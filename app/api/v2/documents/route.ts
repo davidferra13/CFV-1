@@ -10,7 +10,7 @@ export const GET = withApiAuth(
     const eventId = url.searchParams.get('event_id')
     const type = url.searchParams.get('type')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('document_snapshots' as any)
       .select('*', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)

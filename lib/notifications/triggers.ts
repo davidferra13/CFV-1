@@ -4,7 +4,7 @@
 // and never throw. Safe to call as side effects after any operation.
 //
 // These notifications go to the chef (tenant owner) since staff members
-// do not have Supabase auth accounts. The chef sees all operational
+// do not have Auth.js accounts. The chef sees all operational
 // notifications in their bell panel and notifications page.
 
 'use server'

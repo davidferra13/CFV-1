@@ -5,7 +5,7 @@
 // and upcoming event payment plan installments due.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface CashFlowDay {
   date: string // YYYY-MM-DD
@@ -29,7 +29,7 @@ export async function getCashFlowCalendar(
   month: number = new Date().getMonth() + 1
 ): Promise<CashFlowCalendarData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
   const endYear = month === 12 ? year + 1 : year
@@ -38,7 +38,7 @@ export async function getCashFlowCalendar(
 
   const [ledgerRes, expensesRes, eventsRes, installmentsRes] = await Promise.all([
     // Income: payments received
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents, received_at, created_at, entry_type')
       .eq('tenant_id', user.tenantId!)
@@ -48,7 +48,7 @@ export async function getCashFlowCalendar(
       .limit(200),
 
     // Outgoing: expenses
-    supabase
+    db
       .from('expenses')
       .select('amount_cents, expense_date')
       .eq('tenant_id', user.tenantId!)
@@ -57,7 +57,7 @@ export async function getCashFlowCalendar(
       .limit(200),
 
     // Events on each date
-    supabase
+    db
       .from('events')
       .select('event_date')
       .eq('tenant_id', user.tenantId!)
@@ -66,7 +66,7 @@ export async function getCashFlowCalendar(
       .not('status', 'in', '("cancelled","draft")'),
 
     // Upcoming installments due
-    supabase
+    db
       .from('payment_plan_installments' as any)
       .select('amount_cents, due_date')
       .eq('tenant_id', user.tenantId!)

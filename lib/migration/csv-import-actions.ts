@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseCSV } from './csv-parser'
 
 // ---- Types ----
@@ -73,7 +73,7 @@ export async function parseCSVPreview(csvText: string, hasHeaders?: boolean): Pr
 export async function importClients(mappedRows: MappedRow[]): Promise<ImportResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const result: ImportResult = { imported: 0, skipped: 0, errors: [] }
 
@@ -94,7 +94,7 @@ export async function importClients(mappedRows: MappedRow[]): Promise<ImportResu
     }
 
     // Check for duplicate email within this tenant
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -132,7 +132,7 @@ export async function importClients(mappedRows: MappedRow[]): Promise<ImportResu
         .filter(Boolean)
     }
 
-    const { error } = await supabase.from('clients').insert(insertData)
+    const { error } = await db.from('clients').insert(insertData)
 
     if (error) {
       result.errors.push(`Row ${rowNum}: ${error.message}`)
@@ -143,7 +143,7 @@ export async function importClients(mappedRows: MappedRow[]): Promise<ImportResu
   }
 
   // Log import history
-  await logImportHistory(supabase, tenantId, 'clients', result)
+  await logImportHistory(db, tenantId, 'clients', result)
 
   return result
 }
@@ -154,7 +154,7 @@ export async function importClients(mappedRows: MappedRow[]): Promise<ImportResu
 export async function importRecipes(mappedRows: MappedRow[]): Promise<ImportResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const result: ImportResult = { imported: 0, skipped: 0, errors: [] }
 
@@ -216,7 +216,7 @@ export async function importRecipes(mappedRows: MappedRow[]): Promise<ImportResu
         .filter(Boolean)
     }
 
-    const { error } = await supabase.from('recipes').insert(insertData)
+    const { error } = await db.from('recipes').insert(insertData)
 
     if (error) {
       result.errors.push(`Row ${rowNum}: ${error.message}`)
@@ -226,7 +226,7 @@ export async function importRecipes(mappedRows: MappedRow[]): Promise<ImportResu
     }
   }
 
-  await logImportHistory(supabase, tenantId, 'recipes', result)
+  await logImportHistory(db, tenantId, 'recipes', result)
 
   return result
 }
@@ -238,7 +238,7 @@ export async function importRecipes(mappedRows: MappedRow[]): Promise<ImportResu
 export async function importEvents(mappedRows: MappedRow[]): Promise<ImportResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const result: ImportResult = { imported: 0, skipped: 0, errors: [] }
 
@@ -269,7 +269,7 @@ export async function importEvents(mappedRows: MappedRow[]): Promise<ImportResul
     let clientId: string | null = null
 
     if (row.client_name?.trim()) {
-      const { data: client } = await supabase
+      const { data: client } = await db
         .from('clients')
         .select('id')
         .eq('tenant_id', tenantId)
@@ -279,7 +279,7 @@ export async function importEvents(mappedRows: MappedRow[]): Promise<ImportResul
     }
 
     if (!clientId && row.client_email?.trim()) {
-      const { data: client } = await supabase
+      const { data: client } = await db
         .from('clients')
         .select('id')
         .eq('tenant_id', tenantId)
@@ -324,7 +324,7 @@ export async function importEvents(mappedRows: MappedRow[]): Promise<ImportResul
         .filter(Boolean)
     }
 
-    const { error } = await supabase.from('events').insert(insertData)
+    const { error } = await db.from('events').insert(insertData)
 
     if (error) {
       result.errors.push(`Row ${rowNum}: ${error.message}`)
@@ -334,7 +334,7 @@ export async function importEvents(mappedRows: MappedRow[]): Promise<ImportResul
     }
   }
 
-  await logImportHistory(supabase, tenantId, 'events', result)
+  await logImportHistory(db, tenantId, 'events', result)
 
   return result
 }
@@ -481,9 +481,9 @@ function parseSingleMXPRecipe(block: string): MXPRecipe | null {
 export async function getImportHistory(): Promise<ImportHistoryEntry[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('activity_events')
     .select('id, event_type, metadata, created_at')
     .eq('tenant_id', tenantId)
@@ -513,13 +513,13 @@ export async function getImportHistory(): Promise<ImportHistoryEntry[]> {
 // ---- Internal helpers ----
 
 async function logImportHistory(
-  supabase: ReturnType<typeof createServerClient>,
+  db: ReturnType<typeof createServerClient>,
   tenantId: string,
   importType: string,
   result: ImportResult
 ) {
   try {
-    await supabase.from('activity_events').insert({
+    await db.from('activity_events').insert({
       tenant_id: tenantId,
       event_type: 'data_import',
       actor_type: 'chef',

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { ParsedClient } from './parse-client'
 import type { ParsedRecipe, ParsedIngredient } from './parse-recipe'
@@ -27,7 +27,7 @@ export async function checkClientDuplicates(
   candidates: { full_name: string; email?: string | null }[]
 ): Promise<DuplicateCheckResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const emails = candidates
     .map((c) => c.email)
@@ -39,17 +39,13 @@ export async function checkClientDuplicates(
   // PostgREST's ilike filter misparses values that contain spaces.
   const [emailResult, allClientsResult] = await Promise.all([
     emails.length > 0
-      ? supabase
+      ? db
           .from('clients')
           .select('id, full_name, email')
           .eq('tenant_id', user.tenantId!)
           .in('email', emails)
       : Promise.resolve({ data: [] }),
-    supabase
-      .from('clients')
-      .select('id, full_name, email')
-      .eq('tenant_id', user.tenantId!)
-      .limit(500),
+    db.from('clients').select('id, full_name, email').eq('tenant_id', user.tenantId!).limit(500),
   ])
 
   const byEmail: DuplicateCheckResult['byEmail'] = {}
@@ -75,7 +71,7 @@ export async function checkClientDuplicates(
 
 export async function importClient(parsed: ParsedClient) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build regular_guests JSON
   const regularGuests =
@@ -84,7 +80,7 @@ export async function importClient(parsed: ParsedClient) {
   // Build personal_milestones JSON
   const personalMilestones = (parsed.personal_milestones as Json) ?? null
 
-  const { data: client, error } = await supabase
+  const { data: client, error } = await db
     .from('clients')
     .insert({
       tenant_id: user.tenantId!,
@@ -184,10 +180,10 @@ export async function importClients(parsedClients: ParsedClient[]) {
 
 export async function importRecipe(parsed: ParsedRecipe) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Create the recipe record
-  const { data: recipe, error: recipeError } = await supabase
+  const { data: recipe, error: recipeError } = await db
     .from('recipes')
     .insert({
       tenant_id: user.tenantId!,
@@ -222,10 +218,10 @@ export async function importRecipe(parsed: ParsedRecipe) {
       const ing = parsed.ingredients[i]
 
       // Find or create the ingredient in the ingredients table
-      const ingredientId = await findOrCreateIngredient(supabase, user.tenantId!, user.id, ing)
+      const ingredientId = await findOrCreateIngredient(db, user.tenantId!, user.id, ing)
 
       // Create the recipe_ingredient link
-      await supabase.from('recipe_ingredients').insert({
+      await db.from('recipe_ingredients').insert({
         recipe_id: recipe.id,
         ingredient_id: ingredientId,
         quantity: ing.quantity,
@@ -245,13 +241,13 @@ export async function importRecipe(parsed: ParsedRecipe) {
  * Find existing ingredient by name (case-insensitive) or create new one
  */
 async function findOrCreateIngredient(
-  supabase: any,
+  db: any,
   tenantId: string,
   userId: string,
   ing: ParsedIngredient
 ): Promise<string> {
   // Try to find existing ingredient by name
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('ingredients')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -264,7 +260,7 @@ async function findOrCreateIngredient(
   }
 
   // Create new ingredient
-  const { data: newIngredient, error } = await supabase
+  const { data: newIngredient, error } = await db
     .from('ingredients')
     .insert({
       tenant_id: tenantId,
@@ -300,7 +296,7 @@ export type BrainDumpImportResult = {
 
 export async function importBrainDump(parsed: BrainDumpResult): Promise<BrainDumpImportResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const result: BrainDumpImportResult = {
     clients: [],
@@ -357,7 +353,7 @@ export async function importBrainDump(parsed: BrainDumpResult): Promise<BrainDum
 
   for (const note of allNotes) {
     try {
-      await supabase.from('chef_documents').insert({
+      await db.from('chef_documents').insert({
         tenant_id: user.tenantId!,
         title: `Brain dump note - ${note.type.replace(/_/g, ' ')}`,
         document_type: 'note',

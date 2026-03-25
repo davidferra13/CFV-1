@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { computeVendorAging } from '@/lib/vendors/payment-aging'
 import type { VendorAgingEntry } from '@/lib/vendors/payment-aging'
 
@@ -10,11 +10,11 @@ export type { VendorAgingEntry }
 export async function getVendorPaymentAging(): Promise<VendorAgingEntry[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch expenses with vendor info - expenses table has no paid_at column,
   // so we use expense_date as the due-date proxy for aging buckets.
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .select('vendor_name, amount_cents, expense_date')
     .eq('tenant_id', tenantId)

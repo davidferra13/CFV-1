@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -67,10 +67,10 @@ function computeStatuses(ndas: NdaRow[]): NdaRow[] {
 
 export async function createNdaRecord(clientId: string, data: NdaCreateInput): Promise<NdaRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: nda, error } = await supabase
+  const { data: nda, error } = await db
     .from('client_ndas' as any)
     .insert({
       tenant_id: tenantId,
@@ -97,7 +97,7 @@ export async function createNdaRecord(clientId: string, data: NdaCreateInput): P
 
 export async function updateNdaRecord(id: string, data: NdaUpdateInput): Promise<NdaRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const updatePayload: Record<string, unknown> = {
@@ -111,7 +111,7 @@ export async function updateNdaRecord(id: string, data: NdaUpdateInput): Promise
   if (data.document_url !== undefined) updatePayload.document_url = data.document_url
   if (data.restrictions !== undefined) updatePayload.restrictions = data.restrictions
 
-  const { data: nda, error } = await supabase
+  const { data: nda, error } = await db
     .from('client_ndas' as any)
     .update(updatePayload)
     .eq('id', id)
@@ -130,10 +130,10 @@ export async function updateNdaRecord(id: string, data: NdaUpdateInput): Promise
 
 export async function deleteNdaRecord(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_ndas' as any)
     .delete()
     .eq('id', id)
@@ -149,9 +149,9 @@ export async function deleteNdaRecord(id: string): Promise<void> {
 
 export async function getClientNdaRecords(clientId: string): Promise<NdaRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_ndas' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -168,14 +168,14 @@ export async function getClientNdaRecords(clientId: string): Promise<NdaRow[]> {
 
 export async function getExpiringNdaRecords(daysAhead: number = 30): Promise<NdaRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
   const futureDate = new Date()
   futureDate.setDate(futureDate.getDate() + daysAhead)
   const futureDateStr = futureDate.toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_ndas' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -195,9 +195,9 @@ export async function getExpiringNdaRecords(daysAhead: number = 30): Promise<Nda
 
 export async function getNdaDashboard(): Promise<NdaDashboardSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_ndas' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)

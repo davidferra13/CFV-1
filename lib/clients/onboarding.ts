@@ -1,13 +1,13 @@
 import { verifyOnboardingToken } from '@/lib/clients/onboarding-tokens'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export async function getOnboardingData(token: string) {
   const tokenData = verifyOnboardingToken(token)
   if (!tokenData) return null
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select(
       `
@@ -26,7 +26,7 @@ export async function getOnboardingData(token: string) {
 
   if (!client) return null
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name')
     .eq('id', tokenData.tenantId)

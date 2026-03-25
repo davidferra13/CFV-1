@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ---------- Types ----------
@@ -55,9 +55,9 @@ export async function addPriceEntry(
   data: PriceEntryInput
 ): Promise<{ success: boolean; error?: string; entry?: PriceEntry }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: entry, error } = await supabase
+  const { data: entry, error } = await db
     .from('grocery_price_entries')
     .insert({
       chef_id: user.tenantId!,
@@ -85,7 +85,7 @@ export async function bulkAddPrices(
   entries: PriceEntryInput[]
 ): Promise<{ success: boolean; error?: string; count?: number }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const rows = entries.map((e) => ({
     chef_id: user.tenantId!,
@@ -98,7 +98,7 @@ export async function bulkAddPrices(
     notes: e.notes?.trim() || null,
   }))
 
-  const { error, count } = await supabase.from('grocery_price_entries').insert(rows)
+  const { error, count } = await db.from('grocery_price_entries').insert(rows)
 
   if (error) {
     console.error('[grocery-price] bulkAddPrices failed:', error)
@@ -111,9 +111,9 @@ export async function bulkAddPrices(
 
 export async function deletePriceEntry(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('grocery_price_entries')
     .delete()
     .eq('id', id)
@@ -134,9 +134,9 @@ export async function getPriceHistory(
   limit = 100
 ): Promise<{ success: boolean; error?: string; entries?: PriceEntry[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('grocery_price_entries')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -169,9 +169,9 @@ export async function getIngredientPriceStats(
   ingredientName: string
 ): Promise<{ success: boolean; error?: string; stats?: IngredientPriceStats }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('grocery_price_entries')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -232,10 +232,10 @@ export async function getFrequentIngredients(): Promise<{
   ingredients?: { name: string; count: number; latest_cents: number; unit: string }[]
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all entries ordered by date to compute frequency and latest price
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('grocery_price_entries')
     .select('ingredient_name, price_cents, quantity, unit, receipt_date')
     .eq('chef_id', user.tenantId!)
@@ -284,9 +284,9 @@ export async function getPriceComparison(ingredientName: string): Promise<{
   stores?: { store_name: string; avg_cents: number; latest_cents: number; entry_count: number }[]
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('grocery_price_entries')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -332,9 +332,9 @@ export async function getStoreSummary(): Promise<{
   stores?: StoreSummary[]
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('grocery_price_entries')
     .select('store_name, price_cents, quantity, receipt_date')
     .eq('chef_id', user.tenantId!)

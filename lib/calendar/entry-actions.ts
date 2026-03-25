@@ -6,7 +6,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { sendAvailabilitySignalEmail } from '@/lib/email/notifications'
 import { z } from 'zod'
@@ -120,7 +120,7 @@ export type UpdateCalendarEntryInput = z.infer<typeof UpdateEntrySchema>
 export async function createCalendarEntry(input: CreateCalendarEntryInput) {
   const user = await requireChef()
   const validated = CreateEntrySchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Auto-set blocks_bookings from type default if not explicitly provided
   const blocksBookings =
@@ -133,7 +133,7 @@ export async function createCalendarEntry(input: CreateCalendarEntryInput) {
     ? validated.is_revenue_generating
     : false
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_calendar_entries')
     .insert({
       chef_id: user.tenantId!,
@@ -174,10 +174,10 @@ export async function createCalendarEntry(input: CreateCalendarEntryInput) {
 export async function updateCalendarEntry(id: string, input: UpdateCalendarEntryInput) {
   const user = await requireChef()
   const validated = UpdateEntrySchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('chef_calendar_entries')
     .select('chef_id')
     .eq('id', id)
@@ -200,7 +200,7 @@ export async function updateCalendarEntry(id: string, input: UpdateCalendarEntry
     updateData.public_note = null
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_calendar_entries')
     .update(updateData)
     .eq('id', id)
@@ -222,9 +222,9 @@ export async function updateCalendarEntry(id: string, input: UpdateCalendarEntry
 
 export async function deleteCalendarEntry(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_calendar_entries')
     .delete()
     .eq('id', id)
@@ -247,11 +247,11 @@ export async function getCalendarEntriesForRange(
   endDate: string
 ): Promise<ChefCalendarEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Entries that overlap the query window:
   // entry.start_date <= endDate AND entry.end_date >= startDate
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_calendar_entries')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -273,9 +273,9 @@ export async function getCalendarEntriesForRange(
 
 export async function getCalendarEntry(id: string): Promise<ChefCalendarEntry | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_calendar_entries')
     .select('*')
     .eq('id', id)
@@ -292,10 +292,10 @@ export async function getCalendarEntry(id: string): Promise<ChefCalendarEntry | 
 
 export async function markCalendarEntryComplete(id: string, actualRevenueCents?: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('chef_calendar_entries')
     .select('chef_id, is_revenue_generating')
     .eq('id', id)
@@ -314,7 +314,7 @@ export async function markCalendarEntryComplete(id: string, actualRevenueCents?:
     updateFields.actual_revenue_cents = actualRevenueCents
   }
 
-  const { error } = await supabase.from('chef_calendar_entries').update(updateFields).eq('id', id)
+  const { error } = await db.from('chef_calendar_entries').update(updateFields).eq('id', id)
 
   if (error) {
     console.error('[markCalendarEntryComplete] Error:', error)
@@ -331,11 +331,11 @@ export async function markCalendarEntryComplete(id: string, actualRevenueCents?:
 
 export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const chefId = user.tenantId!
 
   // Verify entry exists, belongs to this chef, and is public + target_booking
-  const { data: entry } = await supabase
+  const { data: entry } = await db
     .from('chef_calendar_entries')
     .select('id, entry_type, is_public, start_date, title, public_note')
     .eq('id', calendarEntryId)
@@ -347,7 +347,7 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
   }
 
   // Get all opted-in clients for this chef (need email + name for notifications)
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, email, full_name')
     .eq('tenant_id', chefId)
@@ -362,7 +362,7 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
     client_id: c.id,
   }))
 
-  const { data: inserted, error } = await supabase
+  const { data: inserted, error } = await db
     .from('availability_signal_notification_log')
     .insert(rows)
     .select('id, client_id')
@@ -376,11 +376,7 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
   }
 
   // Get chef business name for email
-  const { data: chef } = await supabase
-    .from('chefs')
-    .select('business_name')
-    .eq('id', chefId)
-    .single()
+  const { data: chef } = await db.from('chefs').select('business_name').eq('id', chefId).single()
 
   const chefName = chef?.business_name || 'Your Chef'
 
@@ -415,10 +411,10 @@ export async function notifyClientsOfPublicSignal(calendarEntryId: string) {
 // ============================================
 
 export async function getPublicAvailabilitySignals(chefId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_calendar_entries')
     .select('id, entry_type, title, start_date, end_date, public_note')
     .eq('chef_id', chefId)
@@ -445,12 +441,12 @@ export async function getPublicAvailabilitySignals(chefId: string) {
 
 export async function getMarketIncomeSummary(year: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const startDate = `${year}-01-01`
   const endDate = `${year}-12-31`
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_calendar_entries')
     .select(
       'entry_type, title, start_date, expected_revenue_cents, actual_revenue_cents, revenue_type, is_completed'

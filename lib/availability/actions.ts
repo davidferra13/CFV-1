@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import {
@@ -48,9 +48,9 @@ export type WaitlistEntryInput = z.infer<typeof WaitlistEntrySchema>
 export async function blockDate(input: BlockDateInput) {
   const user = await requireChef()
   const validated = BlockDateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_availability_blocks')
     .insert({
       chef_id: user.tenantId!,
@@ -71,9 +71,9 @@ export async function blockDate(input: BlockDateInput) {
 
 export async function unblockDate(blockId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_availability_blocks')
     .delete()
     .eq('id', blockId)
@@ -89,10 +89,10 @@ export async function unblockDate(blockId: string) {
  * Called from the event transition logic.
  */
 export async function autoBlockEventDate(eventId: string, chefId: string, eventDate: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Idempotent: skip if already blocked for this event
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('chef_availability_blocks')
     .select('id')
     .eq('chef_id', chefId)
@@ -101,7 +101,7 @@ export async function autoBlockEventDate(eventId: string, chefId: string, eventD
 
   if (existing) return
 
-  await supabase.from('chef_availability_blocks').insert({
+  await db.from('chef_availability_blocks').insert({
     chef_id: chefId,
     block_date: eventDate,
     block_type: 'full_day',
@@ -115,8 +115,8 @@ export async function autoBlockEventDate(eventId: string, chefId: string, eventD
  * Remove auto-block when an event is cancelled.
  */
 export async function removeEventAutoBlock(eventId: string) {
-  const supabase: any = createServerClient()
-  await supabase
+  const db: any = createServerClient()
+  await db
     .from('chef_availability_blocks')
     .delete()
     .eq('event_id', eventId)
@@ -132,12 +132,12 @@ export async function getAvailabilityForMonth(
   month: number // 1-12
 ): Promise<Record<string, 'event_auto' | 'blocked' | 'free'>> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
   const endDate = new Date(year, month, 0).toISOString().split('T')[0] // last day of month
 
-  const { data: blocks } = await supabase
+  const { data: blocks } = await db
     .from('chef_availability_blocks')
     .select('block_date, is_event_auto')
     .eq('chef_id', user.tenantId!)
@@ -153,9 +153,9 @@ export async function getAvailabilityForMonth(
 
 export async function isDateAvailable(date: string): Promise<boolean> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_availability_blocks')
     .select('id')
     .eq('chef_id', user.tenantId!)
@@ -224,16 +224,16 @@ export async function checkDateConflicts(
   excludeEventId?: string
 ): Promise<DateConflictResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Parallel: availability blocks + existing events on same date
   const [blocksResult, eventsResult] = await Promise.all([
-    supabase
+    db
       .from('chef_availability_blocks')
       .select('id, block_type, reason, is_event_auto')
       .eq('chef_id', user.tenantId!)
       .eq('block_date', date),
-    supabase
+    db
       .from('events')
       .select('id, occasion, status')
       .eq('tenant_id', user.tenantId!)
@@ -301,7 +301,7 @@ export async function checkSeriesSessionConflicts(
   sessions: PlannedSessionForConflict[]
 ): Promise<SeriesSessionConflictCheckResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (sessions.length === 0) {
     return { hasConflicts: false, conflicts: [] }
@@ -313,14 +313,14 @@ export async function checkSeriesSessionConflicts(
   if (!rangeStart || !rangeEnd) return { hasConflicts: false, conflicts: [] }
 
   const [{ data: chef }, { data: blocks }, { data: events }] = await Promise.all([
-    supabase.from('chefs').select('booking_min_notice_days').eq('id', user.tenantId!).single(),
-    supabase
+    db.from('chefs').select('booking_min_notice_days').eq('id', user.tenantId!).single(),
+    db
       .from('chef_availability_blocks')
       .select('block_date, block_type, start_time, end_time, reason, is_event_auto')
       .eq('chef_id', user.tenantId!)
       .gte('block_date', rangeStart)
       .lte('block_date', rangeEnd),
-    supabase
+    db
       .from('events')
       .select('id, event_date, status, occasion, serve_time, arrival_time, departure_time')
       .eq('tenant_id', user.tenantId!)
@@ -453,9 +453,9 @@ export async function checkSeriesSessionConflicts(
 export async function addToWaitlist(input: WaitlistEntryInput) {
   const user = await requireChef()
   const validated = WaitlistEntrySchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('waitlist_entries')
     .insert({
       chef_id: user.tenantId!,
@@ -476,9 +476,9 @@ export async function addToWaitlist(input: WaitlistEntryInput) {
 
 export async function contactWaitlistEntry(entryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase
+  await db
     .from('waitlist_entries')
     .update({ status: 'contacted', contacted_at: new Date().toISOString() })
     .eq('id', entryId)
@@ -489,9 +489,9 @@ export async function contactWaitlistEntry(entryId: string) {
 
 export async function convertWaitlistEntry(entryId: string, eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase
+  await db
     .from('waitlist_entries')
     .update({ status: 'converted', converted_event_id: eventId })
     .eq('id', entryId)
@@ -502,9 +502,9 @@ export async function convertWaitlistEntry(entryId: string, eventId: string) {
 
 export async function expireWaitlistEntry(entryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase
+  await db
     .from('waitlist_entries')
     .update({ status: 'expired' })
     .eq('id', entryId)
@@ -515,9 +515,9 @@ export async function expireWaitlistEntry(entryId: string) {
 
 export async function getWaitlistEntries(status?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('waitlist_entries')
     .select(
       `
@@ -537,9 +537,9 @@ export async function getWaitlistEntries(status?: string) {
 
 export async function getWaitlistForDate(date: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('waitlist_entries')
     .select(
       `

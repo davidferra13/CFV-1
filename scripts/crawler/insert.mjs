@@ -1,27 +1,27 @@
-// Supabase insertion with deduplication.
+// Database insertion with deduplication.
 // Inserts classified listings into directory_listings as 'discovered' status.
 // Skips duplicates by checking existing slugs and name+city combos.
 
-import { createClient } from '../lib/supabase.mjs'
+import { createClient } from '../lib/db.mjs'
 import config from './config.json' with { type: 'json' }
 
-let supabase = null
+let db = null
 
 function getClient() {
-  if (supabase) return supabase
+  if (db) return db
 
-  const url = config.supabase.url
-  const key = process.env[config.supabase.serviceRoleKeyEnv]
+  const url = config.database.url
+  const key = process.env[config.database.serviceRoleKeyEnv]
 
   if (!key) {
     throw new Error(
-      `Missing ${config.supabase.serviceRoleKeyEnv} env var. ` +
-        `Set it before running: export ${config.supabase.serviceRoleKeyEnv}=your-key`
+      `Missing ${config.database.serviceRoleKeyEnv} env var. ` +
+        `Set it before running: export ${config.database.serviceRoleKeyEnv}=your-key`
     )
   }
 
-  supabase = createClient(url, key)
-  return supabase
+  db = createClient(url, key)
+  return db
 }
 
 function slugify(text) {

@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -38,9 +38,9 @@ export type LogSubstitutionInput = z.infer<typeof LogSubstitutionSchema>
 export async function logSubstitution(input: LogSubstitutionInput) {
   const user = await requireChef()
   const validated = LogSubstitutionSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('shopping_substitutions')
     .insert({
       ...validated,
@@ -63,9 +63,9 @@ export async function logSubstitution(input: LogSubstitutionInput) {
  */
 export async function getSubstitutions(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('shopping_substitutions')
     .select('*')
     .eq('event_id', eventId)
@@ -85,9 +85,9 @@ export async function getSubstitutions(eventId: string) {
  */
 export async function deleteSubstitution(id: string, eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('shopping_substitutions')
     .delete()
     .eq('id', id)
@@ -108,9 +108,9 @@ export async function deleteSubstitution(id: string, eventId: string) {
  */
 export async function getSubstitutionHistory(ingredientName: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('shopping_substitutions')
     .select('actual_ingredient, reason, store_name, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -136,9 +136,9 @@ export async function getSubstitutionHistory(ingredientName: string) {
  */
 export async function getCommonSubstitutions() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('shopping_substitutions')
     .select('planned_ingredient, actual_ingredient, reason')
     .eq('tenant_id', user.tenantId!)

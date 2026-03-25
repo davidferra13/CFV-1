@@ -6,7 +6,7 @@
 // Each handler is called by the queue worker when a reactive task is processed.
 // They load context from the DB, call Ollama if needed, and return structured results.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { z } from 'zod'
@@ -15,8 +15,8 @@ import { z } from 'zod'
 // SHARED HELPERS
 // ============================================
 
-async function loadEventWithClient(supabase: any, eventId: string, tenantId: string) {
-  const { data } = await supabase
+async function loadEventWithClient(db: any, eventId: string, tenantId: string) {
+  const { data } = await db
     .from('events')
     .select(
       'id, occasion, event_date, guest_count, status, location, client_id, client:clients(full_name, email, dietary_restrictions, allergies)'
@@ -27,8 +27,8 @@ async function loadEventWithClient(supabase: any, eventId: string, tenantId: str
   return data
 }
 
-async function loadChefName(supabase: any, tenantId: string): Promise<string> {
-  const { data } = await supabase
+async function loadChefName(db: any, tenantId: string): Promise<string> {
+  const { data } = await db
     .from('chefs')
     .select('business_name, full_name')
     .eq('id', tenantId)
@@ -45,10 +45,10 @@ export async function handleInquiryCreated(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const inquiryId = String(payload.inquiryId ?? '')
 
-  const { data: inquiry } = await (supabase
+  const { data: inquiry } = await (db
     .from('inquiries')
     .select(
       'id, status, created_at, confirmed_occasion, confirmed_budget_cents, confirmed_guest_count, channel, client:clients(full_name, email)'
@@ -87,7 +87,7 @@ export async function handleInquiryCreated(
   score = Math.min(score, 100)
 
   // Store the score (update inquiry)
-  await (supabase
+  await (db
     .from('inquiries')
     .update({ lead_score: score } as any)
     .eq('id', inquiryId) as any)
@@ -110,13 +110,13 @@ export async function handleEventConfirmed(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
 
-  const event = await loadEventWithClient(supabase, eventId, tenantId)
+  const event = await loadEventWithClient(db, eventId, tenantId)
   if (!event) return { status: 'skipped', reason: 'Event not found' }
 
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
   const clientName = (event as any).client?.full_name ?? 'Client'
 
   const BriefingSchema = z.object({
@@ -160,13 +160,13 @@ export async function handleEventCompleted(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
 
-  const event = await loadEventWithClient(supabase, eventId, tenantId)
+  const event = await loadEventWithClient(db, eventId, tenantId)
   if (!event) return { status: 'skipped', reason: 'Event not found' }
 
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
   const clientName = (event as any).client?.full_name ?? 'Client'
 
   const PostEventSchema = z.object({
@@ -215,13 +215,13 @@ export async function handleEventCancelled(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
 
-  const event = await loadEventWithClient(supabase, eventId, tenantId)
+  const event = await loadEventWithClient(db, eventId, tenantId)
   if (!event) return { status: 'skipped', reason: 'Event not found' }
 
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
   const clientName = (event as any).client?.full_name ?? 'Client'
 
   const CancelSchema = z.object({
@@ -265,7 +265,7 @@ export async function handleMenuApproved(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
   const clientId = String(payload.clientId ?? '')
 
@@ -298,11 +298,11 @@ export async function handlePaymentReceived(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
   const amountCents = Number(payload.amountCents ?? 0)
 
-  const event = await loadEventWithClient(supabase, eventId, tenantId)
+  const event = await loadEventWithClient(db, eventId, tenantId)
   if (!event) return { status: 'skipped', reason: 'Event not found' }
 
   const clientName = (event as any).client?.full_name ?? 'Client'
@@ -328,11 +328,11 @@ export async function handleGuestListUpdated(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
 
   // Load the event to get client_id
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, client_id')
     .eq('id', eventId)
@@ -392,12 +392,12 @@ export async function handleStaffNoShow(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
   const staffName = String(payload.staffName ?? 'Unknown')
 
   // Look for backup chefs
-  const { data: backups } = await (supabase
+  const { data: backups } = await (db
     .from('backup_chef_contacts' as any)
     .select('name, phone, email, specialties')
     .eq('tenant_id', tenantId)
@@ -448,10 +448,10 @@ export async function handleClientBirthday(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const clientId = String(payload.clientId ?? '')
 
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('full_name, vibe_notes')
     .eq('id', clientId)
@@ -460,7 +460,7 @@ export async function handleClientBirthday(
 
   if (!client) return { status: 'skipped', reason: 'Client not found' }
 
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
   const BirthdaySchema = z.object({ subject: z.string(), body: z.string() })
 
   try {
@@ -494,11 +494,11 @@ export async function handleClientComplaint(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const clientId = String(payload.clientId ?? '')
   const complaint = String(payload.complaint ?? '')
 
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('full_name')
     .eq('id', clientId)
@@ -527,10 +527,10 @@ export async function handleFoodRecall(
   const reason = String(payload.reason ?? '')
 
   // Check upcoming events for the ingredient
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const today = new Date().toISOString().split('T')[0]
 
-  const { data: upcomingEvents } = await supabase
+  const { data: upcomingEvents } = await db
     .from('events')
     .select('id, occasion, event_date')
     .eq('tenant_id', tenantId)
@@ -561,24 +561,24 @@ export async function handlePaymentOverdue(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const eventId = String(payload.eventId ?? '')
 
-  const event = await loadEventWithClient(supabase, eventId, tenantId)
+  const event = await loadEventWithClient(db, eventId, tenantId)
   if (!event) return { status: 'skipped', reason: 'Event not found' }
 
   const clientName = (event as any).client?.full_name ?? 'Client'
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   // Calculate outstanding balance from ledger
-  const { data: charges } = await supabase
+  const { data: charges } = await db
     .from('ledger_entries')
     .select('amount_cents')
     .eq('tenant_id', tenantId)
     .eq('event_id', eventId)
     .eq('entry_type', 'charge')
 
-  const { data: payments } = await supabase
+  const { data: payments } = await db
     .from('ledger_entries')
     .select('amount_cents')
     .eq('tenant_id', tenantId)
@@ -629,10 +629,10 @@ export async function handleInquiryStale(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const inquiryId = String(payload.inquiryId ?? '')
 
-  const { data: inquiry } = await (supabase
+  const { data: inquiry } = await (db
     .from('inquiries')
     .select('id, created_at, confirmed_occasion, client:clients(full_name)')
     .eq('id', inquiryId)
@@ -642,7 +642,7 @@ export async function handleInquiryStale(
   if (!inquiry) return { status: 'skipped', reason: 'Inquiry not found' }
 
   const clientName = (inquiry as any).client?.full_name ?? 'Client'
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   const FollowUpSchema = z.object({ subject: z.string(), body: z.string() })
 

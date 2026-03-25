@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 
 // --- Types ---
@@ -68,10 +68,10 @@ const PIPELINE_WEIGHTS: Record<string, number> = {
  */
 export async function getPipelineRevenueForecast(): Promise<PipelineRevenueForecast> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all active pipeline events (not draft, not terminal)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, status, quoted_price_cents')
     .eq('tenant_id', user.tenantId!)
@@ -124,7 +124,7 @@ export async function getFunnelMetrics(
   const validated = GetFunnelMetricsSchema.parse({ startDate, endDate })
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Default to current calendar year
   const now = new Date()
@@ -132,7 +132,7 @@ export async function getFunnelMetrics(
   const effectiveEnd = validated.endDate ?? `${now.getFullYear()}-12-31`
 
   // Stage 1: Total inquiries in the period
-  const { count: inquiryCount } = await supabase
+  const { count: inquiryCount } = await db
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -141,7 +141,7 @@ export async function getFunnelMetrics(
 
   // Stage 2: Quotes sent (events created beyond draft during the period)
   // An event that has progressed past draft had a quote sent
-  const { data: periodEvents } = await supabase
+  const { data: periodEvents } = await db
     .from('events')
     .select('id, status')
     .eq('tenant_id', user.tenantId!)

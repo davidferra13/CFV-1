@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   calculateTruePlateCost,
   IRS_MILEAGE_RATE_CENTS_2026,
@@ -42,7 +42,7 @@ export async function getTruePlateCost(input: {
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     if (!input.menuId && !input.eventId) {
       return { success: false, error: 'Either menuId or eventId is required' }
@@ -55,7 +55,7 @@ export async function getTruePlateCost(input: {
 
     // 1. If eventId provided, fetch event data
     if (input.eventId) {
-      const { data: event, error: eventError } = await supabase
+      const { data: event, error: eventError } = await db
         .from('events')
         .select('guest_count, quoted_price_cents, menu_id, mileage_miles')
         .eq('id', input.eventId)
@@ -81,7 +81,7 @@ export async function getTruePlateCost(input: {
     }
 
     // 2. Fetch dishes with linked recipes
-    const { data: menuItems, error: itemsError } = await supabase
+    const { data: menuItems, error: itemsError } = await db
       .from('dishes')
       .select(
         `
@@ -111,7 +111,7 @@ export async function getTruePlateCost(input: {
 
     let recipeMap = new Map<string, any>()
     if (recipeIds.length > 0) {
-      const { data: recipes } = await supabase
+      const { data: recipes } = await db
         .from('recipes')
         .select('id, total_cost_cents, prep_time_minutes, cook_time_minutes, servings')
         .in('id', recipeIds)
@@ -138,7 +138,7 @@ export async function getTruePlateCost(input: {
     let mileageRateCents = IRS_MILEAGE_RATE_CENTS_2026
     let hourlyRateCents = DEFAULT_HOURLY_RATE_CENTS
 
-    const { data: pricingConfig } = await supabase
+    const { data: pricingConfig } = await db
       .from('chef_pricing_config')
       .select('mileage_rate_cents')
       .eq('chef_id', tenantId)

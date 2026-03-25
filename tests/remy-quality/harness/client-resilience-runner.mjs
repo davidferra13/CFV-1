@@ -25,7 +25,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { createClient } from '../../../scripts/lib/supabase.mjs'
+import { createClient } from '../../../scripts/lib/db.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -46,8 +46,8 @@ function loadEnv() {
     return m ? m[1].trim() : ''
   }
   return {
-    supabaseUrl: get('NEXT_PUBLIC_SUPABASE_URL'),
-    supabaseAnonKey: get('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    dbUrl: get('NEXT_PUBLIC_DB_URL'),
+    dbAnonKey: get('NEXT_PUBLIC_DB_ANON_KEY'),
   }
 }
 
@@ -72,8 +72,8 @@ function loadCredentials(role = 'client') {
 }
 
 async function buildAuthCookie(email, password) {
-  const { supabaseUrl, supabaseAnonKey } = loadEnv()
-  const sb = createClient(supabaseUrl, supabaseAnonKey)
+  const { dbUrl, dbAnonKey } = loadEnv()
+  const sb = createClient(dbUrl, dbAnonKey)
   const { data, error } = await sb.auth.signInWithPassword({ email, password })
   if (error) return { cookie: null, error: error.message }
   const session = data.session
@@ -331,7 +331,7 @@ async function testBadAuth(validClientCookie) {
 
     // Should NOT contain internal error details
     const noInternalLeak = !(result.body || result.response || '').includes('node_modules') &&
-      !(result.body || result.response || '').includes('supabase') &&
+      !(result.body || result.response || '').includes('database') &&
       !(result.body || result.response || '').includes('ECONNREFUSED') &&
       !(result.body || result.response || '').includes('stack')
 
@@ -524,7 +524,7 @@ async function testMaxHistory(cookie) {
     })
 
     // Should not leak internal data
-    const leakTerms = ['tenant_id', 'entity_id', 'supabase', 'node_modules']
+    const leakTerms = ['tenant_id', 'entity_id', 'database', 'node_modules']
     const found = leakTerms.filter((t) => (result.response || '').toLowerCase().includes(t))
     checks.push({
       name: 'no_internal_leak',

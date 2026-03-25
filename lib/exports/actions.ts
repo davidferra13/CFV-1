@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getLedgerEntries } from '@/lib/ledger/actions'
 import { getExpenses, type ExpenseFilters } from '@/lib/expenses/actions'
 import { getCategoryLabel, EXPENSE_CATEGORY_VALUES } from '@/lib/constants/expense-categories'
@@ -22,10 +22,10 @@ function formatDollars(cents: number): string {
 
 export async function exportEventCSV(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get event details
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('*, client:clients(full_name)')
     .eq('id', eventId)
@@ -37,7 +37,7 @@ export async function exportEventCSV(eventId: string) {
   // Get revenue (ledger entries) and expenses in parallel
   const [ledgerEntries, expenses] = await Promise.all([
     getLedgerEntries({ eventId }),
-    supabase
+    db
       .from('expenses')
       .select('*')
       .eq('event_id', eventId)
@@ -224,13 +224,13 @@ export async function exportExpensesCSV(filters: ExpenseFilters = {}) {
 
 export async function exportAllEventsCSV(year: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const startDate = `${year}-01-01`
   const endDate = `${year + 1}-01-01`
 
   // Get all events for the year with client info
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('*, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -239,13 +239,13 @@ export async function exportAllEventsCSV(year: number) {
     .order('event_date', { ascending: true })
 
   // Get financial summaries for all events
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select('*')
     .eq('tenant_id', user.tenantId!)
 
   // Get all expenses for the year
-  const { data: allExpenses } = await supabase
+  const { data: allExpenses } = await db
     .from('expenses')
     .select('*')
     .eq('tenant_id', user.tenantId!)

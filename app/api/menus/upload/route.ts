@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
 import { verifyCsrfOrigin } from '@/lib/security/csrf'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { checkRateLimit } from '@/lib/rateLimit'
 import {
   createUploadJob,
@@ -137,11 +137,11 @@ export async function POST(request: NextRequest) {
       notes: (formData.get('notes') as string) || undefined,
     })
 
-    // Store the original file in Supabase Storage
-    const supabase: any = createServerClient()
+    // Store the original file in local storage
+    const db: any = createServerClient()
     const storagePath = `${tenantId}/${job.id}/${fileName}`
 
-    const { error: storageError } = await supabase.storage
+    const { error: storageError } = await db.storage
       .from(MENU_UPLOADS_BUCKET)
       .upload(storagePath, file, {
         contentType: file.type || 'application/octet-stream',
@@ -153,7 +153,7 @@ export async function POST(request: NextRequest) {
       // Non-blocking - processing can still work from the buffer
     } else {
       // Save the storage path to the job record
-      await supabase
+      await db
         .from('menu_upload_jobs')
         .update({ file_storage_path: storagePath })
         .eq('id', job.id)

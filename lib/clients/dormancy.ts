@@ -6,7 +6,7 @@
 // Used on the chef dashboard to prompt outreach.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type DormantClientEntry = {
   clientId: string
@@ -18,10 +18,10 @@ export type DormantClientEntry = {
 
 export async function getDormantClients(limit = 5): Promise<DormantClientEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Join clients + client_financial_summary in one query using the view
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('client_financial_summary')
     .select('client_id, days_since_last_event, last_event_date, lifetime_value_cents')
     .eq('tenant_id', user.tenantId!)
@@ -35,7 +35,7 @@ export async function getDormantClients(limit = 5): Promise<DormantClientEntry[]
   const clientIds = summaries.map((s: any) => s.client_id)
 
   // Fetch client names
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name')
     .in('id', clientIds)

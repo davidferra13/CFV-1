@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -56,10 +56,10 @@ const BuildBirthdaySchema = z.object({
 export async function buildPostBookingSequence(eventId: string): Promise<AutomatedSequence> {
   const user = await requireChef()
   BuildPostBookingSchema.parse({ eventId })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the event to get event_date for the final-details step
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, event_date, client_id')
     .eq('id', eventId)
@@ -77,7 +77,7 @@ export async function buildPostBookingSequence(eventId: string): Promise<Automat
   const finalDetailsDelay = Math.max(0, daysUntilEvent - 7)
 
   // Insert the sequence
-  const { data: sequence, error: seqError } = await supabase
+  const { data: sequence, error: seqError } = await db
     .from('automated_sequences')
     .insert({
       chef_id: user.tenantId!,
@@ -120,7 +120,7 @@ export async function buildPostBookingSequence(eventId: string): Promise<Automat
     },
   ]
 
-  const { data: steps, error: stepsError } = await supabase
+  const { data: steps, error: stepsError } = await db
     .from('sequence_steps')
     .insert(stepRows)
     .select()
@@ -141,10 +141,10 @@ export async function buildPostBookingSequence(eventId: string): Promise<Automat
 export async function buildReEngagementSequence(clientId: string): Promise<AutomatedSequence> {
   const user = await requireChef()
   BuildReEngagementSchema.parse({ clientId })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the client belongs to this chef
-  const { data: client, error: clientError } = await supabase
+  const { data: client, error: clientError } = await db
     .from('clients')
     .select('id, first_name, last_name')
     .eq('id', clientId)
@@ -158,7 +158,7 @@ export async function buildReEngagementSequence(clientId: string): Promise<Autom
   const clientName = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'there'
 
   // Insert the sequence
-  const { data: sequence, error: seqError } = await supabase
+  const { data: sequence, error: seqError } = await db
     .from('automated_sequences')
     .insert({
       chef_id: user.tenantId!,
@@ -201,7 +201,7 @@ export async function buildReEngagementSequence(clientId: string): Promise<Autom
     },
   ]
 
-  const { data: steps, error: stepsError } = await supabase
+  const { data: steps, error: stepsError } = await db
     .from('sequence_steps')
     .insert(stepRows)
     .select()
@@ -224,10 +224,10 @@ export async function buildBirthdaySequence(
 ): Promise<AutomatedSequence> {
   const user = await requireChef()
   BuildBirthdaySchema.parse({ clientId, birthdayDate })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the client belongs to this chef
-  const { data: client, error: clientError } = await supabase
+  const { data: client, error: clientError } = await db
     .from('clients')
     .select('id, first_name, last_name')
     .eq('id', clientId)
@@ -249,7 +249,7 @@ export async function buildBirthdaySequence(
   )
 
   // Insert the sequence
-  const { data: sequence, error: seqError } = await supabase
+  const { data: sequence, error: seqError } = await db
     .from('automated_sequences')
     .insert({
       chef_id: user.tenantId!,
@@ -284,7 +284,7 @@ export async function buildBirthdaySequence(
     },
   ]
 
-  const { data: steps, error: stepsError } = await supabase
+  const { data: steps, error: stepsError } = await db
     .from('sequence_steps')
     .insert(stepRows)
     .select()

@@ -74,7 +74,7 @@ Comprehensive enhancement of ChefFlow's document management system across three 
 
 | File                                                                      | Purpose                               |
 | ------------------------------------------------------------------------- | ------------------------------------- |
-| `supabase/migrations/20260401000082_document_management_enhancements.sql` | Schema changes                        |
+| `database/migrations/20260401000082_document_management_enhancements.sql` | Schema changes                        |
 | `lib/receipts/batch-upload-actions.ts`                                    | Concurrent batch upload server action |
 | `lib/receipts/image-quality-check.ts`                                     | Client-side image validation          |
 | `lib/documents/auto-organize.ts`                                          | Year/month folder auto-creation       |

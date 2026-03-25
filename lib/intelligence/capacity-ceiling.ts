@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -50,11 +50,11 @@ export interface CapacityCeilingResult {
 export async function getCapacityCeiling(): Promise<CapacityCeilingResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const twelveMonthsAgo = new Date(Date.now() - 365 * 86400000).toISOString().split('T')[0]
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `

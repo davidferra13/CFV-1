@@ -1,5 +1,5 @@
 'use server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 export type SnapshotEntityType = 'menu' | 'quote' | 'recipe'
@@ -19,10 +19,10 @@ export async function saveSnapshot(
   changeSummary?: string
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get current max version for this entity
-  const { data: latest } = await supabase
+  const { data: latest } = await db
     .from('document_versions' as any)
     .select('version_number')
     .eq('entity_type', entityType)
@@ -33,7 +33,7 @@ export async function saveSnapshot(
 
   const nextVersion = ((latest as any)?.version_number || 0) + 1
 
-  await supabase.from('document_versions' as any).insert({
+  await db.from('document_versions' as any).insert({
     tenant_id: user.entityId,
     entity_type: entityType,
     entity_id: entityId,
@@ -49,9 +49,9 @@ export async function getVersionHistory(
   entityId: string
 ): Promise<DocumentVersion[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('document_versions' as any)
     .select('id, version_number, snapshot, change_summary, created_at')
     .eq('entity_type', entityType)

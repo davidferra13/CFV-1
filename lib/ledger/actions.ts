@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type LedgerEntryFilters = {
   entryType?: string
@@ -18,9 +18,9 @@ export type LedgerEntryFilters = {
  */
 export async function getLedgerEntries(filters: LedgerEntryFilters = {}) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('ledger_entries')
     .select(
       `

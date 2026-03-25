@@ -33,7 +33,7 @@ const UpsertProgramBody = z.object({
 export const GET = withApiAuth(
   async (_req, ctx) => {
     // Fetch loyalty config
-    const { data: config, error } = await (ctx.supabase as any)
+    const { data: config, error } = await (ctx.db as any)
       .from('loyalty_config')
       .select('*')
       .eq('tenant_id', ctx.tenantId)
@@ -45,7 +45,7 @@ export const GET = withApiAuth(
     }
 
     // Fetch rewards catalog
-    const { data: rewards } = await (ctx.supabase as any)
+    const { data: rewards } = await (ctx.db as any)
       .from('loyalty_rewards')
       .select('*')
       .eq('tenant_id', ctx.tenantId)
@@ -72,7 +72,7 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     // Check if config exists
-    const { data: existing } = await (ctx.supabase as any)
+    const { data: existing } = await (ctx.db as any)
       .from('loyalty_config')
       .select('id')
       .eq('tenant_id', ctx.tenantId)
@@ -81,7 +81,7 @@ export const POST = withApiAuth(
     let result
     if (existing) {
       // Update existing config
-      const { data, error } = await (ctx.supabase as any)
+      const { data, error } = await (ctx.db as any)
         .from('loyalty_config')
         .update(parsed.data as any)
         .eq('tenant_id', ctx.tenantId)
@@ -95,7 +95,7 @@ export const POST = withApiAuth(
       result = data
     } else {
       // Create new config
-      const { data, error } = await (ctx.supabase as any)
+      const { data, error } = await (ctx.db as any)
         .from('loyalty_config')
         .insert({
           tenant_id: ctx.tenantId,

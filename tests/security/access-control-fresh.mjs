@@ -4,7 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
-import { createAnonClient } from '../../scripts/lib/supabase.mjs'
+import { createAnonClient } from '../../scripts/lib/db.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -34,8 +34,8 @@ const FRESH_TESTS = [
 ]
 
 async function authenticate() {
-  const supabase = createAnonClient()
-  const { data, error } = await supabase.auth.signInWithPassword({ email: ATTACKER.email, password: ATTACKER.password })
+  const db = createAnonClient()
+  const { data, error } = await db.auth.signInWithPassword({ email: ATTACKER.email, password: ATTACKER.password })
   if (error) throw new Error(`Auth failed: ${error.message}`)
   const session = data.session
   const sessionPayload = JSON.stringify({ access_token: session.access_token, refresh_token: session.refresh_token, expires_in: session.expires_in, expires_at: session.expires_at, token_type: session.token_type, user: session.user })

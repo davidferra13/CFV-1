@@ -4,8 +4,8 @@
  * Tests the validation and idempotency logic in lib/ledger/append.ts.
  * This is P1 — bad ledger entries = wrong financial records.
  *
- * We test the pure validation logic without requiring Supabase.
- * The actual appendLedgerEntryInternal() uses Supabase, so we extract
+ * We test the pure validation logic without requiring database.
+ * The actual appendLedgerEntryInternal() uses the database, so we extract
  * and test the same validation patterns independently.
  *
  * Run: npm run test:unit
@@ -72,7 +72,7 @@ function validateLedgerInput(
 }
 
 /**
- * Determines whether the Supabase client should use service role.
+ * Determines whether the database client should use service role.
  * Mirrors the logic: webhook calls have created_by === null.
  */
 function shouldUseServiceRole(createdBy: string | null | undefined): boolean {

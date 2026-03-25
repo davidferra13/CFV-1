@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database, Json } from '@/types/database'
@@ -182,7 +182,7 @@ function mergeSpecialRequestNotes(...notes: Array<string | null | undefined>): s
 }
 
 async function materializeSeriesSessions(params: {
-  supabase: any
+  db: any
   tenantId: string
   actorId: string
   series: EventSeriesRow
@@ -199,9 +199,9 @@ async function materializeSeriesSessions(params: {
   }>
   parsedLocation: { city: string | null; state: string | null }
 }): Promise<EventSessionRow[]> {
-  const { supabase, tenantId, actorId, series, inquiry, plannedSessions, parsedLocation } = params
+  const { db, tenantId, actorId, series, inquiry, plannedSessions, parsedLocation } = params
 
-  const { data: existingSessions } = await supabase
+  const { data: existingSessions } = await db
     .from('event_service_sessions')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -241,10 +241,7 @@ async function materializeSeriesSessions(params: {
 
   let insertedSessions: EventSessionRow[] = []
   if (toInsert.length > 0) {
-    const { data, error } = await supabase
-      .from('event_service_sessions')
-      .insert(toInsert)
-      .select('*')
+    const { data, error } = await db.from('event_service_sessions').insert(toInsert).select('*')
 
     if (error) {
       console.error('[materializeSeriesSessions] Insert error:', error)
@@ -262,7 +259,7 @@ async function materializeSeriesSessions(params: {
 }
 
 async function materializeSeriesEvents(params: {
-  supabase: any
+  db: any
   tenantId: string
   actorId: string
   inquiry: Record<string, any>
@@ -276,7 +273,7 @@ async function materializeSeriesEvents(params: {
   pricingModel: Database['public']['Enums']['pricing_model'] | null
 }): Promise<EventRow[]> {
   const {
-    supabase,
+    db,
     tenantId,
     actorId,
     inquiry,
@@ -292,7 +289,7 @@ async function materializeSeriesEvents(params: {
 
   const cannabisBoolean = mapCannabisPreferenceToBoolean(inquiry.confirmed_cannabis_preference)
 
-  const { data: existingEvents } = await supabase
+  const { data: existingEvents } = await db
     .from('events')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -355,7 +352,7 @@ async function materializeSeriesEvents(params: {
 
   let insertedEvents: EventRow[] = []
   if (payload.length > 0) {
-    const { data, error } = await supabase.from('events').insert(payload).select('*')
+    const { data, error } = await db.from('events').insert(payload).select('*')
 
     if (error) {
       console.error('[materializeSeriesEvents] Event creation error:', error)
@@ -365,7 +362,7 @@ async function materializeSeriesEvents(params: {
   }
 
   if (insertedEvents.length > 0) {
-    await supabase.from('event_state_transitions').insert(
+    await db.from('event_state_transitions').insert(
       insertedEvents.map((event) => ({
         tenant_id: tenantId,
         event_id: event.id,
@@ -383,7 +380,7 @@ async function materializeSeriesEvents(params: {
 
     for (const event of insertedEvents) {
       if (!event.source_session_id) continue
-      await supabase
+      await db
         .from('event_service_sessions')
         .update({ event_id: event.id, updated_by: actorId })
         .eq('id', event.source_session_id)
@@ -410,7 +407,7 @@ async function materializeSeriesEvents(params: {
 export async function createInquiry(input: CreateInquiryInput) {
   const user = await requireChef()
   const validated = CreateInquirySchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Email validation (local-only - no external API call during form submission)
   if (validated.client_email) {
@@ -434,7 +431,7 @@ export async function createInquiry(input: CreateInquiryInput) {
 
   // Auto-link by email if no client_id provided
   if (!clientId && validated.client_email) {
-    const { data: existingClient } = await supabase
+    const { data: existingClient } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', user.tenantId!)
@@ -457,13 +454,13 @@ export async function createInquiry(input: CreateInquiryInput) {
   if (validated.referral_source) unknownFields.referral_source = validated.referral_source
 
   const result = await executeWithIdempotency({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     actionName: 'inquiries.create',
     idempotencyKey: validated.idempotency_key,
     execute: async () => {
-      const { data: inquiry, error } = await supabase
+      const { data: inquiry, error } = await db
         .from('inquiries')
         .insert({
           tenant_id: user.tenantId!,
@@ -637,10 +634,10 @@ export async function getInquiries(filters?: {
   dateTo?: string
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const buildQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('inquiries')
       .select(
         `
@@ -700,10 +697,10 @@ export async function getInquiries(filters?: {
  */
 export async function getInquiryById(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('inquiries')
       .select(
         `
@@ -731,7 +728,7 @@ export async function getInquiryById(id: string) {
   }
 
   // Get transition history
-  const { data: transitions } = await supabase
+  const { data: transitions } = await db
     .from('inquiry_state_transitions')
     .select('*')
     .eq('inquiry_id', id)
@@ -751,13 +748,13 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
   const user = await requireChef()
   const validated = UpdateInquirySchema.parse(input)
   const { expected_updated_at, idempotency_key, ...validatedFields } = validated
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Separate unknown_fields data from DB columns
   const { client_name, client_email, client_phone, notes, ...dbFields } = validatedFields
 
   // Fetch current inquiry to merge unknown_fields
-  const { data: current } = await (supabase
+  const { data: current } = await (db
     .from('inquiries')
     .select('*')
     .eq('id', id)
@@ -787,14 +784,14 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
   }
 
   const result = await executeWithIdempotency({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     actionName: 'inquiries.update',
     idempotencyKey: idempotency_key,
     execute: async () => {
       const runUpdate = async (withSoftDeleteFilter: boolean) => {
-        let query = supabase
+        let query = db
           .from('inquiries')
           .update({
             ...dbFields,
@@ -823,7 +820,7 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
       if (error || !inquiry) {
         if (expected_updated_at) {
           const getLatest = async (withSoftDeleteFilter: boolean) => {
-            let query = supabase
+            let query = db
               .from('inquiries')
               .select('updated_at')
               .eq('id', id)
@@ -923,10 +920,10 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
  */
 export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get current status
-  const { data: inquiry } = await (supabase
+  const { data: inquiry } = await (db
     .from('inquiries')
     .select('status, deleted_at, client_id')
     .eq('id', id)
@@ -978,7 +975,7 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   }
 
   const runUpdate = async (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('inquiries')
       .update(updatePayload)
       .eq('id', id)
@@ -1102,9 +1099,9 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
  */
 export async function createSeriesFromBookingRequest(inquiryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select('*')
     .eq('id', inquiryId)
@@ -1132,7 +1129,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
     throw new ValidationError('Only multi-day inquiries can be converted to a series')
   }
 
-  const { data: existingSeries } = await supabase
+  const { data: existingSeries } = await db
     .from('event_series')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -1141,7 +1138,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
     .limit(1)
     .maybeSingle()
 
-  const { data: inquiryMessages } = await supabase
+  const { data: inquiryMessages } = await db
     .from('messages')
     .select('body, sent_at')
     .eq('tenant_id', user.tenantId!)
@@ -1170,7 +1167,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
     conversationText
   )
 
-  const { data: acceptedQuote } = await supabase
+  const { data: acceptedQuote } = await db
     .from('quotes')
     .select('id, event_id, total_quoted_cents, deposit_amount_cents, pricing_model')
     .eq('inquiry_id', inquiryId)
@@ -1197,14 +1194,14 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
 
   if (existingSeries) {
     const [sessionsResponse, eventsResponse] = await Promise.all([
-      supabase
+      db
         .from('event_service_sessions')
         .select('*')
         .eq('tenant_id', user.tenantId!)
         .eq('series_id', existingSeries.id)
         .order('session_date', { ascending: true })
         .order('sort_order', { ascending: true }),
-      supabase
+      db
         .from('events')
         .select('*')
         .eq('tenant_id', user.tenantId!)
@@ -1218,7 +1215,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
       existingSessions.length > 0
         ? existingSessions
         : await materializeSeriesSessions({
-            supabase,
+            db,
             tenantId: user.tenantId!,
             actorId: user.id,
             series: existingSeries as EventSeriesRow,
@@ -1254,7 +1251,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
       existingEvents.length > 0
         ? existingEvents
         : await materializeSeriesEvents({
-            supabase,
+            db,
             tenantId: user.tenantId!,
             actorId: user.id,
             inquiry,
@@ -1276,7 +1273,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
     }
 
     if (!inquiry.converted_to_event_id) {
-      await supabase
+      await db
         .from('inquiries')
         .update({ converted_to_event_id: primaryEvent.id })
         .eq('id', inquiry.id)
@@ -1285,7 +1282,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
     }
 
     if (acceptedQuote?.id && acceptedQuote.event_id !== primaryEvent.id) {
-      await supabase
+      await db
         .from('quotes')
         .update({ event_id: primaryEvent.id })
         .eq('id', acceptedQuote.id)
@@ -1322,7 +1319,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
     throw new ValidationError(`Schedule conflicts detected: ${preview}${suffix}`)
   }
 
-  const { data: series, error: seriesError } = await supabase
+  const { data: series, error: seriesError } = await db
     .from('event_series')
     .insert({
       tenant_id: user.tenantId!,
@@ -1357,7 +1354,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
   }
 
   const sessions = await materializeSeriesSessions({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     series,
@@ -1367,7 +1364,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
   })
 
   const events = await materializeSeriesEvents({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     inquiry,
@@ -1386,7 +1383,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
     throw new UnknownAppError('Failed to create a primary event for the series')
   }
 
-  await supabase
+  await db
     .from('inquiries')
     .update({ converted_to_event_id: primaryEvent.id })
     .eq('id', inquiry.id)
@@ -1394,7 +1391,7 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
     .is('deleted_at' as any, null)
 
   if (acceptedQuote?.id) {
-    await supabase
+    await db
       .from('quotes')
       .update({ event_id: primaryEvent.id })
       .eq('id', acceptedQuote.id)
@@ -1450,9 +1447,9 @@ export async function createSeriesFromBookingRequest(inquiryId: string) {
  */
 export async function convertInquiryToEvent(inquiryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select('*')
     .eq('id', inquiryId)
@@ -1480,7 +1477,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
     return createSeriesFromBookingRequest(inquiryId)
   }
 
-  const { data: inquiryMessages } = await supabase
+  const { data: inquiryMessages } = await db
     .from('messages')
     .select('body, sent_at')
     .eq('tenant_id', user.tenantId!)
@@ -1510,7 +1507,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
   )
 
   // Check for accepted quote on this inquiry - use its pricing if available
-  const { data: acceptedQuote } = await supabase
+  const { data: acceptedQuote } = await db
     .from('quotes')
     .select('id, total_quoted_cents, deposit_amount_cents, pricing_model')
     .eq('inquiry_id', inquiryId)
@@ -1530,7 +1527,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
   const cannabisBoolean = mapCannabisPreferenceToBoolean(inquiry.confirmed_cannabis_preference)
 
   // Create draft event from confirmed inquiry facts + accepted quote pricing
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .insert({
       tenant_id: user.tenantId!,
@@ -1565,7 +1562,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
   }
 
   // Log initial event transition to 'draft'
-  await supabase.from('event_state_transitions').insert({
+  await db.from('event_state_transitions').insert({
     tenant_id: user.tenantId!,
     event_id: event.id,
     from_status: null,
@@ -1575,7 +1572,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
   })
 
   // Link inquiry to the created event
-  await supabase
+  await db
     .from('inquiries')
     .update({ converted_to_event_id: event.id })
     .eq('id', inquiryId)
@@ -1584,7 +1581,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
 
   // Link accepted quote to the new event
   if (acceptedQuote) {
-    await supabase
+    await db
       .from('quotes')
       .update({ event_id: event.id })
       .eq('id', acceptedQuote.id)
@@ -1593,7 +1590,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
 
   // Auto-scaffold an operational menu from inquiry conversation so event PDFs are
   // immediately usable even before manual menu entry.
-  const { data: existingMenu } = await supabase
+  const { data: existingMenu } = await db
     .from('menus')
     .select('id')
     .eq('tenant_id', user.tenantId!)
@@ -1605,7 +1602,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
   if (!existingMenu?.id) {
     const dishNames = buildAutoMenuCourseNamesFromConversation(conversationText)
 
-    const { data: menu, error: menuError } = await supabase
+    const { data: menu, error: menuError } = await db
       .from('menus')
       .insert({
         tenant_id: user.tenantId!,
@@ -1625,7 +1622,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
       throw new UnknownAppError(`Failed to scaffold menu: ${menuError?.message || 'Unknown error'}`)
     }
 
-    await supabase.from('menu_state_transitions').insert({
+    await db.from('menu_state_transitions').insert({
       tenant_id: user.tenantId!,
       menu_id: menu.id,
       from_status: null,
@@ -1649,7 +1646,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
       updated_by: user.id,
     }))
 
-    const { data: insertedDishes, error: dishError } = await supabase
+    const { data: insertedDishes, error: dishError } = await db
       .from('dishes')
       .insert(dishPayload)
       .select('id, name, course_number')
@@ -1680,7 +1677,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
       }
     )
 
-    const { error: componentError } = await supabase.from('components').insert(componentPayload)
+    const { error: componentError } = await db.from('components').insert(componentPayload)
     if (componentError) {
       console.error('[convertInquiryToEvent] Component scaffold creation error:', componentError)
       throw new UnknownAppError(
@@ -1688,7 +1685,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
       )
     }
 
-    await supabase
+    await db
       .from('events')
       .update({
         menu_id: menu.id,
@@ -1749,10 +1746,10 @@ export async function convertInquiryToEvent(inquiryId: string) {
  */
 export async function getInquiryStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase.from('inquiries').select('status').eq('tenant_id', user.tenantId!)
+    let query = db.from('inquiries').select('status').eq('tenant_id', user.tenantId!)
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
@@ -1800,9 +1797,9 @@ export async function getInquiryStats() {
  */
 export async function deleteInquiry(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiry } = await (supabase
+  const { data: inquiry } = await (db
     .from('inquiries')
     .select('status, deleted_at')
     .eq('id', id)
@@ -1817,7 +1814,7 @@ export async function deleteInquiry(id: string) {
     throw new ValidationError('Can only delete inquiries in "new" or "declined" status')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('inquiries')
     .update({
       deleted_at: new Date().toISOString(),
@@ -1838,9 +1835,9 @@ export async function deleteInquiry(id: string) {
 
 export async function restoreInquiry(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('inquiries')
     .update({
       deleted_at: null,
@@ -1872,9 +1869,9 @@ export async function restoreInquiry(id: string) {
  */
 export async function declineInquiry(id: string, reason?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiry } = await (supabase
+  const { data: inquiry } = await (db
     .from('inquiries')
     .select('status, deleted_at, client_id')
     .eq('id', id)
@@ -1889,7 +1886,7 @@ export async function declineInquiry(id: string, reason?: string) {
     throw new ValidationError(`Cannot decline from status "${currentStatus}"`)
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('inquiries')
     .update({
       status: 'declined',
@@ -1960,9 +1957,9 @@ export type LostReasonStat = { reason: string; count: number }
  */
 export async function getLostReasonStats(): Promise<LostReasonStat[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('inquiries')
     .select('decline_reason')
     .eq('tenant_id', user.tenantId!)
@@ -2001,10 +1998,10 @@ export interface FirstContactInquiry {
  */
 export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInquiry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all new/awaiting_chef inquiries (active leads waiting for chef action)
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select(
       'id, client_id, channel, confirmed_date, confirmed_occasion, confirmed_location, first_contact_at, unknown_fields, source_message'
@@ -2019,7 +2016,7 @@ export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInq
 
   // Filter out inquiries that already have outbound messages
   const inquiryIds = inquiries.map((i: any) => i.id)
-  const { data: outboundMessages } = await supabase
+  const { data: outboundMessages } = await db
     .from('messages')
     .select('inquiry_id')
     .in('inquiry_id', inquiryIds)
@@ -2030,7 +2027,7 @@ export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInq
   )
 
   // Also check if there's an existing conversation linked
-  const { data: linkedConversations } = await supabase
+  const { data: linkedConversations } = await db
     .from('conversations' as any)
     .select('context_id')
     .in('context_id', inquiryIds)
@@ -2050,7 +2047,7 @@ export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInq
     // Resolve client name
     let clientName = 'Unknown'
     if (inq.client_id) {
-      const { data: client } = await supabase
+      const { data: client } = await db
         .from('clients')
         .select('full_name')
         .eq('id', inq.client_id)

@@ -48,17 +48,17 @@ export async function executeCircleEvents(inputs: Record<string, unknown>) {
 
 export async function executeRateCard() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
 
   // Pull chef pricing data + recent event pricing for rate analysis
   const [{ data: chef }, { data: recentEvents }] = await Promise.all([
-    supabase
+    db
       .from('chefs')
       .select('business_name, default_rate_cents, service_types, pricing_notes')
       .eq('id', user.entityId)
       .single(),
-    supabase
+    db
       .from('events')
       .select('id, occasion, guest_count, status, event_date')
       .eq('tenant_id', user.tenantId!)
@@ -71,7 +71,7 @@ export async function executeRateCard() {
   const eventIds = (recentEvents ?? []).map((e: any) => e.id)
   let avgPerHeadCents = 0
   if (eventIds.length > 0) {
-    const { data: ledger } = await supabase
+    const { data: ledger } = await db
       .from('ledger_entries')
       .select('event_id, amount_cents')
       .eq('tenant_id', user.tenantId!)
@@ -482,13 +482,13 @@ export async function executePartnerPerformance() {
   const partners = await getPartners({ status: 'active' })
   // Get event counts per partner
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
 
   const partnerIds = (partners ?? []).map((p: any) => p.id)
   let eventCounts: any[] = []
   if (partnerIds.length > 0) {
-    const { data } = await supabase
+    const { data } = await db
       .from('events')
       .select('referral_partner_id')
       .eq('tenant_id', user.tenantId!)
@@ -583,11 +583,11 @@ export async function executeAARForgottenItems() {
 
 export async function executeWaitlistStatus() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
 
   // Waitlisted clients have a status or flag indicating they're on the waitlist
-  const { data: waitlisted } = await supabase
+  const { data: waitlisted } = await db
     .from('clients')
     .select('id, full_name, email, created_at, notes')
     .eq('tenant_id', user.tenantId!)
@@ -612,9 +612,9 @@ async function resolveEventId(nameOrId: string): Promise<string | null> {
   if (!nameOrId) return null
   if (/^[0-9a-f]{8}-/.test(nameOrId)) return nameOrId
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data: events } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data: events } = await db
     .from('events')
     .select('id, occasion')
     .eq('tenant_id', user.tenantId!)
@@ -627,9 +627,9 @@ async function resolveCircleId(nameOrId: string): Promise<string | null> {
   if (!nameOrId) return null
   if (/^[0-9a-f]{8}-/.test(nameOrId)) return nameOrId
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data: groups } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data: groups } = await db
     .from('hub_groups')
     .select('id, name')
     .eq('created_by', user.entityId)
@@ -642,9 +642,9 @@ async function resolveStationId(nameOrId: string): Promise<string | null> {
   if (!nameOrId) return null
   if (/^[0-9a-f]{8}-/.test(nameOrId)) return nameOrId
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data: stations } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data: stations } = await db
     .from('stations')
     .select('id, name')
     .eq('tenant_id', user.tenantId!)
@@ -657,9 +657,9 @@ async function resolvePartnerId(nameOrId: string): Promise<string | null> {
   if (!nameOrId) return null
   if (/^[0-9a-f]{8}-/.test(nameOrId)) return nameOrId
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data: partners } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data: partners } = await db
     .from('referral_partners')
     .select('id, name')
     .eq('tenant_id', user.tenantId!)

@@ -4,7 +4,7 @@
 // PRIVACY: Handles financial data → local Ollama only (for LLM features).
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { z } from 'zod'
@@ -27,10 +27,10 @@ export interface BreakEvenResult {
 
 export async function analyzeBreakEven(eventName: string): Promise<BreakEvenResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find event
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, guest_count, quoted_price_cents, food_cost_cents')
     .eq('tenant_id', user.tenantId!)
@@ -58,7 +58,7 @@ export async function analyzeBreakEven(eventName: string): Promise<BreakEvenResu
   const foodCostCents = event.food_cost_cents ?? 0
 
   // Load expenses for this event
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('amount_cents, category')
     .eq('tenant_id', user.tenantId!)
@@ -113,10 +113,10 @@ export interface ClientLTVResult {
 
 export async function calculateClientLTV(clientName: string): Promise<ClientLTVResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find client
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', user.tenantId!)
@@ -140,7 +140,7 @@ export async function calculateClientLTV(clientName: string): Promise<ClientLTVR
   const client = clients[0]
 
   // Load completed events with revenue
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, quoted_price_cents')
     .eq('tenant_id', user.tenantId!)
@@ -153,7 +153,7 @@ export async function calculateClientLTV(clientName: string): Promise<ClientLTVR
   let totalRevenueCents = 0
 
   if (eventIds.length > 0) {
-    const { data: payments } = await supabase
+    const { data: payments } = await db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('tenant_id', user.tenantId!)
@@ -225,10 +225,10 @@ export interface RecipeCostResult {
 
 export async function optimizeRecipeCost(recipeName: string): Promise<RecipeCostResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find recipe
-  const { data: recipes } = await supabase
+  const { data: recipes } = await db
     .from('recipes')
     .select('id, name')
     .eq('tenant_id', user.tenantId!)
@@ -247,7 +247,7 @@ export async function optimizeRecipeCost(recipeName: string): Promise<RecipeCost
   const recipe = recipes[0]
 
   // Load ingredients with prices
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await db
     .from('recipe_ingredients')
     .select('name, quantity, unit, price_cents')
     .eq('recipe_id', recipe.id)

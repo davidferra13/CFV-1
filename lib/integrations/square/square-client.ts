@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { encryptOAuthToken, decryptOAuthToken } from '@/lib/integrations/core/token-crypto'
@@ -53,11 +53,11 @@ function getApiBase() {
 export async function initiateSquareConnect(): Promise<{ redirectUrl: string }> {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const state = crypto.randomUUID()
 
-  await supabase.from('social_oauth_states').insert({
+  await db.from('social_oauth_states').insert({
     id: crypto.randomUUID(),
     tenant_id: user.entityId,
     platform: 'square',
@@ -121,9 +121,9 @@ export async function exchangeSquareCode(code: string, tenantId: string): Promis
     merchantName = merchant.merchant?.business_name || merchantName
   }
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  await supabase.from('integration_connections').upsert(
+  await db.from('integration_connections').upsert(
     {
       id: crypto.randomUUID(),
       chef_id: tenantId,
@@ -144,9 +144,9 @@ export async function exchangeSquareCode(code: string, tenantId: string): Promis
 }
 
 async function refreshSquareToken(tenantId: string): Promise<string> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('integration_connections')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -182,7 +182,7 @@ async function refreshSquareToken(tenantId: string): Promise<string> {
   })
 
   if (!response.ok) {
-    await supabase
+    await db
       .from('integration_connections')
       .update({ status: 'reauth_required', last_error: 'Token refresh failed' })
       .eq('tenant_id', tenantId)
@@ -196,7 +196,7 @@ async function refreshSquareToken(tenantId: string): Promise<string> {
     expires_at: string
   }
 
-  await supabase
+  await db
     .from('integration_connections')
     .update({
       access_token: encryptOAuthToken(tokens.access_token),
@@ -221,8 +221,8 @@ export async function createSquarePaymentLink(
     clientId?: string
   }
 ) {
-  const supabase: any = createServerClient({ admin: true })
-  const { data: conn } = await supabase
+  const db: any = createServerClient({ admin: true })
+  const { data: conn } = await db
     .from('integration_connections')
     .select('config')
     .eq('tenant_id', tenantId)
@@ -278,9 +278,9 @@ export async function createSquarePaymentLink(
 }
 
 export async function getSquareConnectionStatus(tenantId: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('integration_connections')
     .select('status, external_account_name, connected_at, last_sync_at, last_error, config')
     .eq('tenant_id', tenantId)
@@ -302,10 +302,10 @@ export async function getSquareConnectionStatus(tenantId: string) {
 export async function disconnectSquare() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Revoke token with Square
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('integration_connections')
     .select('access_token')
     .eq('tenant_id', user.entityId)
@@ -331,7 +331,7 @@ export async function disconnectSquare() {
     }
   }
 
-  await supabase
+  await db
     .from('integration_connections')
     .update({ status: 'disconnected' })
     .eq('tenant_id', user.entityId)

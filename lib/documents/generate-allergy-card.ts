@@ -8,7 +8,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { jsPDF } from 'jspdf'
 import { format, parseISO } from 'date-fns'
 import { FDA_BIG_9, COMMON_ALLERGENS, allergenShortName } from '@/lib/constants/allergens'
@@ -94,10 +94,10 @@ type AllergyCardData = {
 
 async function fetchAllergyCardData(eventId: string): Promise<AllergyCardData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with client data
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -113,7 +113,7 @@ async function fetchAllergyCardData(eventId: string): Promise<AllergyCardData | 
   if (!event) return null
 
   // Fetch attending/maybe/pending guests (including plus-one data)
-  const { data: guests } = await supabase
+  const { data: guests } = await db
     .from('event_guests')
     .select(
       `
@@ -126,7 +126,7 @@ async function fetchAllergyCardData(eventId: string): Promise<AllergyCardData | 
     .in('rsvp_status', ['attending', 'maybe', 'pending'])
 
   // Fetch guest event profile dietary notes
-  const { data: guestProfiles } = (await (supabase as any)
+  const { data: guestProfiles } = (await (db as any)
     .from('guest_event_profiles')
     .select('dietary_notes')
     .eq('event_id', eventId)) as { data: Array<{ dietary_notes: string | null }> | null }
@@ -553,9 +553,9 @@ export async function generateAllergyCard(eventId: string): Promise<Buffer> {
 /** Check whether an event has any allergy/dietary data worth printing */
 export async function hasAllergyData(eventId: string): Promise<boolean> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -582,7 +582,7 @@ export async function hasAllergyData(eventId: string): Promise<boolean> {
   if ((clientData?.dislikes ?? []).length > 0) return true
 
   // Check guests (including plus-one data)
-  const { count } = await supabase
+  const { count } = await db
     .from('event_guests')
     .select('id', { count: 'exact', head: true })
     .eq('event_id', eventId)

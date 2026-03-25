@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { addDays, format, isBefore } from 'date-fns'
@@ -52,9 +52,9 @@ export type RentalInput = z.infer<typeof RentalSchema>
 export async function createEquipmentItem(input: CreateEquipmentInput) {
   const user = await requireChef()
   const validated = CreateEquipmentSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('equipment_items')
     .insert({ chef_id: user.tenantId!, ...validated })
     .select()
@@ -67,9 +67,9 @@ export async function createEquipmentItem(input: CreateEquipmentInput) {
 
 export async function updateEquipmentItem(id: string, input: Partial<CreateEquipmentInput>) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('equipment_items')
     .update(input)
     .eq('id', id)
@@ -84,8 +84,8 @@ export async function updateEquipmentItem(id: string, input: Partial<CreateEquip
 
 export async function retireEquipmentItem(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
-  await supabase
+  const db: any = createServerClient()
+  await db
     .from('equipment_items')
     .update({ status: 'retired' })
     .eq('id', id)
@@ -95,10 +95,10 @@ export async function retireEquipmentItem(id: string) {
 
 export async function logMaintenance(id: string, notes?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = format(new Date(), 'yyyy-MM-dd')
-  const { error } = await supabase
+  const { error } = await db
     .from('equipment_items')
     .update({ last_maintained_at: today })
     .eq('id', id)
@@ -110,9 +110,9 @@ export async function logMaintenance(id: string, notes?: string) {
 
 export async function listEquipment(category?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('equipment_items')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -132,9 +132,9 @@ export async function listEquipment(category?: string) {
  */
 export async function getEquipmentDueForMaintenance() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('equipment_items')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -157,9 +157,9 @@ export async function getEquipmentDueForMaintenance() {
 export async function logRental(input: RentalInput) {
   const user = await requireChef()
   const validated = RentalSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('equipment_rentals')
     .insert({ chef_id: user.tenantId!, ...validated })
     .select()
@@ -173,16 +173,16 @@ export async function logRental(input: RentalInput) {
 
 export async function deleteRental(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
-  await supabase.from('equipment_rentals').delete().eq('id', id).eq('chef_id', user.tenantId!)
+  const db: any = createServerClient()
+  await db.from('equipment_rentals').delete().eq('id', id).eq('chef_id', user.tenantId!)
   revalidatePath('/operations/equipment')
 }
 
 export async function getRentalCostForEvent(eventId: string): Promise<number> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('equipment_rentals')
     .select('cost_cents')
     .eq('chef_id', user.tenantId!)
@@ -193,9 +193,9 @@ export async function getRentalCostForEvent(eventId: string): Promise<number> {
 
 export async function listRentals(eventId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('equipment_rentals')
     .select('*')
     .eq('chef_id', user.tenantId!)

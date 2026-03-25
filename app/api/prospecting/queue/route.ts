@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { validateProspectingAuth } from '@/lib/prospecting/api-auth'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export async function GET(request: NextRequest) {
   const auth = await validateProspectingAuth(request)
@@ -17,9 +17,9 @@ export async function GET(request: NextRequest) {
   const region = url.searchParams.get('region')
   const minScore = Number(url.searchParams.get('min_score') ?? '0')
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  let query = supabase
+  let query = db
     .from('prospects' as any)
     .select(
       'id, name, email, contact_direct_email, category, city, state, region, website, contact_person, contact_title, description, avg_event_budget, event_types_hosted, luxury_indicators, lead_score, draft_email, pipeline_stage, tags'

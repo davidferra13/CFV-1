@@ -279,7 +279,7 @@ test.describe('Full Site Crawl', () => {
             !e.includes('hydration') &&
             !e.includes('[Fast Refresh]') &&
             !e.includes('Warning:') &&
-            !e.includes('Supabase') &&
+            !e.includes('database') &&
             !e.includes('net::ERR_') &&
             !e.includes('ChunkLoadError') &&
             !e.includes('was deprecated')

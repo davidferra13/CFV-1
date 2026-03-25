@@ -200,17 +200,14 @@ function evaluateWeather(forecast: WeatherForecast): {
  */
 export async function getWeatherAlerts(tenantId: string): Promise<EventWeatherAlert[]> {
   // Import dynamically to avoid circular deps in server actions
-  const { createClient } = await import('@supabase/supabase-js')
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const { createAdminClient } = await import('@/lib/db/admin')
+  const db = createAdminClient()
 
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   const weekOut = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, location, occasion, client:clients(full_name)')
     .eq('tenant_id', tenantId)

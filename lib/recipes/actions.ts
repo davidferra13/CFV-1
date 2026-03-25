@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
@@ -213,7 +213,7 @@ export type UpdateIngredientInput = z.infer<typeof UpdateIngredientSchema>
 
 export async function createRecipe(input: CreateRecipeInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = CreateRecipeSchema.parse(input)
   const recipeInsert: RecipeInsert = {
     tenant_id: user.tenantId!,
@@ -243,11 +243,7 @@ export async function createRecipe(input: CreateRecipeInput) {
     updated_by: user.id,
   }
 
-  const { data: recipe, error } = await supabase
-    .from('recipes')
-    .insert(recipeInsert)
-    .select()
-    .single()
+  const { data: recipe, error } = await db.from('recipes').insert(recipeInsert).select().single()
 
   if (error) {
     console.error('[createRecipe] Error:', error)
@@ -299,14 +295,10 @@ export async function getRecipes(filters?: {
   sort?: 'name' | 'recent' | 'most_used'
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get recipes
-  let query = supabase
-    .from('recipes')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
-    .eq('archived', false)
+  let query = db.from('recipes').select('*').eq('tenant_id', user.tenantId!).eq('archived', false)
 
   if (filters?.category) {
     query = query.eq('category', filters.category as RecipeCategory)
@@ -341,7 +333,7 @@ export async function getRecipes(filters?: {
   }
 
   // Get cost data from the view
-  const { data: costData } = await supabase
+  const { data: costData } = await db
     .from('recipe_cost_summary')
     .select('recipe_id, ingredient_count, total_ingredient_cost_cents, has_all_prices')
     .eq('tenant_id', user.tenantId!)
@@ -352,7 +344,7 @@ export async function getRecipes(filters?: {
   const familyIds = [...new Set((recipes || []).map((r: any) => r.family_id).filter(Boolean))]
   let familyMap = new Map<string, string>()
   if (familyIds.length > 0) {
-    const { data: families } = await supabase
+    const { data: families } = await db
       .from('recipe_families')
       .select('id, name')
       .in('id', familyIds)
@@ -399,9 +391,9 @@ export async function getRecipes(filters?: {
 
 export async function getRecipeById(recipeId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipe, error } = await supabase
+  const { data: recipe, error } = await db
     .from('recipes')
     .select('*')
     .eq('id', recipeId)
@@ -414,7 +406,7 @@ export async function getRecipeById(recipeId: string) {
   }
 
   // Get ingredients for this recipe
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select(
       `
@@ -432,14 +424,14 @@ export async function getRecipeById(recipeId: string) {
     .order('sort_order', { ascending: true })
 
   // Get cost summary
-  const { data: costSummary } = await supabase
+  const { data: costSummary } = await db
     .from('recipe_cost_summary')
     .select('*')
     .eq('recipe_id', recipeId)
     .single()
 
   // Get event history: recipe → components → dishes → menus → events
-  const { data: linkedComponents } = await supabase
+  const { data: linkedComponents } = await db
     .from('components')
     .select(
       `
@@ -492,7 +484,7 @@ export async function getRecipeById(recipeId: string) {
   )
 
   // Get sub-recipes (children of this recipe)
-  const { data: subRecipeRows } = await supabase
+  const { data: subRecipeRows } = await db
     .from('recipe_sub_recipes')
     .select('id, quantity, unit, sort_order, notes, child_recipe_id')
     .eq('parent_recipe_id', recipeId)
@@ -514,7 +506,7 @@ export async function getRecipeById(recipeId: string) {
   }> = []
 
   for (const sr of subRecipeRows || []) {
-    const { data: childRecipe } = await supabase
+    const { data: childRecipe } = await db
       .from('recipes')
       .select('id, name, category, yield_quantity, yield_unit')
       .eq('id', sr.child_recipe_id)
@@ -531,14 +523,14 @@ export async function getRecipeById(recipeId: string) {
   }
 
   // Get "used in" (parent recipes that reference this one as a sub-recipe)
-  const { data: usedInRows } = await supabase
+  const { data: usedInRows } = await db
     .from('recipe_sub_recipes')
     .select('id, parent_recipe_id')
     .eq('child_recipe_id', recipeId)
 
   const usedInRecipes: Array<{ id: string; name: string; category: string }> = []
   for (const ui of usedInRows || []) {
-    const { data: parentRecipe } = await supabase
+    const { data: parentRecipe } = await db
       .from('recipes')
       .select('id, name, category')
       .eq('id', ui.parent_recipe_id)
@@ -584,7 +576,7 @@ export async function getRecipeById(recipeId: string) {
 
 export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = UpdateRecipeSchema.parse(input)
 
   const updateData: Partial<RecipeUpdate> = { updated_by: user.id }
@@ -619,7 +611,7 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
   if (validated.season !== undefined) updateData.season = validated.season
   if (validated.occasion_tags !== undefined) updateData.occasion_tags = validated.occasion_tags
 
-  const { data: recipe, error } = await supabase
+  const { data: recipe, error } = await db
     .from('recipes')
     .update(updateData)
     .eq('id', recipeId)
@@ -643,24 +635,24 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
 
 export async function deleteRecipe(recipeId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Unlink from any components first
-  await supabase
+  await db
     .from('components')
     .update({ recipe_id: null })
     .eq('recipe_id', recipeId)
     .eq('tenant_id', user.tenantId!)
 
   // Delete recipe_ingredients
-  await supabase.from('recipe_ingredients').delete().eq('recipe_id', recipeId)
+  await db.from('recipe_ingredients').delete().eq('recipe_id', recipeId)
 
   // Delete sub-recipe links (both as parent and as child)
-  await supabase.from('recipe_sub_recipes').delete().eq('parent_recipe_id', recipeId)
-  await supabase.from('recipe_sub_recipes').delete().eq('child_recipe_id', recipeId)
+  await db.from('recipe_sub_recipes').delete().eq('parent_recipe_id', recipeId)
+  await db.from('recipe_sub_recipes').delete().eq('child_recipe_id', recipeId)
 
   // Delete the recipe
-  const { error } = await supabase
+  const { error } = await db
     .from('recipes')
     .delete()
     .eq('id', recipeId)
@@ -681,11 +673,11 @@ export async function deleteRecipe(recipeId: string) {
 
 export async function addIngredientToRecipe(recipeId: string, input: AddIngredientInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = AddIngredientToRecipeSchema.parse(input)
 
   // Verify recipe belongs to tenant
-  const { data: recipe } = await supabase
+  const { data: recipe } = await db
     .from('recipes')
     .select('id')
     .eq('id', recipeId)
@@ -698,7 +690,7 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
 
   // Find or create ingredient (case-insensitive)
   const ingredientId = await findOrCreateIngredient(
-    supabase,
+    db,
     user.tenantId!,
     user.id,
     validated.ingredient_name,
@@ -707,7 +699,7 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
   )
 
   // Insert recipe_ingredient
-  const { data: recipeIngredient, error } = await supabase
+  const { data: recipeIngredient, error } = await db
     .from('recipe_ingredients')
     .insert({
       recipe_id: recipeId,
@@ -739,11 +731,11 @@ export async function updateRecipeIngredient(
   input: UpdateRecipeIngredientInput
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = UpdateRecipeIngredientSchema.parse(input)
 
   // Verify tenant access through the recipe
-  const { data: ri } = await supabase
+  const { data: ri } = await db
     .from('recipe_ingredients')
     .select('recipe_id, recipe:recipes(tenant_id)')
     .eq('id', recipeIngredientId)
@@ -761,7 +753,7 @@ export async function updateRecipeIngredient(
   if (validated.is_optional !== undefined) updateData.is_optional = validated.is_optional
   if (validated.sort_order !== undefined) updateData.sort_order = validated.sort_order
 
-  const { error } = await supabase
+  const { error } = await db
     .from('recipe_ingredients')
     .update(updateData)
     .eq('id', recipeIngredientId)
@@ -781,10 +773,10 @@ export async function updateRecipeIngredient(
 
 export async function removeIngredientFromRecipe(recipeIngredientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify tenant access through the recipe
-  const { data: ri } = await supabase
+  const { data: ri } = await db
     .from('recipe_ingredients')
     .select('recipe_id, recipe:recipes(tenant_id)')
     .eq('id', recipeIngredientId)
@@ -794,7 +786,7 @@ export async function removeIngredientFromRecipe(recipeIngredientId: string) {
     throw new Error('Recipe ingredient not found')
   }
 
-  const { error } = await supabase.from('recipe_ingredients').delete().eq('id', recipeIngredientId)
+  const { error } = await db.from('recipe_ingredients').delete().eq('id', recipeIngredientId)
 
   if (error) {
     console.error('[removeIngredientFromRecipe] Error:', error)
@@ -811,9 +803,9 @@ export async function removeIngredientFromRecipe(recipeIngredientId: string) {
 
 export async function getIngredients(filters?: { category?: string; search?: string }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('ingredients')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -837,7 +829,7 @@ export async function getIngredients(filters?: { category?: string; search?: str
   }
 
   // Get usage counts from the view
-  const { data: usageData } = await supabase
+  const { data: usageData } = await db
     .from('ingredient_usage_summary')
     .select('ingredient_id, times_used')
     .eq('tenant_id', user.tenantId!)
@@ -856,11 +848,11 @@ export async function getIngredients(filters?: { category?: string; search?: str
 
 export async function createIngredient(input: CreateIngredientInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = CreateIngredientSchema.parse(input)
 
   // Find-or-create: check for existing ingredient (case-insensitive)
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('ingredients')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -872,7 +864,7 @@ export async function createIngredient(input: CreateIngredientInput) {
     return { success: true, ingredient: existing, existed: true }
   }
 
-  const { data: ingredient, error } = await supabase
+  const { data: ingredient, error } = await db
     .from('ingredients')
     .insert({
       tenant_id: user.tenantId!,
@@ -905,7 +897,7 @@ export async function createIngredient(input: CreateIngredientInput) {
 
 export async function updateIngredient(ingredientId: string, input: UpdateIngredientInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = UpdateIngredientSchema.parse(input)
 
   const updateData: Record<string, unknown> = { updated_by: user.id }
@@ -919,7 +911,7 @@ export async function updateIngredient(ingredientId: string, input: UpdateIngred
   if (validated.allergen_flags !== undefined) updateData.allergen_flags = validated.allergen_flags
   if (validated.dietary_tags !== undefined) updateData.dietary_tags = validated.dietary_tags
 
-  const { data: ingredient, error } = await supabase
+  const { data: ingredient, error } = await db
     .from('ingredients')
     .update(updateData)
     .eq('id', ingredientId)
@@ -942,10 +934,10 @@ export async function updateIngredient(ingredientId: string, input: UpdateIngred
 
 export async function linkRecipeToComponent(recipeId: string, componentId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify recipe belongs to tenant
-  const { data: recipe } = await supabase
+  const { data: recipe } = await db
     .from('recipes')
     .select('id')
     .eq('id', recipeId)
@@ -957,7 +949,7 @@ export async function linkRecipeToComponent(recipeId: string, componentId: strin
   }
 
   // Verify component belongs to tenant
-  const { data: component } = await supabase
+  const { data: component } = await db
     .from('components')
     .select('id')
     .eq('id', componentId)
@@ -968,7 +960,7 @@ export async function linkRecipeToComponent(recipeId: string, componentId: strin
     throw new Error('Component not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('components')
     .update({ recipe_id: recipeId })
     .eq('id', componentId)
@@ -990,9 +982,9 @@ export async function linkRecipeToComponent(recipeId: string, componentId: strin
 
 export async function unlinkRecipeFromComponent(componentId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('components')
     .update({ recipe_id: null })
     .eq('id', componentId)
@@ -1014,10 +1006,10 @@ export async function unlinkRecipeFromComponent(componentId: string) {
 
 export async function getRecipesForEvent(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Event → menus → dishes → components → recipes
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -1027,7 +1019,7 @@ export async function getRecipesForEvent(eventId: string) {
 
   const menuIds = menus.map((m: any) => m.id)
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id')
     .in('menu_id', menuIds)
@@ -1037,7 +1029,7 @@ export async function getRecipesForEvent(eventId: string) {
 
   const dishIds = dishes.map((d: any) => d.id)
 
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select(
       `
@@ -1065,10 +1057,10 @@ export async function getRecipesForEvent(eventId: string) {
 
 export async function getUnrecordedComponentsForEvent(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Event → menus → dishes → components where recipe_id IS NULL
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -1078,7 +1070,7 @@ export async function getUnrecordedComponentsForEvent(eventId: string) {
 
   const menuIds = menus.map((m: any) => m.id)
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id')
     .in('menu_id', menuIds)
@@ -1088,7 +1080,7 @@ export async function getUnrecordedComponentsForEvent(eventId: string) {
 
   const dishIds = dishes.map((d: any) => d.id)
 
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('id, name, category')
     .in('dish_id', dishIds)
@@ -1116,7 +1108,7 @@ export type RecipeDebt = {
 
 export async function getRecipeDebt(): Promise<RecipeDebt> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const sevenDaysAgo = new Date(now)
@@ -1125,7 +1117,7 @@ export async function getRecipeDebt(): Promise<RecipeDebt> {
   thirtyDaysAgo.setDate(now.getDate() - 30)
 
   // All components with no recipe, joined through their event
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select(
       `
@@ -1159,7 +1151,7 @@ export async function getRecipeDebt(): Promise<RecipeDebt> {
     }
   }
 
-  const { count: totalRecipes } = await supabase
+  const { count: totalRecipes } = await db
     .from('recipes')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -1190,9 +1182,9 @@ export type UnrecordedComponentForSprint = {
 
 export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentForSprint[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select(
       `
@@ -1240,9 +1232,9 @@ export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentF
 
 export async function searchRecipes(query: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipes } = await supabase
+  const { data: recipes } = await db
     .from('recipes')
     .select(
       'id, name, category, total_cost_cents, cost_per_serving_cents, yield_quantity, yield_unit'
@@ -1269,7 +1261,7 @@ export async function searchRecipes(query: string) {
 // ============================================
 
 async function findOrCreateIngredient(
-  supabase: ReturnType<typeof createServerClient>,
+  db: ReturnType<typeof createServerClient>,
   tenantId: string,
   userId: string,
   name: string,
@@ -1277,7 +1269,7 @@ async function findOrCreateIngredient(
   defaultUnit: string
 ): Promise<string> {
   // Case-insensitive lookup
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('ingredients')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -1289,7 +1281,7 @@ async function findOrCreateIngredient(
     return existing.id
   }
 
-  const { data: newIngredient, error } = await supabase
+  const { data: newIngredient, error } = await db
     .from('ingredients')
     .insert({
       tenant_id: tenantId,
@@ -1341,11 +1333,11 @@ export type UpdateSubRecipeInput = z.infer<typeof UpdateSubRecipeSchema>
  */
 export async function addSubRecipe(parentRecipeId: string, input: AddSubRecipeInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = AddSubRecipeSchema.parse(input)
 
   // Verify both recipes belong to tenant
-  const { data: parentRecipe } = await supabase
+  const { data: parentRecipe } = await db
     .from('recipes')
     .select('id')
     .eq('id', parentRecipeId)
@@ -1354,7 +1346,7 @@ export async function addSubRecipe(parentRecipeId: string, input: AddSubRecipeIn
 
   if (!parentRecipe) throw new Error('Parent recipe not found')
 
-  const { data: childRecipe } = await supabase
+  const { data: childRecipe } = await db
     .from('recipes')
     .select('id')
     .eq('id', validated.child_recipe_id)
@@ -1363,7 +1355,7 @@ export async function addSubRecipe(parentRecipeId: string, input: AddSubRecipeIn
 
   if (!childRecipe) throw new Error('Sub-recipe not found')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('recipe_sub_recipes')
     .insert({
       parent_recipe_id: parentRecipeId,
@@ -1394,11 +1386,11 @@ export async function addSubRecipe(parentRecipeId: string, input: AddSubRecipeIn
  */
 export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecipeInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = UpdateSubRecipeSchema.parse(input)
 
   // Verify tenant access: get parent recipe and check tenant
-  const { data: link } = await supabase
+  const { data: link } = await db
     .from('recipe_sub_recipes')
     .select('parent_recipe_id')
     .eq('id', subRecipeId)
@@ -1406,7 +1398,7 @@ export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecip
 
   if (!link) throw new Error('Sub-recipe link not found')
 
-  const { data: recipe } = await supabase
+  const { data: recipe } = await db
     .from('recipes')
     .select('id')
     .eq('id', link.parent_recipe_id)
@@ -1421,10 +1413,7 @@ export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecip
   if (validated.sort_order !== undefined) updateData.sort_order = validated.sort_order
   if (validated.notes !== undefined) updateData.notes = validated.notes
 
-  const { error } = await supabase
-    .from('recipe_sub_recipes')
-    .update(updateData)
-    .eq('id', subRecipeId)
+  const { error } = await db.from('recipe_sub_recipes').update(updateData).eq('id', subRecipeId)
 
   if (error) {
     console.error('[updateSubRecipe] Error:', error)
@@ -1440,10 +1429,10 @@ export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecip
  */
 export async function removeSubRecipe(subRecipeId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify tenant access
-  const { data: link } = await supabase
+  const { data: link } = await db
     .from('recipe_sub_recipes')
     .select('parent_recipe_id')
     .eq('id', subRecipeId)
@@ -1451,7 +1440,7 @@ export async function removeSubRecipe(subRecipeId: string) {
 
   if (!link) throw new Error('Sub-recipe link not found')
 
-  const { data: recipe } = await supabase
+  const { data: recipe } = await db
     .from('recipes')
     .select('id')
     .eq('id', link.parent_recipe_id)
@@ -1460,7 +1449,7 @@ export async function removeSubRecipe(subRecipeId: string) {
 
   if (!recipe) throw new Error('Access denied')
 
-  const { error } = await supabase.from('recipe_sub_recipes').delete().eq('id', subRecipeId)
+  const { error } = await db.from('recipe_sub_recipes').delete().eq('id', subRecipeId)
 
   if (error) {
     console.error('[removeSubRecipe] Error:', error)
@@ -1482,7 +1471,7 @@ export async function removeSubRecipe(subRecipeId: string) {
  */
 export async function createRecipeDraft(rawText: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const trimmed = rawText.trim()
   if (!trimmed) throw new Error('Recipe text cannot be empty')
@@ -1490,7 +1479,7 @@ export async function createRecipeDraft(rawText: string) {
   const lines = trimmed.split('\n')
   const name = lines[0].slice(0, 100) || 'Untitled Recipe Draft'
 
-  const { error } = await supabase.from('recipes').insert({
+  const { error } = await db.from('recipes').insert({
     tenant_id: user.tenantId!,
     created_by: user.id,
     name,
@@ -1531,11 +1520,11 @@ export async function createRecipeFamily(
   variationLabel?: string
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!name.trim()) throw new Error('Family name is required')
 
-  const { data: family, error } = await supabase
+  const { data: family, error } = await db
     .from('recipe_families')
     .insert({
       tenant_id: user.tenantId!,
@@ -1555,7 +1544,7 @@ export async function createRecipeFamily(
 
   // If an initial recipe was provided, assign it to this family
   if (initialRecipeId) {
-    await supabase
+    await db
       .from('recipes')
       .update({
         family_id: family.id,
@@ -1578,9 +1567,9 @@ export async function assignRecipeToFamily(
   variationLabel?: string
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('recipes')
     .update({
       family_id: familyId,
@@ -1603,9 +1592,9 @@ export async function assignRecipeToFamily(
  */
 export async function removeRecipeFromFamily(recipeId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('recipes')
     .update({ family_id: null, variation_label: null })
     .eq('id', recipeId)
@@ -1625,9 +1614,9 @@ export async function removeRecipeFromFamily(recipeId: string) {
  */
 export async function getRecipeFamilies() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: families, error } = await supabase
+  const { data: families, error } = await db
     .from('recipe_families')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -1642,7 +1631,7 @@ export async function getRecipeFamilies() {
   const familyIds = (families || []).map((f: any) => f.id)
   let countMap = new Map<string, number>()
   if (familyIds.length > 0) {
-    const { data: recipes } = await supabase
+    const { data: recipes } = await db
       .from('recipes')
       .select('family_id')
       .in('family_id', familyIds)
@@ -1670,9 +1659,9 @@ export async function getRecipeFamilies() {
  */
 export async function getRecipesInFamily(familyId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipes, error } = await supabase
+  const { data: recipes, error } = await db
     .from('recipes')
     .select('id, name, category, variation_label, dietary_tags, times_cooked, photo_url')
     .eq('family_id', familyId)

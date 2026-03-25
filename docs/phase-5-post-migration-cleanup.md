@@ -2,7 +2,7 @@
 
 ## What Changed
 
-1. **Supabase packages moved to devDependencies** - `@supabase/supabase-js` and `@supabase/ssr` are now devDependencies (used only by scripts and tests, not production code).
+1. **PostgreSQL packages moved to devDependencies** - `@database/database-js` and `@database/ssr` are now devDependencies (used only by scripts and tests, not production code).
 
 2. **Drizzle npm scripts added** - `drizzle:generate`, `drizzle:migrate`, `drizzle:push`, `drizzle:pull`, `drizzle:studio`.
 
@@ -15,7 +15,7 @@
    - SQL identifier validation now allows table-qualified names (e.g., `chef_preferences.network_discoverable`)
    - `quoteIdent()` properly handles dotted identifiers (`"table"."column"`)
    - `buildWhere()` uses `qualifyColumn()` helper to avoid double-prefixing table-qualified columns
-   - `parseSelectString()` regex now handles Supabase `!inner` and `!left` join hints
+   - `parseSelectString()` regex now handles PostgreSQL `!inner` and `!left` join hints
 
 ## Build Status
 

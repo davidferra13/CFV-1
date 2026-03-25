@@ -8,7 +8,7 @@
 'use server'
 
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -38,9 +38,9 @@ export interface Delivery {
 
 const MIGRATION_ERROR = 'Feature requires database migration. Contact support.'
 
-async function checkTableExists(supabase: any, tableName: string): Promise<boolean> {
+async function checkTableExists(db: any, tableName: string): Promise<boolean> {
   try {
-    const { error } = await supabase.from(tableName).select('id').limit(0)
+    const { error } = await db.from(tableName).select('id').limit(0)
     return !error || !error.message?.includes('does not exist')
   } catch {
     return false
@@ -64,12 +64,12 @@ export async function scheduleDelivery(input: {
   notes?: string | null
 }): Promise<Delivery | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'meal_prep_deliveries')
+  const tableExists = await checkTableExists(db, 'meal_prep_deliveries')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('meal_prep_deliveries')
     .insert({
       chef_id: user.tenantId!,
@@ -109,9 +109,9 @@ export async function updateDelivery(
   }>
 ): Promise<Delivery | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'meal_prep_deliveries')
+  const tableExists = await checkTableExists(db, 'meal_prep_deliveries')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
   const updateData: Record<string, unknown> = {}
@@ -122,7 +122,7 @@ export async function updateDelivery(
   if (input.notes !== undefined) updateData.notes = input.notes
   if (input.status !== undefined) updateData.status = input.status
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('meal_prep_deliveries')
     .update(updateData)
     .eq('id', deliveryId)
@@ -144,12 +144,12 @@ export async function updateDelivery(
  */
 export async function markDelivered(deliveryId: string): Promise<Delivery | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'meal_prep_deliveries')
+  const tableExists = await checkTableExists(db, 'meal_prep_deliveries')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('meal_prep_deliveries')
     .update({
       status: 'delivered',
@@ -176,12 +176,12 @@ export async function cancelDelivery(
   deliveryId: string
 ): Promise<{ success: boolean } | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'meal_prep_deliveries')
+  const tableExists = await checkTableExists(db, 'meal_prep_deliveries')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('meal_prep_deliveries')
     .update({ status: 'cancelled' })
     .eq('id', deliveryId)
@@ -202,12 +202,12 @@ export async function getDeliveries(
   statusFilter?: DeliveryStatus
 ): Promise<Delivery[] | { error: string }> {
   const user = await requirePro('meal-prep')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'meal_prep_deliveries')
+  const tableExists = await checkTableExists(db, 'meal_prep_deliveries')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('meal_prep_deliveries')
     .select('*')
     .eq('chef_id', user.tenantId!)

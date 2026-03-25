@@ -31,7 +31,7 @@
 
 ### What ChefFlow Is
 
-ChefFlow is a **multi-tenant private chef operations platform** built on Next.js 14, Supabase (PostgreSQL), and Stripe. It manages the complete lifecycle of a private chef's business: client acquisition, event management, quoting, invoicing, payments, menu/recipe management, staff coordination, and business analytics. The tagline is "Ops for Artists."
+ChefFlow is a **multi-tenant private chef operations platform** built on Next.js 14, PostgreSQL (PostgreSQL), and Stripe. It manages the complete lifecycle of a private chef's business: client acquisition, event management, quoting, invoicing, payments, menu/recipe management, staff coordination, and business analytics. The tagline is "Ops for Artists."
 
 ### Codebase Metrics (as of 2026-03-17)
 
@@ -58,7 +58,7 @@ ChefFlow is a **multi-tenant private chef operations platform** built on Next.js
 | **Language**        | TypeScript                      | 5.7.2                   |
 | **Runtime**         | React                           | 18.3.1                  |
 | **Database**        | (PostgreSQL)                    | Remote, linked          |
-| **Auth**            | Auth                            | SSR via `@supabase/ssr` |
+| **Auth**            | Auth                            | SSR via `@database/ssr` |
 | **Payments**        | Stripe                          | v20.3.1 (Connect)       |
 | **Styling**         | Tailwind CSS                    | 3.4.17                  |
 | **Icons**           | Lucide React, Phosphor Icons    | Latest                  |
@@ -124,7 +124,7 @@ ChefFlow is a **multi-tenant private chef operations platform** built on Next.js
 
 **External Systems:**
 
-- Supabase (PostgreSQL + Auth + Realtime + Storage)
+- PostgreSQL (PostgreSQL + Auth + Realtime + Storage)
 - Stripe (Payments, Connect, Invoicing)
 - Ollama (Local AI inference, privacy-critical)
 - Google Gemini (Cloud AI, non-private tasks)
@@ -148,7 +148,7 @@ ChefFlow is a **multi-tenant private chef operations platform** built on Next.js
 |                        ChefFlow Platform                          |
 |                                                                   |
 |  +--------------------+  +--------------------+                   |
-|  |   Next.js App      |  |   Supabase         |                  |
+|  |   Next.js App      |  |   PostgreSQL         |                  |
 |  |   (App Router)     |  |   (PostgreSQL)     |                  |
 |  |                    |  |                    |                  |
 |  |  Route Groups:     |  |  591 migrations    |                  |
@@ -235,7 +235,7 @@ lib/
     dispatch/      -- Privacy gate, classifier, router
     queue/         -- Request queue with circuit breakers
   stripe/          -- Stripe Connect integration
-  supabase/        -- Supabase client creation (server/client/admin)
+  database/        -- database client creation (server/client/admin)
   email/           -- Email sending via Resend
   ... (220 domain modules)
 ```
@@ -259,7 +259,7 @@ middleware.ts
     |                   staff routes -> must be staff role
     v
 Route Handler (page.tsx / route.ts)
-    |-- Server Component -> Direct DB access via Supabase
+    |-- Server Component -> Direct DB access via the database
     |-- Server Action -> 'use server' function in lib/
     |     |-- requireChef() / requireClient() / requireAuth()
     |     |-- Tenant-scoped DB query
@@ -291,8 +291,8 @@ These components form the irreducible core. Failure here means the product is un
 | **Event Lifecycle FSM**            | `lib/events/transitions.ts`, `lib/events/actions.ts`                                                    | Core business object. 8-state machine (draft->proposed->accepted->paid->confirmed->in_progress->completed/cancelled). All revenue flows through events. |
 | **Financial Ledger**               | `lib/ledger/append.ts`, `lib/ledger/compute.ts`, `lib/ledger/internal.ts`                               | Append-only, immutable ledger. All financial truth derives from this. Database triggers enforce immutability.                                           |
 | **Quote System**                   | `lib/quotes/actions.ts`, `lib/quotes/compute.ts`                                                        | Pricing engine. Quotes drive revenue. State machine with its own transitions.                                                                           |
-| **Supabase Client**                | `lib/supabase/server.ts`, `lib/supabase/client.ts`, `lib/supabase/admin.ts`                             | Every database operation. Service role vs anon key selection.                                                                                           |
-| **Database Schema (Layers 1-4)**   | `supabase/migrations/20260215000001-4*.sql`                                                             | Foundation tables: chefs, clients, events, quotes, ledger_entries, recipes, menus, ingredients, conversations, documents                                |
+| **PostgreSQL Client**              | `lib/database/server.ts`, `lib/database/client.ts`, `lib/database/admin.ts`                             | Every database operation. Service role vs anon key selection.                                                                                           |
+| **Database Schema (Layers 1-4)**   | `database/migrations/20260215000001-4*.sql`                                                             | Foundation tables: chefs, clients, events, quotes, ledger_entries, recipes, menus, ingredients, conversations, documents                                |
 | **Stripe Integration**             | `lib/stripe/`, `app/api/webhooks/stripe/route.ts`                                                       | Payment processing. Webhook handles paid transitions. Real money.                                                                                       |
 | **Tenant Isolation**               | RLS policies on every table, `tenant_id`/`chef_id` scoping                                              | Multi-tenant security. Failure = chef A sees chef B's data.                                                                                             |
 | **Middleware**                     | `middleware.ts`                                                                                         | Route protection, role resolution, auth context propagation. Every request.                                                                             |
@@ -388,7 +388,7 @@ Internal tooling, developer utilities, experimental features. Never user-facing 
 
 | If This Fails...    | Impact                                                                          |
 | ------------------- | ------------------------------------------------------------------------------- |
-| Supabase connection | **Total outage.** No data, no auth, no pages load.                              |
+| database connection | **Total outage.** No data, no auth, no pages load.                              |
 | Middleware          | **Total outage.** No routing, no auth context.                                  |
 | Auth system         | **Total outage.** No user can access any protected route.                       |
 | Event FSM           | **Revenue blocked.** Can't progress events through lifecycle.                   |
@@ -698,10 +698,10 @@ Cost Tracker --> logs usage metrics
 
 ### Authentication Flow
 
-1. **Supabase Auth** handles user registration, login, password reset, OAuth (Google)
+1. **Auth.js** handles user registration, login, password reset, OAuth (Google)
 2. **Middleware** (`middleware.ts`) runs on every request:
-   - Creates Supabase server client with cookie-based session
-   - Calls `supabase.auth.getUser()` to validate session
+   - Creates PostgreSQL server client with cookie-based session
+   - Calls `database.auth.getUser()` to validate session
    - Queries `user_roles` table for role and entity_id
    - Sets role cookie (5min TTL, httpOnly, secure in production, sameSite: lax)
    - Propagates auth context via request headers
@@ -779,14 +779,14 @@ Defined in `lib/auth/route-policy.ts`:
 
 **Flow:** Client pays -> Stripe webhook -> `transitionEvent({ systemTransition: true })` -> event moves to "paid" -> ledger entry created
 
-### Supabase
+### PostgreSQL
 
 | Component      | File                     | Purpose                                                    |
 | -------------- | ------------------------ | ---------------------------------------------------------- |
-| Server client  | `lib/supabase/server.ts` | Creates server-side Supabase client (with cookie handling) |
-| Browser client | `lib/supabase/client.ts` | Creates client-side Supabase client                        |
-| Admin client   | `lib/supabase/admin.ts`  | Service role client (bypasses RLS)                         |
-| Realtime       | `lib/realtime/`          | Supabase Realtime subscriptions for live updates           |
+| Server client  | `lib/database/server.ts` | Creates server-side database client (with cookie handling) |
+| Browser client | `lib/database/client.ts` | Creates client-side database client                        |
+| Admin client   | `lib/database/admin.ts`  | Service role client (bypasses RLS)                         |
+| Realtime       | `lib/realtime/`          | SSE realtime subscriptions for live updates                |
 
 ### Email (Resend)
 
@@ -926,7 +926,7 @@ Production:   Self-hosted     (app.cheflowhq.com, Cloudflare Tunnel)
 - **Port:** 3100
 - **Command:** `npm run dev` (next dev -p 3100 -H 0.0.0.0)
 - **Hot reload:** Yes
-- **Database:** Remote Supabase (shared with beta)
+- **Database:** Remote PostgreSQL (shared with beta)
 - **AI:** Local Ollama on port 11434
 
 ### Beta Environment
@@ -1182,23 +1182,23 @@ Production:   Self-hosted     (app.cheflowhq.com, Cloudflare Tunnel)
 
 ### Environment Variables (Key Categories)
 
-| Category     | Variables                                                                                |
-| ------------ | ---------------------------------------------------------------------------------------- |
-| **Supabase** | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` |
-| **Stripe**   | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`       |
-| **Resend**   | `RESEND_API_KEY`                                                                         |
-| **Google**   | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_MAPS_API_KEY`                        |
-| **Ollama**   | Runs on localhost:11434, no env vars needed                                              |
-| **Gemini**   | `GOOGLE_GENERATIVE_AI_API_KEY`                                                           |
-| **Groq**     | `GROQ_API_KEY`                                                                           |
-| **Sentry**   | `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`                                                        |
-| **PostHog**  | `NEXT_PUBLIC_POSTHOG_KEY`                                                                |
-| **Upstash**  | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`                                     |
-| **Push**     | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`                                                  |
-| **Twilio**   | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`                                                |
-| **Inngest**  | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`                                               |
-| **App**      | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL`                                            |
-| **PWA**      | `ENABLE_PWA_BUILD` (only when =1)                                                        |
+| Category       | Variables                                                                                |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| **PostgreSQL** | `NEXT_PUBLIC_DATABASE_URL`, `NEXT_PUBLIC_DATABASE_ANON_KEY`, `DATABASE_SERVICE_ROLE_KEY` |
+| **Stripe**     | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`       |
+| **Resend**     | `RESEND_API_KEY`                                                                         |
+| **Google**     | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_MAPS_API_KEY`                        |
+| **Ollama**     | Runs on localhost:11434, no env vars needed                                              |
+| **Gemini**     | `GOOGLE_GENERATIVE_AI_API_KEY`                                                           |
+| **Groq**       | `GROQ_API_KEY`                                                                           |
+| **Sentry**     | `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`                                                        |
+| **PostHog**    | `NEXT_PUBLIC_POSTHOG_KEY`                                                                |
+| **Upstash**    | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`                                     |
+| **Push**       | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`                                                  |
+| **Twilio**     | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`                                                |
+| **Inngest**    | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`                                               |
+| **App**        | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL`                                            |
+| **PWA**        | `ENABLE_PWA_BUILD` (only when =1)                                                        |
 
 Full reference: `docs/environment-variables.md`
 
@@ -1208,10 +1208,10 @@ Full reference: `docs/environment-variables.md`
 | ------------------- | ------------------------------------------------------------------------------------------- |
 | **Dev**             | `dev`, `build`, `start`, `lint`, `format`                                                   |
 | **TypeCheck**       | `typecheck`, `typecheck:app`, `typecheck:web-beta`, `typecheck:scripts`                     |
-| **Database**        | `supabase:*` (start, stop, link, push, reset, types)                                        |
+| **Database**        | `database:*` (start, stop, link, push, reset, types)                                        |
 | **Testing**         | `test:unit`, `test:e2e`, `test:e2e:smoke`, `test:coverage`, `test:soak`, `test:stress:*`    |
 | **AI Testing**      | `test:remy-quality:*` (9 suites), `qa:remy:delivery`                                        |
-| **Verification**    | `verify:release`, `verify:supabase`, `verify:secrets`, `verify:payments`                    |
+| **Verification**    | `verify:release`, `verify:database`, `verify:secrets`, `verify:payments`                    |
 | **Demo**            | `demo:setup`, `demo:load`, `demo:clear`, `demo:reset`, `demo:auth`, `demo:full`             |
 | **Audit**           | `audit:overnight`, `audit:a11y:markup`, `audit:notifications`, `audit:db`, `audit:goldmine` |
 | **Beta**            | `beta`, `beta:quick`, `beta:named`, `beta:build`                                            |
@@ -1229,14 +1229,14 @@ Full reference: `docs/environment-variables.md`
 
 ### Database
 
-- **Dev and beta share one Supabase project.** Production needs its own project before launch. Tracked in production launch plan.
-- **`types/database.ts` can become stale.** Must regenerate after schema changes via `supabase gen types typescript --linked`.
+- **Dev and beta share one database project.** Production needs its own project before launch. Tracked in production launch plan.
+- **`types/database.ts` can become stale.** Must regenerate after schema changes via `drizzle-kit introspect typescript --linked`.
 
 ### Codebase Scale
 
 - **879K lines of TypeScript** across 4,030 files. Some modules may have low usage or be experimental.
 - **220 lib modules** - some overlap (e.g., `lib/follow-up/` and `lib/followup/`, `lib/chef/` and `lib/chefs/`).
-- **591 migrations** - archived migrations exist in `supabase/migrations/archive/`.
+- **591 migrations** - archived migrations exist in `database/migrations/archive/`.
 
 ### AI Limitations
 
@@ -1260,7 +1260,7 @@ Full reference: `docs/environment-variables.md`
 Full checklist in `docs/production-launch-execution-plan.md`:
 
 1. Resolve all type errors (remove `ignoreBuildErrors: true`)
-2. Create separate production Supabase project
+2. Create separate production the database project
 3. Production auth configuration (Google OAuth, email templates)
 4. Verify RLS policies on all tables
 5. Production environment variables configured
@@ -1276,7 +1276,7 @@ Organized by domain relevance and tier:
 
 #### TIER 1 - Critical Infrastructure
 
-`auth/`, `events/`, `ledger/`, `quotes/`, `supabase/`, `stripe/`, `billing/`, `validation/`, `errors/`, `security/`
+`auth/`, `events/`, `ledger/`, `quotes/`, `database/`, `stripe/`, `billing/`, `validation/`, `errors/`, `security/`
 
 #### TIER 2 - Core Business
 

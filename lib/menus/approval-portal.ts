@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -20,10 +20,10 @@ export async function sendMenuProposal(
   error?: string
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load event with client
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       'id, client_id, tenant_id, menu_revision_count, confirmed_occasion:occasion, event_date'
@@ -35,7 +35,7 @@ export async function sendMenuProposal(
   if (!event) return { success: false, error: 'Event not found.' }
 
   // Load menu with dishes and ingredients
-  const { data: menu } = await supabase
+  const { data: menu } = await db
     .from('menus')
     .select(
       `
@@ -61,7 +61,7 @@ export async function sendMenuProposal(
   let ingredientsByRecipeId = new Map<string, { name: string }[]>()
 
   if (recipeIds.length > 0) {
-    const { data: allIngredients } = await supabase
+    const { data: allIngredients } = await db
       .from('recipe_ingredients')
       .select('recipe_id, ingredient_id, ingredients(name)')
       .in('recipe_id', recipeIds)
@@ -84,7 +84,7 @@ export async function sendMenuProposal(
   // Run allergen cross-reference if client has allergy records
   let allergenConflicts: AllergenConflict[] = []
   if (event.client_id) {
-    const { data: allergyRecords } = await supabase
+    const { data: allergyRecords } = await db
       .from('client_allergy_records')
       .select('allergen, severity, confirmed_by_chef')
       .eq('client_id', event.client_id)
@@ -105,7 +105,7 @@ export async function sendMenuProposal(
 
   // Create menu revision (snapshot)
   const newVersion = (event.menu_revision_count ?? 0) + 1
-  const { data: revision, error: revError } = await supabase
+  const { data: revision, error: revError } = await db
     .from('menu_revisions')
     .insert({
       menu_id: menuId,
@@ -138,7 +138,7 @@ export async function sendMenuProposal(
   }
 
   // Update event
-  await supabase
+  await db
     .from('events')
     .update({
       menu_id: menuId,
@@ -151,14 +151,14 @@ export async function sendMenuProposal(
 
   // Send notification to client (non-blocking)
   try {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('id, full_name, email')
       .eq('id', event.client_id!)
       .single()
 
     if (client) {
-      await supabase.from('notifications').insert({
+      await db.from('notifications').insert({
         tenant_id: user.tenantId!,
         recipient_id: client.id,
         recipient_role: 'client',
@@ -202,10 +202,10 @@ export async function submitDishFeedback(
   const parsed = DishFeedbackSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid feedback data.' }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get revision to find tenant_id
-  const { data: revision } = await supabase
+  const { data: revision } = await db
     .from('menu_revisions')
     .select('id, tenant_id, menu_id, version')
     .eq('id', parsed.data.revisionId)
@@ -214,7 +214,7 @@ export async function submitDishFeedback(
   if (!revision) return { success: false, error: 'Menu revision not found.' }
 
   // Get client ID from event (scoped by tenant from revision)
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('client_id')
     .eq('id', parsed.data.eventId)
@@ -233,7 +233,7 @@ export async function submitDishFeedback(
     comment: f.comment ?? null,
   }))
 
-  const { error: insertError } = await supabase.from('menu_dish_feedback').insert(records)
+  const { error: insertError } = await db.from('menu_dish_feedback').insert(records)
 
   if (insertError) {
     console.error('[dish-feedback] Insert failed:', insertError.message)
@@ -243,7 +243,7 @@ export async function submitDishFeedback(
   // Determine overall menu status
   const hasFlagged = parsed.data.feedback.some((f) => f.status === 'flagged')
 
-  await supabase
+  await db
     .from('events')
     .update({
       menu_approval_status: hasFlagged ? 'revision_requested' : 'approved',
@@ -254,7 +254,7 @@ export async function submitDishFeedback(
     .eq('tenant_id', revision.tenant_id)
 
   // Create feedback revision
-  await supabase.from('menu_revisions').insert({
+  await db.from('menu_revisions').insert({
     menu_id: revision.menu_id,
     event_id: parsed.data.eventId,
     tenant_id: revision.tenant_id,
@@ -269,7 +269,7 @@ export async function submitDishFeedback(
 
   // Notify chef (non-blocking)
   try {
-    await supabase.from('notifications').insert({
+    await db.from('notifications').insert({
       tenant_id: revision.tenant_id,
       recipient_id: revision.tenant_id,
       recipient_role: 'chef',
@@ -288,7 +288,7 @@ export async function submitDishFeedback(
   }
 
   // Update menu revision count on event
-  await supabase
+  await db
     .from('events')
     .update({ menu_revision_count: revision.version + 1 })
     .eq('id', parsed.data.eventId)
@@ -307,9 +307,9 @@ export async function approveEntireMenu(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, client_id, tenant_id, menu_id, occasion')
     .eq('id', eventId)
@@ -317,7 +317,7 @@ export async function approveEntireMenu(
 
   if (!event) return { success: false, error: 'Event not found.' }
 
-  await supabase
+  await db
     .from('events')
     .update({
       menu_approval_status: 'approved',
@@ -329,7 +329,7 @@ export async function approveEntireMenu(
 
   // Notify chef (non-blocking)
   try {
-    await supabase.from('notifications').insert({
+    await db.from('notifications').insert({
       tenant_id: event.tenant_id,
       recipient_id: event.tenant_id,
       recipient_role: 'chef',
@@ -355,9 +355,9 @@ export async function approveEntireMenu(
 
 export async function getMenuRevisions(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_revisions')
     .select('*')
     .eq('event_id', eventId)

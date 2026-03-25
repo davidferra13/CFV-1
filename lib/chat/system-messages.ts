@@ -3,7 +3,7 @@
 
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 const STATUS_LABELS: Record<string, string> = {
   draft: 'Draft',
@@ -26,10 +26,10 @@ export async function postEventSystemMessage(
   fromStatus: string,
   toStatus: string
 ) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Find the conversation linked to this event
-  const { data: conversation } = await supabase
+  const { data: conversation } = await db
     .from('conversations')
     .select('id')
     .eq('event_id', eventId)
@@ -41,7 +41,7 @@ export async function postEventSystemMessage(
 
   const body = `Event status changed to ${STATUS_LABELS[toStatus] || toStatus}`
 
-  const { error } = await supabase.from('chat_messages').insert({
+  const { error } = await db.from('chat_messages').insert({
     conversation_id: conversation.id,
     sender_id: '00000000-0000-0000-0000-000000000000', // System sender placeholder
     message_type: 'system' as const,
@@ -70,9 +70,9 @@ export async function postSystemMessage(input: {
   body: string
   metadata?: Record<string, string | number | boolean | null>
 }) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase.from('chat_messages').insert({
+  const { error } = await db.from('chat_messages').insert({
     conversation_id: input.conversation_id,
     sender_id: '00000000-0000-0000-0000-000000000000',
     message_type: 'system' as const,

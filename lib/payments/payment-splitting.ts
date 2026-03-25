@@ -1,5 +1,5 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   generateSplitInvoices,
   getSplitBilling,
@@ -21,9 +21,9 @@ export type PaymentSplitEvent = {
 
 export async function listPaymentSplitEvents(limit = 25): Promise<PaymentSplitEvent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('events')
     .select('id, occasion, event_date, quoted_price_cents, split_billing')
     .eq('tenant_id', user.tenantId!)

@@ -48,7 +48,7 @@ export const GET = withApiAuth(
     const incidentType = url.searchParams.get('type')
     const eventId = url.searchParams.get('event_id')
 
-    let query = (ctx.supabase as any)
+    let query = (ctx.db as any)
       .from('chef_incidents')
       .select('*', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)
@@ -82,7 +82,7 @@ export const POST = withApiAuth(
     const parsed = CreateIncidentBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('chef_incidents')
       .insert({
         ...parsed.data,

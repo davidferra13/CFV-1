@@ -1,11 +1,11 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
 import { hasProAccess } from '@/lib/billing/tier'
 import { computeRegisterSessionTotals } from '@/lib/commerce/register-metrics'
 import { isPosManagerRole, readPosManagerRoleSetFromEnv } from '@/lib/commerce/kiosk-policy'
 
 type DeviceAuthContext = {
-  supabase: any
+  db: any
   device: NonNullable<Awaited<ReturnType<typeof validateDeviceToken>>>
 }
 
@@ -44,13 +44,13 @@ export async function authenticateOrderKioskRequest(request: Request): Promise<D
   // All features are free - no tier check needed
 
   return {
-    supabase: createAdminClient(),
+    db: createAdminClient(),
     device,
   }
 }
 
 export async function assertStaffSession(input: {
-  supabase: any
+  db: any
   deviceId: string
   tenantId: string
   requireStaffPin: boolean
@@ -64,7 +64,7 @@ export async function assertStaffSession(input: {
     throw new KioskApiError('Active staff session is required', 401)
   }
 
-  const { data: session, error } = await (input.supabase
+  const { data: session, error } = await (input.db
     .from('device_sessions' as any)
     .select('id, staff_member_id, status')
     .eq('id', input.sessionId)
@@ -76,7 +76,7 @@ export async function assertStaffSession(input: {
     throw new KioskApiError('Staff session not found or expired', 401)
   }
 
-  const { data: staffMember, error: staffMemberError } = await (input.supabase
+  const { data: staffMember, error: staffMemberError } = await (input.db
     .from('staff_members' as any)
     .select('id, role, name, status')
     .eq('id', (session as any).staff_member_id)
@@ -123,8 +123,8 @@ export function assertManagerDrawerPermission(input: {
   }
 }
 
-export async function getOpenRegisterSession(input: { supabase: any; tenantId: string }) {
-  const { data: session } = await (input.supabase
+export async function getOpenRegisterSession(input: { db: any; tenantId: string }) {
+  const { data: session } = await (input.db
     .from('register_sessions' as any)
     .select('id, status, opening_cash_cents')
     .eq('tenant_id', input.tenantId)
@@ -141,11 +141,11 @@ export async function getOpenRegisterSession(input: { supabase: any; tenantId: s
 }
 
 export async function getDrawerSummary(input: {
-  supabase: any
+  db: any
   tenantId: string
   registerSessionId: string
 }) {
-  const { data: movements } = await (input.supabase
+  const { data: movements } = await (input.db
     .from('cash_drawer_movements' as any)
     .select('movement_type, amount_cents')
     .eq('tenant_id', input.tenantId)
@@ -171,7 +171,7 @@ export async function getDrawerSummary(input: {
     if (row.movement_type === 'adjustment') breakdown.adjustmentCents += amount
   }
 
-  const { data: session } = await (input.supabase
+  const { data: session } = await (input.db
     .from('register_sessions' as any)
     .select('opening_cash_cents, status')
     .eq('id', input.registerSessionId)
@@ -188,11 +188,11 @@ export async function getDrawerSummary(input: {
 }
 
 export async function syncRegisterSessionTotals(input: {
-  supabase: any
+  db: any
   tenantId: string
   registerSessionId: string
 }) {
-  const { data: sales } = await (input.supabase
+  const { data: sales } = await (input.db
     .from('sales' as any)
     .select('id, status')
     .eq('tenant_id', input.tenantId)
@@ -202,7 +202,7 @@ export async function syncRegisterSessionTotals(input: {
 
   let payments: any[] = []
   if (saleIds.length > 0) {
-    const { data } = await (input.supabase
+    const { data } = await (input.db
       .from('commerce_payments' as any)
       .select('sale_id, amount_cents, tip_cents, status')
       .eq('tenant_id', input.tenantId)
@@ -215,7 +215,7 @@ export async function syncRegisterSessionTotals(input: {
     payments,
   })
 
-  await (input.supabase
+  await (input.db
     .from('register_sessions' as any)
     .update({
       total_sales_count: totals.totalSalesCount,

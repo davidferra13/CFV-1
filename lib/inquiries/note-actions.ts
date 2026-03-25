@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -97,9 +97,9 @@ const LinkRecipeSchema = z.object({
 export async function addInquiryNote(input: z.infer<typeof AddNoteSchema>) {
   const user = await requireChef()
   const validated = AddNoteSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('inquiry_notes')
     .insert({
       tenant_id: user.tenantId!,
@@ -153,9 +153,9 @@ export async function addInquiryNote(input: z.infer<typeof AddNoteSchema>) {
 export async function updateInquiryNote(noteId: string, input: z.infer<typeof UpdateNoteSchema>) {
   const user = await requireChef()
   const validated = UpdateNoteSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('inquiry_notes')
     .update(validated)
     .eq('id', noteId)
@@ -176,9 +176,9 @@ export async function updateInquiryNote(noteId: string, input: z.infer<typeof Up
  */
 export async function deleteInquiryNote(noteId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('inquiry_notes')
     .delete()
     .eq('id', noteId)
@@ -197,9 +197,9 @@ export async function deleteInquiryNote(noteId: string) {
  */
 export async function toggleInquiryNotePinned(noteId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('inquiry_notes')
     .select('pinned')
     .eq('id', noteId)
@@ -210,7 +210,7 @@ export async function toggleInquiryNotePinned(noteId: string) {
     throw new Error('Note not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('inquiry_notes')
     .update({ pinned: !existing.pinned })
     .eq('id', noteId)
@@ -236,9 +236,9 @@ export async function getInquiryNotes(
   }
 ): Promise<InquiryNote[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('inquiry_notes')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -282,9 +282,9 @@ export interface RecipeSlim {
  */
 export async function getRecipesForLinker(): Promise<RecipeSlim[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('recipes')
     .select('id, name, category, description, photo_url')
     .eq('tenant_id', user.tenantId!)
@@ -318,14 +318,14 @@ export async function uploadInquiryNoteAttachment(
     throw new Error('No file provided')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const ext = file.name.split('.').pop() ?? 'bin'
   const path = `${inquiryId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
   const arrayBuffer = await file.arrayBuffer()
   const buffer = Buffer.from(arrayBuffer)
 
-  const { error } = await supabase.storage
+  const { error } = await db.storage
     .from('inquiry-note-attachments')
     .upload(path, buffer, { contentType: file.type, upsert: false })
 
@@ -334,7 +334,7 @@ export async function uploadInquiryNoteAttachment(
     throw new Error('Upload failed')
   }
 
-  const { data: urlData } = supabase.storage.from('inquiry-note-attachments').getPublicUrl(path)
+  const { data: urlData } = db.storage.from('inquiry-note-attachments').getPublicUrl(path)
 
   return { url: urlData.publicUrl, filename: file.name }
 }
@@ -349,9 +349,9 @@ export async function uploadInquiryNoteAttachment(
 export async function linkRecipeToInquiry(input: z.infer<typeof LinkRecipeSchema>) {
   const user = await requireChef()
   const validated = LinkRecipeSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('inquiry_recipe_links')
     .insert({
       tenant_id: user.tenantId!,
@@ -381,9 +381,9 @@ export async function linkRecipeToInquiry(input: z.infer<typeof LinkRecipeSchema
  */
 export async function unlinkRecipeFromInquiry(linkId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('inquiry_recipe_links')
     .delete()
     .eq('id', linkId)
@@ -402,9 +402,9 @@ export async function unlinkRecipeFromInquiry(linkId: string) {
  */
 export async function getLinkedRecipes(inquiryId: string): Promise<InquiryRecipeLink[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('inquiry_recipe_links')
     .select(
       `

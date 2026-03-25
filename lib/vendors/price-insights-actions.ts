@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   computeVendorPriceAlerts,
   computeVendorPriceTrends,
@@ -37,8 +37,8 @@ const SetVendorPriceAlertThresholdSchema = z.object({
   thresholdPercent: z.number().min(0).max(1000),
 })
 
-async function assertVendorAccess(supabase: any, tenantId: string, vendorId: string) {
-  const { data, error } = await supabase
+async function assertVendorAccess(db: any, tenantId: string, vendorId: string) {
+  const { data, error } = await db
     .from('vendors')
     .select('id')
     .eq('id', vendorId)
@@ -51,11 +51,11 @@ async function assertVendorAccess(supabase: any, tenantId: string, vendorId: str
 }
 
 async function readVendorAlertThreshold(
-  supabase: any,
+  db: any,
   tenantId: string,
   vendorId: string
 ): Promise<number | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('vendor_price_alert_settings')
     .select('price_change_percent_threshold')
     .eq('chef_id', tenantId)
@@ -82,16 +82,16 @@ function applyAlertThreshold(
 
 export async function getVendorPriceInsights(input?: z.input<typeof GetVendorPriceInsightsSchema>) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const params = GetVendorPriceInsightsSchema.parse(input ?? {})
 
   if (params.vendorId) {
-    await assertVendorAccess(supabase, user.tenantId!, params.vendorId)
+    await assertVendorAccess(db, user.tenantId!, params.vendorId)
   }
 
   const sinceIso = new Date(Date.now() - params.lookbackDays * 24 * 60 * 60 * 1000).toISOString()
 
-  let query = (supabase.from('vendor_price_points') as any)
+  let query = (db.from('vendor_price_points') as any)
     .select('vendor_id, item_name, unit, price_cents, recorded_at, vendors(name)')
     .eq('chef_id', user.tenantId!)
     .gte('recorded_at', sinceIso)
@@ -119,7 +119,7 @@ export async function getVendorPriceInsights(input?: z.input<typeof GetVendorPri
 
   const vendorThreshold =
     params.vendorId && params.useVendorThresholdWhenAvailable
-      ? await readVendorAlertThreshold(supabase, user.tenantId!, params.vendorId)
+      ? await readVendorAlertThreshold(db, user.tenantId!, params.vendorId)
       : null
   const thresholdPercent =
     params.minDeltaPercent ?? vendorThreshold ?? DEFAULT_VENDOR_ALERT_THRESHOLD_PERCENT
@@ -140,9 +140,9 @@ export async function getVendorPriceInsights(input?: z.input<typeof GetVendorPri
 
 export async function getVendorPriceAlertThreshold(vendorId: string): Promise<number> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
-  await assertVendorAccess(supabase, user.tenantId!, vendorId)
-  const value = await readVendorAlertThreshold(supabase, user.tenantId!, vendorId)
+  const db: any = createServerClient()
+  await assertVendorAccess(db, user.tenantId!, vendorId)
+  const value = await readVendorAlertThreshold(db, user.tenantId!, vendorId)
   return value ?? DEFAULT_VENDOR_ALERT_THRESHOLD_PERCENT
 }
 
@@ -150,13 +150,13 @@ export async function setVendorPriceAlertThreshold(
   input: z.input<typeof SetVendorPriceAlertThresholdSchema>
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = SetVendorPriceAlertThresholdSchema.parse(input)
-  await assertVendorAccess(supabase, user.tenantId!, data.vendorId)
+  await assertVendorAccess(db, user.tenantId!, data.vendorId)
 
   const normalizedThreshold = Number(data.thresholdPercent.toFixed(2))
 
-  const { error } = await supabase.from('vendor_price_alert_settings').upsert(
+  const { error } = await db.from('vendor_price_alert_settings').upsert(
     {
       chef_id: user.tenantId!,
       vendor_id: data.vendorId,

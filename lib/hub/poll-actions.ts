@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import type { Json } from '@/types/database'
 import type { HubPoll, HubPollOption } from './types'
@@ -31,10 +31,10 @@ const CreatePollSchema = z.object({
  */
 export async function createHubPoll(input: z.infer<typeof CreatePollSchema>): Promise<HubPoll> {
   const validated = CreatePollSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Resolve profile
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id, display_name')
     .eq('profile_token', validated.profileToken)
@@ -43,7 +43,7 @@ export async function createHubPoll(input: z.infer<typeof CreatePollSchema>): Pr
   if (!profile) throw new Error('Invalid profile token')
 
   // Verify membership
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('can_post')
     .eq('group_id', validated.groupId)
@@ -55,7 +55,7 @@ export async function createHubPoll(input: z.infer<typeof CreatePollSchema>): Pr
   }
 
   // Create poll
-  const { data: poll, error: pollError } = await supabase
+  const { data: poll, error: pollError } = await db
     .from('hub_polls')
     .insert({
       group_id: validated.groupId,
@@ -77,7 +77,7 @@ export async function createHubPoll(input: z.infer<typeof CreatePollSchema>): Pr
     sort_order: i,
   }))
 
-  const { data: options, error: optError } = await supabase
+  const { data: options, error: optError } = await db
     .from('hub_poll_options')
     .insert(optionInserts)
     .select('*')
@@ -85,7 +85,7 @@ export async function createHubPoll(input: z.infer<typeof CreatePollSchema>): Pr
   if (optError) throw new Error(`Failed to create poll options: ${optError.message}`)
 
   // Post a poll message to the thread
-  const { data: message } = await supabase
+  const { data: message } = await db
     .from('hub_messages')
     .insert({
       group_id: validated.groupId,
@@ -99,7 +99,7 @@ export async function createHubPoll(input: z.infer<typeof CreatePollSchema>): Pr
 
   // Link message to poll
   if (message) {
-    await supabase.from('hub_polls').update({ message_id: message.id }).eq('id', poll.id)
+    await db.from('hub_polls').update({ message_id: message.id }).eq('id', poll.id)
   }
 
   return {
@@ -117,9 +117,9 @@ export async function voteOnPoll(input: {
   optionId: string
   profileToken: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -128,7 +128,7 @@ export async function voteOnPoll(input: {
   if (!profile) throw new Error('Invalid profile token')
 
   // Check poll is open
-  const { data: poll } = await supabase
+  const { data: poll } = await db
     .from('hub_polls')
     .select('is_closed, poll_type')
     .eq('id', input.pollId)
@@ -139,7 +139,7 @@ export async function voteOnPoll(input: {
 
   // For single_choice, remove any existing vote first
   if (poll.poll_type === 'single_choice') {
-    await supabase
+    await db
       .from('hub_poll_votes')
       .delete()
       .eq('poll_id', input.pollId)
@@ -147,7 +147,7 @@ export async function voteOnPoll(input: {
   }
 
   // Cast vote
-  const { error } = await supabase.from('hub_poll_votes').insert({
+  const { error } = await db.from('hub_poll_votes').insert({
     poll_id: input.pollId,
     option_id: input.optionId,
     profile_id: profile.id,
@@ -167,9 +167,9 @@ export async function removeVote(input: {
   optionId: string
   profileToken: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -177,7 +177,7 @@ export async function removeVote(input: {
 
   if (!profile) throw new Error('Invalid profile token')
 
-  await supabase
+  await db
     .from('hub_poll_votes')
     .delete()
     .eq('poll_id', input.pollId)
@@ -189,25 +189,21 @@ export async function removeVote(input: {
  * Get a poll with options and vote counts.
  */
 export async function getPoll(pollId: string, viewerProfileId?: string): Promise<HubPoll | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: poll, error } = await supabase
-    .from('hub_polls')
-    .select('*')
-    .eq('id', pollId)
-    .single()
+  const { data: poll, error } = await db.from('hub_polls').select('*').eq('id', pollId).single()
 
   if (error || !poll) return null
 
   // Get options
-  const { data: options } = await supabase
+  const { data: options } = await db
     .from('hub_poll_options')
     .select('*')
     .eq('poll_id', pollId)
     .order('sort_order', { ascending: true })
 
   // Get vote counts per option
-  const { data: votes } = await supabase
+  const { data: votes } = await db
     .from('hub_poll_votes')
     .select('option_id, profile_id')
     .eq('poll_id', pollId)
@@ -238,9 +234,9 @@ export async function getPoll(pollId: string, viewerProfileId?: string): Promise
  * Close a poll. Only creator or group owner/admin.
  */
 export async function closePoll(input: { pollId: string; profileToken: string }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -248,7 +244,7 @@ export async function closePoll(input: { pollId: string; profileToken: string })
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data: poll } = await supabase
+  const { data: poll } = await db
     .from('hub_polls')
     .select('group_id, created_by_profile_id')
     .eq('id', input.pollId)
@@ -259,7 +255,7 @@ export async function closePoll(input: { pollId: string; profileToken: string })
   // Check permission
   const isCreator = poll.created_by_profile_id === profile.id
   if (!isCreator) {
-    const { data: membership } = await supabase
+    const { data: membership } = await db
       .from('hub_group_members')
       .select('role')
       .eq('group_id', poll.group_id)
@@ -271,5 +267,5 @@ export async function closePoll(input: { pollId: string; profileToken: string })
     }
   }
 
-  await supabase.from('hub_polls').update({ is_closed: true }).eq('id', input.pollId)
+  await db.from('hub_polls').update({ is_closed: true }).eq('id', input.pollId)
 }

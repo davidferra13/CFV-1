@@ -4,7 +4,7 @@
 'use server'
 
 import { requireAuth } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { Json } from '@/types/database'
 import type { NotificationCategory, NotificationAction, Notification } from './types'
@@ -15,13 +15,13 @@ import { resolveOwnerAuthUserId } from '@/lib/platform/owner-account'
 let founderRecipientCache: { recipientId: string | null; expiresAt: number } | null = null
 const FOUNDER_CACHE_TTL_MS = 60_000
 
-async function getFounderNotificationRecipientId(supabase: any): Promise<string | null> {
+async function getFounderNotificationRecipientId(db: any): Promise<string | null> {
   const now = Date.now()
   if (founderRecipientCache && now < founderRecipientCache.expiresAt) {
     return founderRecipientCache.recipientId
   }
 
-  const recipientId = await resolveOwnerAuthUserId(supabase)
+  const recipientId = await resolveOwnerAuthUserId(db)
   founderRecipientCache = { recipientId, expiresAt: now + FOUNDER_CACHE_TTL_MS }
   return recipientId
 }
@@ -58,7 +58,7 @@ export async function createNotification({
   clientId?: string
   metadata?: Record<string, unknown>
 }) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const resolvedActionUrl = deriveNotificationActionUrl({
     action,
     actionUrl,
@@ -81,7 +81,7 @@ export async function createNotification({
       .trim()
       .slice(0, 500) ?? null
 
-  const { data: notification, error } = await supabase
+  const { data: notification, error } = await db
     .from('notifications')
     .insert({
       tenant_id: tenantId,
@@ -108,7 +108,7 @@ export async function createNotification({
   // so the owner account can monitor platform activity from one inbox.
   // Out-of-app channels (email/push/sms) are intentionally not mirrored here.
   try {
-    const founderRecipientId = await getFounderNotificationRecipientId(supabase)
+    const founderRecipientId = await getFounderNotificationRecipientId(db)
     if (founderRecipientId && founderRecipientId !== recipientId) {
       const mirrorMetadata = {
         ...metadata,
@@ -117,7 +117,7 @@ export async function createNotification({
         _original_tenant_id: tenantId,
       }
 
-      await supabase.from('notifications').insert({
+      await db.from('notifications').insert({
         tenant_id: tenantId,
         recipient_id: founderRecipientId,
         category,
@@ -182,9 +182,9 @@ function deriveNotificationActionUrl(input: {
  */
 export async function getNotifications(limit = 20, offset = 0): Promise<Notification[]> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('notifications')
     .select('*')
     .eq('recipient_id', user.id)
@@ -205,9 +205,9 @@ export async function getNotifications(limit = 20, offset = 0): Promise<Notifica
  */
 export async function getUnreadCount(): Promise<number> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase.rpc('get_unread_notification_count', {
+  const { data, error } = await db.rpc('get_unread_notification_count', {
     p_user_id: user.id,
   })
 
@@ -226,9 +226,9 @@ export async function getUnreadCount(): Promise<number> {
  */
 export async function markAsRead(notificationId: string) {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('notifications')
     .update({ read_at: new Date().toISOString() })
     .eq('id', notificationId)
@@ -245,9 +245,9 @@ export async function markAsRead(notificationId: string) {
  */
 export async function markAllAsRead() {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('notifications')
     .update({ read_at: new Date().toISOString() })
     .eq('recipient_id', user.id)
@@ -266,9 +266,9 @@ export async function markAllAsRead() {
  */
 export async function archiveNotification(notificationId: string) {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('notifications')
     .update({ archived_at: new Date().toISOString() })
     .eq('id', notificationId)
@@ -300,9 +300,9 @@ export type NotificationRuntimeSettings = {
  */
 export async function getNotificationPreferences(): Promise<NotificationPreference[]> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('notification_preferences')
     .select('category, toast_enabled')
     .eq('auth_user_id', user.id)
@@ -327,8 +327,8 @@ export async function getNotificationRuntimeSettings(): Promise<NotificationRunt
     }
   }
 
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('chef_preferences')
     .select(
       'notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_digest_enabled, notification_digest_interval_minutes'
@@ -362,9 +362,9 @@ export async function updateNotificationPreference(
   toastEnabled: boolean
 ) {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('notification_preferences').upsert(
+  const { error } = await db.from('notification_preferences').upsert(
     {
       tenant_id: user.tenantId!,
       auth_user_id: user.id,
@@ -388,9 +388,9 @@ export async function updateNotificationPreference(
 export async function getChefProfile(
   tenantId: string
 ): Promise<{ email: string; name: string } | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chefs')
     .select('email, business_name')
     .eq('id', tenantId)
@@ -409,9 +409,9 @@ export async function getChefProfile(
  * Used when creating notifications from webhooks where we only have tenant_id.
  */
 export async function getChefAuthUserId(tenantId: string): Promise<string | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('user_roles')
     .select('auth_user_id')
     .eq('entity_id', tenantId)

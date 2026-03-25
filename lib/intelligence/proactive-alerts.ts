@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -33,7 +33,7 @@ export interface ProactiveAlertsResult {
 export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const alerts: ProactiveAlert[] = []
   const now = new Date()
 
@@ -41,7 +41,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
   const [overduePayments, unansweredInquiries, upcomingEvents, staleClients, unpaidEvents] =
     await Promise.all([
       // 1. Overdue payments
-      supabase
+      db
         .from('invoices')
         .select('id, due_date, total_cents, client:clients(full_name)')
         .eq('tenant_id', tenantId)
@@ -53,7 +53,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
         .catch(() => []),
 
       // 2. Unanswered inquiries (>48h old, not converted)
-      supabase
+      db
         .from('inquiries')
         .select('id, client_name, event_type, created_at')
         .eq('tenant_id', tenantId)
@@ -65,7 +65,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
         .catch(() => []),
 
       // 3. Events in next 7 days missing key info
-      supabase
+      db
         .from('events')
         .select('id, title, event_date, guest_count, menu_id, location_text')
         .eq('tenant_id', tenantId)
@@ -78,7 +78,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
         .catch(() => []),
 
       // 4. Clients with no event in 90+ days (top 5 by revenue)
-      supabase
+      db
         .from('clients')
         .select('id, full_name')
         .eq('tenant_id', tenantId)
@@ -90,7 +90,7 @@ export async function getProactiveAlerts(): Promise<ProactiveAlertsResult> {
         .catch(() => []),
 
       // 5. Completed events with no payment
-      supabase
+      db
         .from('events')
         .select('id, title, event_date, quoted_price_cents, client:clients(full_name)')
         .eq('tenant_id', tenantId)

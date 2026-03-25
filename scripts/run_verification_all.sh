@@ -15,51 +15,51 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Step 1: Check Supabase CLI
-echo "Step 1: Checking Supabase CLI..."
-if ! command -v supabase &> /dev/null; then
-    echo -e "${RED}✗ Supabase CLI not found${NC}"
+# Step 1: Check PostgreSQL CLI
+echo "Step 1: Checking PostgreSQL CLI..."
+if ! command -v database &> /dev/null; then
+    echo -e "${RED}✗ PostgreSQL CLI not found${NC}"
     echo ""
-    echo "Install Supabase CLI:"
-    echo "  macOS/Linux: brew install supabase/tap/supabase"
-    echo "  npm: npm install -g supabase"
+    echo "Install PostgreSQL CLI:"
+    echo "  macOS/Linux: brew install database/tap/database"
+    echo "  npm: npm install -g database"
     exit 1
 fi
-echo -e "${GREEN}✓ Supabase CLI found: $(supabase --version)${NC}"
+echo -e "${GREEN}✓ PostgreSQL CLI found: $(database --version)${NC}"
 echo ""
 
 # Step 2: Check if linked to project
-echo "Step 2: Checking Supabase project link..."
-if ! supabase projects list &> /dev/null; then
-    echo -e "${YELLOW}⚠ Not logged in to Supabase${NC}"
+echo "Step 2: Checking database project link..."
+if ! database projects list &> /dev/null; then
+    echo -e "${YELLOW}⚠ Not logged in to PostgreSQL${NC}"
     echo ""
     echo "Run these commands ONCE, then re-run this script:"
     echo ""
-    echo "  supabase login"
-    echo "  supabase link --project-ref <your-project-ref>"
+    echo "  database login"
+    echo "  database link --project-ref <your-project-ref>"
     echo ""
     exit 1
 fi
 
 # Check if actually linked
-if ! supabase migration list &> /dev/null; then
-    echo -e "${YELLOW}⚠ Not linked to a Supabase project${NC}"
+if ! database migration list &> /dev/null; then
+    echo -e "${YELLOW}⚠ Not linked to a database project${NC}"
     echo ""
     echo "Run this command ONCE, then re-run this script:"
     echo ""
-    echo "  supabase link --project-ref <your-project-ref>"
+    echo "  database link --project-ref <your-project-ref>"
     echo ""
-    echo "Get your project-ref from: Supabase Dashboard > Settings > General > Project ID"
+    echo "Get your project-ref from: PostgreSQL Dashboard > Settings > General > Project ID"
     echo ""
     exit 1
 fi
 
-echo -e "${GREEN}✓ Linked to Supabase project${NC}"
+echo -e "${GREEN}✓ Linked to database project${NC}"
 echo ""
 
 # Step 3: Push migrations
 echo "Step 3: Applying migrations..."
-if supabase db push; then
+if drizzle-kit push; then
     echo -e "${GREEN}✓ Migrations applied successfully${NC}"
 else
     echo -e "${RED}✗ Migration push failed${NC}"
@@ -81,7 +81,7 @@ echo ""
 
 # Step 5: Run Test 1 - Migrations
 echo "Step 5: Running Test 1 - Migrations verification..."
-if supabase db execute --file scripts/verify-migrations.sql > verification-1-migrations.txt 2>&1; then
+if database db execute --file scripts/verify-migrations.sql > verification-1-migrations.txt 2>&1; then
     echo -e "${GREEN}✓ Test 1 completed${NC}"
     cat verification-1-migrations.txt
 else
@@ -107,7 +107,7 @@ echo ""
 
 # Step 7: Run Test 3 - Immutability
 echo "Step 7: Running Test 3 - Immutability enforcement..."
-if supabase db execute --file scripts/verify-immutability-strict.sql > verification-3-immutability.txt 2>&1; then
+if database db execute --file scripts/verify-immutability-strict.sql > verification-3-immutability.txt 2>&1; then
     echo -e "${GREEN}✓ Test 3 completed${NC}"
     cat verification-3-immutability.txt
 else

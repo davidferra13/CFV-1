@@ -55,7 +55,7 @@ import {
 import { InviteChefCard } from '@/components/marketing/invite-chef-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CollapsibleWidget } from '@/components/dashboard/collapsible-widget'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import type { DashboardWidgetId } from '@/lib/scheduling/types'
@@ -159,8 +159,8 @@ export async function AlertsSection({ widgetEnabled, widgetOrder }: AlertsSectio
     safe(
       'chefProfile',
       async () => {
-        const supabase: any = createServerClient()
-        const { data } = await supabase
+        const db: any = createServerClient()
+        const { data } = await db
           .from('chefs')
           .select('slug, display_name')
           .eq('id', user.entityId)

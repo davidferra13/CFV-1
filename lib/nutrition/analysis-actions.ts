@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -150,10 +150,10 @@ export async function analyzeMenuNutrition(menuId: string): Promise<{
   await requirePro('nutrition-analysis')
 
   const validated = z.string().uuid().parse(menuId)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Verify menu belongs to this tenant
-  const { data: menu, error: menuError } = await supabase
+  const { data: menu, error: menuError } = await db
     .from('menus')
     .select('id, name')
     .eq('id', validated)
@@ -165,7 +165,7 @@ export async function analyzeMenuNutrition(menuId: string): Promise<{
   }
 
   // 2. Fetch dishes for this menu
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, name, recipe_id')
     .eq('menu_id', validated)
@@ -228,7 +228,7 @@ export async function analyzeMenuNutrition(menuId: string): Promise<{
 
   // 4. Upsert all rows (on conflict: update only if not chef-overridden)
   if (upsertRows.length > 0) {
-    const { error: upsertError } = await supabase.from('menu_nutrition').upsert(upsertRows, {
+    const { error: upsertError } = await db.from('menu_nutrition').upsert(upsertRows, {
       onConflict: 'menu_id,recipe_id,dish_name',
       ignoreDuplicates: false,
     })
@@ -240,7 +240,7 @@ export async function analyzeMenuNutrition(menuId: string): Promise<{
   }
 
   // 5. Return fresh data
-  const entries = await fetchMenuNutritionRows(supabase, validated, user.tenantId!)
+  const entries = await fetchMenuNutritionRows(db, validated, user.tenantId!)
   revalidatePath(`/nutrition/${validated}`)
 
   return { success: true, analyzed, failed, entries }
@@ -254,9 +254,9 @@ export async function getMenuNutrition(menuId: string): Promise<MenuNutritionEnt
   await requirePro('nutrition-analysis')
 
   const validated = z.string().uuid().parse(menuId)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  return fetchMenuNutritionRows(supabase, validated, user.tenantId!)
+  return fetchMenuNutritionRows(db, validated, user.tenantId!)
 }
 
 /**
@@ -288,10 +288,10 @@ export async function updateDishNutrition(
   })
   const validatedUpdates = UpdateSchema.parse(updates)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: existing, error: fetchErr } = await supabase
+  const { data: existing, error: fetchErr } = await db
     .from('menu_nutrition')
     .select('id, menu_id')
     .eq('id', validatedId)
@@ -303,7 +303,7 @@ export async function updateDishNutrition(
   }
 
   // Update with chef_override flag
-  const { data: updated, error: updateErr } = await supabase
+  const { data: updated, error: updateErr } = await db
     .from('menu_nutrition')
     .update({
       ...validatedUpdates,
@@ -332,10 +332,10 @@ export async function deleteDishNutrition(nutritionId: string): Promise<{ succes
   await requirePro('nutrition-analysis')
 
   const validatedId = z.string().uuid().parse(nutritionId)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership and get menu_id for revalidation
-  const { data: existing, error: fetchErr } = await supabase
+  const { data: existing, error: fetchErr } = await db
     .from('menu_nutrition')
     .select('id, menu_id')
     .eq('id', validatedId)
@@ -346,7 +346,7 @@ export async function deleteDishNutrition(nutritionId: string): Promise<{ succes
     throw new Error('Nutrition entry not found or access denied')
   }
 
-  const { error: deleteErr } = await supabase
+  const { error: deleteErr } = await db
     .from('menu_nutrition')
     .delete()
     .eq('id', validatedId)
@@ -375,10 +375,10 @@ export async function toggleNutritionDisplay(
   await requirePro('nutrition-analysis')
 
   const validated = z.string().uuid().parse(menuId)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify menu ownership
-  const { data: menu, error: menuErr } = await supabase
+  const { data: menu, error: menuErr } = await db
     .from('menus')
     .select('id')
     .eq('id', validated)
@@ -392,7 +392,7 @@ export async function toggleNutritionDisplay(
   // Use a sentinel row to store the display preference
   const sentinelName = '__nutrition_display_settings__'
 
-  const { error: upsertErr } = await supabase.from('menu_nutrition').upsert(
+  const { error: upsertErr } = await db.from('menu_nutrition').upsert(
     {
       tenant_id: user.tenantId!,
       menu_id: validated,
@@ -422,9 +422,9 @@ export async function toggleNutritionDisplay(
 export async function getNutritionDisplaySetting(menuId: string): Promise<boolean> {
   const user = await requireChef()
   const validated = z.string().uuid().parse(menuId)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('menu_nutrition')
     .select('calories')
     .eq('menu_id', validated)
@@ -438,11 +438,11 @@ export async function getNutritionDisplaySetting(menuId: string): Promise<boolea
 // ─── Internal Helpers ─────────────────────────────────────────────────────────
 
 async function fetchMenuNutritionRows(
-  supabase: any,
+  db: any,
   menuId: string,
   tenantId: string
 ): Promise<MenuNutritionEntry[]> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_nutrition')
     .select('*')
     .eq('menu_id', menuId)

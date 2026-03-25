@@ -4,7 +4,7 @@
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { generatePreEventBriefing } from '@/lib/templates/pre-event-briefing'
 
 // ─── Pre-Event Briefing ─────────────────────────────────────────────────────
@@ -22,10 +22,10 @@ const sendPreEventBriefing: AgentActionDefinition = {
     const eventId = inputs.eventId as string
     if (!eventId) throw new Error('eventId is required')
 
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Load event
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select(
         'event_date, serve_time, arrival_time, occasion, guest_count, location_name, client_id'
@@ -38,12 +38,12 @@ const sendPreEventBriefing: AgentActionDefinition = {
 
     // Load client + chef in parallel
     const [{ data: client }, { data: chef }] = await Promise.all([
-      supabase.from('clients').select('full_name').eq('id', event.client_id).single(),
-      supabase.from('chefs').select('display_name, business_name').eq('id', ctx.tenantId).single(),
+      db.from('clients').select('full_name').eq('id', event.client_id).single(),
+      db.from('chefs').select('display_name, business_name').eq('id', ctx.tenantId).single(),
     ])
 
     // Load menu highlights
-    const { data: menu } = await supabase
+    const { data: menu } = await db
       .from('menus')
       .select('id, name')
       .eq('event_id', eventId)
@@ -54,14 +54,14 @@ const sendPreEventBriefing: AgentActionDefinition = {
 
     let courseHighlights: string[] = []
     if (menu) {
-      const { data: courses } = await supabase
+      const { data: courses } = await db
         .from('menu_courses')
         .select('id, name')
         .eq('menu_id', menu.id)
         .order('display_order', { ascending: true })
 
       for (const course of courses ?? []) {
-        const { data: dishes } = await supabase
+        const { data: dishes } = await db
           .from('menu_dishes')
           .select('name')
           .eq('course_id', course.id)
@@ -74,7 +74,7 @@ const sendPreEventBriefing: AgentActionDefinition = {
     }
 
     // Load dietary
-    const { data: inquiry } = await supabase
+    const { data: inquiry } = await db
       .from('inquiries')
       .select('confirmed_dietary_restrictions')
       .eq('converted_to_event_id', eventId)
@@ -155,8 +155,8 @@ const sendArrivalNotification: AgentActionDefinition = {
     const arrivalTime = (inputs.arrivalTime as string) || null
     const customMessage = (inputs.message as string) || null
 
-    const supabase: any = createServerClient()
-    const { data: event } = await supabase
+    const db: any = createServerClient()
+    const { data: event } = await db
       .from('events')
       .select('occasion, event_date, client_id')
       .eq('id', eventId)
@@ -165,7 +165,7 @@ const sendArrivalNotification: AgentActionDefinition = {
 
     if (!event) throw new Error(`Event ${eventId} not found`)
 
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('full_name')
       .eq('id', event.client_id)

@@ -36,7 +36,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Vendor')
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('vendors')
       .select('*')
       .eq('id', id)
@@ -64,7 +64,7 @@ export const PATCH = withApiAuth(
     const parsed = UpdateVendorBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data: existing } = await (ctx.supabase as any)
+    const { data: existing } = await (ctx.db as any)
       .from('vendors')
       .select('id')
       .eq('id', id)
@@ -73,7 +73,7 @@ export const PATCH = withApiAuth(
 
     if (!existing) return apiNotFound('Vendor')
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('vendors')
       .update({ ...parsed.data, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -97,7 +97,7 @@ export const DELETE = withApiAuth(
     if (!id) return apiNotFound('Vendor')
 
     // Soft deactivate
-    const { error } = await (ctx.supabase as any)
+    const { error } = await (ctx.db as any)
       .from('vendors')
       .update({ status: 'inactive', updated_at: new Date().toISOString() })
       .eq('id', id)

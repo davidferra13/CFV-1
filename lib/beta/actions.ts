@@ -1,6 +1,6 @@
 'use server'
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { headers } from 'next/headers'
 import { sendEmail } from '@/lib/email/send'
 import { BetaWelcomeEmail } from '@/lib/email/templates/beta-welcome'
@@ -82,12 +82,12 @@ export async function submitBetaSignup(
   }
 
   try {
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
     const sourcePage = input.sourcePage?.trim() || null
     const sourceCta = input.sourceCta?.trim() || null
 
     // Check if this email already exists (for deciding whether to send emails)
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('beta_signups')
       .select('id, source_page, source_cta')
       .eq('email', email)
@@ -108,13 +108,13 @@ export async function submitBetaSignup(
     }
 
     const { error } = isNewSignup
-      ? await supabase.from('beta_signups').insert({
+      ? await db.from('beta_signups').insert({
           ...updatePayload,
           source_page: sourcePage,
           source_cta: sourceCta,
           created_at: new Date().toISOString(),
         })
-      : await supabase.from('beta_signups').update(updatePayload).eq('id', existing.id)
+      : await db.from('beta_signups').update(updatePayload).eq('id', existing.id)
 
     if (error) {
       console.error('[beta-signup] Insert failed:', error)
@@ -156,7 +156,7 @@ export async function submitBetaSignup(
 
       // 3. Founder in-app alert (owner control plane feed)
       try {
-        const owner = await resolveOwnerIdentity(supabase)
+        const owner = await resolveOwnerIdentity(db)
         if (owner.ownerChefId && owner.ownerAuthUserId) {
           await createNotification({
             tenantId: owner.ownerChefId,
@@ -199,10 +199,10 @@ export async function markBetaSignupOnboardedByEmail(
 
   const source = input.source?.trim() || null
   const nowIso = new Date().toISOString()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   try {
-    const { data: existing, error: existingError } = await supabase
+    const { data: existing, error: existingError } = await db
       .from('beta_signups')
       .select('id, referral_source, onboarded_at')
       .eq('email', email)
@@ -229,7 +229,7 @@ export async function markBetaSignupOnboardedByEmail(
         updates.referral_source = source
       }
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await db
         .from('beta_signups')
         .update(updates)
         .eq('id', existing.id)
@@ -246,7 +246,7 @@ export async function markBetaSignupOnboardedByEmail(
     if (!source) return false
 
     const inferredName = input.name?.trim() || email.split('@')[0] || 'Beta Chef'
-    const { error: insertError } = await supabase.from('beta_signups').insert({
+    const { error: insertError } = await db.from('beta_signups').insert({
       name: inferredName,
       email,
       referral_source: source,
@@ -271,9 +271,9 @@ export async function markBetaSignupOnboardedByEmail(
  * Get all beta signups for the admin view.
  */
 export async function getBetaSignups() {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('beta_signups')
     .select('*')
     .order('created_at', { ascending: false })
@@ -294,7 +294,7 @@ export async function updateBetaSignupStatus(
   status: 'pending' | 'invited' | 'onboarded' | 'declined',
   notes?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   const updates: Record<string, unknown> = { status }
 
@@ -308,7 +308,7 @@ export async function updateBetaSignupStatus(
     updates.notes = notes
   }
 
-  const { error } = await supabase.from('beta_signups').update(updates).eq('id', id)
+  const { error } = await db.from('beta_signups').update(updates).eq('id', id)
 
   if (error) {
     console.error('[beta-signup] Status update failed:', error)
@@ -322,9 +322,9 @@ export async function updateBetaSignupStatus(
  * Delete a beta signup (admin action).
  */
 export async function deleteBetaSignup(id: string): Promise<{ success: boolean; error?: string }> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { error } = await supabase.from('beta_signups').delete().eq('id', id)
+  const { error } = await db.from('beta_signups').delete().eq('id', id)
 
   if (error) {
     console.error('[beta-signup] Delete failed:', error)
@@ -338,11 +338,9 @@ export async function deleteBetaSignup(id: string): Promise<{ success: boolean; 
  * Get the total count of beta signups (for social proof on public page).
  */
 export async function getBetaSignupCount(): Promise<number> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { count, error } = await supabase
-    .from('beta_signups')
-    .select('*', { count: 'exact', head: true })
+  const { count, error } = await db.from('beta_signups').select('*', { count: 'exact', head: true })
 
   if (error) {
     console.error('[beta-signup] Count failed:', error)
@@ -356,9 +354,9 @@ export async function getBetaSignupCount(): Promise<number> {
  * Export beta signups as CSV string (admin action).
  */
 export async function exportBetaSignupsCsv(): Promise<string> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('beta_signups')
     .select('*')
     .order('created_at', { ascending: false })

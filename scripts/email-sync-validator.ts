@@ -1,4 +1,4 @@
-// @ts-nocheck - standalone script, Supabase client type mismatch with generated types
+// @ts-nocheck - standalone script, database client type mismatch with generated types
 // Email Sync Validator
 // Resets email sync data, triggers a fresh sync, cross-validates against
 // the "Dinner Email Export" Gmail label, and produces a detailed report.
@@ -11,7 +11,7 @@
 //   --label-only   Only run the label cross-validation (skip sync entirely)
 //   --limit N      Limit historical scan batches (default: unlimited until done)
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import dotenv from 'dotenv'
 
@@ -37,7 +37,7 @@ const flags = {
   })(),
 }
 
-// ─── Supabase Admin Client ────────────────────────────────────────────────────
+// ─── Admin DB Client ────────────────────────────────────────────────────
 
 function getAdminClient() {
   return createAdminClient()

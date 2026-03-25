@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import type {
@@ -60,9 +60,9 @@ function mapServiceTypeRow(row: Record<string, unknown>): ServiceType {
 
 export async function getServiceTypes(): Promise<ServiceType[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_service_types')
     .select('*')
     .eq('tenant_id', user.tenantId)
@@ -77,9 +77,9 @@ export async function getServiceTypes(): Promise<ServiceType[]> {
 export async function createServiceType(input: CreateServiceTypeInput): Promise<{ id: string }> {
   const user = await requireChef()
   const parsed = ServiceTypeSchema.parse(input)
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_service_types')
     .insert({
       tenant_id: user.tenantId,
@@ -108,7 +108,7 @@ export async function updateServiceType(
 ): Promise<void> {
   const user = await requireChef()
   const parsed = ServiceTypeSchema.partial().parse(input)
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
   const updates: Record<string, unknown> = {}
   if (parsed.name !== undefined) updates.name = parsed.name
@@ -122,7 +122,7 @@ export async function updateServiceType(
   if (parsed.isActive !== undefined) updates.is_active = parsed.isActive
   if (parsed.sortOrder !== undefined) updates.sort_order = parsed.sortOrder
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_service_types')
     .update(updates)
     .eq('id', id)
@@ -134,9 +134,9 @@ export async function updateServiceType(
 
 export async function deleteServiceType(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_service_types')
     .delete()
     .eq('id', id)
@@ -148,11 +148,11 @@ export async function deleteServiceType(id: string): Promise<void> {
 
 export async function reorderServiceTypes(orderedIds: string[]): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
   // Update each row's sort_order sequentially
   for (let i = 0; i < orderedIds.length; i++) {
-    await supabase
+    await db
       .from('chef_service_types')
       .update({ sort_order: i })
       .eq('id', orderedIds[i])
@@ -166,10 +166,10 @@ export async function reorderServiceTypes(orderedIds: string[]): Promise<void> {
 
 export async function getRevenuePath(goalId: string): Promise<RevenuePathData> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
   // Fetch the goal (verify it belongs to this tenant)
-  const { data: goalRow, error: goalError } = await supabase
+  const { data: goalRow, error: goalError } = await db
     .from('chef_goals')
     .select('*')
     .eq('id', goalId)
@@ -200,7 +200,7 @@ export async function getRevenuePath(goalId: string): Promise<RevenuePathData> {
 
   // Sum already-booked revenue for this goal's period
   // Counts events in confirmed/active states - not draft or cancelled
-  const { data: eventRows } = await supabase
+  const { data: eventRows } = await db
     .from('events')
     .select('quoted_price_cents')
     .eq('tenant_id', user.tenantId)
@@ -235,10 +235,10 @@ export async function getClientMatchesForServiceType(
   limit = 3
 ): Promise<ServiceSlotClientMatch[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
   // Verify service type belongs to tenant and get its effective price
-  const { data: stRow, error: stError } = await supabase
+  const { data: stRow, error: stError } = await db
     .from('chef_service_types')
     .select('*')
     .eq('id', serviceTypeId)
@@ -250,7 +250,7 @@ export async function getClientMatchesForServiceType(
   const serviceType = mapServiceTypeRow(stRow as Record<string, unknown>)
 
   // Fetch financial summary for all clients (not filtered by dormancy)
-  const { data: summaryRows } = await supabase
+  const { data: summaryRows } = await db
     .from('client_financial_summary')
     .select('client_id, lifetime_value_cents, average_spend_per_event, days_since_last_event')
     .eq('tenant_id', user.tenantId)
@@ -270,7 +270,7 @@ export async function getClientMatchesForServiceType(
   const clientIds = rows.map((r) => r.client_id)
 
   // Fetch client names + last event date
-  const { data: clientRows } = await supabase
+  const { data: clientRows } = await db
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', user.tenantId)

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { z } from 'zod'
 
@@ -34,10 +34,10 @@ export async function submitTestimonial(input: {
   wouldRecommend?: boolean
 }) {
   const validated = TestimonialSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Resolve share token → event + tenant
-  const { data: share } = await supabase
+  const { data: share } = await db
     .from('event_shares')
     .select('event_id, tenant_id')
     .eq('token', validated.shareToken)
@@ -51,7 +51,7 @@ export async function submitTestimonial(input: {
   // Link to guest record if token provided
   let guestId: string | null = null
   if (validated.guestToken) {
-    const { data: guest } = await supabase
+    const { data: guest } = await db
       .from('event_guests')
       .select('id')
       .eq('guest_token', validated.guestToken)
@@ -67,7 +67,7 @@ export async function submitTestimonial(input: {
       : validated.foodRating || validated.chefRating || null
 
   // Deduplicate: one testimonial per guest name per event
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('guest_testimonials')
     .select('id')
     .eq('event_id', share.event_id)
@@ -75,7 +75,7 @@ export async function submitTestimonial(input: {
     .single()
 
   if (existing) {
-    await supabase
+    await db
       .from('guest_testimonials')
       .update({
         testimonial: validated.testimonial.trim(),
@@ -90,7 +90,7 @@ export async function submitTestimonial(input: {
     return { success: true, updated: true }
   }
 
-  const { error } = await supabase.from('guest_testimonials').insert({
+  const { error } = await db.from('guest_testimonials').insert({
     tenant_id: share.tenant_id,
     event_id: share.event_id,
     guest_id: guestId,
@@ -138,9 +138,9 @@ export async function submitTestimonial(input: {
  */
 export async function getTestimonials(filters?: { approved?: boolean; eventId?: string }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('guest_testimonials')
     .select(
       'id, event_id, guest_name, testimonial, rating, food_rating, chef_rating, food_highlight, would_recommend, is_approved, is_featured, created_at'
@@ -171,9 +171,9 @@ export async function getTestimonials(filters?: { approved?: boolean; eventId?: 
  */
 export async function setTestimonialApproval(testimonialId: string, approved: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('guest_testimonials')
     .update({ is_approved: approved })
     .eq('id', testimonialId)
@@ -190,9 +190,9 @@ export async function setTestimonialApproval(testimonialId: string, approved: bo
  */
 export async function setTestimonialFeatured(testimonialId: string, featured: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('guest_testimonials')
     .update({ is_featured: featured })
     .eq('id', testimonialId)

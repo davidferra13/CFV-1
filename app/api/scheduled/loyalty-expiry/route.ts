@@ -7,7 +7,7 @@
 // Also expires waitlist entries that are past their expires_at.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
@@ -15,11 +15,11 @@ async function handleLoyaltyExpiry(request: NextRequest): Promise<NextResponse> 
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const now = new Date().toISOString()
 
   // ── 1. Expire overdue vouchers and gift cards ────────────────────────────
-  const { data: expiredIncentiveRows, error: incentiveError } = await supabase
+  const { data: expiredIncentiveRows, error: incentiveError } = await db
     .from('client_incentives')
     .update({ is_active: false })
     .lt('expires_at', now)
@@ -32,7 +32,7 @@ async function handleLoyaltyExpiry(request: NextRequest): Promise<NextResponse> 
   }
 
   // ── 2. Expire overdue waitlist entries ───────────────────────────────────
-  const { data: expiredWaitlistRows, error: waitlistError } = await supabase
+  const { data: expiredWaitlistRows, error: waitlistError } = await db
     .from('waitlist_entries')
     .update({ status: 'expired' })
     .lt('expires_at', now)

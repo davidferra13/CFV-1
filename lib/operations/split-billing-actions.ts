@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -82,7 +82,7 @@ function serializeSplits(splits: SplitEntry[]): any[] {
 export async function setSplitBilling(eventId: string, splits: SplitEntry[]) {
   const user = await requireChef()
   const validated = SetSplitBillingSchema.parse({ eventId, splits })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Validate that percentages sum to 100
   const totalPercent = validated.splits.reduce((sum, s) => sum + s.percentage, 0)
@@ -90,7 +90,7 @@ export async function setSplitBilling(eventId: string, splits: SplitEntry[]) {
     throw new Error(`Split percentages must sum to 100 (currently ${totalPercent.toFixed(2)})`)
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({ split_billing: serializeSplits(validated.splits) } as any)
     .eq('id', validated.eventId)
@@ -111,9 +111,9 @@ export async function setSplitBilling(eventId: string, splits: SplitEntry[]) {
  */
 export async function getSplitBilling(eventId: string): Promise<SplitBillingConfig> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('events')
     .select('id, split_billing' as any)
     .eq('id', eventId)
@@ -138,9 +138,9 @@ export async function getSplitBilling(eventId: string): Promise<SplitBillingConf
  */
 export async function generateSplitInvoices(eventId: string): Promise<SplitInvoiceSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('events')
     .select('id, quoted_price_cents, split_billing' as any)
     .eq('id', eventId)

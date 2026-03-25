@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { randomBytes } from 'crypto'
 import { promises as fs } from 'fs'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
@@ -33,10 +33,10 @@ function requireEnv(name: string): string {
   return value
 }
 
-function ensureLocalSupabase(url: string) {
+function ensureLocalDb(url: string) {
   if (!url.includes('127.0.0.1:54321') && !url.includes('localhost:54321')) {
     throw new Error(
-      `Refusing to seed non-local Supabase URL (${url}). Point NEXT_PUBLIC_SUPABASE_URL to local first.`
+      `Refusing to seed non-local database URL (${url}). Point database URL to local first.`
     )
   }
 }
@@ -408,8 +408,8 @@ async function updatePlatformOwnerEnv(chefId: string) {
 }
 
 async function main() {
-  const supabaseUrl = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  ensureLocalSupabase(supabaseUrl)
+  const dbUrl = requireEnv('NEXT_PUBLIC_DB_URL')
+  ensureLocalDb(dbUrl)
 
   const admin = createAdminClient()
 

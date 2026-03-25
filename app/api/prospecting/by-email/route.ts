@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { validateProspectingAuth } from '@/lib/prospecting/api-auth'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export async function GET(request: NextRequest) {
   const auth = await validateProspectingAuth(request)
@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'email query param required' }, { status: 400 })
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Check both email and contact_direct_email
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects' as any)
     .select('*')
     .eq('chef_id', auth.tenantId)

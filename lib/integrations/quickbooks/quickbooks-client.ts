@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { encryptOAuthToken, decryptOAuthToken } from '@/lib/integrations/core/token-crypto'
@@ -38,13 +38,13 @@ function getApiBase() {
 export async function initiateQuickBooksConnect(): Promise<{ redirectUrl: string }> {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Generate CSRF state
   const state = crypto.randomUUID()
 
   // Store state temporarily
-  await supabase.from('social_oauth_states').insert({
+  await db.from('social_oauth_states').insert({
     id: crypto.randomUUID(),
     tenant_id: user.entityId,
     platform: 'quickbooks',
@@ -95,10 +95,10 @@ export async function exchangeQuickBooksCode(
     expires_in: number
   }
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Upsert connection (tokens encrypted at rest)
-  await supabase.from('integration_connections').upsert(
+  await db.from('integration_connections').upsert(
     {
       id: crypto.randomUUID(),
       chef_id: tenantId,
@@ -119,9 +119,9 @@ export async function exchangeQuickBooksCode(
 }
 
 async function refreshQuickBooksToken(tenantId: string): Promise<string> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('integration_connections')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -159,7 +159,7 @@ async function refreshQuickBooksToken(tenantId: string): Promise<string> {
 
   if (!response.ok) {
     // Mark connection as needing reauth
-    await supabase
+    await db
       .from('integration_connections')
       .update({ status: 'reauth_required', last_error: 'Token refresh failed' })
       .eq('tenant_id', tenantId)
@@ -174,7 +174,7 @@ async function refreshQuickBooksToken(tenantId: string): Promise<string> {
     expires_in: number
   }
 
-  await supabase
+  await db
     .from('integration_connections')
     .update({
       access_token: encryptOAuthToken(tokens.access_token),
@@ -227,8 +227,8 @@ export async function syncInvoiceToQuickBooks(
     dueDate?: string
   }
 ) {
-  const supabase: any = createServerClient({ admin: true })
-  const { data: conn } = await supabase
+  const db: any = createServerClient({ admin: true })
+  const { data: conn } = await db
     .from('integration_connections')
     .select('config')
     .eq('tenant_id', tenantId)
@@ -293,8 +293,8 @@ export async function syncExpenseToQuickBooks(
     category?: string
   }
 ) {
-  const supabase: any = createServerClient({ admin: true })
-  const { data: conn } = await supabase
+  const db: any = createServerClient({ admin: true })
+  const { data: conn } = await db
     .from('integration_connections')
     .select('config')
     .eq('tenant_id', tenantId)
@@ -349,9 +349,9 @@ export async function syncExpenseToQuickBooks(
 }
 
 export async function getQuickBooksConnectionStatus(tenantId: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('integration_connections')
     .select('status, external_account_name, connected_at, last_sync_at, last_error, config')
     .eq('tenant_id', tenantId)
@@ -374,9 +374,9 @@ export async function getQuickBooksConnectionStatus(tenantId: string) {
 export async function disconnectQuickBooks() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  await supabase
+  await db
     .from('integration_connections')
     .update({ status: 'disconnected' })
     .eq('tenant_id', user.entityId)

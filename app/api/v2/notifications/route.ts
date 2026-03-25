@@ -62,7 +62,7 @@ export const POST = withApiAuth(
     if (input.action_url) insertPayload.action_url = input.action_url
     if (input.metadata) insertPayload.metadata = input.metadata
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('notifications')
       .insert(insertPayload)
       .select()

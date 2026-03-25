@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -45,17 +45,17 @@ export interface ChurnPreventionResult {
 export async function getChurnPreventionTriggers(): Promise<ChurnPreventionResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch clients with events
-  const { data: clients, error: cErr } = await supabase
+  const { data: clients, error: cErr } = await db
     .from('clients')
     .select('id, full_name, created_at')
     .eq('tenant_id', tenantId)
 
   if (cErr || !clients || clients.length < 3) return null
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, client_id, event_date, quoted_price_cents, status')
     .eq('tenant_id', tenantId)
@@ -63,13 +63,13 @@ export async function getChurnPreventionTriggers(): Promise<ChurnPreventionResul
     .order('event_date', { ascending: true })
 
   // Fetch quotes for rejection tracking
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select('id, inquiry_id, status, sent_at')
     .eq('tenant_id', tenantId)
 
   // Fetch inquiries for client mapping
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, client_id, status, updated_at')
     .eq('tenant_id', tenantId)

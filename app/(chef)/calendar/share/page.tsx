@@ -1,11 +1,11 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { AvailabilityShareSettings } from '@/components/calendar/availability-share-settings'
 
 export default async function CalendarSharePage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
-  const { data: tokens } = await supabase
+  const db: any = createServerClient()
+  const { data: tokens } = await db
     .from('chef_availability_share_tokens')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

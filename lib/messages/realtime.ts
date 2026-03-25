@@ -1,12 +1,12 @@
 // Real-Time Message Subscriptions (SSE-based)
-// Uses Server-Sent Events instead of Supabase Realtime
+// Uses Server-Sent Events instead of SSE realtime
 // Client-side only - used in 'use client' components
 
 'use client'
 
 /**
  * Subscribe to real-time message updates for a specific entity.
- * Uses SSE (no Supabase Realtime needed).
+ * Uses SSE (no SSE realtime needed).
  *
  * Usage:
  *   const unsub = subscribeToMessages('inquiry_id', inquiryId, (msg) => { ... })

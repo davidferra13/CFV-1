@@ -9,7 +9,7 @@
 // and cannot access per-request cookies.
 
 import { unstable_cache } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 export const CHEF_LAYOUT_CACHE_TAG = 'chef-layout'
 
@@ -31,17 +31,17 @@ export type ChefLayoutData = {
 export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
   return unstable_cache(
     async (): Promise<ChefLayoutData> => {
-      const supabase: any = createAdminClient()
+      const db: any = createAdminClient()
 
       const [chefResult, prefsResult] = await Promise.all([
-        supabase
+        db
           .from('chefs')
           .select(
             'slug, tagline, business_name, created_at, portal_primary_color, portal_background_color, portal_background_image_url, subscription_status'
           )
           .eq('id', chefId)
           .single(),
-        supabase
+        db
           .from('chef_preferences')
           .select('primary_nav_hrefs, mobile_tab_hrefs, enabled_modules, focus_mode')
           .eq('chef_id', chefId)

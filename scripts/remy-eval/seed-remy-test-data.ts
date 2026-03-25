@@ -11,13 +11,13 @@
  * All data is scoped to the agent tenant (91ec0e6a-...).
  */
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { createHash } from 'crypto'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
 
-const supabase = createAdminClient()
+const db = createAdminClient()
 
 const TENANT_ID = '91ec0e6a-ce61-41ec-b9e5-eea3b415e5b8'
 const AUTH_USER_ID = '20f09030-af9a-44c0-aa59-56d480efa2d7'
@@ -191,40 +191,36 @@ async function cleanup() {
   const allStaffIds = Object.values(STAFF)
 
   // Ledger entries, expenses, event_staff, quotes → depend on events
-  await supabase.from('ledger_entries').delete().in('event_id', allEventIds)
-  await supabase.from('expenses').delete().in('event_id', allEventIds)
-  await supabase.from('event_staff_assignments').delete().in('event_id', allEventIds)
-  await supabase.from('quotes').delete().in('id', allQuoteIds)
-  await supabase.from('client_reviews').delete().in('event_id', allEventIds)
+  await db.from('ledger_entries').delete().in('event_id', allEventIds)
+  await db.from('expenses').delete().in('event_id', allEventIds)
+  await db.from('event_staff_assignments').delete().in('event_id', allEventIds)
+  await db.from('quotes').delete().in('id', allQuoteIds)
+  await db.from('client_reviews').delete().in('event_id', allEventIds)
 
   // Messages → depend on inquiries
-  await supabase.from('messages').delete().in('inquiry_id', allInquiryIds)
-  await supabase.from('inquiries').delete().in('id', allInquiryIds)
+  await db.from('messages').delete().in('inquiry_id', allInquiryIds)
+  await db.from('inquiries').delete().in('id', allInquiryIds)
 
   // Recipe ingredients → depend on recipes; ingredients are standalone
-  await supabase.from('recipe_ingredients').delete().in('recipe_id', allRecipeIds)
-  await supabase.from('recipes').delete().in('id', allRecipeIds)
+  await db.from('recipe_ingredients').delete().in('recipe_id', allRecipeIds)
+  await db.from('recipes').delete().in('id', allRecipeIds)
   const allIngredientIds = Object.values(ING)
-  await supabase.from('ingredients').delete().in('id', allIngredientIds)
+  await db.from('ingredients').delete().in('id', allIngredientIds)
 
   // Menu items (station_menu_items) → cleaned via menu reference if needed
-  await supabase.from('menus').delete().in('id', allMenuIds)
+  await db.from('menus').delete().in('id', allMenuIds)
 
   // Events → depend on clients
-  await supabase.from('events').delete().in('id', allEventIds)
+  await db.from('events').delete().in('id', allEventIds)
 
   // Staff
-  await supabase.from('staff_members').delete().in('id', allStaffIds)
+  await db.from('staff_members').delete().in('id', allStaffIds)
 
   // Remy memories (eval ones)
-  await supabase
-    .from('remy_memories')
-    .delete()
-    .eq('tenant_id', TENANT_ID)
-    .like('content', '%[eval]%')
+  await db.from('remy_memories').delete().eq('tenant_id', TENANT_ID).like('content', '%[eval]%')
 
   // Clients last (everything else depends on them)
-  await supabase.from('clients').delete().in('id', allClientIds)
+  await db.from('clients').delete().in('id', allClientIds)
 
   console.log('✅ Cleanup complete')
 }
@@ -233,7 +229,7 @@ async function cleanup() {
 
 async function seedChefProfile() {
   console.log('👨‍🍳 Updating chef profile...')
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({
       business_name: 'Chef Marco Eval Kitchen',
@@ -558,7 +554,7 @@ async function seedClients() {
     },
   ]
 
-  const { error } = await supabase.from('clients').upsert(clients, { onConflict: 'id' })
+  const { error } = await db.from('clients').upsert(clients, { onConflict: 'id' })
   if (error) console.error('Client seed failed:', error.message)
   else console.log(`  ✅ ${clients.length} clients seeded`)
 }
@@ -965,7 +961,7 @@ async function seedEvents() {
     },
   ]
 
-  const { error } = await supabase.from('events').upsert(events, { onConflict: 'id' })
+  const { error } = await db.from('events').upsert(events, { onConflict: 'id' })
   if (error) console.error('Event seed failed:', error.message)
   else console.log(`  ✅ ${events.length} events seeded`)
 }
@@ -1205,7 +1201,7 @@ async function seedLedgerEntries() {
     },
   ]
 
-  const { error } = await supabase.from('ledger_entries').insert(entries)
+  const { error } = await db.from('ledger_entries').insert(entries)
   if (error) console.error('Ledger seed failed:', error.message)
   else console.log(`  ✅ ${entries.length} ledger entries seeded`)
 }
@@ -1349,7 +1345,7 @@ async function seedExpenses() {
     },
   ]
 
-  const { error } = await supabase.from('expenses').insert(expenses)
+  const { error } = await db.from('expenses').insert(expenses)
   if (error) console.error('Expense seed failed:', error.message)
   else console.log(`  ✅ ${expenses.length} expenses seeded`)
 }
@@ -1448,7 +1444,7 @@ async function seedRecipes() {
     },
   ]
 
-  const { error } = await supabase.from('recipes').upsert(recipes, { onConflict: 'id' })
+  const { error } = await db.from('recipes').upsert(recipes, { onConflict: 'id' })
   if (error) console.error('Recipe seed failed:', error.message)
   else console.log(`  ✅ ${recipes.length} recipes seeded`)
 }
@@ -1543,7 +1539,7 @@ async function seedIngredients() {
     },
   ]
 
-  const { error } = await supabase.from('ingredients').upsert(ingredients, { onConflict: 'id' })
+  const { error } = await db.from('ingredients').upsert(ingredients, { onConflict: 'id' })
   if (error) console.error('Ingredient seed failed:', error.message)
   else console.log(`  ✅ ${ingredients.length} ingredients seeded`)
 }
@@ -1651,7 +1647,7 @@ async function seedRecipeIngredients() {
     },
   ]
 
-  const { error } = await supabase
+  const { error } = await db
     .from('recipe_ingredients')
     .upsert(recipeIngredients, { onConflict: 'id' })
   if (error) console.error('Recipe ingredients seed failed:', error.message)
@@ -1729,7 +1725,7 @@ async function seedInquiries() {
     },
   ]
 
-  const { error } = await supabase.from('inquiries').upsert(inquiries, { onConflict: 'id' })
+  const { error } = await db.from('inquiries').upsert(inquiries, { onConflict: 'id' })
   if (error) console.error('Inquiry seed failed:', error.message)
   else console.log(`  ✅ ${inquiries.length} inquiries seeded`)
 }
@@ -1803,7 +1799,7 @@ async function seedMessages() {
     },
   ]
 
-  const { error } = await supabase.from('messages').insert(messages)
+  const { error } = await db.from('messages').insert(messages)
   if (error) console.error('Message seed failed:', error.message)
   else console.log(`  ✅ ${messages.length} messages seeded`)
 }
@@ -1882,7 +1878,7 @@ async function seedQuotes() {
     },
   ]
 
-  const { error } = await supabase.from('quotes').upsert(quotes, { onConflict: 'id' })
+  const { error } = await db.from('quotes').upsert(quotes, { onConflict: 'id' })
   if (error) console.error('Quote seed failed:', error.message)
   else console.log(`  ✅ ${quotes.length} quotes seeded`)
 }
@@ -1933,7 +1929,7 @@ async function seedStaff() {
     },
   ]
 
-  const { error } = await supabase.from('staff_members').upsert(staff, { onConflict: 'id' })
+  const { error } = await db.from('staff_members').upsert(staff, { onConflict: 'id' })
   if (error) console.error('Staff seed failed:', error.message)
   else console.log(`  ✅ ${staff.length} staff members seeded`)
 }
@@ -2068,7 +2064,7 @@ async function seedMemories() {
     },
   ]
 
-  const { error } = await supabase.from('remy_memories').insert(memories)
+  const { error } = await db.from('remy_memories').insert(memories)
   if (error) console.error('Memory seed failed:', error.message)
   else console.log(`  ✅ ${memories.length} memories seeded`)
 }
@@ -2129,7 +2125,7 @@ async function seedReviews() {
     },
   ]
 
-  const { error } = await supabase.from('client_reviews').insert(reviews)
+  const { error } = await db.from('client_reviews').insert(reviews)
   if (error) console.error('Review seed failed:', error.message)
   else console.log(`  ✅ ${reviews.length} reviews seeded`)
 }
@@ -2170,7 +2166,7 @@ async function seedMenus() {
     },
   ]
 
-  const { error } = await supabase.from('menus').upsert(menus, { onConflict: 'id' })
+  const { error } = await db.from('menus').upsert(menus, { onConflict: 'id' })
   if (error) console.error('Menu seed failed:', error.message)
   else console.log(`  ✅ ${menus.length} menus seeded`)
 }

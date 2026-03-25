@@ -28,12 +28,9 @@ export function isQolMetricKey(value: unknown): value is QolMetricKey {
   return typeof value === 'string' && (QOL_METRIC_KEYS as readonly string[]).includes(value)
 }
 
-export async function recordQolMetricEvent(
-  supabase: any,
-  input: QolMetricEventInput
-): Promise<void> {
+export async function recordQolMetricEvent(db: any, input: QolMetricEventInput): Promise<void> {
   try {
-    await (supabase.from('qol_metric_events' as any) as any).insert({
+    await (db.from('qol_metric_events' as any) as any).insert({
       tenant_id: input.tenantId,
       actor_id: input.actorId ?? null,
       metric_key: input.metricKey,

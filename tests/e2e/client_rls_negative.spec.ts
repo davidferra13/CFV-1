@@ -74,8 +74,8 @@ test.describe('Client RLS Negative', () => {
   test('direct RLS query blocks cross-tenant event rows with client auth token', async ({
     seedIds,
   }) => {
-    const url = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-    const anonKey = requireEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+    const url = requireEnv('NEXT_PUBLIC_DB_URL')
+    const anonKey = requireEnv('NEXT_PUBLIC_DB_ANON_KEY')
     const accessToken = extractAccessTokenFromStorageState('.auth/client.json')
 
     const rlsClient = createClient(url, anonKey, {

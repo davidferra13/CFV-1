@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { listProposalTemplates } from '@/lib/proposals/template-actions'
 import { VisualBuilder } from '@/components/proposals/visual-builder'
 
@@ -12,11 +12,11 @@ export const metadata: Metadata = { title: 'Proposal Templates - ChefFlow' }
 
 export default async function ProposalTemplatesPage() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [templates, menusResult] = await Promise.all([
     listProposalTemplates().catch(() => []),
-    supabase
+    db
       .from('menus')
       .select('id, name')
       .eq('chef_id', user.tenantId!)

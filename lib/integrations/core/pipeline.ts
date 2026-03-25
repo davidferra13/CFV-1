@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { IntegrationProvider, IntegrationSyncStatus } from './types'
 
 function canonicalizeEventType(sourceEventType: string): string {
@@ -92,14 +92,14 @@ export async function createIntegrationEventFromWebhook(input: {
   connectionId?: string | null
   payload: Record<string, unknown>
 }) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const sourceEventId = extractId(input.payload, input.provider)
   const sourceEventType = extractType(input.payload)
   const occurredAt = extractOccurredAt(input.payload)
   const canonicalEventType = canonicalizeEventType(sourceEventType)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('integration_events')
     .insert({
       tenant_id: input.tenantId,
@@ -117,7 +117,7 @@ export async function createIntegrationEventFromWebhook(input: {
 
   if (error) {
     if (error.code === '23505') {
-      const { data: existing } = await supabase
+      const { data: existing } = await db
         .from('integration_events')
         .select('id')
         .eq('tenant_id', input.tenantId)
@@ -141,9 +141,9 @@ export async function createIntegrationEventFromWebhook(input: {
 }
 
 export async function processIntegrationEvent(eventId: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: event, error } = await supabase
+  const { data: event, error } = await db
     .from('integration_events')
     .select('id, status, processing_attempts, source_event_type, raw_payload')
     .eq('id', eventId)
@@ -157,7 +157,7 @@ export async function processIntegrationEvent(eventId: string) {
     return { id: event.id as string, status: event.status as IntegrationSyncStatus }
   }
 
-  const { error: markProcessingError } = await supabase
+  const { error: markProcessingError } = await db
     .from('integration_events')
     .update({
       status: 'processing',
@@ -173,7 +173,7 @@ export async function processIntegrationEvent(eventId: string) {
     const payload = (event.raw_payload || {}) as Record<string, unknown>
     const sourceEventType = String(event.source_event_type || 'unknown')
 
-    const { error: completeError } = await supabase
+    const { error: completeError } = await db
       .from('integration_events')
       .update({
         status: 'completed',
@@ -192,7 +192,7 @@ export async function processIntegrationEvent(eventId: string) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown processing error'
 
-    const { error: failUpdateError } = await supabase
+    const { error: failUpdateError } = await db
       .from('integration_events')
       .update({
         status: 'failed',
@@ -212,9 +212,9 @@ export async function processIntegrationEvent(eventId: string) {
 }
 
 export async function processPendingIntegrationEvents(limit = 100) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('integration_events')
     .select('id')
     .in('status', ['pending', 'failed'])
@@ -248,9 +248,9 @@ export async function createIntegrationPullJob(input: {
   connectionId?: string | null
   cursorBefore?: string | null
 }) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('integration_sync_jobs')
     .insert({
       tenant_id: input.tenantId,

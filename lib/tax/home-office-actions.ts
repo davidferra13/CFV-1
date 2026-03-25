@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   SIMPLIFIED_RATE_CENTS_PER_SQFT,
   SIMPLIFIED_MAX_SQFT,
@@ -56,9 +56,9 @@ const SaveSchema = z.object({
 export async function saveHomeOfficeSettings(input: z.infer<typeof SaveSchema>): Promise<void> {
   const user = await requireChef()
   const parsed = SaveSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('tax_settings').upsert(
+  const { error } = await db.from('tax_settings').upsert(
     {
       chef_id: user.tenantId!,
       tax_year: parsed.taxYear,
@@ -81,9 +81,9 @@ export async function saveHomeOfficeSettings(input: z.infer<typeof SaveSchema>):
 
 export async function getHomeOfficeDeduction(taxYear: number): Promise<HomeOfficeDeductionResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('tax_settings')
     .select('*')
     .eq('chef_id', user.tenantId!)

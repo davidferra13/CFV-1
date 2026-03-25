@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export type ShiftNote = {
@@ -28,7 +28,7 @@ export async function getShiftNotes(date: string): Promise<{
   yesterdayClosingNotes: ShiftNote[]
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Yesterday's date
   const yesterday = new Date(date + 'T00:00:00')
@@ -37,13 +37,13 @@ export async function getShiftNotes(date: string): Promise<{
 
   // Fetch in parallel: today's notes, pinned notes, yesterday's closing notes
   const [todayResult, pinnedResult, closingResult] = await Promise.all([
-    supabase
+    db
       .from('shift_handoff_notes')
       .select('*')
       .eq('chef_id', user.tenantId!)
       .eq('date', date)
       .order('created_at', { ascending: false }),
-    supabase
+    db
       .from('shift_handoff_notes')
       .select('*')
       .eq('chef_id', user.tenantId!)
@@ -51,7 +51,7 @@ export async function getShiftNotes(date: string): Promise<{
       .lt('date', date)
       .order('date', { ascending: false })
       .limit(10),
-    supabase
+    db
       .from('shift_handoff_notes')
       .select('*')
       .eq('chef_id', user.tenantId!)
@@ -76,20 +76,20 @@ export async function createShiftNote(input: {
   date?: string
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!input.content.trim()) {
     throw new Error('Note content is required')
   }
 
   // Get author name
-  const { data: chefData } = await supabase
+  const { data: chefData } = await db
     .from('chefs')
     .select('business_name')
     .eq('id', user.tenantId!)
     .single()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('shift_handoff_notes')
     .insert({
       chef_id: user.tenantId!,
@@ -118,10 +118,10 @@ export async function createShiftNote(input: {
  */
 export async function togglePinNote(noteId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get current pin state
-  const { data: current, error: fetchError } = await supabase
+  const { data: current, error: fetchError } = await db
     .from('shift_handoff_notes')
     .select('pinned')
     .eq('id', noteId)
@@ -132,7 +132,7 @@ export async function togglePinNote(noteId: string) {
     throw new Error('Note not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('shift_handoff_notes')
     .update({ pinned: !current.pinned })
     .eq('id', noteId)
@@ -152,9 +152,9 @@ export async function togglePinNote(noteId: string) {
  */
 export async function deleteShiftNote(noteId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('shift_handoff_notes')
     .delete()
     .eq('id', noteId)

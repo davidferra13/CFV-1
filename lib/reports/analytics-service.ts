@@ -1,5 +1,5 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type FinancialAnalyticsSnapshot = {
   range: {
@@ -58,30 +58,30 @@ export async function getFinancialAnalytics(
   range?: DateRangeInput
 ): Promise<FinancialAnalyticsSnapshot> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const { start, end } = resolveDateRange(range)
   const nowDate = new Date().toISOString().slice(0, 10)
 
   const [ledgerResult, expensesResult, eventsResult, summaryResult] = await Promise.all([
-    supabase
+    db
       .from('ledger_entries')
       .select('id, client_id, amount_cents, entry_type, is_refund, created_at')
       .eq('tenant_id', user.tenantId!)
       .gte('created_at', `${start}T00:00:00`)
       .lte('created_at', `${end}T23:59:59`),
-    supabase
+    db
       .from('expenses')
       .select('id, amount_cents, expense_date')
       .eq('tenant_id', user.tenantId!)
       .gte('expense_date', start)
       .lte('expense_date', end),
-    supabase
+    db
       .from('events')
       .select('id, client_id, event_date, status, quoted_price_cents, clients(full_name)')
       .eq('tenant_id', user.tenantId!)
       .gte('event_date', start)
       .lte('event_date', end),
-    supabase
+    db
       .from('event_financial_summary')
       .select('event_id, total_paid_cents, outstanding_balance_cents')
       .eq('tenant_id', user.tenantId!),

@@ -26,7 +26,7 @@ export const GET = withApiAuth(
       // Resolve single state: check override, then fall back to constant
       const code = stateParam.toUpperCase()
 
-      const { data: override } = await (ctx.supabase as any)
+      const { data: override } = await (ctx.db as any)
         .from('chef_tax_config')
         .select('*')
         .eq('chef_id', ctx.tenantId)
@@ -58,7 +58,7 @@ export const GET = withApiAuth(
     }
 
     // List all overrides for this chef
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('chef_tax_config')
       .select('*')
       .eq('chef_id', ctx.tenantId)
@@ -102,7 +102,7 @@ export const PATCH = withApiAuth(
 
     // Handle delete
     if (shouldDelete) {
-      const { error } = await (ctx.supabase as any)
+      const { error } = await (ctx.db as any)
         .from('chef_tax_config')
         .delete()
         .eq('chef_id', ctx.tenantId)
@@ -117,7 +117,7 @@ export const PATCH = withApiAuth(
     }
 
     // Upsert
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('chef_tax_config')
       .upsert(
         {

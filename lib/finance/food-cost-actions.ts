@@ -5,7 +5,7 @@
 // Formula > AI: all calculations are pure math, zero LLM dependency.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import {
   calculateFoodCostPercentage,
@@ -57,23 +57,23 @@ export interface EventFoodCost {
 export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Get event basics (menu_id, guest_count) + financial summary
   const [eventRes, financialRes, groceryRes] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('id, menu_id, guest_count')
       .eq('id', eventId)
       .eq('tenant_id', tenantId)
       .single(),
-    supabase
+    db
       .from('event_financial_summary')
       .select('net_revenue_cents, quoted_price_cents')
       .eq('event_id', eventId)
       .eq('tenant_id', tenantId)
       .single(),
-    supabase
+    db
       .from('grocery_spend_entries' as any)
       .select('id, store_name, amount_cents, purchase_date, notes, receipt_url')
       .eq('event_id', eventId)
@@ -104,7 +104,7 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
 
   if (event?.menu_id) {
     // Get dishes for this menu
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('id, name, course_name')
       .eq('menu_id', event.menu_id)
@@ -115,7 +115,7 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
       const dishIds = dishes.map((d: any) => d.id)
 
       // Get components with recipe_id for these dishes
-      const { data: components } = await supabase
+      const { data: components } = await db
         .from('components')
         .select('id, dish_id, recipe_id, name, scale_factor')
         .in('dish_id', dishIds)
@@ -132,7 +132,7 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
       let recipeIngredientMap = new Map<string, IngredientBreakdown[]>()
 
       if (recipeIds.length > 0) {
-        const { data: recipeIngredients } = await supabase
+        const { data: recipeIngredients } = await db
           .from('recipe_ingredients')
           .select(
             'recipe_id, quantity, unit, ingredient_id, ingredients(name, cost_per_unit_cents, last_price_cents, default_unit)'
@@ -232,9 +232,9 @@ export async function addGrocerySpend(data: {
   notes?: string
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('grocery_spend_entries' as any).insert({
+  const { error } = await db.from('grocery_spend_entries' as any).insert({
     tenant_id: user.tenantId!,
     event_id: data.eventId,
     store_name: data.store,
@@ -263,7 +263,7 @@ export async function updateGrocerySpend(
   }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updatePayload: Record<string, any> = {}
   if (data.store !== undefined) updatePayload.store_name = data.store
@@ -271,7 +271,7 @@ export async function updateGrocerySpend(
   if (data.date !== undefined) updatePayload.purchase_date = data.date
   if (data.notes !== undefined) updatePayload.notes = data.notes || null
 
-  const { error } = await supabase
+  const { error } = await db
     .from('grocery_spend_entries' as any)
     .update(updatePayload)
     .eq('id', id)
@@ -291,9 +291,9 @@ export async function deleteGrocerySpend(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('grocery_spend_entries' as any)
     .delete()
     .eq('id', id)
@@ -316,9 +316,9 @@ export async function getIngredientCostEstimate(
   _unit: string
 ): Promise<{ unitCostCents: number; totalCostCents: number; hasCostData: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: ingredient } = await supabase
+  const { data: ingredient } = await db
     .from('ingredients')
     .select('cost_per_unit_cents, last_price_cents')
     .eq('id', ingredientId)
@@ -347,7 +347,7 @@ export async function getFoodCostDashboardSummary(): Promise<{
 }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const year = now.getFullYear()
@@ -357,7 +357,7 @@ export async function getFoodCostDashboardSummary(): Promise<{
   const sixMonthsAgo = new Date(year, month - 7, 1)
   const startDate = sixMonthsAgo.toISOString().slice(0, 10)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, menu_id, guest_count')
     .eq('tenant_id', tenantId)
@@ -381,7 +381,7 @@ export async function getFoodCostDashboardSummary(): Promise<{
   const eventIds = events.map((e: any) => e.id)
 
   // Get financials
-  const { data: financials } = await supabase
+  const { data: financials } = await db
     .from('event_financial_summary')
     .select('event_id, net_revenue_cents, quoted_price_cents')
     .eq('tenant_id', tenantId)
@@ -393,7 +393,7 @@ export async function getFoodCostDashboardSummary(): Promise<{
   }
 
   // Get grocery spend totals per event
-  const { data: groceryTotals } = await supabase
+  const { data: groceryTotals } = await db
     .from('grocery_spend_entries' as any)
     .select('event_id, amount_cents')
     .eq('tenant_id', tenantId)
@@ -410,7 +410,7 @@ export async function getFoodCostDashboardSummary(): Promise<{
 
   if (menuIds.length > 0) {
     // Get dishes for menus
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('id, menu_id')
       .in('menu_id', menuIds)
@@ -419,7 +419,7 @@ export async function getFoodCostDashboardSummary(): Promise<{
     if (dishes && dishes.length > 0) {
       const dishIds = dishes.map((d: any) => d.id)
 
-      const { data: components } = await supabase
+      const { data: components } = await db
         .from('components')
         .select('dish_id, recipe_id, scale_factor')
         .in('dish_id', dishIds)
@@ -429,7 +429,7 @@ export async function getFoodCostDashboardSummary(): Promise<{
       const recipeIds = [...new Set(((components ?? []) as any[]).map((c: any) => c.recipe_id))]
 
       if (recipeIds.length > 0) {
-        const { data: recipeCosts } = await supabase
+        const { data: recipeCosts } = await db
           .from('recipe_cost_summary')
           .select('recipe_id, total_ingredient_cost_cents')
           .eq('tenant_id', tenantId)

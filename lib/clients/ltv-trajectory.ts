@@ -6,7 +6,7 @@
 // No new DB schema needed - derives from existing ledger/events data.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type LTVDataPoint = {
   eventId: string
@@ -28,10 +28,10 @@ export type ClientLTVTrajectory = {
  */
 export async function getClientLTVTrajectory(clientId: string): Promise<ClientLTVTrajectory> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all completed events for this client in chronological order
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -46,7 +46,7 @@ export async function getClientLTVTrajectory(clientId: string): Promise<ClientLT
   const eventIds = events.map((e: any) => e.id)
 
   // Fetch payment totals from the financial summary view
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select('event_id, total_paid_cents')
     .eq('tenant_id', user.tenantId!)

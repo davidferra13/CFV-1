@@ -32,7 +32,7 @@ const UpdateBookingBody = z
 
 export const GET = withApiAuth(
   async (_req, ctx) => {
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('chefs')
       .select(
         `
@@ -95,7 +95,7 @@ export const PATCH = withApiAuth(
       const basePriceCents = parsed.data.booking_base_price_cents
       if (!basePriceCents || basePriceCents <= 0) {
         // Check if there's an existing base price
-        const { data: chef } = await ctx.supabase
+        const { data: chef } = await ctx.db
           .from('chefs')
           .select('booking_base_price_cents, stripe_onboarding_complete')
           .eq('id', ctx.tenantId)
@@ -145,7 +145,7 @@ export const PATCH = withApiAuth(
     if (parsed.data.booking_deposit_fixed_cents !== undefined)
       update.booking_deposit_fixed_cents = parsed.data.booking_deposit_fixed_cents
 
-    const { error } = await ctx.supabase
+    const { error } = await ctx.db
       .from('chefs')
       .update(update as any)
       .eq('id', ctx.tenantId)
@@ -156,7 +156,7 @@ export const PATCH = withApiAuth(
     }
 
     // Return the updated settings
-    const { data: updated } = await ctx.supabase
+    const { data: updated } = await ctx.db
       .from('chefs')
       .select(
         `

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 
@@ -9,9 +9,9 @@ import { requirePro } from '@/lib/billing/require-pro'
 export async function getICalFeedStatus() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select('ical_feed_token, ical_feed_enabled')
     .eq('id', user.entityId)
@@ -34,18 +34,18 @@ export async function getICalFeedStatus() {
 export async function toggleICalFeed(enabled: boolean) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // If enabling and no token exists yet, generate one
   if (enabled) {
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('ical_feed_token')
       .eq('id', user.entityId)
       .single()
 
     if (!chef?.ical_feed_token) {
-      await supabase
+      await db
         .from('chefs')
         .update({
           ical_feed_enabled: true,
@@ -53,10 +53,10 @@ export async function toggleICalFeed(enabled: boolean) {
         })
         .eq('id', user.entityId)
     } else {
-      await supabase.from('chefs').update({ ical_feed_enabled: true }).eq('id', user.entityId)
+      await db.from('chefs').update({ ical_feed_enabled: true }).eq('id', user.entityId)
     }
   } else {
-    await supabase.from('chefs').update({ ical_feed_enabled: false }).eq('id', user.entityId)
+    await db.from('chefs').update({ ical_feed_enabled: false }).eq('id', user.entityId)
   }
 
   return { success: true }
@@ -65,11 +65,11 @@ export async function toggleICalFeed(enabled: boolean) {
 export async function regenerateICalFeedToken() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const newToken = crypto.randomUUID()
 
-  await supabase.from('chefs').update({ ical_feed_token: newToken }).eq('id', user.entityId)
+  await db.from('chefs').update({ ical_feed_token: newToken }).eq('id', user.entityId)
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
 

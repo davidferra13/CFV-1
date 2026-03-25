@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createHmac } from 'crypto'
 import { withRetry, pushToDLQ, isTransientError } from '@/lib/resilience/retry'
 
@@ -7,9 +7,9 @@ export async function deliverWebhook(
   eventType: string,
   payload: Record<string, unknown>
 ): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: endpointsRaw } = await supabase
+  const { data: endpointsRaw } = await db
     .from('webhook_endpoints' as any)
     .select('*')
     .eq('tenant_id', tenantId)
@@ -62,7 +62,7 @@ export async function deliverWebhook(
 
       if (!response.ok) {
         // Non-2xx after retries exhausted - push to DLQ for manual review
-        await pushToDLQ(supabase as any, {
+        await pushToDLQ(db as any, {
           tenantId,
           jobType: 'webhook_delivery',
           jobId: endpoint.id,
@@ -73,7 +73,7 @@ export async function deliverWebhook(
       }
     } catch (err) {
       deliveryError = String(err)
-      await pushToDLQ(supabase as any, {
+      await pushToDLQ(db as any, {
         tenantId,
         jobType: 'webhook_delivery',
         jobId: endpoint.id,
@@ -83,7 +83,7 @@ export async function deliverWebhook(
       })
     }
 
-    await supabase.from('webhook_deliveries' as any).insert({
+    await db.from('webhook_deliveries' as any).insert({
       endpoint_id: endpoint.id,
       tenant_id: tenantId,
       event_type: eventType,

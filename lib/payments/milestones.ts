@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -49,9 +49,9 @@ export type MilestoneTemplate = {
 
 export async function getMilestoneTemplates(): Promise<MilestoneTemplate[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('payment_milestone_templates')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -98,16 +98,16 @@ export async function createMilestoneTemplate(
   const parsed = CreateMilestoneTemplateSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid template.' }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (parsed.data.is_default) {
-    await supabase
+    await db
       .from('payment_milestone_templates')
       .update({ is_default: false })
       .eq('chef_id', user.entityId)
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('payment_milestone_templates')
     .insert({
       chef_id: user.entityId,
@@ -132,14 +132,14 @@ export async function updateMilestoneTemplate(
   input: Partial<z.infer<typeof CreateMilestoneTemplateSchema>>
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, any> = { updated_at: new Date().toISOString() }
   if (input.name) updates.name = input.name
   if (input.milestones) updates.milestones = input.milestones
   if (input.is_default !== undefined) {
     if (input.is_default) {
-      await supabase
+      await db
         .from('payment_milestone_templates')
         .update({ is_default: false })
         .eq('chef_id', user.entityId)
@@ -147,7 +147,7 @@ export async function updateMilestoneTemplate(
     updates.is_default = input.is_default
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('payment_milestone_templates')
     .update(updates)
     .eq('id', id)
@@ -166,9 +166,9 @@ export async function deleteMilestoneTemplate(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('payment_milestone_templates')
     .delete()
     .eq('id', id)
@@ -192,10 +192,10 @@ export async function createMilestonesForEvent(
   templateId?: string
 ): Promise<{ success: boolean; count?: number; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load event
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, quoted_price_cents, event_date, tenant_id')
     .eq('id', eventId)
@@ -208,7 +208,7 @@ export async function createMilestonesForEvent(
   // Load template
   let template: MilestoneTemplate | null = null
   if (templateId) {
-    const { data } = await supabase
+    const { data } = await db
       .from('payment_milestone_templates')
       .select('*')
       .eq('id', templateId)
@@ -219,7 +219,7 @@ export async function createMilestonesForEvent(
 
   if (!template) {
     // Use default template or system default
-    const { data } = await supabase
+    const { data } = await db
       .from('payment_milestone_templates')
       .select('*')
       .eq('chef_id', user.entityId)
@@ -272,13 +272,13 @@ export async function createMilestonesForEvent(
   })
 
   // Delete existing milestones for this event (if re-creating)
-  await supabase
+  await db
     .from('event_payment_milestones')
     .delete()
     .eq('event_id', eventId)
     .eq('tenant_id', user.entityId)
 
-  const { error } = await supabase.from('event_payment_milestones').insert(milestoneRecords)
+  const { error } = await db.from('event_payment_milestones').insert(milestoneRecords)
 
   if (error) {
     console.error('[milestones] Failed to create milestones:', error.message)
@@ -291,9 +291,9 @@ export async function createMilestonesForEvent(
 
 export async function getEventMilestones(eventId: string): Promise<PaymentMilestone[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_payment_milestones')
     .select('*')
     .eq('event_id', eventId)
@@ -313,9 +313,9 @@ export async function recordMilestonePayment(
   ledgerEntryId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_payment_milestones')
     .update({
       status: 'paid',
@@ -332,7 +332,7 @@ export async function recordMilestonePayment(
   }
 
   // Get event ID for cache invalidation
-  const { data: milestone } = await supabase
+  const { data: milestone } = await db
     .from('event_payment_milestones')
     .select('event_id')
     .eq('id', milestoneId)
@@ -350,9 +350,9 @@ export async function waiveMilestone(
   reason: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_payment_milestones')
     .update({
       status: 'waived',

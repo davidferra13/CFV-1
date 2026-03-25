@@ -9,7 +9,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createInquiry } from '@/lib/inquiries/actions'
 import { revalidatePath } from 'next/cache'
 
@@ -32,9 +32,9 @@ type ContactSubmission = {
  */
 export async function getUnclaimedSubmissions() {
   await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('contact_submissions')
     .select('id, name, email, subject, message, created_at')
     .is('claimed_by_chef_id', null)
@@ -56,9 +56,9 @@ export async function getUnclaimedSubmissions() {
  */
 export async function getUnclaimedCount(): Promise<number> {
   await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { count, error } = await supabase
+  const { count, error } = await db
     .from('contact_submissions')
     .select('*', { count: 'exact', head: true })
     .is('claimed_by_chef_id', null)
@@ -80,10 +80,10 @@ export async function getUnclaimedCount(): Promise<number> {
  */
 export async function claimContactSubmission(submissionId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Fetch and verify unclaimed
-  const { data: submission, error: fetchError } = await supabase
+  const { data: submission, error: fetchError } = await db
     .from('contact_submissions')
     .select('id, name, email, subject, message, created_at')
     .eq('id', submissionId)
@@ -113,7 +113,7 @@ export async function claimContactSubmission(submissionId: string) {
   })
 
   // 3. Mark as claimed with back-reference
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('contact_submissions')
     .update({
       claimed_by_chef_id: user.entityId,
@@ -142,9 +142,9 @@ export async function claimContactSubmission(submissionId: string) {
  */
 export async function dismissContactSubmission(submissionId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('contact_submissions')
     .update({
       claimed_by_chef_id: user.entityId,
@@ -174,9 +174,9 @@ export async function getLinkedContactSubmission(
   inquiryId: string
 ): Promise<{ id: string } | null> {
   await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('contact_submissions')
     .select('id')
     .eq('inquiry_id', inquiryId)
@@ -192,10 +192,10 @@ export async function getLinkedContactSubmission(
  */
 export async function releaseToMarketplace(inquiryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify inquiry exists, belongs to this chef, and is still 'new'
-  const { data: inquiry, error: inquiryError } = await supabase
+  const { data: inquiry, error: inquiryError } = await db
     .from('inquiries')
     .select('id, status, tenant_id')
     .eq('id', inquiryId)
@@ -211,7 +211,7 @@ export async function releaseToMarketplace(inquiryId: string) {
   }
 
   // Find the linked contact submission
-  const { data: submission } = await supabase
+  const { data: submission } = await db
     .from('contact_submissions')
     .select('id')
     .eq('inquiry_id', inquiryId)
@@ -222,7 +222,7 @@ export async function releaseToMarketplace(inquiryId: string) {
   }
 
   // Unclaim the submission so it reappears in the marketplace
-  const { error: unclaimError } = await supabase
+  const { error: unclaimError } = await db
     .from('contact_submissions')
     .update({
       claimed_by_chef_id: null,
@@ -237,7 +237,7 @@ export async function releaseToMarketplace(inquiryId: string) {
   }
 
   // Delete the auto-created inquiry (status is 'new', so this is safe)
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await db
     .from('inquiries')
     .delete()
     .eq('id', inquiryId)

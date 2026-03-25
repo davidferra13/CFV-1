@@ -28,7 +28,7 @@ export const GET = withApiAuth(
     const url = new URL(req.url)
     const active = url.searchParams.get('active')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('automation_rules' as any)
       .select('*')
       .eq('tenant_id', ctx.tenantId)
@@ -57,7 +57,7 @@ export const POST = withApiAuth(
     const parsed = CreateRuleBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('automation_rules' as any)
       .insert({
         tenant_id: ctx.tenantId,

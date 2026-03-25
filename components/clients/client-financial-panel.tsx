@@ -318,7 +318,7 @@ export function ClientFinancialPanel({ eventBreakdown, ledgerEntries, summary }:
                       className: 'bg-stone-800 text-stone-300',
                     }
                     const isNegative = entry.is_refund || entry.amount_cents < 0
-                    // Supabase returns the FK join as object (many-to-one), but guard for array edge case
+                    // PostgreSQL returns the FK join as object (many-to-one), but guard for array edge case
                     const rawEvent = (entry as any).events
                     const eventData: {
                       id: string

@@ -12,7 +12,7 @@
  * - Support team sees it like any other support ticket
  */
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import type { ExportedConversation } from './remy-local-storage'
 
@@ -33,9 +33,9 @@ export async function shareConversationWithSupport(
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('remy_support_shares')
       .insert({
         tenant_id: tenantId,
@@ -73,9 +73,9 @@ export async function getMySupportShares(): Promise<
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('remy_support_shares')
       .select('id, conversation_json, status, created_at, support_note')
       .eq('tenant_id', tenantId)

@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -45,9 +45,9 @@ const RenderSmartFieldsSchema = z.object({
 
 export async function getSmartFields(): Promise<SmartField[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('smart_field_values')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -61,9 +61,9 @@ export async function getSmartFields(): Promise<SmartField[]> {
 export async function saveSmartField(fieldKey: string, fieldValue: string): Promise<SmartField> {
   const user = await requireChef()
   const parsed = SaveSmartFieldSchema.parse({ fieldKey, fieldValue })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('smart_field_values')
     .upsert(
       {
@@ -96,10 +96,10 @@ export async function renderSmartFields(
 ): Promise<RenderedTemplate> {
   const user = await requireChef()
   const parsed = RenderSmartFieldsSchema.parse({ template, context })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all smart fields for this chef
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('smart_field_values')
     .select('field_key, field_value')
     .eq('chef_id', user.tenantId!)

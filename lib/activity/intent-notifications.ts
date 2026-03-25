@@ -2,7 +2,7 @@
 // Called as a fire-and-forget side effect from /api/activity/track.
 // Never throws; all errors are caught and logged.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createNotification } from '@/lib/notifications/actions'
 import type { ActivityEventType } from './types'
 
@@ -20,8 +20,8 @@ interface IntentNotificationInput {
  * Uses the user_roles table (entity_id = tenant_id for chef role).
  */
 async function getChefRecipientId(tenantId: string): Promise<string | null> {
-  const supabase = createServerClient({ admin: true })
-  const { data } = await supabase
+  const db = createServerClient({ admin: true })
+  const { data } = await db
     .from('user_roles')
     .select('auth_user_id')
     .eq('entity_id', tenantId)
@@ -40,9 +40,9 @@ async function isDuplicate(
   clientId: string,
   windowMs: number
 ): Promise<boolean> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const since = new Date(Date.now() - windowMs).toISOString()
-  const { data } = await supabase
+  const { data } = await db
     .from('notifications')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -71,14 +71,14 @@ export async function checkAndFireIntentNotifications(
     ]
     if (!INTENT_EVENTS.includes(eventType)) return
 
-    const supabase = createServerClient({ admin: true })
+    const db = createServerClient({ admin: true })
 
     // Get chef recipient ID
     const recipientId = await getChefRecipientId(tenantId)
     if (!recipientId) return
 
     // Get client name for notification body
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('full_name')
       .eq('id', clientId)
@@ -136,7 +136,7 @@ export async function checkAndFireIntentNotifications(
       if (!entityId) return
 
       // Look up the quote to check how long ago it was sent
-      const { data: quote } = await supabase
+      const { data: quote } = await db
         .from('quotes')
         .select('sent_at, quote_name')
         .eq('id', entityId)

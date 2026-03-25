@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   canonicalizeDiscoveryCuisine,
   canonicalizeDiscoveryPriceRange,
@@ -90,8 +90,8 @@ function normalizeCanonicalArray(
   return normalized
 }
 
-async function fetchMarketplaceRow(supabase: any, chefId: string) {
-  const result = await (supabase as any)
+async function fetchMarketplaceRow(db: any, chefId: string) {
+  const result = await (db as any)
     .from('chef_marketplace_profiles')
     .select(
       [
@@ -126,8 +126,8 @@ async function fetchMarketplaceRow(supabase: any, chefId: string) {
   return result
 }
 
-async function fetchDirectoryListingRow(supabase: any, chefId: string) {
-  const result = await (supabase as any)
+async function fetchDirectoryListingRow(db: any, chefId: string) {
+  const result = await (db as any)
     .from('chef_directory_listings')
     .select(
       [
@@ -155,8 +155,8 @@ async function fetchDirectoryListingRow(supabase: any, chefId: string) {
   return result
 }
 
-async function fetchLegacyChefRow(supabase: any, chefId: string) {
-  const { data, error } = await supabase
+async function fetchLegacyChefRow(db: any, chefId: string) {
+  const { data, error } = await db
     .from('chefs')
     .select('tagline, profile_image_url')
     .eq('id', chefId)
@@ -172,12 +172,12 @@ async function fetchLegacyChefRow(supabase: any, chefId: string) {
 
 export async function getMyDiscoveryProfile() {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const [marketplaceResult, listingResult, legacyChef] = await Promise.all([
-    fetchMarketplaceRow(supabase, user.entityId),
-    fetchDirectoryListingRow(supabase, user.entityId),
-    fetchLegacyChefRow(supabase, user.entityId),
+    fetchMarketplaceRow(db, user.entityId),
+    fetchDirectoryListingRow(db, user.entityId),
+    fetchLegacyChefRow(db, user.entityId),
   ])
 
   return mergeDiscoveryProfile(
@@ -190,7 +190,7 @@ export async function getMyDiscoveryProfile() {
 
 export async function updateMyDiscoveryProfile(input: z.input<typeof DiscoveryProfileInputSchema>) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = DiscoveryProfileInputSchema.parse(input)
 
   const payload = {
@@ -244,13 +244,13 @@ export async function updateMyDiscoveryProfile(input: z.input<typeof DiscoveryPr
     }
   }
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('slug, booking_slug')
     .eq('id', user.entityId)
     .single()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('chef_marketplace_profiles')
     .upsert(payload, { onConflict: 'chef_id' })
 

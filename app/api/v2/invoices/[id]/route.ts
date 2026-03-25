@@ -22,7 +22,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Invoice')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('events')
       .select(
         'id, status, occasion, event_date, guest_count, quoted_price_cents, invoice_number, invoice_issued_at, invoice_notes, client:clients(id, full_name, email)'
@@ -55,7 +55,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     // Verify event belongs to tenant and has an invoice
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('events')
       .select('id, invoice_number')
       .eq('id', id)
@@ -86,7 +86,7 @@ export const PATCH = withApiAuth(
       updatePayload.invoice_notes = parsed.data.invoice_notes
     }
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('events')
       .update(updatePayload as any)
       .eq('id', id)

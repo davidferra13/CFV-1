@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -108,11 +108,11 @@ function withComputedStatus(cert: any): Certification {
 
 export async function getCertifications(): Promise<Certification[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
   // Query using both possible FK columns (chef_id from original, tenant_id from later migration)
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_certifications')
     .select('*')
     .or(`chef_id.eq.${tenantId},tenant_id.eq.${tenantId}`)
@@ -133,11 +133,11 @@ export async function getCertifications(): Promise<Certification[]> {
 
 export async function addCertification(input: CertificationInput): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
   const parsed = CertificationInputSchema.parse(input)
 
-  const { error } = await supabase.from('chef_certifications').insert({
+  const { error } = await db.from('chef_certifications').insert({
     chef_id: tenantId,
     tenant_id: tenantId,
     cert_type: parsed.cert_type,
@@ -166,11 +166,11 @@ export async function updateCertification(
   input: CertificationInput
 ): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
   const parsed = CertificationInputSchema.parse(input)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_certifications')
     .update({
       cert_type: parsed.cert_type,
@@ -198,10 +198,10 @@ export async function updateCertification(
 
 export async function deleteCertification(certId: string): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_certifications')
     .delete()
     .eq('id', certId)

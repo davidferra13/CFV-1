@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { ingestInboundSms } from '@/lib/sms/ingest'
 import { resolveOwnerChefId } from '@/lib/platform/owner-account'
 import { timingSafeEqual, createHmac } from 'crypto'
@@ -96,20 +96,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required fields: from, body' }, { status: 400 })
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   let tenantId: string | null = null
 
   if (toNumber) {
     const twilioNumber = process.env.TWILIO_FROM_NUMBER
     if (twilioNumber && toNumber.includes(twilioNumber.replace(/\D/g, '').slice(-10))) {
-      tenantId = await resolveOwnerChefId(supabase)
+      tenantId = await resolveOwnerChefId(db)
     }
   }
 
   // Fallback: if bearer auth was used, find tenant via matching client phone.
   if (!tenantId && isBearerAuth) {
     const normalizedPhone = from.replace(/\D/g, '').slice(-10)
-    const { data: clientMatch } = await supabase
+    const { data: clientMatch } = await db
       .from('clients')
       .select('tenant_id')
       .or(`phone.ilike.%${normalizedPhone}%`)
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     tenantId = clientMatch?.tenant_id ?? null
 
     if (!tenantId) {
-      tenantId = await resolveOwnerChefId(supabase)
+      tenantId = await resolveOwnerChefId(db)
     }
   }
 

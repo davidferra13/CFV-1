@@ -9,7 +9,7 @@ export const DELETE = withApiAuth(
     if (!id) return apiNotFound('Taxonomy entry')
 
     // Verify ownership and existence
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('chef_taxonomy_extensions' as any)
       .select('id, category, value')
       .eq('id', id)
@@ -18,7 +18,7 @@ export const DELETE = withApiAuth(
 
     if (!existing) return apiNotFound('Taxonomy entry')
 
-    const { error } = await ctx.supabase
+    const { error } = await ctx.db
       .from('chef_taxonomy_extensions' as any)
       .delete()
       .eq('id', id)

@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 const SNAPSHOT_BUCKET = 'event-documents'
 
 export async function GET(_: Request, { params }: { params: { snapshotId: string } }) {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data: snapshot, error: snapshotError } = await supabase
+    const { data: snapshot, error: snapshotError } = await db
       .from('event_document_snapshots')
       .select('id, storage_path, filename, tenant_id')
       .eq('id', params.snapshotId)
@@ -20,7 +20,7 @@ export async function GET(_: Request, { params }: { params: { snapshotId: string
       return NextResponse.json({ error: 'Snapshot not found' }, { status: 404 })
     }
 
-    const { data: fileData, error: downloadError } = await supabase.storage
+    const { data: fileData, error: downloadError } = await db.storage
       .from(SNAPSHOT_BUCKET)
       .download(snapshot.storage_path)
 

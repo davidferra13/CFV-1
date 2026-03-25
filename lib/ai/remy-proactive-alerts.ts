@@ -5,7 +5,7 @@
 // NO LLM - pure database queries and conditional logic.
 // Runs on a scheduled cron (every hour) or on-demand.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
 interface AlertCandidate {
@@ -19,12 +19,12 @@ interface AlertCandidate {
 
 // ─── Alert Rules ─────────────────────────────────────────────────────────────
 
-async function checkMissingPrepList(supabase: any, tenantId: string): Promise<AlertCandidate[]> {
+async function checkMissingPrepList(db: any, tenantId: string): Promise<AlertCandidate[]> {
   const alerts: AlertCandidate[] = []
   const in48h = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0]
   const today = new Date().toISOString().split('T')[0]
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -53,12 +53,12 @@ async function checkMissingPrepList(supabase: any, tenantId: string): Promise<Al
   return alerts
 }
 
-async function checkMissingGroceryList(supabase: any, tenantId: string): Promise<AlertCandidate[]> {
+async function checkMissingGroceryList(db: any, tenantId: string): Promise<AlertCandidate[]> {
   const alerts: AlertCandidate[] = []
   const in24h = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   const today = new Date().toISOString().split('T')[0]
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -84,11 +84,11 @@ async function checkMissingGroceryList(supabase: any, tenantId: string): Promise
   return alerts
 }
 
-async function checkOverdueInvoices(supabase: any, tenantId: string): Promise<AlertCandidate[]> {
+async function checkOverdueInvoices(db: any, tenantId: string): Promise<AlertCandidate[]> {
   const alerts: AlertCandidate[] = []
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: invoices, error } = await supabase
+  const { data: invoices, error } = await db
     .from('invoices')
     .select('id, invoice_number, due_date, total_cents, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -119,11 +119,11 @@ async function checkOverdueInvoices(supabase: any, tenantId: string): Promise<Al
   return alerts
 }
 
-async function checkStaleInquiries(supabase: any, tenantId: string): Promise<AlertCandidate[]> {
+async function checkStaleInquiries(db: any, tenantId: string): Promise<AlertCandidate[]> {
   const alerts: AlertCandidate[] = []
   const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
 
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select('id, lead_name, event_type, created_at, updated_at')
     .eq('tenant_id', tenantId)
@@ -149,11 +149,11 @@ async function checkStaleInquiries(supabase: any, tenantId: string): Promise<Ale
   return alerts
 }
 
-async function checkPaymentReceived(supabase: any, tenantId: string): Promise<AlertCandidate[]> {
+async function checkPaymentReceived(db: any, tenantId: string): Promise<AlertCandidate[]> {
   const alerts: AlertCandidate[] = []
   const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
 
-  const { data: payments, error } = await supabase
+  const { data: payments, error } = await db
     .from('ledger_entries')
     .select('id, amount_cents, created_at, event:events(id, occasion, client:clients(full_name))')
     .eq('tenant_id', tenantId)
@@ -182,13 +182,13 @@ async function checkPaymentReceived(supabase: any, tenantId: string): Promise<Al
   return alerts
 }
 
-async function checkClientBirthdays(supabase: any, tenantId: string): Promise<AlertCandidate[]> {
+async function checkClientBirthdays(db: any, tenantId: string): Promise<AlertCandidate[]> {
   const alerts: AlertCandidate[] = []
   const now = new Date()
   const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
 
   // Check clients with birthday in next 7 days (month/day comparison)
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('id, full_name, date_of_birth')
     .eq('tenant_id', tenantId)
@@ -264,13 +264,13 @@ async function checkWeatherForEvents(tenantId: string): Promise<AlertCandidate[]
 // ─── Alert Orchestrator ──────────────────────────────────────────────────────
 
 async function isDuplicate(
-  supabase: any,
+  db: any,
   tenantId: string,
   alertType: string,
   entityId?: string
 ): Promise<boolean> {
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-  let query = supabase
+  let query = db
     .from('remy_alerts')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -316,7 +316,7 @@ async function runRuleSafely(
 }
 
 export async function runAlertRules(tenantId: string): Promise<number> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Run all rules in parallel
   const [
@@ -328,22 +328,14 @@ export async function runAlertRules(tenantId: string): Promise<number> {
     birthdayAlerts,
     weatherAlerts,
   ] = await Promise.all([
-    runRuleSafely(tenantId, 'check_missing_prep_list', () =>
-      checkMissingPrepList(supabase, tenantId)
-    ),
+    runRuleSafely(tenantId, 'check_missing_prep_list', () => checkMissingPrepList(db, tenantId)),
     runRuleSafely(tenantId, 'check_missing_grocery_list', () =>
-      checkMissingGroceryList(supabase, tenantId)
+      checkMissingGroceryList(db, tenantId)
     ),
-    runRuleSafely(tenantId, 'check_overdue_invoices', () =>
-      checkOverdueInvoices(supabase, tenantId)
-    ),
-    runRuleSafely(tenantId, 'check_stale_inquiries', () => checkStaleInquiries(supabase, tenantId)),
-    runRuleSafely(tenantId, 'check_payment_received', () =>
-      checkPaymentReceived(supabase, tenantId)
-    ),
-    runRuleSafely(tenantId, 'check_client_birthdays', () =>
-      checkClientBirthdays(supabase, tenantId)
-    ),
+    runRuleSafely(tenantId, 'check_overdue_invoices', () => checkOverdueInvoices(db, tenantId)),
+    runRuleSafely(tenantId, 'check_stale_inquiries', () => checkStaleInquiries(db, tenantId)),
+    runRuleSafely(tenantId, 'check_payment_received', () => checkPaymentReceived(db, tenantId)),
+    runRuleSafely(tenantId, 'check_client_birthdays', () => checkClientBirthdays(db, tenantId)),
     runRuleSafely(tenantId, 'check_weather_for_events', () => checkWeatherForEvents(tenantId)),
   ])
 
@@ -361,10 +353,10 @@ export async function runAlertRules(tenantId: string): Promise<number> {
 
   for (const alert of allCandidates) {
     // Deduplicate: don't re-alert for same condition within 24h
-    const dupe = await isDuplicate(supabase, tenantId, alert.alertType, alert.entityId)
+    const dupe = await isDuplicate(db, tenantId, alert.alertType, alert.entityId)
     if (dupe) continue
 
-    const { error } = await supabase.from('remy_alerts').insert({
+    const { error } = await db.from('remy_alerts').insert({
       tenant_id: tenantId,
       alert_type: alert.alertType,
       entity_type: alert.entityType,
@@ -399,9 +391,9 @@ export async function runAlertRules(tenantId: string): Promise<number> {
 export async function getActiveAlerts(limit = 20) {
   const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('remy_alerts')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -425,9 +417,9 @@ export async function getActiveAlerts(limit = 20) {
 export async function dismissAlert(alertId: string) {
   const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('remy_alerts')
     .update({ dismissed_at: new Date().toISOString() })
     .eq('id', alertId)
@@ -439,9 +431,9 @@ export async function dismissAlert(alertId: string) {
 export async function markAlertActedOn(alertId: string) {
   const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('remy_alerts')
     .update({
       acted_on_at: new Date().toISOString(),

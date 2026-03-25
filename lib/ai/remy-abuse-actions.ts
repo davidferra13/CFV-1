@@ -10,7 +10,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { isAdmin } from '@/lib/auth/admin'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Log Abuse Incident ─────────────────────────────────────────────────────
 
@@ -30,19 +30,19 @@ interface LogAbuseParams {
 export async function logRemyAbuse(params: LogAbuseParams): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get auth user ID
   const {
     data: { user: authUser },
-  } = await supabase.auth.getUser()
+  } = await db.auth.getUser()
   if (!authUser) return
 
   let userBlocked = false
 
   // Check if auto-block threshold reached (2+ prior critical incidents)
   if (params.severity === 'critical') {
-    const { count } = await (supabase as any)
+    const { count } = await (db as any)
       .from('remy_abuse_log')
       .select('id', { count: 'exact', head: true })
       .eq('auth_user_id', authUser.id)
@@ -51,7 +51,7 @@ export async function logRemyAbuse(params: LogAbuseParams): Promise<void> {
     // 2+ prior criticals (this would be the 3rd+) → auto-block
     if ((count ?? 0) >= 2) {
       const blockedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      await (supabase as any)
+      await (db as any)
         .from('chefs')
         .update({ remy_blocked_until: blockedUntil })
         .eq('id', tenantId)
@@ -61,7 +61,7 @@ export async function logRemyAbuse(params: LogAbuseParams): Promise<void> {
   }
 
   // Insert the abuse log entry
-  await (supabase as any).from('remy_abuse_log').insert({
+  await (db as any).from('remy_abuse_log').insert({
     tenant_id: tenantId,
     auth_user_id: authUser.id,
     severity: userBlocked ? 'blocked' : params.severity,
@@ -90,9 +90,9 @@ export async function isRemyBlocked(): Promise<BlockStatus> {
 
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('chefs')
     .select('remy_blocked_until')
     .eq('id', tenantId)
@@ -141,9 +141,9 @@ export async function getRemyAbuseLog(options?: {
 }): Promise<AbuseLogEntry[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('remy_abuse_log')
     .select('*')
     .eq('tenant_id', tenantId)

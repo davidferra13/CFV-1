@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -57,9 +57,9 @@ export type TaskTemplate = {
 export async function createTemplate(input: CreateTemplateInput) {
   const user = await requireChef()
   const validated = CreateTemplateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('task_templates')
     .insert({
       chef_id: user.tenantId!,
@@ -87,7 +87,7 @@ export async function createTemplate(input: CreateTemplateInput) {
 export async function updateTemplate(id: string, input: UpdateTemplateInput) {
   const user = await requireChef()
   const validated = UpdateTemplateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updatePayload: Record<string, unknown> = {}
   if (validated.name !== undefined) updatePayload.name = validated.name
@@ -95,7 +95,7 @@ export async function updateTemplate(id: string, input: UpdateTemplateInput) {
   if (validated.category !== undefined) updatePayload.category = validated.category
   if (validated.items !== undefined) updatePayload.items = validated.items
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('task_templates')
     .update(updatePayload)
     .eq('id', id)
@@ -118,9 +118,9 @@ export async function updateTemplate(id: string, input: UpdateTemplateInput) {
 
 export async function deleteTemplate(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('task_templates')
     .delete()
     .eq('id', id)
@@ -140,9 +140,9 @@ export async function deleteTemplate(id: string) {
 
 export async function listTemplates() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('task_templates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -167,10 +167,10 @@ export async function generateTasksFromTemplate(
   assignedTo?: string
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load the template
-  const { data: template, error: loadError } = await supabase
+  const { data: template, error: loadError } = await db
     .from('task_templates')
     .select('*')
     .eq('id', templateId)
@@ -203,7 +203,7 @@ export async function generateTasksFromTemplate(
     template_id: templateId,
   }))
 
-  const { data, error: insertError } = await supabase.from('tasks').insert(taskInserts).select()
+  const { data, error: insertError } = await db.from('tasks').insert(taskInserts).select()
 
   if (insertError) {
     console.error('[generateTasksFromTemplate] Error creating tasks:', insertError)

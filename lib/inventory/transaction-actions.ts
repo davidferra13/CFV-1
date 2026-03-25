@@ -8,7 +8,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -106,12 +106,12 @@ const RecordTransactionSchema = z.object({
 
 export type RecordTransactionInput = z.infer<typeof RecordTransactionSchema>
 
-// ─── Supabase helper ────────────────────────────────────────────
-function db(supabase: any) {
+// ─── DB helper ────────────────────────────────────────────
+function db(db: any) {
   return {
-    transactions: () => supabase.from('inventory_transactions' as any) as any,
-    currentStock: () => supabase.from('inventory_current_stock' as any) as any,
-    byLocation: () => supabase.from('inventory_by_location' as any) as any,
+    transactions: () => db.from('inventory_transactions' as any) as any,
+    currentStock: () => db.from('inventory_current_stock' as any) as any,
+    byLocation: () => db.from('inventory_by_location' as any) as any,
   }
 }
 
@@ -126,9 +126,9 @@ export async function recordInventoryTransaction(
 ): Promise<InventoryTransaction> {
   const user = await requireChef()
   const parsed = RecordTransactionSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await db(supabase)
+  const { data, error } = await db(db)
     .transactions()
     .insert({
       chef_id: user.tenantId!,
@@ -170,7 +170,7 @@ export async function recordBulkTransactions(
   if (items.length === 0) return []
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const rows = items.map((item) => {
     const parsed = RecordTransactionSchema.parse(item)
@@ -196,7 +196,7 @@ export async function recordBulkTransactions(
     }
   })
 
-  const { data, error } = await db(supabase).transactions().insert(rows).select()
+  const { data, error } = await db(db).transactions().insert(rows).select()
 
   if (error) throw new Error(`Failed to record bulk transactions: ${(error as any).message}`)
 
@@ -218,14 +218,14 @@ export async function getTransactionHistory(filters?: {
   pageSize?: number
 }): Promise<{ transactions: InventoryTransaction[]; total: number }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const page = filters?.page ?? 1
   const pageSize = filters?.pageSize ?? 50
   const from = (page - 1) * pageSize
   const to = from + pageSize - 1
 
-  let query = db(supabase)
+  let query = db(db)
     .transactions()
     .select('*', { count: 'exact' })
     .eq('chef_id', user.tenantId!)
@@ -265,9 +265,9 @@ export async function getTransactionHistory(filters?: {
  */
 export async function getCurrentStock(ingredientId?: string): Promise<StockItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = db(supabase).currentStock().select('*').eq('chef_id', user.tenantId!)
+  let query = db(db).currentStock().select('*').eq('chef_id', user.tenantId!)
 
   if (ingredientId) {
     query = query.eq('ingredient_id', ingredientId)
@@ -295,9 +295,9 @@ export async function getCurrentStock(ingredientId?: string): Promise<StockItem[
  */
 export async function getStockByLocation(locationId?: string): Promise<StockByLocation[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = db(supabase).byLocation().select('*').eq('chef_id', user.tenantId!)
+  let query = db(db).byLocation().select('*').eq('chef_id', user.tenantId!)
 
   if (locationId) {
     query = query.eq('location_id', locationId)
@@ -324,13 +324,10 @@ export async function getStockByLocation(locationId?: string): Promise<StockByLo
  */
 export async function getStockSummary(): Promise<StockSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all current stock items
-  const { data, error } = await db(supabase)
-    .currentStock()
-    .select('*')
-    .eq('chef_id', user.tenantId!)
+  const { data, error } = await db(db).currentStock().select('*').eq('chef_id', user.tenantId!)
 
   if (error) throw new Error(`Failed to fetch stock summary: ${(error as any).message}`)
 
@@ -352,7 +349,7 @@ export async function getStockSummary(): Promise<StockSummary> {
   }
 
   // Get total value by summing (latest cost_cents) for each ingredient with positive stock
-  const { data: costData, error: costError } = await db(supabase)
+  const { data: costData, error: costError } = await db(db)
     .transactions()
     .select('ingredient_id, cost_cents, quantity')
     .eq('chef_id', user.tenantId!)

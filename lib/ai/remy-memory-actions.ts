@@ -5,7 +5,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { createHash } from 'crypto'
@@ -94,7 +94,7 @@ export async function extractAndSaveMemories(
 
     if (!result.memories || result.memories.length === 0) return
 
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     for (const mem of result.memories) {
       // Validate extracted memory content before saving
@@ -107,7 +107,7 @@ export async function extractAndSaveMemories(
       const contentHash = hashContent(mem.content)
 
       // Check for existing duplicate
-      const { data: existing } = await supabase
+      const { data: existing } = await db
         .from('remy_memories')
         .select('id, access_count, importance')
         .eq('tenant_id', tenantId)
@@ -117,7 +117,7 @@ export async function extractAndSaveMemories(
 
       if (existing) {
         // Reinforce existing memory: bump access_count, update importance if higher
-        await supabase
+        await db
           .from('remy_memories')
           .update({
             access_count: (existing.access_count as number) + 1,
@@ -131,7 +131,7 @@ export async function extractAndSaveMemories(
       // Resolve client ID if a client name was mentioned
       let relatedClientId: string | null = null
       if (mem.relatedClientName) {
-        const { data: clients } = await supabase
+        const { data: clients } = await db
           .from('clients')
           .select('id')
           .eq('tenant_id', tenantId)
@@ -150,7 +150,7 @@ export async function extractAndSaveMemories(
       }
 
       // Insert new memory
-      await supabase.from('remy_memories').insert({
+      await db.from('remy_memories').insert({
         tenant_id: tenantId,
         category: mem.category,
         content: mem.content,
@@ -198,7 +198,7 @@ export async function handleCorrectionMemory(
 
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   try {
     // Use Ollama to understand what's being corrected and what the new fact is
@@ -235,7 +235,7 @@ If you can't determine a clear correction, return: { "oldFact": "", "newFact": "
     }
 
     // Search for existing memories that match the OLD (wrong) fact
-    const { data: candidates } = await supabase
+    const { data: candidates } = await db
       .from('remy_memories')
       .select('id, content, category')
       .eq('tenant_id', tenantId)
@@ -263,7 +263,7 @@ If you can't determine a clear correction, return: { "oldFact": "", "newFact": "
     // Deactivate the old wrong memory if found
     let deactivatedId: string | undefined
     if (bestMatch) {
-      await supabase
+      await db
         .from('remy_memories')
         .update({ is_active: false })
         .eq('id', bestMatch.id)
@@ -278,7 +278,7 @@ If you can't determine a clear correction, return: { "oldFact": "", "newFact": "
     // Resolve client ID if mentioned
     let relatedClientId: string | null = null
     if (result.relatedClientName) {
-      const { data: clients } = await supabase
+      const { data: clients } = await db
         .from('clients')
         .select('id')
         .eq('tenant_id', tenantId)
@@ -287,7 +287,7 @@ If you can't determine a clear correction, return: { "oldFact": "", "newFact": "
       relatedClientId = (clients?.[0]?.id as string) ?? null
     }
 
-    const { data: newMem } = await supabase
+    const { data: newMem } = await db
       .from('remy_memories')
       .insert({
         tenant_id: tenantId,
@@ -327,7 +327,7 @@ export async function loadRelevantMemories(
 ): Promise<RemyMemory[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runtimeMemories = sortMemories(await listRuntimeFileMemories())
   const memories: RemyMemory[] = []
@@ -347,7 +347,7 @@ export async function loadRelevantMemories(
       }
     }
 
-    const { data: clients } = await supabase
+    const { data: clients } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -355,7 +355,7 @@ export async function loadRelevantMemories(
       .limit(1)
 
     if (clients?.[0]) {
-      const { data } = await supabase
+      const { data } = await db
         .from('remy_memories')
         .select('*')
         .eq('tenant_id', tenantId)
@@ -377,7 +377,7 @@ export async function loadRelevantMemories(
     }
   }
 
-  const { data: highImportance } = await supabase
+  const { data: highImportance } = await db
     .from('remy_memories')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -407,7 +407,7 @@ export async function loadRelevantMemories(
     }
   }
 
-  const { data: categoryMatched } = await supabase
+  const { data: categoryMatched } = await db
     .from('remy_memories')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -421,7 +421,7 @@ export async function loadRelevantMemories(
   }
 
   // Layer 4: Recently accessed memories (recency bias)
-  const { data: recent } = await supabase
+  const { data: recent } = await db
     .from('remy_memories')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -439,8 +439,7 @@ export async function loadRelevantMemories(
   // Bump last_accessed_at for all loaded memories (non-blocking)
   const loadedIds = capped.filter((m) => m.source === 'database').map((m) => m.id)
   if (loadedIds.length > 0) {
-    supabase
-      .from('remy_memories')
+    db.from('remy_memories')
       .update({ last_accessed_at: new Date().toISOString() })
       .in('id', loadedIds)
       .then(() => {})
@@ -459,9 +458,9 @@ export async function deleteRemyMemory(memoryId: string): Promise<void> {
 
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('remy_memories')
     .update({ is_active: false })
     .eq('id', memoryId)
@@ -478,10 +477,10 @@ export async function listRemyMemories(options?: {
 }): Promise<RemyMemory[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const runtimeMemories = await listRuntimeFileMemories()
 
-  let query = supabase
+  let query = db
     .from('remy_memories')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -510,13 +509,13 @@ export async function listRemyMemories(options?: {
 export async function decayStaleMemories(): Promise<{ deactivated: number }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Memories not accessed in 90 days with low importance get deactivated
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - 90)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('remy_memories')
     .update({ is_active: false })
     .eq('tenant_id', tenantId)
@@ -543,12 +542,12 @@ export async function addRemyMemoryManual(input: {
 }): Promise<{ id: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const contentHash = hashContent(input.content)
 
   // Check for duplicates
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('remy_memories')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -560,7 +559,7 @@ export async function addRemyMemoryManual(input: {
     return { id: existing.id as string }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('remy_memories')
     .insert({
       tenant_id: tenantId,

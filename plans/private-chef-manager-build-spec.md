@@ -78,7 +78,7 @@ Each phase is independently shippable.
 
 ### Migration 1
 
-Add `supabase/migrations/20260312000001_marketplace_platform_records.sql`
+Add `database/migrations/20260312000001_marketplace_platform_records.sql`
 
 Create `platform_records`:
 
@@ -118,7 +118,7 @@ Constraints and indexes:
 
 ### Migration 2
 
-Add `supabase/migrations/20260312000002_marketplace_snapshots_and_actions.sql`
+Add `database/migrations/20260312000002_marketplace_snapshots_and_actions.sql`
 
 Create `platform_snapshots`:
 
@@ -158,7 +158,7 @@ Constraints and indexes:
 
 ### Migration 3
 
-Add `supabase/migrations/20260312000003_marketplace_proposals_and_payouts.sql`
+Add `database/migrations/20260312000003_marketplace_proposals_and_payouts.sql`
 
 Create `platform_proposals`:
 
@@ -398,7 +398,7 @@ Update:
 Rename:
 
 - `components/marketplace/take-a-chef-capture-tool.tsx`
-to
+  to
 - `components/marketplace/marketplace-capture-tool.tsx`
 
 UI changes:

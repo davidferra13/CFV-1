@@ -1,7 +1,7 @@
 import { recordQolMetricEvent } from '@/lib/qol/metrics'
 
 type IdempotentExecutionArgs<T> = {
-  supabase: any
+  db: any
   tenantId: string
   actorId?: string | null
   actionName: string
@@ -10,7 +10,7 @@ type IdempotentExecutionArgs<T> = {
 }
 
 export async function executeWithIdempotency<T>({
-  supabase,
+  db,
   tenantId,
   actorId = null,
   actionName,
@@ -21,7 +21,7 @@ export async function executeWithIdempotency<T>({
     return execute()
   }
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('mutation_idempotency')
     .select('response_data')
     .eq('tenant_id', tenantId)
@@ -31,7 +31,7 @@ export async function executeWithIdempotency<T>({
 
   if (existing?.response_data) {
     if (actionName.toLowerCase().includes('create')) {
-      await recordQolMetricEvent(supabase, {
+      await recordQolMetricEvent(db, {
         tenantId,
         actorId,
         metricKey: 'duplicate_create_prevented',
@@ -44,7 +44,7 @@ export async function executeWithIdempotency<T>({
 
   const response = await execute()
 
-  await supabase.from('mutation_idempotency').upsert(
+  await db.from('mutation_idempotency').upsert(
     {
       tenant_id: tenantId,
       actor_id: actorId,

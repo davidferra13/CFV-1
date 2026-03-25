@@ -8,10 +8,10 @@ import {
   buildMigrationRepairPlan,
   createMigrationRepairReport,
   inspectLocalMigrationDirectory,
-  parseSupabaseMigrationListOutput,
-} from '../../scripts/plan-supabase-migration-repair.mjs'
+  parseMigrationListOutput,
+} from '../../scripts/plan-db-migration-repair.mjs'
 
-describe('Supabase migration repair plan', () => {
+describe('Database migration repair plan', () => {
   it('parses local and remote versions independently from the CLI table', () => {
     const output = `
        Local          | Remote         | Time (UTC)
@@ -28,7 +28,7 @@ describe('Supabase migration repair plan', () => {
        20260330000082 |                | 2026-03-30 00:00:82
     `
 
-    const parsed = parseSupabaseMigrationListOutput(output)
+    const parsed = parseMigrationListOutput(output)
     const plan = buildMigrationRepairPlan({
       localVersions: [
         '20260304000010',
@@ -61,8 +61,8 @@ describe('Supabase migration repair plan', () => {
     assert.deepEqual(
       plan.repairCommands.map((item) => item.command),
       [
-        'npx supabase migration repair --linked --status reverted 20260305',
-        'npx supabase migration repair --linked --status applied 20260313000011',
+        'npx db migration repair --linked --status reverted 20260305',
+        'npx db migration repair --linked --status applied 20260313000011',
       ]
     )
     assert.deepEqual(plan.pushableLocalOnly, [

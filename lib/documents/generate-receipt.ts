@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns'
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 
 type ReceiptLedgerEntry = {
@@ -51,9 +51,9 @@ function money(cents: number) {
 
 export async function fetchReceiptData(eventId: string): Promise<ReceiptData> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -72,24 +72,16 @@ export async function fetchReceiptData(eventId: string): Promise<ReceiptData> {
 
   const [{ data: client }, { data: chef }, { data: ledger }, { data: financial }] =
     await Promise.all([
-      supabase
-        .from('clients')
-        .select('full_name, email, address')
-        .eq('id', event.client_id)
-        .single(),
-      supabase
-        .from('chefs')
-        .select('business_name, email, phone')
-        .eq('id', event.tenant_id)
-        .single(),
-      supabase
+      db.from('clients').select('full_name, email, address').eq('id', event.client_id).single(),
+      db.from('chefs').select('business_name, email, phone').eq('id', event.tenant_id).single(),
+      db
         .from('ledger_entries')
         .select(
           'id, description, amount_cents, entry_type, payment_method, created_at, transaction_reference'
         )
         .eq('event_id', event.id)
         .order('created_at', { ascending: true }),
-      supabase
+      db
         .from('event_financial_summary')
         .select('quoted_price_cents, total_paid_cents, outstanding_balance_cents')
         .eq('event_id', event.id)
@@ -216,9 +208,9 @@ import { requireChef } from '@/lib/auth/get-user'
  */
 export async function fetchReceiptDataForChef(eventId: string): Promise<ReceiptData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -235,24 +227,16 @@ export async function fetchReceiptDataForChef(eventId: string): Promise<ReceiptD
 
   const [{ data: client }, { data: chef }, { data: ledger }, { data: financial }] =
     await Promise.all([
-      supabase
-        .from('clients')
-        .select('full_name, email, address')
-        .eq('id', event.client_id)
-        .single(),
-      supabase
-        .from('chefs')
-        .select('business_name, email, phone')
-        .eq('id', event.tenant_id)
-        .single(),
-      supabase
+      db.from('clients').select('full_name, email, address').eq('id', event.client_id).single(),
+      db.from('chefs').select('business_name, email, phone').eq('id', event.tenant_id).single(),
+      db
         .from('ledger_entries')
         .select(
           'id, description, amount_cents, entry_type, payment_method, created_at, transaction_reference'
         )
         .eq('event_id', event.id)
         .order('created_at', { ascending: true }),
-      supabase
+      db
         .from('event_financial_summary')
         .select('quoted_price_cents, total_paid_cents, outstanding_balance_cents')
         .eq('event_id', event.id)

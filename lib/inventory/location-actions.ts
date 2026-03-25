@@ -7,7 +7,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -99,18 +99,18 @@ export type TransferInventoryInput = z.infer<typeof TransferInventorySchema>
 export async function createStorageLocation(input: CreateLocationInput): Promise<StorageLocation> {
   const user = await requireChef()
   const parsed = CreateLocationSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If this should be the default, unset any existing default first
   if (parsed.isDefault) {
-    await supabase
+    await db
       .from('storage_locations' as any)
       .update({ is_default: false })
       .eq('chef_id', user.tenantId!)
       .eq('is_default', true)
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('storage_locations' as any)
     .insert({
       chef_id: user.tenantId!,
@@ -142,10 +142,10 @@ export async function updateStorageLocation(
 ): Promise<StorageLocation> {
   const user = await requireChef()
   const parsed = UpdateLocationSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('storage_locations' as any)
     .select('id')
     .eq('id', id)
@@ -156,7 +156,7 @@ export async function updateStorageLocation(
 
   // If setting as default, unset current default
   if (parsed.isDefault === true) {
-    await supabase
+    await db
       .from('storage_locations' as any)
       .update({ is_default: false })
       .eq('chef_id', user.tenantId!)
@@ -173,7 +173,7 @@ export async function updateStorageLocation(
   if (parsed.isDefault !== undefined) updatePayload.is_default = parsed.isDefault
   if (parsed.sortOrder !== undefined) updatePayload.sort_order = parsed.sortOrder
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('storage_locations' as any)
     .update(updatePayload)
     .eq('id', id)
@@ -195,9 +195,9 @@ export async function updateStorageLocation(
  */
 export async function deleteStorageLocation(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('storage_locations' as any)
     .update({ is_active: false, is_default: false })
     .eq('id', id)
@@ -214,9 +214,9 @@ export async function deleteStorageLocation(id: string): Promise<void> {
  */
 export async function getStorageLocations(): Promise<StorageLocation[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('storage_locations' as any)
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -234,10 +234,10 @@ export async function getStorageLocations(): Promise<StorageLocation[]> {
  */
 export async function setDefaultLocation(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('storage_locations' as any)
     .select('id')
     .eq('id', id)
@@ -247,14 +247,14 @@ export async function setDefaultLocation(id: string): Promise<void> {
   if (fetchError || !existing) throw new Error('Storage location not found')
 
   // Unset all defaults
-  await supabase
+  await db
     .from('storage_locations' as any)
     .update({ is_default: false })
     .eq('chef_id', user.tenantId!)
     .eq('is_default', true)
 
   // Set the new default
-  const { error } = await supabase
+  const { error } = await db
     .from('storage_locations' as any)
     .update({ is_default: true })
     .eq('id', id)
@@ -278,7 +278,7 @@ export async function transferInventory(
 ): Promise<{ transferPairId: string }> {
   const user = await requireChef()
   const parsed = TransferInventorySchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (parsed.fromLocationId === parsed.toLocationId) {
     throw new Error('Source and destination locations must be different')
@@ -288,7 +288,7 @@ export async function transferInventory(
   const transferPairId = crypto.randomUUID()
 
   // Insert both transactions together
-  const { error } = await supabase.from('inventory_transactions' as any).insert([
+  const { error } = await db.from('inventory_transactions' as any).insert([
     {
       chef_id: user.tenantId!,
       ingredient_id: parsed.ingredientId ?? null,

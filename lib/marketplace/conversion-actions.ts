@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { isMarketplaceSource, getMarketplacePlatform } from './platforms'
 
 export type MarketplaceConversionData = {
@@ -30,11 +30,11 @@ export async function getMarketplaceConversionData(
   eventId: string
 ): Promise<MarketplaceConversionData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   try {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('client_id, inquiry_id, client:clients(full_name, referral_source)')
       .eq('id', eventId)
@@ -53,7 +53,7 @@ export async function getMarketplaceConversionData(
 
     // Check inquiry channel if client source didn't match
     if (!matchedChannel && event.inquiry_id) {
-      const { data: inquiry } = await supabase
+      const { data: inquiry } = await db
         .from('inquiries')
         .select('channel')
         .eq('id', event.inquiry_id)
@@ -70,11 +70,7 @@ export async function getMarketplaceConversionData(
     const platform = getMarketplacePlatform(matchedChannel)
 
     // Fetch chef slug for the direct booking link
-    const { data: chef } = await supabase
-      .from('chefs')
-      .select('booking_slug')
-      .eq('id', tenantId)
-      .single()
+    const { data: chef } = await db.from('chefs').select('booking_slug').eq('id', tenantId).single()
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
     const directBookingUrl = chef?.booking_slug

@@ -1,20 +1,20 @@
-# Local Supabase Migration
+# Local PostgreSQL Migration
 
 **Date:** 2026-03-21
 **Branch:** `feature/external-directory`
 
 ## What Changed
 
-ChefFlow's development environment now runs against a **local Supabase stack** (Docker) instead of the remote Supabase cloud project. This eliminates dependency on Supabase's cloud availability and moves toward full self-hosting.
+ChefFlow's development environment now runs against a **local database stack** (Docker) instead of the remote database cloud project. This eliminates dependency on the database's cloud availability and moves toward full self-hosting.
 
 ## Architecture
 
 ```
-Before:  App (localhost:3100) --> Supabase Cloud (luefkpakzvxcsqroxyhz.supabase.co)
-After:   App (localhost:3100) --> Local Supabase (127.0.0.1:54321) via Docker
+Before:  App (localhost:3100) --> PostgreSQL Cloud (luefkpakzvxcsqroxyhz.database.co)
+After:   App (localhost:3100) --> Local PostgreSQL (127.0.0.1:54321) via Docker
 ```
 
-Local Supabase services running:
+Local PostgreSQL services running:
 
 - **PostgREST** (REST API): `http://127.0.0.1:54321/rest/v1`
 - **Auth (GoTrue)**: `http://127.0.0.1:54321/auth/v1`
@@ -26,15 +26,15 @@ Local Supabase services running:
 
 ## Environment Configuration
 
-`.env.local` was updated to point at local Supabase:
+`.env.local` was updated to point at local database:
 
 ```
-NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbG...(local demo anon key)
-SUPABASE_SERVICE_ROLE_KEY=eyJhbG...(local demo service role key)
+NEXT_PUBLIC_DATABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_DATABASE_ANON_KEY=eyJhbG...(local demo anon key)
+DATABASE_SERVICE_ROLE_KEY=eyJhbG...(local demo service role key)
 ```
 
-The remote Supabase credentials are preserved as comments in `.env.local` for reference.
+The remote database credentials are preserved as comments in `.env.local` for reference.
 
 ## Database State
 
@@ -64,35 +64,35 @@ Several migrations had conflicts due to duplicate migration files (same table cr
 | agent@chefflow.test    | TestAgent123 | aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee | chef                  |
 | davidferra13@gmail.com | LocalDev2026 | 1d59faa8-757c-4e9d-9ca4-ad249e92e42e | chef (platform owner) |
 
-## Starting Local Supabase
+## Starting Local PostgreSQL
 
 ```bash
 cd CFv1
-npx supabase start    # Start all services
-npx supabase stop     # Stop all services
-npx supabase status   # Check status
+npx docker compose up -d    # Start all services
+npx database stop     # Stop all services
+npx database status   # Check status
 ```
 
 Requires Docker Desktop to be running.
 
-## Reverting to Remote Supabase
+## Reverting to Remote PostgreSQL
 
-To switch back to cloud Supabase, edit `.env.local` and uncomment the remote credentials while commenting out the local ones.
+To switch back to cloud PostgreSQL, edit `.env.local` and uncomment the remote credentials while commenting out the local ones.
 
 ## Data Migration (Pending)
 
-The local database has the full schema but no production data. When remote Supabase is back online, a data dump can be imported:
+The local database has the full schema but no production data. When remote database is back online, a data dump can be imported:
 
 ```bash
 # From remote (when available)
-supabase db dump --linked --data-only > data-dump.sql
+database db dump --linked --data-only > data-dump.sql
 
 # To local
-docker exec -i supabase_db_CFv1 psql -U postgres < data-dump.sql
+docker exec -i database_db_CFv1 psql -U postgres < data-dump.sql
 ```
 
 ## What This Does NOT Change
 
-- Beta and production environments still use remote Supabase (`.env.local.beta` and `.env.local.prod` unchanged)
+- Beta and production environments still use remote database (`.env.local.beta` and `.env.local.prod` unchanged)
 - No code changes to the app itself (only `.env.local` and migration SQL files)
-- The `@supabase/ssr` and `@supabase/supabase-js` packages remain (they work with any Supabase instance, local or remote)
+- The `@database/ssr` and `@database/database-js` packages remain (they work with any PostgreSQL instance, local or remote)

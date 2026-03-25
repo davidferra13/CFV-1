@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import {
@@ -17,9 +17,9 @@ const UpdateTakeAChefSettingsSchema = z.object({
 
 export async function getTakeAChefIntegrationSettings(): Promise<TakeAChefIntegrationSettings> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('tenant_settings')
     .select('integration_connection_settings')
     .eq('tenant_id', user.tenantId!)
@@ -33,9 +33,9 @@ export async function updateTakeAChefIntegrationSettings(input: {
 }) {
   const user = await requireChef()
   const validated = UpdateTakeAChefSettingsSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('tenant_settings')
     .select('integration_connection_settings')
     .eq('tenant_id', user.tenantId!)
@@ -50,7 +50,7 @@ export async function updateTakeAChefIntegrationSettings(input: {
     },
   })
 
-  const { error } = await supabase.from('tenant_settings').upsert(
+  const { error } = await db.from('tenant_settings').upsert(
     {
       tenant_id: user.tenantId!,
       integration_connection_settings: mergedSettings,

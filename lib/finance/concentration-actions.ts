@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { computeConcentrationRisk } from '@/lib/finance/concentration-risk'
 import type { ConcentrationRisk } from '@/lib/finance/concentration-risk'
 
@@ -10,14 +10,14 @@ export type { ConcentrationRisk }
 export async function getConcentrationRisk(): Promise<ConcentrationRisk | null> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Look back 12 months
   const twelveMonthsAgo = new Date()
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
 
   // Get ledger payment entries joined to events and clients
-  const { data: entries, error } = await supabase
+  const { data: entries, error } = await db
     .from('ledger_entries')
     .select('amount_cents, event_id, events!inner(client_id, clients!inner(id, full_name))')
     .eq('tenant_id', tenantId)

@@ -2,7 +2,7 @@
 
 import type { Database } from '@/types/database'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -31,13 +31,13 @@ export async function getPricingSuggestion(params: {
   occasion?: string | null
 }): Promise<PricingSuggestion> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const { pricingModel, guestCount, occasion } = params
   const guestMin = Math.max(1, Math.floor(guestCount * 0.8))
   const guestMax = Math.ceil(guestCount * 1.2)
 
-  const { data: quotes, error } = await supabase
+  const { data: quotes, error } = await db
     .from('quotes')
     .select('id, total_quoted_cents, guest_count_estimated, event_id')
     .eq('tenant_id', user.tenantId!)
@@ -89,7 +89,7 @@ export async function getPricingSuggestion(params: {
   let avgFoodCostPercent: number | null = null
 
   if (eventIds.length > 0) {
-    const { data: financials } = await supabase
+    const { data: financials } = await db
       .from('event_financial_summary')
       .select('food_cost_percentage')
       .in('event_id', eventIds)

@@ -3,7 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { getMenuById, getMenuCostSummaries, getMenuEvent } from '@/lib/menus/actions'
 import { notFound } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { MenuDetailClient } from './menu-detail-client'
 import { getMenuRecommendations } from '@/lib/analytics/menu-recommendations'
 import { MenuRecommendationHints } from '@/components/analytics/menu-recommendation-hints'

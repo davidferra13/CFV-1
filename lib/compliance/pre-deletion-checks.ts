@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type DeletionBlocker = {
   type: 'active_events' | 'outstanding_payments' | 'active_retainers' | 'active_subscription'
@@ -13,11 +13,11 @@ export type DeletionBlocker = {
  * before account deletion can proceed.
  */
 export async function runPreDeletionChecks(chefId: string): Promise<DeletionBlocker[]> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const blockers: DeletionBlocker[] = []
 
   // 1. Check for active events (not completed or cancelled)
-  const { data: activeEvents, error: eventsError } = await supabase
+  const { data: activeEvents, error: eventsError } = await db
     .from('events')
     .select('id', { count: 'exact' })
     .eq('tenant_id', chefId)
@@ -33,7 +33,7 @@ export async function runPreDeletionChecks(chefId: string): Promise<DeletionBloc
 
   // 2. Check for outstanding payments via event_financial_summary view
   try {
-    const { data: unpaidEvents } = await supabase
+    const { data: unpaidEvents } = await db
       .from('event_financial_summary')
       .select('event_id, total_quoted, total_paid')
       .eq('tenant_id', chefId)
@@ -56,7 +56,7 @@ export async function runPreDeletionChecks(chefId: string): Promise<DeletionBloc
 
   // 3. Check for active retainers
   try {
-    const { data: activeRetainers } = await supabase
+    const { data: activeRetainers } = await db
       .from('retainers')
       .select('id', { count: 'exact' })
       .eq('tenant_id', chefId)
@@ -74,7 +74,7 @@ export async function runPreDeletionChecks(chefId: string): Promise<DeletionBloc
   }
 
   // 4. Check for active SaaS subscription
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('stripe_subscription_id')
     .eq('id', chefId)

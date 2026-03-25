@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ---------------------------------------------------------------------------
 // Inquiry Circle Actions
@@ -19,9 +19,9 @@ export async function createInquiryCircle(input: {
   clientEmail: string | null
   occasion: string | null
 }): Promise<{ groupToken: string; groupId: string }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select('tenant_id')
     .eq('id', input.inquiryId)
@@ -34,7 +34,7 @@ export async function createInquiryCircle(input: {
   const tenantId = inquiry.tenant_id
 
   // Check if a circle already exists for this inquiry
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('hub_groups')
     .select('id, group_token')
     .eq('inquiry_id', input.inquiryId)
@@ -44,7 +44,7 @@ export async function createInquiryCircle(input: {
   if (existing) return { groupToken: existing.group_token, groupId: existing.id }
 
   // --- Get or create chef hub profile ---
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('id, business_name, display_name, auth_user_id')
     .eq('id', tenantId)
@@ -54,7 +54,7 @@ export async function createInquiryCircle(input: {
 
   let chefProfileId: string | null = null
   if (chef?.auth_user_id) {
-    const { data: chefProfile } = await supabase
+    const { data: chefProfile } = await db
       .from('hub_guest_profiles')
       .select('id')
       .eq('auth_user_id', chef.auth_user_id)
@@ -64,7 +64,7 @@ export async function createInquiryCircle(input: {
   }
 
   if (!chefProfileId) {
-    const { data: newProfile } = await supabase
+    const { data: newProfile } = await db
       .from('hub_guest_profiles')
       .insert({
         display_name: chefName,
@@ -84,7 +84,7 @@ export async function createInquiryCircle(input: {
 
   if (input.clientEmail) {
     const normalized = input.clientEmail.toLowerCase().trim()
-    const { data: existingClient } = await supabase
+    const { data: existingClient } = await db
       .from('hub_guest_profiles')
       .select('id')
       .eq('email_normalized', normalized)
@@ -94,7 +94,7 @@ export async function createInquiryCircle(input: {
   }
 
   if (!clientProfileId) {
-    const { data: newClient } = await supabase
+    const { data: newClient } = await db
       .from('hub_guest_profiles')
       .insert({
         display_name: input.clientName || 'Guest',
@@ -111,7 +111,7 @@ export async function createInquiryCircle(input: {
     ? `${input.occasion} with ${input.clientName || 'Guest'}`
     : `Dinner with ${input.clientName || 'Guest'}`
 
-  const { data: group, error } = await supabase
+  const { data: group, error } = await db
     .from('hub_groups')
     .insert({
       name: groupName,
@@ -128,7 +128,7 @@ export async function createInquiryCircle(input: {
   // --- Add members ---
 
   // Chef as 'chef' role
-  await supabase.from('hub_group_members').insert({
+  await db.from('hub_group_members').insert({
     group_id: group.id,
     profile_id: chefProfileId,
     role: 'chef',
@@ -139,7 +139,7 @@ export async function createInquiryCircle(input: {
 
   // Client as 'member' role (if profile was created)
   if (clientProfileId) {
-    await supabase.from('hub_group_members').insert({
+    await db.from('hub_group_members').insert({
       group_id: group.id,
       profile_id: clientProfileId,
       role: 'member',
@@ -156,9 +156,9 @@ export async function createInquiryCircle(input: {
  * Get the circle token for an inquiry (if one exists).
  */
 export async function getInquiryCircleToken(inquiryId: string): Promise<string | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('hub_groups')
     .select('group_token')
     .eq('inquiry_id', inquiryId)
@@ -176,11 +176,11 @@ export async function linkInquiryCircleToEvent(input: {
   inquiryId: string
   eventId: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const [inquiryResult, eventResult] = await Promise.all([
-    supabase.from('inquiries').select('tenant_id').eq('id', input.inquiryId).single(),
-    supabase.from('events').select('tenant_id').eq('id', input.eventId).single(),
+    db.from('inquiries').select('tenant_id').eq('id', input.inquiryId).single(),
+    db.from('events').select('tenant_id').eq('id', input.eventId).single(),
   ])
 
   const inquiryTenantId = inquiryResult.data?.tenant_id
@@ -190,7 +190,7 @@ export async function linkInquiryCircleToEvent(input: {
     throw new Error('Inquiry and event tenant mismatch while linking Dinner Circle')
   }
 
-  await supabase
+  await db
     .from('hub_groups')
     .update({ event_id: input.eventId })
     .eq('inquiry_id', input.inquiryId)

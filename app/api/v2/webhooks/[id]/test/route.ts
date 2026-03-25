@@ -10,7 +10,7 @@ export const POST = withApiAuth(
     if (!id) return apiNotFound('Webhook subscription')
 
     // Fetch endpoint and verify ownership
-    const { data: endpoint, error: fetchError } = await ctx.supabase
+    const { data: endpoint, error: fetchError } = await ctx.db
       .from('webhook_endpoints' as any)
       .select('*')
       .eq('id', id)
@@ -69,7 +69,7 @@ export const POST = withApiAuth(
 
     // Log the test delivery (non-blocking)
     try {
-      await ctx.supabase.from('webhook_deliveries' as any).insert({
+      await ctx.db.from('webhook_deliveries' as any).insert({
         endpoint_id: id,
         tenant_id: ctx.tenantId,
         event_type: 'test.ping',

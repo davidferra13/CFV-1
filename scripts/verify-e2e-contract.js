@@ -6,7 +6,7 @@
  *  - Playwright config matches package.json dev port
  *  - Required env vars are set
  *  - Test directory structure exists
- *  - Supabase connection is reachable
+ *  - Database connection is reachable
  *
  * Exit 0 on pass, non-zero on fail.
  */
@@ -84,7 +84,7 @@ check('tests/helpers/ directory must exist', fs.existsSync(helpersDir))
 // 5. Required env vars (check .env.local or process.env)
 // ============================================================
 
-const requiredVars = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY']
+const requiredVars = ['NEXT_PUBLIC_DB_URL', 'NEXT_PUBLIC_DB_ANON_KEY']
 
 for (const varName of requiredVars) {
   const inEnv = !!process.env[varName]
@@ -93,11 +93,11 @@ for (const varName of requiredVars) {
 }
 
 // ============================================================
-// 6. Supabase migrations exist
+// 6. Database migrations exist
 // ============================================================
 
-const migrationsDir = path.join(ROOT, 'supabase', 'migrations')
-check('supabase/migrations/ directory must exist', fs.existsSync(migrationsDir))
+const migrationsDir = path.join(ROOT, 'database', 'migrations')
+check('database/migrations/ directory must exist', fs.existsSync(migrationsDir))
 
 if (fs.existsSync(migrationsDir)) {
   const migrations = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql'))

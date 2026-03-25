@@ -7,7 +7,7 @@ import { createEvent, updateEvent, getEventById } from '@/lib/events/actions'
 import { transitionEvent } from '@/lib/events/transitions'
 import { searchClientsByName } from '@/lib/clients/actions'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 
 // ─── NL → Structured Event Parser ─────────────────────────────────────────
@@ -221,8 +221,8 @@ export const eventAgentActions: AgentActionDefinition[] = [
       const parsed = await parseEventUpdateFromNL(description)
 
       // Find the event by searching events
-      const supabase: any = createServerClient()
-      const { data: events } = await supabase
+      const db: any = createServerClient()
+      const { data: events } = await db
         .from('events')
         .select('id, occasion, event_date, status, guest_count, client:clients(full_name)')
         .eq('tenant_id', ctx.tenantId)
@@ -322,8 +322,8 @@ export const eventAgentActions: AgentActionDefinition[] = [
       const identifier = String(inputs.eventIdentifier ?? '').toLowerCase()
       const toStatus = String(inputs.toStatus ?? '')
 
-      const supabase: any = createServerClient()
-      const { data: events } = await supabase
+      const db: any = createServerClient()
+      const { data: events } = await db
         .from('events')
         .select('id, occasion, event_date, status, client:clients(full_name)')
         .eq('tenant_id', ctx.tenantId)

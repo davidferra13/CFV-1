@@ -5,7 +5,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -44,7 +44,7 @@ export type IngredientBatch = {
  */
 export async function getExpiryAlerts(daysAhead: number = 7): Promise<ExpiryAlert[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Compute the cutoff date: now + daysAhead days
   const cutoff = new Date()
@@ -52,7 +52,7 @@ export async function getExpiryAlerts(daysAhead: number = 7): Promise<ExpiryAler
   const cutoffIso = cutoff.toISOString().split('T')[0]
 
   // Fetch active batches with an expiry date within the window
-  const { data: batches, error } = await supabase
+  const { data: batches, error } = await db
     .from('inventory_batches' as any)
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -72,7 +72,7 @@ export async function getExpiryAlerts(daysAhead: number = 7): Promise<ExpiryAler
   let locationMap = new Map<string, string>()
 
   if (locationIds.length > 0) {
-    const { data: locations } = await supabase
+    const { data: locations } = await db
       .from('storage_locations' as any)
       .select('id, name')
       .in('id', locationIds)
@@ -135,12 +135,12 @@ export async function consumeFromBatch(
   quantity: number
 ): Promise<{ remainingQty: number; isDepleted: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (quantity <= 0) throw new Error('Quantity must be positive')
 
   // Fetch the batch - verify ownership
-  const { data: batch, error: fetchError } = await supabase
+  const { data: batch, error: fetchError } = await db
     .from('inventory_batches' as any)
     .select('id, remaining_qty, is_depleted')
     .eq('id', batchId)
@@ -159,7 +159,7 @@ export async function consumeFromBatch(
   const newRemainingQty = Math.max(0, currentQty - quantity)
   const isDepleted = newRemainingQty <= 0
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('inventory_batches' as any)
     .update({
       remaining_qty: newRemainingQty,
@@ -182,10 +182,10 @@ export async function consumeFromBatch(
  */
 export async function markBatchExpired(batchId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the batch - verify ownership
-  const { data: batch, error: fetchError } = await supabase
+  const { data: batch, error: fetchError } = await db
     .from('inventory_batches' as any)
     .select('*')
     .eq('id', batchId)
@@ -203,7 +203,7 @@ export async function markBatchExpired(batchId: string): Promise<void> {
     const wasteCostCents = Math.round(remainingQty * unitCostCents)
 
     try {
-      await supabase.from('inventory_transactions' as any).insert({
+      await db.from('inventory_transactions' as any).insert({
         chef_id: user.tenantId!,
         ingredient_id: batchData.ingredient_id ?? null,
         ingredient_name: batchData.ingredient_name,
@@ -220,7 +220,7 @@ export async function markBatchExpired(batchId: string): Promise<void> {
   }
 
   // Mark batch as expired and depleted
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('inventory_batches' as any)
     .update({
       is_expired: true,
@@ -240,9 +240,9 @@ export async function markBatchExpired(batchId: string): Promise<void> {
  */
 export async function getBatchesForIngredient(ingredientId: string): Promise<IngredientBatch[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('inventory_batches' as any)
     .select('*')
     .eq('chef_id', user.tenantId!)

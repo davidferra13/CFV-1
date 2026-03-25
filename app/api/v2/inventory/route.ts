@@ -52,7 +52,7 @@ export const GET = withApiAuth(
 
     // If view=transactions or filters are set, return raw transactions
     if (view === 'transactions' || txType || eventId) {
-      let txQuery = (ctx.supabase as any)
+      let txQuery = (ctx.db as any)
         .from('inventory_transactions')
         .select('*', { count: 'exact' })
         .eq('chef_id', ctx.tenantId)
@@ -70,7 +70,7 @@ export const GET = withApiAuth(
     }
 
     // Default: return stock summary (aggregated current quantities)
-    let summaryQuery = (ctx.supabase as any)
+    let summaryQuery = (ctx.db as any)
       .from('inventory_stock_summary')
       .select('*', { count: 'exact' })
       .eq('chef_id', ctx.tenantId)
@@ -84,7 +84,7 @@ export const GET = withApiAuth(
 
     if (error) {
       // If the view doesn't exist, fall back to raw transaction query
-      let fallbackQuery = (ctx.supabase as any)
+      let fallbackQuery = (ctx.db as any)
         .from('inventory_transactions')
         .select('*', { count: 'exact' })
         .eq('chef_id', ctx.tenantId)
@@ -121,7 +121,7 @@ export const POST = withApiAuth(
     const parsed = RecordTransactionBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('inventory_transactions')
       .insert({
         ...parsed.data,

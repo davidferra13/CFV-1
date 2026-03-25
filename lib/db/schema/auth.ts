@@ -10,7 +10,7 @@ import {
   text,
 } from 'drizzle-orm/pg-core'
 
-// Supabase stores users in the 'auth' schema, not 'public'
+// The database stores users in the 'auth' schema, not 'public'
 const authSchema = pgSchema('auth')
 
 export const authUsers = authSchema.table('users', {

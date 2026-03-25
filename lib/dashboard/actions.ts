@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { formatMinutesAsDuration } from '@/lib/events/time-tracking'
@@ -16,9 +16,9 @@ import { formatMinutesAsDuration } from '@/lib/events/time-tracking'
 
 export async function getOutstandingPayments() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: summaries, error } = await supabase
+  const { data: summaries, error } = await db
     .from('event_financial_summary')
     .select('event_id, outstanding_balance_cents, quoted_price_cents, total_paid_cents')
     .eq('tenant_id', user.tenantId!)
@@ -32,7 +32,7 @@ export async function getOutstandingPayments() {
   const eventIds = summaries.map((s: any) => s.event_id).filter(Boolean) as string[]
 
   // Only show non-draft, non-cancelled events where payment is expected
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, status, client:clients(id, full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -70,9 +70,9 @@ export type OutstandingEvent = {
 
 export async function getDashboardQuoteStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: quotes, error } = await supabase
+  const { data: quotes, error } = await db
     .from('quotes')
     .select('status, valid_until, total_quoted_cents, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -127,12 +127,12 @@ export type DashboardInquiryBudgetMix = {
 
 export async function getDashboardInquiryBudgetMix(windowDays = 90) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const safeWindowDays = Number.isFinite(windowDays) && windowDays > 0 ? Math.floor(windowDays) : 90
   const cutoff = new Date(Date.now() - safeWindowDays * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select('confirmed_budget_cents, unknown_fields, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -211,13 +211,13 @@ export async function getDashboardInquiryBudgetMix(windowDays = 90) {
 
 export async function getDashboardEventCounts() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const yearStart = `${now.getFullYear()}-01-01`
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('id, event_date, status, guest_count')
     .eq('tenant_id', user.tenantId!)
@@ -265,7 +265,7 @@ export async function getDashboardEventCounts() {
 
 export async function getMonthOverMonthRevenue() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const currentYear = now.getFullYear()
@@ -281,7 +281,7 @@ export async function getMonthOverMonthRevenue() {
       : `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`
 
   // Get events for current and previous months
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -313,7 +313,7 @@ export async function getMonthOverMonthRevenue() {
     }
   }
 
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select('event_id, total_paid_cents, profit_cents')
     .eq('tenant_id', user.tenantId!)
@@ -353,12 +353,12 @@ export async function getMonthOverMonthRevenue() {
 
 export async function getCurrentMonthExpenseSummary() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .select('amount_cents, is_business')
     .eq('tenant_id', user.tenantId!)
@@ -388,11 +388,11 @@ export async function getCurrentMonthExpenseSummary() {
 
 export async function getNextUpcomingEvent() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('events')
     .select('id, occasion, event_date, serve_time, guest_count, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -651,7 +651,7 @@ function buildTopActivity(
 
 export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapshot> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const todayIso = new Date().toISOString().slice(0, 10)
   const sevenDaysAgoIso = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
@@ -663,7 +663,7 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
       let from = 0
 
       while (true) {
-        const { data, error } = await supabase
+        const { data, error } = await db
           .from('events')
           .select(
             'event_date, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes'
@@ -689,7 +689,7 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
       let from = 0
 
       while (true) {
-        const { data, error } = await supabase
+        const { data, error } = await db
           .from('chef_activity_log')
           .select('id, action, created_at, context')
           .eq('tenant_id', user.tenantId!)
@@ -856,12 +856,12 @@ export type TopProfitEvent = {
 
 export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -873,7 +873,7 @@ export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]>
 
   const eventIds = events.map((e: any) => e.id)
 
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select('event_id, profit_cents, profit_margin, total_paid_cents')
     .eq('tenant_id', user.tenantId!)
@@ -903,12 +903,12 @@ export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]>
 
 export async function getMonthlyAvgHourlyRate(): Promise<number | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       'id, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes'
@@ -921,7 +921,7 @@ export async function getMonthlyAvgHourlyRate(): Promise<number | null> {
 
   const eventIds = events.map((e: any) => e.id)
 
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select('event_id, profit_cents, tip_amount_cents')
     .eq('tenant_id', user.tenantId!)
@@ -1011,7 +1011,7 @@ export interface RevenueProjection {
 
 export async function getRevenueProjection(): Promise<RevenueProjection> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
@@ -1019,7 +1019,7 @@ export async function getRevenueProjection(): Promise<RevenueProjection> {
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
 
   // Get this month's events
-  const { data: bookedEvents } = await supabase
+  const { data: bookedEvents } = await db
     .from('events')
     .select('quoted_price_cents, status')
     .eq('tenant_id', user.tenantId!)
@@ -1042,7 +1042,7 @@ export async function getRevenueProjection(): Promise<RevenueProjection> {
   const sixMonthsAgo = new Date(now)
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
 
-  const { data: historicalEvents } = await supabase
+  const { data: historicalEvents } = await db
     .from('events')
     .select('status')
     .eq('tenant_id', user.tenantId!)
@@ -1062,7 +1062,7 @@ export async function getRevenueProjection(): Promise<RevenueProjection> {
   const pipelineExpectedCents = Math.round(pendingCents * conversionRate)
 
   // Monthly goal
-  const { data: prefs } = await supabase
+  const { data: prefs } = await db
     .from('chef_preferences')
     .select('target_monthly_revenue_cents')
     .eq('chef_id', user.entityId ?? user.tenantId!)
@@ -1117,13 +1117,13 @@ interface MonthMetrics {
 
 export async function getComparativePeriods(): Promise<ComparativePeriods> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date()
 
   const [thisMonth, lastMonth, sameMonthLastYear] = await Promise.all([
-    fetchMonthRevenue(supabase, user.tenantId!, now),
-    fetchMonthRevenue(supabase, user.tenantId!, new Date(now.getFullYear(), now.getMonth() - 1, 1)),
-    fetchMonthRevenue(supabase, user.tenantId!, new Date(now.getFullYear() - 1, now.getMonth(), 1)),
+    fetchMonthRevenue(db, user.tenantId!, now),
+    fetchMonthRevenue(db, user.tenantId!, new Date(now.getFullYear(), now.getMonth() - 1, 1)),
+    fetchMonthRevenue(db, user.tenantId!, new Date(now.getFullYear() - 1, now.getMonth(), 1)),
   ])
 
   function pctChange(from: number, to: number): number {
@@ -1150,7 +1150,7 @@ export async function getComparativePeriods(): Promise<ComparativePeriods> {
 }
 
 async function fetchMonthRevenue(
-  supabase: any,
+  db: any,
   tenantId: string,
   monthDate: Date
 ): Promise<MonthMetrics> {
@@ -1161,7 +1161,7 @@ async function fetchMonthRevenue(
     .toISOString()
     .slice(0, 10)
 
-  const { data } = await supabase
+  const { data } = await db
     .from('events')
     .select('quoted_price_cents, status')
     .eq('tenant_id', tenantId)
@@ -1202,14 +1202,14 @@ export interface UnloggedEvent {
 
 export async function getUnloggedEventHours(): Promise<UnloggedEvent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   const twoDaysAgo = new Date()
   twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
 
-  const { data: recentEvents } = await supabase
+  const { data: recentEvents } = await db
     .from('events')
     .select(
       'id, occasion, event_date, guest_count, service_hours, prep_hours, shopping_hours, travel_hours, client:clients(full_name)'
@@ -1257,12 +1257,12 @@ export interface EventNeedingAAR {
 
 export async function getEventsNeedingAAR(): Promise<EventNeedingAAR[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const twoDaysAgo = new Date()
   twoDaysAgo.setDate(twoDaysAgo.getDate() - 2)
 
-  const { data } = await supabase
+  const { data } = await db
     .from('events')
     .select('id, occasion, event_date, completed_at, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)

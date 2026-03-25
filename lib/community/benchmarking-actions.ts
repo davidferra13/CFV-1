@@ -6,7 +6,7 @@
 'use server'
 
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ============================================
 // TYPES
@@ -80,14 +80,14 @@ const MIN_CHEFS_FOR_BENCHMARKS = 3
  */
 export async function getPeerBenchmarks(): Promise<BenchmarkReport> {
   const user = await requirePro('community')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const disclaimer =
     'All benchmarks are anonymous aggregates across participating chefs. ' +
     'No individual chef data is shared. Minimum 3 chefs required for any metric.'
 
   // Get all chefs (we need aggregate stats)
-  const { data: allChefs } = await (supabase as any).from('chefs').select('id')
+  const { data: allChefs } = await (db as any).from('chefs').select('id')
 
   const totalChefs = allChefs?.length ?? 0
 
@@ -115,14 +115,14 @@ export async function getPeerBenchmarks(): Promise<BenchmarkReport> {
   >()
 
   // Get completed events per chef with quote totals
-  const { data: events } = await (supabase as any)
+  const { data: events } = await (db as any)
     .from('events')
     .select('tenant_id, guest_count, status')
     .in('tenant_id', chefIds)
     .eq('status', 'completed')
 
   // Get quote totals per event tenant
-  const { data: quotes } = await (supabase as any)
+  const { data: quotes } = await (db as any)
     .from('quotes')
     .select('tenant_id, total_cents')
     .in('tenant_id', chefIds)
@@ -256,10 +256,10 @@ export async function getPeerBenchmarks(): Promise<BenchmarkReport> {
  */
 export async function getEventTypeBenchmarks(): Promise<EventTypeBenchmark[]> {
   const user = await requirePro('community')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all completed events with quotes across all chefs
-  const { data: events } = await (supabase as any)
+  const { data: events } = await (db as any)
     .from('events')
     .select('id, occasion, guest_count')
     .eq('status', 'completed')
@@ -269,7 +269,7 @@ export async function getEventTypeBenchmarks(): Promise<EventTypeBenchmark[]> {
 
   // Get quotes for these events
   const eventIds = events.map((e: any) => e.id)
-  const { data: quotes } = await (supabase as any)
+  const { data: quotes } = await (db as any)
     .from('quotes')
     .select('event_id, total_cents')
     .in('event_id', eventIds)

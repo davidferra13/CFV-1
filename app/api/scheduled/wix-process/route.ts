@@ -5,7 +5,7 @@
 // Secured with CRON_SECRET bearer token (same pattern as follow-ups cron).
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { processWixSubmission } from '@/lib/wix/process'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
@@ -13,10 +13,10 @@ async function handleWixProcess(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Find pending or failed (retryable) submissions
-  const { data: pendingSubmissions, error } = await supabase
+  const { data: pendingSubmissions, error } = await db
     .from('wix_submissions')
     .select('id, wix_submission_id, processing_attempts')
     .in('status', ['pending', 'failed'])

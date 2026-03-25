@@ -10,7 +10,7 @@
 // - Milestone messages at 3, 7, 14, 30
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type ClosureStreakData = {
   currentStreak: number
@@ -35,9 +35,9 @@ function getMilestoneMessage(streak: number): string | null {
  */
 export async function getClosureStreak(): Promise<ClosureStreakData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('current_closure_streak, longest_closure_streak, last_closure_date')
     .eq('id', user.entityId!)
@@ -66,9 +66,9 @@ export async function getClosureStreak(): Promise<ClosureStreakData> {
  */
 export async function recordClosureForStreak(eventDate: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('current_closure_streak, longest_closure_streak, last_closure_date')
     .eq('id', user.entityId!)
@@ -103,7 +103,7 @@ export async function recordClosureForStreak(eventDate: string): Promise<void> {
   const newLongest = Math.max(longestStreak, newStreak)
   const todayStr = today.toISOString().split('T')[0]
 
-  await supabase
+  await db
     .from('chefs')
     .update({
       current_closure_streak: newStreak,

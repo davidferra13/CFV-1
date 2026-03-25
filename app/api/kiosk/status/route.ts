@@ -3,7 +3,7 @@
 // Requires device token in Authorization header
 
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { extractBearerToken, hashToken } from '@/lib/devices/token'
 import type { KioskConfig } from '@/lib/devices/types'
 
@@ -17,9 +17,9 @@ export async function GET(request: Request) {
     }
 
     const tokenHash = hashToken(token)
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
 
-    const { data: device, error } = await supabase
+    const { data: device, error } = await db
       .from('devices')
       .select('id, tenant_id, status, mode, kiosk_flow, idle_timeout_seconds, require_staff_pin')
       .eq('token_hash', tokenHash)
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ status: device.status, config: null })
     }
 
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('business_name')
       .eq('id', device.tenant_id)

@@ -4,7 +4,7 @@
 //
 // NOT a 'use server' file - imported by classify.ts (which IS 'use server').
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { EmailClassification } from './types'
 
 /** Minimum mark_done count before auto-classifying a domain as marketing */
@@ -24,7 +24,7 @@ export async function recordSenderAction(
   const domain = extractDomainFromIdentity(senderIdentity)
   if (!domain) return
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const columnMap: Record<ReputationAction, string> = {
     mark_done: 'mark_done_count',
@@ -36,7 +36,7 @@ export async function recordSenderAction(
 
   // Upsert: increment the relevant counter, update last_seen_at
   // Also auto-compute reputation based on the updated counts
-  const { error } = await supabase.rpc('upsert_sender_reputation', {
+  const { error } = await db.rpc('upsert_sender_reputation', {
     p_tenant_id: tenantId,
     p_sender_domain: domain,
     p_column: column,
@@ -45,7 +45,7 @@ export async function recordSenderAction(
 
   if (error) {
     // Fallback: try simple upsert without RPC (in case RPC doesn't exist yet)
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('email_sender_reputation' as any)
       .select('id, mark_done_count, mark_spam_count, replied_count, inquiry_created_count')
       .eq('tenant_id', tenantId)
@@ -72,12 +72,12 @@ export async function recordSenderAction(
         updates.reputation = 'trusted'
       }
 
-      await supabase
+      await db
         .from('email_sender_reputation' as any)
         .update(updates)
         .eq('id', existing.id)
     } else {
-      await supabase.from('email_sender_reputation' as any).insert({
+      await db.from('email_sender_reputation' as any).insert({
         tenant_id: tenantId,
         sender_domain: domain,
         [column]: 1,
@@ -95,9 +95,9 @@ export async function checkSenderReputation(
   tenantId: string,
   senderDomain: string
 ): Promise<EmailClassification | null> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('email_sender_reputation' as any)
     .select('reputation, mark_done_count, replied_count, inquiry_created_count')
     .eq('tenant_id', tenantId)

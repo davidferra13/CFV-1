@@ -5,7 +5,7 @@
 // Push dinners are 1:1 personalised invites: every recipient gets an
 // individually AI-drafted message that the chef approves before it's sent.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { getResendClient, FROM_EMAIL } from '@/lib/email/resend-client'
@@ -80,8 +80,8 @@ function generateToken(): string {
   return require('crypto').randomBytes(32).toString('hex')
 }
 
-async function getChefDisplayName(chefEntityId: string, supabase: any): Promise<string> {
-  const { data: prefs } = await supabase
+async function getChefDisplayName(chefEntityId: string, db: any): Promise<string> {
+  const { data: prefs } = await db
     .from('chef_preferences')
     .select('display_name, business_name')
     .eq('chef_id', chefEntityId)
@@ -95,12 +95,12 @@ async function getChefDisplayName(chefEntityId: string, supabase: any): Promise<
 
 export async function createPushDinner(input: PushDinnerInput): Promise<string> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const token = generateToken()
   const seats = input.seats_available ?? input.guest_count_max ?? 12
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('marketing_campaigns')
     .insert({
       chef_id: chef.entityId,
@@ -132,9 +132,9 @@ export async function createPushDinner(input: PushDinnerInput): Promise<string> 
 
 export async function updatePushDinner(id: string, input: Partial<PushDinnerInput>): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('marketing_campaigns')
     .update(input)
     .eq('id', id)
@@ -147,9 +147,9 @@ export async function updatePushDinner(id: string, input: Partial<PushDinnerInpu
 
 export async function getPushDinner(id: string): Promise<PushDinner | null> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('marketing_campaigns')
     .select('*')
     .eq('id', id)
@@ -162,9 +162,9 @@ export async function getPushDinner(id: string): Promise<PushDinner | null> {
 
 export async function listPushDinners(): Promise<PushDinner[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('marketing_campaigns')
     .select('*')
     .eq('chef_id', chef.entityId)
@@ -178,9 +178,9 @@ export async function listPushDinners(): Promise<PushDinner[]> {
 
 export async function cancelPushDinner(id: string): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('marketing_campaigns')
     .update({ status: 'cancelled' })
     .eq('id', id)
@@ -200,10 +200,10 @@ export async function addRecipientsToCampaign(
   clients: Array<{ id: string; email: string }>
 ): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify campaign ownership
-  const { data: campaign } = await supabase
+  const { data: campaign } = await db
     .from('marketing_campaigns')
     .select('id, status')
     .eq('id', campaignId)
@@ -214,7 +214,7 @@ export async function addRecipientsToCampaign(
   if (campaign.status !== 'draft') throw new Error('Campaign is no longer in draft')
 
   // Fetch existing recipients to avoid duplicates
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('campaign_recipients')
     .select('client_id')
     .eq('campaign_id', campaignId)
@@ -232,7 +232,7 @@ export async function addRecipientsToCampaign(
 
   if (toInsert.length === 0) return
 
-  const { error } = await supabase.from('campaign_recipients').insert(toInsert)
+  const { error } = await db.from('campaign_recipients').insert(toInsert)
 
   if (error) throw new Error(error.message)
   revalidatePath(`/marketing/push-dinners/${campaignId}`)
@@ -240,9 +240,9 @@ export async function addRecipientsToCampaign(
 
 export async function getCampaignRecipients(campaignId: string): Promise<PushDinnerRecipient[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('campaign_recipients')
     .select('*')
     .eq('campaign_id', campaignId)
@@ -263,9 +263,9 @@ export async function updateDraft(
   body: string
 ): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('campaign_recipients')
     .update({
       draft_subject: subject,
@@ -281,9 +281,9 @@ export async function updateDraft(
 
 export async function approveDraft(recipientId: string): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('campaign_recipients')
     .update({ chef_approved: true, chef_approved_at: new Date().toISOString() })
     .eq('id', recipientId)
@@ -294,11 +294,11 @@ export async function approveDraft(recipientId: string): Promise<void> {
 
 export async function approveAllDrafts(campaignId: string): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date().toISOString()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('campaign_recipients')
     .update({ chef_approved: true, chef_approved_at: now })
     .eq('campaign_id', campaignId)
@@ -312,9 +312,9 @@ export async function approveAllDrafts(campaignId: string): Promise<void> {
 
 export async function skipRecipient(recipientId: string): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('campaign_recipients')
     .delete()
     .eq('id', recipientId)
@@ -336,10 +336,10 @@ export type LaunchResult = {
 
 export async function launchCampaign(campaignId: string): Promise<LaunchResult> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership + status
-  const { data: campaign, error: campErr } = await supabase
+  const { data: campaign, error: campErr } = await db
     .from('marketing_campaigns')
     .select('*')
     .eq('id', campaignId)
@@ -350,10 +350,10 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
   if (campaign.status !== 'draft') throw new Error('Campaign is not in draft status')
 
   // Mark as sending
-  await supabase.from('marketing_campaigns').update({ status: 'sending' }).eq('id', campaignId)
+  await db.from('marketing_campaigns').update({ status: 'sending' }).eq('id', campaignId)
 
   // Fetch all approved recipients not yet sent
-  const { data: recipients } = await supabase
+  const { data: recipients } = await db
     .from('campaign_recipients')
     .select('*')
     .eq('campaign_id', campaignId)
@@ -361,7 +361,7 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
     .eq('chef_approved', true)
     .is('sent_at', null)
 
-  const chefName = await getChefDisplayName(chef.entityId, supabase)
+  const chefName = await getChefDisplayName(chef.entityId, db)
   const unsubscribeBase = `${APP_URL}/unsubscribe?rid=`
   const bookingUrl = `${APP_URL}/book/campaign/${campaign.public_booking_token}`
 
@@ -391,7 +391,7 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
         '[push-dinner] RESEND_API_KEY not set - skipping email to recipient',
         recipient.id
       )
-      await supabase
+      await db
         .from('campaign_recipients')
         .update({ error_message: 'Email not configured' })
         .eq('id', recipient.id)
@@ -418,20 +418,20 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
       })
 
       if (sendError) {
-        await supabase
+        await db
           .from('campaign_recipients')
           .update({ error_message: sendError.message })
           .eq('id', recipient.id)
         failed++
       } else {
-        await supabase
+        await db
           .from('campaign_recipients')
           .update({ sent_at: new Date().toISOString() })
           .eq('id', recipient.id)
         sent++
       }
     } catch (err) {
-      await supabase
+      await db
         .from('campaign_recipients')
         .update({ error_message: err instanceof Error ? err.message : 'Delivery failed' })
         .eq('id', recipient.id)
@@ -440,7 +440,7 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
   }
 
   // Mark campaign as sent
-  await supabase
+  await db
     .from('marketing_campaigns')
     .update({
       status: 'sent',
@@ -470,9 +470,9 @@ export type PushDinnerStats = {
 
 export async function getPushDinnerStats(campaignId: string): Promise<PushDinnerStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('campaign_recipients')
     .select(
       'draft_body, chef_approved, sent_at, responded_at, converted_to_inquiry_id, error_message'

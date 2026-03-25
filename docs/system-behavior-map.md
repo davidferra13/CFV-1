@@ -34,25 +34,25 @@
 
 ## 1. System Scale Summary
 
-| Category                         | Count                                                         | Status                           |
-| -------------------------------- | ------------------------------------------------------------- | -------------------------------- |
-| App pages (page.tsx)             | 654                                                           | EXECUTING                        |
-| Route groups                     | 8 (chef, client, public, admin, staff, partner, mobile, demo) | EXECUTING                        |
-| Server action files              | 574                                                           | EXECUTING                        |
-| Exported server action functions | ~1,500+                                                       | EXECUTING (some UNKNOWN usage)   |
-| API route files                  | 284                                                           | EXECUTING                        |
-| Webhook handlers                 | 14                                                            | EXECUTING                        |
-| Cron endpoints                   | 14                                                            | EXECUTING (requires CRON_SECRET) |
-| Scheduled endpoints              | 26                                                            | EXECUTING (requires CRON_SECRET) |
-| Inngest background jobs          | 6                                                             | EXECUTING                        |
-| AI system files                  | 182                                                           | EXECUTING                        |
-| Remy agent action modules        | 25                                                            | EXECUTING                        |
-| Custom React hooks               | 26                                                            | EXECUTING                        |
-| Context providers                | 9+                                                            | EXECUTING                        |
-| Supabase realtime subscriptions  | 5+                                                            | EXECUTING                        |
-| Email templates                  | 40+                                                           | EXECUTING                        |
-| Notification action types        | 50+                                                           | EXECUTING                        |
-| Loading skeleton files           | 152                                                           | EXECUTING                        |
+| Category                          | Count                                                         | Status                           |
+| --------------------------------- | ------------------------------------------------------------- | -------------------------------- |
+| App pages (page.tsx)              | 654                                                           | EXECUTING                        |
+| Route groups                      | 8 (chef, client, public, admin, staff, partner, mobile, demo) | EXECUTING                        |
+| Server action files               | 574                                                           | EXECUTING                        |
+| Exported server action functions  | ~1,500+                                                       | EXECUTING (some UNKNOWN usage)   |
+| API route files                   | 284                                                           | EXECUTING                        |
+| Webhook handlers                  | 14                                                            | EXECUTING                        |
+| Cron endpoints                    | 14                                                            | EXECUTING (requires CRON_SECRET) |
+| Scheduled endpoints               | 26                                                            | EXECUTING (requires CRON_SECRET) |
+| Inngest background jobs           | 6                                                             | EXECUTING                        |
+| AI system files                   | 182                                                           | EXECUTING                        |
+| Remy agent action modules         | 25                                                            | EXECUTING                        |
+| Custom React hooks                | 26                                                            | EXECUTING                        |
+| Context providers                 | 9+                                                            | EXECUTING                        |
+| PostgreSQL realtime subscriptions | 5+                                                            | EXECUTING                        |
+| Email templates                   | 40+                                                           | EXECUTING                        |
+| Notification action types         | 50+                                                           | EXECUTING                        |
+| Loading skeleton files            | 152                                                           | EXECUTING                        |
 
 ---
 
@@ -68,12 +68,12 @@
 
 1. Bypasses auth for public assets, API webhooks, health checks, embed routes
 2. Allows unauthenticated access to public pages (/about, /pricing, token pages)
-3. For protected paths: checks Supabase auth, queries `user_roles` table
+3. For protected paths: checks PostgreSQL auth, queries `user_roles` table
 4. Sets auth context headers (userId, email, role, entityId, tenantId)
 5. Redirects root `/` to role-specific home page
 6. Prevents cross-role access (chef can't access /my-events, client can't access /dashboard)
 
-**Calls:** `lib/auth/route-policy.ts` (path categorization), Supabase auth
+**Calls:** `lib/auth/route-policy.ts` (path categorization), PostgreSQL auth
 **Called by:** Next.js runtime (automatic)
 
 ### 2.2 Auth Guard Functions (`lib/auth/get-user.ts`)
@@ -625,7 +625,7 @@ All hooks actively used. Key hooks:
 
 - Timer-based: All `setInterval` have `clearInterval` in cleanup
 - Event listeners: All 10+ listener types properly removed
-- Supabase subscriptions: All use `removeChannel` in cleanup
+- PostgreSQL subscriptions: All use `removeChannel` in cleanup
 - RAF/Animation: `cancelAnimationFrame` in cleanup
 - AudioContext: Proper close via oscillator `onended`
 
@@ -733,7 +733,7 @@ Chef profiles, chef directory, discover (universal food services directory), mar
 **Rollback scripts:** `scripts/rollback-beta.sh`, `scripts/rollback-prod.sh`
 **Start scripts:** `scripts/start-beta.ps1`, `scripts/start-prod.ps1`
 
-All three environments share the same Supabase database and Ollama instance.
+All three environments share the same PostgreSQL database and Ollama instance.
 
 ---
 
@@ -854,7 +854,7 @@ Business event occurs (transition, creation, etc.)
   -> lib/notifications/channel-router.ts: route by preference
   |
   ├─ In-app: INSERT into notifications table
-  │   -> Supabase Realtime -> Client component update
+  │   -> SSE realtime -> Client component update
   ├─ Email: lib/email/send.ts -> Resend API
   │   -> Circuit breaker (5 failures -> 60s cooldown)
   ├─ SMS: Twilio API

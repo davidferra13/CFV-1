@@ -5,7 +5,7 @@
 // All actions require requireChef() and are tenant-scoped.
 
 import { revalidatePath } from 'next/cache'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { createClientFromLead } from '@/lib/clients/actions'
@@ -44,9 +44,9 @@ export interface HistoricalFinding {
 
 export async function enableHistoricalEmailScan(): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase
+  await db
     .from('google_connections')
     .update({
       historical_scan_enabled: true,
@@ -62,10 +62,10 @@ export async function enableHistoricalEmailScan(): Promise<void> {
 
 export async function disableHistoricalEmailScan(): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Pause (not reset) - preserves progress and existing findings
-  await supabase
+  await db
     .from('google_connections')
     .update({
       historical_scan_enabled: false,
@@ -80,9 +80,9 @@ export async function disableHistoricalEmailScan(): Promise<void> {
 
 export async function getHistoricalScanStatus(): Promise<HistoricalScanStatus | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('google_connections')
     .select(
       'gmail_connected, historical_scan_enabled, historical_scan_status, historical_scan_total_processed, historical_scan_lookback_days, historical_scan_started_at, historical_scan_completed_at, historical_scan_last_run_at'
@@ -113,9 +113,9 @@ export async function getHistoricalFindings(
   limit = 50
 ): Promise<HistoricalFinding[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('gmail_historical_findings')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -152,10 +152,10 @@ export async function getHistoricalFindings(
 
 export async function importHistoricalFinding(findingId: string): Promise<{ inquiryId: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load the finding (tenant-scoped)
-  const { data: finding, error: findErr } = await supabase
+  const { data: finding, error: findErr } = await db
     .from('gmail_historical_findings')
     .select('*')
     .eq('id', findingId)
@@ -206,7 +206,7 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
     ? new Date(finding.received_at).toISOString()
     : new Date().toISOString()
 
-  const { data: inquiry, error: inquiryErr } = await supabase
+  const { data: inquiry, error: inquiryErr } = await db
     .from('inquiries')
     .insert({
       tenant_id: user.tenantId!,
@@ -235,7 +235,7 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
   if (inquiryErr) throw new Error(inquiryErr.message)
 
   // Log original email as a message on the inquiry
-  await supabase.from('messages').insert({
+  await db.from('messages').insert({
     tenant_id: user.tenantId!,
     inquiry_id: inquiry.id,
     client_id: clientId,
@@ -250,7 +250,7 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
   })
 
   // Mark finding as imported
-  await supabase
+  await db
     .from('gmail_historical_findings')
     .update({
       status: 'imported',
@@ -270,9 +270,9 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
 
 export async function dismissHistoricalFinding(findingId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase
+  await db
     .from('gmail_historical_findings')
     .update({
       status: 'dismissed',
@@ -291,9 +291,9 @@ export async function dismissAllFindings(filter: {
   classification?: 'inquiry' | 'existing_thread'
 }): Promise<{ count: number }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('gmail_historical_findings')
     .update({
       status: 'dismissed',

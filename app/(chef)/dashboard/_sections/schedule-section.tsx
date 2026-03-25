@@ -11,7 +11,7 @@ import { getNextUpcomingEvent } from '@/lib/dashboard/actions'
 import { getDOPTaskDigest, type DOPTaskDigest } from '@/lib/scheduling/task-digest'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { getWeatherForEvents, type InlineWeather } from '@/lib/weather/open-meteo'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { WeekStrip } from '@/components/dashboard/week-strip'
 import { PrepPromptsView } from '@/components/scheduling/prep-prompts-view'
 import { DOPTaskPanel } from '@/components/dashboard/dop-task-panel'
@@ -88,8 +88,8 @@ export async function ScheduleSection({ widgetEnabled, widgetOrder }: ScheduleSe
       for (const task of dopTaskDigest.tasks) eventIds.add(task.eventId)
       if (eventIds.size === 0) return {}
 
-      const supabase: any = createServerClient()
-      const { data: eventCoords } = await supabase
+      const db: any = createServerClient()
+      const { data: eventCoords } = await db
         .from('events')
         .select('id, event_date, location_lat, location_lng')
         .in('id', Array.from(eventIds))

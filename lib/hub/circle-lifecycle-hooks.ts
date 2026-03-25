@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getCircleForContext, getCircleForEvent, getChefHubProfileId } from './circle-lookup'
 
 // ---------------------------------------------------------------------------
@@ -26,8 +26,8 @@ export async function postMenuSharedToCircle(input: {
   const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
-  const supabase = createServerClient({ admin: true })
-  await supabase.from('hub_messages').insert({
+  const db = createServerClient({ admin: true })
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'system',
@@ -74,8 +74,8 @@ export async function postQuoteSentToCircle(input: {
 
   body += ' Check your email for the full details, or review it in your portal.'
 
-  const supabase = createServerClient({ admin: true })
-  await supabase.from('hub_messages').insert({
+  const db = createServerClient({ admin: true })
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'system',
@@ -104,8 +104,8 @@ export async function postQuoteAcceptedToCircle(input: {
   const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
-  const supabase = createServerClient({ admin: true })
-  await supabase.from('hub_messages').insert({
+  const db = createServerClient({ admin: true })
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'system',
@@ -133,8 +133,8 @@ export async function postPaymentReceivedToCircle(input: {
   const amount = (input.amountCents / 100).toFixed(2)
   const typeLabel = input.paymentType === 'deposit' ? 'Deposit' : 'Payment'
 
-  const supabase = createServerClient({ admin: true })
-  await supabase.from('hub_messages').insert({
+  const db = createServerClient({ admin: true })
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'system',
@@ -162,8 +162,8 @@ export async function postEventConfirmedToCircle(input: {
 
   const datePart = input.eventDate ? ` for ${input.eventDate}` : ''
 
-  const supabase = createServerClient({ admin: true })
-  await supabase.from('hub_messages').insert({
+  const db = createServerClient({ admin: true })
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'system',
@@ -193,8 +193,8 @@ export async function postArrivalToCircle(input: {
     body = `I'm on my way! Arriving at ${input.arrivalTime}.`
   }
 
-  const supabase = createServerClient({ admin: true })
-  await supabase.from('hub_messages').insert({
+  const db = createServerClient({ admin: true })
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'system',
@@ -220,8 +220,8 @@ export async function postEventCompletedToCircle(input: {
   if (!chefProfileId) return
 
   // Load chef first name for a personal touch
-  const supabase = createServerClient({ admin: true })
-  const { data: chef } = await supabase
+  const db = createServerClient({ admin: true })
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', circle.tenantId)
@@ -237,7 +237,7 @@ export async function postEventCompletedToCircle(input: {
   body += " I hope everyone enjoyed the meal. I'll share photos here soon."
   body += `\n\n${chefFirst}`
 
-  await supabase.from('hub_messages').insert({
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'text',
@@ -264,8 +264,8 @@ export async function postPhotosToCircle(input: {
   const noun = input.photoCount === 1 ? 'photo' : 'photos'
   const body = `${input.photoCount} ${noun} from your event are now available! Check your event page to see them.`
 
-  const supabase = createServerClient({ admin: true })
-  await supabase.from('hub_messages').insert({
+  const db = createServerClient({ admin: true })
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'system',
@@ -290,8 +290,8 @@ export async function postPrepUpdateToCircle(input: {
   const chefProfileId = await getChefHubProfileId(circle.tenantId)
   if (!chefProfileId) return
 
-  const supabase = createServerClient({ admin: true })
-  await supabase.from('hub_messages').insert({
+  const db = createServerClient({ admin: true })
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'text',

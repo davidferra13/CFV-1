@@ -2,12 +2,12 @@
 // Returns the number of completed events in the period [start, end].
 
 export async function fetchBookingCount(
-  supabase: any,
+  db: any,
   tenantId: string,
   start: string,
   end: string
 ): Promise<number> {
-  const { count } = await supabase
+  const { count } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -22,12 +22,12 @@ export async function fetchBookingCount(
 // Returns the number of clients first created in the period.
 
 export async function fetchNewClientCount(
-  supabase: any,
+  db: any,
   tenantId: string,
   start: string,
   end: string
 ): Promise<number> {
-  const { count } = await supabase
+  const { count } = await db
     .from('clients')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -41,8 +41,8 @@ export async function fetchNewClientCount(
 // Returns the total number of recipes in the chef's library.
 // This is a cumulative "library size" goal, not period-scoped.
 
-export async function fetchRecipeCount(supabase: any, tenantId: string): Promise<number> {
-  const { count } = await supabase
+export async function fetchRecipeCount(db: any, tenantId: string): Promise<number> {
+  const { count } = await db
     .from('recipes')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -56,14 +56,14 @@ export async function fetchRecipeCount(supabase: any, tenantId: string): Promise
 // Falls back to 0 if no data.
 
 export async function fetchTrailingProfitMarginBp(
-  supabase: any,
+  db: any,
   tenantId: string,
   trailingDays: number
 ): Promise<number> {
   const cutoff = new Date(Date.now() - trailingDays * 24 * 60 * 60 * 1000)
   const cutoffStr = cutoff.toISOString().slice(0, 10)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -73,7 +73,7 @@ export async function fetchTrailingProfitMarginBp(
   const eventIds = ((events || []) as Array<{ id: string }>).map((e) => e.id)
   if (eventIds.length === 0) return 0
 
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select('profit_margin')
     .eq('tenant_id', tenantId)
@@ -93,7 +93,7 @@ export async function fetchTrailingProfitMarginBp(
 // expressed as basis points.
 
 export async function fetchTrailingExpenseRatioBp(
-  supabase: any,
+  db: any,
   tenantId: string,
   trailingDays: number
 ): Promise<number> {
@@ -101,12 +101,12 @@ export async function fetchTrailingExpenseRatioBp(
   const cutoffStr = cutoff.toISOString().slice(0, 10)
 
   const [{ data: expenses }, { data: events }] = await Promise.all([
-    supabase
+    db
       .from('expenses')
       .select('amount_cents')
       .eq('tenant_id', tenantId)
       .gte('expense_date', cutoffStr),
-    supabase
+    db
       .from('events')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -122,7 +122,7 @@ export async function fetchTrailingExpenseRatioBp(
   const eventIds = ((events || []) as Array<{ id: string }>).map((e) => e.id)
   if (eventIds.length === 0 || totalExpenses === 0) return 0
 
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select('net_revenue_cents')
     .eq('tenant_id', tenantId)
@@ -141,9 +141,9 @@ export async function fetchTrailingExpenseRatioBp(
 // Returns the % of clients who have completed 2+ events with this chef,
 // expressed as basis points (e.g. 4000 = 40.00%).
 
-export async function fetchRepeatBookingRateBp(supabase: any, tenantId: string): Promise<number> {
+export async function fetchRepeatBookingRateBp(db: any, tenantId: string): Promise<number> {
   // Get all clients and count how many have 2+ completed events
-  const { data: clientEvents } = await supabase
+  const { data: clientEvents } = await db
     .from('events')
     .select('client_id')
     .eq('tenant_id', tenantId)
@@ -167,8 +167,8 @@ export async function fetchRepeatBookingRateBp(supabase: any, tenantId: string):
 // ── Total reviews ─────────────────────────────────────────────────────────────
 // Returns total external reviews synced for this tenant.
 
-export async function fetchTotalReviews(supabase: any, tenantId: string): Promise<number> {
-  const { count } = await supabase
+export async function fetchTotalReviews(db: any, tenantId: string): Promise<number> {
+  const { count } = await db
     .from('external_reviews')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -180,8 +180,8 @@ export async function fetchTotalReviews(supabase: any, tenantId: string): Promis
 // Returns average rating from external_reviews, expressed in basis points
 // (e.g. 450 = 4.50 stars). Returns 0 if no reviews.
 
-export async function fetchReviewAverageBp(supabase: any, tenantId: string): Promise<number> {
-  const { data } = await supabase
+export async function fetchReviewAverageBp(db: any, tenantId: string): Promise<number> {
+  const { data } = await db
     .from('external_reviews')
     .select('rating')
     .eq('tenant_id', tenantId)
@@ -201,12 +201,12 @@ export async function fetchReviewAverageBp(supabase: any, tenantId: string): Pro
 // We resolve chef_id from user_roles using the admin client.
 
 export async function fetchWorkshopsAttended(
-  supabase: any,
+  db: any,
   tenantId: string,
   start: string,
   end: string
 ): Promise<number> {
-  const { count } = await supabase
+  const { count } = await db
     .from('professional_achievements')
     .select('id', { count: 'exact', head: true })
     .eq('chef_id', tenantId)

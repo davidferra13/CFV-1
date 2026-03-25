@@ -6,7 +6,7 @@
 // be called from the auto-scheduler and manual API route without a user session.
 
 import { requireChefAdmin } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { runSimulationInternal } from './simulation-runner'
 import type { SimModule, SimRun, SimResult, SimSummary, SimRunConfig } from './types'
 
@@ -25,9 +25,9 @@ export async function startSimulationRun(config: SimRunConfig): Promise<{
 
 export async function getSimulationRuns(limit = 10): Promise<SimRun[]> {
   const user = await requireChefAdmin()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('simulation_runs')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -52,9 +52,9 @@ export async function getSimulationRuns(limit = 10): Promise<SimRun[]> {
 
 export async function getSimulationResults(runId: string): Promise<SimResult[]> {
   const user = await requireChefAdmin()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('simulation_results')
     .select('*')
     .eq('run_id', runId)
@@ -82,9 +82,9 @@ export async function getFailureExamples(
   limit = 5
 ): Promise<Array<{ scenarioPayload: string; score: number; failures: string[] }>> {
   const user = await requireChefAdmin()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('simulation_results')
     .select('scenario_payload, score, failures')
     .eq('tenant_id', user.tenantId!)
@@ -106,19 +106,19 @@ export async function getFailureExamples(
 
 export async function getSimulationSummary(): Promise<SimSummary> {
   const user = await requireChefAdmin()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const [runsRes, totalRes, ftRes] = await Promise.all([
-    supabase
+    db
       .from('simulation_runs')
       .select('*')
       .eq('tenant_id', tenantId)
       .eq('status', 'completed')
       .order('started_at', { ascending: false })
       .limit(1),
-    supabase.from('simulation_results').select('module, passed').eq('tenant_id', tenantId),
-    supabase
+    db.from('simulation_results').select('module, passed').eq('tenant_id', tenantId),
+    db
       .from('fine_tuning_examples')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId),

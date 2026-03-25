@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef, requireClient, requireAuth } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { sendEmail } from '@/lib/email/send'
@@ -93,9 +93,9 @@ function renderMergeFields(
 export async function createContractTemplate(input: CreateTemplateInput) {
   const user = await requireChef()
   const validated = CreateTemplateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const db = supabase as any
+  const db = db as any
 
   // If setting as default, unset existing default first
   if (validated.is_default) {
@@ -129,8 +129,8 @@ export async function createContractTemplate(input: CreateTemplateInput) {
 export async function updateContractTemplate(id: string, input: UpdateTemplateInput) {
   const user = await requireChef()
   const validated = UpdateTemplateSchema.parse(input)
-  const supabase: any = createServerClient()
-  const db = supabase as any
+  const db: any = createServerClient()
+  const db = db as any
 
   // If setting as default, unset existing default first
   if (validated.is_default) {
@@ -180,9 +180,9 @@ type ContractTemplate = {
 
 export async function listContractTemplates(): Promise<ContractTemplate[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('contract_templates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -199,9 +199,9 @@ export async function listContractTemplates(): Promise<ContractTemplate[]> {
 
 export async function deleteContractTemplate(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('contract_templates')
     .delete()
     .eq('id', id)
@@ -226,10 +226,10 @@ export async function deleteContractTemplate(id: string) {
  */
 export async function generateEventContract(eventId: string, templateId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load event + client
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       `
@@ -254,7 +254,7 @@ export async function generateEventContract(eventId: string, templateId?: string
   let bodyMarkdown: string
 
   if (templateId) {
-    const { data: tmpl, error: tmplErr } = await supabase
+    const { data: tmpl, error: tmplErr } = await db
       .from('contract_templates')
       .select('body_markdown')
       .eq('id', templateId)
@@ -264,7 +264,7 @@ export async function generateEventContract(eventId: string, templateId?: string
     bodyMarkdown = tmpl.body_markdown
   } else {
     // Try default template
-    const { data: defaultTmpl } = await supabase
+    const { data: defaultTmpl } = await db
       .from('contract_templates')
       .select('body_markdown')
       .eq('chef_id', user.tenantId!)
@@ -294,7 +294,7 @@ export async function generateEventContract(eventId: string, templateId?: string
   })
 
   // Void any existing unsigned draft/sent contract for this event
-  await supabase
+  await db
     .from('event_contracts')
     .update({
       status: 'voided',
@@ -306,7 +306,7 @@ export async function generateEventContract(eventId: string, templateId?: string
     .in('status', ['draft', 'sent', 'viewed'])
 
   // Create new contract
-  const { data: contract, error: contractError } = await supabase
+  const { data: contract, error: contractError } = await db
     .from('event_contracts')
     .insert({
       event_id: eventId,
@@ -334,9 +334,9 @@ export async function generateEventContract(eventId: string, templateId?: string
  */
 export async function sendContractToClient(contractId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract, error } = await supabase
+  const { data: contract, error } = await db
     .from('event_contracts')
     .select(
       `
@@ -355,7 +355,7 @@ export async function sendContractToClient(contractId: string) {
 
   const now = new Date().toISOString()
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('event_contracts')
     .update({ status: 'sent', sent_at: now })
     .eq('id', contractId)
@@ -396,9 +396,9 @@ export async function sendContractToClient(contractId: string) {
  */
 export async function recordClientView(contractId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract } = await supabase
+  const { data: contract } = await db
     .from('event_contracts')
     .select('id, status, client_id, event_id')
     .eq('id', contractId)
@@ -407,7 +407,7 @@ export async function recordClientView(contractId: string) {
 
   if (!contract) throw new Error('Contract not found')
   if (contract.status === 'sent') {
-    await supabase
+    await db
       .from('event_contracts')
       .update({ status: 'viewed', viewed_at: new Date().toISOString() })
       .eq('id', contractId)
@@ -423,9 +423,9 @@ export async function recordClientView(contractId: string) {
 export async function signContract(input: SignContractInput) {
   const user = await requireClient()
   const validated = SignContractSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract } = await supabase
+  const { data: contract } = await db
     .from('event_contracts')
     .select('id, status, event_id')
     .eq('id', validated.contract_id)
@@ -440,7 +440,7 @@ export async function signContract(input: SignContractInput) {
   }
 
   // Optimistic lock: only update if status is still 'sent' or 'viewed'
-  const { data: updatedContract, error } = await supabase
+  const { data: updatedContract, error } = await db
     .from('event_contracts')
     .update({
       status: 'signed',
@@ -469,8 +469,8 @@ export async function signContract(input: SignContractInput) {
   // Non-blocking: notify chef + email
   try {
     // Fetch contract details for notification
-    const supabaseForLookup = createServerClient()
-    const { data: fullContract } = await supabaseForLookup
+    const dbForLookup = createServerClient()
+    const { data: fullContract } = await dbForLookup
       .from('event_contracts')
       .select('chef_id, events(occasion, event_date, clients(full_name))')
       .eq('id', validated.contract_id)
@@ -516,9 +516,9 @@ export async function signContract(input: SignContractInput) {
  */
 export async function voidContract(contractId: string, reason?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract } = await supabase
+  const { data: contract } = await db
     .from('event_contracts')
     .select('id, status, event_id')
     .eq('id', contractId)
@@ -528,7 +528,7 @@ export async function voidContract(contractId: string, reason?: string) {
   if (!contract) throw new Error('Contract not found')
   if (contract.status === 'signed') throw new Error('Cannot void a signed contract')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_contracts')
     .update({
       status: 'voided',
@@ -546,7 +546,7 @@ export async function voidContract(contractId: string, reason?: string) {
   // Non-blocking: notify client that contract was voided
   try {
     const { createClientNotification } = await import('@/lib/notifications/client-actions')
-    const { data: eventData } = await supabase
+    const { data: eventData } = await db
       .from('events')
       .select('occasion, client_id')
       .eq('id', contract.event_id)
@@ -597,9 +597,9 @@ export type ContractListItem = {
  */
 export async function getContracts(statusFilter?: ContractStatus): Promise<ContractListItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('event_contracts')
     .select(
       `
@@ -642,9 +642,9 @@ export async function getContracts(statusFilter?: ContractStatus): Promise<Contr
  */
 export async function getContractById(contractId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_contracts')
     .select(
       `
@@ -670,9 +670,9 @@ export async function getContractById(contractId: string) {
  */
 export async function markContractSent(contractId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract } = await supabase
+  const { data: contract } = await db
     .from('event_contracts')
     .select('id, status, event_id')
     .eq('id', contractId)
@@ -682,7 +682,7 @@ export async function markContractSent(contractId: string) {
   if (!contract) throw new Error('Contract not found')
   if (contract.status !== 'draft') throw new Error('Only draft contracts can be marked as sent')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_contracts')
     .update({ status: 'sent', sent_at: new Date().toISOString() })
     .eq('id', contractId)
@@ -701,9 +701,9 @@ export async function markContractSent(contractId: string) {
  */
 export async function markContractSigned(contractId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract } = await supabase
+  const { data: contract } = await db
     .from('event_contracts')
     .select('id, status, event_id')
     .eq('id', contractId)
@@ -714,7 +714,7 @@ export async function markContractSigned(contractId: string) {
   if (contract.status === 'signed') throw new Error('Contract is already signed')
   if (contract.status === 'voided') throw new Error('Cannot sign a voided contract')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_contracts')
     .update({ status: 'signed', signed_at: new Date().toISOString() })
     .eq('id', contractId)
@@ -732,9 +732,9 @@ export async function markContractSigned(contractId: string) {
  */
 export async function getEventContract(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('event_contracts')
     .select('*')
     .eq('event_id', eventId)
@@ -751,9 +751,9 @@ export async function getEventContract(eventId: string) {
  */
 export async function getClientEventContract(eventId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('event_contracts')
     .select('*')
     .eq('event_id', eventId)

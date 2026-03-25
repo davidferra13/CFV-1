@@ -5,7 +5,7 @@
 // All queries hit existing tables - nothing new required.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type OnboardingProgress = {
   profile: boolean
@@ -19,29 +19,22 @@ export type OnboardingProgress = {
 
 export async function getOnboardingProgress(): Promise<OnboardingProgress> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [chefRow, clients, loyaltyConfig, recipes, staff] = await Promise.all([
-    supabase
+    db
       .from('chefs')
       .select('business_name, display_name, profile_image_url')
       .eq('id', user.entityId)
       .single(),
-    supabase
-      .from('clients')
-      .select('id', { count: 'exact', head: true })
-      .eq('tenant_id', user.tenantId!),
-    supabase
-      .from('loyalty_config')
-      .select('is_active')
-      .eq('tenant_id', user.tenantId!)
-      .maybeSingle(),
-    supabase
+    db.from('clients').select('id', { count: 'exact', head: true }).eq('tenant_id', user.tenantId!),
+    db.from('loyalty_config').select('is_active').eq('tenant_id', user.tenantId!).maybeSingle(),
+    db
       .from('recipes')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', user.tenantId!)
       .eq('archived', false),
-    supabase
+    db
       .from('staff_members')
       .select('id', { count: 'exact', head: true })
       .eq('chef_id', user.tenantId!),

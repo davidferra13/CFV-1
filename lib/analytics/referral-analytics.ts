@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { subMonths, format, startOfMonth } from 'date-fns'
 
 // ============================================
@@ -111,10 +111,10 @@ export async function getReferralFunnelData(): Promise<{
   }
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all inquiries with channel, referral_source, and status
-  const { data: inquiries, error: inqError } = await supabase
+  const { data: inquiries, error: inqError } = await db
     .from('inquiries')
     .select('id, channel, referral_source, status, converted_to_event_id')
     .eq('tenant_id', user.tenantId!)
@@ -140,7 +140,7 @@ export async function getReferralFunnelData(): Promise<{
   // Fetch events for those IDs to determine stage progression and revenue
   let eventMap: Record<string, { status: string; quoted_price_cents: number | null }> = {}
   if (eventIds.length > 0) {
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('id, status, quoted_price_cents')
       .eq('tenant_id', user.tenantId!)
@@ -236,9 +236,9 @@ export async function getReferralFunnelData(): Promise<{
 
 export async function getClientAcquisitionBySource(): Promise<ClientAcquisitionBySource[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('referral_source, lifetime_value_cents')
     .eq('tenant_id', user.tenantId!)
@@ -278,10 +278,10 @@ export async function getClientAcquisitionBySource(): Promise<ClientAcquisitionB
 
 export async function getTopReferrers(): Promise<TopReferrer[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get clients who came via referral and have a named referrer
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('id, referral_source_detail')
     .eq('tenant_id', user.tenantId!)
@@ -306,7 +306,7 @@ export async function getTopReferrers(): Promise<TopReferrer[]> {
   // Get all client IDs to look up events
   const allClientIds = Object.values(referrerClients).flat()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, status, quoted_price_cents')
     .eq('tenant_id', user.tenantId!)
@@ -355,12 +355,12 @@ export async function getReferralTimeSeries(months = 12): Promise<{
   sources: string[]
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const from = startOfMonth(subMonths(now, months - 1)).toISOString()
 
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select('channel, referral_source, created_at')
     .eq('tenant_id', user.tenantId!)

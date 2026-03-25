@@ -5,7 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -28,11 +28,11 @@ export type EventBridgeResult = {
 export async function createSaleFromEvent(eventId: string): Promise<EventBridgeResult> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Fetch event
-  const { data: event, error: evErr } = await supabase
+  const { data: event, error: evErr } = await db
     .from('events')
     .select('id, client_id, occasion, event_date, quoted_price_cents, guest_count, status')
     .eq('id', eventId)
@@ -42,7 +42,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
   if (evErr || !event) throw new Error('Event not found')
 
   // Check if a sale already exists for this event
-  const { data: existingSale } = await supabase
+  const { data: existingSale } = await db
     .from('sales')
     .select('id, sale_number')
     .eq('event_id', eventId)
@@ -56,7 +56,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
   }
 
   // Create the sale
-  const { data: sale, error: saleErr } = await supabase
+  const { data: sale, error: saleErr } = await db
     .from('sales')
     .insert({
       tenant_id: tenantId,
@@ -79,7 +79,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
   let subtotalCents = 0
 
   // Get event's active menu → dish appearances
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -89,7 +89,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
 
   if (menus && menus.length > 0) {
     const menuId = menus[0].id
-    const { data: appearances } = await supabase
+    const { data: appearances } = await db
       .from('dish_appearances')
       .select('id, dish_index_id, display_name, price_cents, course')
       .eq('menu_id', menuId)
@@ -98,7 +98,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
       const guestCount = (event as any).guest_count ?? 1
       const lineTotalCents = (da.price_cents ?? 0) * guestCount
 
-      await supabase.from('sale_items').insert({
+      await db.from('sale_items').insert({
         sale_id: saleId,
         tenant_id: tenantId,
         name: da.display_name ?? 'Menu Item',
@@ -117,7 +117,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
 
   // If no menu items, create a single line item from the quoted price
   if (itemCount === 0 && (event as any).quoted_price_cents) {
-    await supabase.from('sale_items').insert({
+    await db.from('sale_items').insert({
       sale_id: saleId,
       tenant_id: tenantId,
       name: (event as any).occasion ?? 'Event Service',
@@ -133,7 +133,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
   }
 
   // Update sale totals
-  await supabase
+  await db
     .from('sales')
     .update({
       subtotal_cents: subtotalCents,
@@ -144,7 +144,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
 
   // Link existing event payments to the sale (read-only - don't modify ledger)
   let paymentsLinked = 0
-  const { data: ledgerPayments } = await supabase
+  const { data: ledgerPayments } = await db
     .from('ledger_entries')
     .select('id, amount_cents, payment_method, entry_type, created_at, transaction_reference')
     .eq('tenant_id', tenantId)
@@ -155,7 +155,7 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
   for (const lp of (ledgerPayments ?? []) as any[]) {
     const idempKey = `bridge_${eventId}_${lp.id}`
 
-    const { error: pErr } = await supabase.from('commerce_payments').insert({
+    const { error: pErr } = await db.from('commerce_payments').insert({
       tenant_id: tenantId,
       sale_id: saleId,
       event_id: eventId,
@@ -185,13 +185,13 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
     )
 
     if (totalPaid >= subtotalCents) {
-      await supabase
+      await db
         .from('sales')
         .update({ status: 'settled' } as any)
         .eq('id', saleId)
         .eq('tenant_id', tenantId)
     } else if (totalPaid > 0) {
-      await supabase
+      await db
         .from('sales')
         .update({ status: 'captured' } as any)
         .eq('id', saleId)
@@ -219,9 +219,9 @@ export async function createSaleFromEvent(eventId: string): Promise<EventBridgeR
 export async function getEventSale(eventId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('sales')
     .select('id, sale_number, status, channel, total_cents, created_at')
     .eq('event_id', eventId)

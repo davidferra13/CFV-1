@@ -79,7 +79,7 @@ All hooks use dynamic `import()` and `try/catch` to avoid circular deps and ensu
 
 | File                                                                   | Purpose                            |
 | ---------------------------------------------------------------------- | ---------------------------------- |
-| `supabase/migrations/20260309000004_outbound_webhook_enhancements.sql` | Schema additions                   |
+| `database/migrations/20260309000004_outbound_webhook_enhancements.sql` | Schema additions                   |
 | `lib/webhooks/types.ts`                                                | Type definitions                   |
 | `lib/webhooks/emitter.ts`                                              | Fire-and-forget emitter            |
 | `lib/webhooks/actions.ts`                                              | Server actions (CRUD + test + log) |

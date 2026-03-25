@@ -1,7 +1,7 @@
 // Authentication Server Actions
 // Handles signup, signin, signout
 // Supports chef signup and client signup
-// Uses Drizzle ORM + bcrypt (replaces Supabase GoTrue)
+// Uses Drizzle ORM + bcrypt (replaces Auth.js)
 
 'use server'
 
@@ -144,7 +144,7 @@ export async function signUpChef(input: ChefSignupInput) {
     )
   }
 
-  // Hash password (bcrypt, compatible with existing Supabase hashes)
+  // Hash password (bcrypt, compatible with existing existing hashes)
   const hashedPassword = await bcrypt.hash(validated.password, 10)
   const authUserId = crypto.randomUUID()
 

@@ -5,7 +5,7 @@
 // Profile completion (markOnboardingComplete) lives in lib/chef/profile-actions.ts.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 /**
  * Returns true if the given slug is available (not taken by another chef).
@@ -13,9 +13,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
  */
 export async function checkSlugAvailability(slug: string): Promise<boolean> {
   const user = await requireChef()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select('id')
     .eq('slug', slug)

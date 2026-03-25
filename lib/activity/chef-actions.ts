@@ -3,7 +3,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type {
   ChefActivityEntry,
   ChefActivityDomain,
@@ -29,11 +29,11 @@ export async function getChefActivityFeed(
   options: ChefActivityQueryOptions = {}
 ): Promise<ChefActivityQueryResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const limit = Math.max(1, Math.min(100, options.limit ?? 50))
   const daysBack = parseDaysBack(options.daysBack)
 
-  let query = supabase
+  let query = db
     .from('chef_activity_log')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -92,10 +92,10 @@ export async function getActivityCountsByDomain(
   daysBack = 7
 ): Promise<Partial<Record<ChefActivityDomain, number>>> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const resolved = parseDaysBack(daysBack)
 
-  let query = supabase.from('chef_activity_log').select('domain').eq('tenant_id', user.tenantId!)
+  let query = db.from('chef_activity_log').select('domain').eq('tenant_id', user.tenantId!)
 
   if (resolved > 0) {
     const since = new Date(Date.now() - resolved * 24 * 60 * 60 * 1000).toISOString()

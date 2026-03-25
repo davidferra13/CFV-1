@@ -4,7 +4,7 @@
 // Tracks per-staff vetting items: certs, agreements, briefings.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { ONBOARDING_ITEM_KEYS } from './onboarding-constants'
 
@@ -36,9 +36,9 @@ export async function getOrCreateOnboardingChecklist(
 ): Promise<OnboardingItem[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('staff_onboarding_items')
     .select('*')
     .eq('staff_member_id', staffMemberId)
@@ -61,7 +61,7 @@ export async function getOrCreateOnboardingChecklist(
     completed_at: null,
   }))
 
-  const { data: created, error: insertError } = await supabase
+  const { data: created, error: insertError } = await db
     .from('staff_onboarding_items')
     .insert(defaultItems)
     .select('*')
@@ -82,11 +82,11 @@ export async function updateOnboardingItem(
 ): Promise<void> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const completedAt = status === 'complete' ? new Date().toISOString() : null
 
-  const { error } = await supabase.from('staff_onboarding_items').upsert(
+  const { error } = await db.from('staff_onboarding_items').upsert(
     {
       staff_member_id: staffMemberId,
       tenant_id: tenantId,
@@ -110,9 +110,9 @@ export async function updateOnboardingItem(
 export async function getOnboardingStatus(staffMemberId: string): Promise<OnboardingStatusSummary> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_onboarding_items')
     .select('item_key, status')
     .eq('staff_member_id', staffMemberId)

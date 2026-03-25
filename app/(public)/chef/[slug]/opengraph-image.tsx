@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 export const runtime = 'nodejs'
 export const alt = 'Chef Profile | ChefFlow'
@@ -7,8 +7,8 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image({ params }: { params: { slug: string } }) {
-  const supabase: any = createAdminClient()
-  const { data: chef } = await supabase
+  const db: any = createAdminClient()
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, tagline, bio, profile_image_url, cuisine_types')
     .eq('slug', params.slug)

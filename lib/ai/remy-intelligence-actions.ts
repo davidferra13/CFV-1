@@ -6,7 +6,7 @@
 // FORMULA > AI: Everything here is deterministic - no LLM calls.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
 import { generateContract } from '@/lib/ai/contract-generator'
 import { generateContingencyPlans } from '@/lib/ai/contingency-ai'
@@ -89,11 +89,11 @@ export async function executeGroceryConsolidation(inputs: Record<string, unknown
 // ─── Phase 2: Financial Intelligence (all deterministic) ──────────────────────
 
 export async function executeRevenueForecast(tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date()
 
   // Get upcoming events with quotes
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, guest_count, quoted_price_cents, status, client_id')
     .eq('tenant_id', tenantId)
@@ -107,7 +107,7 @@ export async function executeRevenueForecast(tenantId: string) {
   // Get client names for display
   const clientIds = [...new Set(events.map((e: any) => e.client_id).filter(Boolean))]
   const { data: clients } = clientIds.length
-    ? await supabase.from('clients').select('id, full_name').in('id', clientIds)
+    ? await db.from('clients').select('id, full_name').in('id', clientIds)
     : { data: [] }
   const clientMap = new Map((clients ?? []).map((c: any) => [c.id, c.full_name]))
 
@@ -164,7 +164,7 @@ export async function executeRevenueForecast(tenantId: string) {
 }
 
 export async function executePnLReport(tenantId: string, inputs: Record<string, unknown>) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date()
 
   // Default to current month
@@ -176,7 +176,7 @@ export async function executePnLReport(tenantId: string, inputs: Record<string, 
   const endDate = `${endYear}-${String(endMonth).padStart(2, '0')}-01`
 
   // Revenue: ledger entries of type payment/deposit in period
-  const { data: revenue } = await supabase
+  const { data: revenue } = await db
     .from('ledger_entries')
     .select('amount_cents, entry_type')
     .eq('tenant_id', tenantId)
@@ -184,7 +184,7 @@ export async function executePnLReport(tenantId: string, inputs: Record<string, 
     .lt('created_at', endDate)
 
   // Expenses in period
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('amount_cents, category')
     .eq('tenant_id', tenantId)
@@ -192,7 +192,7 @@ export async function executePnLReport(tenantId: string, inputs: Record<string, 
     .lt('expense_date', endDate)
 
   // Events completed in period
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, status')
     .eq('tenant_id', tenantId)
@@ -238,14 +238,14 @@ export async function executePnLReport(tenantId: string, inputs: Record<string, 
 }
 
 export async function executeTaxSummary(tenantId: string, inputs: Record<string, unknown>) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date()
   const year = inputs.year ? Number(inputs.year) : now.getFullYear()
   const startDate = `${year}-01-01`
   const endDate = `${year + 1}-01-01`
 
   // All expenses for the year
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('amount_cents, category, vendor, description, expense_date')
     .eq('tenant_id', tenantId)
@@ -254,7 +254,7 @@ export async function executeTaxSummary(tenantId: string, inputs: Record<string,
     .order('expense_date', { ascending: true })
 
   // Mileage entries
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('mileage_miles, event_date, occasion')
     .eq('tenant_id', tenantId)
@@ -295,10 +295,10 @@ export async function executeTaxSummary(tenantId: string, inputs: Record<string,
 }
 
 export async function executePricingAnalysis(tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all completed events with quotes and guests
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('occasion, guest_count, quoted_price_cents, service_style, event_date, status')
     .eq('tenant_id', tenantId)
@@ -390,13 +390,13 @@ export async function executeUtilizationAnalysis(
   tenantId: string,
   inputs: Record<string, unknown>
 ) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const days = Number(inputs.days ?? 14)
   const now = new Date()
   const endDate = new Date(now)
   endDate.setDate(endDate.getDate() + days)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('occasion, event_date, guest_count, status, arrival_time, serve_time')
     .eq('tenant_id', tenantId)
@@ -474,13 +474,13 @@ export async function executeUtilizationAnalysis(
 // ─── Phase 4: Relationship Intelligence ───────────────────────────────────────
 
 export async function executeClientMilestones(tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date()
   const twoWeeksOut = new Date(now)
   twoWeeksOut.setDate(twoWeeksOut.getDate() + 14)
 
   // Get all clients with event history
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, created_at, birthday, anniversary, notes, vibe_notes')
     .eq('tenant_id', tenantId)
@@ -489,7 +489,7 @@ export async function executeClientMilestones(tenantId: string) {
   if (!clients?.length) return { milestones: [] }
 
   // Get event counts per client
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, status')
     .eq('tenant_id', tenantId)
@@ -571,13 +571,13 @@ export async function executeClientMilestones(tenantId: string) {
 }
 
 export async function executeReEngagementScoring(tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date()
   const ninetyDaysAgo = new Date(now)
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
   // Get clients with no recent events
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, status, created_at')
     .eq('tenant_id', tenantId)
@@ -585,7 +585,7 @@ export async function executeReEngagementScoring(tenantId: string) {
   if (!clients?.length) return { candidates: [] }
 
   // Get all events with dates for these clients
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, event_date, quoted_price_cents, status')
     .eq('tenant_id', tenantId)
@@ -664,16 +664,16 @@ export async function executeReEngagementScoring(tenantId: string) {
 }
 
 export async function executeAcquisitionFunnel(tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // All inquiries
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, status, source, created_at, chef_likelihood')
     .eq('tenant_id', tenantId)
 
   // All events (to check conversions)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, status, inquiry_id, quoted_price_cents')
     .eq('tenant_id', tenantId)
@@ -728,7 +728,7 @@ export async function executeMultiEventComparison(
   inputs: Record<string, unknown>,
   tenantId: string
 ) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get event names to compare
   const event1Name = String(inputs.event1 ?? inputs.eventName1 ?? '')
@@ -741,7 +741,7 @@ export async function executeMultiEventComparison(
     }
   }
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       'id, occasion, event_date, guest_count, quoted_price_cents, status, service_style, client_id'
@@ -755,7 +755,7 @@ export async function executeMultiEventComparison(
 
   // Get expenses for both
   const eventIds = events.map((e: any) => e.id)
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('event_id, amount_cents')
     .in('event_id', eventIds)
@@ -832,8 +832,8 @@ export async function executeEquipmentMaintenance() {
 }
 
 export async function executeVendorsList(tenantId: string) {
-  const supabase: any = createServerClient()
-  const { data: vendors } = await supabase
+  const db: any = createServerClient()
+  const { data: vendors } = await db
     .from('vendors')
     .select('id, name, category, phone, email, website, notes, rating')
     .eq('tenant_id', tenantId)
@@ -855,11 +855,11 @@ export async function executeVendorsList(tenantId: string) {
 // ─── Phase 7: Day-of Support ─────────────────────────────────────────────────
 
 export async function executeMorningBriefing(tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
   // Today's events with full details
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       'id, occasion, event_date, guest_count, status, arrival_time, serve_time, location_address, service_style, dietary_restrictions, allergies, special_requests, client_id'
@@ -872,7 +872,7 @@ export async function executeMorningBriefing(tenantId: string) {
   // Get client names
   const clientIds = (events ?? []).map((e: any) => e.client_id).filter(Boolean)
   const { data: clients } = clientIds.length
-    ? await supabase
+    ? await db
         .from('clients')
         .select('id, full_name, dietary_restrictions, allergies')
         .in('id', clientIds)
@@ -882,11 +882,11 @@ export async function executeMorningBriefing(tenantId: string) {
   // Staff assignments for today
   const eventIds = (events ?? []).map((e: any) => e.id)
   const { data: staffAssignments } = eventIds.length
-    ? await supabase.from('event_staff').select('event_id, staff_id, role').in('event_id', eventIds)
+    ? await db.from('event_staff').select('event_id, staff_id, role').in('event_id', eventIds)
     : { data: [] }
 
   // Overdue todos
-  const { data: todos } = await supabase
+  const { data: todos } = await db
     .from('todos')
     .select('id, title, due_date, priority')
     .eq('tenant_id', tenantId)
@@ -898,7 +898,7 @@ export async function executeMorningBriefing(tenantId: string) {
   // New inquiries (last 24 hours)
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
-  const { data: newInquiries } = await supabase
+  const { data: newInquiries } = await db
     .from('inquiries')
     .select('id, client_name, occasion, event_date, source')
     .eq('tenant_id', tenantId)
@@ -906,7 +906,7 @@ export async function executeMorningBriefing(tenantId: string) {
     .order('created_at', { ascending: false })
 
   // Pending payments
-  const { data: pendingPayments } = await supabase
+  const { data: pendingPayments } = await db
     .from('events')
     .select('id, occasion, quoted_price_cents, client_id, event_date')
     .eq('tenant_id', tenantId)
@@ -964,12 +964,12 @@ function getTimeOfDayGreeting(): string {
 // ─── Phase 6: Workflow Chains ─────────────────────────────────────────────────
 
 export async function executeCancellationImpact(inputs: Record<string, unknown>, tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const eventName = String(inputs.eventName ?? '')
   const eventId = await resolveEventId(eventName)
   if (!eventId) return { error: 'Could not find that event.' }
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, occasion, event_date, guest_count, quoted_price_cents, client_id, status')
     .eq('id', eventId)
@@ -989,7 +989,7 @@ export async function executeCancellationImpact(inputs: Record<string, unknown>,
     .toISOString()
     .split('T')[0]
 
-  const { data: monthEvents } = await supabase
+  const { data: monthEvents } = await db
     .from('events')
     .select('id, quoted_price_cents, status')
     .eq('tenant_id', tenantId)
@@ -1005,7 +1005,7 @@ export async function executeCancellationImpact(inputs: Record<string, unknown>,
     monthRevenueCents > 0 ? Math.round((lostRevenueCents / monthRevenueCents) * 100) : 0
 
   // Check waitlist for the freed date
-  const { data: waitlistEntries } = await supabase
+  const { data: waitlistEntries } = await db
     .from('waitlist_entries')
     .select('id, client_name, requested_date, occasion')
     .eq('tenant_id', tenantId)
@@ -1047,9 +1047,9 @@ export async function executePostEventSequence(inputs: Record<string, unknown>) 
   if (!eventId) return { error: 'Could not find that event.' }
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, occasion, event_date, status, client_id')
     .eq('id', eventId)
@@ -1060,7 +1060,7 @@ export async function executePostEventSequence(inputs: Record<string, unknown>) 
 
   let clientName = 'the client'
   if (event.client_id) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('full_name')
       .eq('id', event.client_id)
@@ -1068,11 +1068,7 @@ export async function executePostEventSequence(inputs: Record<string, unknown>) 
     if (client) clientName = client.full_name
   }
 
-  const { data: expenses } = await supabase
-    .from('expenses')
-    .select('id')
-    .eq('event_id', eventId)
-    .limit(1)
+  const { data: expenses } = await db.from('expenses').select('id').eq('event_id', eventId).limit(1)
   const hasExpenses = (expenses ?? []).length > 0
 
   const steps = [
@@ -1222,9 +1218,9 @@ async function resolveEventId(nameOrId: string): Promise<string | null> {
   if (/^[0-9a-f]{8}-/.test(nameOrId)) return nameOrId
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion')
     .eq('tenant_id', user.tenantId!)

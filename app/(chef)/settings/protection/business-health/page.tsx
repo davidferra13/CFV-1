@@ -3,16 +3,16 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { BusinessHealthChecklist } from '@/components/protection/business-health-checklist'
 
 export const metadata: Metadata = { title: 'Business Health | ChefFlow' }
 
 export default async function BusinessHealthPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: items } = await supabase
+  const { data: items } = await db
     .from('chef_business_health_items')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

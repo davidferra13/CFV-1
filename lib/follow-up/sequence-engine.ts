@@ -2,7 +2,7 @@
 // Core logic for scheduling, cancelling, and processing follow-up email sends.
 // NOT a server action file. Called from server actions and event transitions.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { sendEmail } from '@/lib/email/send'
 import {
   getThankYouEmail,
@@ -44,10 +44,10 @@ export async function schedulePostEventFollowUp(
   eventId: string,
   tenantId: string
 ): Promise<{ scheduled: number; error?: string }> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get event + client info
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, client_id, title, event_date')
     .eq('id', eventId)
@@ -60,7 +60,7 @@ export async function schedulePostEventFollowUp(
   }
 
   // Check if sends already exist for this event (prevent duplicates)
-  const { count } = await supabase
+  const { count } = await db
     .from('follow_up_sends')
     .select('id', { count: 'exact', head: true })
     .eq('event_id', eventId)
@@ -72,7 +72,7 @@ export async function schedulePostEventFollowUp(
   }
 
   // Look up chef's custom rules for event_completed
-  const { data: rules } = await supabase
+  const { data: rules } = await db
     .from('followup_rules')
     .select('id, delay_days, template_id')
     .eq('chef_id', tenantId)
@@ -126,7 +126,7 @@ export async function schedulePostEventFollowUp(
     }
   }
 
-  const { error: insertError } = await supabase.from('follow_up_sends').insert(sends)
+  const { error: insertError } = await db.from('follow_up_sends').insert(sends)
 
   if (insertError) {
     console.error('[follow-up] Failed to insert sends:', insertError)
@@ -145,9 +145,9 @@ export async function cancelFollowUpSends(
   clientId: string,
   tenantId: string
 ): Promise<{ cancelled: number }> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: pending } = await supabase
+  const { data: pending } = await db
     .from('follow_up_sends')
     .select('id')
     .eq('client_id', clientId)
@@ -160,7 +160,7 @@ export async function cancelFollowUpSends(
 
   const ids = pending.map((s: any) => s.id)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('follow_up_sends')
     .update({
       status: 'skipped',
@@ -183,9 +183,9 @@ export async function cancelFollowUpSends(
  * Get the next batch of pending sends that are ready to go.
  */
 export async function getNextPendingSends(limit = 50): Promise<FollowUpSend[]> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('follow_up_sends')
     .select('*')
     .eq('status', 'pending')
@@ -216,10 +216,10 @@ function getCurrentSeason(): string {
  * Process a single pending follow-up send: fetch context, render email, send it, update status.
  */
 export async function processPendingSend(sendId: string): Promise<boolean> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Fetch the send record with event and client info
-  const { data: send, error: sendError } = await supabase
+  const { data: send, error: sendError } = await db
     .from('follow_up_sends')
     .select('*')
     .eq('id', sendId)
@@ -240,19 +240,15 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
 
   // Get client and chef info
   const [clientResult, chefResult, eventResult] = await Promise.all([
-    supabase.from('clients').select('full_name, email').eq('id', typedSend.client_id).single(),
-    supabase
-      .from('chefs')
-      .select('full_name, business_name')
-      .eq('id', typedSend.tenant_id)
-      .single(),
-    supabase.from('events').select('title, event_date').eq('id', typedSend.event_id).single(),
+    db.from('clients').select('full_name, email').eq('id', typedSend.client_id).single(),
+    db.from('chefs').select('full_name, business_name').eq('id', typedSend.tenant_id).single(),
+    db.from('events').select('title, event_date').eq('id', typedSend.event_id).single(),
   ])
 
   if (!clientResult.data || !chefResult.data || !eventResult.data) {
     console.error('[follow-up] Missing context data for send:', sendId)
     // Mark as skipped so we don't retry forever
-    await supabase
+    await db
       .from('follow_up_sends')
       .update({ status: 'skipped', cancel_reason: 'Missing client/chef/event data' })
       .eq('id', sendId)
@@ -273,7 +269,7 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
 
   if (!clientEmail) {
     console.error('[follow-up] Client has no email, skipping:', sendId)
-    await supabase
+    await db
       .from('follow_up_sends')
       .update({ status: 'skipped', cancel_reason: 'No client email' })
       .eq('id', sendId)
@@ -306,14 +302,14 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
     })
 
     if (sent) {
-      await supabase
+      await db
         .from('follow_up_sends')
         .update({ status: 'sent', sent_at: new Date().toISOString() })
         .eq('id', sendId)
       console.info(`[follow-up] Sent step ${typedSend.step_number} to ${clientName}`)
       return true
     } else {
-      await supabase
+      await db
         .from('follow_up_sends')
         .update({ status: 'bounced', cancel_reason: 'Email send failed' })
         .eq('id', sendId)
@@ -321,7 +317,7 @@ export async function processPendingSend(sendId: string): Promise<boolean> {
     }
   } catch (err) {
     console.error('[follow-up] Email send error (non-blocking):', err)
-    await supabase
+    await db
       .from('follow_up_sends')
       .update({ status: 'bounced', cancel_reason: 'Email send exception' })
       .eq('id', sendId)

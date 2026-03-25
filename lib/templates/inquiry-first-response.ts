@@ -3,7 +3,8 @@
 // Used by both Remy's draft action and the Dinner Circle auto-message.
 
 import type { ChefServiceConfig } from '@/lib/chef-services/service-config-actions'
-import { GROUP_RATES, centsToDisplay } from '@/lib/pricing/constants'
+import type { PricingConfig } from '@/lib/pricing/config-types'
+import { centsToDisplay } from '@/lib/pricing/constants'
 
 // ─── Input ──────────────────────────────────────────────────────────────────
 
@@ -15,6 +16,8 @@ export interface FirstResponseInput {
   occasion: string | null // e.g., "birthday", "anniversary", null if unknown
   chefFirstName: string
   serviceConfig: ChefServiceConfig
+  /** Chef's per-chef pricing config. If absent, pricing paragraph is omitted. */
+  pricingConfig?: PricingConfig | null
 }
 
 export interface FirstResponseOutput {
@@ -69,8 +72,8 @@ export function generateFirstResponse(input: FirstResponseInput): FirstResponseO
   const whatsIncluded = buildWhatsIncluded(serviceConfig)
   paragraphs.push(whatsIncluded)
 
-  // --- Paragraph 3: Pricing ---
-  const pricingLine = buildPricingLine(guestCount, serviceConfig)
+  // --- Paragraph 3: Pricing (only if chef has configured their rates) ---
+  const pricingLine = buildPricingLine(guestCount, serviceConfig, input.pricingConfig)
   if (pricingLine) {
     paragraphs.push(pricingLine)
   }
@@ -129,11 +132,17 @@ function buildWhatsIncluded(config: ChefServiceConfig): string {
   return line
 }
 
-function buildPricingLine(guestCount: number | null, config: ChefServiceConfig): string | null {
-  // Default to 4-course group rate as the "starting at" reference
-  const defaultRate = GROUP_RATES[4] // 4-course group rate in cents
+function buildPricingLine(
+  guestCount: number | null,
+  config: ChefServiceConfig,
+  pricingConfig?: PricingConfig | null
+): string | null {
+  // Use the chef's configured 4-course group rate as the "starting at" reference.
+  // If no pricing config exists (chef hasn't set up rates yet), skip the pricing paragraph
+  // entirely rather than showing hardcoded numbers that aren't theirs.
+  const defaultRate = pricingConfig?.group_rate_4_course
 
-  if (!defaultRate) return null
+  if (!defaultRate || defaultRate <= 0) return null
 
   const rateDisplay = centsToDisplay(defaultRate)
   const groceryNote = config.grocery_cost_included

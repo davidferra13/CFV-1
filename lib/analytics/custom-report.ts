@@ -1,6 +1,6 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { subMonths, format } from 'date-fns'
 
 export type ReportEntity = 'events' | 'clients' | 'expenses'
@@ -23,7 +23,7 @@ export interface ReportDataPoint {
 
 export async function runCustomReport(config: ReportConfig): Promise<ReportDataPoint[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   let fromDate: Date
@@ -42,7 +42,7 @@ export async function runCustomReport(config: ReportConfig): Promise<ReportDataP
   }
 
   if (config.entity === 'events') {
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('event_date, quoted_price_cents, status, occasion')
       .eq('tenant_id', user.entityId)
@@ -75,7 +75,7 @@ export async function runCustomReport(config: ReportConfig): Promise<ReportDataP
   }
 
   if (config.entity === 'expenses') {
-    const { data: expenses } = await supabase
+    const { data: expenses } = await db
       .from('expenses')
       .select('amount_cents, category, expense_date')
       .eq('tenant_id', user.entityId)

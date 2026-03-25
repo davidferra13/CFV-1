@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -56,10 +56,10 @@ export interface ClientLifetimeResult {
 export async function getClientLifetimeJourneys(): Promise<ClientLifetimeResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch clients
-  const { data: clients, error: cErr } = await supabase
+  const { data: clients, error: cErr } = await db
     .from('clients')
     .select('id, full_name, created_at')
     .eq('tenant_id', tenantId)
@@ -67,7 +67,7 @@ export async function getClientLifetimeJourneys(): Promise<ClientLifetimeResult 
   if (cErr || !clients || clients.length < 3) return null
 
   // Fetch all events (completed or near-complete)
-  const { data: events, error: eErr } = await supabase
+  const { data: events, error: eErr } = await db
     .from('events')
     .select('id, client_id, event_date, quoted_price_cents, status')
     .eq('tenant_id', tenantId)
@@ -77,7 +77,7 @@ export async function getClientLifetimeJourneys(): Promise<ClientLifetimeResult 
   if (eErr) return null
 
   // Fetch inquiries for first contact
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, client_id, created_at')
     .eq('tenant_id', tenantId)
@@ -89,10 +89,7 @@ export async function getClientLifetimeJourneys(): Promise<ClientLifetimeResult 
     .map((e: any) => e.id)
   const { data: expenses } =
     completedIds.length > 0
-      ? await supabase
-          .from('expenses')
-          .select('event_id, amount_cents')
-          .in('event_id', completedIds)
+      ? await db.from('expenses').select('event_id, amount_cents').in('event_id', completedIds)
       : { data: [] }
 
   const expenseByEvent = new Map<string, number>()

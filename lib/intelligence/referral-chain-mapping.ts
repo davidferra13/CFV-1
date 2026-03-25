@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -53,10 +53,10 @@ export interface ReferralChainResult {
 export async function getReferralChainMapping(): Promise<ReferralChainResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch clients
-  const { data: clients, error: cErr } = await supabase
+  const { data: clients, error: cErr } = await db
     .from('clients')
     .select('id, full_name, referral_source, created_at')
     .eq('tenant_id', tenantId)
@@ -64,13 +64,13 @@ export async function getReferralChainMapping(): Promise<ReferralChainResult | n
   if (cErr || !clients || clients.length < 3) return null
 
   // Fetch inquiries with referral data
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, client_id, referral_source, converted_to_event_id')
     .eq('tenant_id', tenantId)
 
   // Fetch events for revenue
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, client_id, quoted_price_cents, status')
     .eq('tenant_id', tenantId)

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type PreviewClient = {
   id: string
@@ -18,9 +18,9 @@ export type PreviewClient = {
 
 export async function getPreviewClients(): Promise<PreviewClient[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .select('id, full_name, email')
     .eq('tenant_id', user.tenantId!)
@@ -40,10 +40,10 @@ export async function getPreviewClients(): Promise<PreviewClient[]> {
 
 export async function getPreviewClientEvents(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to this tenant
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id')
     .eq('id', clientId)
@@ -52,7 +52,7 @@ export async function getPreviewClientEvents(clientId: string) {
 
   if (!client) return []
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       'id, occasion, event_date, guest_count, status, quoted_price_cents, location_address, location_city'
@@ -74,10 +74,10 @@ export async function getPreviewClientEvents(clientId: string) {
 
 export async function getPreviewClientQuotes(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to this tenant
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id')
     .eq('id', clientId)
@@ -86,7 +86,7 @@ export async function getPreviewClientQuotes(clientId: string) {
 
   if (!client) return []
 
-  const { data: quotes, error } = await supabase
+  const { data: quotes, error } = await db
     .from('quotes')
     .select(
       'id, quote_name, total_quoted_cents, status, created_at, valid_until, deposit_amount_cents, deposit_percentage, pricing_notes, inquiry:inquiries(id, confirmed_occasion)'
@@ -108,9 +108,9 @@ export async function getPreviewClientQuotes(clientId: string) {
 
 export async function getPreviewClientLoyaltyStatus(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, loyalty_points, loyalty_tier, total_events_completed, total_guests_served')
     .eq('id', clientId)
@@ -123,7 +123,7 @@ export async function getPreviewClientLoyaltyStatus(clientId: string) {
 
   if (balance === 0 && !client.total_events_completed) return null
 
-  const { data: rewards } = await supabase
+  const { data: rewards } = await db
     .from('loyalty_rewards')
     .select('id, name, points_required, description')
     .eq('tenant_id', user.tenantId!)

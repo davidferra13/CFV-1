@@ -29,7 +29,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Inquiry')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('inquiries')
       .select('*')
       .eq('id', id)
@@ -57,7 +57,7 @@ export const PATCH = withApiAuth(
     const parsed = UpdateInquiryBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('inquiries')
       .select('id')
       .eq('id', id)
@@ -66,7 +66,7 @@ export const PATCH = withApiAuth(
 
     if (!existing) return apiNotFound('Inquiry')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('inquiries')
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
@@ -89,7 +89,7 @@ export const DELETE = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Inquiry')
 
-    const { error } = await ctx.supabase
+    const { error } = await ctx.db
       .from('inquiries')
       .update({ deleted_at: new Date().toISOString() } as any)
       .eq('id', id)

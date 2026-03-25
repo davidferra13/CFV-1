@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { computeChargebackRate } from '@/lib/finance/chargeback-rate'
 import type { ChargebackRate } from '@/lib/finance/chargeback-rate'
 
@@ -10,13 +10,13 @@ export type { ChargebackRate }
 export async function getChargebackRate(): Promise<ChargebackRate | null> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const twelveMonthsAgo = new Date()
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
 
   // Count payment disputes in last 12 months
-  const { count: disputeCount, error: disputeError } = await supabase
+  const { count: disputeCount, error: disputeError } = await db
     .from('payment_disputes')
     .select('id', { count: 'exact', head: true })
     .eq('chef_id', tenantId)
@@ -28,7 +28,7 @@ export async function getChargebackRate(): Promise<ChargebackRate | null> {
   }
 
   // Count payment ledger entries in last 12 months
-  const { count: transactionCount, error: ledgerError } = await supabase
+  const { count: transactionCount, error: ledgerError } = await db
     .from('ledger_entries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)

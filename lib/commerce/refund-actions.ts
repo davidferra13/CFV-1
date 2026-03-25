@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { canRefund } from './sale-fsm'
 import { appendPosAuditLog } from './pos-audit-log'
@@ -35,14 +35,14 @@ export type CreateRefundInput = {
 export async function createRefund(input: CreateRefundInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const normalizedReason = normalizeManualReason({
     reason: input.reason,
     actionLabel: 'Refund',
   })
 
   await assertPosManagerAccess({
-    supabase,
+    db,
     user,
     action: 'issue a refund',
   })
@@ -51,7 +51,7 @@ export async function createRefund(input: CreateRefundInput) {
     throw new Error('Refund amount must be a positive integer (cents)')
   }
   // Fetch the original payment
-  const { data: payment, error: paymentErr } = await supabase
+  const { data: payment, error: paymentErr } = await db
     .from('commerce_payments')
     .select('id, sale_id, amount_cents, tip_cents, status, tenant_id')
     .eq('id', input.paymentId)
@@ -66,7 +66,7 @@ export async function createRefund(input: CreateRefundInput) {
   }
 
   // Validate refund amount doesn't exceed payment
-  const { data: existingRefunds } = await supabase
+  const { data: existingRefunds } = await db
     .from('commerce_refunds')
     .select('amount_cents')
     .eq('payment_id', input.paymentId)
@@ -90,7 +90,7 @@ export async function createRefund(input: CreateRefundInput) {
 
   // If sale exists, check it can be refunded
   if (saleId) {
-    const { data: sale } = await supabase
+    const { data: sale } = await db
       .from('sales')
       .select('status')
       .eq('id', saleId)
@@ -105,7 +105,7 @@ export async function createRefund(input: CreateRefundInput) {
   // Determine initial status - manual refunds are immediate, Stripe ones are pending
   const refundStatus = input.stripeRefundId ? 'pending' : 'processed'
 
-  const { data: refund, error } = await supabase
+  const { data: refund, error } = await db
     .from('commerce_refunds')
     .insert({
       tenant_id: user.tenantId!,
@@ -125,7 +125,7 @@ export async function createRefund(input: CreateRefundInput) {
   if (error) {
     // Idempotency: if duplicate key, return existing
     if (error.code === '23505' && error.message.includes('idempotency')) {
-      const { data: existing } = await supabase
+      const { data: existing } = await db
         .from('commerce_refunds')
         .select('id, ledger_entry_id')
         .eq('idempotency_key', input.idempotencyKey)
@@ -139,7 +139,7 @@ export async function createRefund(input: CreateRefundInput) {
   // Update sale status if this is a processed refund
   if (refundStatus === 'processed' && saleId) {
     await updateSaleStatusAfterRefund(saleId, user.tenantId!)
-    const { data: updatedSale } = await supabase
+    const { data: updatedSale } = await db
       .from('sales')
       .select('status')
       .eq('id', saleId)
@@ -174,9 +174,9 @@ export async function createRefund(input: CreateRefundInput) {
 export async function getRefundsForSale(saleId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('commerce_refunds')
     .select('*')
     .eq('sale_id', saleId)
@@ -190,9 +190,9 @@ export async function getRefundsForSale(saleId: string) {
 // ─── Internal: Update Sale Status After Refund ────────────────────
 
 async function updateSaleStatusAfterRefund(saleId: string, tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: sale } = await supabase
+  const { data: sale } = await db
     .from('sales')
     .select('total_cents, status')
     .eq('id', saleId)
@@ -202,7 +202,7 @@ async function updateSaleStatusAfterRefund(saleId: string, tenantId: string) {
   if (!sale) return
 
   // Get total paid
-  const { data: payments } = await supabase
+  const { data: payments } = await db
     .from('commerce_payments')
     .select('amount_cents, status')
     .eq('sale_id', saleId)
@@ -213,7 +213,7 @@ async function updateSaleStatusAfterRefund(saleId: string, tenantId: string) {
     .reduce((sum: number, p: any) => sum + p.amount_cents, 0)
 
   // Get total refunded
-  const { data: refunds } = await supabase
+  const { data: refunds } = await db
     .from('commerce_refunds')
     .select('amount_cents, status')
     .eq('sale_id', saleId)
@@ -232,7 +232,7 @@ async function updateSaleStatusAfterRefund(saleId: string, tenantId: string) {
   }
 
   if (newStatus !== (sale as any).status) {
-    await supabase
+    await db
       .from('sales')
       .update({ status: newStatus } as any)
       .eq('id', saleId)

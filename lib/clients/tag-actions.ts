@@ -4,14 +4,14 @@
 // Tags are free-text labels (max 50 chars) scoped to a chef-tenant.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export async function getClientTags(clientId: string): Promise<string[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('client_tags' as any)
     .select('tag')
     .eq('client_id', clientId)
@@ -24,9 +24,9 @@ export async function getClientTags(clientId: string): Promise<string[]> {
 /** Returns all distinct tags used by this chef, sorted alphabetically. */
 export async function getAllUsedTags(): Promise<string[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('client_tags' as any)
     .select('tag')
     .eq('tenant_id', user.tenantId!)
@@ -38,12 +38,12 @@ export async function getAllUsedTags(): Promise<string[]> {
 
 export async function addClientTag(clientId: string, tag: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const trimmed = tag.trim().slice(0, 50)
   if (!trimmed) return
 
-  await supabase
+  await db
     .from('client_tags' as any)
     .upsert(
       { client_id: clientId, tenant_id: user.tenantId!, tag: trimmed },
@@ -56,9 +56,9 @@ export async function addClientTag(clientId: string, tag: string): Promise<void>
 
 export async function removeClientTag(clientId: string, tag: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase
+  await db
     .from('client_tags' as any)
     .delete()
     .eq('client_id', clientId)
@@ -72,9 +72,9 @@ export async function removeClientTag(clientId: string, tag: string): Promise<vo
 /** Returns a map of clientId → tag array for all clients with tags. */
 export async function getTagsForAllClients(): Promise<Map<string, string[]>> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('client_tags' as any)
     .select('client_id, tag')
     .eq('tenant_id', user.tenantId!)

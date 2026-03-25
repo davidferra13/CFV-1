@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ---------------------------------------------------------------------------
 // Social Feed: aggregated activity across all circles a profile belongs to.
@@ -29,11 +29,11 @@ export async function getSocialFeed(input: {
   limit?: number
   cursor?: string
 }): Promise<{ items: SocialFeedItem[]; nextCursor: string | null }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const limit = input.limit ?? 30
 
   // Get all groups the profile is a member of
-  const { data: memberships } = await supabase
+  const { data: memberships } = await db
     .from('hub_group_members')
     .select('group_id')
     .eq('profile_id', input.profileId)
@@ -45,7 +45,7 @@ export async function getSocialFeed(input: {
   const groupIds = memberships.map((m: any) => m.group_id)
 
   // Fetch recent messages across all groups
-  let query = supabase
+  let query = db
     .from('hub_messages')
     .select(
       'id, group_id, author_profile_id, message_type, body, media_urls, created_at, hub_guest_profiles!author_profile_id(display_name, avatar_url)'
@@ -65,7 +65,7 @@ export async function getSocialFeed(input: {
 
   // Load group info for names
   const uniqueGroupIds = [...new Set(messages.map((m: any) => m.group_id))]
-  const { data: groups } = await supabase
+  const { data: groups } = await db
     .from('hub_groups')
     .select('id, name, emoji, group_token')
     .in('id', uniqueGroupIds)
@@ -108,9 +108,9 @@ export async function getChefSocialFeed(input?: {
 }): Promise<{ items: SocialFeedItem[]; nextCursor: string | null }> {
   const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('auth_user_id', user.userId)

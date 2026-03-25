@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -33,13 +33,13 @@ export interface QuoteAcceptanceInsights {
 
 export async function getQuoteAcceptanceInsights(): Promise<QuoteAcceptanceInsights> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const since90 = new Date(Date.now() - 90 * 86_400_000).toISOString()
   const today = new Date().toISOString().slice(0, 10)
   const in7Days = new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10)
 
-  const { data: quotes, error } = await supabase
+  const { data: quotes, error } = await db
     .from('quotes')
     .select(
       'id, status, total_quoted_cents, pricing_model, sent_at, accepted_at, rejected_at, valid_until, client:clients(full_name)'

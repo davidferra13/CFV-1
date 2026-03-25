@@ -7,7 +7,7 @@
 //     -H "Authorization: Bearer $CRON_SECRET"
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { runSimulationInternal } from '@/lib/simulation/simulation-runner'
 import { ALL_SIM_MODULES } from '@/lib/simulation/types'
 import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
@@ -22,7 +22,7 @@ async function handleSimulation(req: NextRequest): Promise<NextResponse> {
   if (authError) return authError
 
   const started = Date.now()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Determine which tenants to run
   let tenantIds: string[]
@@ -40,7 +40,7 @@ async function handleSimulation(req: NextRequest): Promise<NextResponse> {
 
   // If no tenant IDs specified, run for all chefs
   if (tenantIds.length === 0) {
-    const { data: chefs } = await supabase.from('chefs').select('id').limit(10000)
+    const { data: chefs } = await db.from('chefs').select('id').limit(10000)
     tenantIds = (chefs ?? []).map((c: { id: string }) => c.id)
   }
 

@@ -14,7 +14,7 @@
 //   - result summary
 //   - timestamp (auto-set by DB)
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 type WebhookEventStatus = 'received' | 'processed' | 'failed' | 'skipped'
 
@@ -36,8 +36,8 @@ export async function logWebhookEvent({
   payloadSizeBytes?: number
 }): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
-    const { error } = await supabase.from('webhook_events').insert({
+    const db = createServerClient({ admin: true })
+    const { error } = await db.from('webhook_events').insert({
       provider,
       event_type: eventType,
       provider_event_id: providerEventId ?? null,

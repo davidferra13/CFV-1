@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { MARKETPLACE_PLATFORMS, getMarketplacePlatform } from './platforms'
 
 // All marketplace channel values for the DB query
@@ -56,12 +56,12 @@ export type MarketplaceCommandCenterData = {
 export async function getMarketplaceCommandCenter(): Promise<MarketplaceCommandCenterData> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = Date.now()
   const today = new Date().toISOString().slice(0, 10)
 
   // Fetch all marketplace inquiries that are active
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select(
       `id, channel, status, created_at, confirmed_occasion, confirmed_date,
@@ -110,7 +110,7 @@ export async function getMarketplaceCommandCenter(): Promise<MarketplaceCommandC
   let upcomingBookings: MarketplaceBooking[] = []
 
   if (linkedEventIds.length > 0) {
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select(
         'id, inquiry_id, event_date, status, occasion, quoted_price_cents, client:clients(full_name)'

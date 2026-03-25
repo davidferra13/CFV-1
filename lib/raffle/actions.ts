@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef, requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { ALIAS_EMOJIS } from './constants'
 import { createClientNotification } from '@/lib/notifications/client-actions'
@@ -109,7 +109,7 @@ export async function createRaffleRound(input: {
 }): Promise<{ success: boolean; error?: string; roundId?: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Generate month label from the start date
   const startDate = new Date(input.monthStart + 'T00:00:00Z')
@@ -119,7 +119,7 @@ export async function createRaffleRound(input: {
     timeZone: 'UTC',
   })
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('raffle_rounds')
     .insert({
       tenant_id: tenantId,
@@ -174,14 +174,14 @@ export async function updateRaffleRound(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = {}
   if (input.prizeDescription !== undefined)
     updates.prize_description = input.prizeDescription.trim()
   if (input.status === 'cancelled') updates.status = 'cancelled'
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('raffle_rounds')
     .update(updates)
     .eq('id', roundId)
@@ -202,9 +202,9 @@ export async function updateRaffleRound(
 export async function getRaffleRounds(): Promise<RaffleRound[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('raffle_rounds')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -230,16 +230,16 @@ export async function getRaffleRoundDetail(roundId: string): Promise<{
 }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [roundResult, entriesResult] = await Promise.all([
-    (supabase as any)
+    (db as any)
       .from('raffle_rounds')
       .select('*')
       .eq('id', roundId)
       .eq('tenant_id', tenantId)
       .single(),
-    (supabase as any)
+    (db as any)
       .from('raffle_entries')
       .select('*, clients!inner(full_name)')
       .eq('round_id', roundId)
@@ -302,7 +302,7 @@ export async function markPrizeDelivered(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const columnMap = {
     random: { delivered: 'prize_random_delivered', deliveredAt: 'prize_random_delivered_at' },
@@ -328,7 +328,7 @@ export async function markPrizeDelivered(
     updates.prize_delivered_at = now
   }
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('raffle_rounds')
     .update(updates)
     .eq('id', roundId)
@@ -359,10 +359,10 @@ export async function getActiveRaffle(): Promise<{
   lastDrawReceipt: DrawReceipt | null
 } | null> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get client's tenant
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('tenant_id')
     .eq('id', user.entityId)
@@ -375,7 +375,7 @@ export async function getActiveRaffle(): Promise<{
 
   // Fetch active round + most recent completed round in parallel
   const [activeResult, completedResult] = await Promise.all([
-    (supabase as any)
+    (db as any)
       .from('raffle_rounds')
       .select('*')
       .eq('tenant_id', client.tenant_id)
@@ -384,7 +384,7 @@ export async function getActiveRaffle(): Promise<{
       .order('month_start', { ascending: false })
       .limit(1)
       .maybeSingle(),
-    (supabase as any)
+    (db as any)
       .from('raffle_rounds')
       .select('*')
       .eq('tenant_id', client.tenant_id)
@@ -459,7 +459,7 @@ export async function getActiveRaffle(): Promise<{
   }
 
   // Get all entries for this round
-  const { data: allEntries } = await (supabase as any)
+  const { data: allEntries } = await (db as any)
     .from('raffle_entries')
     .select('client_id, alias_emoji, game_score, entry_date')
     .eq('round_id', round.id)
@@ -521,10 +521,10 @@ export async function submitRaffleEntry(
   isNewEntry?: boolean
 }> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get client info
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('tenant_id')
     .eq('id', user.entityId)
@@ -533,7 +533,7 @@ export async function submitRaffleEntry(
   if (!client) return { success: false, error: 'Client not found.' }
 
   // Verify round is active and belongs to client's tenant
-  const { data: round } = await (supabase as any)
+  const { data: round } = await (db as any)
     .from('raffle_rounds')
     .select('id, status, tenant_id')
     .eq('id', roundId)
@@ -544,7 +544,7 @@ export async function submitRaffleEntry(
   if (!round) return { success: false, error: 'No active raffle found.' }
 
   // Get existing alias for this client in this round, or assign new one
-  const { data: existingEntries } = await (supabase as any)
+  const { data: existingEntries } = await (db as any)
     .from('raffle_entries')
     .select('alias_emoji')
     .eq('round_id', roundId)
@@ -556,7 +556,7 @@ export async function submitRaffleEntry(
     aliasEmoji = existingEntries[0].alias_emoji
   } else {
     // Assign a new unique alias - check which emojis are already taken in this round
-    const { data: usedAliases } = await (supabase as any)
+    const { data: usedAliases } = await (db as any)
       .from('raffle_entries')
       .select('alias_emoji')
       .eq('round_id', roundId)
@@ -572,7 +572,7 @@ export async function submitRaffleEntry(
   const safeScore = Math.max(0, Math.round(gameScore))
 
   // Try to insert a new entry for today
-  const { error: insertError } = await (supabase as any).from('raffle_entries').insert({
+  const { error: insertError } = await (db as any).from('raffle_entries').insert({
     tenant_id: client.tenant_id,
     round_id: roundId,
     client_id: user.entityId,
@@ -587,7 +587,7 @@ export async function submitRaffleEntry(
       // Already have an entry today - update score if this one is higher
       isNewEntry = false
       const today = new Date().toISOString().split('T')[0]
-      await (supabase as any)
+      await (db as any)
         .from('raffle_entries')
         .update({ game_score: safeScore })
         .eq('round_id', roundId)
@@ -601,7 +601,7 @@ export async function submitRaffleEntry(
   }
 
   // Get updated total
-  const { count } = await (supabase as any)
+  const { count } = await (db as any)
     .from('raffle_entries')
     .select('id', { count: 'exact', head: true })
     .eq('round_id', roundId)
@@ -643,10 +643,10 @@ export async function drawRaffleWinner(roundId: string): Promise<{
   mostDedicatedAlias?: string
 }> {
   // Use admin client to bypass RLS (called from cron)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Lock the round by setting status to 'drawing' (prevents concurrent draws)
-  const { data: round, error: lockError } = await (supabase as any)
+  const { data: round, error: lockError } = await (db as any)
     .from('raffle_rounds')
     .update({ status: 'drawing' })
     .eq('id', roundId)
@@ -659,14 +659,14 @@ export async function drawRaffleWinner(roundId: string): Promise<{
   }
 
   // Get all entries (expanded fields for top scorer + most dedicated computation)
-  const { data: entries, error: entriesError } = await (supabase as any)
+  const { data: entries, error: entriesError } = await (db as any)
     .from('raffle_entries')
     .select('id, client_id, alias_emoji, game_score, entry_date, created_at')
     .eq('round_id', roundId)
 
   if (entriesError || !entries || entries.length === 0) {
     // No entries - cancel the round
-    await (supabase as any).from('raffle_rounds').update({ status: 'cancelled' }).eq('id', roundId)
+    await (db as any).from('raffle_rounds').update({ status: 'cancelled' }).eq('id', roundId)
     return { success: false, error: 'No entries in this round.' }
   }
 
@@ -723,7 +723,7 @@ export async function drawRaffleWinner(roundId: string): Promise<{
   const uniqueParticipants = clientStats.size
 
   // Update round with all winners
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await (db as any)
     .from('raffle_rounds')
     .update({
       status: 'completed',
@@ -749,7 +749,7 @@ export async function drawRaffleWinner(roundId: string): Promise<{
 
   if (updateError) {
     console.error('[raffle] Failed to record winner:', updateError)
-    await (supabase as any).from('raffle_rounds').update({ status: 'active' }).eq('id', roundId)
+    await (db as any).from('raffle_rounds').update({ status: 'active' }).eq('id', roundId)
     return { success: false, error: 'Failed to record draw result.' }
   }
 

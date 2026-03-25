@@ -11,15 +11,15 @@ import {
   createStaffMember,
   getEventStaffRoster,
 } from '@/lib/staff/actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
 // ─── Event Finder ────────────────────────────────────────────────────────────
 
 async function findEvent(identifier: string, tenantId: string) {
-  const supabase: any = createServerClient()
-  const { data: events } = await supabase
+  const db: any = createServerClient()
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', tenantId)

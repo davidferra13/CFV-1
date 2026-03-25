@@ -6,7 +6,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -69,9 +69,9 @@ export async function updateInventoryCount(
 ): Promise<InventoryCount> {
   const user = await requireChef()
   const parsed = UpdateInventoryCountSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase.from('inventory_counts') as any)
+  const { data, error } = await (db.from('inventory_counts') as any)
     .upsert(
       {
         chef_id: user.tenantId!,
@@ -111,9 +111,9 @@ export async function updateInventoryCount(
  */
 export async function getInventoryCounts(): Promise<InventoryCount[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('inventory_counts')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -141,10 +141,10 @@ export async function getInventoryCounts(): Promise<InventoryCount[]> {
  */
 export async function getParAlerts(): Promise<ParAlert[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch items that have a par_level set
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('inventory_counts')
     .select('*')
     .eq('chef_id', user.tenantId!)

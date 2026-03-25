@@ -6,7 +6,7 @@ HTTP-level load testing for ChefFlow. Simulates concurrent users hitting pages a
 
 - **k6 binary** at `node_modules/.bin/k6.exe` (already installed)
 - **Dev server** running on port 3100 (`npm run dev`)
-- **SUPABASE_E2E_ALLOW_REMOTE=true** in `.env.local` (for authenticated page route tests)
+- **DATABASE_E2E_ALLOW_REMOTE=true** in `.env.local` (for authenticated page route tests)
 - **Ollama running** (only needed for `test:load:remy`)
 
 ## Quick Start
@@ -60,7 +60,7 @@ Authenticated chef pages with realistic weights: dashboard (40%), events (20%), 
 
 ### 04-api-v2-reads.js
 
-REST API GET endpoints with API key or Supabase token auth. Tests events list, clients list, and financial summary. Respects 100 req/min rate limit. The financial summary endpoint is the most expensive (multiple DB queries).
+REST API GET endpoints with API key or PostgreSQL token auth. Tests events list, clients list, and financial summary. Respects 100 req/min rate limit. The financial summary endpoint is the most expensive (multiple DB queries).
 
 ### 05-api-v2-writes.js
 
@@ -119,8 +119,8 @@ node_modules/.bin/k6 run tests/load/scenarios/01-public-routes.js -e PROFILE=str
 
 - **k6 is Go-based**: Low overhead, won't compete much with Node.js for RAM. But at 200 VUs on a single PC, both processes share CPU.
 - **Rate limiting**: API v2 has 100 req/min per tenant (in-memory). Tests space requests accordingly. If you see mostly 429 responses, reduce VU count or increase rate limit temporarily.
-- **Auth**: Page routes use Supabase SSR cookies (set via `/api/e2e/auth`). API v2 routes use Bearer token. Both methods are in `tests/load/helpers/auth.js`.
-- **Shared database**: All environments share the same Supabase instance. Write tests create real records. Clean up after.
+- **Auth**: Page routes use PostgreSQL SSR cookies (set via `/api/e2e/auth`). API v2 routes use Bearer token. Both methods are in `tests/load/helpers/auth.js`.
+- **Shared database**: All environments share the same PostgreSQL instance. Write tests create real records. Clean up after.
 
 ## File Structure
 
@@ -128,7 +128,7 @@ node_modules/.bin/k6 run tests/load/scenarios/01-public-routes.js -e PROFILE=str
 tests/load/
   config.js              # Base URLs, thresholds, stage definitions
   helpers/
-    auth.js              # Supabase JWT + E2E auth helpers
+    auth.js              # PostgreSQL JWT + E2E auth helpers
     checks.js            # Response validation helpers
   scenarios/
     00-smoke.js          # Setup validation

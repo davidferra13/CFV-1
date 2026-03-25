@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -47,10 +47,10 @@ export type UpsertRulesInput = z.infer<typeof UpsertRulesSchema>
 
 export async function getSchedulingRules(): Promise<SchedulingRules | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // cast as any - table not in generated types until migration is pushed
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_scheduling_rules')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -66,10 +66,10 @@ export async function upsertSchedulingRules(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const validated = UpsertRulesSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // cast as any - table not in generated types until migration is pushed
-  const { error } = await supabase.from('chef_scheduling_rules').upsert(
+  const { error } = await db.from('chef_scheduling_rules').upsert(
     {
       tenant_id: user.tenantId!,
       blocked_days_of_week: validated.blocked_days_of_week,
@@ -103,14 +103,14 @@ export async function validateDateAgainstRules(
   excludeEventId?: string
 ): Promise<DateRuleValidation> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const blockers: string[] = []
   const warnings: string[] = []
 
   // Fetch rules (may not exist yet) - cast as any until migration is pushed
-  const { data: rules } = await supabase
+  const { data: rules } = await db
     .from('chef_scheduling_rules')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -154,7 +154,7 @@ export async function validateDateAgainstRules(
     const bufferAfter = new Date(proposed)
     bufferAfter.setUTCDate(proposed.getUTCDate() + r.min_buffer_days)
 
-    let query = supabase
+    let query = db
       .from('events')
       .select('event_date, occasion')
       .eq('tenant_id', tenantId)
@@ -188,7 +188,7 @@ export async function validateDateAgainstRules(
     const weekEnd = new Date(weekStart)
     weekEnd.setUTCDate(weekStart.getUTCDate() + 6)
 
-    let weekQuery = supabase
+    let weekQuery = db
       .from('events')
       .select('id', { count: 'exact' })
       .eq('tenant_id', tenantId)
@@ -216,7 +216,7 @@ export async function validateDateAgainstRules(
     const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate()
     const monthEnd = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
-    let monthQuery = supabase
+    let monthQuery = db
       .from('events')
       .select('id', { count: 'exact' })
       .eq('tenant_id', tenantId)

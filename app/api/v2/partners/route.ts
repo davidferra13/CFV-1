@@ -38,7 +38,7 @@ export const GET = withApiAuth(
     const status = url.searchParams.get('status')
     const q = url.searchParams.get('q')
 
-    let query = (ctx.supabase as any)
+    let query = (ctx.db as any)
       .from('referral_partners')
       .select('*', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)
@@ -72,7 +72,7 @@ export const POST = withApiAuth(
     const parsed = CreatePartnerBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('referral_partners')
       .insert({
         tenant_id: ctx.tenantId,

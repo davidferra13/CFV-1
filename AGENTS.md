@@ -17,7 +17,7 @@ The ONLY exception: the developer explicitly says "push to main" or "deploy."
 
 No `DROP TABLE`, `DROP COLUMN`, `DELETE`, `TRUNCATE`, or column type changes without explicit developer approval. All migrations must be additive (add tables, add columns, add indexes). Show the developer the full SQL before writing any migration file.
 
-### 3. NEVER run `supabase db push` without explicit approval
+### 3. NEVER run `drizzle-kit push` without explicit approval
 
 ### 4. NEVER edit `types/database.ts`
 
@@ -43,7 +43,7 @@ The developer may have dev/beta/prod servers running. Don't touch them.
 
 ## STACK & ARCHITECTURE
 
-- **Stack:** Next.js (App Router) + Supabase + Stripe
+- **Stack:** Next.js (App Router) + PostgreSQL + Stripe
 - **What it is:** Multi-tenant private chef platform (SaaS)
 - **All monetary amounts:** stored in cents (integers, minor units)
 - **Financial model:** Ledger-first, immutable, append-only. Balances are computed from ledger entries, never stored directly.
@@ -60,7 +60,7 @@ The developer may have dev/beta/prod servers running. Don't touch them.
 | 3200 | Beta        | beta.cheflowhq.com | `next start`, Cloudflare Tunnel |
 | 3300 | Production  | app.cheflowhq.com  | `next start`, Cloudflare Tunnel |
 
-All three share the same Supabase database and Ollama instance (port 11434).
+All three share the same PostgreSQL database and Ollama instance (port 11434).
 
 ---
 
@@ -171,7 +171,7 @@ Both reference `chefs(id)`. Historical naming split:
 
 Before creating ANY migration file:
 
-1. List all existing files in `supabase/migrations/*.sql`
+1. List all existing files in `database/migrations/*.sql`
 2. Pick a timestamp strictly higher than the highest existing one
 3. Never reuse or guess timestamps (multiple agents may run concurrently)
 4. Show the developer the full SQL before writing the file

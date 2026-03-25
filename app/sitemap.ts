@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
 
@@ -66,7 +66,7 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
 
     // Fetch all chefs who have public profiles enabled and a slug
     const timeoutPromise = new Promise<never>((_, reject) => {
@@ -74,7 +74,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
 
     const { data: chefs } = (await Promise.race([
-      supabase
+      db
         .from('chefs')
         .select('slug, updated_at')
         .not('slug', 'is', null)

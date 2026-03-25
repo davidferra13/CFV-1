@@ -6,8 +6,8 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient } from '@/lib/db/server'
+import { createAdminClient } from '@/lib/db/admin'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -78,10 +78,10 @@ export async function generateStaffEventToken(
 ): Promise<{ success: boolean; token?: string; error?: string }> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Verify the event belongs to this chef
-    const { data: event, error: eventError } = await supabase
+    const { data: event, error: eventError } = await db
       .from('events')
       .select('id')
       .eq('id', eventId)
@@ -93,7 +93,7 @@ export async function generateStaffEventToken(
     }
 
     // Verify the staff member belongs to this chef
-    const { data: staff, error: staffError } = await supabase
+    const { data: staff, error: staffError } = await db
       .from('staff_members')
       .select('id')
       .eq('id', staffMemberId)
@@ -105,7 +105,7 @@ export async function generateStaffEventToken(
     }
 
     // Get assigned tasks from the event assignment (if any)
-    const { data: assignment } = await supabase
+    const { data: assignment } = await db
       .from('event_staff_assignments')
       .select('id, notes')
       .eq('event_id', eventId)
@@ -114,7 +114,7 @@ export async function generateStaffEventToken(
       .single()
 
     // Upsert: if a token already exists for this event+staff, reactivate it
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('staff_event_tokens')
       .select('id, token')
       .eq('event_id', eventId)
@@ -124,7 +124,7 @@ export async function generateStaffEventToken(
 
     if (existing) {
       // Reactivate existing token
-      await supabase
+      await db
         .from('staff_event_tokens')
         .update({
           is_revoked: false,
@@ -137,7 +137,7 @@ export async function generateStaffEventToken(
     }
 
     // Create new token
-    const { data: newToken, error: insertError } = await supabase
+    const { data: newToken, error: insertError } = await db
       .from('staff_event_tokens')
       .insert({
         tenant_id: user.tenantId,
@@ -169,9 +169,9 @@ export async function generateStaffEventToken(
 export async function listStaffEventTokens(eventId: string): Promise<StaffEventTokenInfo[]> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data: tokens, error } = await supabase
+    const { data: tokens, error } = await db
       .from('staff_event_tokens')
       .select('id, staff_member_id, token, is_revoked, expires_at, last_accessed, created_at')
       .eq('event_id', eventId)
@@ -187,7 +187,7 @@ export async function listStaffEventTokens(eventId: string): Promise<StaffEventT
 
     // Get staff names
     const staffIds = tokens.map((t: any) => t.staff_member_id)
-    const { data: staffMembers } = await supabase
+    const { data: staffMembers } = await db
       .from('staff_members')
       .select('id, name')
       .in('id', staffIds)
@@ -223,9 +223,9 @@ export async function revokeStaffEventToken(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { error } = await supabase
+    const { error } = await db
       .from('staff_event_tokens')
       .update({ is_revoked: true })
       .eq('id', tokenId)

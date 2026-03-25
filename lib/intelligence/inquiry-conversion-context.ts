@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -42,11 +42,11 @@ export async function getInquiryConversionContext(params: {
 }): Promise<InquiryConversionContext | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [historicalRes, openRes] = await Promise.all([
     // All past inquiries (converted + declined/expired) for conversion rate
-    supabase
+    db
       .from('inquiries')
       .select(
         'id, status, channel, confirmed_guest_count, confirmed_occasion, confirmed_budget_cents, created_at, updated_at, converted_to_event_id'
@@ -56,7 +56,7 @@ export async function getInquiryConversionContext(params: {
       .order('created_at', { ascending: false })
       .limit(200),
     // Current open inquiries for pipeline context
-    supabase
+    db
       .from('inquiries')
       .select('id, confirmed_budget_cents, created_at')
       .eq('tenant_id', tenantId)
@@ -164,7 +164,7 @@ export async function getInquiryConversionContext(params: {
     const convertedEventIds = converted.map((c: any) => c.converted_to_event_id).filter(Boolean)
 
     if (convertedEventIds.length >= 3) {
-      const { data: events } = await supabase
+      const { data: events } = await db
         .from('events')
         .select('quoted_price_cents, guest_count')
         .in('id', convertedEventIds)

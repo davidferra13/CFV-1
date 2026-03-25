@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import primaryShortcuts from '@/lib/navigation/primary-shortcuts'
 
 const {
@@ -21,9 +21,9 @@ function equalHrefOrder(left: readonly string[], right: readonly string[]) {
 
 async function main() {
   const shouldApply = process.argv.includes('--apply')
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_preferences')
     .select('id, chef_id, primary_nav_hrefs, saved_custom_nav_hrefs')
 
@@ -85,7 +85,7 @@ async function main() {
 
     if (!shouldApply) continue
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await db
       .from('chef_preferences')
       .update({ primary_nav_hrefs: nextPayload })
       .eq('id', candidate.id)

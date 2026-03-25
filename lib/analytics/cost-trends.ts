@@ -6,7 +6,7 @@
 // Flags an amber warning if food cost % has risen for 2+ consecutive months.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type FoodCostTrendMonth = {
   month: string // 'YYYY-MM'
@@ -39,7 +39,7 @@ const MONTH_LABELS = [
 
 export async function getFoodCostTrend(months = 6): Promise<FoodCostTrend> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Compute the cutoff date: first day of the month N months ago
   const cutoff = new Date()
@@ -48,7 +48,7 @@ export async function getFoodCostTrend(months = 6): Promise<FoodCostTrend> {
   const cutoffStr = cutoff.toISOString().split('T')[0]
 
   // Fetch all completed events in the range
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -63,7 +63,7 @@ export async function getFoodCostTrend(months = 6): Promise<FoodCostTrend> {
   const dateMap = new Map<string, string>(events.map((e: any) => [e.id, e.event_date]))
 
   // Fetch food_cost_percentage from the event_financial_summary view
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select('event_id, food_cost_percentage')
     .eq('tenant_id', user.tenantId!)

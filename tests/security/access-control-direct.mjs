@@ -12,7 +12,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
-import { createAnonClient } from '../../scripts/lib/supabase.mjs'
+import { createAnonClient } from '../../scripts/lib/db.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -1270,9 +1270,9 @@ const TESTS = [
 
 async function authenticate() {
   console.log(`[Auth] Authenticating as ${ATTACKER.email}...`)
-  const supabase = createAnonClient()
+  const db = createAnonClient()
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await db.auth.signInWithPassword({
     email: ATTACKER.email,
     password: ATTACKER.password,
   })

@@ -27,7 +27,7 @@ const UpdatePreferencesBody = z
 
 export const GET = withApiAuth(
   async (_req, ctx) => {
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('chef_preferences')
       .select('*')
       .eq('chef_id', ctx.tenantId)
@@ -55,7 +55,7 @@ export const PATCH = withApiAuth(
     const parsed = UpdatePreferencesBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('chef_preferences')
       .upsert(
         { chef_id: ctx.tenantId, ...parsed.data, updated_at: new Date().toISOString() } as any,

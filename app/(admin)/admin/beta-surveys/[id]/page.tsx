@@ -2,7 +2,7 @@
 // response table, invite management, and CSV export.
 
 import { requireAdmin } from '@/lib/auth/admin'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { getBetaSurveyResults, getBetaSurveyInvites } from '@/lib/beta-survey/actions'
 import type { SurveyQuestion } from '@/lib/beta-survey/survey-utils'
 import type { Metadata } from 'next'
@@ -13,10 +13,10 @@ export const metadata: Metadata = { title: 'Survey Results - Admin' }
 
 export default async function AdminBetaSurveyDetailPage({ params }: { params: { id: string } }) {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get the survey definition
-  const { data: survey } = await (supabase as any)
+  const { data: survey } = await (db as any)
     .from('beta_survey_definitions')
     .select('*')
     .eq('id', params.id)

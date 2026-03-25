@@ -7,7 +7,7 @@
 // so each reminder fires at most once per call.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { CallType } from '@/lib/calls/actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
@@ -15,14 +15,14 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const now = new Date()
 
   // ── 24-hour window ────────────────────────────────────────────────────────
   const window24hStart = new Date(now.getTime() + 23 * 60 * 60 * 1000).toISOString()
   const window24hEnd = new Date(now.getTime() + 25 * 60 * 60 * 1000).toISOString()
 
-  const { data: calls24h, error: err24 } = await supabase
+  const { data: calls24h, error: err24 } = await db
     .from('scheduled_calls')
     .select(
       `
@@ -40,7 +40,7 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
   const window1hStart = new Date(now.getTime() + 45 * 60 * 1000).toISOString()
   const window1hEnd = new Date(now.getTime() + 75 * 60 * 1000).toISOString()
 
-  const { data: calls1h, error: err1 } = await supabase
+  const { data: calls1h, error: err1 } = await db
     .from('scheduled_calls')
     .select(
       `
@@ -73,7 +73,7 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
   async function getChefEmail(
     tenantId: string
   ): Promise<{ email: string; displayName: string } | null> {
-    const { data } = await supabase
+    const { data } = await db
       .from('user_roles')
       .select('auth_user_id')
       .eq('entity_id', tenantId)
@@ -82,15 +82,11 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
 
     if (!data) return null
 
-    const { data: userData } = await supabase.auth.admin.getUserById(data.auth_user_id)
+    const { data: userData } = await db.auth.admin.getUserById(data.auth_user_id)
     if (!userData?.user?.email) return null
 
     // Get chef display name
-    const { data: chef } = await supabase
-      .from('chefs')
-      .select('display_name')
-      .eq('id', tenantId)
-      .single()
+    const { data: chef } = await db.from('chefs').select('display_name').eq('id', tenantId).single()
 
     return {
       email: userData.user.email,
@@ -119,7 +115,7 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
         }),
       })
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await db
         .from('scheduled_calls')
         .update({ reminder_24h_sent_at: new Date().toISOString() })
         .eq('id', call.id)
@@ -161,7 +157,7 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
         }),
       })
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await db
         .from('scheduled_calls')
         .update({ reminder_1h_sent_at: new Date().toISOString() })
         .eq('id', call.id)

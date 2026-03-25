@@ -1,12 +1,12 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { CreativeProjectCard } from '@/components/professional/creative-project-card'
 import { CreativeProjectForm } from '@/components/professional/creative-project-form'
 
 export default async function MyKitchenPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
-  const { data: projects } = await supabase
+  const db: any = createServerClient()
+  const { data: projects } = await db
     .from('chef_creative_projects')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

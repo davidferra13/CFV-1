@@ -5,7 +5,7 @@
 // on top of DEFAULT_TIER_MAP at notification send time.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { DEFAULT_TIER_MAP, type NotificationTier } from './tier-config'
 import { NOTIFICATION_CONFIG, type NotificationAction, type NotificationCategory } from './types'
@@ -27,9 +27,9 @@ export async function getNotificationTierMap(): Promise<TierMapEntry[]> {
   const user = await requireChef()
   if (!user.tenantId) return buildDefaultEntries()
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: overrides, error } = await supabase
+  const { data: overrides, error } = await db
     .from('chef_notification_tier_overrides' as any)
     .select('action, tier')
     .eq('chef_id', user.tenantId)
@@ -90,9 +90,9 @@ export async function updateNotificationTier(
     return resetNotificationTier(action)
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('chef_notification_tier_overrides' as any).upsert(
+  const { error } = await db.from('chef_notification_tier_overrides' as any).upsert(
     {
       chef_id: user.tenantId,
       action,
@@ -118,9 +118,9 @@ export async function resetNotificationTier(action: string): Promise<{ error: st
   const user = await requireChef()
   if (!user.tenantId) return { error: 'No tenant context' }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_notification_tier_overrides' as any)
     .delete()
     .eq('chef_id', user.tenantId)
@@ -142,9 +142,9 @@ export async function resetAllNotificationTiers(): Promise<{ error: string | nul
   const user = await requireChef()
   if (!user.tenantId) return { error: 'No tenant context' }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_notification_tier_overrides' as any)
     .delete()
     .eq('chef_id', user.tenantId)

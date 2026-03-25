@@ -6,13 +6,15 @@ Added a system for coordinating events that involve multiple chefs or collaborat
 
 ## Files Created
 
-### Migration: `supabase/migrations/20260401000092_multi_chef_coordination.sql`
+### Migration: `database/migrations/20260401000092_multi_chef_coordination.sql`
+
 - New `event_collaborators` table with columns for collaborator identity, station assignment, role, revenue split, status
 - RLS policy scoped to host chef (via `chef_id`)
 - Updated_at trigger
 - Indexes on `event_id` and `chef_id`
 
 ### Server Actions: `lib/events/collaborator-actions.ts`
+
 - `getEventCollaborators(eventId)` - list all collaborators for an event
 - `addCollaborator(eventId, input)` - add with validation (split cannot exceed 100%)
 - `updateCollaborator(id, input)` - update any field, validates split totals
@@ -21,6 +23,7 @@ Added a system for coordinating events that involve multiple chefs or collaborat
 - All actions tenant-scoped via `requireChef()`
 
 ### UI Component: `components/events/collaborator-panel.tsx`
+
 - Collapsible panel (same pattern as ContingencyPanel)
 - Add/edit forms with station dropdown, role selector, revenue split input
 - Status badges (invited/confirmed/declined) with quick toggle buttons
@@ -38,6 +41,7 @@ Added a system for coordinating events that involve multiple chefs or collaborat
 ## Integration
 
 The `CollaboratorPanel` component accepts:
+
 - `eventId` - the event UUID
 - `initialCollaborators` - pre-fetched collaborator list
 - `eventTotalCents` - event total in cents (for revenue split dollar calculations)

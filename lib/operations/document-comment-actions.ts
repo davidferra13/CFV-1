@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -64,9 +64,9 @@ function mapDocumentComment(row: any): DocumentComment {
 export async function addComment(input: AddCommentInput) {
   const user = await requireChef()
   const validated = AddCommentSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('document_comments')
     .insert({
       chef_id: user.tenantId!,
@@ -92,9 +92,9 @@ export async function addComment(input: AddCommentInput) {
  */
 export async function resolveComment(commentId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('document_comments')
     .update({ resolved: true })
     .eq('id', commentId)
@@ -119,9 +119,9 @@ export async function getComments(
   entityId: string
 ): Promise<DocumentComment[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('document_comments')
     .select('*')
     .eq('chef_id', user.tenantId!)

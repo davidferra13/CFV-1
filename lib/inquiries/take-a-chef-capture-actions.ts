@@ -6,7 +6,7 @@
 // Pattern follows: lib/inquiries/public-actions.ts (submitPublicInquiry)
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -56,7 +56,7 @@ export async function captureTakeAChefBooking(
 ): Promise<TakeAChefCaptureResult> {
   const user = await requireChef()
   const validated = TakeAChefCaptureSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   try {
@@ -99,7 +99,7 @@ export async function captureTakeAChefBooking(
       }
     } else {
       // No email - create a minimal client record with placeholder email
-      const { data: newClient } = await supabase
+      const { data: newClient } = await db
         .from('clients')
         .insert({
           tenant_id: tenantId,
@@ -121,7 +121,7 @@ export async function captureTakeAChefBooking(
     }
 
     // 4. Create inquiry
-    const { data: inquiry, error: inquiryError } = await supabase
+    const { data: inquiry, error: inquiryError } = await db
       .from('inquiries')
       .insert({
         tenant_id: tenantId,
@@ -167,7 +167,7 @@ export async function captureTakeAChefBooking(
       }
     }
 
-    const { data: event, error: eventError } = await supabase
+    const { data: event, error: eventError } = await db
       .from('events')
       .insert({
         tenant_id: tenantId,
@@ -201,7 +201,7 @@ export async function captureTakeAChefBooking(
     }
 
     // 6. Log event state transition
-    await supabase.from('event_state_transitions').insert({
+    await db.from('event_state_transitions').insert({
       tenant_id: tenantId,
       event_id: event.id,
       from_status: null,
@@ -210,10 +210,7 @@ export async function captureTakeAChefBooking(
     })
 
     // 7. Link inquiry to event
-    await supabase
-      .from('inquiries')
-      .update({ converted_to_event_id: event.id })
-      .eq('id', inquiry.id)
+    await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
 
     // 8. Log commission as expense
     let commissionExpenseId: string | undefined
@@ -226,7 +223,7 @@ export async function captureTakeAChefBooking(
       const commissionCents = Math.floor(
         (validated.total_price_cents * validated.commission_percent) / 100
       )
-      const { data: expense } = await supabase
+      const { data: expense } = await db
         .from('expenses')
         .insert({
           tenant_id: tenantId,
@@ -304,7 +301,7 @@ export async function getTakeAChefConversionData(
   eventId: string
 ): Promise<TakeAChefConversionData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const empty: TakeAChefConversionData = {
@@ -316,7 +313,7 @@ export async function getTakeAChefConversionData(
 
   try {
     // Fetch event with client referral_source and inquiry channel
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('client_id, inquiry_id, client:clients(full_name, referral_source)')
       .eq('id', eventId)
@@ -331,7 +328,7 @@ export async function getTakeAChefConversionData(
     // Check the linked inquiry channel if client source isn't already conclusive
     let isInquiryFromTAC = false
     if (event.inquiry_id) {
-      const { data: inquiry } = await supabase
+      const { data: inquiry } = await db
         .from('inquiries')
         .select('channel')
         .eq('id', event.inquiry_id)
@@ -344,11 +341,7 @@ export async function getTakeAChefConversionData(
     if (!isTakeAChef) return empty
 
     // Fetch chef slug for the direct booking link
-    const { data: chef } = await supabase
-      .from('chefs')
-      .select('booking_slug')
-      .eq('id', tenantId)
-      .single()
+    const { data: chef } = await db.from('chefs').select('booking_slug').eq('id', tenantId).single()
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
     const directBookingUrl = chef?.booking_slug

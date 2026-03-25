@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { syncGmailInbox } from './sync'
 import { getGoogleAccessToken } from '@/lib/google/auth'
@@ -16,10 +16,10 @@ import type { SyncResult, GmailSyncLogEntry, SendMessageResult } from './types'
 
 export async function triggerGmailSync(): Promise<SyncResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify Gmail is connected
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('google_connections')
     .select('gmail_connected')
     .eq('chef_id', user.entityId)
@@ -45,9 +45,9 @@ export async function triggerGmailSync(): Promise<SyncResult> {
 
 export async function getGmailSyncHistory(limit = 20): Promise<GmailSyncLogEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('gmail_sync_log')
     .select(
       'id, gmail_message_id, from_address, subject, classification, confidence, action_taken, error, synced_at'
@@ -76,10 +76,10 @@ export async function createDraftMessage(input: {
   eventId?: string | null
 }): Promise<{ messageId: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to tenant
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, email')
     .eq('id', input.clientId)
@@ -89,7 +89,7 @@ export async function createDraftMessage(input: {
   if (!client) throw new Error('Client not found')
   if (!client.email) throw new Error('Client has no email address')
 
-  const { data: message, error } = await supabase
+  const { data: message, error } = await db
     .from('messages')
     .insert({
       tenant_id: user.tenantId!,
@@ -121,10 +121,10 @@ export async function createDraftMessage(input: {
 
 export async function approveAndSendMessage(messageId: string): Promise<SendMessageResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Fetch the draft message
-  const { data: message, error: msgErr } = await supabase
+  const { data: message, error: msgErr } = await db
     .from('messages')
     .select('*, client:clients(email, full_name)')
     .eq('id', messageId)
@@ -147,7 +147,7 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
   let threadId: string | undefined
 
   if (message.inquiry_id) {
-    const { data: lastInbound } = await supabase
+    const { data: lastInbound } = await db
       .from('messages')
       .select('gmail_message_id, gmail_thread_id')
       .eq('tenant_id', user.tenantId!)
@@ -182,7 +182,7 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
     let paymentUrl: string | null = null
 
     if (message.inquiry_id) {
-      const { data: inq } = await supabase
+      const { data: inq } = await db
         .from('inquiries')
         .select('converted_to_event_id')
         .eq('id', message.inquiry_id)
@@ -204,7 +204,7 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
       : emailBody.replace('[PAYMENT_LINK]', '(payment link will be sent separately)')
 
     // Persist the resolved body so the message record has the actual link
-    await supabase
+    await db
       .from('messages')
       .update({ body: emailBody })
       .eq('id', messageId)
@@ -224,7 +224,7 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
 
   // 6. Update message record: draft → sent
   const now = new Date().toISOString()
-  const { error: updateErr } = await supabase
+  const { error: updateErr } = await db
     .from('messages')
     .update({
       status: 'sent',
@@ -250,7 +250,7 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
       const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
 
       // Get the chef's connected Gmail address for senderIdentity
-      const { data: conn } = await supabase
+      const { data: conn } = await db
         .from('google_connections')
         .select('connected_email')
         .eq('chef_id', user.entityId!)
@@ -280,7 +280,7 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
 
   // 8. Update inquiry: action tracking, auto-advance status, set follow-up timer
   if (message.inquiry_id) {
-    const { data: currentInquiry } = await supabase
+    const { data: currentInquiry } = await db
       .from('inquiries')
       .select('status')
       .eq('id', message.inquiry_id)
@@ -299,7 +299,7 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
       updatePayload.status = 'awaiting_client'
     }
 
-    await supabase
+    await db
       .from('inquiries')
       .update(updatePayload)
       .eq('id', message.inquiry_id)
@@ -325,9 +325,9 @@ export async function updateDraftMessage(
   updates: { subject?: string; body?: string }
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: message } = await supabase
+  const { data: message } = await db
     .from('messages')
     .select('status')
     .eq('id', messageId)
@@ -337,7 +337,7 @@ export async function updateDraftMessage(
   if (!message) throw new Error('Message not found')
   if (message.status !== 'draft') throw new Error('Can only edit draft messages')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('messages')
     .update({
       ...(updates.subject !== undefined && { subject: updates.subject }),
@@ -356,9 +356,9 @@ export async function updateDraftMessage(
 
 export async function getMessagesForInquiry(inquiryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('messages')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -377,9 +377,9 @@ export async function getMessagesForInquiry(inquiryId: string) {
 
 export async function deleteDraftMessage(messageId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: message } = await supabase
+  const { data: message } = await db
     .from('messages')
     .select('status')
     .eq('id', messageId)
@@ -389,7 +389,7 @@ export async function deleteDraftMessage(messageId: string) {
   if (!message) throw new Error('Message not found')
   if (message.status !== 'draft') throw new Error('Can only delete draft messages')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('messages')
     .delete()
     .eq('id', messageId)

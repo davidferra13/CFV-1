@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { exchangeQuickBooksCode } from '@/lib/integrations/quickbooks/quickbooks-client'
 
 export async function GET(req: NextRequest) {
@@ -18,10 +18,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${appUrl}/settings/integrations?error=quickbooks_missing_params`)
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Validate CSRF state
-  const { data: oauthState } = await supabase
+  const { data: oauthState } = await db
     .from('social_oauth_states')
     .select('tenant_id')
     .eq('state', state)
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Delete used state (one-time use)
-  await supabase.from('social_oauth_states').delete().eq('state', state)
+  await db.from('social_oauth_states').delete().eq('state', state)
 
   try {
     await exchangeQuickBooksCode(code, realmId, oauthState.tenant_id)

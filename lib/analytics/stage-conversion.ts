@@ -6,7 +6,7 @@
 // (new → confirmed) and the event pipeline (draft → completed).
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface PipelineStage {
   key: string
@@ -78,13 +78,13 @@ function buildFunnel(
 
 export async function getStageConversionData(): Promise<StageConversionData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [inquiriesRes, eventsRes] = await Promise.all([
     // Count per status for ALL inquiries (including terminal states)
-    supabase.from('inquiries').select('status').eq('tenant_id', user.tenantId!).limit(10000),
+    db.from('inquiries').select('status').eq('tenant_id', user.tenantId!).limit(10000),
 
-    supabase.from('events').select('status').eq('tenant_id', user.tenantId!).limit(10000),
+    db.from('events').select('status').eq('tenant_id', user.tenantId!).limit(10000),
   ])
 
   // Build count maps

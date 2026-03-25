@@ -7,7 +7,7 @@
 import http from 'k6/http'
 import { sleep } from 'k6'
 import { BASE_URL, DEFAULT_THRESHOLDS } from '../config.js'
-import { authenticateViaSupabase } from '../helpers/auth.js'
+import { authenticateViaDb } from '../helpers/auth.js'
 import { checkHealth, checkPageLoad, checkNotRedirectedToSignIn } from '../helpers/checks.js'
 
 export const options = {
@@ -24,8 +24,8 @@ export function setup() {
     return { serverUp: false }
   }
 
-  // Authenticate via Supabase (returns cookie data to set per-VU)
-  const auth = authenticateViaSupabase()
+  // Authenticate via database (returns cookie data to set per-VU)
+  const auth = authenticateViaDb()
   return { serverUp: true, auth }
 }
 

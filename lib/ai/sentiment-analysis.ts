@@ -16,7 +16,7 @@
 // is now 100% deterministic.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   analyzeThreadSentiment,
   scoreMessage,
@@ -30,9 +30,9 @@ export type SentimentAnalysis = ThreadSentimentResult
 
 export async function analyzeClientSentiment(clientId: string): Promise<SentimentAnalysis> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: messages } = await supabase
+  const { data: messages } = await db
     .from('messages')
     .select('body, direction, created_at')
     .eq('client_id', clientId)

@@ -54,7 +54,7 @@ export const GET = withApiAuth(
     const callType = url.searchParams.get('call_type')
     const clientId = url.searchParams.get('client_id')
 
-    let query = (ctx.supabase as any)
+    let query = (ctx.db as any)
       .from('scheduled_calls')
       .select('*, client:clients(id, full_name, email)', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)
@@ -98,7 +98,7 @@ export const POST = withApiAuth(
       source: item.source,
     }))
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('scheduled_calls')
       .insert({
         tenant_id: ctx.tenantId,

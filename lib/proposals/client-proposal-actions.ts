@@ -3,8 +3,8 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient } from '@/lib/db/server'
+import { createAdminClient } from '@/lib/db/admin'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -119,9 +119,9 @@ export async function createClientProposal(
 ): Promise<ClientProposal> {
   const user = await requireChef()
   const parsed = CreateProposalSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_proposals')
     .insert({
       tenant_id: user.tenantId!,
@@ -148,9 +148,9 @@ export async function createClientProposal(
 
 export async function listClientProposals(): Promise<ClientProposal[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_proposals')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -163,9 +163,9 @@ export async function listClientProposals(): Promise<ClientProposal[]> {
 
 export async function getClientProposal(id: string): Promise<ClientProposal> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_proposals')
     .select('*')
     .eq('id', id)
@@ -183,7 +183,7 @@ export async function updateClientProposal(
 ): Promise<ClientProposal> {
   const user = await requireChef()
   const parsed = UpdateProposalSchema.parse(updates)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const payload: Record<string, unknown> = {}
   if (parsed.title !== undefined) payload.title = parsed.title
@@ -201,7 +201,7 @@ export async function updateClientProposal(
     throw new Error('No fields to update')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_proposals')
     .update(payload)
     .eq('id', id)
@@ -218,9 +218,9 @@ export async function updateClientProposal(
 
 export async function sendProposal(id: string): Promise<ClientProposal> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_proposals')
     .update({
       status: 'sent',
@@ -241,10 +241,10 @@ export async function sendProposal(id: string): Promise<ClientProposal> {
 // ─── Public Actions (no auth, token-gated) ──────────────────────
 
 export async function getPublicProposal(shareToken: string): Promise<PublicProposalData | null> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Fetch proposal by share token
-  const { data: proposal, error } = await supabase
+  const { data: proposal, error } = await db
     .from('client_proposals')
     .select('*')
     .eq('share_token', shareToken)
@@ -256,7 +256,7 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
   if (proposal.expires_at && new Date(proposal.expires_at) < new Date()) {
     // Auto-mark as expired if not already
     if (proposal.status !== 'expired') {
-      await supabase.from('client_proposals').update({ status: 'expired' }).eq('id', proposal.id)
+      await db.from('client_proposals').update({ status: 'expired' }).eq('id', proposal.id)
     }
     return {
       ...buildPublicData(proposal, null, null, null, null),
@@ -266,7 +266,7 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
 
   // Record view if status is 'sent' (first view) or 'viewed'
   if (proposal.status === 'sent') {
-    await supabase
+    await db
       .from('client_proposals')
       .update({
         status: 'viewed',
@@ -276,7 +276,7 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
   }
 
   // Fetch chef info
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', proposal.tenant_id)
@@ -285,7 +285,7 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
   // Fetch client info (if linked)
   let client = null
   if (proposal.client_id) {
-    const { data: c } = await supabase
+    const { data: c } = await db
       .from('clients')
       .select('first_name, last_name')
       .eq('id', proposal.client_id)
@@ -296,7 +296,7 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
   // Fetch event info (if linked)
   let event = null
   if (proposal.event_id) {
-    const { data: e } = await supabase
+    const { data: e } = await db
       .from('events')
       .select('event_date, occasion, guest_count')
       .eq('id', proposal.event_id)
@@ -307,14 +307,14 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
   // Fetch menu + dishes (if linked)
   let menuData = null
   if (proposal.menu_id) {
-    const { data: menu } = await supabase
+    const { data: menu } = await db
       .from('menus')
       .select('id, name, description')
       .eq('id', proposal.menu_id)
       .single()
 
     if (menu) {
-      const { data: dishes } = await supabase
+      const { data: dishes } = await db
         .from('dishes')
         .select('id, name, description, course_name')
         .eq('menu_id', menu.id)
@@ -338,7 +338,7 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
   // Fetch template info (if linked)
   let template = null
   if (proposal.template_id) {
-    const { data: t } = await supabase
+    const { data: t } = await db
       .from('proposal_templates')
       .select('id, name, description, cover_photo_url, included_services')
       .eq('id', proposal.template_id)
@@ -361,9 +361,9 @@ export async function getPublicProposal(shareToken: string): Promise<PublicPropo
 export async function approveProposal(
   shareToken: string
 ): Promise<{ success: boolean; message: string }> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: proposal, error: fetchError } = await supabase
+  const { data: proposal, error: fetchError } = await db
     .from('client_proposals')
     .select('id, status, expires_at')
     .eq('share_token', shareToken)
@@ -386,7 +386,7 @@ export async function approveProposal(
     return { success: false, message: 'This proposal has been declined' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_proposals')
     .update({
       status: 'approved',
@@ -405,9 +405,9 @@ export async function declineProposal(
   shareToken: string,
   _reason?: string
 ): Promise<{ success: boolean; message: string }> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: proposal, error: fetchError } = await supabase
+  const { data: proposal, error: fetchError } = await db
     .from('client_proposals')
     .select('id, status, expires_at')
     .eq('share_token', shareToken)
@@ -424,7 +424,7 @@ export async function declineProposal(
     return { success: false, message: 'This proposal has already been declined' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_proposals')
     .update({
       status: 'declined',

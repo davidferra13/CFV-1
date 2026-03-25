@@ -4,7 +4,7 @@
 // Used to surface scheduling conflicts and capacity warnings on the dashboard.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface MultiEventDay {
   date: string // ISO date string, e.g. '2026-03-15'
@@ -23,14 +23,14 @@ export interface MultiEventDay {
  */
 export async function getMultiEventDays(lookaheadDays = 90): Promise<MultiEventDay[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   const future = new Date(today)
   future.setDate(future.getDate() + lookaheadDays)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, guest_count, status')
     .eq('tenant_id', user.entityId)

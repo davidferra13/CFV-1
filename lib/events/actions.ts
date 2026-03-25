@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { executeWithIdempotency } from '@/lib/mutations/idempotency'
@@ -121,10 +121,10 @@ export async function createEvent(input: CreateEventInput) {
   // Validate input
   const validated = CreateEventSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to this tenant
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('tenant_id')
     .eq('id', validated.client_id)
@@ -135,7 +135,7 @@ export async function createEvent(input: CreateEventInput) {
   }
 
   const result = await executeWithIdempotency({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     actionName: 'events.create',
@@ -176,7 +176,7 @@ export async function createEvent(input: CreateEventInput) {
         updated_by: user.id,
       }
 
-      const { data: event, error } = await supabase
+      const { data: event, error } = await db
         .from('events')
         .insert(insertPayload as any)
         .select()
@@ -188,7 +188,7 @@ export async function createEvent(input: CreateEventInput) {
       }
 
       // Log initial transition to 'draft'
-      await supabase.from('event_state_transitions').insert({
+      await db.from('event_state_transitions').insert({
         tenant_id: user.tenantId!,
         event_id: event.id,
         from_status: null,
@@ -248,10 +248,10 @@ export async function createEvent(input: CreateEventInput) {
  */
 export async function getEvents() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('events')
       .select(
         `
@@ -289,10 +289,10 @@ export async function getEvents() {
  */
 export async function getEventById(eventId: string) {
   await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('events')
       .select(
         `
@@ -334,10 +334,10 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
   const validated = UpdateEventSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current event to verify ownership and status
-  const { data: currentEvent } = await (supabase
+  const { data: currentEvent } = await (db
     .from('events')
     .select('*')
     .eq('id', eventId)
@@ -363,7 +363,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
     let acceptedQuoteExists = false
 
     if (convertingQuoteId) {
-      const { data: acceptedConvertingQuote } = await supabase
+      const { data: acceptedConvertingQuote } = await db
         .from('quotes')
         .select('id')
         .eq('id', convertingQuoteId)
@@ -376,7 +376,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
     }
 
     if (!acceptedQuoteExists) {
-      const { data: acceptedLinkedQuote } = await supabase
+      const { data: acceptedLinkedQuote } = await db
         .from('quotes')
         .select('id')
         .eq('event_id', eventId)
@@ -401,7 +401,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
   }
 
   const result = await executeWithIdempotency({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     actionName: 'events.update',
@@ -409,7 +409,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
     execute: async () => {
       // Update event (RLS enforces tenant_id match)
       const runUpdate = async (withSoftDeleteFilter: boolean) => {
-        let query = supabase
+        let query = db
           .from('events')
           .update({
             ...updateFields,
@@ -436,7 +436,7 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
       if (error || !event) {
         if (expected_updated_at) {
           const getLatest = async (withSoftDeleteFilter: boolean) => {
-            let query = supabase
+            let query = db
               .from('events')
               .select('updated_at')
               .eq('id', eventId)
@@ -521,10 +521,10 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
  */
 export async function deleteEvent(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event exists and is draft
-  const { data: event } = await (supabase
+  const { data: event } = await (db
     .from('events')
     .select('status, deleted_at')
     .eq('id', eventId)
@@ -540,7 +540,7 @@ export async function deleteEvent(eventId: string) {
   }
 
   // Soft delete event
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       deleted_at: new Date().toISOString(),
@@ -565,9 +565,9 @@ export async function deleteEvent(eventId: string) {
  */
 export async function restoreEvent(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       deleted_at: null,
@@ -603,9 +603,9 @@ export type EventClosureStatus = {
  */
 export async function getEventClosureStatus(eventId: string): Promise<EventClosureStatus> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event, error } = await supabase
+  const { data: event, error } = await db
     .from('events')
     .select('aar_filed, reset_complete, follow_up_sent, financially_closed')
     .eq('id', eventId)
@@ -632,9 +632,9 @@ export async function getEventClosureStatus(eventId: string): Promise<EventClosu
  */
 export async function markResetComplete(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, status')
     .eq('id', eventId)
@@ -643,7 +643,7 @@ export async function markResetComplete(eventId: string) {
 
   if (!event) throw new ValidationError('Event not found')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       reset_complete: true,
@@ -668,9 +668,9 @@ export async function markResetComplete(eventId: string) {
  */
 export async function markFollowUpSent(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, status')
     .eq('id', eventId)
@@ -679,7 +679,7 @@ export async function markFollowUpSent(eventId: string) {
 
   if (!event) throw new ValidationError('Event not found')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       follow_up_sent: true,
@@ -704,9 +704,9 @@ export async function markFollowUpSent(eventId: string) {
  */
 export async function getEventsNeedingClosure() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -762,9 +762,9 @@ function getActiveEventActivity(event: {
 export async function startEventActivity(eventId: string, activityInput: EventTimeActivityType) {
   const user = await requireChef()
   const activity = EventTimeActivitySchema.parse(activityInput)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event, error: fetchError } = await supabase
+  const { data: event, error: fetchError } = await db
     .from('events')
     .select(
       `
@@ -804,7 +804,7 @@ export async function startEventActivity(eventId: string, activityInput: EventTi
     updated_by: user.id,
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('events')
     .update(updatePayload as any)
     .eq('id', eventId)
@@ -848,10 +848,10 @@ export async function startEventActivity(eventId: string, activityInput: EventTi
 export async function stopEventActivity(eventId: string, activityInput: EventTimeActivityType) {
   const user = await requireChef()
   const activity = EventTimeActivitySchema.parse(activityInput)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const config = EVENT_TIME_ACTIVITY_CONFIG[activity]
-  const { data: event, error: fetchError } = await supabase
+  const { data: event, error: fetchError } = await db
     .from('events')
     .select(
       `
@@ -889,7 +889,7 @@ export async function stopEventActivity(eventId: string, activityInput: EventTim
     updated_by: user.id,
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('events')
     .update(updatePayload as any)
     .eq('id', eventId)
@@ -951,9 +951,9 @@ export async function updateEventTimeAndCard(
   }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update(data)
     .eq('id', eventId)
@@ -1014,14 +1014,14 @@ export async function logCharityHours(input: LogCharityHoursInput) {
  */
 export async function setEventFoodCostBudget(eventId: string, budgetCents: number | null) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Validate the budget amount when provided
   if (budgetCents !== null && (budgetCents < 0 || !Number.isInteger(budgetCents))) {
     return { success: false, error: 'Budget must be a non-negative integer (cents)' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({ food_cost_budget_cents: budgetCents })
     .eq('id', eventId)

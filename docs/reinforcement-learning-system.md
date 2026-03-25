@@ -97,7 +97,7 @@ The RL system complements existing tests by exploring the space between scripted
 |  | (local, zero cost)    |     | (Cloudflare Tunnel)        |      |
 |  |                       |     |                            |      |
 |  | - Episodes            |     | - Real Next.js app         |      |
-|  | - State transitions   |     | - Real Supabase backend    |      |
+|  | - State transitions   |     | - Real PostgreSQL backend    |      |
 |  | - Rewards             |     | - Real Stripe (test mode)  |      |
 |  | - Anomalies           |     | - Real Ollama AI           |      |
 |  | - Optimal paths       |     +----------------------------+      |
@@ -115,9 +115,9 @@ The RL system complements existing tests by exploring the space between scripted
 +------------------------------------------------------------------+
 ```
 
-### Why SQLite (Not Supabase)
+### Why SQLite (Not PostgreSQL)
 
-The RL system generates massive amounts of interaction data (thousands of state transitions per session). Writing this to Supabase would:
+The RL system generates massive amounts of interaction data (thousands of state transitions per session). Writing this to PostgreSQL would:
 
 - Cost money (row writes)
 - Pollute the shared dev/beta database
@@ -136,7 +136,7 @@ SQLite is local, instant, free, and keeps all RL data completely isolated from a
 | -------- | ---------------------------------------------- |
 | URL      | `https://beta.cheflowhq.com/`                  |
 | Auth     | Agent account (`.auth/agent.json` credentials) |
-| Database | Shared Supabase (dev/beta)                     |
+| Database | Shared PostgreSQL (dev/beta)                   |
 | AI       | Ollama on `localhost:11434` (shared)           |
 | Network  | Real internet via Cloudflare Tunnel            |
 

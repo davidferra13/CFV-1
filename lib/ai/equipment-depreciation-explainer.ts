@@ -10,7 +10,7 @@
 // Reference: IRS Publication 946.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { calculateDepreciationFormula } from '@/lib/formulas/depreciation'
 import type { EquipmentItem, EquipmentDepreciationReport } from '@/lib/formulas/depreciation'
 
@@ -19,10 +19,10 @@ export type { EquipmentExplanation, EquipmentDepreciationReport } from '@/lib/fo
 
 export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciationReport> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // equipment_items uses chef_id (not tenant_id) and useful_life_years (not depreciation_years)
-  const { data: equipment } = await supabase
+  const { data: equipment } = await db
     .from('equipment_items')
     .select(
       'name, purchase_price_cents, purchase_date, useful_life_years, depreciation_method, category'

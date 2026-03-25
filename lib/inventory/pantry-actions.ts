@@ -4,7 +4,7 @@
 // Multi-location pantry tracking with drawdown for events.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ── Types ──────────────────────────────────────────────────────
@@ -54,14 +54,14 @@ export async function createPantryLocation(data: {
 }) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If setting as default, unset existing defaults first
   if (data.isDefault) {
-    await supabase.from('pantry_locations').update({ is_default: false }).eq('tenant_id', tenantId)
+    await db.from('pantry_locations').update({ is_default: false }).eq('tenant_id', tenantId)
   }
 
-  const { data: location, error } = await supabase
+  const { data: location, error } = await db
     .from('pantry_locations')
     .insert({
       tenant_id: tenantId,
@@ -82,9 +82,9 @@ export async function createPantryLocation(data: {
 export async function getPantryLocations(): Promise<PantryLocation[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('pantry_locations')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -107,9 +107,9 @@ export async function getPantryLocations(): Promise<PantryLocation[]> {
 export async function deletePantryLocation(id: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('pantry_locations')
     .delete()
     .eq('id', id)
@@ -138,9 +138,9 @@ export async function addPantryItem(
 ) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: item, error } = await supabase
+  const { data: item, error } = await db
     .from('pantry_items')
     .insert({
       tenant_id: tenantId,
@@ -178,7 +178,7 @@ export async function updatePantryItem(
 ) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, any> = {
     last_updated: new Date().toISOString(),
@@ -192,7 +192,7 @@ export async function updatePantryItem(
   if (data.minimumStock !== undefined) updateData.minimum_stock = data.minimumStock
   if (data.notes !== undefined) updateData.notes = data.notes
 
-  const { data: item, error } = await supabase
+  const { data: item, error } = await db
     .from('pantry_items')
     .update(updateData)
     .eq('id', id)
@@ -209,13 +209,9 @@ export async function updatePantryItem(
 export async function removePantryItem(id: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
-    .from('pantry_items')
-    .delete()
-    .eq('id', id)
-    .eq('tenant_id', tenantId)
+  const { error } = await db.from('pantry_items').delete().eq('id', id).eq('tenant_id', tenantId)
 
   if (error) throw new Error(`Failed to remove pantry item: ${error.message}`)
 
@@ -226,9 +222,9 @@ export async function removePantryItem(id: string) {
 export async function getPantryItems(locationId?: string): Promise<PantryItem[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('pantry_items')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -270,10 +266,10 @@ export async function getPantryItems(locationId?: string): Promise<PantryItem[]>
 export async function drawdownForEvent(eventId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Get event's menu items and their recipes
-  const { data: eventMenus, error: menuErr } = await supabase
+  const { data: eventMenus, error: menuErr } = await db
     .from('event_menus')
     .select('menu_id')
     .eq('event_id', eventId)
@@ -286,7 +282,7 @@ export async function drawdownForEvent(eventId: string) {
   const menuIds = eventMenus.map((em: any) => em.menu_id)
 
   // 2. Get all recipes from those menus
-  const { data: menuRecipes, error: recipeErr } = await supabase
+  const { data: menuRecipes, error: recipeErr } = await db
     .from('menu_recipes')
     .select('recipe_id')
     .in('menu_id', menuIds)
@@ -299,7 +295,7 @@ export async function drawdownForEvent(eventId: string) {
   const recipeIds = menuRecipes.map((mr: any) => mr.recipe_id)
 
   // 3. Get all recipe ingredients
-  const { data: recipeIngredients, error: riErr } = await supabase
+  const { data: recipeIngredients, error: riErr } = await db
     .from('recipe_ingredients')
     .select('ingredient_id, quantity, unit')
     .in('recipe_id', recipeIds)
@@ -326,7 +322,7 @@ export async function drawdownForEvent(eventId: string) {
 
   // 5. Get pantry items matching these ingredients, default location first
   const ingredientIds = Array.from(needed.keys())
-  const { data: pantryItems, error: piErr } = await supabase
+  const { data: pantryItems, error: piErr } = await db
     .from('pantry_items')
     .select('id, ingredient_id, quantity, location_id, name, pantry_locations!inner(is_default)')
     .eq('tenant_id', tenantId)
@@ -358,7 +354,7 @@ export async function drawdownForEvent(eventId: string) {
       const newQty = available - toDeduct
       remaining -= toDeduct
 
-      await supabase
+      await db
         .from('pantry_items')
         .update({
           quantity: newQty,
@@ -387,9 +383,9 @@ export async function drawdownForEvent(eventId: string) {
 export async function getLowStockAlerts(): Promise<PantryItem[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('pantry_items')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -423,13 +419,13 @@ export async function getLowStockAlerts(): Promise<PantryItem[]> {
 export async function getExpiringItems(daysAhead: number = 7): Promise<PantryItem[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() + daysAhead)
   const cutoffStr = cutoff.toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('pantry_items')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -460,22 +456,22 @@ export async function getExpiringItems(daysAhead: number = 7): Promise<PantryIte
 export async function getPantrySummary(): Promise<PantrySummary> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Total items
-  const { count: totalItems } = await supabase
+  const { count: totalItems } = await db
     .from('pantry_items')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
 
   // Total locations
-  const { count: totalLocations } = await supabase
+  const { count: totalLocations } = await db
     .from('pantry_locations')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
 
   // Low stock count
-  const { data: lowStockData } = await supabase
+  const { data: lowStockData } = await db
     .from('pantry_items')
     .select('id, quantity, minimum_stock')
     .eq('tenant_id', tenantId)
@@ -490,7 +486,7 @@ export async function getPantrySummary(): Promise<PantrySummary> {
   cutoff.setDate(cutoff.getDate() + 7)
   const cutoffStr = cutoff.toISOString().split('T')[0]
 
-  const { count: expiringCount } = await supabase
+  const { count: expiringCount } = await db
     .from('pantry_items')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)

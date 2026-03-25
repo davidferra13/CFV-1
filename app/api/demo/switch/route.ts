@@ -3,7 +3,7 @@
 // Only active when DEMO_MODE_ENABLED=true.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { readFileSync } from 'fs'
 
 export async function POST(req: NextRequest) {
@@ -36,8 +36,8 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const supabase: any = createServerClient()
-  const { error } = await supabase.auth.signInWithPassword({
+  const db: any = createServerClient()
+  const { error } = await db.auth.signInWithPassword({
     email: creds.email,
     password: creds.password,
   })

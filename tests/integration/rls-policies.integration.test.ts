@@ -1,10 +1,10 @@
 /**
  * Integration Test: Row-Level Security (RLS) Policies
  *
- * Verifies that Supabase RLS prevents cross-tenant data access.
+ * Verifies that RLS prevents cross-tenant data access.
  * This is P1 — a broken RLS policy leaks data between tenants.
  *
- * Requires: NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in env
+ * Requires: NEXT_PUBLIC_DB_URL + DB_SERVICE_ROLE_KEY in env
  *
  * Run: npm run test:integration
  */
@@ -13,10 +13,10 @@ import { describe, it, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { testDb } from '../helpers/test-db.js'
 
-// Skip if no Supabase credentials
-testDb.skipIfNoSupabase()
+// Skip if no credentials
+testDb.skipIfNoDatabase()
 
-const supabase = testDb.getClient()
+const db = testDb.getClient()
 
 let chefA: { id: string }
 let chefB: { id: string }
@@ -49,10 +49,7 @@ describe('RLS Policies — Cross-Tenant Isolation', () => {
   // ─── Service role can see everything (admin bypass) ──────────────────────
 
   it('service role can read both tenants (admin bypass works)', async () => {
-    const { data: events } = await supabase
-      .from('events')
-      .select('id')
-      .in('id', [eventA.id, eventB.id])
+    const { data: events } = await db.from('events').select('id').in('id', [eventA.id, eventB.id])
 
     assert.equal(events?.length, 2, 'Service role should see both events')
   })
@@ -60,7 +57,7 @@ describe('RLS Policies — Cross-Tenant Isolation', () => {
   // ─── Tenant-scoped queries (simulating app behavior) ─────────────────────
 
   it('querying with tenant_id filter returns only that tenant data', async () => {
-    const { data: eventsA } = await supabase
+    const { data: eventsA } = await db
       .from('events')
       .select('id, occasion')
       .eq('tenant_id', chefA.id)
@@ -71,7 +68,7 @@ describe('RLS Policies — Cross-Tenant Isolation', () => {
   })
 
   it('tenant A clients are not visible under tenant B filter', async () => {
-    const { data: clients } = await supabase
+    const { data: clients } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', chefB.id)
@@ -81,7 +78,7 @@ describe('RLS Policies — Cross-Tenant Isolation', () => {
   })
 
   it('tenant B events are not visible under tenant A filter', async () => {
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('id')
       .eq('tenant_id', chefA.id)
@@ -100,7 +97,7 @@ describe('RLS Policies — Cross-Tenant Isolation', () => {
     })
 
     // Query with Chef B's tenant filter — should NOT find it
-    const { data: leaked } = await supabase
+    const { data: leaked } = await db
       .from('ledger_entries')
       .select('id')
       .eq('tenant_id', chefB.id)

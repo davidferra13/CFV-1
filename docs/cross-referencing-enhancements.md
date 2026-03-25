@@ -43,14 +43,14 @@ Compares `menus.target_guest_count` vs `events.guest_count`. If they differ, sho
 
 **Where:** Recipe detail page (`app/(chef)/recipes/[id]/recipe-detail-client.tsx`)
 **Action:** Updated `logProduction()` in `lib/recipes/production-log-actions.ts`
-**Migration:** `supabase/migrations/20260401000084_production_log_enhancements.sql`
+**Migration:** `database/migrations/20260401000084_production_log_enhancements.sql`
 
 Added two fields to the existing production log:
 
 - **Outcome rating** (1-5 stars): clickable star UI, stored as `outcome_rating smallint`
 - **Substitutions** (free text): "Used ghee instead of butter", stored as `substitutions text`
 
-Both columns are nullable and additive-only. Migration must be applied with `supabase db push`.
+Both columns are nullable and additive-only. Migration must be applied with `drizzle-kit push`.
 
 ## Files Changed
 
@@ -62,7 +62,7 @@ Both columns are nullable and additive-only. Migration must be applied with `sup
 | `app/(chef)/recipes/[id]/recipe-detail-client.tsx`                   | RecipeUsagePanel + production journal enhancements      |
 | `app/(chef)/menus/[id]/page.tsx`                                     | "Back to Inquiry" link                                  |
 | `lib/recipes/production-log-actions.ts`                              | outcome_rating + substitutions fields                   |
-| `supabase/migrations/20260401000084_production_log_enhancements.sql` | New columns on recipe_production_log                    |
+| `database/migrations/20260401000084_production_log_enhancements.sql` | New columns on recipe_production_log                    |
 
 ## Architecture Notes
 

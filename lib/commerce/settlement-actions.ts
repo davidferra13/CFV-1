@@ -5,7 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -36,9 +36,9 @@ export type RecordSettlementInput = {
 export async function recordSettlement(input: RecordSettlementInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('settlement_records' as any)
     .upsert(
       {
@@ -81,12 +81,12 @@ export async function updateSettlementStatus(
 ) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, any> = { payout_status: status }
   if (arrivalDate) updates.payout_arrival_date = arrivalDate
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('settlement_records' as any)
     .update(updates as any)
     .eq('id', settlementId)
@@ -101,12 +101,12 @@ export async function updateSettlementStatus(
 export async function listSettlements(opts?: { limit?: number; offset?: number; status?: string }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const limit = opts?.limit ?? 30
   const offset = opts?.offset ?? 0
 
-  let query = supabase
+  let query = db
     .from('settlement_records' as any)
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
@@ -128,9 +128,9 @@ export async function listSettlements(opts?: { limit?: number; offset?: number; 
 export async function getSettlement(settlementId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('settlement_records' as any)
     .select('*')
     .eq('id', settlementId)
@@ -149,9 +149,9 @@ export async function getSettlement(settlementId: string) {
 export async function getSettlementSummary() {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: all } = await (supabase
+  const { data: all } = await (db
     .from('settlement_records' as any)
     .select('payout_status, net_amount_cents, payment_count')
     .eq('tenant_id', user.tenantId!) as any)

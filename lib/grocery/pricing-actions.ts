@@ -9,7 +9,7 @@
 // Contact mealme.ai sales to obtain a key.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { buildInstacartCartLink } from './instacart-actions'
 import { lookupUsdaPrice } from './usda-prices'
 import { getNeMultiplier } from './regional-multipliers'
@@ -94,9 +94,9 @@ type RawIngredient = {
 }
 
 async function getEventIngredients(eventId: string, tenantId: string): Promise<RawIngredient[]> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -106,7 +106,7 @@ async function getEventIngredients(eventId: string, tenantId: string): Promise<R
 
   if (!menus || menus.length === 0) return []
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id')
     .eq('menu_id', menus[0].id)
@@ -114,7 +114,7 @@ async function getEventIngredients(eventId: string, tenantId: string): Promise<R
 
   if (!dishes || dishes.length === 0) return []
 
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('recipe_id, scale_factor')
     .in(
@@ -138,7 +138,7 @@ async function getEventIngredients(eventId: string, tenantId: string): Promise<R
     )
   }
 
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select(
       `recipe_id, quantity, unit, is_optional, ingredient_id,
@@ -419,11 +419,11 @@ function usdaUnitMatches(usdaUnit: string, recipeUnit: string): boolean {
 
 export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuoteResult | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Return cached quote if < 24 hours old
   const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-  const { data: cached } = await supabase
+  const { data: cached } = await db
     .from('grocery_price_quotes')
     .select('*, grocery_price_quote_items(*)')
     .eq('event_id', eventId)
@@ -435,14 +435,14 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
     .single()
 
   if (cached) {
-    return buildResultFromRow(cached, eventId, supabase, user.tenantId!, true)
+    return buildResultFromRow(cached, eventId, db, user.tenantId!, true)
   }
 
   const ingredients = await getEventIngredients(eventId, user.tenantId!)
   if (ingredients.length === 0) return null
 
   // Fetch chef's zip code for MealMe location-based pricing
-  const { data: prefs } = await supabase
+  const { data: prefs } = await db
     .from('chef_preferences')
     .select('zip_code, city, state')
     .eq('tenant_id', user.tenantId!)
@@ -453,7 +453,7 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
   const mealMeConfigured = !!process.env.MEALME_API_KEY
 
   // Create pending quote record
-  const { data: quote, error: quoteErr } = await supabase
+  const { data: quote, error: quoteErr } = await db
     .from('grocery_price_quotes')
     .insert({
       tenant_id: user.tenantId!,
@@ -524,7 +524,7 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
   )
 
   // Persist line items
-  await supabase.from('grocery_price_quote_items').insert(
+  await db.from('grocery_price_quote_items').insert(
     results.map((r) => ({
       quote_id: quote.id,
       ingredient_id: r.ingredientId,
@@ -551,7 +551,7 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
   )
 
   // Update quote to complete
-  await supabase
+  await db
     .from('grocery_price_quotes')
     .update({
       spoonacular_total_cents: spoonacularTotal,
@@ -565,7 +565,7 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
 
   // Persist estimated food cost to the event for Profit Summary integration (non-blocking)
   try {
-    await supabase
+    await db
       .from('events')
       .update({ estimated_food_cost_cents: averageTotal } as any)
       .eq('id', eventId)
@@ -577,7 +577,7 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
   const { budgetCeilingCents, quotedPriceCents } = await getEventBudgetContext(
     eventId,
     user.tenantId!,
-    supabase
+    db
   )
 
   return {
@@ -605,7 +605,7 @@ export async function previewManualGroceryPricing(
   items: ManualGroceryDraftItemInput[]
 ): Promise<ManualGroceryDraftPriceResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const normalizedItems = items
     .map((item) => ({
@@ -631,7 +631,7 @@ export async function previewManualGroceryPricing(
     }
   }
 
-  const { data: prefs } = await supabase
+  const { data: prefs } = await db
     .from('chef_preferences')
     .select('zip_code')
     .eq('tenant_id', user.tenantId!)
@@ -714,9 +714,9 @@ export async function previewManualGroceryPricing(
 
 export async function getLatestGroceryQuote(eventId: string): Promise<GroceryQuoteResult | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('grocery_price_quotes')
     .select('*, grocery_price_quote_items(*)')
     .eq('event_id', eventId)
@@ -727,7 +727,7 @@ export async function getLatestGroceryQuote(eventId: string): Promise<GroceryQuo
     .single()
 
   if (!data) return null
-  return buildResultFromRow(data, eventId, supabase, user.tenantId!, true)
+  return buildResultFromRow(data, eventId, db, user.tenantId!, true)
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -740,15 +740,11 @@ function sumNullable(values: (number | null)[]): number | null {
 async function getEventBudgetContext(
   eventId: string,
   tenantId: string,
-  supabase: any
+  db: any
 ): Promise<{ budgetCeilingCents: number | null; quotedPriceCents: number | null }> {
   const [{ data: event }, { data: prefs }] = await Promise.all([
-    supabase.from('events').select('quoted_price_cents').eq('id', eventId).single(),
-    supabase
-      .from('chef_preferences')
-      .select('target_margin_percent')
-      .eq('tenant_id', tenantId)
-      .single(),
+    db.from('events').select('quoted_price_cents').eq('id', eventId).single(),
+    db.from('chef_preferences').select('target_margin_percent').eq('tenant_id', tenantId).single(),
   ])
 
   const quotedPriceCents = event?.quoted_price_cents ?? null
@@ -771,10 +767,10 @@ export async function logActualGroceryCost(
   actualCostCents: number
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find the most recent complete quote for this event
-  const { data: quote } = await supabase
+  const { data: quote } = await db
     .from('grocery_price_quotes')
     .select('id, average_total_cents')
     .eq('event_id', eventId)
@@ -796,7 +792,7 @@ export async function logActualGroceryCost(
         )
       : null
 
-  await (supabase.from('grocery_price_quotes') as any)
+  await (db.from('grocery_price_quotes') as any)
     .update({
       actual_grocery_cost_cents: actualCostCents,
       accuracy_delta_pct: accuracyDeltaPct,
@@ -808,7 +804,7 @@ export async function logActualGroceryCost(
 async function buildResultFromRow(
   row: any,
   eventId: string,
-  supabase: any,
+  db: any,
   tenantId: string,
   isFromCache: boolean
 ): Promise<GroceryQuoteResult> {
@@ -834,7 +830,7 @@ async function buildResultFromRow(
   const { budgetCeilingCents, quotedPriceCents } = await getEventBudgetContext(
     eventId,
     tenantId,
-    supabase
+    db
   )
 
   return {
@@ -853,7 +849,7 @@ async function buildResultFromRow(
     budgetCeilingCents,
     quotedPriceCents,
     actualGroceryCostCents: row.actual_grocery_cost_cents ?? null,
-    // Supabase returns DECIMAL columns as strings - parse to number before use in the UI
+    // PostgreSQL returns DECIMAL columns as strings - parse to number before use in the UI
     accuracyDeltaPct: row.accuracy_delta_pct != null ? Number(row.accuracy_delta_pct) : null,
     isFromCache,
   }

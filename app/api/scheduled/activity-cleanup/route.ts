@@ -2,7 +2,7 @@
 // Deletes aged activity events with optional archive copy.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
@@ -18,13 +18,13 @@ export async function POST(request: NextRequest) {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const retentionDays = getRetentionDays()
   const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000).toISOString()
   const archiveBeforeDelete = process.env.ACTIVITY_ARCHIVE_BEFORE_DELETE === 'true'
 
   if (archiveBeforeDelete) {
-    const { data: oldRows, error: fetchError } = await supabase
+    const { data: oldRows, error: fetchError } = await db
       .from('activity_events')
       .select('*')
       .lt('created_at', cutoff)
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         archived_at: new Date().toISOString(),
       }))
 
-      const { error: archiveError } = await supabase
+      const { error: archiveError } = await db
         .from('activity_events_archive' as any) // table added in migration, types pending regen
         .insert(archivePayload)
 
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const { count, error } = await supabase
+  const { count, error } = await db
     .from('activity_events')
     .delete({ count: 'exact' })
     .lt('created_at', cutoff)

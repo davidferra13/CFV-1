@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { verifyCsrfOrigin } from '@/lib/security/csrf'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createNotification } from '@/lib/notifications/actions'
 import { sendNotificationEmail } from '@/lib/notifications/email-service'
 import { sendNotificationSms } from '@/lib/notifications/sms-service'
@@ -47,8 +47,8 @@ async function verifyRecipientScope(input: {
   tenantId: string
   recipientAuthUserId: string
 }): Promise<boolean> {
-  const supabase: any = createServerClient({ admin: true })
-  const { data: role, error } = await supabase
+  const db: any = createServerClient({ admin: true })
+  const { data: role, error } = await db
     .from('user_roles')
     .select('role, entity_id')
     .eq('auth_user_id', input.recipientAuthUserId)
@@ -57,7 +57,7 @@ async function verifyRecipientScope(input: {
   if (error || !role) return false
   if (role.role === 'chef') return role.entity_id === input.tenantId
   if (role.role === 'client') {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('tenant_id')
       .eq('id', role.entity_id)

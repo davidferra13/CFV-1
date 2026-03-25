@@ -5,7 +5,7 @@
 // Respects chef_automation_settings.follow_up_reminders_enabled per tenant.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
@@ -15,10 +15,10 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Find inquiries with overdue follow-ups
-  const { data: overdueInquiries, error } = await supabase
+  const { data: overdueInquiries, error } = await db
     .from('inquiries')
     .select(
       `
@@ -112,7 +112,7 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
       // Reschedule next follow-up using the tenant's configured interval
       const intervalMs = tenantSettings.follow_up_reminder_interval_hours * 60 * 60 * 1000
       const nextFollowUpDueAt = new Date(Date.now() + intervalMs).toISOString()
-      const { error: rescheduleError } = await supabase
+      const { error: rescheduleError } = await db
         .from('inquiries')
         .update({
           follow_up_due_at: nextFollowUpDueAt,

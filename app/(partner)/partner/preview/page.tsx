@@ -4,15 +4,15 @@
 
 import Image from 'next/image'
 import { requirePartner } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Eye, EyeOff, ExternalLink } from '@/components/ui/icons'
 
 export default async function PartnerPreviewPage() {
   const user = await requirePartner()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Fetch partner record with locations and images
-  const { data: partner } = await supabase
+  const { data: partner } = await db
     .from('referral_partners')
     .select(
       `
@@ -31,7 +31,7 @@ export default async function PartnerPreviewPage() {
     .single()
 
   // Fetch the chef's slug so we can link to the live public page
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('slug, display_name, business_name')
     .eq('id', user.tenantId)

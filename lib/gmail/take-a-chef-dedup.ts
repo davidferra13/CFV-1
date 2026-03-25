@@ -24,7 +24,7 @@ export interface TacDedupMatch {
  * Returns the existing inquiry ID if found, or null if this is a new inquiry.
  */
 export async function checkTacInquiryDuplicate(
-  supabase: any,
+  db: any,
   tenantId: string,
   opts: {
     externalId?: string | null
@@ -36,7 +36,7 @@ export async function checkTacInquiryDuplicate(
 
   // Strategy 1: Match by external inquiry ID (most reliable)
   if (opts.externalId) {
-    const { data } = await supabase
+    const { data } = await db
       .from('inquiries')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -52,7 +52,7 @@ export async function checkTacInquiryDuplicate(
 
   // Strategy 2: Match by client name + date (fuzzy - for when we don't have an external ID)
   if (opts.clientName && opts.eventDate) {
-    const { data } = await supabase
+    const { data } = await db
       .from('inquiries')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -71,7 +71,7 @@ export async function checkTacInquiryDuplicate(
       // For now, if we find any TakeAChef inquiry with the same date,
       // do a secondary name lookup
       for (const row of data) {
-        const { data: inquiry } = await supabase
+        const { data: inquiry } = await db
           .from('inquiries')
           .select('id, client_id, source_message, unknown_fields')
           .eq('id', row.id)
@@ -88,7 +88,7 @@ export async function checkTacInquiryDuplicate(
 
         // Check linked client name
         if (inquiry.client_id) {
-          const { data: client } = await supabase
+          const { data: client } = await db
             .from('clients')
             .select('full_name')
             .eq('id', inquiry.client_id)
@@ -110,7 +110,7 @@ export async function checkTacInquiryDuplicate(
  * Used for matching message/booking/customer-info emails to existing inquiries.
  */
 export async function findTacInquiryByContext(
-  supabase: any,
+  db: any,
   tenantId: string,
   opts: {
     clientName: string | null
@@ -120,7 +120,7 @@ export async function findTacInquiryByContext(
 ): Promise<string | null> {
   // First try by Order ID (stored as external_inquiry_id after booking confirmation)
   if (opts.orderId) {
-    const { data } = await supabase
+    const { data } = await db
       .from('inquiries')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -135,7 +135,7 @@ export async function findTacInquiryByContext(
   // Fall back to client name + date matching
   if (!opts.clientName) return null
 
-  const query = supabase
+  const query = db
     .from('inquiries')
     .select('id, client_id, unknown_fields')
     .eq('tenant_id', tenantId)
@@ -162,7 +162,7 @@ export async function findTacInquiryByContext(
 
     // Check linked client
     if (row.client_id) {
-      const { data: client } = await supabase
+      const { data: client } = await db
         .from('clients')
         .select('full_name')
         .eq('id', row.client_id)

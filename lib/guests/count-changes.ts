@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -42,10 +42,10 @@ export async function requestGuestCountChange(
   const parsed = GuestCountChangeSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid input.' }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load event
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, guest_count, quoted_price_cents, pricing_model, tenant_id, client_id, event_date')
     .eq('id', parsed.data.eventId)
@@ -81,7 +81,7 @@ export async function requestGuestCountChange(
   }
 
   // Insert change record
-  const { data: change, error: insertError } = await supabase
+  const { data: change, error: insertError } = await db
     .from('guest_count_changes')
     .insert({
       event_id: parsed.data.eventId,
@@ -106,7 +106,7 @@ export async function requestGuestCountChange(
   }
 
   // Apply the change (chef-initiated changes apply immediately)
-  await supabase
+  await db
     .from('events')
     .update({
       guest_count: newCount,
@@ -117,7 +117,7 @@ export async function requestGuestCountChange(
   // Update quoted price if per-person
   if (event.pricing_model === 'per_person' && priceImpactCents !== 0) {
     const newQuotedPrice = (event.quoted_price_cents ?? 0) + priceImpactCents + surchargeCents
-    await supabase
+    await db
       .from('events')
       .update({ quoted_price_cents: newQuotedPrice })
       .eq('id', parsed.data.eventId)
@@ -127,7 +127,7 @@ export async function requestGuestCountChange(
   try {
     if (event.client_id) {
       const direction = newCount > previousCount ? 'increased' : 'decreased'
-      await supabase.from('notifications').insert({
+      await db.from('notifications').insert({
         tenant_id: user.entityId,
         recipient_id: event.client_id,
         recipient_role: 'client',
@@ -154,9 +154,9 @@ export async function requestGuestCountChange(
 
 export async function getGuestCountHistory(eventId: string): Promise<GuestCountChange[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_count_changes')
     .select('*')
     .eq('event_id', eventId)

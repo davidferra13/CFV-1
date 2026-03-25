@@ -3,7 +3,7 @@
 // Client Cannabis Actions
 // Used by client portal pages in app/(client)/cannabis/
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireClient } from '@/lib/auth/get-user'
 import { isAdmin } from '@/lib/auth/admin'
 
@@ -15,8 +15,8 @@ export async function clientHasCannabisAccess(authUserId: string): Promise<boole
     const adminCheck = await isAdmin().catch(() => false)
     if (adminCheck) return true
 
-    const supabase: any = createServerClient()
-    const { data, error } = await supabase
+    const db: any = createServerClient()
+    const { data, error } = await db
       .from('cannabis_tier_users')
       .select('status')
       .eq('auth_user_id', authUserId)
@@ -36,9 +36,9 @@ export async function clientHasCannabisAccess(authUserId: string): Promise<boole
  */
 export async function getClientCannabisEvents() {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('events')
     .select(
       `
@@ -64,7 +64,7 @@ export async function getClientCannabisEvents() {
   let details: any[] = []
 
   if (eventIds.length > 0) {
-    const { data: detailData } = await supabase
+    const { data: detailData } = await db
       .from('cannabis_event_details')
       .select('event_id, cannabis_category, guest_consent_confirmed')
       .in('event_id', eventIds)

@@ -5,7 +5,7 @@
 // Formula > AI: all metrics are SQL queries + math. Zero LLM dependency.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { differenceInMonths } from 'date-fns'
 import { getClientTier } from './lifetime-value-constants'
 
@@ -52,11 +52,11 @@ export type ClientRetentionMetrics = {
  */
 export async function getClientLifetimeValue(clientId: string): Promise<ClientLifetimeValue> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Fetch all events for this client (all statuses for the status breakdown)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, status, occasion')
     .eq('tenant_id', tenantId)
@@ -96,7 +96,7 @@ export async function getClientLifetimeValue(clientId: string): Promise<ClientLi
   let totalTipsCents = 0
 
   if (eventIds.length > 0) {
-    const { data: financials } = await supabase
+    const { data: financials } = await db
       .from('event_financial_summary')
       .select('event_id, total_paid_cents, tip_amount_cents')
       .eq('tenant_id', tenantId)
@@ -162,11 +162,11 @@ export async function getClientLifetimeValue(clientId: string): Promise<ClientLi
  */
 export async function getTopClientsByRevenue(limit = 10): Promise<TopClientByRevenue[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Fetch all completed events with client info
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, client_id, event_date, clients!inner(id, full_name)')
     .eq('tenant_id', tenantId)
@@ -176,7 +176,7 @@ export async function getTopClientsByRevenue(limit = 10): Promise<TopClientByRev
 
   // Fetch financials for all completed events
   const eventIds = events.map((e: any) => e.id)
-  const { data: financials } = await supabase
+  const { data: financials } = await db
     .from('event_financial_summary')
     .select('event_id, total_paid_cents')
     .eq('tenant_id', tenantId)
@@ -243,11 +243,11 @@ export async function getTopClientsByRevenue(limit = 10): Promise<TopClientByRev
  */
 export async function getClientRetentionMetrics(): Promise<ClientRetentionMetrics> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Fetch all clients
-  const { data: clients } = await supabase.from('clients').select('id').eq('tenant_id', tenantId)
+  const { data: clients } = await db.from('clients').select('id').eq('tenant_id', tenantId)
 
   if (!clients || clients.length === 0) {
     return {
@@ -264,7 +264,7 @@ export async function getClientRetentionMetrics(): Promise<ClientRetentionMetric
   const clientIds = clients.map((c: any) => c.id)
 
   // Fetch all non-cancelled events for these clients
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, client_id, event_date, status')
     .eq('tenant_id', tenantId)
@@ -278,7 +278,7 @@ export async function getClientRetentionMetrics(): Promise<ClientRetentionMetric
   let revenueMap = new Map<string, number>()
 
   if (eventIds.length > 0) {
-    const { data: financials } = await supabase
+    const { data: financials } = await db
       .from('event_financial_summary')
       .select('event_id, total_paid_cents')
       .eq('tenant_id', tenantId)

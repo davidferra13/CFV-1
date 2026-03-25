@@ -26,7 +26,7 @@ export const GET = withApiAuth(
     const url = new URL(req.url)
     const pagination = parsePagination(url)
 
-    let query = (ctx.supabase as any)
+    let query = (ctx.db as any)
       .from('remy_approval_policies')
       .select('*', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)
@@ -65,7 +65,7 @@ export const POST = withApiAuth(
       updated_at: new Date().toISOString(),
     }
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('remy_approval_policies')
       .upsert(payload, { onConflict: 'tenant_id,task_type' })
       .select()

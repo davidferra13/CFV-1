@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -27,9 +27,9 @@ export interface BookingScore {
 
 export async function getBookingScoreForInquiry(inquiryId: string): Promise<BookingScore | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiry, error } = await supabase
+  const { data: inquiry, error } = await db
     .from('inquiries')
     .select(
       'id, client_id, confirmed_date, confirmed_guest_count, confirmed_budget_cents, client:clients(full_name)'
@@ -44,7 +44,7 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
   let profitabilityPoints = 20 // default midpoint
 
   const [avgData] = await Promise.all([
-    supabase
+    db
       .from('quotes')
       .select('total_quoted_cents, guest_count_estimated')
       .eq('tenant_id', user.tenantId!)
@@ -85,7 +85,7 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
   let isNewClient = true
 
   if (inquiry.client_id) {
-    const { data: summary } = await supabase
+    const { data: summary } = await db
       .from('client_financial_summary')
       .select('total_events_completed, total_events_cancelled, total_events_count')
       .eq('client_id', inquiry.client_id)
@@ -110,7 +110,7 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
   let hasDateConflict = false
 
   if (inquiry.confirmed_date) {
-    const { data: conflicts } = await supabase
+    const { data: conflicts } = await db
       .from('events')
       .select('id')
       .eq('tenant_id', user.tenantId!)
@@ -162,9 +162,9 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
 
 export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id')
     .eq('tenant_id', user.tenantId!)

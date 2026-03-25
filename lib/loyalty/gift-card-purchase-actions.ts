@@ -6,7 +6,7 @@
 // client_incentives record and sends the gift card code to the recipient.
 
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getCurrentUser } from '@/lib/auth/get-user'
 import type Stripe from 'stripe'
 
@@ -56,10 +56,10 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
 
   // Resolve logged-in user (if any) - gift card purchases are also open to guests
   const currentUser = await getCurrentUser()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Verify chef exists and get their display name for the checkout line item
-  const { data: chef, error: chefError } = await supabase
+  const { data: chef, error: chefError } = await db
     .from('chefs')
     .select('id, display_name, business_name, is_discoverable')
     .eq('id', validated.tenantId)
@@ -73,7 +73,7 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
 
   // Create the purchase intent row first (pre-payment audit state)
-  const { data: intent, error: intentError } = await supabase
+  const { data: intent, error: intentError } = await db
     .from('gift_card_purchase_intents')
     .insert({
       tenant_id: validated.tenantId,
@@ -140,7 +140,7 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
   }
 
   // Store the session ID on the intent for later lookup
-  await supabase
+  await db
     .from('gift_card_purchase_intents')
     .update({ stripe_checkout_session_id: session.id })
     .eq('id', intent.id)
@@ -155,9 +155,9 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
 export async function getGiftCardPurchaseBySession(sessionId: string) {
   if (!sessionId) return null
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: intent } = await supabase
+  const { data: intent } = await db
     .from('gift_card_purchase_intents')
     .select(
       `

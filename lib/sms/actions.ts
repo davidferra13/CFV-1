@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { sendSMS, sendWhatsApp, isTwilioConfigured, isWhatsAppConfigured } from './twilio-client'
 import { revalidatePath } from 'next/cache'
 
@@ -31,10 +31,10 @@ export async function sendSmsToClient(input: {
   eventId?: string
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to chef
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, full_name, phone')
     .eq('id', input.clientId)
@@ -46,7 +46,7 @@ export async function sendSmsToClient(input: {
   const result = await sendSMS(input.phone, input.body)
 
   // Log message regardless of send success (for visibility)
-  await supabase.from('messages').insert({
+  await db.from('messages').insert({
     tenant_id: user.tenantId!,
     client_id: input.clientId,
     inquiry_id: input.inquiryId ?? null,
@@ -74,10 +74,10 @@ export async function sendWhatsAppToClient(input: {
   eventId?: string
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to chef
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, full_name, phone')
     .eq('id', input.clientId)
@@ -89,7 +89,7 @@ export async function sendWhatsAppToClient(input: {
   const result = await sendWhatsApp(input.phone, input.body)
 
   // Log message regardless of send success
-  await supabase.from('messages').insert({
+  await db.from('messages').insert({
     tenant_id: user.tenantId!,
     client_id: input.clientId,
     inquiry_id: input.inquiryId ?? null,

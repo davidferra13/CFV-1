@@ -6,7 +6,7 @@
 // Output is DRAFT ONLY - chef approves/edits before using.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { GoogleGenAI } from '@google/genai'
 
 // ── Types ─────────────────────────────────────────────────────────────────
@@ -52,16 +52,16 @@ const getClient = () => {
 
 export async function generatePrepTimeline(eventId: string): Promise<PrepTimeline> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [eventResult, menuResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('occasion, guest_count, event_date, serve_time, arrival_time, service_style')
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase as any)
+    (db as any)
       .from('event_menu_components')
       .select(
         `

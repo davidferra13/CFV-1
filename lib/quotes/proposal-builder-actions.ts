@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -149,9 +149,9 @@ export async function getProposalTemplate(chefId: string): Promise<ProposalTempl
     throw new Error('Unauthorized: tenant mismatch')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('proposal_templates')
     .select('*')
     .eq('chef_id', chefId)
@@ -185,11 +185,11 @@ export async function saveProposalTemplate(
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
   const validated = SaveTemplateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const chefId = user.tenantId!
 
   // Upsert: insert if no template exists, update if it does
-  const { error } = await (supabase as any).from('proposal_templates').upsert(
+  const { error } = await (db as any).from('proposal_templates').upsert(
     {
       chef_id: chefId,
       default_sections: validated.default_sections,
@@ -215,21 +215,17 @@ export async function saveProposalTemplate(
 
 export async function getProposalDraft(eventId: string): Promise<ProposalDraft | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event belongs to tenant
-  const { data: event } = await supabase
-    .from('events')
-    .select('tenant_id')
-    .eq('id', eventId)
-    .single()
+  const { data: event } = await db.from('events').select('tenant_id').eq('id', eventId).single()
 
   if (!event || event.tenant_id !== user.tenantId) {
     throw new Error('Event not found or does not belong to your tenant')
   }
 
   // Check if a proposal draft exists on the quote for this event
-  const { data: quote } = await (supabase as any)
+  const { data: quote } = await (db as any)
     .from('quotes')
     .select('proposal_data')
     .eq('event_id', eventId)
@@ -254,21 +250,17 @@ export async function saveProposalDraft(
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
   const validated = SaveDraftSchema.parse({ sections, branding })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event belongs to tenant
-  const { data: event } = await supabase
-    .from('events')
-    .select('tenant_id')
-    .eq('id', eventId)
-    .single()
+  const { data: event } = await db.from('events').select('tenant_id').eq('id', eventId).single()
 
   if (!event || event.tenant_id !== user.tenantId) {
     throw new Error('Event not found or does not belong to your tenant')
   }
 
   // Find or create quote for this event
-  const { data: existingQuote } = await (supabase as any)
+  const { data: existingQuote } = await (db as any)
     .from('quotes')
     .select('id')
     .eq('event_id', eventId)
@@ -284,7 +276,7 @@ export async function saveProposalDraft(
   }
 
   if (existingQuote) {
-    const { error } = await (supabase as any)
+    const { error } = await (db as any)
       .from('quotes')
       .update({
         proposal_data: proposalData,
@@ -311,21 +303,17 @@ export async function saveProposalDraft(
 
 export async function publishProposal(eventId: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event belongs to tenant
-  const { data: event } = await supabase
-    .from('events')
-    .select('tenant_id')
-    .eq('id', eventId)
-    .single()
+  const { data: event } = await db.from('events').select('tenant_id').eq('id', eventId).single()
 
   if (!event || event.tenant_id !== user.tenantId) {
     throw new Error('Event not found or does not belong to your tenant')
   }
 
   // Find the quote with proposal data
-  const { data: quote } = await (supabase as any)
+  const { data: quote } = await (db as any)
     .from('quotes')
     .select('id, proposal_data')
     .eq('event_id', eventId)
@@ -344,7 +332,7 @@ export async function publishProposal(eventId: string): Promise<{ success: boole
     published_at: new Date().toISOString(),
   }
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('quotes')
     .update({
       proposal_data: updatedProposal,

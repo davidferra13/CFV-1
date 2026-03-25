@@ -2,7 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -44,9 +44,9 @@ export async function addPolicy(input: AddPolicyInput) {
   const tenantId = chef.tenantId!
   const validated = PolicySchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_insurance_policies')
     .insert({ ...validated, tenant_id: tenantId })
     .select()
@@ -67,10 +67,10 @@ export async function updatePolicy(id: string, input: UpdatePolicyInput) {
   const tenantId = chef.tenantId!
   const validated = UpdatePolicySchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('chef_insurance_policies')
     .select('id')
     .eq('id', id)
@@ -79,7 +79,7 @@ export async function updatePolicy(id: string, input: UpdatePolicyInput) {
 
   if (!existing) throw new Error('Policy not found or access denied')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_insurance_policies')
     .update({ ...validated, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -101,10 +101,10 @@ export async function deletePolicy(id: string) {
   await requirePro('protection')
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('chef_insurance_policies')
     .select('id')
     .eq('id', id)
@@ -113,7 +113,7 @@ export async function deletePolicy(id: string) {
 
   if (!existing) throw new Error('Policy not found or access denied')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_insurance_policies')
     .delete()
     .eq('id', id)
@@ -132,9 +132,9 @@ export async function getPolicies() {
   await requirePro('protection')
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_insurance_policies')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -154,13 +154,13 @@ export async function getExpiringPolicies(daysAhead: number) {
   await requirePro('protection')
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date()
   const cutoff = new Date(today)
   cutoff.setDate(today.getDate() + daysAhead)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_insurance_policies')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -182,11 +182,11 @@ export async function getCoverageGapReport() {
   await requirePro('protection')
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_insurance_policies')
     .select('policy_type')
     .eq('tenant_id', tenantId)

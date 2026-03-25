@@ -1,15 +1,15 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
 export async function recordLostReason(quoteId: string, reason: string, notes?: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('quotes')
     .update({
       lost_reason: reason,
@@ -26,12 +26,12 @@ export async function recordLostReason(quoteId: string, reason: string, notes?: 
 export async function getLossAnalysis(): Promise<Array<{ reason: string; count: number }>> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const since = new Date()
   since.setFullYear(since.getFullYear() - 1)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('quotes')
     .select('lost_reason')
     .eq('tenant_id', tenantId)

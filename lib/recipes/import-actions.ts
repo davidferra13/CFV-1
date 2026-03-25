@@ -6,7 +6,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { parseIngredientString } from './ingredient-parser'
@@ -416,11 +416,11 @@ export async function saveImportedRecipe(
   preview: ImportedRecipePreview
 ): Promise<ImportRecipeResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   try {
     // Create the recipe
-    const { data: recipe, error: recipeError } = await supabase
+    const { data: recipe, error: recipeError } = await db
       .from('recipes')
       .insert({
         tenant_id: user.tenantId!,
@@ -454,14 +454,14 @@ export async function saveImportedRecipe(
       try {
         // Find or create ingredient (case-insensitive)
         const ingredientId = await findOrCreateIngredientForImport(
-          supabase,
+          db,
           user.tenantId!,
           user.id,
           parsed.name
         )
 
         // Link to recipe
-        await supabase.from('recipe_ingredients').insert({
+        await db.from('recipe_ingredients').insert({
           recipe_id: recipe.id,
           ingredient_id: ingredientId,
           quantity: parsed.quantity || 1,
@@ -498,7 +498,7 @@ export async function saveImportedRecipe(
 // ============================================
 
 async function findOrCreateIngredientForImport(
-  supabase: ReturnType<typeof createServerClient>,
+  db: ReturnType<typeof createServerClient>,
   tenantId: string,
   userId: string,
   name: string
@@ -507,7 +507,7 @@ async function findOrCreateIngredientForImport(
   const normalizedName = name.trim()
 
   // Case-insensitive lookup
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('ingredients')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -518,7 +518,7 @@ async function findOrCreateIngredientForImport(
   if (existing) return existing.id
 
   // Create new ingredient with "other" category (chef can categorize later)
-  const { data: newIngredient, error } = await supabase
+  const { data: newIngredient, error } = await db
     .from('ingredients')
     .insert({
       tenant_id: tenantId,

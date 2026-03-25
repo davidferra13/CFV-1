@@ -21,7 +21,7 @@ export const GET = withApiAuth(
 
     // Search events
     if (!type || type === 'events') {
-      const { data } = await ctx.supabase
+      const { data } = await ctx.db
         .from('events')
         .select('id, occasion, event_date, status, guest_count, location_city')
         .eq('tenant_id', ctx.tenantId)
@@ -34,7 +34,7 @@ export const GET = withApiAuth(
 
     // Search clients
     if (!type || type === 'clients') {
-      const { data } = await ctx.supabase
+      const { data } = await ctx.db
         .from('clients')
         .select('id, full_name, email, phone, status')
         .eq('chef_id', ctx.tenantId)
@@ -46,7 +46,7 @@ export const GET = withApiAuth(
 
     // Search quotes
     if (!type || type === 'quotes') {
-      const { data } = await ctx.supabase
+      const { data } = await ctx.db
         .from('quotes')
         .select('id, quote_name, status, total_quoted_cents')
         .eq('tenant_id', ctx.tenantId)
@@ -58,7 +58,7 @@ export const GET = withApiAuth(
 
     // Search recipes
     if (!type || type === 'recipes') {
-      const { data } = await ctx.supabase
+      const { data } = await ctx.db
         .from('recipes')
         .select('id, recipe_name, category, cuisine')
         .eq('tenant_id', ctx.tenantId)

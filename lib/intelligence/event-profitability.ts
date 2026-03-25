@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -47,10 +47,10 @@ export interface EventProfitabilityResult {
 export async function getEventProfitability(): Promise<EventProfitabilityResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch completed events with time data
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -70,7 +70,7 @@ export async function getEventProfitability(): Promise<EventProfitabilityResult 
 
   // Fetch expenses for all these events
   const eventIds = events.map((e: any) => e.id)
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('event_id, amount_cents')
     .in('event_id', eventIds)

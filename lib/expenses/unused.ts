@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -32,9 +32,9 @@ export type LogUnusedInput = z.infer<typeof LogUnusedSchema>
 export async function logUnusedIngredient(input: LogUnusedInput) {
   const user = await requireChef()
   const validated = LogUnusedSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('unused_ingredients')
     .insert({
       ...validated,
@@ -57,9 +57,9 @@ export async function logUnusedIngredient(input: LogUnusedInput) {
  */
 export async function getUnusedIngredients(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('unused_ingredients')
     .select('*')
     .eq('event_id', eventId)
@@ -79,9 +79,9 @@ export async function getUnusedIngredients(eventId: string) {
  */
 export async function deleteUnusedIngredient(id: string, eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('unused_ingredients')
     .delete()
     .eq('id', id)
@@ -102,10 +102,10 @@ export async function deleteUnusedIngredient(id: string, eventId: string) {
  */
 export async function transferUnusedToEvent(unusedId: string, targetEventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the target event belongs to same tenant
-  const { data: targetEvent } = await supabase
+  const { data: targetEvent } = await db
     .from('events')
     .select('id')
     .eq('id', targetEventId)
@@ -116,7 +116,7 @@ export async function transferUnusedToEvent(unusedId: string, targetEventId: str
     throw new Error('Target event not found')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('unused_ingredients')
     .update({ transferred_to_event_id: targetEventId })
     .eq('id', unusedId)
@@ -139,9 +139,9 @@ export async function transferUnusedToEvent(unusedId: string, targetEventId: str
  */
 export async function markIngredientExpired(id: string, eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('unused_ingredients')
     .update({ expired: true })
     .eq('id', id)

@@ -5,7 +5,7 @@
 // Includes packing list generation (gap analysis) and kitchen templates.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -59,9 +59,9 @@ export interface PackingListItem {
 
 export async function getClientKitchenInventory(clientId: string): Promise<KitchenItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_kitchen_inventory' as any)
     .select('*')
     .eq('client_id', clientId)
@@ -84,12 +84,12 @@ export async function addKitchenItem(
   }
 ): Promise<KitchenItem> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const trimmedName = data.item_name.trim()
   if (!trimmedName) throw new Error('Item name is required')
 
-  const { data: item, error } = await supabase
+  const { data: item, error } = await db
     .from('client_kitchen_inventory' as any)
     .insert({
       tenant_id: user.tenantId!,
@@ -121,7 +121,7 @@ export async function updateKitchenItem(
   }
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (data.category !== undefined) updates.category = data.category
@@ -131,7 +131,7 @@ export async function updateKitchenItem(
   if (data.notes !== undefined) updates.notes = data.notes?.trim() || null
   if (data.last_verified_at !== undefined) updates.last_verified_at = data.last_verified_at
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_kitchen_inventory' as any)
     .update(updates)
     .eq('id', itemId)
@@ -140,7 +140,7 @@ export async function updateKitchenItem(
   if (error) throw new Error(`Failed to update kitchen item: ${error.message}`)
 
   // Get client_id for revalidation
-  const { data: item } = await supabase
+  const { data: item } = await db
     .from('client_kitchen_inventory' as any)
     .select('client_id')
     .eq('id', itemId)
@@ -152,17 +152,17 @@ export async function updateKitchenItem(
 
 export async function deleteKitchenItem(itemId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get client_id before deleting for revalidation
-  const { data: item } = await supabase
+  const { data: item } = await db
     .from('client_kitchen_inventory' as any)
     .select('client_id')
     .eq('id', itemId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_kitchen_inventory' as any)
     .delete()
     .eq('id', itemId)
@@ -176,9 +176,9 @@ export async function deleteKitchenItem(itemId: string): Promise<void> {
 
 export async function getChefEquipment(): Promise<ChefEquipmentItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_equipment_master' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -197,12 +197,12 @@ export async function addChefEquipment(data: {
   notes?: string
 }): Promise<ChefEquipmentItem> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const trimmedName = data.item_name.trim()
   if (!trimmedName) throw new Error('Item name is required')
 
-  const { data: item, error } = await supabase
+  const { data: item, error } = await db
     .from('chef_equipment_master' as any)
     .insert({
       tenant_id: user.tenantId!,
@@ -231,7 +231,7 @@ export async function updateChefEquipment(
   }
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (data.category !== undefined) updates.category = data.category
@@ -240,7 +240,7 @@ export async function updateChefEquipment(
   if (data.is_portable !== undefined) updates.is_portable = data.is_portable
   if (data.notes !== undefined) updates.notes = data.notes?.trim() || null
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_equipment_master' as any)
     .update(updates)
     .eq('id', itemId)
@@ -252,9 +252,9 @@ export async function updateChefEquipment(
 
 export async function deleteChefEquipment(itemId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_equipment_master' as any)
     .delete()
     .eq('id', itemId)
@@ -268,17 +268,17 @@ export async function deleteChefEquipment(itemId: string): Promise<void> {
 
 export async function generatePackingList(clientId: string): Promise<PackingListItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch client kitchen inventory
-  const { data: clientItems } = await supabase
+  const { data: clientItems } = await db
     .from('client_kitchen_inventory' as any)
     .select('*')
     .eq('client_id', clientId)
     .eq('tenant_id', user.tenantId!)
 
   // Fetch chef's portable equipment
-  const { data: chefItems } = await supabase
+  const { data: chefItems } = await db
     .from('chef_equipment_master' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -450,7 +450,7 @@ export async function applyKitchenTemplate(
   template: 'basic' | 'well-equipped' | 'minimal'
 ): Promise<number> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const items = KITCHEN_TEMPLATES[template]
   if (!items) throw new Error(`Unknown template: ${template}`)
@@ -465,7 +465,7 @@ export async function applyKitchenTemplate(
     last_verified_at: new Date().toISOString(),
   }))
 
-  const { error } = await supabase.from('client_kitchen_inventory' as any).insert(rows)
+  const { error } = await db.from('client_kitchen_inventory' as any).insert(rows)
 
   if (error) throw new Error(`Failed to apply template: ${error.message}`)
   revalidatePath(`/clients/${clientId}`)

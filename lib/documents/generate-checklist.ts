@@ -5,7 +5,7 @@
 // MUST fit on ONE page - no exceptions.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getChefChecklist, type ChecklistItem } from '@/lib/checklist/actions'
 import { PDFLayout } from './pdf-layout'
 
@@ -28,10 +28,10 @@ export type ChecklistData = {
 /** Fetch all data needed for the checklist */
 export async function fetchChecklistData(eventId: string): Promise<ChecklistData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event basics
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `

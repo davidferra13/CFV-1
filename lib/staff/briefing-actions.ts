@@ -6,7 +6,7 @@
 // plating style, service expectations, client vibe, allergies, roles.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { format, parse, addHours } from 'date-fns'
 
 export type StaffBriefingMember = {
@@ -66,10 +66,10 @@ function parseArrivalTime(serveTime: string | null): string | null {
 
 export async function generateStaffBriefing(eventId: string): Promise<StaffBriefingData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event + client in one query
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       `
@@ -90,7 +90,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
   if (eventError || !event) return null
 
   // Fetch staff assignments
-  const { data: assignments } = await supabase
+  const { data: assignments } = await db
     .from('event_staff_assignments')
     .select(
       `
@@ -103,7 +103,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     .order('created_at')
 
   // Fetch confirmed dietary restrictions from linked inquiry (if any)
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select('confirmed_dietary_restrictions, service_style_pref')
     .eq('converted_to_event_id', eventId)
@@ -111,7 +111,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     .maybeSingle()
 
   // Fetch active menu items for this event
-  const { data: menuRows } = await supabase
+  const { data: menuRows } = await db
     .from('event_menu_items' as any)
     .select('name, description, course')
     .eq('event_id', eventId)

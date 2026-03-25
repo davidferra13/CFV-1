@@ -2,7 +2,7 @@
 // These are the numbers a chef checks 10x/day. Never collapsible.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { HeroMetricsClient } from './hero-metrics-client'
 
 type HeroMetric = {
@@ -15,7 +15,7 @@ type HeroMetric = {
 
 async function getHeroMetrics(): Promise<HeroMetric[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const now = new Date()
@@ -26,7 +26,7 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
   // All queries in parallel
   const [revenueResult, eventsResult, inquiriesResult, outstandingResult] = await Promise.all([
     // This month's revenue from ledger
-    supabase
+    db
       .from('event_financial_summary')
       .select('total_paid_cents')
       .eq('tenant_id', tenantId)
@@ -37,7 +37,7 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
       }),
 
     // Events this week
-    supabase
+    db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
@@ -46,14 +46,14 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
       .not('status', 'eq', 'cancelled'),
 
     // Open inquiries (not converted, not declined)
-    supabase
+    db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .not('status', 'in', '("converted","declined")'),
 
     // Outstanding balance
-    supabase
+    db
       .from('event_financial_summary')
       .select('outstanding_balance_cents')
       .eq('tenant_id', tenantId)

@@ -2,7 +2,7 @@
 // Checks all ChefFlow services in dependency order.
 // Not a 'use server' file - pure utility (exports constants + functions).
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { breakers, getCircuitBreakerHealth } from '@/lib/resilience/circuit-breaker'
 import { getOllamaConfig, getModelForEndpoint } from '@/lib/ai/providers'
 import { pingEndpoint } from '@/lib/ai/ollama-wake'
@@ -43,16 +43,11 @@ export const SERVICE_REGISTRY: ServiceDefinition[] = [
     id: 'database',
     name: 'Database',
     tier: 1,
-    description: 'Supabase connection',
+    description: 'database connection',
     dependsOn: ['network'],
-    envVars: ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'],
+    envVars: ['NEXT_PUBLIC_DB_URL', 'DB_SERVICE_ROLE_KEY'],
     fixActions: [
-      fix(
-        'reset_supabase_breaker',
-        'Reset Breaker',
-        'Reset the Supabase circuit breaker',
-        'database'
-      ),
+      fix('reset_db_breaker', 'Reset Breaker', 'Reset the database circuit breaker', 'database'),
     ],
   },
   // Tier 2
@@ -60,9 +55,9 @@ export const SERVICE_REGISTRY: ServiceDefinition[] = [
     id: 'auth',
     name: 'Auth',
     tier: 2,
-    description: 'Supabase Auth service',
+    description: 'Auth service',
     dependsOn: ['database'],
-    envVars: ['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
+    envVars: ['NEXT_PUBLIC_DB_ANON_KEY'],
     fixActions: [],
   },
   // Tier 3
@@ -211,16 +206,16 @@ async function checkDatabase(): Promise<ServiceHealthResult> {
 
   const start = Date.now()
   try {
-    const supabase = createAdminClient()
-    const { error } = await supabase.from('chefs').select('id').limit(1).maybeSingle()
+    const db = createAdminClient()
+    const { error } = await db.from('chefs').select('id').limit(1).maybeSingle()
     const latency = Date.now() - start
 
     if (error && error.code !== 'PGRST116') {
       return result(def, 'error', `Query failed: ${error.message}`, latency, error.message)
     }
 
-    const cbState = breakers.supabase.getState()
-    const cbFails = breakers.supabase.getFailures()
+    const cbState = breakers.db.getState()
+    const cbFails = breakers.db.getFailures()
     const r =
       cbState === 'OPEN'
         ? result(

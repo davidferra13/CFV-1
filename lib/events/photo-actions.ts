@@ -5,7 +5,7 @@
 // Chef: full CRUD. Client: read-only for their own events.
 
 import { requireChef, requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { compressImageBuffer } from '@/lib/images/resmush'
 
@@ -70,14 +70,14 @@ export type EventPhoto = {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function hydrateSignedUrls(
-  supabase: any,
+  db: any,
   photos: Omit<EventPhoto, 'signedUrl'>[]
 ): Promise<EventPhoto[]> {
   if (photos.length === 0) return []
 
   const paths = photos.map((p) => p.storage_path)
 
-  const { data: signedData } = await supabase.storage
+  const { data: signedData } = await db.storage
     .from(BUCKET)
     .createSignedUrls(paths, SIGNED_URL_EXPIRY_SECONDS)
 
@@ -105,10 +105,10 @@ export async function uploadEventPhoto(
   formData: FormData
 ): Promise<{ success: true; photo: EventPhoto } | { success: false; error: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the event belongs to this chef's tenant
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id, client_id, occasion, event_date')
     .eq('id', eventId)
@@ -120,7 +120,7 @@ export async function uploadEventPhoto(
   }
 
   // Enforce per-event photo cap
-  const { count } = await supabase
+  const { count } = await db
     .from('event_photos')
     .select('id', { count: 'exact', head: true })
     .eq('event_id', eventId)
@@ -180,13 +180,11 @@ export async function uploadEventPhoto(
     )
   }
 
-  // Upload to Supabase Storage
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET)
-    .upload(storagePath, uploadBody, {
-      contentType: uploadContentType,
-      upsert: false,
-    })
+  // Upload to local storage
+  const { error: uploadError } = await db.storage.from(BUCKET).upload(storagePath, uploadBody, {
+    contentType: uploadContentType,
+    upsert: false,
+  })
 
   if (uploadError) {
     console.error('[uploadEventPhoto] Storage upload failed:', uploadError)
@@ -194,7 +192,7 @@ export async function uploadEventPhoto(
   }
 
   // Determine display_order - append after the last active photo
-  const { data: lastPhoto } = await supabase
+  const { data: lastPhoto } = await db
     .from('event_photos')
     .select('display_order')
     .eq('event_id', eventId)
@@ -207,7 +205,7 @@ export async function uploadEventPhoto(
   const displayOrder = lastPhoto ? lastPhoto.display_order + 1 : 0
 
   // Insert DB record (use the same UUID as the storage path segment)
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await db
     .from('event_photos')
     .insert({
       id: photoId,
@@ -226,13 +224,13 @@ export async function uploadEventPhoto(
 
   if (insertError || !inserted) {
     // Clean up orphaned storage object
-    await supabase.storage.from(BUCKET).remove([storagePath])
+    await db.storage.from(BUCKET).remove([storagePath])
     console.error('[uploadEventPhoto] DB insert failed:', insertError)
     return { success: false, error: 'Failed to save photo record' }
   }
 
   // Generate a fresh signed URL for immediate display
-  const { data: signed } = await supabase.storage
+  const { data: signed } = await db.storage
     .from(BUCKET)
     .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS)
 
@@ -291,9 +289,9 @@ export async function uploadEventPhoto(
  */
 export async function getEventPhotosForChef(eventId: string): Promise<EventPhoto[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: photos, error } = await supabase
+  const { data: photos, error } = await db
     .from('event_photos')
     .select('*')
     .eq('event_id', eventId)
@@ -308,7 +306,7 @@ export async function getEventPhotosForChef(eventId: string): Promise<EventPhoto
 
   if (!photos?.length) return []
 
-  return hydrateSignedUrls(supabase, photos)
+  return hydrateSignedUrls(db, photos)
 }
 
 // ─── getEventPhotosForClient ──────────────────────────────────────────────────
@@ -320,10 +318,10 @@ export async function getEventPhotosForChef(eventId: string): Promise<EventPhoto
  */
 export async function getEventPhotosForClient(eventId: string): Promise<EventPhoto[]> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client owns this event and get the tenant_id
-  const { data: ev } = await supabase
+  const { data: ev } = await db
     .from('events')
     .select('tenant_id')
     .eq('id', eventId)
@@ -332,7 +330,7 @@ export async function getEventPhotosForClient(eventId: string): Promise<EventPho
 
   if (!ev) return []
 
-  const { data: photos, error } = await supabase
+  const { data: photos, error } = await db
     .from('event_photos')
     .select('*')
     .eq('event_id', eventId)
@@ -342,7 +340,7 @@ export async function getEventPhotosForClient(eventId: string): Promise<EventPho
 
   if (error || !photos?.length) return []
 
-  return hydrateSignedUrls(supabase, photos)
+  return hydrateSignedUrls(db, photos)
 }
 
 // ─── deleteEventPhoto ─────────────────────────────────────────────────────────
@@ -355,9 +353,9 @@ export async function deleteEventPhoto(
   photoId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: photo } = await supabase
+  const { data: photo } = await db
     .from('event_photos')
     .select('storage_path, event_id, deleted_at')
     .eq('id', photoId)
@@ -368,7 +366,7 @@ export async function deleteEventPhoto(
   if (photo.deleted_at) return { success: true } // Already deleted - idempotent
 
   // Soft-delete in DB first
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('event_photos')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', photoId)
@@ -380,7 +378,7 @@ export async function deleteEventPhoto(
   }
 
   // Remove storage object (non-fatal)
-  const { error: storageError } = await supabase.storage.from(BUCKET).remove([photo.storage_path])
+  const { error: storageError } = await db.storage.from(BUCKET).remove([photo.storage_path])
 
   if (storageError) {
     console.warn('[deleteEventPhoto] Storage remove failed (non-fatal):', storageError)
@@ -403,9 +401,9 @@ export async function updatePhotoCaption(
   caption: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: photo, error } = await supabase
+  const { data: photo, error } = await db
     .from('event_photos')
     .update({ caption: caption.trim() || null })
     .eq('id', photoId)
@@ -439,9 +437,9 @@ export type PortfolioPhoto = EventPhoto & {
 
 export async function getPortfolioPhotos(): Promise<PortfolioPhoto[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: photos, error } = await supabase
+  const { data: photos, error } = await db
     .from('event_photos')
     .select('*, events(occasion, event_date, name)')
     .eq('tenant_id', user.tenantId!)
@@ -466,7 +464,7 @@ export async function getPortfolioPhotos(): Promise<PortfolioPhoto[]> {
 
   // Hydrate signed URLs
   const paths = flattened.map((p: any) => p.storage_path)
-  const { data: signedData } = await supabase.storage
+  const { data: signedData } = await db.storage
     .from(BUCKET)
     .createSignedUrls(paths, SIGNED_URL_EXPIRY_SECONDS)
 
@@ -497,8 +495,8 @@ export async function getPhotoSignedUrl(
     return { url: null, error: 'Unauthorized' }
   }
 
-  const supabase: any = createServerClient()
-  const { data, error } = await supabase.storage
+  const db: any = createServerClient()
+  const { data, error } = await db.storage
     .from(BUCKET)
     .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS)
 
@@ -522,10 +520,10 @@ export async function reorderEventPhotos(
   orderedPhotoIds: string[]
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event belongs to this chef's tenant
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id')
     .eq('id', eventId)
@@ -537,7 +535,7 @@ export async function reorderEventPhotos(
   // Update display_order for each photo in parallel
   const results = await Promise.all(
     orderedPhotoIds.map((id, index) =>
-      supabase
+      db
         .from('event_photos')
         .update({ display_order: index })
         .eq('id', id)
@@ -574,7 +572,7 @@ export async function updatePhotoDetails(
   }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updatePayload: Record<string, unknown> = {}
   if (data.caption !== undefined) updatePayload.caption = data.caption.trim() || null
@@ -587,7 +585,7 @@ export async function updatePhotoDetails(
     return { success: true }
   }
 
-  const { data: photo, error } = await supabase
+  const { data: photo, error } = await db
     .from('event_photos')
     .update(updatePayload)
     .eq('id', photoId)
@@ -616,10 +614,10 @@ export async function togglePortfolio(
   photoId: string
 ): Promise<{ success: boolean; is_portfolio?: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current state
-  const { data: photo } = await supabase
+  const { data: photo } = await db
     .from('event_photos')
     .select('is_portfolio, event_id')
     .eq('id', photoId)
@@ -631,7 +629,7 @@ export async function togglePortfolio(
 
   const newValue = !photo.is_portfolio
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_photos')
     .update({ is_portfolio: newValue })
     .eq('id', photoId)
@@ -667,9 +665,9 @@ export type PublicPortfolioPhoto = {
 }
 
 export async function getPublicPortfolio(chefId: string): Promise<PublicPortfolioPhoto[]> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: photos, error } = await supabase
+  const { data: photos, error } = await db
     .from('event_photos')
     .select(
       'id, storage_path, caption, photo_type, display_order, taken_at, created_at, events(occasion, event_date)'
@@ -687,7 +685,7 @@ export async function getPublicPortfolio(chefId: string): Promise<PublicPortfoli
 
   // Hydrate signed URLs
   const paths = photos.map((p: any) => p.storage_path)
-  const { data: signedData } = await supabase.storage
+  const { data: signedData } = await db.storage
     .from(BUCKET)
     .createSignedUrls(paths, SIGNED_URL_EXPIRY_SECONDS)
 

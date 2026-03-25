@@ -1,11 +1,11 @@
 import { writeFileSync } from 'fs'
-import { createClient } from './lib/supabase.mjs'
+import { createClient } from './lib/db.mjs'
 
-const SUPABASE_URL = 'http://127.0.0.1:54321'
+const DB_URL = 'http://127.0.0.1:54321'
 const SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU'
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
 
-const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
+const admin = createClient(DB_URL, SERVICE_KEY, { auth: { persistSession: false } })
 
 // Find client users via user_roles table
 const { data: roles, error: rolesErr } = await admin
@@ -45,7 +45,7 @@ const email = userInfo?.user?.email
 console.log('Email:', email)
 
 // Sign in with the new password
-const anonClient = createClient(SUPABASE_URL, ANON_KEY)
+const anonClient = createClient(DB_URL, ANON_KEY)
 const { data: session, error: signErr } = await anonClient.auth.signInWithPassword({
   email,
   password: NEW_PASS

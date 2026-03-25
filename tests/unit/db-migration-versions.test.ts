@@ -3,9 +3,9 @@ import assert from 'node:assert/strict'
 import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
-describe('Supabase migration versions', () => {
+describe('Database migration versions', () => {
   it('has unique numeric version prefixes', () => {
-    const migrationsDir = join(process.cwd(), 'supabase', 'migrations')
+    const migrationsDir = join(process.cwd(), 'db', 'migrations')
     const files = readdirSync(migrationsDir).filter((name) => name.endsWith('.sql'))
 
     const seen = new Map<string, string>()

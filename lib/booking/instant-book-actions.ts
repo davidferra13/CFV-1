@@ -5,7 +5,7 @@
 
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import {
   BookingServiceModeSchema,
@@ -86,9 +86,9 @@ export async function createInstantBookingCheckout(
   input: InstantBookInput
 ): Promise<InstantBookResult> {
   const validated = InstantBookSchema.parse(input)
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select(
       `
@@ -148,7 +148,7 @@ export async function createInstantBookingCheckout(
     source: 'website',
   })
 
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .insert({
       tenant_id: tenantId,
@@ -191,14 +191,14 @@ export async function createInstantBookingCheckout(
     })
 
     const [eventsInRange, manualBlocksInRange] = await Promise.all([
-      supabase
+      db
         .from('events')
         .select('id, event_date, status, occasion')
         .eq('tenant_id', tenantId)
         .in('status', ['confirmed', 'in_progress', 'paid', 'accepted'])
         .gte('event_date', schedulePlan.start_date)
         .lte('event_date', `${schedulePlan.end_date}T23:59:59Z`),
-      supabase
+      db
         .from('chef_availability_blocks')
         .select('block_date, is_event_auto, reason')
         .eq('chef_id', tenantId)
@@ -252,7 +252,7 @@ export async function createInstantBookingCheckout(
 
     const pricingModel = chef.booking_pricing_type === 'per_person' ? 'per_person' : 'flat_rate'
 
-    const { data: series, error: seriesError } = await supabase
+    const { data: series, error: seriesError } = await db
       .from('event_series')
       .insert({
         tenant_id: tenantId,
@@ -302,7 +302,7 @@ export async function createInstantBookingCheckout(
       notes: session.notes,
     }))
 
-    const { data: insertedSessions, error: sessionsError } = await supabase
+    const { data: insertedSessions, error: sessionsError } = await db
       .from('event_service_sessions')
       .insert(sessionPayload)
       .select('id, session_date, meal_slot, start_time, sort_order')
@@ -349,7 +349,7 @@ export async function createInstantBookingCheckout(
       booking_source: bookingSource,
     }))
 
-    const { data: events, error: eventError } = await supabase
+    const { data: events, error: eventError } = await db
       .from('events')
       .insert(eventPayload)
       .select('id, source_session_id')
@@ -361,7 +361,7 @@ export async function createInstantBookingCheckout(
 
     checkoutEventId = events[0].id
 
-    await supabase.from('event_state_transitions').insert(
+    await db.from('event_state_transitions').insert(
       events.map((event: any) => ({
         tenant_id: tenantId,
         event_id: event.id,
@@ -378,13 +378,13 @@ export async function createInstantBookingCheckout(
 
     for (const event of events) {
       if (!event.source_session_id) continue
-      await supabase
+      await db
         .from('event_service_sessions')
         .update({ event_id: event.id })
         .eq('id', event.source_session_id)
     }
   } else {
-    const { data: event, error: eventError } = await supabase
+    const { data: event, error: eventError } = await db
       .from('events')
       .insert({
         tenant_id: tenantId,
@@ -420,7 +420,7 @@ export async function createInstantBookingCheckout(
 
     checkoutEventId = event.id
 
-    await supabase.from('event_state_transitions').insert({
+    await db.from('event_state_transitions').insert({
       tenant_id: tenantId,
       event_id: event.id,
       from_status: null,
@@ -434,7 +434,7 @@ export async function createInstantBookingCheckout(
   }
 
   if (inquiry?.id) {
-    await supabase
+    await db
       .from('inquiries')
       .update({ converted_to_event_id: checkoutEventId })
       .eq('id', inquiry.id)

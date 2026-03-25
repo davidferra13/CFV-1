@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 
 export const metadata: Metadata = { title: 'Smart Import - ChefFlow' }
 import { isAIConfigured } from '@/lib/ai/parse'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { ImportMode } from '@/components/import/smart-import-hub'
 
 const SmartImportHub = dynamic(
@@ -44,8 +44,8 @@ function getInitialMode(mode?: string): ImportMode {
 }
 
 async function getEventsForDropdown() {
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .order('event_date', { ascending: false })

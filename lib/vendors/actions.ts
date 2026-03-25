@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -52,9 +52,9 @@ export type UpdateVendorInput = z.infer<typeof UpdateVendorSchema>
 
 export async function createVendor(input: VendorInput | CreateVendorInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: vendor, error } = await supabase
+  const { data: vendor, error } = await db
     .from('vendors')
     .insert({
       name: input.name,
@@ -82,7 +82,7 @@ export async function createVendor(input: VendorInput | CreateVendorInput) {
 
 export async function updateVendor(id: string, input: UpdateVendorInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = UpdateVendorSchema.parse(input)
 
   const updateData: Record<string, unknown> = {}
@@ -95,7 +95,7 @@ export async function updateVendor(id: string, input: UpdateVendorInput) {
   if (data.payment_terms !== undefined) updateData.payment_terms = data.payment_terms || null
   if (data.notes !== undefined) updateData.notes = data.notes || null
 
-  const { error } = await supabase
+  const { error } = await db
     .from('vendors')
     .update(updateData)
     .eq('id', id)
@@ -112,9 +112,9 @@ export async function updateVendor(id: string, input: UpdateVendorInput) {
 
 export async function deactivateVendor(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('vendors')
     .update({ status: 'inactive' })
     .eq('id', id)
@@ -130,9 +130,9 @@ export async function deactivateVendor(id: string) {
 
 export async function listVendors(activeOnly = true) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let q = supabase
+  let q = db
     .from('vendors')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -154,9 +154,9 @@ export async function listVendors(activeOnly = true) {
 
 export async function getVendor(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: vendor, error } = await supabase
+  const { data: vendor, error } = await db
     .from('vendors')
     .select('*')
     .eq('id', id)
@@ -169,7 +169,7 @@ export async function getVendor(id: string) {
   }
 
   // Also fetch vendor items
-  const { data: items } = await supabase
+  const { data: items } = await db
     .from('vendor_items')
     .select('*')
     .eq('vendor_id', id)
@@ -181,13 +181,9 @@ export async function getVendor(id: string) {
 
 export async function deleteVendor(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
-    .from('vendors')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', user.tenantId!)
+  const { error } = await db.from('vendors').delete().eq('id', id).eq('chef_id', user.tenantId!)
 
   if (error) {
     console.error('[vendors] deleteVendor error:', error)
@@ -199,9 +195,9 @@ export async function deleteVendor(id: string) {
 
 export async function setVendorPreferred(id: string, preferred: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('vendors')
     .update({ is_preferred: preferred })
     .eq('id', id)

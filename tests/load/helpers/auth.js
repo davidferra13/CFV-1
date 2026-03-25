@@ -1,20 +1,14 @@
 // Authentication helpers for k6 load tests.
-// Two strategies: E2E endpoint (dev server only) and direct Supabase auth (any env).
+// Two strategies: E2E endpoint (dev server only) and direct database auth (any env).
 
 import http from 'k6/http'
 import { check } from 'k6'
 import encoding from 'k6/encoding'
-import {
-  BASE_URL,
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY,
-  AGENT_EMAIL,
-  AGENT_PASSWORD,
-} from '../config.js'
+import { BASE_URL, DB_URL, DB_ANON_KEY, AGENT_EMAIL, AGENT_PASSWORD } from '../config.js'
 
 /**
  * Authenticate via the /api/e2e/auth endpoint (dev server only, NODE_ENV=development).
- * Returns cookie jar with Supabase session cookies that k6 will include in subsequent requests.
+ * Returns cookie jar with session cookies that k6 will include in subsequent requests.
  *
  * Call this in setup() and pass the result to default function via return value.
  */
@@ -42,7 +36,7 @@ export function authenticateViaE2E() {
 
   if (!ok) {
     console.error(`E2E auth failed: ${res.status} ${res.body}`)
-    console.error('Ensure dev server is running on port 3100 with SUPABASE_E2E_ALLOW_REMOTE=true')
+    console.error('Ensure dev server is running on port 3100 with E2E_ALLOW_REMOTE=true')
   }
 
   // Extract cookies set by the response
@@ -51,28 +45,28 @@ export function authenticateViaE2E() {
 }
 
 /**
- * Authenticate directly against Supabase Auth REST API.
+ * Authenticate directly against Auth REST API.
  * Works against any environment (dev, beta, prod) since it bypasses the app server.
  * Returns the access token and formatted cookie headers.
  */
-export function authenticateViaSupabase() {
+export function authenticateViaDb() {
   const res = http.post(
-    `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
+    `${DB_URL}/auth/v1/token?grant_type=password`,
     JSON.stringify({ email: AGENT_EMAIL, password: AGENT_PASSWORD }),
     {
       headers: {
         'Content-Type': 'application/json',
-        apikey: SUPABASE_ANON_KEY,
+        apikey: DB_ANON_KEY,
       },
     }
   )
 
   const ok = check(res, {
-    'supabase auth: status 200': (r) => r.status === 200,
+    'database auth: status 200': (r) => r.status === 200,
   })
 
   if (!ok) {
-    console.error(`Supabase auth failed: ${res.status} ${res.body}`)
+    console.error(`database auth failed: ${res.status} ${res.body}`)
     return null
   }
 
@@ -80,7 +74,7 @@ export function authenticateViaSupabase() {
   const accessToken = data.access_token
   const refreshToken = data.refresh_token
 
-  // Supabase SSR stores the session as a base64-encoded JSON cookie.
+  // Auth SSR stores the session as a base64-encoded JSON cookie.
   // The cookie name follows the pattern: sb-{project-ref}-auth-token
   // For large JWTs it chunks into .0, .1, etc. but most fit in one cookie.
   const cookieValue = encoding.b64encode(
@@ -93,11 +87,11 @@ export function authenticateViaSupabase() {
     })
   )
 
-  // Determine the cookie name from the Supabase URL
+  // Determine the cookie name from the database URL
   // For hosted: sb-{ref}-auth-token
   // For local: sb-127-auth-token or similar
   let cookieName = 'sb-luefkpakzvxcsqroxyhz-auth-token'
-  if (SUPABASE_URL.includes('127.0.0.1') || SUPABASE_URL.includes('localhost')) {
+  if (DB_URL.includes('127.0.0.1') || DB_URL.includes('localhost')) {
     cookieName = 'sb-127-auth-token'
   }
 
@@ -122,8 +116,8 @@ export function authenticateViaSupabase() {
 }
 
 /**
- * Apply Supabase auth cookies to the cookie jar for a given URL.
- * Use this when authenticating via direct Supabase auth (not e2e endpoint).
+ * Apply database auth cookies to the cookie jar for a given URL.
+ * Use this when authenticating via direct database auth (not e2e endpoint).
  */
 export function applyAuthCookies(authData) {
   if (!authData) return
@@ -138,7 +132,7 @@ export function applyAuthCookies(authData) {
 /**
  * Get headers for API v2 endpoints (Bearer token auth).
  * Pass the API key as an env var: k6 run -e API_KEY=cf_live_xxx ...
- * Or use the Supabase access token as a fallback.
+ * Or use the access token as a fallback.
  */
 export function getApiHeaders(accessToken) {
   const apiKey = __ENV.API_KEY

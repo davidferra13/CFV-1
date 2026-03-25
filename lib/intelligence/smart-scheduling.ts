@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -39,10 +39,10 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 export async function getSchedulingIntelligence(): Promise<SchedulingIntelligence | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch events with timing and quality data
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -58,7 +58,7 @@ export async function getSchedulingIntelligence(): Promise<SchedulingIntelligenc
   if (error || !events || events.length < 3) return null
 
   // Fetch AARs for quality correlation
-  const { data: aars } = await supabase
+  const { data: aars } = await db
     .from('after_action_reviews')
     .select('event_id, calm_rating, preparation_rating, execution_rating')
     .eq('tenant_id', tenantId)
@@ -130,7 +130,7 @@ export async function getSchedulingIntelligence(): Promise<SchedulingIntelligenc
   const optimalSpacingDays = avgPrepMinutes > 240 ? 3 : avgPrepMinutes > 120 ? 2 : 1
 
   // Upcoming event density (next 30 days)
-  const { data: upcomingEvents } = await supabase
+  const { data: upcomingEvents } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', tenantId)

@@ -3,15 +3,15 @@ import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { createMigrationRepairReport } from './plan-supabase-migration-repair.mjs'
+import { createMigrationRepairReport } from './plan-migration-repair.mjs'
 
 const DEFAULT_TEST_COMMAND = [
   'node',
   '--test',
   '--import',
   'tsx',
-  'tests/unit/supabase-migration-plan.test.ts',
-  'tests/unit/supabase-migration-versions.test.ts',
+  'tests/unit/db-migration-plan.test.ts',
+  'tests/unit/db-migration-versions.test.ts',
   'tests/unit/runtime-log-regressions.test.ts',
 ]
 
@@ -99,7 +99,7 @@ function readMigrationList(fromFile) {
     return readFileSync(resolve(fromFile), 'utf8')
   }
 
-  return readCommandOutput('npx supabase migration list --linked')
+  return readCommandOutput('npx database migration list --linked')
 }
 
 export function buildApplyExecutionPlan(report, options = {}) {
@@ -156,14 +156,14 @@ export function buildApplyExecutionPlan(report, options = {}) {
   if (!options.skipPush && planData.pushableLocalOnly.length > 0) {
     plan.push({
       label: 'push',
-      command: 'npx supabase db push --linked --include-all',
+      command: 'npx database push --linked --include-all',
     })
   }
 
   if (!options.skipTypes) {
     plan.push({
       label: 'types',
-      command: 'npm run supabase:types',
+      command: 'npm run db:types',
     })
   }
 
@@ -198,7 +198,7 @@ function main() {
   const projectRoot = join(dirname(scriptPath), '..')
   const migrationListOutput = readMigrationList(args.fromFile)
   const report = createMigrationRepairReport({
-    migrationsDir: join(projectRoot, 'supabase', 'migrations'),
+    migrationsDir: join(projectRoot, 'database', 'migrations'),
     migrationListOutput,
   })
   const executionPlan = buildApplyExecutionPlan(report, args)

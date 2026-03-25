@@ -1,5 +1,5 @@
 import { createHash } from 'crypto'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export const EXTERNAL_REVIEW_PROVIDERS = ['google_places', 'website_jsonld', 'yelp'] as const
 
@@ -357,12 +357,8 @@ async function fetchWebsiteJsonLdReviews(
   return reviews
 }
 
-async function getChefWebsiteUrl(supabase: any, tenantId: string) {
-  const { data, error } = await supabase
-    .from('chefs')
-    .select('website_url')
-    .eq('id', tenantId)
-    .single()
+async function getChefWebsiteUrl(db: any, tenantId: string) {
+  const { data, error } = await db.from('chefs').select('website_url').eq('id', tenantId).single()
 
   if (error) {
     throw new Error(`Failed to load chef website URL: ${error.message}`)
@@ -429,8 +425,8 @@ function toSourceRecord(row: any): ExternalReviewSourceRecord {
   }
 }
 
-async function markSyncFailure(supabase: any, sourceId: string, message: string) {
-  await supabase
+async function markSyncFailure(db: any, sourceId: string, message: string) {
+  await db
     .from('external_review_sources')
     .update({
       last_error: message,
@@ -441,12 +437,12 @@ async function markSyncFailure(supabase: any, sourceId: string, message: string)
 
 export async function syncExternalReviewSource(
   source: ExternalReviewSourceRecord,
-  supabaseClient?: any
+  dbClient?: any
 ): Promise<ExternalSyncResult> {
-  const supabase: any = supabaseClient ?? createServerClient({ admin: true })
+  const db: any = dbClient ?? createServerClient({ admin: true })
 
   try {
-    const chefWebsiteUrl = await getChefWebsiteUrl(supabase, source.tenant_id)
+    const chefWebsiteUrl = await getChefWebsiteUrl(db, source.tenant_id)
     const pulled = await pullFromProvider(source, chefWebsiteUrl)
     const normalized = dedupeBySourceReviewId(pulled)
     const nowIso = new Date().toISOString()
@@ -467,7 +463,7 @@ export async function syncExternalReviewSource(
 
     let upserted = 0
     if (rows.length > 0) {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('external_reviews')
         .upsert(rows, {
           onConflict: 'tenant_id,provider,source_review_id',
@@ -481,7 +477,7 @@ export async function syncExternalReviewSource(
       upserted = (data || []).length
     }
 
-    const { error: sourceUpdateError } = await supabase
+    const { error: sourceUpdateError } = await db
       .from('external_review_sources')
       .update({
         last_synced_at: nowIso,
@@ -503,7 +499,7 @@ export async function syncExternalReviewSource(
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown external review sync error'
-    await markSyncFailure(supabase, source.id, message)
+    await markSyncFailure(db, source.id, message)
 
     return {
       sourceId: source.id,
@@ -523,9 +519,9 @@ export async function syncExternalReviewSourceById(
     skipIntervalCheck?: boolean
   }
 ) {
-  const supabase: any = createServerClient({ admin: options?.admin ?? true })
+  const db: any = createServerClient({ admin: options?.admin ?? true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('external_review_sources')
     .select(
       'id, tenant_id, provider, label, config, active, sync_interval_minutes, last_synced_at, last_cursor, last_error'
@@ -558,13 +554,13 @@ export async function syncExternalReviewSourceById(
     } satisfies ExternalSyncResult
   }
 
-  return syncExternalReviewSource(source, supabase)
+  return syncExternalReviewSource(source, db)
 }
 
 export async function syncAllActiveExternalReviewSources(limit = 100) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('external_review_sources')
     .select(
       'id, tenant_id, provider, label, config, active, sync_interval_minutes, last_synced_at, last_cursor, last_error'
@@ -592,7 +588,7 @@ export async function syncAllActiveExternalReviewSources(limit = 100) {
       continue
     }
 
-    const result = await syncExternalReviewSource(source, supabase)
+    const result = await syncExternalReviewSource(source, db)
     results.push(result)
   }
 

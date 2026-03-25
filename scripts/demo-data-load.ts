@@ -5,7 +5,7 @@
 // Usage: npx tsx scripts/demo-data-load.ts
 // Prereq: npm run demo:setup (creates demo accounts first)
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { readFileSync } from 'fs'
 import { createRequire } from 'module'
 import dotenv from 'dotenv'

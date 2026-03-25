@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { revalidatePath } from 'next/cache'
@@ -8,10 +8,10 @@ import { revalidatePath } from 'next/cache'
 export async function saveYelpBusinessId(businessId: string, businessName: string) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Upsert an integration_connection record for Yelp
-  await supabase.from('integration_connections').upsert(
+  await db.from('integration_connections').upsert(
     {
       id: crypto.randomUUID(),
       chef_id: user.entityId,
@@ -34,9 +34,9 @@ export async function saveYelpBusinessId(businessId: string, businessName: strin
 export async function removeYelpBusinessId() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  await supabase
+  await db
     .from('integration_connections')
     .update({ status: 'disconnected' })
     .eq('tenant_id', user.entityId)
@@ -49,9 +49,9 @@ export async function removeYelpBusinessId() {
 export async function getYelpConnection() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('integration_connections')
     .select('external_account_id, external_account_name, config')
     .eq('tenant_id', user.entityId)
@@ -70,9 +70,9 @@ export async function getYelpConnection() {
 export async function getYelpReviewCount() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { count } = await supabase
+  const { count } = await db
     .from('external_reviews')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.entityId)
@@ -90,7 +90,7 @@ export async function searchYelpBusinessAction(term: string, location?: string) 
 export async function syncYelpReviewsAction(businessId: string) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const { fetchYelpReviews } = await import('@/lib/integrations/yelp/yelp-sync')
 
   const reviews = await fetchYelpReviews({ business_id: businessId })
@@ -111,7 +111,7 @@ export async function syncYelpReviewsAction(businessId: string) {
     last_seen_at: nowIso,
   }))
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('external_reviews')
     .upsert(rows, { onConflict: 'tenant_id,provider,source_review_id' })
     .select('id')

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import type { Json } from '@/types/database'
 import type { HubMessage, HubPinnedNote } from './types'
@@ -25,10 +25,10 @@ export async function postHubMessage(
   input: z.infer<typeof PostMessageSchema>
 ): Promise<HubMessage> {
   const validated = PostMessageSchema.parse(input)
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Resolve profile
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', validated.profileToken)
@@ -37,7 +37,7 @@ export async function postHubMessage(
   if (!profile) throw new Error('Invalid profile token')
 
   // Verify membership
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('can_post')
     .eq('group_id', validated.groupId)
@@ -50,7 +50,7 @@ export async function postHubMessage(
   // Determine message type
   const messageType = validated.media_urls && validated.media_urls.length > 0 ? 'image' : 'text'
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_messages')
     .insert({
       group_id: validated.groupId,
@@ -91,10 +91,10 @@ export async function postSystemMessage(input: {
   metadata?: Record<string, unknown>
   body?: string
 }): Promise<void> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   try {
-    await supabase.from('hub_messages').insert({
+    await db.from('hub_messages').insert({
       group_id: input.groupId,
       author_profile_id: input.authorProfileId,
       message_type: 'system',
@@ -116,10 +116,10 @@ export async function getHubMessages(input: {
   cursor?: string
   limit?: number
 }): Promise<{ messages: HubMessage[]; nextCursor: string | null }> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const limit = input.limit ?? 50
 
-  let query = supabase
+  let query = db
     .from('hub_messages')
     .select('*, hub_guest_profiles!author_profile_id(*)')
     .eq('group_id', input.groupId)
@@ -152,9 +152,9 @@ export async function getHubMessages(input: {
  * Get pinned messages for a group.
  */
 export async function getPinnedMessages(groupId: string): Promise<HubMessage[]> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_messages')
     .select('*, hub_guest_profiles!author_profile_id(*)')
     .eq('group_id', groupId)
@@ -178,9 +178,9 @@ export async function togglePinMessage(input: {
   messageId: string
   profileToken: string
 }): Promise<void> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -189,7 +189,7 @@ export async function togglePinMessage(input: {
   if (!profile) throw new Error('Invalid profile token')
 
   // Get the message to find the group
-  const { data: message } = await supabase
+  const { data: message } = await db
     .from('hub_messages')
     .select('group_id, is_pinned')
     .eq('id', input.messageId)
@@ -198,7 +198,7 @@ export async function togglePinMessage(input: {
   if (!message) throw new Error('Message not found')
 
   // Verify permission
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('role, can_pin')
     .eq('group_id', message.group_id)
@@ -210,7 +210,7 @@ export async function togglePinMessage(input: {
     throw new Error('No permission to pin messages')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('hub_messages')
     .update({
       is_pinned: !message.is_pinned,
@@ -230,9 +230,9 @@ export async function addReaction(input: {
   profileToken: string
   emoji: string
 }): Promise<void> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -240,7 +240,7 @@ export async function addReaction(input: {
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { error } = await supabase.from('hub_message_reactions').insert({
+  const { error } = await db.from('hub_message_reactions').insert({
     message_id: input.messageId,
     profile_id: profile.id,
     emoji: input.emoji,
@@ -252,7 +252,7 @@ export async function addReaction(input: {
   }
 
   // Update denormalized reaction counts on message
-  const { data: counts } = await supabase
+  const { data: counts } = await db
     .from('hub_message_reactions')
     .select('emoji')
     .eq('message_id', input.messageId)
@@ -262,7 +262,7 @@ export async function addReaction(input: {
     for (const r of counts) {
       reactionCounts[r.emoji] = (reactionCounts[r.emoji] ?? 0) + 1
     }
-    await supabase
+    await db
       .from('hub_messages')
       .update({ reaction_counts: reactionCounts })
       .eq('id', input.messageId)
@@ -277,9 +277,9 @@ export async function removeReaction(input: {
   profileToken: string
   emoji: string
 }): Promise<void> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -287,7 +287,7 @@ export async function removeReaction(input: {
 
   if (!profile) throw new Error('Invalid profile token')
 
-  await supabase
+  await db
     .from('hub_message_reactions')
     .delete()
     .eq('message_id', input.messageId)
@@ -295,7 +295,7 @@ export async function removeReaction(input: {
     .eq('emoji', input.emoji)
 
   // Update denormalized counts
-  const { data: counts } = await supabase
+  const { data: counts } = await db
     .from('hub_message_reactions')
     .select('emoji')
     .eq('message_id', input.messageId)
@@ -306,7 +306,7 @@ export async function removeReaction(input: {
       reactionCounts[r.emoji] = (reactionCounts[r.emoji] ?? 0) + 1
     }
   }
-  await supabase
+  await db
     .from('hub_messages')
     .update({ reaction_counts: reactionCounts })
     .eq('id', input.messageId)
@@ -319,9 +319,9 @@ export async function deleteHubMessage(input: {
   messageId: string
   profileToken: string
 }): Promise<void> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -329,7 +329,7 @@ export async function deleteHubMessage(input: {
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data: message } = await supabase
+  const { data: message } = await db
     .from('hub_messages')
     .select('group_id, author_profile_id')
     .eq('id', input.messageId)
@@ -340,7 +340,7 @@ export async function deleteHubMessage(input: {
   // Check if author or admin
   const isAuthor = message.author_profile_id === profile.id
   if (!isAuthor) {
-    const { data: membership } = await supabase
+    const { data: membership } = await db
       .from('hub_group_members')
       .select('role')
       .eq('group_id', message.group_id)
@@ -352,7 +352,7 @@ export async function deleteHubMessage(input: {
     }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('hub_messages')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', input.messageId)
@@ -364,9 +364,9 @@ export async function deleteHubMessage(input: {
  * Mark messages as read for a member. Also records per-message reads for "Seen by."
  */
 export async function markHubRead(input: { groupId: string; profileToken: string }): Promise<void> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -381,7 +381,7 @@ export async function markHubRead(input: { groupId: string; profileToken: string
     // Non-blocking: per-message reads are a nice-to-have
   }
 
-  await supabase
+  await db
     .from('hub_group_members')
     .update({ last_read_at: new Date().toISOString() })
     .eq('group_id', input.groupId)
@@ -396,9 +396,9 @@ export async function recordMessageReads(input: {
   groupId: string
   profileToken: string
 }): Promise<void> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -407,7 +407,7 @@ export async function recordMessageReads(input: {
   if (!profile) return
 
   // Get member's last_read_at to find which messages are newly read
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('last_read_at')
     .eq('group_id', input.groupId)
@@ -417,7 +417,7 @@ export async function recordMessageReads(input: {
   if (!membership) return
 
   // Find messages in this group that this member hasn't read yet
-  let query = supabase
+  let query = db
     .from('hub_messages')
     .select('id')
     .eq('group_id', input.groupId)
@@ -439,7 +439,7 @@ export async function recordMessageReads(input: {
     profile_id: profile.id,
   }))
 
-  await supabase.from('hub_message_reads').upsert(rows, {
+  await db.from('hub_message_reads').upsert(rows, {
     onConflict: 'message_id,profile_id',
     ignoreDuplicates: true,
   })
@@ -453,9 +453,9 @@ export async function getMessageReaders(
 ): Promise<
   { profile_id: string; display_name: string; avatar_url: string | null; read_at: string }[]
 > {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_message_reads')
     .select('profile_id, read_at, hub_guest_profiles!profile_id(display_name, avatar_url)')
     .eq('message_id', messageId)
@@ -486,9 +486,9 @@ export async function editHubMessage(input: {
   profileToken: string
   body: string
 }): Promise<void> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -496,7 +496,7 @@ export async function editHubMessage(input: {
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data: message } = await supabase
+  const { data: message } = await db
     .from('hub_messages')
     .select('author_profile_id')
     .eq('id', input.messageId)
@@ -510,7 +510,7 @@ export async function editHubMessage(input: {
   const trimmed = input.body.trim()
   if (!trimmed || trimmed.length > 2000) throw new Error('Invalid message body')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('hub_messages')
     .update({ body: trimmed, edited_at: new Date().toISOString() })
     .eq('id', input.messageId)
@@ -526,13 +526,13 @@ export async function searchHubMessages(input: {
   query: string
   limit?: number
 }): Promise<HubMessage[]> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const limit = input.limit ?? 20
   const q = input.query.trim()
 
   if (!q || q.length < 2) return []
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_messages')
     .select('*, hub_guest_profiles!author_profile_id(*)')
     .eq('group_id', input.groupId)
@@ -569,9 +569,9 @@ export async function createPinnedNote(
   input: z.infer<typeof CreateNoteSchema>
 ): Promise<HubPinnedNote> {
   const validated = CreateNoteSchema.parse(input)
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', validated.profileToken)
@@ -580,7 +580,7 @@ export async function createPinnedNote(
   if (!profile) throw new Error('Invalid profile token')
 
   // Verify membership
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('can_post')
     .eq('group_id', validated.groupId)
@@ -591,7 +591,7 @@ export async function createPinnedNote(
     throw new Error('No permission to create notes')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_pinned_notes')
     .insert({
       group_id: validated.groupId,
@@ -611,9 +611,9 @@ export async function createPinnedNote(
  * Get all pinned notes for a group.
  */
 export async function getGroupNotes(groupId: string): Promise<HubPinnedNote[]> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_pinned_notes')
     .select('*, hub_guest_profiles!author_profile_id(*)')
     .eq('group_id', groupId)
@@ -635,9 +635,9 @@ export async function deletePinnedNote(input: {
   noteId: string
   profileToken: string
 }): Promise<void> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -645,7 +645,7 @@ export async function deletePinnedNote(input: {
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data: note } = await supabase
+  const { data: note } = await db
     .from('hub_pinned_notes')
     .select('group_id, author_profile_id')
     .eq('id', input.noteId)
@@ -655,7 +655,7 @@ export async function deletePinnedNote(input: {
 
   const isAuthor = note.author_profile_id === profile.id
   if (!isAuthor) {
-    const { data: membership } = await supabase
+    const { data: membership } = await db
       .from('hub_group_members')
       .select('role')
       .eq('group_id', note.group_id)
@@ -667,7 +667,7 @@ export async function deletePinnedNote(input: {
     }
   }
 
-  await supabase.from('hub_pinned_notes').delete().eq('id', input.noteId)
+  await db.from('hub_pinned_notes').delete().eq('id', input.noteId)
 }
 
 /**
@@ -677,9 +677,9 @@ export async function deletePinnedNote(input: {
 export async function getCircleMilestones(
   groupId: string
 ): Promise<{ notification_type: string; created_at: string; body: string | null }[]> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_messages')
     .select('notification_type, created_at, body')
     .eq('group_id', groupId)

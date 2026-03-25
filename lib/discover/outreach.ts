@@ -5,7 +5,7 @@
 // All sends are non-blocking side effects with logging.
 // Respects opt-out preferences before sending.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { sendEmail } from '@/lib/email/send'
 import { DirectoryWelcomeEmail } from '@/lib/email/templates/directory-welcome'
 import { DirectoryClaimedEmail } from '@/lib/email/templates/directory-claimed'
@@ -16,8 +16,8 @@ const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 // ─── Opt-Out Check ────────────────────────────────────────────────────────────
 
 async function isOptedOut(email: string): Promise<boolean> {
-  const supabase = createServerClient({ admin: true })
-  const { data } = await supabase
+  const db = createServerClient({ admin: true })
+  const { data } = await db
     .from('directory_email_preferences')
     .select('opted_out')
     .eq('email', email.toLowerCase())
@@ -42,8 +42,8 @@ async function logOutreach(params: {
   error?: string
 }): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
-    await supabase.from('directory_outreach_log').insert({
+    const db = createServerClient({ admin: true })
+    await db.from('directory_outreach_log').insert({
       listing_id: params.listingId,
       email_type: params.emailType,
       recipient_email: params.recipientEmail,
@@ -218,11 +218,11 @@ export async function optOutDirectoryEmail(
 ): Promise<{ success: boolean; error?: string }> {
   if (!email) return { success: false, error: 'Email is required.' }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const normalized = email.toLowerCase()
 
   // Upsert: create or update the preference
-  const { error } = await supabase.from('directory_email_preferences').upsert(
+  const { error } = await db.from('directory_email_preferences').upsert(
     {
       email: normalized,
       opted_out: true,
@@ -248,17 +248,17 @@ export async function getOutreachStats(): Promise<{
   recentErrors: { listing_id: string; email_type: string; error: string; sent_at: string }[]
   optOutCount: number
 }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const [logResult, errorResult, optOutResult] = await Promise.all([
-    supabase.from('directory_outreach_log').select('email_type'),
-    supabase
+    db.from('directory_outreach_log').select('email_type'),
+    db
       .from('directory_outreach_log')
       .select('listing_id, email_type, error, sent_at')
       .not('error', 'is', null)
       .order('sent_at', { ascending: false })
       .limit(10),
-    supabase.from('directory_email_preferences').select('id').eq('opted_out', true),
+    db.from('directory_email_preferences').select('id').eq('opted_out', true),
   ])
 
   const logs = (logResult.data || []) as any[]

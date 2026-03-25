@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -95,10 +95,10 @@ export type ClassListOptions = {
 
 export async function createClass(data: CreateClassInput): Promise<CookingClassRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('cooking_classes' as any)
     .insert({
       tenant_id: tenantId,
@@ -131,7 +131,7 @@ export async function createClass(data: CreateClassInput): Promise<CookingClassR
 
 export async function updateClass(id: string, data: UpdateClassInput): Promise<CookingClassRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() }
@@ -152,7 +152,7 @@ export async function updateClass(id: string, data: UpdateClassInput): Promise<C
     updatePayload.registration_deadline = data.registration_deadline
   if (data.status !== undefined) updatePayload.status = data.status
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('cooking_classes' as any)
     .update(updatePayload)
     .eq('id', id)
@@ -172,11 +172,11 @@ export async function updateClass(id: string, data: UpdateClassInput): Promise<C
 
 export async function deleteClass(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Only allow deleting draft classes
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('cooking_classes' as any)
     .select('status')
     .eq('id', id)
@@ -191,7 +191,7 @@ export async function deleteClass(id: string): Promise<void> {
     throw new Error('Only draft classes can be deleted. Cancel the class instead.')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('cooking_classes' as any)
     .delete()
     .eq('id', id)
@@ -207,9 +207,9 @@ export async function deleteClass(id: string): Promise<void> {
 
 export async function getClasses(options?: ClassListOptions): Promise<CookingClassRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('cooking_classes' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -245,10 +245,10 @@ export async function getClassDetail(id: string): Promise<{
   registrations: ClassRegistrationRow[]
 } | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: classData, error: classError } = await supabase
+  const { data: classData, error: classError } = await db
     .from('cooking_classes' as any)
     .select('*')
     .eq('id', id)
@@ -259,7 +259,7 @@ export async function getClassDetail(id: string): Promise<{
     return null
   }
 
-  const { data: registrations, error: regError } = await supabase
+  const { data: registrations, error: regError } = await db
     .from('class_registrations' as any)
     .select('*')
     .eq('class_id', id)
@@ -281,14 +281,14 @@ export async function registerForClass(
   attendeeData: RegisterAttendeeInput
 ): Promise<ClassRegistrationRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Check capacity
   const capacity = await getClassCapacityStatus(classId)
   const status = capacity.isFull ? 'waitlisted' : 'registered'
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('class_registrations' as any)
     .insert({
       tenant_id: tenantId,
@@ -310,7 +310,7 @@ export async function registerForClass(
 
   // If class is now full, update status to 'full'
   if (!capacity.isFull && capacity.available === 1) {
-    await supabase
+    await db
       .from('cooking_classes' as any)
       .update({ status: 'full', updated_at: new Date().toISOString() })
       .eq('id', classId)
@@ -325,11 +325,11 @@ export async function registerForClass(
 
 export async function cancelRegistration(registrationId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Get the registration to find class_id
-  const { data: reg, error: fetchError } = await supabase
+  const { data: reg, error: fetchError } = await db
     .from('class_registrations' as any)
     .select('class_id, status')
     .eq('id', registrationId)
@@ -343,7 +343,7 @@ export async function cancelRegistration(registrationId: string): Promise<void> 
   const wasRegistered = reg.status === 'registered' || reg.status === 'confirmed'
 
   // Cancel the registration
-  const { error } = await supabase
+  const { error } = await db
     .from('class_registrations' as any)
     .update({ status: 'cancelled' })
     .eq('id', registrationId)
@@ -356,7 +356,7 @@ export async function cancelRegistration(registrationId: string): Promise<void> 
 
   // Auto-promote from waitlist if a registered spot opened up
   if (wasRegistered) {
-    const { data: nextWaitlisted } = await supabase
+    const { data: nextWaitlisted } = await db
       .from('class_registrations' as any)
       .select('id')
       .eq('class_id', reg.class_id)
@@ -367,7 +367,7 @@ export async function cancelRegistration(registrationId: string): Promise<void> 
       .single()
 
     if (nextWaitlisted) {
-      await supabase
+      await db
         .from('class_registrations' as any)
         .update({ status: 'registered' })
         .eq('id', nextWaitlisted.id)
@@ -375,7 +375,7 @@ export async function cancelRegistration(registrationId: string): Promise<void> 
     }
 
     // If class was full, set back to published
-    await supabase
+    await db
       .from('cooking_classes' as any)
       .update({ status: 'published', updated_at: new Date().toISOString() })
       .eq('id', reg.class_id)
@@ -389,10 +389,10 @@ export async function cancelRegistration(registrationId: string): Promise<void> 
 
 export async function getClassCapacityStatus(classId: string): Promise<ClassCapacityStatus> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: classData } = await supabase
+  const { data: classData } = await db
     .from('cooking_classes' as any)
     .select('max_capacity')
     .eq('id', classId)
@@ -405,14 +405,14 @@ export async function getClassCapacityStatus(classId: string): Promise<ClassCapa
 
   const maxCapacity = classData.max_capacity ?? 10
 
-  const { count: registered } = await supabase
+  const { count: registered } = await db
     .from('class_registrations' as any)
     .select('*', { count: 'exact', head: true })
     .eq('class_id', classId)
     .eq('tenant_id', tenantId)
     .in('status', ['registered', 'confirmed'])
 
-  const { count: waitlisted } = await supabase
+  const { count: waitlisted } = await db
     .from('class_registrations' as any)
     .select('*', { count: 'exact', head: true })
     .eq('class_id', classId)
@@ -434,10 +434,10 @@ export async function getClassCapacityStatus(classId: string): Promise<ClassCapa
 
 export async function getClassDietarySummary(classId: string): Promise<ClassDietarySummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: registrations, error } = await supabase
+  const { data: registrations, error } = await db
     .from('class_registrations' as any)
     .select('allergies, dietary_restrictions')
     .eq('class_id', classId)

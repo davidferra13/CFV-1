@@ -37,7 +37,7 @@ export const POST = withApiAuth(
     const { event_id, type } = parsed.data
 
     // Verify event belongs to tenant
-    const { data: event } = await ctx.supabase
+    const { data: event } = await ctx.db
       .from('events')
       .select('id, status, tenant_id')
       .eq('id', event_id)
@@ -47,7 +47,7 @@ export const POST = withApiAuth(
     if (!event) return apiNotFound('Event')
 
     // Check if document already exists for this event + type
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('document_snapshots' as any)
       .select('id, document_type, created_at')
       .eq('event_id', event_id)

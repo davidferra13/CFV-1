@@ -21,7 +21,7 @@ export const DELETE = withApiAuth(
     }
 
     // Check existence first
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('chef_taxonomy_hidden' as any)
       .select('id')
       .eq('chef_id', ctx.tenantId)
@@ -31,7 +31,7 @@ export const DELETE = withApiAuth(
 
     if (!existing) return apiNotFound('Hidden taxonomy entry')
 
-    const { error } = await ctx.supabase
+    const { error } = await ctx.db
       .from('chef_taxonomy_hidden' as any)
       .delete()
       .eq('chef_id', ctx.tenantId)

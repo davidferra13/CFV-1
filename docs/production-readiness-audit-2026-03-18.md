@@ -2,7 +2,7 @@
 
 **Date:** 2026-03-18
 **Scope:** Full codebase (94,625 lines across 8,676 files, 265+ pages)
-**Stack:** Next.js 14 + Supabase (PostgreSQL) + Inngest + Resend + Vercel
+**Stack:** Next.js 14 + PostgreSQL (PostgreSQL) + Inngest + Resend + Vercel
 **Methodology:** 7 parallel automated audits covering security, performance, error handling, code quality, testing/CI, scalability, and UX/accessibility
 
 ---
@@ -212,7 +212,7 @@ Only 9 references to `dynamic()` in entire codebase. Prime candidates: signature
 | #   | Finding                           | Severity    | Count                      | Action                                     |
 | --- | --------------------------------- | ----------- | -------------------------- | ------------------------------------------ |
 | Q1  | Em-dash rule violations           | HIGH (rule) | 26 instances               | Replace with commas/semicolons/parentheses |
-| Q2  | `supabase: any` pattern           | LOW         | 100+ files                 | Consider typed wrapper                     |
+| Q2  | `database: any` pattern           | LOW         | 100+ files                 | Consider typed wrapper                     |
 | Q3  | Oversized components              | MEDIUM      | 2 (POS: 2,691, Nav: 2,026) | Plan refactoring                           |
 | Q4  | TODO comments (deferred features) | LOW         | 4                          | Track, no immediate action                 |
 | Q5  | Commented-out code                | LOW         | 2 files                    | Intentional (future schema phases)         |
@@ -266,7 +266,7 @@ Only 9 references to `dynamic()` in entire codebase. Prime candidates: signature
 
 Integration tests (RLS policies, immutability triggers, ledger idempotency) only run locally. Database sync issues only caught before merge by developer discipline.
 
-**Fix:** Add `npm run test:integration` stage in CI, requiring Supabase connection string as secret.
+**Fix:** Add `npm run test:integration` stage in CI, requiring database connection string as secret.
 
 #### MEDIUM: No Post-Deploy Health Check
 
@@ -371,7 +371,7 @@ Every RLS policy calls `get_current_user_role()` and `get_current_tenant_id()`, 
 
 In-memory rate limiting doesn't share state across Vercel serverless instances. Under load, each instance has its own counter.
 
-**Fix:** Move rate limit state to Redis or Supabase. Use sliding window algorithm.
+**Fix:** Move rate limit state to Redis or PostgreSQL. Use sliding window algorithm.
 
 #### LOW: Conversation Denormalization Lock Contention
 
@@ -491,7 +491,7 @@ These prevent data loss, security issues, and major performance degradation:
 | 28  | Extract arbitrary Tailwind text sizes to theme  | UX           | 4     | Design system consistency       |
 | 29  | Add keyboard shortcut help panel                | UX           | 3     | User discoverability            |
 | 30  | Move rate limiting to Redis                     | Scalability  | 4     | Multi-instance consistency      |
-| 31  | Typed Supabase client wrapper                   | Code Quality | 4     | Better IDE autocomplete         |
+| 31  | Typed database client wrapper                   | Code Quality | 4     | Better IDE autocomplete         |
 | 32  | Property-based testing for financial invariants | Testing      | 8     | Stronger correctness guarantees |
 
 ---
@@ -528,7 +528,7 @@ The audit was asked to evaluate microservices, message queues, and circuit break
 
 **Circuit breakers: NOT NEEDED.** External dependencies are:
 
-- Supabase (managed, 99.9% SLA)
+- PostgreSQL (managed, 99.9% SLA)
 - Ollama (local, hard-fails with OllamaOfflineError)
 - Resend (email, non-blocking side effect)
 - Stripe (payment, synchronous but infrequent)

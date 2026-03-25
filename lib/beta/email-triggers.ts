@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { getDietaryRollupForEvent } from './onboarding-actions'
 import { format } from 'date-fns'
@@ -14,10 +14,10 @@ import { format } from 'date-fns'
  * Called by the daily ops scheduler or manually triggered.
  */
 export async function sendPreEventDietarySummary(eventId: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get event details
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -31,7 +31,7 @@ export async function sendPreEventDietarySummary(eventId: string) {
   if (!event) return { success: false, reason: 'event_not_found' }
 
   // Get chef email
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('email, display_name, business_name')
     .eq('id', event.tenant_id)
@@ -89,10 +89,10 @@ export async function sendPreEventDietarySummary(eventId: string) {
  * Called when event transitions to 'completed'.
  */
 export async function sendPostEventCircleThanks(eventId: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get event + circle info
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -106,7 +106,7 @@ export async function sendPostEventCircleThanks(eventId: string) {
   if (!event) return { success: false, reason: 'event_not_found' }
 
   // Get chef name
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name, slug')
     .eq('id', event.tenant_id)
@@ -116,7 +116,7 @@ export async function sendPostEventCircleThanks(eventId: string) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
 
   // Find circles linked to this event
-  const { data: groupEvents } = await supabase
+  const { data: groupEvents } = await db
     .from('hub_group_events')
     .select('group_id')
     .eq('event_id', eventId)
@@ -128,7 +128,7 @@ export async function sendPostEventCircleThanks(eventId: string) {
   const groupIds = groupEvents.map((g: any) => g.group_id)
 
   // Get all members of these circles
-  const { data: members } = await supabase
+  const { data: members } = await db
     .from('hub_group_members')
     .select('profile_id, hub_guest_profiles(id, display_name, email, auth_user_id)')
     .in('group_id', groupIds)
@@ -138,7 +138,7 @@ export async function sendPostEventCircleThanks(eventId: string) {
   }
 
   // Get menu items for the event (for highlights)
-  const { data: menuItems } = await supabase
+  const { data: menuItems } = await db
     .from('event_menu_items')
     .select('name, course')
     .eq('event_id', eventId)

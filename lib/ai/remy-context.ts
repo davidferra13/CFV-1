@@ -5,7 +5,7 @@
 // Contains client names, event details, and financial data - must stay local.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { RemyContext, PageEntityContext } from '@/lib/ai/remy-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { loadEmailDigest } from '@/lib/ai/remy-email-actions'
@@ -97,12 +97,12 @@ async function reportContextQueryErrors(
 export async function loadRemyContext(currentPage?: string): Promise<RemyContext> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Tier 1: Always fresh (cheap count queries + chef profile + daily plan + service config)
   const [chefProfile, counts, dailyPlan, healthSummary, serviceConfig] = await Promise.all([
-    loadChefProfile(supabase, tenantId),
-    loadQuickCounts(supabase, tenantId),
+    loadChefProfile(db, tenantId),
+    loadQuickCounts(db, tenantId),
     withContextFallback(tenantId, 'load_daily_plan', null, () => getDailyPlanStats()),
     withContextFallback(tenantId, 'load_business_health_summary', null, async () => {
       const summary = await getBusinessHealthSummary()
@@ -120,7 +120,7 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
   if (cached && cached.expiresAt > Date.now()) {
     detailed = cached.data
   } else {
-    detailed = await loadDetailedContext(supabase, tenantId)
+    detailed = await loadDetailedContext(db, tenantId)
     contextCache.set(tenantId, {
       data: detailed,
       expiresAt: Date.now() + CACHE_TTL_MS,
@@ -142,7 +142,7 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     'load_recent_survey_feedback',
     undefined,
     async () => {
-      const { data } = await supabase
+      const { data } = await db
         .from('post_event_surveys')
         .select(
           'overall_rating, would_book_again, completed_at, event:events(occasion, client:clients(full_name))'
@@ -167,7 +167,7 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     'load_pending_milestones',
     undefined,
     async () => {
-      const { data } = await supabase
+      const { data } = await db
         .from('event_payment_milestones')
         .select('name, amount_cents, due_date, event:events(occasion, client:clients(full_name))')
         .eq('chef_id', tenantId)
@@ -192,8 +192,8 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     undefined,
     async () => {
       const [configResult, templateCountResult] = await Promise.all([
-        supabase.from('auto_response_config').select('enabled').eq('chef_id', tenantId).single(),
-        supabase
+        db.from('auto_response_config').select('enabled').eq('chef_id', tenantId).single(),
+        db
           .from('response_templates')
           .select('id', { count: 'exact', head: true })
           .eq('chef_id', tenantId),
@@ -210,7 +210,7 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     tenantId,
     'load_page_entity_context',
     undefined,
-    () => loadPageEntityContext(supabase, tenantId, currentPage),
+    () => loadPageEntityContext(db, tenantId, currentPage),
     { currentPage: currentPage ?? null }
   )
 
@@ -262,8 +262,8 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
 
 // ─── Tier 1: Chef Profile ───────────────────────────────────────────────────
 
-async function loadChefProfile(supabase: any, tenantId: string) {
-  const { data, error } = await supabase
+async function loadChefProfile(db: any, tenantId: string) {
+  const { data, error } = await db
     .from('chefs')
     .select('business_name, tagline')
     .eq('id', tenantId)
@@ -281,16 +281,16 @@ async function loadChefProfile(supabase: any, tenantId: string) {
 
 // ─── Tier 1: Quick Counts ───────────────────────────────────────────────────
 
-async function loadQuickCounts(supabase: any, tenantId: string) {
+async function loadQuickCounts(db: any, tenantId: string) {
   const [clientsResult, eventsResult, inquiriesResult] = await Promise.all([
-    supabase.from('clients').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
-    supabase
+    db.from('clients').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
+    db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .not('status', 'in', '("cancelled","completed")')
       .gte('event_date', new Date().toISOString().split('T')[0]),
-    supabase
+    db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
@@ -312,7 +312,7 @@ async function loadQuickCounts(supabase: any, tenantId: string) {
 
 // ─── Tier 2: Detailed Context (cached 5 min) ────────────────────────────────
 
-async function loadDetailedContext(supabase: any, tenantId: string) {
+async function loadDetailedContext(db: any, tenantId: string) {
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
@@ -367,7 +367,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     clientReferralResult,
   ] = await Promise.all([
     // Upcoming events (next 7 days, limit 10)
-    supabase
+    db
       .from('events')
       .select(
         'id, occasion, event_date, status, guest_count, prep_list_ready, grocery_list_ready, timeline_ready, client:clients(full_name, loyalty_tier, loyalty_points)'
@@ -379,7 +379,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(10),
 
     // Recent clients (limit 5)
-    supabase
+    db
       .from('clients')
       .select('id, full_name, loyalty_tier, loyalty_points')
       .eq('tenant_id', tenantId)
@@ -387,7 +387,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(5),
 
     // Month revenue from ledger
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('tenant_id', tenantId)
@@ -395,14 +395,14 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .gte('created_at', monthStart),
 
     // Pending quotes
-    supabase
+    db
       .from('quotes')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .in('status', ['draft', 'sent']),
 
     // Availability blocks (next 30 days)
-    supabase
+    db
       .from('chef_availability_blocks')
       .select('block_date, block_type, reason')
       .eq('chef_id', tenantId)
@@ -412,7 +412,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(20),
 
     // Calendar entries (next 30 days)
-    supabase
+    db
       .from('chef_calendar_entries')
       .select('title, start_date, end_date, entry_type, blocks_bookings')
       .eq('chef_id', tenantId)
@@ -422,7 +422,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(15),
 
     // Waitlist entries (active)
-    supabase
+    db
       .from('waitlist_entries')
       .select('requested_date, occasion, status, client:clients(full_name)')
       .eq('chef_id', tenantId)
@@ -431,7 +431,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(10),
 
     // Staff roster
-    supabase
+    db
       .from('staff_members')
       .select('id, full_name, default_role, phone, status')
       .eq('chef_id', tenantId)
@@ -440,7 +440,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(20),
 
     // Equipment count by category
-    supabase
+    db
       .from('equipment_items')
       .select('id, category')
       .eq('chef_id', tenantId)
@@ -448,7 +448,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(100),
 
     // Active goals
-    supabase
+    db
       .from('chef_goals')
       .select('title, target_date, progress_pct, status')
       .eq('chef_id', tenantId)
@@ -457,7 +457,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(10),
 
     // Active todos
-    supabase
+    db
       .from('chef_todos')
       .select('title, due_date, priority, status')
       .eq('chef_id', tenantId)
@@ -466,7 +466,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(10),
 
     // Scheduled calls (upcoming)
-    supabase
+    db
       .from('scheduled_calls')
       .select('scheduled_at, purpose, status, client:clients(full_name)')
       .eq('chef_id', tenantId)
@@ -476,19 +476,13 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(5),
 
     // Documents count
-    supabase
-      .from('chef_documents')
-      .select('id', { count: 'exact', head: true })
-      .eq('chef_id', tenantId),
+    db.from('chef_documents').select('id', { count: 'exact', head: true }).eq('chef_id', tenantId),
 
     // Folders count
-    supabase
-      .from('chef_folders')
-      .select('id', { count: 'exact', head: true })
-      .eq('chef_id', tenantId),
+    db.from('chef_folders').select('id', { count: 'exact', head: true }).eq('chef_id', tenantId),
 
     // Recent Remy artifacts
-    supabase
+    db
       .from('remy_artifacts')
       .select('artifact_type, title, created_at')
       .eq('chef_id', tenantId)
@@ -496,7 +490,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(5),
 
     // Year revenue (ledger payments YTD)
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents, client_id')
       .eq('tenant_id', tenantId)
@@ -504,14 +498,14 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .gte('created_at', yearStart),
 
     // Year expenses
-    supabase
+    db
       .from('expenses')
       .select('amount_cents')
       .eq('tenant_id', tenantId)
       .gte('expense_date', yearStart.split('T')[0]),
 
     // Year events
-    supabase
+    db
       .from('events')
       .select('id, status, quoted_price_cents, client:clients(full_name)')
       .eq('tenant_id', tenantId)
@@ -521,10 +515,10 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     // ─── Context enrichment (2026-02-28) ─────────────────────────────────
 
     // Recipe library stats
-    supabase.from('recipes').select('id, category').eq('tenant_id', tenantId).limit(200),
+    db.from('recipes').select('id, category').eq('tenant_id', tenantId).limit(200),
 
     // Client vibe notes + dietary/allergy data (safety-critical)
-    supabase
+    db
       .from('clients')
       .select('full_name, vibe_notes, dietary_restrictions, allergies')
       .eq('tenant_id', tenantId)
@@ -533,7 +527,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(10),
 
     // Recent after-action reviews (lessons learned)
-    supabase
+    db
       .from('after_action_reviews')
       .select('event_id, overall_rating, went_well, to_improve, lessons_learned, created_at')
       .eq('tenant_id', tenantId)
@@ -541,7 +535,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(3),
 
     // Pending menu approvals
-    supabase
+    db
       .from('menu_approval_requests')
       .select('id, status, client:clients(full_name), created_at')
       .eq('tenant_id', tenantId)
@@ -550,7 +544,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(5),
 
     // Unread inbound messages (inquiry_messages table doesn't exist - use messages table)
-    supabase
+    db
       .from('messages')
       .select('id, inquiry_id, direction, created_at, clients(full_name)')
       .eq('tenant_id', tenantId)
@@ -562,7 +556,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
     // ─── Proactive nudges (2026-03-06) ────────────────────────────────────
 
     // Stale inquiries (no response in >3 days) - includes lead score for urgency escalation
-    supabase
+    db
       .from('inquiries')
       .select('id, lead_name, updated_at, chef_likelihood, unknown_fields')
       .eq('tenant_id', tenantId)
@@ -572,7 +566,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(5),
 
     // Overdue payments (events past due date with outstanding balance)
-    supabase
+    db
       .from('events')
       .select('id, occasion, payment_due_date, balance_due_cents, client:clients(full_name)')
       .eq('tenant_id', tenantId)
@@ -584,7 +578,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
 
     // Client booking frequency - all completed/confirmed events with client + date
     // Used to detect clients overdue for re-engagement based on their historical cadence
-    supabase
+    db
       .from('events')
       .select('client_id, event_date, client:clients(full_name)')
       .eq('tenant_id', tenantId)
@@ -595,7 +589,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
 
     // Monthly revenue distribution - ledger payments from past 12 months
     // Used to identify busy/slow months for revenue pattern awareness
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents, created_at')
       .eq('tenant_id', tenantId)
@@ -603,7 +597,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .gte('created_at', new Date(now.getFullYear() - 1, now.getMonth(), 1).toISOString()),
 
     // Upcoming payment deadlines (due within 7 days, not yet overdue)
-    supabase
+    db
       .from('events')
       .select('id, occasion, payment_due_date, balance_due_cents, client:clients(full_name)')
       .eq('tenant_id', tenantId)
@@ -618,7 +612,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(5),
 
     // Expiring quotes (valid_until within 7 days)
-    supabase
+    db
       .from('quotes')
       .select('id, valid_until, total_cents, event:events(occasion, client:clients(full_name))')
       .eq('tenant_id', tenantId)
@@ -632,7 +626,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(5),
 
     // Event profitability - completed events this year with profit data
-    supabase
+    db
       .from('event_financial_summary' as any)
       .select(
         'event_id, quoted_price_cents, net_revenue_cents, total_expenses_cents, profit_cents, profit_margin'
@@ -642,7 +636,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(50),
 
     // Inquiry velocity - this week vs last week
-    supabase
+    db
       .from('inquiries')
       .select('id, created_at')
       .eq('tenant_id', tenantId)
@@ -651,7 +645,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(100),
 
     // Staff assignments - upcoming events (for utilization awareness)
-    supabase
+    db
       .from('event_staff_assignments')
       .select('staff_member_id, event:events!inner(event_date, status)')
       .eq('chef_id', tenantId)
@@ -659,7 +653,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(100),
 
     // Conversion rate - all inquiries with their resolution status
-    supabase
+    db
       .from('inquiries')
       .select('id, status, created_at, channel')
       .eq('tenant_id', tenantId)
@@ -667,7 +661,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(500),
 
     // Expense breakdown - categories for this year
-    supabase
+    db
       .from('expenses')
       .select('category, amount_cents')
       .eq('tenant_id', tenantId)
@@ -675,7 +669,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(500),
 
     // All events with dates, guest counts, service style, location for pattern detection
-    supabase
+    db
       .from('events')
       .select(
         'id, event_date, guest_count, service_style, status, location_city, location_state, dietary_restrictions, allergies, client_id, occasion, created_at'
@@ -686,7 +680,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(200),
 
     // Menu approval turnaround
-    supabase
+    db
       .from('menu_approval_requests')
       .select('sent_at, responded_at, status')
       .eq('chef_id', tenantId)
@@ -694,7 +688,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
       .limit(50),
 
     // Client referral sources
-    supabase
+    db
       .from('clients')
       .select('id, referral_source, created_at')
       .eq('tenant_id', tenantId)
@@ -784,7 +778,7 @@ async function loadDetailedContext(supabase: any, tenantId: string) {
   const topClientIds = topClientsArr.map(([id]) => id)
   let topClientNames: Record<string, string> = {}
   if (topClientIds.length > 0) {
-    const { data: nameData } = await supabase
+    const { data: nameData } = await db
       .from('clients')
       .select('id, full_name')
       .in('id', topClientIds)
@@ -1473,7 +1467,7 @@ function computeRevenuePattern(
 const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
 
 async function loadPageEntityContext(
-  supabase: any,
+  db: any,
   tenantId: string,
   currentPage?: string
 ): Promise<PageEntityContext | undefined> {
@@ -1484,26 +1478,26 @@ async function loadPageEntityContext(
   const entityId = idMatch[0]
 
   if (currentPage.startsWith('/events/')) {
-    return loadEventEntity(supabase, tenantId, entityId)
+    return loadEventEntity(db, tenantId, entityId)
   }
   if (currentPage.startsWith('/clients/')) {
-    return loadClientEntity(supabase, tenantId, entityId)
+    return loadClientEntity(db, tenantId, entityId)
   }
   if (currentPage.startsWith('/recipes/')) {
-    return loadRecipeEntity(supabase, tenantId, entityId)
+    return loadRecipeEntity(db, tenantId, entityId)
   }
   if (currentPage.startsWith('/inquiries/')) {
-    return loadInquiryEntity(supabase, tenantId, entityId)
+    return loadInquiryEntity(db, tenantId, entityId)
   }
   if (currentPage.startsWith('/menus/')) {
-    return loadMenuEntity(supabase, tenantId, entityId)
+    return loadMenuEntity(db, tenantId, entityId)
   }
 
   return undefined
 }
 
 async function loadEventEntity(
-  supabase: any,
+  db: any,
   tenantId: string,
   eventId: string
 ): Promise<PageEntityContext | undefined> {
@@ -1520,7 +1514,7 @@ async function loadEventEntity(
     groceryResult,
     aarResult,
   ] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         `id, occasion, event_date, serve_time, guest_count, status, service_style,
@@ -1535,7 +1529,7 @@ async function loadEventEntity(
       .eq('tenant_id', tenantId)
       .single(),
     // Ledger entries (payments, deposits, refunds)
-    supabase
+    db
       .from('ledger_entries')
       .select('entry_type, amount_cents, description, payment_method, received_at, is_refund')
       .eq('event_id', eventId)
@@ -1543,7 +1537,7 @@ async function loadEventEntity(
       .order('created_at', { ascending: true })
       .limit(20),
     // Expenses linked to this event
-    supabase
+    db
       .from('expenses')
       .select('category, amount_cents, vendor_name, description, expense_date')
       .eq('event_id', eventId)
@@ -1551,7 +1545,7 @@ async function loadEventEntity(
       .order('expense_date', { ascending: true })
       .limit(20),
     // Staff assignments
-    supabase
+    db
       .from('event_staff_assignments')
       .select(
         'role_override, scheduled_hours, actual_hours, pay_amount_cents, status, notes, staff_member:staff_members(full_name)'
@@ -1560,7 +1554,7 @@ async function loadEventEntity(
       .eq('chef_id', tenantId)
       .limit(10),
     // Temperature logs
-    supabase
+    db
       .from('event_temp_logs')
       .select('item_description, temp_fahrenheit, phase, is_safe, logged_at, notes')
       .eq('event_id', eventId)
@@ -1568,7 +1562,7 @@ async function loadEventEntity(
       .order('logged_at', { ascending: true })
       .limit(20),
     // Quotes for this event
-    supabase
+    db
       .from('quotes')
       .select(
         'quote_name, status, total_quoted_cents, pricing_model, deposit_amount_cents, sent_at, accepted_at, pricing_notes'
@@ -1578,7 +1572,7 @@ async function loadEventEntity(
       .order('created_at', { ascending: false })
       .limit(5),
     // Event transitions (audit trail)
-    supabase
+    db
       .from('event_transitions' as any)
       .select('from_status, to_status, transitioned_at, reason')
       .eq('event_id', eventId)
@@ -1586,7 +1580,7 @@ async function loadEventEntity(
       .order('transitioned_at', { ascending: true })
       .limit(15),
     // Menu approval requests
-    supabase
+    db
       .from('menu_approval_requests')
       .select('status, sent_at, responded_at, revision_notes')
       .eq('event_id', eventId)
@@ -1594,7 +1588,7 @@ async function loadEventEntity(
       .order('created_at', { ascending: false })
       .limit(5),
     // Grocery price quotes
-    supabase
+    db
       .from('grocery_price_quotes')
       .select(
         'status, ingredient_count, spoonacular_total_cents, kroger_total_cents, average_total_cents, instacart_link, created_at'
@@ -1604,7 +1598,7 @@ async function loadEventEntity(
       .order('created_at', { ascending: false })
       .limit(3),
     // After-action reviews
-    supabase
+    db
       .from('after_action_reviews')
       .select('overall_rating, went_well, to_improve, lessons_learned, would_repeat, created_at')
       .eq('event_id', eventId)
@@ -1958,13 +1952,13 @@ async function loadEventEntity(
 }
 
 async function loadClientEntity(
-  supabase: any,
+  db: any,
   tenantId: string,
   clientId: string
 ): Promise<PageEntityContext | undefined> {
   const [clientResult, eventsResult, notesResult, reviewsResult, lastMessageResult] =
     await Promise.all([
-      supabase
+      db
         .from('clients')
         .select(
           `id, full_name, email, phone, preferred_contact_method, referral_source,
@@ -1978,7 +1972,7 @@ async function loadClientEntity(
         .eq('tenant_id', tenantId)
         .single(),
       // Event history for this client
-      supabase
+      db
         .from('events')
         .select(
           'id, occasion, event_date, status, guest_count, quoted_price_cents, payment_status, service_style'
@@ -1988,7 +1982,7 @@ async function loadClientEntity(
         .order('event_date', { ascending: false })
         .limit(15),
       // Client notes
-      supabase
+      db
         .from('client_notes')
         .select('note, category, created_at')
         .eq('client_id', clientId)
@@ -1996,7 +1990,7 @@ async function loadClientEntity(
         .order('created_at', { ascending: false })
         .limit(10),
       // Client reviews
-      supabase
+      db
         .from('client_reviews')
         .select('rating, review_text, event_id, created_at')
         .eq('client_id', clientId)
@@ -2004,7 +1998,7 @@ async function loadClientEntity(
         .order('created_at', { ascending: false })
         .limit(5),
       // Last communication - most recent message with this client
-      supabase
+      db
         .from('messages')
         .select('direction, body, created_at')
         .eq('tenant_id', tenantId)
@@ -2272,12 +2266,12 @@ async function loadClientEntity(
 }
 
 async function loadRecipeEntity(
-  supabase: any,
+  db: any,
   tenantId: string,
   recipeId: string
 ): Promise<PageEntityContext | undefined> {
   const [recipeResult, ingredientsResult] = await Promise.all([
-    supabase
+    db
       .from('recipes')
       .select(
         `id, name, category, description, method, yield_description,
@@ -2287,7 +2281,7 @@ async function loadRecipeEntity(
       .eq('id', recipeId)
       .eq('tenant_id', tenantId)
       .single(),
-    supabase
+    db
       .from('recipe_ingredients')
       .select('quantity, unit, preparation_notes, ingredient:ingredients(name, allergen_flags)')
       .eq('recipe_id', recipeId)
@@ -2362,12 +2356,12 @@ async function loadRecipeEntity(
 }
 
 async function loadInquiryEntity(
-  supabase: any,
+  db: any,
   tenantId: string,
   inquiryId: string
 ): Promise<PageEntityContext | undefined> {
   const [inquiryResult, messagesResult] = await Promise.all([
-    supabase
+    db
       .from('inquiries')
       .select(
         `id, channel, status, source_message,
@@ -2381,7 +2375,7 @@ async function loadInquiryEntity(
       .eq('tenant_id', tenantId)
       .single(),
     // Message thread for this inquiry
-    supabase
+    db
       .from('inquiry_messages' as any)
       .select('channel, direction, status, subject, body, sent_at, created_at')
       .eq('inquiry_id', inquiryId)
@@ -2572,12 +2566,12 @@ async function loadInquiryEntity(
 }
 
 async function loadMenuEntity(
-  supabase: any,
+  db: any,
   tenantId: string,
   menuId: string
 ): Promise<PageEntityContext | undefined> {
   const [menuResult, dishesResult] = await Promise.all([
-    supabase
+    db
       .from('menus')
       .select(
         `id, name, description, status, cuisine_type, service_style,
@@ -2586,7 +2580,7 @@ async function loadMenuEntity(
       .eq('id', menuId)
       .eq('tenant_id', tenantId)
       .single(),
-    supabase
+    db
       .from('dishes')
       .select(
         `id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes,
@@ -2672,36 +2666,36 @@ export async function resolveMessageEntities(message: string): Promise<PageEntit
 
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Normalize message for matching
   const msgLower = message.toLowerCase()
 
   // Run all searches in parallel - each is cheap (indexed ilike, limit 3)
   const [clientHits, eventHits, recipeHits, inquiryHits] = await Promise.all([
-    findMentionedClients(supabase, tenantId, msgLower),
-    findMentionedEvents(supabase, tenantId, msgLower),
-    findMentionedRecipes(supabase, tenantId, msgLower),
-    findMentionedInquiries(supabase, tenantId, msgLower),
+    findMentionedClients(db, tenantId, msgLower),
+    findMentionedEvents(db, tenantId, msgLower),
+    findMentionedRecipes(db, tenantId, msgLower),
+    findMentionedInquiries(db, tenantId, msgLower),
   ])
 
   const results: PageEntityContext[] = []
 
   // Load full details for matched entities (limit to 3 total to keep prompt lean)
   for (const client of clientHits.slice(0, 2)) {
-    const ctx = await loadClientEntity(supabase, tenantId, client.id)
+    const ctx = await loadClientEntity(db, tenantId, client.id)
     if (ctx) results.push(ctx)
   }
   for (const event of eventHits.slice(0, 2)) {
-    const ctx = await loadEventEntity(supabase, tenantId, event.id)
+    const ctx = await loadEventEntity(db, tenantId, event.id)
     if (ctx) results.push(ctx)
   }
   for (const recipe of recipeHits.slice(0, 1)) {
-    const ctx = await loadRecipeEntity(supabase, tenantId, recipe.id)
+    const ctx = await loadRecipeEntity(db, tenantId, recipe.id)
     if (ctx) results.push(ctx)
   }
   for (const inquiry of inquiryHits.slice(0, 1)) {
-    const ctx = await loadInquiryEntity(supabase, tenantId, inquiry.id)
+    const ctx = await loadInquiryEntity(db, tenantId, inquiry.id)
     if (ctx) results.push(ctx)
   }
 
@@ -2709,12 +2703,12 @@ export async function resolveMessageEntities(message: string): Promise<PageEntit
 }
 
 async function findMentionedClients(
-  supabase: any,
+  db: any,
   tenantId: string,
   msgLower: string
 ): Promise<Array<{ id: string; full_name: string }>> {
   // Get all client names for this tenant (cached in Tier 2, so this is usually fast)
-  const { data } = await supabase
+  const { data } = await db
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', tenantId)
@@ -2759,12 +2753,12 @@ async function findMentionedClients(
 }
 
 async function findMentionedEvents(
-  supabase: any,
+  db: any,
   tenantId: string,
   msgLower: string
 ): Promise<Array<{ id: string }>> {
   // Get recent events with their occasion and client name
-  const { data } = await supabase
+  const { data } = await db
     .from('events')
     .select('id, occasion, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -2815,11 +2809,11 @@ async function findMentionedEvents(
 }
 
 async function findMentionedRecipes(
-  supabase: any,
+  db: any,
   tenantId: string,
   msgLower: string
 ): Promise<Array<{ id: string }>> {
-  const { data } = await supabase
+  const { data } = await db
     .from('recipes')
     .select('id, name')
     .eq('tenant_id', tenantId)
@@ -2835,7 +2829,7 @@ async function findMentionedRecipes(
 }
 
 async function findMentionedInquiries(
-  supabase: any,
+  db: any,
   tenantId: string,
   msgLower: string
 ): Promise<Array<{ id: string }>> {
@@ -2843,7 +2837,7 @@ async function findMentionedInquiries(
   const inquiryKeywords = ['inquiry', 'enquiry', 'lead', 'prospect', 'follow up', 'follow-up']
   if (!inquiryKeywords.some((k) => msgLower.includes(k))) return []
 
-  const { data } = await supabase
+  const { data } = await db
     .from('inquiries')
     .select('id, confirmed_occasion, client:clients(full_name)')
     .eq('tenant_id', tenantId)

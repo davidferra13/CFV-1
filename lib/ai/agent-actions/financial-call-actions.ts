@@ -7,7 +7,7 @@ import { updateExpense, deleteExpense } from '@/lib/expenses/actions'
 import { logCallOutcome, cancelCall, getUpcomingCalls } from '@/lib/calls/actions'
 import { updateInquiry, declineInquiry } from '@/lib/inquiries/actions'
 import { getInquiries } from '@/lib/inquiries/actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
@@ -37,8 +37,8 @@ export const financialCallAgentActions: AgentActionDefinition[] = [
       )
 
       // Find the expense
-      const supabase: any = createServerClient()
-      const { data: expenses } = await supabase
+      const db: any = createServerClient()
+      const { data: expenses } = await db
         .from('expenses')
         .select('id, description, amount_cents, vendor, category, expense_date')
         .eq('tenant_id', ctx.tenantId)

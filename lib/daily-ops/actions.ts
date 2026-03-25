@@ -5,7 +5,7 @@
 // Every action is tenant-scoped via requireChef().
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { getPriorityQueue } from '@/lib/queue/actions'
 import { getDOPTaskDigest } from '@/lib/scheduling/task-digest'
@@ -38,7 +38,7 @@ async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promis
 
 export async function getDailyPlan(): Promise<DailyPlan> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const todayStr = new Date().toISOString().split('T')[0]
 
   // Fetch all data sources in parallel
@@ -97,7 +97,7 @@ export async function getDailyPlan(): Promise<DailyPlan> {
     safe(
       'dismissals',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('daily_plan_dismissals')
           .select('item_key')
           .eq('chef_id', user.tenantId!)
@@ -110,7 +110,7 @@ export async function getDailyPlan(): Promise<DailyPlan> {
     safe(
       'todayEvents',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('events')
           .select('id, occasion, serve_time, guest_count, client:clients(full_name)')
           .eq('tenant_id', user.tenantId!)
@@ -226,10 +226,10 @@ export async function dismissDailyPlanItem(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
     const todayStr = new Date().toISOString().split('T')[0]
 
-    const { error } = await supabase.from('daily_plan_dismissals').upsert(
+    const { error } = await db.from('daily_plan_dismissals').upsert(
       {
         chef_id: user.tenantId!,
         item_key: itemKey,

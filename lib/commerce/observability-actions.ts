@@ -2,7 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { assertPosRoleAccess } from './pos-authorization'
 import {
@@ -114,14 +114,14 @@ function pickHigherSeverity(left: PosAlertSeverity, right: PosAlertSeverity): Po
 }
 
 export async function recordPosAlert(alert: RecordPosAlertInput) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const nowIso = new Date().toISOString()
   const severity = normalizePosAlertSeverity(alert.severity)
   const dedupeKey = String(alert.dedupeKey ?? '').trim() || null
 
   try {
     if (dedupeKey) {
-      const { data: existing } = await (supabase
+      const { data: existing } = await (db
         .from('pos_alert_events' as any)
         .select('id, occurrence_count, severity')
         .eq('tenant_id', alert.tenantId)
@@ -130,7 +130,7 @@ export async function recordPosAlert(alert: RecordPosAlertInput) {
         .maybeSingle() as any)
 
       if (existing?.id) {
-        await (supabase
+        await (db
           .from('pos_alert_events' as any)
           .update({
             message: alert.message,
@@ -148,7 +148,7 @@ export async function recordPosAlert(alert: RecordPosAlertInput) {
       }
     }
 
-    await (supabase.from('pos_alert_events' as any).insert({
+    await (db.from('pos_alert_events' as any).insert({
       tenant_id: alert.tenantId,
       source: alert.source,
       event_type: alert.eventType,
@@ -173,14 +173,14 @@ export async function listPosAlerts(input?: {
 }): Promise<PosAlertRow[]> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const limit =
     Number.isInteger(input?.limit) && (input?.limit as number) > 0
       ? Math.min(200, input?.limit as number)
       : 100
 
-  let query = supabase
+  let query = db
     .from('pos_alert_events' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -198,15 +198,15 @@ export async function listPosAlerts(input?: {
 export async function acknowledgePosAlert(alertId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'acknowledge POS alerts',
     requiredLevel: 'lead',
   })
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('pos_alert_events' as any)
     .update({
       status: 'acknowledged',
@@ -223,16 +223,16 @@ export async function acknowledgePosAlert(alertId: string) {
 export async function resolvePosAlert(alertId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'resolve POS alerts',
     requiredLevel: 'lead',
   })
 
   const now = new Date().toISOString()
-  const { error } = await (supabase
+  const { error } = await (db
     .from('pos_alert_events' as any)
     .update({
       status: 'resolved',
@@ -251,9 +251,9 @@ export async function resolvePosAlert(alertId: string) {
 export async function captureDailyPosMetrics(input?: { date?: string }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'capture POS metric snapshots',
     requiredLevel: 'lead',
@@ -263,27 +263,27 @@ export async function captureDailyPosMetrics(input?: { date?: string }) {
   const toIso = `${day}T23:59:59.999Z`
 
   const [salesRes, refundsRes, sessionsRes, alertsRes] = await Promise.all([
-    supabase
+    db
       .from('sales')
       .select('status, total_cents')
       .eq('tenant_id', user.tenantId!)
       .gte('created_at', fromIso)
       .lte('created_at', toIso),
-    supabase
+    db
       .from('commerce_refunds')
       .select('amount_cents')
       .eq('tenant_id', user.tenantId!)
       .eq('status', 'processed')
       .gte('created_at', fromIso)
       .lte('created_at', toIso),
-    supabase
+    db
       .from('register_sessions')
       .select('cash_variance_cents')
       .eq('tenant_id', user.tenantId!)
       .eq('status', 'closed')
       .gte('closed_at', fromIso)
       .lte('closed_at', toIso),
-    supabase
+    db
       .from('pos_alert_events' as any)
       .select('status, severity')
       .eq('tenant_id', user.tenantId!)
@@ -298,7 +298,7 @@ export async function captureDailyPosMetrics(input?: { date?: string }) {
     alerts: alertsRes.data ?? [],
   })
 
-  const { error } = await (supabase.from('pos_metric_snapshots' as any).upsert(
+  const { error } = await (db.from('pos_metric_snapshots' as any).upsert(
     {
       tenant_id: user.tenantId!,
       snapshot_date: day,
@@ -330,13 +330,13 @@ export async function listPosMetricSnapshots(input?: {
 }): Promise<PosMetricSnapshotRow[]> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const limit =
     Number.isInteger(input?.limit) && (input?.limit as number) > 0
       ? Math.min(90, input?.limit as number)
       : 30
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('pos_metric_snapshots' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)

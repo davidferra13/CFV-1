@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { FavoriteChef, CreateFavoriteChefInput, UpdateFavoriteChefInput } from './types'
@@ -30,9 +30,9 @@ const UpdateSchema = z.object({
 
 export async function getFavoriteChefs(): Promise<FavoriteChef[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('favorite_chefs')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -51,10 +51,10 @@ export async function createFavoriteChef(
 ): Promise<{ success: boolean; chef: FavoriteChef }> {
   const validated = CreateSchema.parse(input)
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get next sort_order
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('favorite_chefs')
     .select('sort_order')
     .eq('chef_id', user.tenantId!)
@@ -63,7 +63,7 @@ export async function createFavoriteChef(
 
   const nextOrder = existing && existing.length > 0 ? (existing[0].sort_order ?? 0) + 1 : 0
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('favorite_chefs')
     .insert({
       chef_id: user.tenantId!,
@@ -92,7 +92,7 @@ export async function updateFavoriteChef(
 ): Promise<{ success: boolean; chef: FavoriteChef }> {
   const validated = UpdateSchema.parse(updates)
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const payload: Record<string, unknown> = {}
   if (validated.chefName !== undefined) payload.chef_name = validated.chefName
@@ -104,7 +104,7 @@ export async function updateFavoriteChef(
     throw new Error('No fields to update')
   }
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('favorite_chefs')
     .update(payload)
     .eq('id', id)
@@ -124,9 +124,9 @@ export async function updateFavoriteChef(
 
 export async function deleteFavoriteChef(id: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('favorite_chefs')
     .delete()
     .eq('id', id)
@@ -146,11 +146,11 @@ export async function reorderFavoriteChefs(
   ordered: { id: string; sortOrder: number }[]
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   await Promise.all(
     ordered.map(({ id, sortOrder }) =>
-      supabase
+      db
         .from('favorite_chefs')
         .update({ sort_order: sortOrder })
         .eq('id', id)

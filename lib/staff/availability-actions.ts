@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -67,9 +67,9 @@ export async function setAvailability(
 ): Promise<StaffAvailability> {
   const user = await requireChef()
   const parsed = SetAvailabilitySchema.parse({ staffMemberId, date, isAvailable, notes })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_availability')
     .upsert(
       {
@@ -110,10 +110,10 @@ export async function getStaffAvailabilityGrid(
 ): Promise<StaffAvailabilityGridRow[]> {
   const user = await requireChef()
   DateRangeSchema.parse({ startDate, endDate })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all active staff members
-  const { data: staffMembers, error: staffError } = await supabase
+  const { data: staffMembers, error: staffError } = await db
     .from('staff_members')
     .select('id, name, role')
     .eq('chef_id', user.tenantId!)
@@ -123,7 +123,7 @@ export async function getStaffAvailabilityGrid(
   if (staffError) throw new Error(`Failed to load staff: ${staffError.message}`)
 
   // Fetch all availability records in the date range
-  const { data: availRecords, error: availError } = await supabase
+  const { data: availRecords, error: availError } = await db
     .from('staff_availability')
     .select('staff_member_id, date, is_available, notes')
     .eq('chef_id', user.tenantId!)
@@ -159,10 +159,10 @@ export async function getAvailableStaffForDate(date: string): Promise<AvailableS
   z.string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .parse(date)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all active staff
-  const { data: allStaff, error: staffError } = await supabase
+  const { data: allStaff, error: staffError } = await db
     .from('staff_members')
     .select('id, name, role, phone, hourly_rate_cents, notes')
     .eq('chef_id', user.tenantId!)
@@ -172,7 +172,7 @@ export async function getAvailableStaffForDate(date: string): Promise<AvailableS
   if (staffError) throw new Error(`Failed to load staff: ${staffError.message}`)
 
   // Get unavailability records for this date
-  const { data: unavailRecords, error: availError } = await supabase
+  const { data: unavailRecords, error: availError } = await db
     .from('staff_availability')
     .select('staff_member_id')
     .eq('chef_id', user.tenantId!)
@@ -206,7 +206,7 @@ export async function bulkSetAvailability(
 ): Promise<{ updated: number }> {
   const user = await requireChef()
   const parsed = BulkSetAvailabilitySchema.parse({ staffMemberId, dates, isAvailable })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const rows = parsed.dates.map((date) => ({
     staff_member_id: parsed.staffMemberId,
@@ -215,7 +215,7 @@ export async function bulkSetAvailability(
     is_available: parsed.isAvailable,
   }))
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_availability')
     .upsert(rows, { onConflict: 'staff_member_id,date' })
     .select()

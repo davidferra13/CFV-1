@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { SEP_IRA_RATE, SEP_IRA_MAX_CENTS } from '@/lib/tax/retirement-constants'
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -58,9 +58,9 @@ export async function addRetirementContribution(
 ): Promise<RetirementContribution> {
   const user = await requireChef()
   const parsed = AddContributionSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('retirement_contributions')
     .insert({
       chef_id: user.tenantId!,
@@ -88,9 +88,9 @@ export async function addRetirementContribution(
 
 export async function deleteRetirementContribution(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('retirement_contributions')
     .delete()
     .eq('id', id)
@@ -107,9 +107,9 @@ export async function getRetirementContributions(taxYear: number): Promise<{
   remainingCapacityCents: number
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('retirement_contributions')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -130,7 +130,7 @@ export async function getRetirementContributions(taxYear: number): Promise<{
   const totalContributionCents = contributions.reduce((s, c) => s + c.contributionCents, 0)
 
   // Estimate SEP-IRA limit from current year net income in ledger
-  const { data: ledger } = await supabase
+  const { data: ledger } = await db
     .from('ledger_entries')
     .select('amount_cents, entry_type')
     .eq('chef_id', user.tenantId!)
@@ -164,9 +164,9 @@ export async function addHealthInsurancePremium(
 ): Promise<HealthInsurancePremium> {
   const user = await requireChef()
   const parsed = AddPremiumSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('health_insurance_premiums')
     .insert({
       chef_id: user.tenantId!,
@@ -192,9 +192,9 @@ export async function addHealthInsurancePremium(
 
 export async function deleteHealthInsurancePremium(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('health_insurance_premiums')
     .delete()
     .eq('id', id)
@@ -209,9 +209,9 @@ export async function getHealthInsurancePremiums(taxYear: number): Promise<{
   totalPremiumCents: number
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('health_insurance_premiums')
     .select('*')
     .eq('chef_id', user.tenantId!)

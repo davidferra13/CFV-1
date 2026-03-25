@@ -12,9 +12,9 @@ import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { testDb } from '../helpers/test-db.js'
 
-testDb.skipIfNoSupabase()
+testDb.skipIfNoDatabase()
 
-const supabase = testDb.getClient()
+const db = testDb.getClient()
 
 let actorUserId: string
 let chefAuthUserId: string
@@ -28,7 +28,7 @@ describe('Quote/Event Pricing Integrity', () => {
   before(async () => {
     const now = Date.now()
     const actorEmail = `quote-integrity-actor-${now}@chefflow.test`
-    const { data: actorUser, error: actorError } = await supabase.auth.admin.createUser({
+    const { data: actorUser, error: actorError } = await db.auth.admin.createUser({
       email: actorEmail,
       password: `Tmp-${now}-Pass!`,
       email_confirm: true,
@@ -40,7 +40,7 @@ describe('Quote/Event Pricing Integrity', () => {
     actorUserId = actorUser.user.id
 
     const chefAuthEmail = `quote-integrity-chef-auth-${now}@chefflow.test`
-    const { data: chefAuthUser, error: chefAuthError } = await supabase.auth.admin.createUser({
+    const { data: chefAuthUser, error: chefAuthError } = await db.auth.admin.createUser({
       email: chefAuthEmail,
       password: `Tmp-${now}-ChefPass!`,
       email_confirm: true,
@@ -121,15 +121,15 @@ describe('Quote/Event Pricing Integrity', () => {
   after(async () => {
     await testDb.cleanup()
     if (chefAuthUserId) {
-      await supabase.auth.admin.deleteUser(chefAuthUserId)
+      await db.auth.admin.deleteUser(chefAuthUserId)
     }
     if (actorUserId) {
-      await supabase.auth.admin.deleteUser(actorUserId)
+      await db.auth.admin.deleteUser(actorUserId)
     }
   })
 
   it('accepting a quote syncs event pricing and converting_quote_id', async () => {
-    const { error: acceptError } = await supabase.rpc('respond_to_quote_atomic', {
+    const { error: acceptError } = await db.rpc('respond_to_quote_atomic', {
       p_quote_id: primaryQuoteId,
       p_client_id: clientId,
       p_new_status: 'accepted',
@@ -139,7 +139,7 @@ describe('Quote/Event Pricing Integrity', () => {
 
     assert.equal(acceptError, null, acceptError?.message)
 
-    const { data: acceptedQuote, error: quoteFetchError } = await supabase
+    const { data: acceptedQuote, error: quoteFetchError } = await db
       .from('quotes')
       .select('status')
       .eq('id', primaryQuoteId)
@@ -147,7 +147,7 @@ describe('Quote/Event Pricing Integrity', () => {
     assert.equal(quoteFetchError, null, quoteFetchError?.message)
     assert.equal(acceptedQuote?.status, 'accepted')
 
-    const { data: event, error: eventFetchError } = await supabase
+    const { data: event, error: eventFetchError } = await db
       .from('events')
       .select('quoted_price_cents, deposit_amount_cents, pricing_model, converting_quote_id')
       .eq('id', eventId)
@@ -161,7 +161,7 @@ describe('Quote/Event Pricing Integrity', () => {
   })
 
   it('rejects accepting a second quote in the same event workflow', async () => {
-    const { error } = await supabase.rpc('respond_to_quote_atomic', {
+    const { error } = await db.rpc('respond_to_quote_atomic', {
       p_quote_id: secondaryQuoteId,
       p_client_id: clientId,
       p_new_status: 'accepted',
@@ -174,7 +174,7 @@ describe('Quote/Event Pricing Integrity', () => {
   })
 
   it('blocks event pricing drift from the accepted quote', async () => {
-    const { error } = await supabase
+    const { error } = await db
       .from('events')
       .update({ quoted_price_cents: 126000 })
       .eq('id', eventId)
@@ -184,13 +184,13 @@ describe('Quote/Event Pricing Integrity', () => {
   })
 
   it('still blocks pricing drift when converting_quote_id is null (fallback by event_id)', async () => {
-    const { error: clearError } = await supabase
+    const { error: clearError } = await db
       .from('events')
       .update({ converting_quote_id: null })
       .eq('id', eventId)
     assert.equal(clearError, null, clearError?.message)
 
-    const { error: driftError } = await supabase
+    const { error: driftError } = await db
       .from('events')
       .update({ deposit_amount_cents: 39000 })
       .eq('id', eventId)

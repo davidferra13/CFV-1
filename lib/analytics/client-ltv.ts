@@ -5,7 +5,7 @@
 'use server'
 
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ============================================
 // TYPES
@@ -157,10 +157,10 @@ function computeChurnRisk(
  */
 export async function calculateClientLTV(clientId: string): Promise<ClientLTV> {
   const user = await requirePro('client-intelligence')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get client info
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, full_name, first_event_date, last_event_date, total_events_count')
     .eq('id', clientId)
@@ -170,7 +170,7 @@ export async function calculateClientLTV(clientId: string): Promise<ClientLTV> {
   if (!client) throw new Error('Client not found')
 
   // Get all payment entries for this client
-  const { data: ledger } = await supabase
+  const { data: ledger } = await db
     .from('ledger_entries')
     .select('amount_cents, is_refund')
     .eq('tenant_id', user.tenantId!)
@@ -218,10 +218,10 @@ export async function calculateClientLTV(clientId: string): Promise<ClientLTV> {
  */
 export async function predictChurnRisk(clientId: string): Promise<ChurnPrediction> {
   const user = await requirePro('client-intelligence')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get client info
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, full_name, last_event_date, total_events_count')
     .eq('id', clientId)
@@ -231,7 +231,7 @@ export async function predictChurnRisk(clientId: string): Promise<ChurnPredictio
   if (!client) throw new Error('Client not found')
 
   // Get all event dates for this client
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', user.tenantId!)
@@ -284,9 +284,9 @@ export async function predictChurnRisk(clientId: string): Promise<ChurnPredictio
  */
 export async function getAllChurnPredictions(): Promise<ChurnPrediction[]> {
   const user = await requirePro('client-intelligence')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id')
     .eq('tenant_id', user.tenantId!)
@@ -312,9 +312,9 @@ export async function getAllChurnPredictions(): Promise<ChurnPrediction[]> {
  */
 export async function getAllClientLTV(): Promise<ClientLTV[]> {
   const user = await requirePro('client-intelligence')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id')
     .eq('tenant_id', user.tenantId!)

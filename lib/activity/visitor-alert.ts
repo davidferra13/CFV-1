@@ -2,7 +2,7 @@
 // Debounced to one alert per client per 30-minute window.
 // Non-blocking - failures are logged, never thrown.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { sendNotification } from '@/lib/notifications/send'
 import type { ActivityEventType } from './types'
 
@@ -38,12 +38,12 @@ export async function triggerVisitorAlert(params: {
     // Only alert on meaningful events
     if (!ALERTABLE_EVENTS.includes(params.eventType)) return
 
-    const supabase = createServerClient({ admin: true })
+    const db = createServerClient({ admin: true })
 
     // Check debounce: was an alert sent for this client in the last 30 minutes?
     const cutoff = new Date(Date.now() - DEBOUNCE_MINUTES * 60 * 1000).toISOString()
 
-    const { data: recentAlert } = await supabase
+    const { data: recentAlert } = await db
       .from('notifications')
       .select('id')
       .eq('tenant_id', params.tenantId)
@@ -56,7 +56,7 @@ export async function triggerVisitorAlert(params: {
     if (recentAlert) return // Already alerted recently - skip
 
     // Check if visitor alerts are enabled for this chef
-    const { data: prefs } = await supabase
+    const { data: prefs } = await db
       .from('chef_preferences')
       .select('visitor_alerts_enabled')
       .eq('chef_id', params.tenantId)
@@ -66,7 +66,7 @@ export async function triggerVisitorAlert(params: {
     if (prefs && prefs.visitor_alerts_enabled === false) return
 
     // Resolve the chef's auth_user_id (needed for sendNotification)
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('auth_user_id')
       .eq('id', params.tenantId)
@@ -77,7 +77,7 @@ export async function triggerVisitorAlert(params: {
     // Resolve client name if not provided
     let clientName = params.clientName
     if (!clientName || clientName === 'A client') {
-      const { data: client } = await supabase
+      const { data: client } = await db
         .from('clients')
         .select('full_name')
         .eq('id', params.clientId)

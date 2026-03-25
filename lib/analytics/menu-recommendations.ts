@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -36,13 +36,13 @@ export async function getMenuRecommendations(params: {
   limit?: number
 }): Promise<MenuRecommendationResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const allergies = params.allergies ?? []
   const limit = params.limit ?? 20
 
   // Fetch all active (non-archived) recipes
-  const { data: recipes, error } = await supabase
+  const { data: recipes, error } = await db
     .from('recipes')
     .select('id, name, category, times_cooked, last_cooked_at, dietary_tags')
     .eq('tenant_id', user.tenantId!)
@@ -56,7 +56,7 @@ export async function getMenuRecommendations(params: {
 
   // Fetch allergen flags for required ingredients (allergen_flags lives on ingredients table)
   const recipeIds = recipes.map((r: any) => r.id)
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select('recipe_id, ingredient:ingredients(allergen_flags)')
     .in('recipe_id', recipeIds)

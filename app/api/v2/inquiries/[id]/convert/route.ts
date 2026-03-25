@@ -9,7 +9,7 @@ export const POST = withApiAuth(
     if (!id) return apiNotFound('Inquiry')
 
     // Fetch the inquiry
-    const { data: inquiry } = await ctx.supabase
+    const { data: inquiry } = await ctx.db
       .from('inquiries')
       .select('*')
       .eq('id', id)
@@ -22,7 +22,7 @@ export const POST = withApiAuth(
     const inq = inquiry as Record<string, unknown>
 
     // Create a draft event from inquiry data
-    const { data: event, error } = await ctx.supabase
+    const { data: event, error } = await ctx.db
       .from('events')
       .insert({
         tenant_id: ctx.tenantId,
@@ -50,7 +50,7 @@ export const POST = withApiAuth(
     }
 
     // Mark inquiry as converted
-    await ctx.supabase
+    await ctx.db
       .from('inquiries')
       .update({
         status: 'converted',

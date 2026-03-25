@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -30,9 +30,9 @@ export type AutoResponseConfig = {
 
 export async function getAutoResponseConfig(): Promise<AutoResponseConfig | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('auto_response_config')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -55,9 +55,9 @@ export async function updateAutoResponseConfig(
     return { success: false, error: 'Invalid configuration.' }
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('auto_response_config').upsert(
+  const { error } = await db.from('auto_response_config').upsert(
     {
       chef_id: user.entityId,
       enabled: parsed.data.enabled,
@@ -86,10 +86,10 @@ export async function triggerAutoResponse(
   inquiryId: string,
   tenantId: string
 ): Promise<{ sent: boolean; reason?: string }> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // 1. Check if auto-response is enabled
-  const { data: config } = await supabase
+  const { data: config } = await db
     .from('auto_response_config')
     .select('*')
     .eq('chef_id', tenantId)
@@ -101,7 +101,7 @@ export async function triggerAutoResponse(
   }
 
   // 2. Load inquiry
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select('id, client_id, channel, confirmed_occasion, confirmed_date, auto_responded_at')
     .eq('id', inquiryId)
@@ -122,7 +122,7 @@ export async function triggerAutoResponse(
   }
 
   // 3. Load client email
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, full_name, email')
     .eq('id', inquiry.client_id)
@@ -134,7 +134,7 @@ export async function triggerAutoResponse(
   }
 
   // 4. Find matching template
-  const template = await selectAutoResponseTemplate(supabase, tenantId, {
+  const template = await selectAutoResponseTemplate(db, tenantId, {
     channel: inquiry.channel,
     occasion: inquiry.confirmed_occasion,
   })
@@ -144,7 +144,7 @@ export async function triggerAutoResponse(
   }
 
   // 5. Load chef info for template personalization
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('id, business_name, email')
     .eq('id', tenantId)
@@ -182,7 +182,7 @@ export async function triggerAutoResponse(
   }
 
   // 8. Record auto-response
-  await supabase
+  await db
     .from('inquiries')
     .update({
       auto_responded_at: new Date().toISOString(),
@@ -191,7 +191,7 @@ export async function triggerAutoResponse(
     .eq('id', inquiryId)
 
   // 9. Increment template usage
-  await supabase
+  await db
     .from('response_templates')
     .update({
       usage_count: (template.usage_count ?? 0) + 1,
@@ -207,12 +207,12 @@ export async function triggerAutoResponse(
 // ==========================================
 
 async function selectAutoResponseTemplate(
-  supabase: any,
+  db: any,
   chefId: string,
   context: { channel: string | null; occasion: string | null }
 ) {
   // Priority: exact match (channel + occasion) > channel only > default > system default
-  const { data: templates } = await supabase
+  const { data: templates } = await db
     .from('response_templates')
     .select('*')
     .eq('chef_id', chefId)

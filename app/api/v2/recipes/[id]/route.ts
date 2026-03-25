@@ -28,7 +28,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Recipe')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('recipes')
       .select('*')
       .eq('id', id)
@@ -57,7 +57,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     // Verify recipe belongs to tenant
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('recipes')
       .select('id')
       .eq('id', id)
@@ -66,7 +66,7 @@ export const PATCH = withApiAuth(
 
     if (!existing) return apiNotFound('Recipe')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('recipes')
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)

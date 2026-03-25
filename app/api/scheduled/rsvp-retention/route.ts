@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 async function purgeTable(params: {
@@ -8,8 +8,8 @@ async function purgeTable(params: {
   cutoffIso: string
   extraFilter?: (query: any) => any
 }) {
-  const supabase = createServerClient({ admin: true })
-  let query = (supabase as any)
+  const db = createServerClient({ admin: true })
+  let query = (db as any)
     .from(params.table)
     .delete({ count: 'exact' })
     .lt(params.timestampColumn, params.cutoffIso)

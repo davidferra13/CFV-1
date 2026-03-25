@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns'
@@ -42,9 +42,9 @@ export type LogAdminTimeInput = z.infer<typeof LogAdminTimeSchema>
 export async function logAdminTime(input: LogAdminTimeInput) {
   const user = await requireChef()
   const validated = LogAdminTimeSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('admin_time_logs')
     .insert({
       chef_id: user.tenantId!,
@@ -65,9 +65,9 @@ export async function logAdminTime(input: LogAdminTimeInput) {
 
 export async function deleteAdminTimeLog(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase.from('admin_time_logs').delete().eq('id', id).eq('chef_id', user.tenantId!)
+  await db.from('admin_time_logs').delete().eq('id', id).eq('chef_id', user.tenantId!)
 
   revalidatePath('/insights/time-analysis')
 }
@@ -78,9 +78,9 @@ export async function deleteAdminTimeLog(id: string) {
  */
 export async function getAdminTimeForPeriod(startDate: string, endDate: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('admin_time_logs')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -117,9 +117,9 @@ export async function getAdminTimeThisWeek() {
  */
 export async function getAdminTimeForEvent(eventId: string): Promise<number> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('admin_time_logs')
     .select('minutes')
     .eq('chef_id', user.tenantId!)

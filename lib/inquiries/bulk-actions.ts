@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -12,9 +12,9 @@ export async function bulkDeclineInquiries(ids: string[]) {
   if (ids.length === 0) return { success: true, count: 0 }
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('inquiries')
     .update({ status: 'declined', updated_at: new Date().toISOString() })
     .in('id', ids)
@@ -37,9 +37,9 @@ export async function bulkArchiveInquiries(ids: string[]) {
   if (ids.length === 0) return { success: true, count: 0 }
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('inquiries')
     .update({
       deleted_at: new Date().toISOString(),

@@ -3,16 +3,16 @@
 
 import { NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { csvRowSafe as row } from '@/lib/security/csv-sanitize'
 
 export async function GET(request: Request) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const { searchParams } = new URL(request.url)
   const year = parseInt(searchParams.get('year') ?? String(new Date().getFullYear()), 10)
 
-  const { data: entries } = await supabase
+  const { data: entries } = await db
     .from('ledger_entries')
     .select(
       `

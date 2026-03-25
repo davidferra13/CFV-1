@@ -69,11 +69,11 @@ export interface PayoutInput {
  * Returns the platform_record ID, or null if the write failed (non-blocking).
  */
 export async function ensurePlatformRecord(
-  supabase: DbClient,
+  db: DbClient,
   input: PlatformRecordInput
 ): Promise<string | null> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('platform_records')
       .upsert(
         {
@@ -113,12 +113,9 @@ export async function ensurePlatformRecord(
  * Create an email-sourced snapshot for a platform record.
  * Non-blocking: logs errors but never throws.
  */
-export async function createEmailSnapshot(
-  supabase: DbClient,
-  input: EmailSnapshotInput
-): Promise<void> {
+export async function createEmailSnapshot(db: DbClient, input: EmailSnapshotInput): Promise<void> {
   try {
-    const { error } = await supabase.from('platform_snapshots').insert({
+    const { error } = await db.from('platform_snapshots').insert({
       tenant_id: input.tenantId,
       platform_record_id: input.platformRecordId,
       inquiry_id: input.inquiryId,
@@ -151,13 +148,13 @@ export async function createEmailSnapshot(
  * Uses the platform_record_id unique index for idempotency.
  * Non-blocking: logs errors but never throws.
  */
-export async function upsertPlatformPayout(supabase: DbClient, input: PayoutInput): Promise<void> {
+export async function upsertPlatformPayout(db: DbClient, input: PayoutInput): Promise<void> {
   try {
     const platformConfig = getMarketplacePlatform(input.platform)
     const commissionPercent =
       input.commissionPercent ?? platformConfig?.defaultCommissionPercent ?? null
 
-    const { error } = await supabase.from('platform_payouts').upsert(
+    const { error } = await db.from('platform_payouts').upsert(
       {
         tenant_id: input.tenantId,
         platform_record_id: input.platformRecordId,
@@ -191,7 +188,7 @@ export async function upsertPlatformPayout(supabase: DbClient, input: PayoutInpu
  * Non-blocking.
  */
 export async function updatePlatformRecordStatus(
-  supabase: DbClient,
+  db: DbClient,
   opts: {
     tenantId: string
     inquiryId: string
@@ -211,7 +208,7 @@ export async function updatePlatformRecordStatus(
     if (opts.eventId) updateFields.event_id = opts.eventId
     if (opts.clientId) updateFields.client_id = opts.clientId
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('platform_records')
       .update(updateFields)
       .eq('inquiry_id', opts.inquiryId)
@@ -237,12 +234,12 @@ export async function updatePlatformRecordStatus(
  * Get a platform_record ID by inquiry_id for adding snapshots/payouts to existing records.
  */
 export async function getPlatformRecordIdByInquiry(
-  supabase: DbClient,
+  db: DbClient,
   tenantId: string,
   inquiryId: string
 ): Promise<string | null> {
   try {
-    const { data } = await supabase
+    const { data } = await db
       .from('platform_records')
       .select('id')
       .eq('inquiry_id', inquiryId)

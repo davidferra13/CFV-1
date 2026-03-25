@@ -16,8 +16,8 @@ import {
   getPublicChefPathSlug,
   getPublicInquirySlug,
 } from '@/lib/profile/public-chef'
-import { createServerClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient } from '@/lib/db/server'
+import { createAdminClient } from '@/lib/db/admin'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 
@@ -62,15 +62,12 @@ function extractPortalBackgroundPath(url: string | null | undefined): string | n
   return decodeURIComponent(encodedPath)
 }
 
-async function ensureChefPortalBackgroundsBucket(supabase: any) {
-  const { error: createError } = await supabase.storage.createBucket(
-    CHEF_PORTAL_BACKGROUNDS_BUCKET,
-    {
-      public: true,
-      allowedMimeTypes: ALLOWED_BACKGROUND_IMAGE_TYPES,
-      fileSizeLimit: `${MAX_BACKGROUND_IMAGE_SIZE}`,
-    } as any
-  )
+async function ensureChefPortalBackgroundsBucket(db: any) {
+  const { error: createError } = await db.storage.createBucket(CHEF_PORTAL_BACKGROUNDS_BUCKET, {
+    public: true,
+    allowedMimeTypes: ALLOWED_BACKGROUND_IMAGE_TYPES,
+    fileSizeLimit: `${MAX_BACKGROUND_IMAGE_SIZE}`,
+  } as any)
 
   if (!createError) return
 
@@ -84,7 +81,7 @@ async function ensureChefPortalBackgroundsBucket(supabase: any) {
 
   if (isConflict) return
 
-  const { data: buckets, error: listError } = await supabase.storage.listBuckets()
+  const { data: buckets, error: listError } = await db.storage.listBuckets()
   if (!listError) {
     const exists = (buckets || []).some(
       (bucket: any) => bucket.id === CHEF_PORTAL_BACKGROUNDS_BUCKET
@@ -103,10 +100,10 @@ async function ensureChefPortalBackgroundsBucket(supabase: any) {
 // ============================================
 
 export async function getPublicChefProfile(slug: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   let chefLookup = await findChefByPublicSlug<any>(
-    supabase,
+    db,
     slug,
     [
       'id',
@@ -132,7 +129,7 @@ export async function getPublicChefProfile(slug: string) {
   // Backward compatibility before website controls migration is applied.
   if (chefLookup.error?.code === '42703') {
     chefLookup = await findChefByPublicSlug<any>(
-      supabase,
+      db,
       slug,
       [
         'id',
@@ -155,7 +152,7 @@ export async function getPublicChefProfile(slug: string) {
   if (chefLookup.error || !chef) return null
 
   const [partnersResult, marketplaceResult, listingResult] = await Promise.all([
-    supabase
+    db
       .from('referral_partners')
       .select(
         `
@@ -168,7 +165,7 @@ export async function getPublicChefProfile(slug: string) {
       .eq('is_showcase_visible', true)
       .eq('status', 'active')
       .order('showcase_order', { ascending: true }),
-    (supabase as any)
+    (db as any)
       .from('chef_marketplace_profiles')
       .select(
         [
@@ -195,7 +192,7 @@ export async function getPublicChefProfile(slug: string) {
       )
       .eq('chef_id', chef.id)
       .maybeSingle(),
-    (supabase as any)
+    (db as any)
       .from('chef_directory_listings')
       .select(
         [
@@ -280,10 +277,10 @@ export async function getPublicChefProfile(slug: string) {
 export async function updateChefSlug(slug: string) {
   const user = await requireChef()
   const validated = SlugSchema.parse(slug)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check uniqueness
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('chefs')
     .select('id')
     .eq('slug', validated)
@@ -294,7 +291,7 @@ export async function updateChefSlug(slug: string) {
     throw new Error('This URL is already taken. Please choose a different one.')
   }
 
-  const { error } = await supabase.from('chefs').update({ slug: validated }).eq('id', user.entityId)
+  const { error } = await db.from('chefs').update({ slug: validated }).eq('id', user.entityId)
 
   if (error) {
     console.error('[updateChefSlug] Error:', error)
@@ -312,9 +309,9 @@ export async function updateChefSlug(slug: string) {
 
 export async function updateChefTagline(tagline: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('chefs').update({ tagline }).eq('id', user.entityId)
+  const { error } = await db.from('chefs').update({ tagline }).eq('id', user.entityId)
 
   if (error) {
     console.error('[updateChefTagline] Error:', error)
@@ -336,9 +333,9 @@ const UpdateChefPortalThemeSchema = z.object({
 export async function updateChefPortalTheme(input: z.infer<typeof UpdateChefPortalThemeSchema>) {
   const user = await requireChef()
   const validated = UpdateChefPortalThemeSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: currentChef } = await supabase
+  const { data: currentChef } = await db
     .from('chefs')
     .select('slug, booking_slug')
     .eq('id', user.entityId)
@@ -363,7 +360,7 @@ export async function updateChefPortalTheme(input: z.infer<typeof UpdateChefPort
     return { success: true }
   }
 
-  const { error } = await supabase.from('chefs').update(payload).eq('id', user.entityId)
+  const { error } = await db.from('chefs').update(payload).eq('id', user.entityId)
 
   if (error) {
     console.error('[updateChefPortalTheme] Error:', error)
@@ -390,7 +387,7 @@ export async function uploadChefPortalBackgroundImage(
   formData: FormData
 ): Promise<{ success: true; url: string }> {
   const user = await requireChef()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   const file = formData.get('image') as File | null
   if (!file) throw new Error('No image file provided')
@@ -404,7 +401,7 @@ export async function uploadChefPortalBackgroundImage(
     )
   }
 
-  const { data: currentChef } = await supabase
+  const { data: currentChef } = await db
     .from('chefs')
     .select('slug, booking_slug, portal_background_image_url')
     .eq('id', user.entityId)
@@ -415,7 +412,7 @@ export async function uploadChefPortalBackgroundImage(
   const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
 
   const uploadFile = async () =>
-    supabase.storage.from(CHEF_PORTAL_BACKGROUNDS_BUCKET).upload(storagePath, file, {
+    db.storage.from(CHEF_PORTAL_BACKGROUNDS_BUCKET).upload(storagePath, file, {
       contentType: file.type,
       upsert: false,
     })
@@ -428,7 +425,7 @@ export async function uploadChefPortalBackgroundImage(
       .toLowerCase()
       .includes('bucket')
   ) {
-    await ensureChefPortalBackgroundsBucket(supabase)
+    await ensureChefPortalBackgroundsBucket(db)
     const retry = await uploadFile()
     uploadError = retry.error
   }
@@ -438,24 +435,24 @@ export async function uploadChefPortalBackgroundImage(
     throw new Error('Failed to upload background image')
   }
 
-  const { data: publicUrlData } = supabase.storage
+  const { data: publicUrlData } = db.storage
     .from(CHEF_PORTAL_BACKGROUNDS_BUCKET)
     .getPublicUrl(storagePath)
 
   const publicUrl = publicUrlData.publicUrl
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('chefs')
     .update({ portal_background_image_url: publicUrl })
     .eq('id', user.entityId)
 
   if (updateError) {
     console.error('[uploadChefPortalBackgroundImage] update profile error:', updateError)
-    await supabase.storage.from(CHEF_PORTAL_BACKGROUNDS_BUCKET).remove([storagePath])
+    await db.storage.from(CHEF_PORTAL_BACKGROUNDS_BUCKET).remove([storagePath])
     throw new Error('Image uploaded but failed to save portal settings')
   }
 
   if (previousPath && previousPath !== storagePath) {
-    await supabase.storage.from(CHEF_PORTAL_BACKGROUNDS_BUCKET).remove([previousPath])
+    await db.storage.from(CHEF_PORTAL_BACKGROUNDS_BUCKET).remove([previousPath])
   }
 
   revalidatePath('/settings/public-profile')
@@ -480,9 +477,9 @@ export async function uploadChefPortalBackgroundImage(
 
 export async function getChefSlug() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select(
       'slug, tagline, portal_primary_color, portal_background_color, portal_background_image_url'

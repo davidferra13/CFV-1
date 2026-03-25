@@ -1,7 +1,7 @@
 ﻿'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type TimelineEntityType = 'event' | 'inquiry' | 'quote' | 'menu' | 'client'
 
@@ -96,18 +96,18 @@ export async function getEntityActivityTimeline(
   entityId: string
 ): Promise<EntityTimelineEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const transitionConfig = TRANSITION_CONFIG[entityType]
   const transitionsPromise = transitionConfig
-    ? (supabase
+    ? (db
         .from(transitionConfig.table as any)
         .select('id, from_status, to_status, transitioned_at, transitioned_by, metadata')
         .eq(transitionConfig.foreignKey, entityId)
         .order('transitioned_at', { ascending: false }) as any)
     : Promise.resolve({ data: [] })
 
-  const mutationPromise = supabase
+  const mutationPromise = db
     .from('chef_activity_log')
     .select('id, summary, action, context, created_at, actor_id')
     .eq('tenant_id', user.tenantId!)

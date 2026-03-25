@@ -1,12 +1,12 @@
 'use server'
 
 import { createElement } from 'react'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ---------------------------------------------------------------------------
 // Circle Digest
 // Sends batched email digests to members with digest_mode = 'hourly' | 'daily'.
-// Intended to be called by a cron job (scheduled cron or Supabase pg_cron).
+// Intended to be called by a cron job (scheduled cron or pg_cron).
 // ---------------------------------------------------------------------------
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -18,12 +18,12 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 export async function processDigests(
   mode: 'hourly' | 'daily'
 ): Promise<{ sent: number; skipped: number }> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   let sent = 0
   let skipped = 0
 
   // Find all members with this digest mode who have unread messages
-  const { data: members } = await supabase
+  const { data: members } = await db
     .from('hub_group_members')
     .select(
       `
@@ -85,7 +85,7 @@ export async function processDigests(
     for (const circle of memberData.circles) {
       try {
         // Get group info
-        const { data: group } = await supabase
+        const { data: group } = await db
           .from('hub_groups')
           .select('name, group_token')
           .eq('id', circle.groupId)
@@ -96,7 +96,7 @@ export async function processDigests(
         // Get unread messages since last_read_at or last_notified_at
         const since = circle.lastReadAt || new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
-        const { data: messages } = await supabase
+        const { data: messages } = await db
           .from('hub_messages')
           .select('body, created_at, author_profile_id, hub_guest_profiles!inner(display_name)')
           .eq('group_id', circle.groupId)
@@ -139,7 +139,7 @@ export async function processDigests(
         })
 
         // Update last_notified_at
-        await supabase
+        await db
           .from('hub_group_members')
           .update({ last_notified_at: new Date().toISOString() })
           .eq('group_id', circle.groupId)

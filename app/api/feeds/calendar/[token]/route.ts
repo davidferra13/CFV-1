@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { checkRateLimit } from '@/lib/rateLimit'
 
 // Public iCal feed endpoint - no auth required.
@@ -21,10 +21,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
     return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Look up chef by feed token
-  const { data: chef } = await (supabase
+  const { data: chef } = await (db
     .from('chefs')
     .select('id, business_name')
     .eq('ical_feed_token' as any, token)
@@ -38,7 +38,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ tok
   // Fetch events - include upcoming and recent past (30 days back)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: events } = await (supabase
+  const { data: events } = await (db
     .from('events')
     .select('id, occasion, event_date, start_time, end_time, status, location, guest_count, notes')
     .eq('tenant_id', chef.id)

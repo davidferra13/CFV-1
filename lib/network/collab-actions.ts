@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import {
@@ -229,36 +229,36 @@ const HandoffTimelineSchema = z.object({
   limit: z.number().int().min(1).max(100).optional(),
 })
 
-function trustedCircleTable(supabase: any): any {
-  return supabase.from('chef_trusted_circle')
+function trustedCircleTable(db: any): any {
+  return db.from('chef_trusted_circle')
 }
 
-function handoffsTable(supabase: any): any {
-  return supabase.from('chef_handoffs')
+function handoffsTable(db: any): any {
+  return db.from('chef_handoffs')
 }
 
-function handoffRecipientsTable(supabase: any): any {
-  return supabase.from('chef_handoff_recipients')
+function handoffRecipientsTable(db: any): any {
+  return db.from('chef_handoff_recipients')
 }
 
-function handoffEventsTable(supabase: any): any {
-  return supabase.from('chef_handoff_events')
+function handoffEventsTable(db: any): any {
+  return db.from('chef_handoff_events')
 }
 
-function availabilitySignalsTable(supabase: any): any {
-  return supabase.from('chef_availability_signals')
+function availabilitySignalsTable(db: any): any {
+  return db.from('chef_availability_signals')
 }
 
-function chefConnectionsTable(supabase: any): any {
-  return supabase.from('chef_connections')
+function chefConnectionsTable(db: any): any {
+  return db.from('chef_connections')
 }
 
-function socialNotificationsTable(supabase: any): any {
-  return supabase.from('chef_social_notifications')
+function socialNotificationsTable(db: any): any {
+  return db.from('chef_social_notifications')
 }
 
-async function getConnectedChefIds(supabase: any, chefId: string): Promise<Set<string>> {
-  const { data } = await chefConnectionsTable(supabase)
+async function getConnectedChefIds(db: any, chefId: string): Promise<Set<string>> {
+  const { data } = await chefConnectionsTable(db)
     .select('requester_id, addressee_id')
     .eq('status', 'accepted')
     .or(`requester_id.eq.${chefId},addressee_id.eq.${chefId}`)
@@ -270,14 +270,11 @@ async function getConnectedChefIds(supabase: any, chefId: string): Promise<Set<s
   return connectedIds
 }
 
-async function getChefCardsById(
-  supabase: any,
-  chefIds: string[]
-): Promise<Map<string, CollabChefCard>> {
+async function getChefCardsById(db: any, chefIds: string[]): Promise<Map<string, CollabChefCard>> {
   const uniqueIds = Array.from(new Set(chefIds.filter(Boolean)))
   if (uniqueIds.length === 0) return new Map()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select(
       `id, display_name, business_name, profile_image_url,
@@ -303,7 +300,7 @@ async function getChefCardsById(
 }
 
 async function logHandoffEvent(
-  supabase: any,
+  db: any,
   input: {
     handoffId: string
     actorChefId: string
@@ -319,7 +316,7 @@ async function logHandoffEvent(
     metadata?: Record<string, any>
   }
 ) {
-  await handoffEventsTable(supabase).insert({
+  await handoffEventsTable(db).insert({
     handoff_id: input.handoffId,
     actor_chef_id: input.actorChefId,
     event_type: input.eventType,
@@ -328,7 +325,7 @@ async function logHandoffEvent(
 }
 
 async function createCollabSocialNotifications(
-  supabase: any,
+  db: any,
   input: {
     recipients: string[]
     actorChefId: string
@@ -349,25 +346,22 @@ async function createCollabSocialNotifications(
       }))
 
     if (rows.length === 0) return
-    await socialNotificationsTable(supabase).insert(rows)
+    await socialNotificationsTable(db).insert(rows)
   } catch (error) {
     console.error('[createCollabSocialNotifications] Non-blocking error:', error)
   }
 }
 
 async function recomputeHandoffStatus(
-  supabase: any,
+  db: any,
   handoffId: string,
   actorChefId: string
 ): Promise<void> {
-  const { data: handoff } = await handoffsTable(supabase)
-    .select('status')
-    .eq('id', handoffId)
-    .single()
+  const { data: handoff } = await handoffsTable(db).select('status').eq('id', handoffId).single()
   if (!handoff) return
   if (handoff.status === 'cancelled' || handoff.status === 'expired') return
 
-  const { data: recipients } = await handoffRecipientsTable(supabase)
+  const { data: recipients } = await handoffRecipientsTable(db)
     .select('status')
     .eq('handoff_id', handoffId)
 
@@ -377,8 +371,8 @@ async function recomputeHandoffStatus(
   const nextStatus = deriveHandoffStatusFromRecipients(statuses)
 
   if (handoff.status !== nextStatus) {
-    await handoffsTable(supabase).update({ status: nextStatus }).eq('id', handoffId)
-    await logHandoffEvent(supabase, {
+    await handoffsTable(db).update({ status: nextStatus }).eq('id', handoffId)
+    await logHandoffEvent(db, {
       handoffId,
       actorChefId,
       eventType: 'status_recomputed',
@@ -397,7 +391,7 @@ function chunkValues<T>(values: T[], size: number): T[][] {
 }
 
 async function getExpiredHandoffIdsByCandidateIds(
-  supabase: any,
+  db: any,
   candidateIds: string[],
   nowIso: string
 ): Promise<string[]> {
@@ -406,7 +400,7 @@ async function getExpiredHandoffIdsByCandidateIds(
 
   const expiredIds: string[] = []
   for (const idBatch of chunkValues(uniqueIds, 200)) {
-    const { data, error } = await handoffsTable(supabase)
+    const { data, error } = await handoffsTable(db)
       .select('id')
       .in('id', idBatch)
       .in('status', ['open', 'partially_accepted'])
@@ -424,13 +418,13 @@ async function getExpiredHandoffIdsByCandidateIds(
 }
 
 async function expireOverdueHandoffsForChef(
-  supabase: any,
+  db: any,
   chefId: string
 ): Promise<{ expiredIds: string[] }> {
   const nowIso = new Date().toISOString()
   const expiredCandidateIds = new Set<string>()
 
-  const { data: authoredHandoffs, error: authoredError } = await handoffsTable(supabase)
+  const { data: authoredHandoffs, error: authoredError } = await handoffsTable(db)
     .select('id')
     .eq('from_chef_id', chefId)
     .in('status', ['open', 'partially_accepted'])
@@ -443,7 +437,7 @@ async function expireOverdueHandoffsForChef(
     for (const row of (authoredHandoffs ?? []) as any[]) expiredCandidateIds.add(row.id)
   }
 
-  const { data: recipientRows, error: recipientError } = await handoffRecipientsTable(supabase)
+  const { data: recipientRows, error: recipientError } = await handoffRecipientsTable(db)
     .select('handoff_id')
     .eq('recipient_chef_id', chefId)
 
@@ -452,7 +446,7 @@ async function expireOverdueHandoffsForChef(
   } else {
     const recipientHandoffIds = ((recipientRows ?? []) as any[]).map((row) => row.handoff_id)
     const recipientExpiredIds = await getExpiredHandoffIdsByCandidateIds(
-      supabase,
+      db,
       recipientHandoffIds,
       nowIso
     )
@@ -462,7 +456,7 @@ async function expireOverdueHandoffsForChef(
   const candidateList = Array.from(expiredCandidateIds)
   if (candidateList.length === 0) return { expiredIds: [] }
 
-  const { data: expiredRows, error: expireError } = await handoffsTable(supabase)
+  const { data: expiredRows, error: expireError } = await handoffsTable(db)
     .update({ status: 'expired' })
     .in('id', candidateList)
     .in('status', ['open', 'partially_accepted'])
@@ -476,7 +470,7 @@ async function expireOverdueHandoffsForChef(
   const expiredIds = ((expiredRows ?? []) as any[]).map((row) => row.id)
   if (expiredIds.length === 0) return { expiredIds: [] }
 
-  const { error: recipientWithdrawError } = await handoffRecipientsTable(supabase)
+  const { error: recipientWithdrawError } = await handoffRecipientsTable(db)
     .update({ status: 'withdrawn', responded_at: nowIso })
     .in('handoff_id', expiredIds)
     .in('status', ['sent', 'viewed'])
@@ -486,7 +480,7 @@ async function expireOverdueHandoffsForChef(
   }
 
   for (const handoffId of expiredIds) {
-    await logHandoffEvent(supabase, {
+    await logHandoffEvent(db, {
       handoffId,
       actorChefId: chefId,
       eventType: 'status_recomputed',
@@ -499,9 +493,9 @@ async function expireOverdueHandoffsForChef(
 
 export async function getTrustedCircle(): Promise<TrustedCircleMember[]> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await trustedCircleTable(supabase)
+  const { data } = await trustedCircleTable(db)
     .select('id, trusted_chef_id, trust_level, notes, created_at')
     .eq('chef_id', user.entityId)
     .order('created_at', { ascending: false })
@@ -516,7 +510,7 @@ export async function getTrustedCircle(): Promise<TrustedCircleMember[]> {
 
   if (trustedRows.length === 0) return []
   const chefMap = await getChefCardsById(
-    supabase,
+    db,
     trustedRows.map((row) => row.trusted_chef_id)
   )
 
@@ -538,18 +532,18 @@ export async function getTrustedCircle(): Promise<TrustedCircleMember[]> {
 export async function addTrustedChef(input: z.infer<typeof TrustedChefSchema>) {
   const user = await requireChef()
   const validated = TrustedChefSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   if (validated.trustedChefId === user.entityId) {
     throw new Error('You cannot add yourself to your trusted circle.')
   }
 
-  const connected = await getConnectedChefIds(supabase, user.entityId)
+  const connected = await getConnectedChefIds(db, user.entityId)
   if (!connected.has(validated.trustedChefId)) {
     throw new Error('You can only add accepted connections to your trusted circle.')
   }
 
-  const { error } = await trustedCircleTable(supabase).upsert(
+  const { error } = await trustedCircleTable(db).upsert(
     {
       chef_id: user.entityId,
       trusted_chef_id: validated.trustedChefId,
@@ -573,13 +567,13 @@ export async function getCollabRecipientSuggestions(
 ): Promise<CollabRecipientSuggestion[]> {
   const user = await requireChef()
   const validated = SuggestRecipientsSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const connectedIds = Array.from(await getConnectedChefIds(supabase, user.entityId))
+  const connectedIds = Array.from(await getConnectedChefIds(db, user.entityId))
   if (connectedIds.length === 0) return []
 
-  const chefCards = await getChefCardsById(supabase, connectedIds)
-  const trustedRows = await trustedCircleTable(supabase)
+  const chefCards = await getChefCardsById(db, connectedIds)
+  const trustedRows = await trustedCircleTable(db)
     .select('trusted_chef_id, trust_level')
     .eq('chef_id', user.entityId)
   const trustedMap = new Map<string, TrustLevel>()
@@ -588,7 +582,7 @@ export async function getCollabRecipientSuggestions(
   }
 
   const boundaryDate = validated.eventDate ?? new Date().toISOString().slice(0, 10)
-  const { data: signalRows } = await availabilitySignalsTable(supabase)
+  const { data: signalRows } = await availabilitySignalsTable(db)
     .select(
       'chef_id, date_start, date_end, region_text, cuisines, max_guest_count, status, share_with_trusted_only, updated_at'
     )
@@ -662,10 +656,10 @@ export async function getCollabRecipientSuggestions(
 
 export async function getCollabUnreadCount(): Promise<number> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
-  await expireOverdueHandoffsForChef(supabase, user.entityId)
+  const db = createServerClient({ admin: true })
+  await expireOverdueHandoffsForChef(db, user.entityId)
 
-  const { count, error } = await handoffRecipientsTable(supabase)
+  const { count, error } = await handoffRecipientsTable(db)
     .select('*', { count: 'exact', head: true })
     .eq('recipient_chef_id', user.entityId)
     .eq('status', 'sent')
@@ -680,14 +674,14 @@ export async function getCollabUnreadCount(): Promise<number> {
 
 export async function getCollabMetrics(windowDays = 90): Promise<CollabMetrics> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
-  await expireOverdueHandoffsForChef(supabase, user.entityId)
+  const db = createServerClient({ admin: true })
+  await expireOverdueHandoffsForChef(db, user.entityId)
   const safeWindowDays = Math.min(Math.max(windowDays, 7), 365)
   const since = new Date()
   since.setDate(since.getDate() - safeWindowDays)
   const sinceIso = since.toISOString()
 
-  const { data: outgoingHandoffs, error: outgoingError } = await handoffsTable(supabase)
+  const { data: outgoingHandoffs, error: outgoingError } = await handoffsTable(db)
     .select('id, status, created_at')
     .eq('from_chef_id', user.entityId)
     .gte('created_at', sinceIso)
@@ -700,7 +694,7 @@ export async function getCollabMetrics(windowDays = 90): Promise<CollabMetrics> 
   const { data: outgoingRecipients, error: recipientError } =
     outgoingIds.length === 0
       ? { data: [] as any[], error: null }
-      : await handoffRecipientsTable(supabase)
+      : await handoffRecipientsTable(db)
           .select('handoff_id, status, responded_at')
           .in('handoff_id', outgoingIds)
 
@@ -708,7 +702,7 @@ export async function getCollabMetrics(windowDays = 90): Promise<CollabMetrics> 
     console.error('[getCollabMetrics] outgoing recipients query error:', recipientError)
   }
 
-  const { data: incomingRecipients, error: incomingError } = await handoffRecipientsTable(supabase)
+  const { data: incomingRecipients, error: incomingError } = await handoffRecipientsTable(db)
     .select('status')
     .eq('recipient_chef_id', user.entityId)
     .gte('created_at', sinceIso)
@@ -740,11 +734,11 @@ export async function getCollabHandoffTimeline(
 ): Promise<CollabHandoffTimelineEvent[]> {
   const user = await requireChef()
   const validated = HandoffTimelineSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
-  await expireOverdueHandoffsForChef(supabase, user.entityId)
+  const db = createServerClient({ admin: true })
+  await expireOverdueHandoffsForChef(db, user.entityId)
   const safeLimit = validated.limit ?? 40
 
-  const { data: handoff } = await handoffsTable(supabase)
+  const { data: handoff } = await handoffsTable(db)
     .select('id, from_chef_id')
     .eq('id', validated.handoffId)
     .maybeSingle()
@@ -753,7 +747,7 @@ export async function getCollabHandoffTimeline(
 
   let canView = handoff.from_chef_id === user.entityId
   if (!canView) {
-    const { data: recipientRow } = await handoffRecipientsTable(supabase)
+    const { data: recipientRow } = await handoffRecipientsTable(db)
       .select('id')
       .eq('handoff_id', validated.handoffId)
       .eq('recipient_chef_id', user.entityId)
@@ -763,7 +757,7 @@ export async function getCollabHandoffTimeline(
 
   if (!canView) throw new Error('Access denied for this handoff timeline.')
 
-  const { data: timelineRows } = await handoffEventsTable(supabase)
+  const { data: timelineRows } = await handoffEventsTable(db)
     .select('id, handoff_id, actor_chef_id, event_type, metadata, created_at')
     .eq('handoff_id', validated.handoffId)
     .order('created_at', { ascending: false })
@@ -772,7 +766,7 @@ export async function getCollabHandoffTimeline(
   const actorIds = Array.from(
     new Set(((timelineRows ?? []) as any[]).map((row) => row.actor_chef_id).filter(Boolean))
   )
-  const actorMap = await getChefCardsById(supabase, actorIds)
+  const actorMap = await getChefCardsById(db, actorIds)
 
   return ((timelineRows ?? []) as any[]).map((row) => ({
     id: row.id,
@@ -787,9 +781,9 @@ export async function getCollabHandoffTimeline(
 export async function removeTrustedChef(trustedChefId: string) {
   const user = await requireChef()
   z.string().uuid().parse(trustedChefId)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await trustedCircleTable(supabase)
+  const { error } = await trustedCircleTable(db)
     .delete()
     .eq('chef_id', user.entityId)
     .eq('trusted_chef_id', trustedChefId)
@@ -805,9 +799,9 @@ export async function removeTrustedChef(trustedChefId: string) {
 
 export async function getCollabAvailabilitySignals(): Promise<CollabAvailabilitySignal[]> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await availabilitySignalsTable(supabase)
+  const { data } = await availabilitySignalsTable(db)
     .select('*')
     .eq('chef_id', user.entityId)
     .order('date_start', { ascending: true })
@@ -832,14 +826,14 @@ export async function upsertCollabAvailabilitySignal(
 ) {
   const user = await requireChef()
   const validated = AvailabilitySignalSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   if (validated.dateEnd < validated.dateStart) {
     throw new Error('End date must be after start date.')
   }
 
   if (validated.id) {
-    const { error } = await availabilitySignalsTable(supabase)
+    const { error } = await availabilitySignalsTable(db)
       .update({
         date_start: validated.dateStart,
         date_end: validated.dateEnd,
@@ -858,7 +852,7 @@ export async function upsertCollabAvailabilitySignal(
       throw new Error('Failed to update availability signal.')
     }
   } else {
-    const { error } = await availabilitySignalsTable(supabase).insert({
+    const { error } = await availabilitySignalsTable(db).insert({
       chef_id: user.entityId,
       date_start: validated.dateStart,
       date_end: validated.dateEnd,
@@ -883,9 +877,9 @@ export async function upsertCollabAvailabilitySignal(
 export async function deleteCollabAvailabilitySignal(signalId: string) {
   const user = await requireChef()
   z.string().uuid().parse(signalId)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await availabilitySignalsTable(supabase)
+  const { error } = await availabilitySignalsTable(db)
     .delete()
     .eq('id', signalId)
     .eq('chef_id', user.entityId)
@@ -900,11 +894,11 @@ export async function deleteCollabAvailabilitySignal(signalId: string) {
 }
 
 async function resolveHandoffRecipients(
-  supabase: any,
+  db: any,
   chefId: string,
   input: z.infer<typeof CreateHandoffSchema>
 ): Promise<string[]> {
-  const connected = await getConnectedChefIds(supabase, chefId)
+  const connected = await getConnectedChefIds(db, chefId)
 
   if (input.visibilityScope === 'selected_chefs') {
     const selected = Array.from(
@@ -921,9 +915,7 @@ async function resolveHandoffRecipients(
   }
 
   if (input.visibilityScope === 'trusted_circle') {
-    const { data } = await trustedCircleTable(supabase)
-      .select('trusted_chef_id')
-      .eq('chef_id', chefId)
+    const { data } = await trustedCircleTable(db).select('trusted_chef_id').eq('chef_id', chefId)
     const trusted = Array.from(new Set(((data ?? []) as any[]).map((row) => row.trusted_chef_id)))
     const validTrusted = trusted.filter((id) => connected.has(id))
     if (validTrusted.length === 0) {
@@ -945,15 +937,15 @@ export async function createCollabHandoff(input: z.infer<typeof CreateHandoffSch
     ...input,
     sourceEntityType: input.sourceEntityType ?? 'manual',
   })
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   if (validated.expiresAt && hasCollabHandoffExpired(validated.expiresAt)) {
     throw new Error('Handoff expiration must be in the future.')
   }
 
-  const recipientChefIds = await resolveHandoffRecipients(supabase, user.entityId, validated)
+  const recipientChefIds = await resolveHandoffRecipients(db, user.entityId, validated)
 
-  const { data: handoff, error: handoffError } = await handoffsTable(supabase)
+  const { data: handoff, error: handoffError } = await handoffsTable(db)
     .insert({
       from_chef_id: user.entityId,
       title: validated.title,
@@ -984,13 +976,13 @@ export async function createCollabHandoff(input: z.infer<typeof CreateHandoffSch
     status: 'sent',
   }))
 
-  const { error: recipientsError } = await handoffRecipientsTable(supabase).insert(recipientRows)
+  const { error: recipientsError } = await handoffRecipientsTable(db).insert(recipientRows)
   if (recipientsError) {
     console.error('[createCollabHandoff] recipient insert error:', recipientsError)
     throw new Error('Failed to assign handoff recipients.')
   }
 
-  await logHandoffEvent(supabase, {
+  await logHandoffEvent(db, {
     handoffId: handoff.id,
     actorChefId: user.entityId,
     eventType: 'created',
@@ -999,7 +991,7 @@ export async function createCollabHandoff(input: z.infer<typeof CreateHandoffSch
       visibility_scope: validated.visibilityScope,
     },
   })
-  await createCollabSocialNotifications(supabase, {
+  await createCollabSocialNotifications(db, {
     recipients: recipientChefIds,
     actorChefId: user.entityId,
     notificationType: 'collab_handoff_received',
@@ -1013,11 +1005,11 @@ export async function createCollabHandoff(input: z.infer<typeof CreateHandoffSch
 
 export async function getCollabInbox(limit = 50): Promise<CollabInbox> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
-  await expireOverdueHandoffsForChef(supabase, user.entityId)
+  const db = createServerClient({ admin: true })
+  await expireOverdueHandoffsForChef(db, user.entityId)
   const safeLimit = Math.min(Math.max(limit, 1), 200)
 
-  const { data: incomingRows } = await handoffRecipientsTable(supabase)
+  const { data: incomingRows } = await handoffRecipientsTable(db)
     .select('id, handoff_id, status, response_note, viewed_at, responded_at, created_at')
     .eq('recipient_chef_id', user.entityId)
     .order('created_at', { ascending: false })
@@ -1028,7 +1020,7 @@ export async function getCollabInbox(limit = 50): Promise<CollabInbox> {
   )
   const incomingHandoffsMap = new Map<string, any>()
   if (incomingHandoffIds.length > 0) {
-    const { data: incomingHandoffs } = await handoffsTable(supabase)
+    const { data: incomingHandoffs } = await handoffsTable(db)
       .select(
         'id, from_chef_id, title, handoff_type, source_entity_type, source_entity_id, status, occasion, event_date, guest_count, location_text, budget_cents, private_note, client_context, expires_at, created_at'
       )
@@ -1044,7 +1036,7 @@ export async function getCollabInbox(limit = 50): Promise<CollabInbox> {
         .filter(Boolean)
     )
   )
-  const incomingSenderMap = await getChefCardsById(supabase, incomingSenderIds)
+  const incomingSenderMap = await getChefCardsById(db, incomingSenderIds)
 
   const incoming: IncomingCollabHandoff[] = ((incomingRows ?? []) as any[])
     .map((row) => {
@@ -1078,7 +1070,7 @@ export async function getCollabInbox(limit = 50): Promise<CollabInbox> {
     })
     .filter((row): row is IncomingCollabHandoff => Boolean(row))
 
-  const { data: outgoingHandoffs } = await handoffsTable(supabase)
+  const { data: outgoingHandoffs } = await handoffsTable(db)
     .select(
       'id, title, handoff_type, source_entity_type, source_entity_id, status, occasion, event_date, guest_count, location_text, budget_cents, private_note, client_context, expires_at, visibility_scope, created_at'
     )
@@ -1090,7 +1082,7 @@ export async function getCollabInbox(limit = 50): Promise<CollabInbox> {
   const { data: outgoingRecipientRows } =
     outgoingIds.length === 0
       ? { data: [] }
-      : await handoffRecipientsTable(supabase)
+      : await handoffRecipientsTable(db)
           .select(
             'id, handoff_id, recipient_chef_id, status, response_note, viewed_at, responded_at, created_at'
           )
@@ -1100,7 +1092,7 @@ export async function getCollabInbox(limit = 50): Promise<CollabInbox> {
   const outgoingRecipientIds = Array.from(
     new Set(((outgoingRecipientRows ?? []) as any[]).map((row) => row.recipient_chef_id))
   )
-  const outgoingRecipientMap = await getChefCardsById(supabase, outgoingRecipientIds)
+  const outgoingRecipientMap = await getChefCardsById(db, outgoingRecipientIds)
 
   const recipientsByHandoff = new Map<string, any[]>()
   for (const row of (outgoingRecipientRows ?? []) as any[]) {
@@ -1164,10 +1156,10 @@ export async function getCollabInbox(limit = 50): Promise<CollabInbox> {
 export async function markCollabHandoffViewed(input: z.infer<typeof HandoffIdSchema>) {
   const user = await requireChef()
   const validated = HandoffIdSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
-  await expireOverdueHandoffsForChef(supabase, user.entityId)
+  const db = createServerClient({ admin: true })
+  await expireOverdueHandoffsForChef(db, user.entityId)
 
-  const { data: handoff } = await handoffsTable(supabase)
+  const { data: handoff } = await handoffsTable(db)
     .select('id, status')
     .eq('id', validated.handoffId)
     .maybeSingle()
@@ -1177,7 +1169,7 @@ export async function markCollabHandoffViewed(input: z.infer<typeof HandoffIdSch
     return { success: true }
   }
 
-  const { data: recipient } = await handoffRecipientsTable(supabase)
+  const { data: recipient } = await handoffRecipientsTable(db)
     .select('id, status')
     .eq('handoff_id', validated.handoffId)
     .eq('recipient_chef_id', user.entityId)
@@ -1187,17 +1179,17 @@ export async function markCollabHandoffViewed(input: z.infer<typeof HandoffIdSch
   if (recipient.status !== 'sent') return { success: true }
 
   const now = new Date().toISOString()
-  await handoffRecipientsTable(supabase)
+  await handoffRecipientsTable(db)
     .update({ status: 'viewed', viewed_at: now })
     .eq('id', recipient.id)
 
-  await logHandoffEvent(supabase, {
+  await logHandoffEvent(db, {
     handoffId: validated.handoffId,
     actorChefId: user.entityId,
     eventType: 'viewed',
   })
 
-  await recomputeHandoffStatus(supabase, validated.handoffId, user.entityId)
+  await recomputeHandoffStatus(db, validated.handoffId, user.entityId)
   revalidatePath('/network')
   return { success: true }
 }
@@ -1205,10 +1197,10 @@ export async function markCollabHandoffViewed(input: z.infer<typeof HandoffIdSch
 export async function respondToCollabHandoff(input: z.infer<typeof RespondHandoffSchema>) {
   const user = await requireChef()
   const validated = RespondHandoffSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
-  await expireOverdueHandoffsForChef(supabase, user.entityId)
+  const db = createServerClient({ admin: true })
+  await expireOverdueHandoffsForChef(db, user.entityId)
 
-  const { data: handoff } = await handoffsTable(supabase)
+  const { data: handoff } = await handoffsTable(db)
     .select('id, from_chef_id, status')
     .eq('id', validated.handoffId)
     .maybeSingle()
@@ -1218,7 +1210,7 @@ export async function respondToCollabHandoff(input: z.infer<typeof RespondHandof
     throw new Error('This handoff is no longer accepting responses.')
   }
 
-  const { data: recipient } = await handoffRecipientsTable(supabase)
+  const { data: recipient } = await handoffRecipientsTable(db)
     .select('id, status')
     .eq('handoff_id', validated.handoffId)
     .eq('recipient_chef_id', user.entityId)
@@ -1231,7 +1223,7 @@ export async function respondToCollabHandoff(input: z.infer<typeof RespondHandof
 
   const nextStatus = validated.action === 'accepted' ? 'accepted' : 'rejected'
   const now = new Date().toISOString()
-  const { error } = await handoffRecipientsTable(supabase)
+  const { error } = await handoffRecipientsTable(db)
     .update({
       status: nextStatus,
       response_note: validated.responseNote ?? null,
@@ -1245,14 +1237,14 @@ export async function respondToCollabHandoff(input: z.infer<typeof RespondHandof
     throw new Error('Failed to respond to handoff.')
   }
 
-  await logHandoffEvent(supabase, {
+  await logHandoffEvent(db, {
     handoffId: validated.handoffId,
     actorChefId: user.entityId,
     eventType: validated.action,
     metadata: { response_note: validated.responseNote ?? null },
   })
   if (handoff.from_chef_id && handoff.from_chef_id !== user.entityId) {
-    await createCollabSocialNotifications(supabase, {
+    await createCollabSocialNotifications(db, {
       recipients: [handoff.from_chef_id],
       actorChefId: user.entityId,
       notificationType:
@@ -1261,7 +1253,7 @@ export async function respondToCollabHandoff(input: z.infer<typeof RespondHandof
     })
   }
 
-  await recomputeHandoffStatus(supabase, validated.handoffId, user.entityId)
+  await recomputeHandoffStatus(db, validated.handoffId, user.entityId)
   revalidatePath('/network')
   revalidatePath('/dashboard')
   return { success: true }
@@ -1270,10 +1262,10 @@ export async function respondToCollabHandoff(input: z.infer<typeof RespondHandof
 export async function cancelCollabHandoff(input: z.infer<typeof HandoffIdSchema>) {
   const user = await requireChef()
   const validated = HandoffIdSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
-  await expireOverdueHandoffsForChef(supabase, user.entityId)
+  const db = createServerClient({ admin: true })
+  await expireOverdueHandoffsForChef(db, user.entityId)
 
-  const { data: handoff } = await handoffsTable(supabase)
+  const { data: handoff } = await handoffsTable(db)
     .select('id, from_chef_id, status')
     .eq('id', validated.handoffId)
     .maybeSingle()
@@ -1284,24 +1276,24 @@ export async function cancelCollabHandoff(input: z.infer<typeof HandoffIdSchema>
 
   if (handoff.status === 'cancelled' || handoff.status === 'expired') return { success: true }
 
-  const { data: recipientsBeforeCancel } = await handoffRecipientsTable(supabase)
+  const { data: recipientsBeforeCancel } = await handoffRecipientsTable(db)
     .select('recipient_chef_id')
     .eq('handoff_id', validated.handoffId)
     .in('status', ['sent', 'viewed', 'accepted'])
 
   const now = new Date().toISOString()
-  await handoffsTable(supabase).update({ status: 'cancelled' }).eq('id', validated.handoffId)
-  await handoffRecipientsTable(supabase)
+  await handoffsTable(db).update({ status: 'cancelled' }).eq('id', validated.handoffId)
+  await handoffRecipientsTable(db)
     .update({ status: 'withdrawn', responded_at: now })
     .eq('handoff_id', validated.handoffId)
     .in('status', ['sent', 'viewed'])
 
-  await logHandoffEvent(supabase, {
+  await logHandoffEvent(db, {
     handoffId: validated.handoffId,
     actorChefId: user.entityId,
     eventType: 'cancelled',
   })
-  await createCollabSocialNotifications(supabase, {
+  await createCollabSocialNotifications(db, {
     recipients: Array.from(
       new Set(((recipientsBeforeCancel ?? []) as any[]).map((row) => row.recipient_chef_id))
     ),
@@ -1317,10 +1309,10 @@ export async function cancelCollabHandoff(input: z.infer<typeof HandoffIdSchema>
 export async function recordCollabHandoffConversion(input: z.infer<typeof ConvertHandoffSchema>) {
   const user = await requireChef()
   const validated = ConvertHandoffSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
-  await expireOverdueHandoffsForChef(supabase, user.entityId)
+  const db = createServerClient({ admin: true })
+  await expireOverdueHandoffsForChef(db, user.entityId)
 
-  const { data: handoff } = await handoffsTable(supabase)
+  const { data: handoff } = await handoffsTable(db)
     .select('id, from_chef_id, status')
     .eq('id', validated.handoffId)
     .maybeSingle()
@@ -1333,7 +1325,7 @@ export async function recordCollabHandoffConversion(input: z.infer<typeof Conver
     throw new Error('This handoff can no longer be converted.')
   }
 
-  const { data: recipient } = await handoffRecipientsTable(supabase)
+  const { data: recipient } = await handoffRecipientsTable(db)
     .select('id, status')
     .eq('handoff_id', validated.handoffId)
     .eq('recipient_chef_id', user.entityId)
@@ -1345,7 +1337,7 @@ export async function recordCollabHandoffConversion(input: z.infer<typeof Conver
   }
 
   const now = new Date().toISOString()
-  const { error } = await handoffRecipientsTable(supabase)
+  const { error } = await handoffRecipientsTable(db)
     .update({
       status: 'converted',
       converted_event_id: validated.convertedEventId ?? null,
@@ -1359,7 +1351,7 @@ export async function recordCollabHandoffConversion(input: z.infer<typeof Conver
     throw new Error('Failed to mark handoff conversion.')
   }
 
-  await logHandoffEvent(supabase, {
+  await logHandoffEvent(db, {
     handoffId: validated.handoffId,
     actorChefId: user.entityId,
     eventType: 'converted',
@@ -1369,7 +1361,7 @@ export async function recordCollabHandoffConversion(input: z.infer<typeof Conver
     },
   })
   if (handoff.from_chef_id && handoff.from_chef_id !== user.entityId) {
-    await createCollabSocialNotifications(supabase, {
+    await createCollabSocialNotifications(db, {
       recipients: [handoff.from_chef_id],
       actorChefId: user.entityId,
       notificationType: 'collab_handoff_converted',
@@ -1377,7 +1369,7 @@ export async function recordCollabHandoffConversion(input: z.infer<typeof Conver
     })
   }
 
-  await recomputeHandoffStatus(supabase, validated.handoffId, user.entityId)
+  await recomputeHandoffStatus(db, validated.handoffId, user.entityId)
   revalidatePath('/network')
   return { success: true }
 }

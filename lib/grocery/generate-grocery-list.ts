@@ -7,7 +7,7 @@
 // Consolidates duplicates, converts units, scales by guest count, groups by category.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { normalizeUnit, canConvert, addQuantities, formatQuantity } from './unit-conversion'
 import { assignStoreSection } from '@/lib/formulas/grocery-consolidation'
 
@@ -80,10 +80,10 @@ function getCategoryDisplay(category: string): string {
 
 export async function generateGroceryList(eventId: string): Promise<GroceryListData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Fetch event details + menu
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, occasion, guest_count, event_date, menu_id')
     .eq('id', eventId)
@@ -107,7 +107,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
 
   // 2. Fetch the full chain: menu -> dishes -> components -> recipes -> recipe_ingredients -> ingredients
   //    Using the real schema: menus -> dishes -> components (with recipe_id) -> recipes -> recipe_ingredients -> ingredients
-  const { data: components } = (await (supabase as any)
+  const { data: components } = (await (db as any)
     .from('components')
     .select(
       `
@@ -277,7 +277,7 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
   }
 }
 
-// ── Internal Types for Supabase Query ─────────────────────────────────
+// ── Internal Types for the database Query ─────────────────────────────────
 
 interface ComponentRow {
   id: string

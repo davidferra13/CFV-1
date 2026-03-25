@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -39,9 +39,9 @@ export async function getScheduledMessages(options?: {
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('scheduled_messages')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -84,7 +84,7 @@ export async function scheduleMessage(input: {
   context_id?: string
 }): Promise<{ data: ScheduledMessage | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const scheduledDate = new Date(input.scheduled_for)
   if (isNaN(scheduledDate.getTime())) {
@@ -95,7 +95,7 @@ export async function scheduleMessage(input: {
     return { data: null, error: 'Scheduled date must be in the future' }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('scheduled_messages')
     .insert({
       chef_id: user.entityId,
@@ -125,10 +125,10 @@ export async function cancelMessage(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the message is still cancellable
-  const { data: msg, error: fetchError } = await supabase
+  const { data: msg, error: fetchError } = await db
     .from('scheduled_messages')
     .select('status')
     .eq('id', id)
@@ -143,7 +143,7 @@ export async function cancelMessage(id: string): Promise<{
     return { data: null, error: `Cannot cancel a message with status "${msg.status}"` }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('scheduled_messages')
     .update({
       status: 'cancelled',
@@ -168,7 +168,7 @@ export async function rescheduleMessage(
   newScheduledFor: string
 ): Promise<{ data: ScheduledMessage | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const scheduledDate = new Date(newScheduledFor)
   if (isNaN(scheduledDate.getTime())) {
@@ -180,7 +180,7 @@ export async function rescheduleMessage(
   }
 
   // Verify the message is still reschedulable
-  const { data: msg, error: fetchError } = await supabase
+  const { data: msg, error: fetchError } = await db
     .from('scheduled_messages')
     .select('status')
     .eq('id', id)
@@ -195,7 +195,7 @@ export async function rescheduleMessage(
     return { data: null, error: `Cannot reschedule a message with status "${msg.status}"` }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('scheduled_messages')
     .update({
       scheduled_for: newScheduledFor,

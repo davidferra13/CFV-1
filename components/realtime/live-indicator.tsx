@@ -1,8 +1,8 @@
 'use client'
 
-// LiveIndicator - Shows Supabase realtime connection status in the nav.
+// LiveIndicator - Shows SSE realtime connection status in the nav.
 // Green dot = connected. Red dot + label = offline.
-// Uses browser online/offline events + Supabase channel health.
+// Uses browser online/offline events + connection health.
 
 import { useState, useEffect } from 'react'
 

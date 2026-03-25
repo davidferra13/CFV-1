@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 
 // --- Types ---
@@ -79,11 +79,11 @@ function distributeCents(totalCents: number, count: number): number[] {
  */
 export async function getPaymentPlan(eventId: string): Promise<EventPaymentPlan | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
   // Fetch event
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, occasion, event_date, quoted_price_cents, deposit_amount_cents')
     .eq('id', validatedEventId)
@@ -110,7 +110,7 @@ export async function getPaymentPlan(eventId: string): Promise<EventPaymentPlan 
   }
 
   // Also check for any accepted quote
-  const { data: quote } = await supabase
+  const { data: quote } = await db
     .from('quotes')
     .select('total_quoted_cents')
     .eq('event_id', validatedEventId)

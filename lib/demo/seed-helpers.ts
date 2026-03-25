@@ -6,7 +6,7 @@
 
 import type { CompatClient } from '@/lib/db/compat'
 
-// Accept both CompatClient and legacy SupabaseClient
+// Accept both CompatClient and legacy DbClient
 type DbClient = CompatClient | { from: (table: string) => any }
 
 function daysFromNow(days: number): string {

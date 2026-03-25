@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -24,9 +24,9 @@ const DEFAULT_PRINT_PREFS: PrintPreferences = {
 
 export async function getPrintPreferences(): Promise<PrintPreferences> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_preferences')
     .select('print_preferences')
     .eq('tenant_id', user.tenantId!)
@@ -44,9 +44,9 @@ export async function getPrintPreferences(): Promise<PrintPreferences> {
  */
 export async function getDocumentAttribution(): Promise<string | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_preferences')
     .select('print_preferences')
     .eq('tenant_id', user.tenantId!)
@@ -60,7 +60,7 @@ export async function getDocumentAttribution(): Promise<string | null> {
   if (prefs.attribution_name) return prefs.attribution_name
 
   // Otherwise fall back to business name
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name')
     .eq('id', user.tenantId!)
@@ -79,9 +79,9 @@ export async function getDocumentContext(): Promise<{
   customFooter: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_preferences')
     .select('print_preferences')
     .eq('tenant_id', user.tenantId!)
@@ -94,7 +94,7 @@ export async function getDocumentContext(): Promise<{
     if (prefs.attribution_name) {
       generatedBy = prefs.attribution_name
     } else {
-      const { data: chef } = await supabase
+      const { data: chef } = await db
         .from('chefs')
         .select('business_name')
         .eq('id', user.tenantId!)
@@ -116,13 +116,13 @@ export async function updatePrintPreferences(
   updates: Partial<PrintPreferences>
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Merge with existing
   const current = await getPrintPreferences()
   const merged = { ...current, ...updates }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_preferences')
     .update({ print_preferences: merged })
     .eq('tenant_id', user.tenantId!)

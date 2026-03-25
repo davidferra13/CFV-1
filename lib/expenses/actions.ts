@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { EXPENSE_CATEGORY_VALUES } from '@/lib/constants/expense-categories'
@@ -75,9 +75,9 @@ export type ExpenseFilters = {
 export async function createExpense(input: CreateExpenseInput) {
   const user = await requireChef()
   const validated = CreateExpenseSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .insert({
       ...validated,
@@ -139,9 +139,9 @@ export async function createExpense(input: CreateExpenseInput) {
  */
 export async function getExpenses(filters: ExpenseFilters = {}) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('expenses')
     .select(
       `
@@ -182,9 +182,9 @@ export async function getExpenses(filters: ExpenseFilters = {}) {
  */
 export async function getExpenseById(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .select(
       `
@@ -210,9 +210,9 @@ export async function getExpenseById(id: string) {
 export async function updateExpense(id: string, input: UpdateExpenseInput) {
   const user = await requireChef()
   const validated = UpdateExpenseSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .update({
       ...validated,
@@ -243,21 +243,17 @@ export async function updateExpense(id: string, input: UpdateExpenseInput) {
  */
 export async function deleteExpense(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the expense first to know which event to revalidate
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('expenses')
     .select('event_id')
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  const { error } = await supabase
-    .from('expenses')
-    .delete()
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
+  const { error } = await db.from('expenses').delete().eq('id', id).eq('tenant_id', user.tenantId!)
 
   if (error) {
     console.error('[deleteExpense] Error:', error)
@@ -278,9 +274,9 @@ export async function deleteExpense(id: string) {
  */
 export async function getEventExpenses(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .select('*')
     .eq('event_id', eventId)
@@ -316,10 +312,10 @@ export async function getEventExpenses(eventId: string) {
  */
 export async function getEventProfitSummary(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get event financial summary from the view (has revenue + expense data)
-  const { data: summary } = await supabase
+  const { data: summary } = await db
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', eventId)
@@ -327,14 +323,14 @@ export async function getEventProfitSummary(eventId: string) {
     .single()
 
   // Get expense breakdown by category (include card_cashback_percent)
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('category, amount_cents, is_business, payment_card_used, card_cashback_percent')
     .eq('event_id', eventId)
     .eq('tenant_id', user.tenantId!)
 
   // Get event time tracking, guest count, and estimated food cost data
-  const { data: eventData } = await supabase
+  const { data: eventData } = await db
     .from('events')
     .select(
       'time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes, guest_count, estimated_food_cost_cents'
@@ -405,7 +401,7 @@ export async function getEventProfitSummary(eventId: string) {
 
   // Fetch chef's average food cost % across other completed events (for comparison)
   let chefAvgFoodCostPercent: number | null = null
-  const { data: historicalRows } = await supabase
+  const { data: historicalRows } = await db
     .from('event_financial_summary')
     .select('food_cost_percentage')
     .eq('tenant_id', user.tenantId!)
@@ -495,7 +491,7 @@ export async function getEventProfitSummary(eventId: string) {
  */
 export async function getMonthlyFinancialSummary(year: number, month: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build date range for the month
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
@@ -504,7 +500,7 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
   const endDate = `${endYear}-${String(endMonth).padStart(2, '0')}-01`
 
   // Get events in this month with financial summaries
-  const { data: eventSummaries } = await supabase
+  const { data: eventSummaries } = await db
     .from('event_financial_summary')
     .select(
       `
@@ -521,7 +517,7 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
     .eq('tenant_id', user.tenantId!)
 
   // Get events in this month to filter summaries
-  const { data: monthEvents } = await supabase
+  const { data: monthEvents } = await db
     .from('events')
     .select('id, occasion, event_date, status, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -598,10 +594,10 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
  */
 export async function getBudgetGuardrail(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get quoted price and any manually-set budget for this event
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('quoted_price_cents, food_cost_budget_cents')
     .eq('id', eventId)
@@ -623,7 +619,7 @@ export async function getBudgetGuardrail(eventId: string) {
       : Math.round(quotedPriceCents * (1 - targetMarginPercent / 100))
 
   // Get current expenses already logged for this event (business only)
-  const { data: existingExpenses } = await supabase
+  const { data: existingExpenses } = await db
     .from('expenses')
     .select('amount_cents')
     .eq('event_id', eventId)
@@ -636,7 +632,7 @@ export async function getBudgetGuardrail(eventId: string) {
   )
 
   // Get historical average grocery spend for similar events
-  const { data: historicalExpenses } = await supabase
+  const { data: historicalExpenses } = await db
     .from('expenses')
     .select('amount_cents, event_id')
     .eq('tenant_id', user.tenantId!)

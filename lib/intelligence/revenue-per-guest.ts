@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,9 +49,9 @@ export interface RevenuePerGuestResult {
 export async function getRevenuePerGuest(): Promise<RevenuePerGuestResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('id, event_date, guest_count, quoted_price_cents, occasion, service_style')
     .eq('tenant_id', tenantId)

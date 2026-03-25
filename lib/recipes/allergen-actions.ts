@@ -6,7 +6,7 @@
 // Uses Upstash cache upstream (in lib/nutrition/edamam.ts) to stay under 10K/month limit.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { analyzeRecipe } from '@/lib/nutrition/edamam'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -34,7 +34,7 @@ export type AllergenResult = {
  */
 export async function detectAllergens(recipeId: string): Promise<AllergenResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const emptyResult: AllergenResult = {
     allergens: [],
@@ -49,7 +49,7 @@ export async function detectAllergens(recipeId: string): Promise<AllergenResult>
   }
 
   // 1. Fetch recipe ingredients
-  const { data: recipe } = await supabase
+  const { data: recipe } = await db
     .from('recipes')
     .select('id, name')
     .eq('id', recipeId)
@@ -60,7 +60,7 @@ export async function detectAllergens(recipeId: string): Promise<AllergenResult>
     throw new Error('Recipe not found')
   }
 
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select(
       `

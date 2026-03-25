@@ -1,18 +1,18 @@
-# Phase 2: Supabase Compatibility Layer (Drizzle-backed)
+# Phase 2: PostgreSQL Compatibility Layer (Drizzle-backed)
 
 ## What Changed
 
-Instead of converting 1,012 individual files from Supabase PostgREST queries to Drizzle ORM syntax, we built a **compatibility shim** that makes `createServerClient()` and `createAdminClient()` return a Drizzle-backed query builder that mimics the Supabase PostgREST API.
+Instead of converting 1,012 individual files from query builder queries to Drizzle ORM syntax, we built a **compatibility shim** that makes `createServerClient()` and `createAdminClient()` return a Drizzle-backed query builder that mimics the query builder API.
 
-This removes the Supabase SDK from the server-side data query path while keeping all consumer files unchanged.
+This removes the database SDK from the server-side data query path while keeping all consumer files unchanged.
 
 ## Files Modified
 
 | File                     | Change                                          |
 | ------------------------ | ----------------------------------------------- |
 | `lib/db/compat.ts`       | New. 1,300-line compatibility query builder     |
-| `lib/supabase/server.ts` | Now returns `CompatClient` from `lib/db/compat` |
-| `lib/supabase/admin.ts`  | Now returns `CompatClient` from `lib/db/compat` |
+| `lib/database/server.ts` | Now returns `CompatClient` from `lib/db/compat` |
+| `lib/database/admin.ts`  | Now returns `CompatClient` from `lib/db/compat` |
 
 ## Architecture
 
@@ -35,7 +35,7 @@ PostgreSQL (localhost:54322)
 Previously:
 
 ```
-Consumer files -> Supabase SDK -> PostgREST API -> PostgreSQL
+Consumer files -> database SDK -> PostgREST API -> PostgreSQL
 ```
 
 Now:
@@ -104,17 +104,17 @@ When a query uses nested selects like `.select('*, clients(full_name)')`, the co
 1. Queries `information_schema.table_constraints` once at startup to build an FK cache
 2. Uses the cached FK relationships to generate correct LEFT JOIN clauses
 3. Falls back to naming convention (`table_name` -> `table_name_id` without trailing `s`) if no FK found
-4. Returns nested data as a JSON object under the relation name (matching Supabase behavior)
+4. Returns nested data as a JSON object under the relation name (matching PostgreSQL behavior)
 
-## What Still Uses Supabase SDK
+## What Still Uses database SDK
 
-13 files import from `@/lib/supabase/client` (browser-side):
+13 files import from `@/lib/database/client` (browser-side):
 
 - 10 for Realtime subscriptions (Phase 3b)
 - 2 for Storage operations (Phase 3)
 - 1 for Auth (test banner)
 
-63 files import directly from `@supabase/supabase-js` or `@supabase/ssr`:
+63 files import directly from `@database/database-js` or `@database/ssr`:
 
 - Scripts, tests, queue providers, cron jobs
 - These will be addressed in Phase 4 cleanup

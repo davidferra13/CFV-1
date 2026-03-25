@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type StaffActivity = {
   id: string
@@ -27,13 +27,13 @@ export type StaffActivity = {
  */
 export async function getStaffActivityBoard(): Promise<StaffActivity[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
   const today = new Date().toISOString().split('T')[0]
   const now = Date.now()
 
   // Fetch all active staff
-  const { data: staffMembers, error: staffError } = await supabase
+  const { data: staffMembers, error: staffError } = await db
     .from('staff_members')
     .select('id, name, role')
     .eq('chef_id', tenantId)
@@ -49,21 +49,21 @@ export async function getStaffActivityBoard(): Promise<StaffActivity[]> {
   // Fetch data in parallel
   const [tasksResult, completionLogResult, opsLogResult, clipboardResult] = await Promise.all([
     // Today's tasks per staff member
-    supabase
+    db
       .from('tasks')
       .select('id, assigned_to, status, title')
       .eq('chef_id', tenantId)
       .eq('due_date', today)
       .in('assigned_to', staffIds),
     // Recent task completion log (today)
-    supabase
+    db
       .from('task_completion_log')
       .select('completed_by, completed_at')
       .eq('chef_id', tenantId)
       .gte('completed_at', today + 'T00:00:00')
       .order('completed_at', { ascending: false }),
     // Recent ops log entries (today, by staff)
-    supabase
+    db
       .from('ops_log')
       .select('staff_member_id, created_at, action_type')
       .eq('chef_id', tenantId)
@@ -72,7 +72,7 @@ export async function getStaffActivityBoard(): Promise<StaffActivity[]> {
       .order('created_at', { ascending: false })
       .limit(100),
     // Station clipboard entries (today, updated_by staff)
-    supabase
+    db
       .from('clipboard_entries')
       .select('updated_by, updated_at')
       .eq('chef_id', tenantId)

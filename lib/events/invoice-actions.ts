@@ -7,7 +7,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { format } from 'date-fns'
 import { calculateSalesTax } from '@/lib/tax/api-ninjas'
@@ -103,11 +103,11 @@ export type InvoiceData = {
  * Counts existing invoices for the tenant in the current year.
  */
 export async function generateInvoiceNumber(tenantId: string): Promise<string> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const year = new Date().getFullYear()
 
   // Count how many invoices this tenant already has this year
-  const { count } = await supabase
+  const { count } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -125,10 +125,10 @@ export async function generateInvoiceNumber(tenantId: string): Promise<string> {
  * Idempotent - does nothing if invoice_number is already set.
  */
 export async function assignInvoiceNumber(eventId: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Check if already assigned
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, invoice_number, tenant_id')
     .eq('id', eventId)
@@ -138,7 +138,7 @@ export async function assignInvoiceNumber(eventId: string) {
 
   const invoiceNumber = await generateInvoiceNumber(event.tenant_id)
 
-  await supabase
+  await db
     .from('events')
     .update({
       invoice_number: invoiceNumber,
@@ -160,9 +160,9 @@ export async function assignInvoiceNumber(eventId: string) {
  */
 export async function getInvoiceData(eventId: string): Promise<InvoiceData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -180,7 +180,7 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
 
   if (!event) return null
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, email, phone')
     .eq('id', user.tenantId!)
@@ -189,7 +189,7 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
   if (!chef) return null
 
   // Fetch ledger entries for this event
-  const { data: ledgerEntries } = await supabase
+  const { data: ledgerEntries } = await db
     .from('ledger_entries')
     .select(
       'id, amount_cents, entry_type, payment_method, received_at, created_at, description, transaction_reference, is_refund'
@@ -206,7 +206,7 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
       ? getClientLoyaltySnapshotByTenant(user.tenantId, clientData.id).catch(() => null)
       : Promise.resolve(null),
     getEventLoyaltyAdjustmentSummary({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       clientId: clientData?.id,
       eventId,
@@ -217,7 +217,7 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
   const afterLoyaltyCents = loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents
   let betaResult: BetaDiscountResult | null = null
   if (clientData?.id) {
-    const { data: clientBeta } = await supabase
+    const { data: clientBeta } = await db
       .from('clients')
       .select('is_beta_tester, beta_discount_percent')
       .eq('id', clientData.id)
@@ -255,9 +255,9 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
  */
 export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceData | null> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -275,7 +275,7 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
 
   if (!event) return null
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, email, phone')
     .eq('id', event.tenant_id as string)
@@ -283,7 +283,7 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
 
   if (!chef) return null
 
-  const { data: ledgerEntries } = await supabase
+  const { data: ledgerEntries } = await db
     .from('ledger_entries')
     .select(
       'id, amount_cents, entry_type, payment_method, received_at, created_at, description, transaction_reference, is_refund'
@@ -301,7 +301,7 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
       ? getClientLoyaltySnapshotByTenant(tenantId, clientData.id).catch(() => null)
       : Promise.resolve(null),
     getEventLoyaltyAdjustmentSummary({
-      supabase,
+      db,
       tenantId,
       clientId: clientData?.id,
       eventId,
@@ -312,7 +312,7 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
   const afterLoyaltyCents = loyaltyAdjustments?.adjustedServiceCents ?? baseServiceCents
   let betaResult: BetaDiscountResult | null = null
   if (clientData?.id) {
-    const { data: clientBeta } = await supabase
+    const { data: clientBeta } = await db
       .from('clients')
       .select('is_beta_tester, beta_discount_percent')
       .eq('id', clientData.id)
@@ -415,14 +415,14 @@ function isMissingSnapshotColumnError(error: QueryErrorLike): boolean {
 }
 
 async function fetchDeliveredRedemptionsForEvent(params: {
-  supabase: any
+  db: any
   tenantId: string
   clientId: string
   eventId: string
 }): Promise<RawRedemptionRow[]> {
-  const { supabase, tenantId, clientId, eventId } = params
+  const { db, tenantId, clientId, eventId } = params
 
-  const withSnapshots = await supabase
+  const withSnapshots = await db
     .from('loyalty_reward_redemptions')
     .select(
       'id, reward_id, reward_name, reward_type, points_spent, created_at, reward_value_cents, reward_percent'
@@ -439,7 +439,7 @@ async function fetchDeliveredRedemptionsForEvent(params: {
   }
 
   // Backward-compatible fallback before snapshot migration is applied.
-  const legacy = await supabase
+  const legacy = await db
     .from('loyalty_reward_redemptions')
     .select('id, reward_id, reward_name, reward_type, points_spent, created_at')
     .eq('tenant_id', tenantId)
@@ -453,18 +453,18 @@ async function fetchDeliveredRedemptionsForEvent(params: {
 }
 
 async function getEventLoyaltyAdjustmentSummary(params: {
-  supabase: any
+  db: any
   tenantId: string
   clientId: string | null | undefined
   eventId: string
   baseServiceCents: number
 }): Promise<LoyaltyInvoiceAdjustmentSummary | null> {
-  const { supabase, tenantId, clientId, eventId, baseServiceCents } = params
+  const { db, tenantId, clientId, eventId, baseServiceCents } = params
   if (!clientId || baseServiceCents <= 0) return null
 
   try {
     const rows = await fetchDeliveredRedemptionsForEvent({
-      supabase,
+      db,
       tenantId,
       clientId,
       eventId,
@@ -486,7 +486,7 @@ async function getEventLoyaltyAdjustmentSummary(params: {
 
     const rewardValueMap = new Map<string, RawRewardValueRow>()
     if (missingRewardValueIds.length > 0) {
-      const { data: rewardRows, error: rewardErr } = await supabase
+      const { data: rewardRows, error: rewardErr } = await db
         .from('loyalty_rewards')
         .select('id, reward_value_cents, reward_percent')
         .in('id', missingRewardValueIds)

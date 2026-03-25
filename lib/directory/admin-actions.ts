@@ -4,7 +4,7 @@
 // Only platform admins (ADMIN_EMAILS) can approve/revoke chefs for the public directory.
 
 import { requireAdmin } from '@/lib/auth/admin'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export type DirectoryCandidate = {
@@ -24,9 +24,9 @@ export type DirectoryCandidate = {
  */
 export async function getDirectoryCandidates(): Promise<DirectoryCandidate[]> {
   await requireAdmin()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chefs')
     .select(
       'id, email, display_name, business_name, slug, profile_image_url, directory_approved, created_at'
@@ -56,12 +56,9 @@ export async function getDirectoryCandidates(): Promise<DirectoryCandidate[]> {
  */
 export async function approveChefForDirectory(chefId: string): Promise<void> {
   await requireAdmin()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase
-    .from('chefs')
-    .update({ directory_approved: true })
-    .eq('id', chefId)
+  const { error } = await db.from('chefs').update({ directory_approved: true }).eq('id', chefId)
 
   if (error) {
     console.error('[approveChefForDirectory]', error)
@@ -78,12 +75,9 @@ export async function approveChefForDirectory(chefId: string): Promise<void> {
  */
 export async function revokeChefFromDirectory(chefId: string): Promise<void> {
   await requireAdmin()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase
-    .from('chefs')
-    .update({ directory_approved: false })
-    .eq('id', chefId)
+  const { error } = await db.from('chefs').update({ directory_approved: false }).eq('id', chefId)
 
   if (error) {
     console.error('[revokeChefFromDirectory]', error)

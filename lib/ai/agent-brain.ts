@@ -155,7 +155,7 @@ export function getAgentBrainForState(
       }
       break
     case 'booking':
-      stageRules = extractBookingRules()
+      stageRules = extractBookingRules(pricingConfig)
       rateCard = extractRateCard(pricingConfig)
       break
     case 'post_service':
@@ -594,11 +594,13 @@ COMPUTE: All arithmetic is deterministic. The AI formats but NEVER calculates to
 HOLIDAY PREMIUMS: Tier 1 (+40-50%): Thanksgiving, Christmas Eve/Day, NYE, Valentine's Day. Tier 2 (+25-35%): Mother's/Father's Day, Easter, July 4th. Tier 3 (+15-25%): Memorial/Labor Day, Halloween, Graduation.`
 }
 
-function extractBookingRules(): string {
+function extractBookingRules(config?: PricingConfig): string {
   const doc = loadDocument('bookingPayment')
   if (!doc) return 'Deposit required to lock date. Payment in same email.'
 
-  const depositPct = `${DEPOSIT_PERCENTAGE * 100}%`
+  // Use chef's configured deposit percentage, fall back to 50% if not set
+  const depositDecimal = config ? config.deposit_percentage / 100 : DEPOSIT_PERCENTAGE
+  const depositPct = `${depositDecimal * 100}%`
   return `TRIGGER: Client confirmed interest, confirmed menu/course count, said "ready to pay", or asked for "next steps"/"payment"/"how to lock the date".
 DEPOSIT: ${depositPct} non-refundable. No date held without deposit. Balance due 24 hours before service.
 CRITICAL RULE: If client is ready to pay - payment instruction MUST be in the SAME email. NEVER defer to a future message.

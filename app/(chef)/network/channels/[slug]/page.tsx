@@ -11,7 +11,7 @@ import {
   getTrendingHashtags,
   getActiveStories,
 } from '@/lib/social/chef-social-actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { SocialFeedClient } from '@/components/social/social-feed-client'
 import { ChannelJoinButton } from '@/components/social/social-channel-card'
 import { ArrowLeft, Users, MessageSquare } from '@/components/ui/icons'
@@ -29,8 +29,8 @@ export default async function ChannelPage({ params }: { params: Promise<{ slug: 
   const user = await requireChef()
   const { slug } = await params
 
-  const supabase = createServerClient({ admin: true })
-  const { data: channel } = await supabase
+  const db = createServerClient({ admin: true })
+  const { data: channel } = await db
     .from('chef_social_channels')
     .select('*')
     .eq('slug', slug)
@@ -50,7 +50,7 @@ export default async function ChannelPage({ params }: { params: Promise<{ slug: 
       getActiveStories(),
     ])
 
-  const { data: me } = await supabase
+  const { data: me } = await db
     .from('chefs')
     .select('display_name, business_name, profile_image_url')
     .eq('id', user.entityId)

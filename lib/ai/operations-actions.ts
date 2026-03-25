@@ -4,7 +4,7 @@
 // PRIVACY: Handles event/client data → local Ollama only.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { searchClientsByName } from '@/lib/clients/actions'
 
 // ============================================
@@ -30,10 +30,10 @@ export async function calculatePortions(
   guestCount: number
 ): Promise<PortionResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find recipe by name
-  const { data: recipes } = await supabase
+  const { data: recipes } = await db
     .from('recipes')
     .select('id, name, servings')
     .eq('tenant_id', user.tenantId!)
@@ -56,7 +56,7 @@ export async function calculatePortions(
   const scaleFactor = guestCount / originalYield
 
   // Load ingredients (recipe_ingredients → ingredients join for name)
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await db
     .from('recipe_ingredients')
     .select('quantity, unit, ingredient:ingredients(name)')
     .eq('recipe_id', recipe.id)
@@ -109,10 +109,10 @@ export interface PackingListResult {
 
 export async function generatePackingList(eventName: string): Promise<PackingListResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find event - try occasion match first, then fuzzy match with client name
-  let { data: events } = await supabase
+  let { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, guest_count, location_type, location_address, status')
     .eq('tenant_id', user.tenantId!)
@@ -152,7 +152,7 @@ export async function generatePackingList(eventName: string): Promise<PackingLis
     for (const word of words) {
       const occasionWords = words.filter((w) => w.toLowerCase() !== word.toLowerCase()).join('%')
       if (!occasionWords) continue
-      const { data: fuzzy } = await supabase
+      const { data: fuzzy } = await db
         .from('events')
         .select(
           'id, occasion, event_date, guest_count, location_type, location_address, status, client_id'
@@ -166,7 +166,7 @@ export async function generatePackingList(eventName: string): Promise<PackingLis
       if (fuzzy && fuzzy.length > 0) {
         const clientIds = fuzzy.map((e: any) => e.client_id).filter(Boolean)
         if (clientIds.length > 0) {
-          const { data: matchingClients } = await supabase
+          const { data: matchingClients } = await db
             .from('clients')
             .select('id')
             .in('id', clientIds)
@@ -300,10 +300,10 @@ export async function analyzeCrossContamination(
   eventName: string
 ): Promise<CrossContaminationResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find event with client
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, client_id, client:clients(full_name, dietary_restrictions, allergies)')
     .eq('tenant_id', user.tenantId!)
@@ -338,7 +338,7 @@ export async function analyzeCrossContamination(
   }
 
   // Load menu items for this event's menus
-  const { data: menuItems } = await (supabase
+  const { data: menuItems } = await (db
     .from('menu_items' as any)
     .select('name, description')
     .eq('tenant_id', user.tenantId!) as any)

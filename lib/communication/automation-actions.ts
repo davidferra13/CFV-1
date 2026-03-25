@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -36,13 +36,9 @@ export async function getRules(options?: { triggerEvent?: string; activeOnly?: b
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
-    .from('automation_rules')
-    .select('*')
-    .eq('chef_id', user.entityId)
-    .order('name')
+  let query = db.from('automation_rules').select('*').eq('chef_id', user.entityId).order('name')
 
   if (options?.triggerEvent) {
     query = query.eq('trigger_event', options.triggerEvent)
@@ -74,7 +70,7 @@ export async function createRule(input: {
   is_active?: boolean
 }): Promise<{ data: AutomationRule | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!input.actions || input.actions.length === 0) {
     return { data: null, error: 'Rule must have at least one action' }
@@ -95,7 +91,7 @@ export async function createRule(input: {
     return { data: null, error: `Invalid trigger event: ${input.trigger_event}` }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('automation_rules')
     .insert({
       chef_id: user.entityId,
@@ -128,7 +124,7 @@ export async function updateRule(
   }
 ): Promise<{ data: AutomationRule | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -139,7 +135,7 @@ export async function updateRule(
   if (input.actions !== undefined) updateData.actions = input.actions
   if (input.is_active !== undefined) updateData.is_active = input.is_active
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('automation_rules')
     .update(updateData)
     .eq('id', id)
@@ -161,9 +157,9 @@ export async function toggleRule(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: current, error: fetchError } = await supabase
+  const { data: current, error: fetchError } = await db
     .from('automation_rules')
     .select('is_active')
     .eq('id', id)
@@ -174,7 +170,7 @@ export async function toggleRule(id: string): Promise<{
     return { data: null, error: 'Rule not found' }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('automation_rules')
     .update({
       is_active: !current.is_active,
@@ -199,10 +195,10 @@ export async function executeRule(
   context: Record<string, unknown>
 ): Promise<{ error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the rule
-  const { data: rule, error: fetchError } = await supabase
+  const { data: rule, error: fetchError } = await db
     .from('automation_rules')
     .select('*')
     .eq('id', id)
@@ -259,7 +255,7 @@ export async function executeRule(
 
   // Update execution count and timestamp
   try {
-    await supabase
+    await db
       .from('automation_rules')
       .update({
         execution_count: (rule.execution_count || 0) + 1,

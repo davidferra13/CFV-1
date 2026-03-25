@@ -4,7 +4,7 @@
 // Read, dismiss, and cleanup side_effect_failures records.
 
 import { requireAdmin } from '@/lib/auth/admin'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export interface SideEffectFailure {
@@ -29,11 +29,11 @@ export async function getSideEffectFailures(opts?: {
   severity?: string
 }): Promise<{ failures: SideEffectFailure[]; total: number }> {
   await requireAdmin()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const limit = opts?.limit ?? 100
 
-  let query = supabase
+  let query = db
     .from('side_effect_failures')
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
@@ -61,12 +61,9 @@ export async function getSideEffectFailures(opts?: {
 
 export async function getFailureSources(): Promise<string[]> {
   await requireAdmin()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data } = await supabase
-    .from('side_effect_failures')
-    .select('source')
-    .is('dismissed_at', null)
+  const { data } = await db.from('side_effect_failures').select('source').is('dismissed_at', null)
 
   if (!data) return []
 
@@ -76,9 +73,9 @@ export async function getFailureSources(): Promise<string[]> {
 
 export async function dismissFailure(id: string, adminEmail: string): Promise<void> {
   await requireAdmin()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { error } = await supabase
+  const { error } = await db
     .from('side_effect_failures')
     .update({ dismissed_at: new Date().toISOString(), dismissed_by: adminEmail })
     .eq('id', id)
@@ -92,9 +89,9 @@ export async function dismissFailure(id: string, adminEmail: string): Promise<vo
 
 export async function dismissAllBySource(source: string, adminEmail: string): Promise<number> {
   await requireAdmin()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('side_effect_failures')
     .update({ dismissed_at: new Date().toISOString(), dismissed_by: adminEmail })
     .eq('source', source)
@@ -115,9 +112,9 @@ export async function getFailureSummary(): Promise<{
   bySource: { source: string; count: number }[]
 }> {
   await requireAdmin()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('side_effect_failures')
     .select('severity, source')
     .is('dismissed_at', null)

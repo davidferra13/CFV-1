@@ -9,7 +9,7 @@
 //
 // The cleaner cron (activity-cleanup) removes rows older than 48 hours.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { NotificationAction } from '@/lib/notifications/types'
 import { DEFAULT_TIER_MAP } from '@/lib/notifications/tier-config'
 
@@ -31,9 +31,9 @@ export async function isSmsAllowed(tenantId: string, action: NotificationAction)
 
   const windowStart = new Date(Date.now() - windowMinutes * 60 * 1000).toISOString()
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('sms_send_log')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -57,9 +57,9 @@ export async function isSmsAllowed(tenantId: string, action: NotificationAction)
  * Call this AFTER a successful sendSms() call.
  */
 export async function recordSmsSent(tenantId: string, action: NotificationAction): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase.from('sms_send_log').insert({ tenant_id: tenantId, action })
+  const { error } = await db.from('sms_send_log').insert({ tenant_id: tenantId, action })
 
   if (error) {
     console.error('[recordSmsSent] Insert failed:', error)

@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent } from '@/components/ui/card'
 
 export default async function PublicAvailabilityPage({
@@ -7,9 +7,9 @@ export default async function PublicAvailabilityPage({
   params: Promise<{ token: string }>
 }) {
   const { token } = await params
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: shareToken } = await supabase
+  const { data: shareToken } = await db
     .from('chef_availability_share_tokens')
     .select('*, chefs(display_name)')
     .eq('token', token)
@@ -78,7 +78,7 @@ export default async function PublicAvailabilityPage({
   // Fetch events for next 60 days (only dates, no details)
   const now = new Date()
   const sixtyDaysOut = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', shareToken.tenant_id)

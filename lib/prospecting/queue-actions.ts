@@ -5,7 +5,7 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { Prospect } from './types'
 import { CALL_OUTCOMES } from './constants'
@@ -22,7 +22,7 @@ export async function buildDailyQueue(
 ): Promise<Prospect[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Smart queue priority:
   //   1. Follow-ups that are due (overdue first)
@@ -41,7 +41,7 @@ export async function buildDailyQueue(
     }
   }
 
-  function applyFilters(query: ReturnType<typeof supabase.from>) {
+  function applyFilters(query: ReturnType<typeof db.from>) {
     let q = query
     if (filters?.category) q = q.eq('category', filters.category)
     if (filters?.region) q = q.ilike('region', `%${filters.region}%`)
@@ -51,7 +51,7 @@ export async function buildDailyQueue(
 
   // 1. Follow-ups that are due
   const { data: followUps } = await applyFilters(
-    supabase
+    db
       .from('prospects')
       .select('*')
       .eq('chef_id', user.tenantId!)
@@ -65,7 +65,7 @@ export async function buildDailyQueue(
   // 2. Hot pipeline prospects (responded/meeting_set) - they showed interest, keep momentum
   if (prospects.length < count) {
     const { data: hotPipeline } = await applyFilters(
-      supabase
+      db
         .from('prospects')
         .select('*')
         .eq('chef_id', user.tenantId!)
@@ -80,7 +80,7 @@ export async function buildDailyQueue(
   // 3. Fill remaining slots with new/queued prospects (highest lead score first)
   if (prospects.length < count) {
     const { data: newProspects } = await applyFilters(
-      supabase
+      db
         .from('prospects')
         .select('*')
         .eq('chef_id', user.tenantId!)
@@ -99,7 +99,7 @@ export async function buildDailyQueue(
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
     const { data: calledProspects } = await applyFilters(
-      supabase
+      db
         .from('prospects')
         .select('*')
         .eq('chef_id', user.tenantId!)
@@ -114,7 +114,7 @@ export async function buildDailyQueue(
   // Mark all queued prospects as 'queued'
   const queuedIds = prospects.filter((p) => p.status === 'new').map((p) => p.id)
   if (queuedIds.length > 0) {
-    await supabase
+    await db
       .from('prospects')
       .update({ status: 'queued' })
       .in('id', queuedIds)
@@ -134,10 +134,10 @@ export async function logProspectCall(
 ) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get prospect data
-  const { data: prospect, error: fetchError } = await supabase
+  const { data: prospect, error: fetchError } = await db
     .from('prospects')
     .select('*')
     .eq('id', prospectId)
@@ -164,14 +164,14 @@ export async function logProspectCall(
     prospectUpdates.next_follow_up_at = followUpDate.toISOString()
   }
 
-  await supabase
+  await db
     .from('prospects')
     .update(prospectUpdates)
     .eq('id', prospectId)
     .eq('chef_id', user.tenantId!)
 
   // Create a scheduled_calls record
-  await supabase.from('scheduled_calls').insert({
+  await db.from('scheduled_calls').insert({
     tenant_id: user.tenantId!,
     call_type: 'prospecting',
     prospect_id: prospectId,
@@ -188,7 +188,7 @@ export async function logProspectCall(
 
   // Add a prospect note if notes were provided
   if (notes?.trim()) {
-    await supabase.from('prospect_notes').insert({
+    await db.from('prospect_notes').insert({
       prospect_id: prospectId,
       chef_id: user.tenantId!,
       note_type: 'call_note',
@@ -226,9 +226,9 @@ export async function logProspectCall(
 export async function convertProspectToInquiry(prospectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: prospect, error: fetchError } = await supabase
+  const { data: prospect, error: fetchError } = await db
     .from('prospects')
     .select('*')
     .eq('id', prospectId)
@@ -238,7 +238,7 @@ export async function convertProspectToInquiry(prospectId: string) {
   if (fetchError || !prospect) throw new Error('Prospect not found')
 
   // Create inquiry from prospect data
-  const { data: inquiry, error: inquiryError } = await supabase
+  const { data: inquiry, error: inquiryError } = await db
     .from('inquiries')
     .insert({
       tenant_id: user.tenantId!,
@@ -263,7 +263,7 @@ export async function convertProspectToInquiry(prospectId: string) {
   }
 
   // Update prospect with conversion link
-  await supabase
+  await db
     .from('prospects')
     .update({
       status: 'converted',
@@ -274,7 +274,7 @@ export async function convertProspectToInquiry(prospectId: string) {
     .eq('chef_id', user.tenantId!)
 
   // Add conversion note
-  await supabase.from('prospect_notes').insert({
+  await db.from('prospect_notes').insert({
     prospect_id: prospectId,
     chef_id: user.tenantId!,
     note_type: 'general',

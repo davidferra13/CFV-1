@@ -1,7 +1,7 @@
 // Chef activity log write utility.
 // Non-blocking by design.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { TablesInsert } from '@/types/database'
 import type { ChefActivityAction, ChefActivityDomain } from './chef-types'
 import { logActivityEvent } from './observability'
@@ -18,12 +18,12 @@ export async function logChefActivity(input: {
   clientId?: string
 }): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
+    const db = createServerClient({ admin: true })
 
     // Check if chef has opted out of activity logging.
     // Default to logging (true) if preference row missing or query fails.
     try {
-      const { data: prefs } = await supabase
+      const { data: prefs } = await db
         .from('chef_preferences')
         .select('activity_log_enabled')
         .eq('tenant_id', input.tenantId)
@@ -48,7 +48,7 @@ export async function logChefActivity(input: {
       client_id: input.clientId || null,
     }
 
-    const { error } = await supabase.from('chef_activity_log').insert(payload)
+    const { error } = await db.from('chef_activity_log').insert(payload)
 
     if (error) {
       logActivityEvent('error', 'logChefActivity insert failed', {

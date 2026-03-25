@@ -6,7 +6,7 @@
 // Formula > AI: pure database aggregation, zero LLM dependency.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -33,10 +33,10 @@ export async function getClientSpendingInsights(
   const user = await requireChef()
   // Always use tenant from session, not from parameter (security)
   const safeTenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all completed events for this client with financial summary data
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -69,8 +69,7 @@ export async function getClientSpendingInsights(
     const summary = event.event_financial_summary
     if (!summary) continue
 
-    const eventTotal =
-      (summary.total_paid_cents ?? 0) + (summary.tip_amount_cents ?? 0)
+    const eventTotal = (summary.total_paid_cents ?? 0) + (summary.tip_amount_cents ?? 0)
 
     if (eventTotal > 0) {
       amounts.push(eventTotal)

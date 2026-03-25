@@ -1,6 +1,6 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -57,9 +57,9 @@ export interface SalesTaxSummary {
 
 export async function getSalesTaxSettings(): Promise<SalesTaxSettings | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('sales_tax_settings')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -79,9 +79,9 @@ export async function saveSalesTaxSettings(input: {
   notes: string | null
 }): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase.from('sales_tax_settings').upsert(
+  await db.from('sales_tax_settings').upsert(
     {
       chef_id: user.entityId,
       enabled: input.enabled,
@@ -107,13 +107,13 @@ export async function setEventSalesTax(input: {
   exemptionReason: string | null
 }): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const taxCollectedCents = input.isExempt
     ? 0
     : Math.round((input.taxableAmountCents * input.taxRateBps) / 10000)
 
-  await supabase.from('event_sales_tax').upsert(
+  await db.from('event_sales_tax').upsert(
     {
       chef_id: user.entityId,
       event_id: input.eventId,
@@ -130,9 +130,9 @@ export async function setEventSalesTax(input: {
 
 export async function getEventSalesTax(eventId: string): Promise<EventSalesTax | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('event_sales_tax')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -148,9 +148,9 @@ export async function markEventSalesTaxRemitted(input: {
   remittancePeriod: string
 }): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase
+  await db
     .from('event_sales_tax')
     .update({
       remitted: true,
@@ -169,9 +169,9 @@ export async function getSalesTaxSummary(filters?: {
   periodEnd?: string
 }): Promise<SalesTaxSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('event_sales_tax')
     .select('tax_collected_cents, remitted, is_exempt, remitted_at')
     .eq('chef_id', user.entityId)
@@ -220,9 +220,9 @@ export async function recordSalesTaxRemittance(input: {
   notes: string | null
 }): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase.from('sales_tax_remittances').insert({
+  await db.from('sales_tax_remittances').insert({
     chef_id: user.entityId,
     period: input.period,
     period_start: input.periodStart,
@@ -236,9 +236,9 @@ export async function recordSalesTaxRemittance(input: {
 
 export async function getSalesTaxRemittances(): Promise<SalesTaxRemittance[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('sales_tax_remittances')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -257,9 +257,9 @@ export async function getUnremittedEventTax(): Promise<
   }>
 > {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('event_sales_tax')
     .select('event_id, tax_collected_cents, tax_rate_bps, taxable_amount_cents, remittance_period')
     .eq('chef_id', user.entityId)

@@ -1,7 +1,7 @@
 'use server'
 
 import { getCurrentUser } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 
 const FeedbackSchema = z.object({
@@ -27,9 +27,9 @@ export async function submitFeedback(
   // Best-effort: attach identity if the user is authenticated and not sending anonymously
   const user = await getCurrentUser()
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('user_feedback').insert({
+  const { error } = await db.from('user_feedback').insert({
     sentiment,
     message,
     anonymous,

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
@@ -75,10 +75,10 @@ export type UpdateQuoteInput = z.infer<typeof UpdateQuoteSchema>
 export async function createQuote(input: CreateQuoteInput) {
   const user = await requireChef()
   const validated = CreateQuoteSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to tenant
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('tenant_id')
     .eq('id', validated.client_id)
@@ -90,7 +90,7 @@ export async function createQuote(input: CreateQuoteInput) {
 
   // Verify inquiry belongs to tenant if provided
   if (validated.inquiry_id) {
-    const { data: inquiry } = await supabase
+    const { data: inquiry } = await db
       .from('inquiries')
       .select('tenant_id')
       .eq('id', validated.inquiry_id)
@@ -102,13 +102,13 @@ export async function createQuote(input: CreateQuoteInput) {
   }
 
   const result = await executeWithIdempotency({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     actionName: 'quotes.create',
     idempotencyKey: validated.idempotency_key,
     execute: async () => {
-      const { data: quote, error } = await supabase
+      const { data: quote, error } = await db
         .from('quotes')
         .insert({
           tenant_id: user.tenantId!,
@@ -194,10 +194,10 @@ export async function getQuotes(filters?: {
   event_id?: string
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const buildQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('quotes')
       .select(
         `
@@ -257,10 +257,10 @@ export async function getQuotes(filters?: {
 
 export async function getQuoteById(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('quotes')
       .select(
         `
@@ -293,7 +293,7 @@ export async function getQuoteById(id: string) {
   }
 
   // Get transition history
-  const { data: transitions } = await supabase
+  const { data: transitions } = await db
     .from('quote_state_transitions')
     .select('*')
     .eq('quote_id', id)
@@ -310,10 +310,10 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
   const user = await requireChef()
   const validated = UpdateQuoteSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify quote exists and is in draft
-  const { data: current } = await (supabase
+  const { data: current } = await (db
     .from('quotes')
     .select('*')
     .eq('id', id)
@@ -333,14 +333,14 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
   }
 
   const result = await executeWithIdempotency({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     actionName: 'quotes.update',
     idempotencyKey: idempotency_key,
     execute: async () => {
       const runUpdate = async (withSoftDeleteFilter: boolean) => {
-        let query = supabase
+        let query = db
           .from('quotes')
           .update({
             ...updateFields,
@@ -370,7 +370,7 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
       if (error || !quote) {
         if (expected_updated_at) {
           const getLatest = async (withSoftDeleteFilter: boolean) => {
-            let query = supabase
+            let query = db
               .from('quotes')
               .select('updated_at')
               .eq('id', id)
@@ -444,11 +444,11 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
 
 export async function transitionQuote(id: string, newStatus: QuoteStatus) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const warnings: string[] = []
 
   const getCurrentQuote = async (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('quotes')
       .select(
         'status, total_quoted_cents, price_per_person_cents, guest_count_estimated, pricing_model, deposit_amount_cents, deposit_percentage, deposit_required, valid_until'
@@ -489,7 +489,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     )
   }
 
-  const { data: rpcResponse, error: rpcError } = await supabase.rpc('transition_quote_atomic', {
+  const { data: rpcResponse, error: rpcError } = await db.rpc('transition_quote_atomic', {
     p_quote_id: id,
     p_tenant_id: user.tenantId!,
     p_actor_id: user.id,
@@ -520,13 +520,13 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
   // Send quote-sent email to client (non-blocking)
   if (newStatus === 'sent') {
     try {
-      const { data: client } = await supabase
+      const { data: client } = await db
         .from('clients')
         .select('email, full_name')
         .eq('id', updated.client_id)
         .single()
 
-      const { data: chef } = await supabase
+      const { data: chef } = await db
         .from('chefs')
         .select('business_name')
         .eq('id', user.tenantId!)
@@ -535,7 +535,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
       // Get occasion from linked inquiry or event
       let occasion: string | null = null
       if (updated.inquiry_id) {
-        const { data: inquiry } = await supabase
+        const { data: inquiry } = await db
           .from('inquiries')
           .select('confirmed_occasion')
           .eq('id', updated.inquiry_id)
@@ -543,7 +543,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
         occasion = inquiry?.confirmed_occasion || null
       }
       if (!occasion && updated.event_id) {
-        const { data: evt } = await supabase
+        const { data: evt } = await db
           .from('events')
           .select('occasion')
           .eq('id', updated.event_id)
@@ -715,10 +715,10 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
 
 export async function getClientPricingHistory(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('quotes')
       .select(
         `
@@ -764,10 +764,10 @@ export async function getClientPricingHistory(clientId: string) {
 
 export async function getQuotesForInquiry(inquiryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('quotes')
       .select('*')
       .eq('tenant_id', user.tenantId!)
@@ -799,9 +799,9 @@ export async function getQuotesForInquiry(inquiryId: string) {
 
 export async function deleteQuote(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: quote } = await (supabase
+  const { data: quote } = await (db
     .from('quotes')
     .select('status, deleted_at')
     .eq('id', id)
@@ -816,7 +816,7 @@ export async function deleteQuote(id: string) {
     throw new ValidationError('Can only delete quotes in draft status')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('quotes')
     .update({
       deleted_at: new Date().toISOString(),
@@ -838,9 +838,9 @@ export async function deleteQuote(id: string) {
 
 export async function restoreQuote(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('quotes')
     .update({
       deleted_at: null,
@@ -939,9 +939,9 @@ export type QuoteVersionSummary = {
  */
 export async function reviseQuote(quoteId: string): Promise<{ success: true; newQuoteId: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: original } = await supabase
+  const { data: original } = await db
     .from('quotes')
     .select('*')
     .eq('id', quoteId)
@@ -956,7 +956,7 @@ export async function reviseQuote(quoteId: string): Promise<{ success: true; new
   const currentVersion: number = (original as any).version ?? 1
 
   // Create the new version as draft
-  const { data: newQuote, error } = await supabase
+  const { data: newQuote, error } = await db
     .from('quotes')
     .insert({
       tenant_id: user.tenantId!,
@@ -987,7 +987,7 @@ export async function reviseQuote(quoteId: string): Promise<{ success: true; new
   }
 
   // Mark original as superseded
-  await supabase
+  await db
     .from('quotes')
     .update({ is_superseded: true } as any)
     .eq('id', quoteId)
@@ -1017,10 +1017,10 @@ export async function getEventMenuCost(eventId: string): Promise<{
   guestCount: number | null
 } | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find the menu linked to this event
-  const { data: menu } = await supabase
+  const { data: menu } = await db
     .from('menus')
     .select('id, name, target_guest_count')
     .eq('event_id', eventId)
@@ -1032,7 +1032,7 @@ export async function getEventMenuCost(eventId: string): Promise<{
   if (!menu) return null
 
   // Get cost summary
-  const { data: cost } = await supabase
+  const { data: cost } = await db
     .from('menu_cost_summary')
     .select(
       'total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, has_all_recipe_costs'
@@ -1043,7 +1043,7 @@ export async function getEventMenuCost(eventId: string): Promise<{
   if (!cost?.total_recipe_cost_cents) return null
 
   // Get event guest count
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('guest_count')
     .eq('id', eventId)
@@ -1066,7 +1066,7 @@ export async function getEventMenuCost(eventId: string): Promise<{
  */
 export async function getQuoteVersionHistory(quoteId: string): Promise<QuoteVersionSummary[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Walk back through the version chain to find the root
   let rootId = quoteId
@@ -1074,7 +1074,7 @@ export async function getQuoteVersionHistory(quoteId: string): Promise<QuoteVers
 
   while (rootId && !seen.has(rootId)) {
     seen.add(rootId)
-    const { data } = await supabase
+    const { data } = await db
       .from('quotes')
       .select('previous_version_id')
       .eq('id', rootId)
@@ -1087,7 +1087,7 @@ export async function getQuoteVersionHistory(quoteId: string): Promise<QuoteVers
 
   // Now fetch all quotes with this root in their chain using previous_version_id chain
   // Simplified: fetch all quotes for the same event/inquiry and return them sorted by version
-  const { data: allQuotes } = await supabase
+  const { data: allQuotes } = await db
     .from('quotes')
     .select('id, total_quoted_cents, status, created_at, previous_version_id')
     .eq('tenant_id', user.tenantId!)

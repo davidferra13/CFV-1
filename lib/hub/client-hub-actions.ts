@@ -1,7 +1,7 @@
 'use server'
 
 import { requireClient, type AuthUser } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { HubGuestProfile, HubGroup } from './types'
 
 // ---------------------------------------------------------------------------
@@ -14,10 +14,10 @@ import type { HubGuestProfile, HubGroup } from './types'
  */
 export async function getOrCreateClientHubProfile(): Promise<HubGuestProfile> {
   const user = await requireClient()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Try to find existing profile linked to this auth user or client
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('hub_guest_profiles')
     .select('*')
     .or(`auth_user_id.eq.${user.id},client_id.eq.${user.entityId}`)
@@ -31,7 +31,7 @@ export async function getOrCreateClientHubProfile(): Promise<HubGuestProfile> {
     if (!existing.client_id) updates.client_id = user.entityId
 
     if (Object.keys(updates).length > 0) {
-      await supabase.from('hub_guest_profiles').update(updates).eq('id', existing.id)
+      await db.from('hub_guest_profiles').update(updates).eq('id', existing.id)
     }
 
     return existing as HubGuestProfile
@@ -40,7 +40,7 @@ export async function getOrCreateClientHubProfile(): Promise<HubGuestProfile> {
   // Try to find by email match
   if (user.email) {
     const normalized = user.email.toLowerCase().trim()
-    const { data: emailMatch } = await supabase
+    const { data: emailMatch } = await db
       .from('hub_guest_profiles')
       .select('*')
       .eq('email_normalized', normalized)
@@ -49,7 +49,7 @@ export async function getOrCreateClientHubProfile(): Promise<HubGuestProfile> {
 
     if (emailMatch) {
       // Link the existing profile to this client
-      await supabase
+      await db
         .from('hub_guest_profiles')
         .update({ auth_user_id: user.id, client_id: user.entityId })
         .eq('id', emailMatch.id)
@@ -59,7 +59,7 @@ export async function getOrCreateClientHubProfile(): Promise<HubGuestProfile> {
   }
 
   // Get client name for the display name
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('full_name')
     .eq('id', user.entityId)
@@ -68,7 +68,7 @@ export async function getOrCreateClientHubProfile(): Promise<HubGuestProfile> {
   const displayName = client?.full_name || user.email.split('@')[0]
 
   // Create a new profile
-  const { data: profile, error } = await supabase
+  const { data: profile, error } = await db
     .from('hub_guest_profiles')
     .insert({
       display_name: displayName,
@@ -94,10 +94,10 @@ export type ClientHubGroup = HubGroup & {
  */
 export async function getClientHubGroups(): Promise<ClientHubGroup[]> {
   const profile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Get all memberships
-  const { data: memberships, error: memErr } = await supabase
+  const { data: memberships, error: memErr } = await db
     .from('hub_group_members')
     .select('group_id, role, last_read_at')
     .eq('profile_id', profile.id)
@@ -107,7 +107,7 @@ export async function getClientHubGroups(): Promise<ClientHubGroup[]> {
   const groupIds = memberships.map((m: any) => m.group_id)
 
   // Fetch groups
-  const { data: groups, error: grpErr } = await supabase
+  const { data: groups, error: grpErr } = await db
     .from('hub_groups')
     .select('*, event_themes(*)')
     .in('id', groupIds)
@@ -117,7 +117,7 @@ export async function getClientHubGroups(): Promise<ClientHubGroup[]> {
   if (grpErr || !groups?.length) return []
 
   // Get member counts
-  const { data: countRows } = await supabase
+  const { data: countRows } = await db
     .from('hub_group_members')
     .select('group_id')
     .in('group_id', groupIds)
@@ -158,10 +158,10 @@ export async function getClientProfileToken(): Promise<string> {
  * Get the circle group token for a client's event, if one exists.
  */
 export async function getCircleTokenForEvent(eventId: string): Promise<string | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Check direct event link
-  const { data: group } = await supabase
+  const { data: group } = await db
     .from('hub_groups')
     .select('group_token')
     .eq('event_id', eventId)
@@ -171,14 +171,14 @@ export async function getCircleTokenForEvent(eventId: string): Promise<string | 
   if (group) return group.group_token
 
   // Check via inquiry conversion
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select('id')
     .eq('converted_to_event_id', eventId)
     .maybeSingle()
 
   if (inquiry) {
-    const { data: inquiryGroup } = await supabase
+    const { data: inquiryGroup } = await db
       .from('hub_groups')
       .select('group_token')
       .eq('inquiry_id', inquiry.id)
@@ -189,7 +189,7 @@ export async function getCircleTokenForEvent(eventId: string): Promise<string | 
   }
 
   // Check via hub_group_events junction table
-  const { data: linkedGroup } = await supabase
+  const { data: linkedGroup } = await db
     .from('hub_group_events')
     .select('hub_groups(group_token, is_active)')
     .eq('event_id', eventId)

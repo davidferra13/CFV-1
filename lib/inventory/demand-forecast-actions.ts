@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -43,10 +43,10 @@ export type ShortageAlert = {
   costImpactCents: number
 }
 
-// ─── Supabase helper ────────────────────────────────────────────
-function db(supabase: any) {
+// ─── DB helper ────────────────────────────────────────────
+function db(db: any) {
   return {
-    transactions: () => supabase.from('inventory_transactions' as any) as any,
+    transactions: () => db.from('inventory_transactions' as any) as any,
   }
 }
 
@@ -57,7 +57,7 @@ function db(supabase: any) {
  * and aggregate ingredient demand. Returns a Map of ingredientId -> aggregate info.
  */
 async function aggregateIngredientDemand(
-  supabase: any,
+  db: any,
   tenantId: string,
   eventFilter: { ids?: string[]; daysAhead?: number }
 ): Promise<
@@ -74,7 +74,7 @@ async function aggregateIngredientDemand(
   >
 > {
   // Fetch upcoming confirmed/paid events within the window
-  let eventsQuery = supabase
+  let eventsQuery = db
     .from('events')
     .select('id, event_date, status')
     .eq('tenant_id', tenantId)
@@ -103,7 +103,7 @@ async function aggregateIngredientDemand(
   }
 
   // Fetch menus for these events
-  const { data: menus, error: menusError } = await supabase
+  const { data: menus, error: menusError } = await db
     .from('menus')
     .select('id, event_id')
     .eq('tenant_id', tenantId)
@@ -119,7 +119,7 @@ async function aggregateIngredientDemand(
   }
 
   // Fetch dishes
-  const { data: dishes, error: dishesError } = await supabase
+  const { data: dishes, error: dishesError } = await db
     .from('dishes')
     .select('id, menu_id')
     .in('menu_id', menuIds)
@@ -134,7 +134,7 @@ async function aggregateIngredientDemand(
   }
 
   // Fetch components with recipe links and scale factors
-  const { data: components, error: compsError } = await supabase
+  const { data: components, error: compsError } = await db
     .from('components')
     .select('id, dish_id, recipe_id, scale_factor')
     .in('dish_id', dishIds)
@@ -164,9 +164,7 @@ async function aggregateIngredientDemand(
   if (recipeIds.length === 0) return new Map()
 
   // Fetch recipe_ingredients with ingredient details
-  const { data: recipeIngredients, error: riError } = await (
-    supabase.from('recipe_ingredients') as any
-  )
+  const { data: recipeIngredients, error: riError } = await (db.from('recipe_ingredients') as any)
     .select(
       `
       recipe_id, ingredient_id, quantity, unit,
@@ -227,7 +225,7 @@ async function aggregateIngredientDemand(
  * Get current on-hand stock for a set of ingredient IDs by summing inventory_transactions.
  */
 async function getCurrentStock(
-  supabase: any,
+  db: any,
   tenantId: string,
   ingredientIds: string[]
 ): Promise<Map<string, number>> {
@@ -235,7 +233,7 @@ async function getCurrentStock(
   if (ingredientIds.length === 0) return stockMap
 
   // Sum inventory_transactions per ingredient
-  const { data: transactions, error } = await db(supabase)
+  const { data: transactions, error } = await db(db)
     .transactions()
     .select('ingredient_id, quantity')
     .eq('chef_id', tenantId)
@@ -268,14 +266,14 @@ async function getCurrentStock(
  */
 export async function getDemandForecast(daysAhead: number = 14): Promise<ForecastItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const demand = await aggregateIngredientDemand(supabase, user.tenantId!, { daysAhead })
+  const demand = await aggregateIngredientDemand(db, user.tenantId!, { daysAhead })
 
   if (demand.size === 0) return []
 
   const ingredientIds = [...demand.keys()]
-  const stockMap = await getCurrentStock(supabase, user.tenantId!, ingredientIds)
+  const stockMap = await getCurrentStock(db, user.tenantId!, ingredientIds)
 
   const result: ForecastItem[] = []
 
@@ -313,14 +311,14 @@ export async function getDemandForecast(daysAhead: number = 14): Promise<Forecas
  */
 export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get demand forecast items with a deficit
   const forecast = await getDemandForecast(14)
   const deficitItems = forecast.filter((item) => item.deficit > 0)
 
   // Also check inventory_counts for items below par_level
-  const { data: parAlerts } = await (supabase.from('inventory_counts') as any)
+  const { data: parAlerts } = await (db.from('inventory_counts') as any)
     .select('ingredient_id, ingredient_name, current_qty, par_level, unit, vendor_id')
     .eq('chef_id', user.tenantId!)
     .not('par_level', 'is', null)
@@ -380,7 +378,7 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
   // Note: ingredients table has preferred_vendor (not preferred_vendor_id)
   const ingredientIds = [...mergedMap.keys()]
 
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await db
     .from('ingredients')
     .select('id, preferred_vendor')
     .in('id', ingredientIds)
@@ -398,7 +396,7 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
   const vendorNameMap = new Map<string, string>()
 
   if (vendorIds.length > 0) {
-    const { data: vendors } = await (supabase.from('vendors') as any)
+    const { data: vendors } = await (db.from('vendors') as any)
       .select('id, name')
       .in('id', vendorIds)
 
@@ -449,14 +447,14 @@ export async function getReorderSuggestions(): Promise<ReorderGroup[]> {
  */
 export async function getShortageAlerts(eventId: string): Promise<ShortageAlert[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const demand = await aggregateIngredientDemand(supabase, user.tenantId!, { ids: [eventId] })
+  const demand = await aggregateIngredientDemand(db, user.tenantId!, { ids: [eventId] })
 
   if (demand.size === 0) return []
 
   const ingredientIds = [...demand.keys()]
-  const stockMap = await getCurrentStock(supabase, user.tenantId!, ingredientIds)
+  const stockMap = await getCurrentStock(db, user.tenantId!, ingredientIds)
 
   const alerts: ShortageAlert[] = []
 

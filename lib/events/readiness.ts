@@ -23,7 +23,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { EventStatus } from './transitions'
 
@@ -128,7 +128,7 @@ export async function evaluateReadinessForTransition(
   fromStatus: EventStatus,
   toStatus: EventStatus
 ): Promise<ReadinessResult> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const transitionKey = `${fromStatus}->${toStatus}`
   const requiredGates = TRANSITION_GATES[transitionKey] || []
@@ -147,7 +147,7 @@ export async function evaluateReadinessForTransition(
   }
 
   // Fetch event to get client_id and tenant_id
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('tenant_id, client_id')
     .eq('id', eventId)
@@ -166,7 +166,7 @@ export async function evaluateReadinessForTransition(
   }
 
   // Fetch existing gate records for this event
-  const { data: existingGates } = await supabase
+  const { data: existingGates } = await db
     .from('event_readiness_gates' as any)
     .select('*')
     .eq('event_id', eventId)
@@ -179,7 +179,7 @@ export async function evaluateReadinessForTransition(
   // Check each gate dynamically
   const results = await Promise.all(
     requiredGates.map((gate) =>
-      evaluateGate(gate, eventId, event.tenant_id, event.client_id, existingMap, supabase)
+      evaluateGate(gate, eventId, event.tenant_id, event.client_id, existingMap, db)
     )
   )
 
@@ -207,7 +207,7 @@ async function evaluateGate(
   tenantId: string,
   clientId: string | null,
   existingMap: Map<string, { status: string; override_reason: string | null }>,
-  supabase: any
+  db: any
 ): Promise<GateResult> {
   const catalog = GATE_CATALOG[gate]
   const existing = existingMap.get(gate)
@@ -237,16 +237,16 @@ async function evaluateGate(
   // Otherwise: dynamically check
   switch (gate) {
     case 'allergies_verified':
-      return checkAllergyGate(gate, eventId, tenantId, clientId, catalog, supabase)
+      return checkAllergyGate(gate, eventId, tenantId, clientId, catalog, db)
 
     case 'documents_generated':
-      return checkDocumentsGate(gate, eventId, catalog, supabase)
+      return checkDocumentsGate(gate, eventId, catalog, db)
 
     case 'menu_client_approved':
-      return checkMenuApprovalGate(gate, eventId, catalog, supabase)
+      return checkMenuApprovalGate(gate, eventId, catalog, db)
 
     case 'deposit_collected':
-      return checkDepositGate(gate, eventId, catalog, supabase)
+      return checkDepositGate(gate, eventId, catalog, db)
 
     case 'packing_reviewed':
     case 'equipment_confirmed':
@@ -281,10 +281,10 @@ async function checkDepositGate(
   gate: ReadinessGate,
   eventId: string,
   catalog: { label: string; description: string },
-  supabase: any
+  db: any
 ): Promise<GateResult> {
   // Fetch event's deposit requirement
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('deposit_amount_cents')
     .eq('id', eventId)
@@ -304,7 +304,7 @@ async function checkDepositGate(
   }
 
   // Check how much has been paid via ledger
-  const { data: summary } = await supabase
+  const { data: summary } = await db
     .from('event_financial_summary')
     .select('total_paid_cents')
     .eq('event_id', eventId)
@@ -344,7 +344,7 @@ async function checkAllergyGate(
   tenantId: string,
   clientId: string | null,
   catalog: { label: string; description: string },
-  supabase: any
+  db: any
 ): Promise<GateResult> {
   if (!clientId) {
     // No client assigned - can't verify, treat as passed (no one to check)
@@ -358,7 +358,7 @@ async function checkAllergyGate(
   }
 
   // Check for unconfirmed allergy records
-  const { data: unconfirmed } = await supabase
+  const { data: unconfirmed } = await db
     .from('client_allergy_records')
     .select('allergen, severity')
     .eq('client_id', clientId)
@@ -396,11 +396,11 @@ async function checkDocumentsGate(
   gate: ReadinessGate,
   eventId: string,
   catalog: { label: string; description: string },
-  supabase: any
+  db: any
 ): Promise<GateResult> {
   // Check if at minimum a prep sheet has been generated
   // (FOH menu auto-generates on confirm, so we just check if it was ever generated)
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('prep_sheet_generated_at, packing_list_generated_at')
     .eq('id', eventId)
@@ -436,10 +436,10 @@ async function checkMenuApprovalGate(
   gate: ReadinessGate,
   eventId: string,
   catalog: { label: string; description: string },
-  supabase: any
+  db: any
 ): Promise<GateResult> {
   // Check menu_approval_requests table for an approved record
-  const { data: approval } = await supabase
+  const { data: approval } = await db
     .from('menu_approval_requests')
     .select('status')
     .eq('event_id', eventId)
@@ -458,7 +458,7 @@ async function checkMenuApprovalGate(
   }
 
   // Check if there's a pending approval request
-  const { data: pending } = await supabase
+  const { data: pending } = await db
     .from('menu_approval_requests')
     .select('status, sent_at')
     .eq('event_id', eventId)
@@ -484,9 +484,9 @@ async function checkMenuApprovalGate(
  */
 export async function getClientAllergyRecords(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_allergy_records')
     .select('*')
     .eq('client_id', clientId)
@@ -510,7 +510,7 @@ export async function confirmAllergyRecord(
   options?: { severity?: string; notes?: string }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = {
     confirmed_by_chef: true,
@@ -519,7 +519,7 @@ export async function confirmAllergyRecord(
   if (options?.severity) updateData.severity = options.severity
   if (options?.notes !== undefined) updateData.notes = options.notes
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_allergy_records')
     .update(updateData)
     .eq('id', allergyRecordId)
@@ -539,9 +539,9 @@ export async function confirmAllergyRecord(
  */
 export async function dismissAllergyRecord(allergyRecordId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_allergy_records')
     .delete()
     .eq('id', allergyRecordId)
@@ -564,9 +564,9 @@ export async function addAllergyRecord(
   data: { allergen: string; severity: string; notes?: string }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('client_allergy_records').upsert(
+  const { error } = await db.from('client_allergy_records').upsert(
     {
       tenant_id: user.tenantId!,
       client_id: clientId,
@@ -600,10 +600,10 @@ export async function markGatePassed(
   metadata?: Record<string, unknown>
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event belongs to tenant
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('tenant_id')
     .eq('id', eventId)
@@ -612,7 +612,7 @@ export async function markGatePassed(
 
   if (!event) throw new Error('Event not found')
 
-  const { error } = await supabase.from('event_readiness_gates' as any).upsert(
+  const { error } = await db.from('event_readiness_gates' as any).upsert(
     {
       tenant_id: user.tenantId!,
       event_id: eventId,
@@ -639,14 +639,14 @@ export async function markGatePassed(
  */
 export async function overrideGate(eventId: string, gate: ReadinessGate, reason: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!reason || reason.trim().length < 5) {
     throw new Error('A reason of at least 5 characters is required to override a gate')
   }
 
   // Verify event belongs to tenant
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('tenant_id, client_id')
     .eq('id', eventId)
@@ -657,7 +657,7 @@ export async function overrideGate(eventId: string, gate: ReadinessGate, reason:
 
   // Check if this gate is hard-blocked (anaphylaxis allergy present)
   if (gate === 'allergies_verified' && event.client_id) {
-    const { data: criticalAllergies } = await supabase
+    const { data: criticalAllergies } = await db
       .from('client_allergy_records')
       .select('allergen')
       .eq('client_id', event.client_id)
@@ -672,7 +672,7 @@ export async function overrideGate(eventId: string, gate: ReadinessGate, reason:
     }
   }
 
-  const { error } = await supabase.from('event_readiness_gates' as any).upsert(
+  const { error } = await db.from('event_readiness_gates' as any).upsert(
     {
       tenant_id: user.tenantId!,
       event_id: eventId,
@@ -700,9 +700,9 @@ export async function overrideGate(eventId: string, gate: ReadinessGate, reason:
  */
 export async function getEventReadiness(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('status, tenant_id, client_id')
     .eq('id', eventId)
@@ -741,10 +741,10 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
   hasConflicts: boolean
   conflicts: Array<{ allergen: string; severity: string; menuItem?: string }>
 }> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get event's client
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('client_id, tenant_id')
     .eq('id', eventId)
@@ -753,7 +753,7 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
   if (!event?.client_id) return { hasConflicts: false, conflicts: [] }
 
   // Get confirmed allergy records
-  const { data: allergies } = await supabase
+  const { data: allergies } = await db
     .from('client_allergy_records')
     .select('allergen, severity')
     .eq('client_id', event.client_id)
@@ -763,7 +763,7 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
   if (!allergies || allergies.length === 0) return { hasConflicts: false, conflicts: [] }
 
   // Get event menu items (components attached to this event's menus)
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('menu_components' as any)
     .select('name, ingredients')
     .eq('event_id', eventId)

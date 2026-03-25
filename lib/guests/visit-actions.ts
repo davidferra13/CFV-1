@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -26,10 +26,10 @@ export type LogVisitInput = z.infer<typeof LogVisitSchema>
 
 export async function logVisit(input: LogVisitInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = LogVisitSchema.parse(input)
 
-  const { data: visit, error } = await supabase
+  const { data: visit, error } = await db
     .from('guest_visits')
     .insert({
       guest_id: data.guest_id,
@@ -55,9 +55,9 @@ export async function logVisit(input: LogVisitInput) {
 
 export async function listVisits(guestId: string, limit = 50) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_visits')
     .select('*')
     .eq('guest_id', guestId)
@@ -75,9 +75,9 @@ export async function listVisits(guestId: string, limit = 50) {
 
 export async function getVisitStats(guestId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: visits, error } = await supabase
+  const { data: visits, error } = await db
     .from('guest_visits')
     .select('visit_date, spend_cents')
     .eq('guest_id', guestId)

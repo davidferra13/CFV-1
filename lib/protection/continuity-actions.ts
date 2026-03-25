@@ -1,16 +1,16 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export async function saveContinuityPlan(plan: Record<string, unknown>) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({ business_continuity_plan: plan })
     .eq('id', tenantId)
@@ -24,9 +24,9 @@ export async function getContinuityPlan() {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select('business_continuity_plan')
     .eq('id', tenantId)

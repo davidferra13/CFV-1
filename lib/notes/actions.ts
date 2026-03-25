@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -56,9 +56,9 @@ const UpdateNoteSchema = z.object({
 export async function addClientNote(input: z.infer<typeof AddNoteSchema>) {
   const user = await requireChef()
   const validated = AddNoteSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_notes')
     .insert({
       tenant_id: user.tenantId!,
@@ -108,9 +108,9 @@ export async function addClientNote(input: z.infer<typeof AddNoteSchema>) {
 export async function updateClientNote(noteId: string, input: z.infer<typeof UpdateNoteSchema>) {
   const user = await requireChef()
   const validated = UpdateNoteSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_notes')
     .update(validated)
     .eq('id', noteId)
@@ -131,9 +131,9 @@ export async function updateClientNote(noteId: string, input: z.infer<typeof Upd
  */
 export async function deleteClientNote(noteId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_notes')
     .delete()
     .eq('id', noteId)
@@ -152,10 +152,10 @@ export async function deleteClientNote(noteId: string) {
  */
 export async function toggleNotePin(noteId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get current pin state
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('client_notes')
     .select('pinned')
     .eq('id', noteId)
@@ -166,7 +166,7 @@ export async function toggleNotePin(noteId: string) {
     throw new Error('Note not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_notes')
     .update({ pinned: !existing.pinned })
     .eq('id', noteId)
@@ -193,9 +193,9 @@ export async function getClientNotes(
   }
 ): Promise<ClientNote[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('client_notes')
     .select('*')
     .eq('tenant_id', user.tenantId!)

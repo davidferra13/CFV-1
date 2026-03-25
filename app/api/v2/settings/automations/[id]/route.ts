@@ -47,7 +47,7 @@ export const PATCH = withApiAuth(
     const parsed = UpdateRuleBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('automation_rules' as any)
       .select('id')
       .eq('id', id)
@@ -56,7 +56,7 @@ export const PATCH = withApiAuth(
 
     if (!existing) return apiNotFound('Automation rule')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('automation_rules' as any)
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
@@ -79,7 +79,7 @@ export const DELETE = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Automation rule')
 
-    const { error } = await ctx.supabase
+    const { error } = await ctx.db
       .from('automation_rules' as any)
       .delete()
       .eq('id', id)

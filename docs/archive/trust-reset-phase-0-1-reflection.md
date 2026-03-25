@@ -90,5 +90,5 @@ caller passes it from a trusted source (never from request body). No fix needed.
   hash in the same text field. No schema change required.
 - **No Zapier routes exist** to consolidate. The `url-validation.ts` module is
   ready for when they are built.
-- **`createAdminClient()`** in `lib/supabase/admin.ts` is only imported by test
+- **`createAdminClient()`** in `lib/database/admin.ts` is only imported by test
   helpers. No production code uses it.

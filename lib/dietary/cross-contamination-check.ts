@@ -5,7 +5,7 @@
 // No AI. Deterministic. Formula > AI.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { FDA_BIG_9, allergenShortName } from '@/lib/constants/allergens'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -105,10 +105,10 @@ export async function checkMenuAllergenConflicts(
 ): Promise<CrossContaminationResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
   // 1. Fetch event with client and menu info
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, client_id, menu_id, dietary_restrictions, allergies')
     .eq('id', eventId)
@@ -120,7 +120,7 @@ export async function checkMenuAllergenConflicts(
   }
 
   // 2. Fetch client dietary info
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('full_name, dietary_restrictions, allergies')
     .eq('id', event.client_id)
@@ -128,7 +128,7 @@ export async function checkMenuAllergenConflicts(
     .single()
 
   // 3. Fetch guests for this event
-  const { data: guests } = await supabase
+  const { data: guests } = await db
     .from('event_guests')
     .select(
       'full_name, dietary_restrictions, allergies, plus_one_name, plus_one_dietary, plus_one_allergies'
@@ -206,7 +206,7 @@ export async function checkMenuAllergenConflicts(
   }
 
   // 6. Fetch menu dishes with allergen_flags
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, name, course_name, allergen_flags')
     .eq('menu_id', event.menu_id)
@@ -232,7 +232,7 @@ export async function checkMenuAllergenConflicts(
     // Use DB function for recursive allergen resolution
     let dbFlags: string[] = []
     try {
-      const { data: flagResult } = await supabase.rpc('get_dish_allergen_flags', {
+      const { data: flagResult } = await db.rpc('get_dish_allergen_flags', {
         p_dish_id: dish.id,
       })
       if (Array.isArray(flagResult)) {
@@ -320,10 +320,10 @@ export async function checkMenuAllergenConflicts(
 export async function getMenuAllergenMatrix(menuId: string): Promise<AllergenMatrixResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
   // Fetch dishes for this menu
-  const { data: dishes, error } = await supabase
+  const { data: dishes, error } = await db
     .from('dishes')
     .select('id, name, course_name, allergen_flags')
     .eq('menu_id', menuId)
@@ -345,7 +345,7 @@ export async function getMenuAllergenMatrix(menuId: string): Promise<AllergenMat
 
     let dbFlags: string[] = []
     try {
-      const { data: flagResult } = await supabase.rpc('get_dish_allergen_flags', {
+      const { data: flagResult } = await db.rpc('get_dish_allergen_flags', {
         p_dish_id: dish.id,
       })
       if (Array.isArray(flagResult)) {

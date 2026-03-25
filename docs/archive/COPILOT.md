@@ -96,7 +96,7 @@ You create a file in `prompts/queue/` following the template.
 
 - Source code (`app/`, `components/`, `lib/`, `types/`, etc.)
 - Configuration (`next.config.js`, `package.json`, `tsconfig.json`, etc.)
-- Database (`supabase/migrations/`, `types/database.ts`)
+- Database (`database/migrations/`, `types/database.ts`)
 - Environment files (`.env*`)
 - Project rules (`CLAUDE.md`, `KILO.md`, this file)
 - Git operations (no commits, no branches, no pushes)
@@ -112,7 +112,7 @@ You need to know this to write good prompts:
 
 ### Stack
 
-Next.js 14 (App Router) · Supabase (PostgreSQL + RLS) · Stripe · Tailwind · TypeScript · Ollama (local AI)
+Next.js 14 (App Router) · PostgreSQL (PostgreSQL + RLS) · Stripe · Tailwind · TypeScript · Ollama (local AI)
 
 ### Patterns
 
@@ -142,7 +142,7 @@ Next.js 14 (App Router) · Supabase (PostgreSQL + RLS) · Stripe · Tailwind · 
 | Chef pages | `app/(chef)/...`                                                              |
 | Components | `components/<domain>/...`                                                     |
 | DB types   | `types/database.ts`                                                           |
-| Migrations | `supabase/migrations/`                                                        |
+| Migrations | `database/migrations/`                                                        |
 | App audit  | `docs/app-complete-audit.md`                                                  |
 
 ### Multi-Agent Hierarchy

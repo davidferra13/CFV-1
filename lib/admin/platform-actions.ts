@@ -3,7 +3,7 @@
 // Platform Settings Actions - admin-only mutations for global platform config.
 // Reads and writes platform_settings table via service role.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { revalidatePath } from 'next/cache'
 import { logAdminAction } from './audit'
@@ -20,9 +20,9 @@ export type PlatformAnnouncement = {
  * Returns null if no active announcement.
  */
 export async function getAnnouncement(): Promise<PlatformAnnouncement | null> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('platform_settings')
     .select('key, value')
     .in('key', ['announcement', 'announcement_type'])
@@ -48,11 +48,11 @@ export async function setAnnouncement(
   type: AnnouncementType = 'info'
 ): Promise<{ success: boolean; error?: string }> {
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   const now = new Date().toISOString()
 
-  const { error } = await supabase.from('platform_settings').upsert(
+  const { error } = await db.from('platform_settings').upsert(
     [
       { key: 'announcement', value: text.trim(), updated_at: now, updated_by: admin.email },
       { key: 'announcement_type', value: type, updated_at: now, updated_by: admin.email },

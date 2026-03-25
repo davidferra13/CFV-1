@@ -6,7 +6,7 @@
 // Table: event_surveys (migration 20260303000022)
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import type { ChefSurveyRow } from './survey-utils'
 import { sendPostEventSurveyEmail } from '@/lib/email/notifications'
@@ -37,9 +37,9 @@ export async function createSurveyForEvent(
   eventId: string,
   tenantId: string
 ): Promise<string | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('event_surveys')
     .select('token')
     .eq('event_id', eventId)
@@ -47,7 +47,7 @@ export async function createSurveyForEvent(
 
   if (existing) return existing.token
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_surveys')
     .insert({ event_id: eventId, chef_id: tenantId, tenant_id: tenantId })
     .select('token')
@@ -71,9 +71,9 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
  */
 export async function sendClientSurvey(eventId: string): Promise<{ ok: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -110,9 +110,9 @@ export async function sendClientSurvey(eventId: string): Promise<{ ok: boolean; 
 // ─── Public survey retrieval (token-based, no auth) ──────────────────────────
 
 export async function getSurveyByToken(token: string): Promise<SurveyPublic | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_surveys')
     .select(
       `
@@ -159,9 +159,9 @@ export type SurveySubmitInput = z.infer<typeof SurveySubmitSchema>
 
 export async function submitSurvey(input: SurveySubmitInput): Promise<{ success: true }> {
   const validated = SurveySubmitSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('event_surveys')
     .select('id, submitted_at')
     .eq('token', validated.token)
@@ -170,7 +170,7 @@ export async function submitSurvey(input: SurveySubmitInput): Promise<{ success:
   if (fetchError || !existing) throw new Error('Survey not found')
   if (existing.submitted_at) throw new Error('Survey has already been submitted')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_surveys')
     .update({
       overall_rating: validated.overall_rating,
@@ -234,9 +234,9 @@ export async function submitSurveyResponse(input: {
 
 export async function getChefSurveys(): Promise<ChefSurveyRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_surveys')
     .select(
       `

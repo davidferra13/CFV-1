@@ -9,7 +9,7 @@
 // separate follow-on task and does not modify existing payment flows.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type Stripe from 'stripe'
 
@@ -41,9 +41,9 @@ export type ConnectAccountStatus = {
  */
 export async function getConnectAccountStatus(): Promise<ConnectAccountStatus> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select('stripe_account_id, stripe_onboarding_complete')
     .eq('id', user.entityId)
@@ -78,11 +78,11 @@ export async function getConnectAccountStatus(): Promise<ConnectAccountStatus> {
  */
 export async function createConnectAccountLink(fromOnboarding = false): Promise<{ url: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const stripe = getStripe()
 
   // Fetch current state
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('stripe_account_id, email, business_name')
     .eq('id', user.entityId)
@@ -106,7 +106,7 @@ export async function createConnectAccountLink(fromOnboarding = false): Promise<
 
     accountId = account.id
 
-    const { error } = await supabase
+    const { error } = await db
       .from('chefs')
       .update({ stripe_account_id: accountId })
       .eq('id', user.entityId)
@@ -141,10 +141,10 @@ export async function createConnectAccountLink(fromOnboarding = false): Promise<
  */
 export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatus> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const stripe = getStripe()
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('stripe_account_id')
     .eq('id', user.entityId)
@@ -162,7 +162,7 @@ export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatu
 
   const account = await stripe.accounts.retrieve(chef.stripe_account_id)
 
-  await supabase
+  await db
     .from('chefs')
     .update({ stripe_onboarding_complete: account.charges_enabled === true })
     .eq('id', user.entityId)
@@ -189,9 +189,9 @@ export async function updateConnectStatusFromWebhook(
   stripeAccountId: string,
   chargesEnabled: boolean
 ): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({ stripe_onboarding_complete: chargesEnabled })
     .eq('stripe_account_id', stripeAccountId)

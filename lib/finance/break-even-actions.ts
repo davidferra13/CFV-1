@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // -- Types --
 
@@ -54,10 +54,10 @@ function deriveStatus(breakEvenEvents: number, currentMonthlyCount: number): Bre
 export async function calculateBreakEven(monthlyFixedCostsCents: number): Promise<BreakEvenResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all completed events with financials
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, status')
     .eq('tenant_id', tenantId)
@@ -72,7 +72,7 @@ export async function calculateBreakEven(monthlyFixedCostsCents: number): Promis
   let totalExpensesCents = 0
 
   if (eventIds.length > 0) {
-    const { data: financials } = await supabase
+    const { data: financials } = await db
       .from('event_financial_summary')
       .select('event_id, net_revenue_cents, total_expenses_cents')
       .eq('tenant_id', tenantId)
@@ -158,10 +158,10 @@ export async function getBreakEvenScenarios(
 ): Promise<BreakEvenScenario[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Same data pull as calculateBreakEven
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -170,7 +170,7 @@ export async function getBreakEvenScenarios(
   const eventIds = (events || []).map((e: any) => e.id)
   if (eventIds.length === 0) return []
 
-  const { data: financials } = await supabase
+  const { data: financials } = await db
     .from('event_financial_summary')
     .select('net_revenue_cents, total_expenses_cents')
     .eq('tenant_id', tenantId)
@@ -218,13 +218,13 @@ export async function getBreakEvenScenarios(
 export async function getMonthlyFixedCostEstimate(): Promise<FixedCostEstimate> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Look for recurring/fixed expenses in the last 60 days
   const sixtyDaysAgo = new Date()
   sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .select('amount_cents, recurrence, category')
     .eq('tenant_id', tenantId)

@@ -2,7 +2,7 @@
 // Called by Instagram after user grants permissions
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -20,10 +20,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(`${redirectBase}?error=instagram_invalid_callback`)
   }
 
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Validate state
-  const { data: stateRow } = await supabase
+  const { data: stateRow } = await db
     .from('social_oauth_states')
     .select('tenant_id, expires_at')
     .eq('state', state)
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   const chefId = stateRow.tenant_id
 
   // Delete used state
-  await supabase.from('social_oauth_states').delete().eq('state', state)
+  await db.from('social_oauth_states').delete().eq('state', state)
 
   // Exchange code for short-lived token
   const appId = process.env.INSTAGRAM_APP_ID!
@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
   } = await profileRes.json()
 
   // Upsert connection
-  await supabase.from('social_connected_accounts').upsert(
+  await db.from('social_connected_accounts').upsert(
     {
       tenant_id: chefId,
       platform: 'instagram',

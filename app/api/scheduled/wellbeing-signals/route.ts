@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 import { computeBurnoutLevel } from '@/lib/wellbeing/burnout-score'
@@ -23,7 +23,7 @@ async function handleWellbeingSignals(request: NextRequest): Promise<NextRespons
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true }) as any
+  const db = createServerClient({ admin: true }) as any
   const now = new Date()
   const today = now.toISOString().slice(0, 10)
   const weekStart = getUtcWeekStart(now)
@@ -37,7 +37,7 @@ async function handleWellbeingSignals(request: NextRequest): Promise<NextRespons
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
   const ninetyDaysAgoStr = ninetyDaysAgo.toISOString().slice(0, 10)
 
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs')
     .select('id, max_events_per_week, max_events_per_month')
     .limit(10000)
@@ -89,21 +89,21 @@ async function handleWellbeingSignals(request: NextRequest): Promise<NextRespons
         { data: recentEvent },
         { data: checkins },
       ] = await Promise.all([
-        supabase
+        db
           .from('events')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', chef.id)
           .gte('event_date', weekStart)
           .lte('event_date', weekEnd)
           .not('status', 'in', '("cancelled","draft")'),
-        supabase
+        db
           .from('events')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', chef.id)
           .gte('event_date', monthStartStr)
           .lte('event_date', monthEndStr)
           .not('status', 'in', '("cancelled","draft")'),
-        supabase
+        db
           .from('events')
           .select('event_date')
           .eq('tenant_id', chef.id)
@@ -111,7 +111,7 @@ async function handleWellbeingSignals(request: NextRequest): Promise<NextRespons
           .order('event_date', { ascending: false })
           .limit(1)
           .maybeSingle(),
-        supabase
+        db
           .from('chef_growth_checkins')
           .select('satisfaction_score')
           .eq('tenant_id', chef.id)
@@ -136,7 +136,7 @@ async function handleWellbeingSignals(request: NextRequest): Promise<NextRespons
 
       let daysSinceJournalEntry = 60
       try {
-        const { data: journalEntry } = await supabase
+        const { data: journalEntry } = await db
           .from('chef_journey_entries')
           .select('entry_date')
           .eq('tenant_id', chef.id)
@@ -161,7 +161,7 @@ async function handleWellbeingSignals(request: NextRequest): Promise<NextRespons
       })
 
       if (burnoutLevel === 'high') {
-        const { data: existingBurnout } = await supabase
+        const { data: existingBurnout } = await db
           .from('notifications')
           .select('id')
           .eq('tenant_id', chef.id)
@@ -208,7 +208,7 @@ async function handleWellbeingSignals(request: NextRequest): Promise<NextRespons
         const booked = useWeek ? (weekCount ?? 0) : (monthCount ?? 0)
         const limit = useWeek ? weeklyLimit : monthlyLimit
 
-        const { data: existingCapacity } = await supabase
+        const { data: existingCapacity } = await db
           .from('notifications')
           .select('id')
           .eq('tenant_id', chef.id)
@@ -243,7 +243,7 @@ async function handleWellbeingSignals(request: NextRequest): Promise<NextRespons
         }
       }
 
-      const { count: educationCount } = await supabase
+      const { count: educationCount } = await db
         .from('professional_achievements')
         .select('id', { count: 'exact', head: true })
         .eq('chef_id', chef.id)
@@ -252,7 +252,7 @@ async function handleWellbeingSignals(request: NextRequest): Promise<NextRespons
 
       if ((educationCount ?? 0) === 0) {
         const cycleMonth = today.slice(0, 7)
-        const { data: existingEducation } = await supabase
+        const { data: existingEducation } = await db
           .from('notifications')
           .select('id')
           .eq('tenant_id', chef.id)

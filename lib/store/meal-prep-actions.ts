@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -62,9 +62,9 @@ export interface MealPrepStats {
 
 export async function getMealPrepItems(filters?: { category?: string; availableOnly?: boolean }) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  let query = supabase
+  let query = db
     .from('meal_prep_items')
     .select('*')
     .eq('chef_id', chef.tenantId!)
@@ -97,9 +97,9 @@ export async function createMealPrepItem(input: {
   prep_lead_days?: number
 }) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('meal_prep_items')
     .insert({
       chef_id: chef.tenantId!,
@@ -141,9 +141,9 @@ export async function updateMealPrepItem(
   }
 ) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('meal_prep_items')
     .update({ ...input, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -158,9 +158,9 @@ export async function updateMealPrepItem(
 
 export async function deleteMealPrepItem(id: string) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_items')
     .delete()
     .eq('id', id)
@@ -172,10 +172,10 @@ export async function deleteMealPrepItem(id: string) {
 
 export async function toggleItemAvailability(id: string) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Fetch current state
-  const { data: current, error: fetchErr } = await supabase
+  const { data: current, error: fetchErr } = await db
     .from('meal_prep_items')
     .select('is_available')
     .eq('id', id)
@@ -184,7 +184,7 @@ export async function toggleItemAvailability(id: string) {
 
   if (fetchErr || !current) throw new Error(fetchErr?.message ?? 'Item not found')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_items')
     .update({ is_available: !current.is_available, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -202,9 +202,9 @@ export async function getMealPrepOrders(filters?: {
   dateTo?: string
 }) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  let query = supabase
+  let query = db
     .from('meal_prep_orders')
     .select('*')
     .eq('chef_id', chef.tenantId!)
@@ -236,10 +236,10 @@ const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
 
 export async function updateOrderStatus(id: string, newStatus: string) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Fetch current status
-  const { data: current, error: fetchErr } = await supabase
+  const { data: current, error: fetchErr } = await db
     .from('meal_prep_orders')
     .select('status')
     .eq('id', id)
@@ -253,7 +253,7 @@ export async function updateOrderStatus(id: string, newStatus: string) {
     throw new Error(`Cannot transition from "${current.status}" to "${newStatus}"`)
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_orders')
     .update({ status: newStatus, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -267,9 +267,9 @@ export async function updateOrderStatus(id: string, newStatus: string) {
 
 export async function getOrderingWindows() {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('meal_prep_windows')
     .select('*')
     .eq('chef_id', chef.tenantId!)
@@ -289,10 +289,10 @@ export async function saveOrderingWindows(
   }[]
 ) {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Delete existing windows and replace
-  const { error: delErr } = await supabase
+  const { error: delErr } = await db
     .from('meal_prep_windows')
     .delete()
     .eq('chef_id', chef.tenantId!)
@@ -308,7 +308,7 @@ export async function saveOrderingWindows(
       is_active: w.is_active,
     }))
 
-    const { error: insErr } = await supabase.from('meal_prep_windows').insert(rows)
+    const { error: insErr } = await db.from('meal_prep_windows').insert(rows)
     if (insErr) throw new Error(insErr.message)
   }
 
@@ -319,13 +319,13 @@ export async function saveOrderingWindows(
 
 export async function getMealPrepStats(): Promise<MealPrepStats> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
   // Orders today
-  const { count: ordersToday, error: e1 } = await supabase
+  const { count: ordersToday, error: e1 } = await db
     .from('meal_prep_orders')
     .select('*', { count: 'exact', head: true })
     .eq('chef_id', chef.tenantId!)
@@ -334,7 +334,7 @@ export async function getMealPrepStats(): Promise<MealPrepStats> {
   if (e1) throw new Error(e1.message)
 
   // Pending orders
-  const { count: pendingOrders, error: e2 } = await supabase
+  const { count: pendingOrders, error: e2 } = await db
     .from('meal_prep_orders')
     .select('*', { count: 'exact', head: true })
     .eq('chef_id', chef.tenantId!)
@@ -343,7 +343,7 @@ export async function getMealPrepStats(): Promise<MealPrepStats> {
   if (e2) throw new Error(e2.message)
 
   // Revenue this week (non-cancelled orders)
-  const { data: weekOrders, error: e3 } = await supabase
+  const { data: weekOrders, error: e3 } = await db
     .from('meal_prep_orders')
     .select('total_cents')
     .eq('chef_id', chef.tenantId!)

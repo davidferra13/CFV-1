@@ -2,7 +2,7 @@
 // Requires device token in Authorization header
 
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { extractBearerToken, validateDeviceToken, validateStaffPin } from '@/lib/devices/token'
 import { isPosManagerRole, readPosManagerRoleSetFromEnv } from '@/lib/commerce/kiosk-policy'
 
@@ -29,10 +29,10 @@ export async function POST(request: Request) {
     }
 
     // DB-based rate limit - count recent pin_failed events for this device
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
     const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString()
 
-    const { count: failedCount } = await supabase
+    const { count: failedCount } = await db
       .from('device_events')
       .select('*', { count: 'exact', head: true })
       .eq('device_id', device.deviceId)
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     if (!staff) {
       // Log failed attempt to DB (serves as rate limit counter)
       try {
-        await supabase.from('device_events').insert({
+        await db.from('device_events').insert({
           device_id: device.deviceId,
           tenant_id: device.tenantId,
           type: 'pin_failed',
@@ -70,13 +70,13 @@ export async function POST(request: Request) {
     // End any existing active sessions for this device, then insert new one
     // Using a single RPC call would be ideal, but sequential ops with the same
     // admin client are safe since each device can only have one active PIN entry at a time
-    await supabase
+    await db
       .from('device_sessions')
       .update({ status: 'ended', ended_at: sessionNow })
       .eq('device_id', device.deviceId)
       .eq('status', 'active')
 
-    const { data: session, error } = await supabase
+    const { data: session, error } = await db
       .from('device_sessions')
       .insert({
         device_id: device.deviceId,
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
 
     // Log successful PIN verification
     try {
-      await supabase.from('device_events').insert({
+      await db.from('device_events').insert({
         device_id: device.deviceId,
         tenant_id: device.tenantId,
         staff_member_id: staff.id,

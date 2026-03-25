@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getPayrollReportForPeriod } from '@/lib/staffing/actions'
 
 const DateRangeSchema = z.object({
@@ -40,7 +40,7 @@ export async function getProfitAndLossReport(
 ): Promise<ProfitAndLossReportData> {
   const user = await requireChef()
   const parsed = DateRangeSchema.parse({ startDate, endDate })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [
     ledgerResult,
@@ -51,32 +51,32 @@ export async function getProfitAndLossReport(
     expenseResult,
     payroll,
   ] = await Promise.all([
-    supabase
+    db
       .from('ledger_entries')
       .select('entry_type, amount_cents, is_refund')
       .eq('tenant_id', user.tenantId!)
       .gte('created_at', `${parsed.startDate}T00:00:00Z`)
       .lte('created_at', `${parsed.endDate}T23:59:59Z`),
-    supabase
+    db
       .from('commerce_payments')
       .select('amount_cents, status, sale_id, ledger_entry_id')
       .eq('tenant_id', user.tenantId!)
       .gte('created_at', `${parsed.startDate}T00:00:00Z`)
       .lte('created_at', `${parsed.endDate}T23:59:59Z`)
       .in('status', ['captured', 'settled']),
-    supabase
+    db
       .from('sales')
       .select('id, total_cents, status')
       .eq('tenant_id', user.tenantId!)
       .gte('created_at', `${parsed.startDate}T00:00:00Z`)
       .lte('created_at', `${parsed.endDate}T23:59:59Z`)
       .in('status', ['captured', 'settled', 'partially_refunded']),
-    supabase
+    db
       .from('commerce_payments')
       .select('sale_id')
       .eq('tenant_id', user.tenantId!)
       .not('sale_id', 'is', null),
-    supabase
+    db
       .from('purchase_orders')
       .select('status, order_date, received_at, estimated_total_cents, actual_total_cents')
       .eq('chef_id', user.tenantId!)
@@ -84,7 +84,7 @@ export async function getProfitAndLossReport(
       .or(
         `order_date.gte.${parsed.startDate},and(order_date.lte.${parsed.endDate}),received_at.gte.${parsed.startDate}T00:00:00Z,and(received_at.lte.${parsed.endDate}T23:59:59Z)`
       ),
-    supabase
+    db
       .from('expenses')
       .select('amount_cents')
       .eq('tenant_id', user.tenantId!)

@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export const metadata: Metadata = { title: 'Menus - ChefFlow' }
 import { getMenuCostSummaries, getMenus } from '@/lib/menus/actions'
@@ -34,8 +34,8 @@ export default async function MenusPage() {
 
   if (eventIds.length > 0) {
     try {
-      const supabase: any = createServerClient()
-      const { data: events } = await supabase
+      const db: any = createServerClient()
+      const { data: events } = await db
         .from('events')
         .select('id, occasion, event_date, status')
         .in('id', eventIds)

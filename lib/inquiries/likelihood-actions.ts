@@ -3,7 +3,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 type Likelihood = 'hot' | 'warm' | 'cold'
@@ -14,9 +14,9 @@ type Likelihood = 'hot' | 'warm' | 'cold'
  */
 export async function setInquiryLikelihood(inquiryId: string, likelihood: Likelihood | null) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('inquiries')
     .update({ chef_likelihood: likelihood })
     .eq('id', inquiryId)

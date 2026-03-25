@@ -11,7 +11,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { parseReceiptImage } from '@/lib/ai/parse-receipt'
@@ -61,15 +61,15 @@ const UploadSchema = z.object({
 
 /**
  * Register an uploaded receipt photo URL with the pipeline.
- * The photo must already be in Supabase Storage - this records the URL only.
+ * The photo must already be in local storage - this records the URL only.
  */
 export async function uploadReceiptPhoto(input: z.infer<typeof UploadSchema>) {
   const user = await requireChef()
   const { eventId, photoUrl } = UploadSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event belongs to chef
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id')
     .eq('id', eventId)
@@ -78,7 +78,7 @@ export async function uploadReceiptPhoto(input: z.infer<typeof UploadSchema>) {
 
   if (!event) throw new Error('Event not found')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('receipt_photos')
     .insert({
       event_id: eventId,
@@ -104,10 +104,10 @@ export async function uploadReceiptPhoto(input: z.infer<typeof UploadSchema>) {
  */
 export async function processReceiptOCR(receiptPhotoId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the photo record
-  const { data: photo } = await supabase
+  const { data: photo } = await db
     .from('receipt_photos')
     .select('id, event_id, photo_url, upload_status')
     .eq('id', receiptPhotoId)
@@ -119,12 +119,9 @@ export async function processReceiptOCR(receiptPhotoId: string) {
     throw new Error('Receipt already approved - cannot re-process')
 
   // Mark as processing
-  await supabase
-    .from('receipt_photos')
-    .update({ upload_status: 'processing' })
-    .eq('id', receiptPhotoId)
+  await db.from('receipt_photos').update({ upload_status: 'processing' }).eq('id', receiptPhotoId)
 
-  // Fetch the image as base64 - the photo_url is a Supabase Storage public URL
+  // Fetch the image as base64 - the photo_url is a local storage public URL
   let imageBase64: string
   let mediaType: 'image/jpeg' | 'image/png' | 'image/webp' = 'image/jpeg'
   try {
@@ -137,10 +134,7 @@ export async function processReceiptOCR(receiptPhotoId: string) {
     imageBase64 = Buffer.from(buffer).toString('base64')
   } catch (err) {
     // Reset to pending on fetch failure
-    await supabase
-      .from('receipt_photos')
-      .update({ upload_status: 'pending' })
-      .eq('id', receiptPhotoId)
+    await db.from('receipt_photos').update({ upload_status: 'pending' }).eq('id', receiptPhotoId)
     throw new Error('Could not fetch receipt image for processing')
   }
 
@@ -155,19 +149,19 @@ export async function processReceiptOCR(receiptPhotoId: string) {
   const needsReview = confidenceScore < 0.5
 
   // Store raw OCR output for debugging
-  await supabase
+  await db
     .from('receipt_photos')
     .update({ ocr_raw: JSON.stringify(extraction) })
     .eq('id', receiptPhotoId)
 
   // Upsert extraction record (delete old if re-running)
-  await supabase
+  await db
     .from('receipt_extractions')
     .delete()
     .eq('receipt_photo_id', receiptPhotoId)
     .eq('tenant_id', user.tenantId!)
 
-  const { data: extractionRecord, error: extractionError } = await supabase
+  const { data: extractionRecord, error: extractionError } = await db
     .from('receipt_extractions')
     .insert({
       receipt_photo_id: receiptPhotoId,
@@ -185,10 +179,7 @@ export async function processReceiptOCR(receiptPhotoId: string) {
     .single()
 
   if (extractionError || !extractionRecord) {
-    await supabase
-      .from('receipt_photos')
-      .update({ upload_status: 'pending' })
-      .eq('id', receiptPhotoId)
+    await db.from('receipt_photos').update({ upload_status: 'pending' }).eq('id', receiptPhotoId)
     throw new Error('Failed to store extraction results')
   }
 
@@ -204,7 +195,7 @@ export async function processReceiptOCR(receiptPhotoId: string) {
   }))
 
   if (lineItemRows.length > 0) {
-    const { error: lineItemsError } = await supabase.from('receipt_line_items').insert(lineItemRows)
+    const { error: lineItemsError } = await db.from('receipt_line_items').insert(lineItemRows)
 
     if (lineItemsError) {
       console.error('[processReceiptOCR] Line items error:', lineItemsError)
@@ -213,7 +204,7 @@ export async function processReceiptOCR(receiptPhotoId: string) {
   }
 
   // Mark as extracted or needs_review based on confidence
-  await supabase
+  await db
     .from('receipt_photos')
     .update({ upload_status: needsReview ? 'needs_review' : 'extracted' })
     .eq('id', receiptPhotoId)
@@ -252,7 +243,7 @@ const UpdateLineItemSchema = z.object({
 export async function updateLineItem(input: z.infer<typeof UpdateLineItemSchema>) {
   const user = await requireChef()
   const { lineItemId, ...fields } = UpdateLineItemSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = {}
   if (fields.expenseTag !== undefined) updates.expense_tag = fields.expenseTag
@@ -261,7 +252,7 @@ export async function updateLineItem(input: z.infer<typeof UpdateLineItemSchema>
   if (fields.description !== undefined) updates.description = fields.description
   if (fields.priceCents !== undefined) updates.price_cents = fields.priceCents
 
-  const { error } = await supabase
+  const { error } = await db
     .from('receipt_line_items')
     .update(updates)
     .eq('id', lineItemId)
@@ -282,10 +273,10 @@ export async function updateLineItem(input: z.infer<typeof UpdateLineItemSchema>
  */
 export async function approveReceiptSummary(receiptPhotoId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch photo + extraction + line items
-  const { data: photo } = await supabase
+  const { data: photo } = await db
     .from('receipt_photos')
     .select(
       `
@@ -330,7 +321,7 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
 
     for (const item of businessItems) {
       const category = categoryMap[item.ingredientCategory ?? 'unknown'] ?? 'groceries'
-      const { error } = await supabase.from('expenses').insert({
+      const { error } = await db.from('expenses').insert({
         event_id: photo.event_id ?? null, // null for standalone receipts - expenses.event_id allows NULL
         tenant_id: user.tenantId!,
         amount_cents: item.priceCents!,
@@ -352,7 +343,7 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
   }
 
   // Mark approved
-  await supabase
+  await db
     .from('receipt_photos')
     .update({ upload_status: 'approved', approved_at: new Date().toISOString() })
     .eq('id', receiptPhotoId)
@@ -405,9 +396,9 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
 /** Fetch all receipts with extractions and line items for an event. */
 export async function getReceiptSummaryForEvent(eventId: string): Promise<ReceiptPhoto[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('receipt_photos')
     .select(
       `

@@ -1,13 +1,13 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { getArchetype, ARCHETYPE_IDS } from './presets'
 import type { ArchetypeId } from './presets'
 
-function fromChefPreferences(supabase: any): any {
-  return (supabase as any).from('chef_preferences')
+function fromChefPreferences(db: any): any {
+  return (db as any).from('chef_preferences')
 }
 
 /**
@@ -23,7 +23,7 @@ export async function selectArchetype(archetypeId: ArchetypeId) {
   if (!archetype) throw new Error(`Archetype not found: ${archetypeId}`)
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const payload = {
     archetype: archetypeId,
@@ -32,22 +32,20 @@ export async function selectArchetype(archetypeId: ArchetypeId) {
   }
 
   // Upsert into chef_preferences
-  const { data: existing } = await fromChefPreferences(supabase)
+  const { data: existing } = await fromChefPreferences(db)
     .select('id')
     .eq('chef_id', user.entityId)
     .single()
 
   if (existing) {
-    const { error } = await fromChefPreferences(supabase)
-      .update(payload)
-      .eq('chef_id', user.entityId)
+    const { error } = await fromChefPreferences(db).update(payload).eq('chef_id', user.entityId)
 
     if (error) {
       console.error('[selectArchetype] Update error:', error)
       throw new Error('Failed to apply archetype')
     }
   } else {
-    const { error } = await fromChefPreferences(supabase).insert({
+    const { error } = await fromChefPreferences(db).insert({
       chef_id: user.entityId,
       tenant_id: user.tenantId!,
       ...payload,
@@ -79,9 +77,9 @@ export async function selectArchetype(archetypeId: ArchetypeId) {
  */
 export async function getChefArchetype(): Promise<ArchetypeId | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await fromChefPreferences(supabase)
+  const { data } = await fromChefPreferences(db)
     .select('archetype')
     .eq('chef_id', user.entityId)
     .single()
@@ -99,17 +97,17 @@ export async function getChefArchetype(): Promise<ArchetypeId | null> {
  */
 export async function saveCustomNavDefault() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Read current nav hrefs and modules
-  const { data: prefs } = await fromChefPreferences(supabase)
+  const { data: prefs } = await fromChefPreferences(db)
     .select('primary_nav_hrefs, enabled_modules')
     .eq('chef_id', user.entityId)
     .single()
 
   if (!prefs) throw new Error('No preferences found')
 
-  const { error } = await fromChefPreferences(supabase)
+  const { error } = await fromChefPreferences(db)
     .update({
       saved_custom_nav_hrefs: {
         primary_nav_hrefs: (prefs as any).primary_nav_hrefs ?? [],
@@ -132,9 +130,9 @@ export async function saveCustomNavDefault() {
  */
 export async function restoreCustomNavDefault() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: prefs } = await fromChefPreferences(supabase)
+  const { data: prefs } = await fromChefPreferences(db)
     .select('saved_custom_nav_hrefs')
     .eq('chef_id', user.entityId)
     .single()
@@ -144,7 +142,7 @@ export async function restoreCustomNavDefault() {
     throw new Error('No saved custom default found')
   }
 
-  const { error } = await fromChefPreferences(supabase)
+  const { error } = await fromChefPreferences(db)
     .update({
       primary_nav_hrefs: saved.primary_nav_hrefs ?? [],
       enabled_modules: saved.enabled_modules ?? [],
@@ -166,9 +164,9 @@ export async function restoreCustomNavDefault() {
  */
 export async function hasCustomNavDefault(): Promise<boolean> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await fromChefPreferences(supabase)
+  const { data } = await fromChefPreferences(db)
     .select('saved_custom_nav_hrefs')
     .eq('chef_id', user.entityId)
     .single()

@@ -5,7 +5,7 @@ import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { createMenu, updateMenu, applyMenuToEvent, getMenus } from '@/lib/menus/actions'
 import { searchClientsByName } from '@/lib/clients/actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
@@ -46,8 +46,8 @@ export const menuAgentActions: AgentActionDefinition[] = [
 
       let eventId: string | undefined
       if (parsed.event_identifier) {
-        const supabase: any = createServerClient()
-        const { data: events } = await supabase
+        const db: any = createServerClient()
+        const { data: events } = await db
           .from('events')
           .select('id, occasion')
           .eq('tenant_id', ctx.tenantId)
@@ -127,8 +127,8 @@ export const menuAgentActions: AgentActionDefinition[] = [
           .includes(menuName)
       )
 
-      const supabase: any = createServerClient()
-      const { data: events } = await supabase
+      const db: any = createServerClient()
+      const { data: events } = await db
         .from('events')
         .select('id, occasion, client:clients(full_name)')
         .eq('tenant_id', ctx.tenantId)

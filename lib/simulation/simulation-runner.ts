@@ -6,7 +6,7 @@
 // This file has NO 'use server' directive - it is a plain server-side module.
 // Never import this from a client component.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { generateScenarios } from './scenario-generator'
 import { runScenario } from './pipeline-runner'
 import { evaluateOutput } from './quality-evaluator'
@@ -18,12 +18,12 @@ export async function runSimulationInternal(
   tenantId: string,
   config: SimRunConfig
 ): Promise<{ success: boolean; runId: string | null; error: string | null }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const modules = config.modules
   const scenariosPerModule = Math.min(config.scenariosPerModule ?? 5, 20)
 
   // Create the run record
-  const { data: runData, error: runError } = await supabase
+  const { data: runData, error: runError } = await db
     .from('simulation_runs')
     .insert({
       tenant_id: tenantId,
@@ -120,7 +120,7 @@ export async function runSimulationInternal(
       }
 
       if (resultRows.length > 0) {
-        await supabase.from('simulation_results').insert(resultRows)
+        await db.from('simulation_results').insert(resultRows)
       }
 
       moduleBreakdown[module] = {
@@ -133,7 +133,7 @@ export async function runSimulationInternal(
     // Store fine-tuning examples (non-blocking)
     if (fineTuningBuffer.length > 0) {
       try {
-        await supabase.from('fine_tuning_examples').insert(fineTuningBuffer)
+        await db.from('fine_tuning_examples').insert(fineTuningBuffer)
       } catch (err) {
         console.warn('[sim] Failed to store fine-tuning examples:', err)
       }
@@ -142,7 +142,7 @@ export async function runSimulationInternal(
     const passRate = totalScenarios > 0 ? totalPassed / totalScenarios : 0
     const completedAt = new Date().toISOString()
 
-    await supabase
+    await db
       .from('simulation_runs')
       .update({
         completed_at: completedAt,
@@ -177,7 +177,7 @@ export async function runSimulationInternal(
 
     return { success: true, runId, error: null }
   } catch (err) {
-    await supabase
+    await db
       .from('simulation_runs')
       .update({ status: 'failed', completed_at: new Date().toISOString() })
       .eq('id', runId)

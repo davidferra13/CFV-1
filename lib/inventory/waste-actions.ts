@@ -6,7 +6,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -85,9 +85,9 @@ export type LogWasteInput = z.infer<typeof LogWasteSchema>
 export async function logWaste(input: LogWasteInput): Promise<WasteEntry> {
   const user = await requireChef()
   const parsed = LogWasteSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase.from('waste_logs') as any)
+  const { data, error } = await (db.from('waste_logs') as any)
     .insert({
       chef_id: user.tenantId!,
       event_id: parsed.eventId ?? null,
@@ -131,9 +131,9 @@ export async function getWasteDashboard(
   endDate?: string
 ): Promise<WasteDashboard> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = (supabase.from('waste_logs') as any)
+  let query = (db.from('waste_logs') as any)
     .select('reason, estimated_cost_cents, quantity')
     .eq('chef_id', user.tenantId!)
 
@@ -182,14 +182,14 @@ export async function getWasteDashboard(
  */
 export async function getWasteTrend(months: number = 6): Promise<WasteTrendPoint[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Compute start date: beginning of the month N months ago
   const now = new Date()
   const start = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
   const startDate = start.toISOString()
 
-  const { data, error } = await (supabase.from('waste_logs') as any)
+  const { data, error } = await (db.from('waste_logs') as any)
     .select('created_at, estimated_cost_cents')
     .eq('chef_id', user.tenantId!)
     .gte('created_at', startDate)
@@ -232,9 +232,9 @@ export async function getWasteTrend(months: number = 6): Promise<WasteTrendPoint
  */
 export async function getWasteByEvent(eventId: string): Promise<WasteEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase.from('waste_logs') as any)
+  const { data, error } = await (db.from('waste_logs') as any)
     .select('*')
     .eq('chef_id', user.tenantId!)
     .eq('event_id', eventId)

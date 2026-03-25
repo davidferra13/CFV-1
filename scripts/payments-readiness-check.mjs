@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import dotenv from 'dotenv'
-import { createClient } from './lib/supabase.mjs'
+import { createClient } from './lib/db.mjs'
 
 dotenv.config({ path: '.env.local' })
 
@@ -87,26 +87,26 @@ async function main() {
     warnings.push('STRIPE_WEBHOOK_SECRET does not use whsec_ prefix')
   }
 
-  const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceRole = env.SUPABASE_SERVICE_ROLE_KEY
+  const dbUrl = env.NEXT_PUBLIC_DB_URL
+  const serviceRole = env.DB_SERVICE_ROLE_KEY
   const platformOwnerChefId = env.PLATFORM_OWNER_CHEF_ID
 
-  if (!supabaseUrl || !serviceRole) {
-    errors.push('Supabase credentials missing for DB readiness checks')
+  if (!dbUrl || !serviceRole) {
+    errors.push('Database credentials missing for DB readiness checks')
   }
 
   if (!platformOwnerChefId) {
     warnings.push('PLATFORM_OWNER_CHEF_ID is missing; skipping platform chef checks')
   }
 
-  if (supabaseUrl && serviceRole) {
-    const supabase = createClient(supabaseUrl, serviceRole, {
+  if (dbUrl && serviceRole) {
+    const db = createClient(dbUrl, serviceRole, {
       auth: { autoRefreshToken: false, persistSession: false },
     })
 
     if (platformOwnerChefId) {
       printSection('Platform Chef Connect')
-      const { data: chef, error: chefError } = await supabase
+      const { data: chef, error: chefError } = await db
         .from('chefs')
         .select('id,business_name,stripe_account_id,stripe_onboarding_complete')
         .eq('id', platformOwnerChefId)
@@ -132,7 +132,7 @@ async function main() {
 
     printSection('Stripe Webhook Health (24h)')
     const sinceIso = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    const { data: hooks, error: hooksError } = await supabase
+    const { data: hooks, error: hooksError } = await db
       .from('webhook_events')
       .select('status,received_at,event_type,provider_event_id,error_text')
       .eq('provider', 'stripe')

@@ -5,8 +5,8 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient } from '@/lib/db/server'
+import { createAdminClient } from '@/lib/db/admin'
 import { revalidatePath } from 'next/cache'
 import { FDA_BIG_9, COMMON_ALLERGENS } from '@/lib/constants/allergens'
 
@@ -44,9 +44,9 @@ interface UpdateIntakeFormData {
 export async function createIntakeForm(data: CreateIntakeFormData) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { data: form, error } = await (supabase as any)
+  const { data: form, error } = await (db as any)
     .from('client_intake_forms')
     .insert({
       tenant_id: tenantId,
@@ -67,9 +67,9 @@ export async function createIntakeForm(data: CreateIntakeFormData) {
 export async function getIntakeForms() {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { data: forms, error } = await (supabase as any)
+  const { data: forms, error } = await (db as any)
     .from('client_intake_forms')
     .select('*, client_intake_responses(count)')
     .eq('tenant_id', tenantId)
@@ -87,9 +87,9 @@ export async function getIntakeForms() {
 export async function getIntakeForm(formId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { data: form, error } = await (supabase as any)
+  const { data: form, error } = await (db as any)
     .from('client_intake_forms')
     .select('*')
     .eq('id', formId)
@@ -104,7 +104,7 @@ export async function getIntakeForm(formId: string) {
 export async function updateIntakeForm(formId: string, data: UpdateIntakeFormData) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (data.name !== undefined) updateData.name = data.name
@@ -112,7 +112,7 @@ export async function updateIntakeForm(formId: string, data: UpdateIntakeFormDat
   if (data.fields !== undefined) updateData.fields = data.fields
   if (data.is_default !== undefined) updateData.is_default = data.is_default
 
-  const { data: form, error } = await (supabase as any)
+  const { data: form, error } = await (db as any)
     .from('client_intake_forms')
     .update(updateData)
     .eq('id', formId)
@@ -129,9 +129,9 @@ export async function updateIntakeForm(formId: string, data: UpdateIntakeFormDat
 export async function deleteIntakeForm(formId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('client_intake_forms')
     .update({ is_deleted: true, updated_at: new Date().toISOString() })
     .eq('id', formId)
@@ -155,9 +155,9 @@ export async function createIntakeShare(
 ) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { data: share, error } = await (supabase as any)
+  const { data: share, error } = await (db as any)
     .from('client_intake_shares')
     .insert({
       tenant_id: tenantId,
@@ -178,9 +178,9 @@ export async function createIntakeShare(
 export async function getIntakeShares(formId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { data: shares, error } = await (supabase as any)
+  const { data: shares, error } = await (db as any)
     .from('client_intake_shares')
     .select('*')
     .eq('form_id', formId)
@@ -196,10 +196,10 @@ export async function getIntakeShares(formId: string) {
 // ============================================
 
 export async function getShareByToken(token: string) {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Load the share record
-  const { data: share, error: shareError } = await (supabase as any)
+  const { data: share, error: shareError } = await (db as any)
     .from('client_intake_shares')
     .select('*')
     .eq('share_token', token)
@@ -214,7 +214,7 @@ export async function getShareByToken(token: string) {
   if (share.response_id) return { ...share, already_submitted: true, form: null }
 
   // Load the form
-  const { data: form, error: formError } = await (supabase as any)
+  const { data: form, error: formError } = await (db as any)
     .from('client_intake_forms')
     .select('*')
     .eq('id', share.form_id)
@@ -232,10 +232,10 @@ export async function submitIntakeResponse(
   clientName: string,
   clientEmail: string
 ) {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Validate the share token
-  const { data: share, error: shareError } = await (supabase as any)
+  const { data: share, error: shareError } = await (db as any)
     .from('client_intake_shares')
     .select('*')
     .eq('share_token', token)
@@ -248,7 +248,7 @@ export async function submitIntakeResponse(
   if (share.response_id) throw new Error('A response has already been submitted for this link')
 
   // Insert the response
-  const { data: response, error: responseError } = await (supabase as any)
+  const { data: response, error: responseError } = await (db as any)
     .from('client_intake_responses')
     .insert({
       tenant_id: share.tenant_id,
@@ -264,7 +264,7 @@ export async function submitIntakeResponse(
   if (responseError) throw new Error(`Failed to submit response: ${responseError.message}`)
 
   // Link the response to the share
-  await (supabase as any)
+  await (db as any)
     .from('client_intake_shares')
     .update({ response_id: response.id })
     .eq('id', share.id)
@@ -279,9 +279,9 @@ export async function submitIntakeResponse(
 export async function getIntakeResponses(formId?: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('client_intake_responses')
     .select('*, client_intake_forms!inner(name)')
     .eq('tenant_id', tenantId)
@@ -300,10 +300,10 @@ export async function getIntakeResponses(formId?: string) {
 export async function applyResponseToClient(responseId: string, clientId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Load the response
-  const { data: response, error: respError } = await (supabase as any)
+  const { data: response, error: respError } = await (db as any)
     .from('client_intake_responses')
     .select('*')
     .eq('id', responseId)
@@ -313,7 +313,7 @@ export async function applyResponseToClient(responseId: string, clientId: string
   if (respError || !response) throw new Error('Response not found')
 
   // Load the form to understand the field definitions
-  const { data: form, error: formError } = await (supabase as any)
+  const { data: form, error: formError } = await (db as any)
     .from('client_intake_forms')
     .select('fields')
     .eq('id', response.form_id)
@@ -345,7 +345,7 @@ export async function applyResponseToClient(responseId: string, clientId: string
   }
 
   // Store full responses in client's unknown_fields for reference
-  const { data: existingClient } = await (supabase as any)
+  const { data: existingClient } = await (db as any)
     .from('clients')
     .select('unknown_fields')
     .eq('id', clientId)
@@ -367,7 +367,7 @@ export async function applyResponseToClient(responseId: string, clientId: string
 
   // Update client record
   if (Object.keys(clientUpdate).length > 0) {
-    const { error: updateError } = await (supabase as any)
+    const { error: updateError } = await (db as any)
       .from('clients')
       .update(clientUpdate)
       .eq('id', clientId)
@@ -377,7 +377,7 @@ export async function applyResponseToClient(responseId: string, clientId: string
   }
 
   // Mark response as applied
-  const { error: applyError } = await (supabase as any)
+  const { error: applyError } = await (db as any)
     .from('client_intake_responses')
     .update({
       applied_at: new Date().toISOString(),
@@ -400,10 +400,10 @@ export async function applyResponseToClient(responseId: string, clientId: string
 export async function createDefaultForms() {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Check if defaults already exist
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await (db as any)
     .from('client_intake_forms')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -626,7 +626,7 @@ export async function createDefaultForms() {
 
   const results = []
   for (const formData of defaultForms) {
-    const { data: form, error } = await (supabase as any)
+    const { data: form, error } = await (db as any)
       .from('client_intake_forms')
       .insert({
         tenant_id: tenantId,

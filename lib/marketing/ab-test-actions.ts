@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -78,9 +78,9 @@ function mapABTest(row: any): ABTest {
 export async function createABTest(input: CreateABTestInput) {
   const user = await requireChef()
   const validated = CreateABTestSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ab_tests')
     .insert({
       campaign_id: validated.campaignId,
@@ -108,9 +108,9 @@ export async function createABTest(input: CreateABTestInput) {
 export async function resolveABTest(testId: string, winner: 'a' | 'b') {
   const user = await requireChef()
   const validated = ResolveABTestSchema.parse({ testId, winner })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ab_tests')
     .update({
       winner: validated.winner,
@@ -136,10 +136,10 @@ export async function resolveABTest(testId: string, winner: 'a' | 'b') {
  */
 export async function getABTestResults(testId: string): Promise<ABTestWithStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the test itself
-  const { data: test, error } = await supabase
+  const { data: test, error } = await db
     .from('ab_tests')
     .select('*')
     .eq('id', testId)
@@ -152,7 +152,7 @@ export async function getABTestResults(testId: string): Promise<ABTestWithStats>
   }
 
   // Fetch campaign recipients to compute per-variant stats
-  const { data: recipients } = await supabase
+  const { data: recipients } = await db
     .from('campaign_recipients')
     .select('ab_variant, opened_at, pixel_loaded_at, link_clicks')
     .eq('campaign_id', test.campaign_id)
@@ -191,9 +191,9 @@ export async function getABTestResults(testId: string): Promise<ABTestWithStats>
  */
 export async function listABTests(): Promise<ABTest[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ab_tests')
     .select('*')
     .eq('chef_id', user.tenantId!)

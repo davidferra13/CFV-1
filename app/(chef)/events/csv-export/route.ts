@@ -2,14 +2,14 @@
 
 import { NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { csvRowSafe as row } from '@/lib/security/csv-sanitize'
 
 export async function GET() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       `

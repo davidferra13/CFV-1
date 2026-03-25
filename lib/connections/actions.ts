@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -53,10 +53,10 @@ const UpdateConnectionSchema = z.object({
  */
 export async function getClientConnections(clientId: string): Promise<ClientConnection[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get connections where this client is on either side
-  const { data: connections, error } = await supabase
+  const { data: connections, error } = await db
     .from('client_connections' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -77,7 +77,7 @@ export async function getClientConnections(clientId: string): Promise<ClientConn
   }
 
   // Fetch client info in one query
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, email')
     .in('id', Array.from(otherClientIds))
@@ -115,14 +115,14 @@ export async function getClientConnections(clientId: string): Promise<ClientConn
 export async function createConnection(input: z.infer<typeof CreateConnectionSchema>) {
   const user = await requireChef()
   const validated = CreateConnectionSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (validated.client_a_id === validated.client_b_id) {
     throw new Error('Cannot connect a client to themselves')
   }
 
   // Verify both clients belong to this chef
-  const { data: clientA } = await supabase
+  const { data: clientA } = await db
     .from('clients')
     .select('id')
     .eq('id', validated.client_a_id)
@@ -131,7 +131,7 @@ export async function createConnection(input: z.infer<typeof CreateConnectionSch
 
   if (!clientA) throw new Error('First client not found')
 
-  const { data: clientB } = await supabase
+  const { data: clientB } = await db
     .from('clients')
     .select('id')
     .eq('id', validated.client_b_id)
@@ -140,7 +140,7 @@ export async function createConnection(input: z.infer<typeof CreateConnectionSch
 
   if (!clientB) throw new Error('Second client not found')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_connections' as any)
     .insert({
       tenant_id: user.tenantId!,
@@ -174,7 +174,7 @@ export async function updateConnection(
 ) {
   const user = await requireChef()
   const validated = UpdateConnectionSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build update object
   const updates: Record<string, unknown> = {}
@@ -186,7 +186,7 @@ export async function updateConnection(
     throw new Error('No fields to update')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_connections' as any)
     .update(updates)
     .eq('id', connectionId)
@@ -210,10 +210,10 @@ export async function updateConnection(
  */
 export async function removeConnection(connectionId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get connection first for revalidation paths
-  const { data: connection } = await supabase
+  const { data: connection } = await db
     .from('client_connections' as any)
     .select('client_a_id, client_b_id')
     .eq('id', connectionId)
@@ -224,7 +224,7 @@ export async function removeConnection(connectionId: string) {
     throw new Error('Connection not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_connections' as any)
     .delete()
     .eq('id', connectionId)

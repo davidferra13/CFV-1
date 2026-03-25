@@ -6,7 +6,7 @@
 // Pure math, no AI.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -51,10 +51,10 @@ const DEFAULT_SPLITS: Record<string, number> = {
  */
 export async function getEventSettlement(eventId: string): Promise<EventSettlement | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with revenue data
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, occasion, quoted_price_cents, amount_paid_cents')
     .eq('id', eventId)
@@ -67,7 +67,7 @@ export async function getEventSettlement(eventId: string): Promise<EventSettleme
   }
 
   // Fetch collaborators
-  const { data: collabs, error: collabError } = await supabase
+  const { data: collabs, error: collabError } = await db
     .from('event_collaborators')
     .select(
       `
@@ -89,7 +89,7 @@ export async function getEventSettlement(eventId: string): Promise<EventSettleme
 
   // Fetch chef names for collaborators
   const chefIds = collabs.map((c: any) => c.chef_id)
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs')
     .select('id, business_name, first_name, last_name')
     .in('id', chefIds)
@@ -147,9 +147,9 @@ export async function getEventCollaboratorsWithStations(eventId: string): Promis
   unassigned: Array<{ chefName: string; role: string; chefId: string }>
 } | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: collabs, error } = await supabase
+  const { data: collabs, error } = await db
     .from('event_collaborators')
     .select('chef_id, role, permissions, status')
     .eq('event_id', eventId)
@@ -159,7 +159,7 @@ export async function getEventCollaboratorsWithStations(eventId: string): Promis
 
   // Fetch chef names
   const chefIds = collabs.map((c: any) => c.chef_id)
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs')
     .select('id, business_name, first_name, last_name')
     .in('id', chefIds)

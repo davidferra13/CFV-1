@@ -12,14 +12,14 @@ Write unit and integration tests for every untested module in the ChefFlow codeb
 
 ## Context
 
-ChefFlow is a multi-tenant private chef platform (Next.js + Supabase + Stripe). It has:
+ChefFlow is a multi-tenant private chef platform (Next.js + PostgreSQL + Stripe). It has:
 
 - 896 files in `lib/` containing business logic
 - 30 sections in the test-coverage-todo spanning auth, ledger, finance, events, quotes, clients, recipes, inventory, staff, AI, scheduling, analytics, communications, marketing, operations, compliance, admin, API routes, middleware, database integrity, concurrency, hooks, caching, email/PDF rendering, PWA, and cross-cutting behavioral concerns
 - ~21 existing unit/integration test files that cover ~5% of the codebase
 - ~148 Playwright E2E test files (these are separate — don't touch them)
 
-Your goal: write **unit tests** for every pure-logic module. For modules that require Supabase, write **integration tests** using the test-db helper.
+Your goal: write **unit tests** for every pure-logic module. For modules that require PostgreSQL, write **integration tests** using the test-db helper.
 
 ---
 
@@ -56,10 +56,10 @@ Every test file follows this exact structure:
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-// If you CAN import the actual function (pure logic, no 'use server', no Supabase):
+// If you CAN import the actual function (pure logic, no 'use server', no database):
 import { myFunction } from '../../lib/some-module.js'
 
-// If you CANNOT import (has 'use server' or Supabase dependency):
+// If you CANNOT import (has 'use server' or PostgreSQL dependency):
 // Extract the pure logic into the test file and test it directly.
 // Copy the exact formulas/rules from the source file.
 
@@ -75,7 +75,7 @@ describe('Module Name — category', () => {
 **CAN import directly** (do this whenever possible):
 
 - Files WITHOUT `'use server'` at the top
-- Files that export pure functions (no Supabase, no server-only APIs)
+- Files that export pure functions (no database, no server-only APIs)
 - Examples: `lib/events/fsm.ts`, `lib/billing/modules.ts`, `lib/pricing/compute.ts`
 
 **CANNOT import directly** (extract logic into test file):
@@ -102,18 +102,18 @@ Three helper files already exist. Use them:
 2. **`tests/helpers/mocks.ts`** — Mock infrastructure
 
    ```typescript
-   import { createMockSupabase, createMockStripe } from '../helpers/mocks.js'
+   import { createMockPostgreSQL, createMockStripe } from '../helpers/mocks.js'
    ```
 
-   Available: `createMockSupabase()`, `createMockOllama()`, `createMockStripe()`, `createMockEmail()`, `createMockSms()`, `createMockGroceryApi()`, `createMockTurnstile()`
+   Available: `createMockPostgreSQL()`, `createMockOllama()`, `createMockStripe()`, `createMockEmail()`, `createMockSms()`, `createMockGroceryApi()`, `createMockTurnstile()`
 
-3. **`tests/helpers/test-db.ts`** — Integration test helpers (requires Supabase credentials)
+3. **`tests/helpers/test-db.ts`** — Integration test helpers (requires PostgreSQL credentials)
    ```typescript
    import { testDb } from '../helpers/test-db.js'
-   testDb.skipIfNoSupabase()
-   const supabase = testDb.getClient()
+   testDb.skipIfNoPostgreSQL()
+   const database = testDb.getClient()
    ```
-   Available: `skipIfNoSupabase()`, `getClient()`, `createTestChef()`, `createTestClient()`, `createTestEvent()`, `createTestLedgerEntry()`, `cleanup()`
+   Available: `skipIfNoPostgreSQL()`, `getClient()`, `createTestChef()`, `createTestClient()`, `createTestEvent()`, `createTestLedgerEntry()`, `cleanup()`
 
 ---
 

@@ -77,7 +77,7 @@ This is a sort-order change only. All sections still render regardless of time.
 
 **Files:**
 
-- `supabase/migrations/20260401000070_mobile_tab_preferences.sql` - adds `mobile_tab_hrefs` JSONB column
+- `database/migrations/20260401000070_mobile_tab_preferences.sql` - adds `mobile_tab_hrefs` JSONB column
 - `lib/chef/layout-cache.ts` - fetches `mobile_tab_hrefs` from preferences
 - `lib/chef/actions.ts` - adds `mobile_tab_hrefs` to `UpdatePreferencesSchema`
 - `components/navigation/nav-config.tsx` - adds `MOBILE_TAB_OPTIONS` (14 choices), `resolveMobileTabs()` resolver

@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   FRONT_OF_HOUSE_THEMES,
   FrontOfHouseContextSchema,
@@ -86,9 +86,9 @@ function inferEventType(occasion?: string | null, theme?: string | null): FrontO
 
 async function fetchMenuData(menuId: string): Promise<FrontOfHouseMenuData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: menu, error: menuError } = await supabase
+  const { data: menu, error: menuError } = await db
     .from('menus')
     .select('id, name, tenant_id, event_id')
     .eq('id', menuId)
@@ -100,7 +100,7 @@ async function fetchMenuData(menuId: string): Promise<FrontOfHouseMenuData> {
   }
 
   const [{ data: dishes }, { data: event }] = await Promise.all([
-    supabase
+    db
       .from('dishes')
       .select(
         'id, course_name, course_number, description, dietary_tags, allergen_flags, sort_order'
@@ -110,7 +110,7 @@ async function fetchMenuData(menuId: string): Promise<FrontOfHouseMenuData> {
       .order('course_number', { ascending: true })
       .order('sort_order', { ascending: true }),
     menu.event_id
-      ? supabase
+      ? db
           .from('events')
           .select('id, event_date, occasion, clients(full_name)')
           .eq('id', menu.event_id)
@@ -169,8 +169,8 @@ async function getTemplate(
   theme: string | null
 ): Promise<MenuTemplateDefinition> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
-  const templatesTable = (supabase as any).from('menu_templates')
+  const db: any = createServerClient()
+  const templatesTable = (db as any).from('menu_templates')
 
   if (templateId) {
     const { data } = await templatesTable

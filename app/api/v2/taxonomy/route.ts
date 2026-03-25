@@ -44,7 +44,7 @@ export const GET = withApiAuth(
     const systemDefaults = getSystemDefaults(cat)
 
     // Get chef's hidden entries
-    const { data: hiddenRows } = await ctx.supabase
+    const { data: hiddenRows } = await ctx.db
       .from('chef_taxonomy_hidden' as any)
       .select('value')
       .eq('chef_id', ctx.tenantId)
@@ -53,7 +53,7 @@ export const GET = withApiAuth(
     const hiddenSet = new Set((hiddenRows ?? []).map((r: any) => r.value))
 
     // Get chef's custom entries
-    const { data: customRows, error } = await ctx.supabase
+    const { data: customRows, error } = await ctx.db
       .from('chef_taxonomy_extensions' as any)
       .select('*')
       .eq('chef_id', ctx.tenantId)
@@ -133,7 +133,7 @@ export const POST = withApiAuth(
       )
     }
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('chef_taxonomy_extensions' as any)
       .insert({
         chef_id: ctx.tenantId,

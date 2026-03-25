@@ -6,7 +6,7 @@
 // Follows the same pattern as lib/wix/process.ts
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { revalidatePath } from 'next/cache'
@@ -43,7 +43,7 @@ export async function importTakeAChefBooking(
 ): Promise<TakeAChefImportResult> {
   const user = await requireChef()
   const validated = TakeAChefImportSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   try {
@@ -85,7 +85,7 @@ export async function importTakeAChefBooking(
     if (parsed.referral_source) unknownFields.referral_source_raw = parsed.referral_source
 
     // 4. Create inquiry
-    const { data: inquiry, error: inquiryError } = await supabase
+    const { data: inquiry, error: inquiryError } = await db
       .from('inquiries')
       .insert({
         tenant_id: tenantId,
@@ -122,7 +122,7 @@ export async function importTakeAChefBooking(
     }
 
     // 5. Create draft event
-    const { data: event, error: eventError } = await supabase
+    const { data: event, error: eventError } = await db
       .from('events')
       .insert({
         tenant_id: tenantId,
@@ -161,7 +161,7 @@ export async function importTakeAChefBooking(
     }
 
     // 6. Log event state transition (null → draft)
-    await supabase.from('event_state_transitions').insert({
+    await db.from('event_state_transitions').insert({
       tenant_id: tenantId,
       event_id: event.id,
       from_status: null,
@@ -170,10 +170,7 @@ export async function importTakeAChefBooking(
     })
 
     // 7. Link inquiry to event
-    await supabase
-      .from('inquiries')
-      .update({ converted_to_event_id: event.id })
-      .eq('id', inquiry.id)
+    await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
 
     // 8. Log commission as expense (if requested and price is known)
     let commissionExpenseId: string | undefined
@@ -186,7 +183,7 @@ export async function importTakeAChefBooking(
       const commissionCents = Math.floor(
         (parsed.confirmed_budget_cents * validated.commissionPercent) / 100
       )
-      const { data: expense } = await supabase
+      const { data: expense } = await db
         .from('expenses')
         .insert({
           tenant_id: tenantId,
@@ -258,9 +255,9 @@ export async function importTakeAChefBooking(
 export async function getChefDirectBookingLink(): Promise<string | null> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data } = await supabase.from('chefs').select('slug').eq('id', user.tenantId!).single()
+    const { data } = await db.from('chefs').select('slug').eq('id', user.tenantId!).single()
 
     if (!data?.slug) return null
 

@@ -4,16 +4,16 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { CertificationList } from '@/components/protection/certification-list'
 
 export const metadata: Metadata = { title: 'Certifications | ChefFlow' }
 
 export default async function ProtectionCertificationsPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: certs } = await supabase
+  const { data: certs } = await db
     .from('chef_certifications')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

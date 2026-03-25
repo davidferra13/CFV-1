@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -82,9 +82,9 @@ const VALID_TRANSITIONS: Record<VaTaskStatus, VaTaskStatus[]> = {
 
 export async function getVaTasks(filters?: VaTaskFilters): Promise<VaTask[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('va_tasks')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -110,9 +110,9 @@ export async function getVaTasks(filters?: VaTaskFilters): Promise<VaTask[]> {
 
 export async function createVaTask(input: CreateVaTaskInput): Promise<VaTask> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('va_tasks')
     .insert({
       chef_id: user.tenantId!,
@@ -139,7 +139,7 @@ export async function createVaTask(input: CreateVaTaskInput): Promise<VaTask> {
 
 export async function updateVaTask(id: string, input: UpdateVaTaskInput): Promise<VaTask> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (input.title !== undefined) updateData.title = input.title
@@ -150,7 +150,7 @@ export async function updateVaTask(id: string, input: UpdateVaTaskInput): Promis
   if (input.due_date !== undefined) updateData.due_date = input.due_date
   if (input.notes !== undefined) updateData.notes = input.notes
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('va_tasks')
     .update(updateData)
     .eq('id', id)
@@ -170,9 +170,9 @@ export async function updateVaTask(id: string, input: UpdateVaTaskInput): Promis
 
 export async function deleteVaTask(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('va_tasks')
     .delete()
     .eq('id', id)
@@ -189,10 +189,10 @@ export async function deleteVaTask(id: string): Promise<void> {
 
 export async function updateVaTaskStatus(id: string, newStatus: VaTaskStatus): Promise<VaTask> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current task to validate transition
-  const { data: current, error: fetchError } = await (supabase as any)
+  const { data: current, error: fetchError } = await (db as any)
     .from('va_tasks')
     .select('status')
     .eq('id', id)
@@ -221,7 +221,7 @@ export async function updateVaTaskStatus(id: string, newStatus: VaTaskStatus): P
     updateData.completed_at = null
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('va_tasks')
     .update(updateData)
     .eq('id', id)
@@ -248,9 +248,9 @@ export async function getVaTaskStats(): Promise<{
   overdue: number
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('va_tasks')
     .select('status, due_date')
     .eq('chef_id', user.tenantId!)
@@ -288,9 +288,9 @@ export async function getVaTaskStats(): Promise<{
 
 export async function getVaAssignees(): Promise<string[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('va_tasks')
     .select('assigned_to')
     .eq('chef_id', user.tenantId!)

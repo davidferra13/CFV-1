@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ───
@@ -66,10 +66,10 @@ const VALID_CATEGORIES: EquipmentCategory[] = [
 
 export async function getChefEquipment(): Promise<Equipment[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_equipment')
     .select('*')
     .eq('chef_id', tenantId)
@@ -87,13 +87,13 @@ export async function addEquipment(input: {
   notes?: string
 }): Promise<Equipment> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   if (!input.name?.trim()) throw new Error('Equipment name is required')
   if (!VALID_CATEGORIES.includes(input.category)) throw new Error('Invalid category')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_equipment')
     .insert({
       chef_id: tenantId,
@@ -119,7 +119,7 @@ export async function updateEquipment(
   input: { name?: string; category?: EquipmentCategory; quantity?: number; notes?: string }
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   if (input.category && !VALID_CATEGORIES.includes(input.category)) {
@@ -132,7 +132,7 @@ export async function updateEquipment(
   if (input.quantity !== undefined) updates.quantity = input.quantity
   if (input.notes !== undefined) updates.notes = input.notes?.trim() || null
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_equipment')
     .update(updates)
     .eq('id', id)
@@ -148,14 +148,10 @@ export async function updateEquipment(
 
 export async function deleteEquipment(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { error } = await supabase
-    .from('chef_equipment')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', tenantId)
+  const { error } = await db.from('chef_equipment').delete().eq('id', id).eq('chef_id', tenantId)
 
   if (error) throw new Error(`Failed to delete equipment: ${error.message}`)
   revalidatePath('/equipment')
@@ -165,11 +161,11 @@ export async function deleteEquipment(id: string): Promise<void> {
 
 export async function getClientKitchenGaps(clientId: string): Promise<Equipment[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Get all chef equipment
-  const { data: chefEquipment, error: eqErr } = await supabase
+  const { data: chefEquipment, error: eqErr } = await db
     .from('chef_equipment')
     .select('*')
     .eq('chef_id', tenantId)
@@ -189,11 +185,11 @@ export async function generatePackingChecklist(
   eventId: string
 ): Promise<PackingChecklist & { items: PackingChecklistItem[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Check for existing checklist for this event
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('packing_checklists')
     .select('id')
     .eq('event_id', eventId)
@@ -206,7 +202,7 @@ export async function generatePackingChecklist(
   }
 
   // Get event details
-  const { data: event, error: eventErr } = await supabase
+  const { data: event, error: eventErr } = await db
     .from('events')
     .select('id, title, client_id')
     .eq('id', eventId)
@@ -216,7 +212,7 @@ export async function generatePackingChecklist(
   if (eventErr || !event) throw new Error('Event not found')
 
   // Get chef's equipment
-  const { data: equipment } = await supabase
+  const { data: equipment } = await db
     .from('chef_equipment')
     .select('*')
     .eq('chef_id', tenantId)
@@ -228,7 +224,7 @@ export async function generatePackingChecklist(
   // Create checklist
   const checklistName = `Packing list: ${event.title || 'Event'}`
 
-  const { data: checklist, error: createErr } = await supabase
+  const { data: checklist, error: createErr } = await db
     .from('packing_checklists')
     .insert({
       chef_id: tenantId,
@@ -269,7 +265,7 @@ export async function generatePackingChecklist(
   }))
 
   if (items.length > 0) {
-    const { error: itemsErr } = await supabase.from('packing_checklist_items').insert(items)
+    const { error: itemsErr } = await db.from('packing_checklist_items').insert(items)
 
     if (itemsErr) throw new Error(`Failed to create checklist items: ${itemsErr.message}`)
   }
@@ -284,10 +280,10 @@ export async function getPackingChecklist(
   checklistId: string
 ): Promise<PackingChecklist & { items: PackingChecklistItem[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: checklist, error: clErr } = await supabase
+  const { data: checklist, error: clErr } = await db
     .from('packing_checklists')
     .select('*')
     .eq('id', checklistId)
@@ -296,7 +292,7 @@ export async function getPackingChecklist(
 
   if (clErr || !checklist) throw new Error('Checklist not found')
 
-  const { data: items, error: itemsErr } = await supabase
+  const { data: items, error: itemsErr } = await db
     .from('packing_checklist_items')
     .select('*')
     .eq('checklist_id', checklistId)
@@ -314,10 +310,10 @@ export async function getEventChecklist(
   eventId: string
 ): Promise<(PackingChecklist & { items: PackingChecklistItem[] }) | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: checklist } = await supabase
+  const { data: checklist } = await db
     .from('packing_checklists')
     .select('*')
     .eq('event_id', eventId)
@@ -326,7 +322,7 @@ export async function getEventChecklist(
 
   if (!checklist) return null
 
-  const { data: items } = await supabase
+  const { data: items } = await db
     .from('packing_checklist_items')
     .select('*')
     .eq('checklist_id', checklist.id)
@@ -342,11 +338,11 @@ export async function getEventChecklist(
 
 export async function toggleItemPacked(itemId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Verify ownership through checklist
-  const { data: item } = await supabase
+  const { data: item } = await db
     .from('packing_checklist_items')
     .select('id, is_packed, checklist_id')
     .eq('id', itemId)
@@ -355,7 +351,7 @@ export async function toggleItemPacked(itemId: string): Promise<void> {
   if (!item) throw new Error('Item not found')
 
   // Verify checklist belongs to this chef
-  const { data: checklist } = await supabase
+  const { data: checklist } = await db
     .from('packing_checklists')
     .select('id')
     .eq('id', item.checklist_id)
@@ -364,7 +360,7 @@ export async function toggleItemPacked(itemId: string): Promise<void> {
 
   if (!checklist) throw new Error('Unauthorized')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('packing_checklist_items')
     .update({ is_packed: !item.is_packed })
     .eq('id', itemId)
@@ -374,10 +370,10 @@ export async function toggleItemPacked(itemId: string): Promise<void> {
 
 export async function toggleItemReturned(itemId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: item } = await supabase
+  const { data: item } = await db
     .from('packing_checklist_items')
     .select('id, is_returned, checklist_id')
     .eq('id', itemId)
@@ -385,7 +381,7 @@ export async function toggleItemReturned(itemId: string): Promise<void> {
 
   if (!item) throw new Error('Item not found')
 
-  const { data: checklist } = await supabase
+  const { data: checklist } = await db
     .from('packing_checklists')
     .select('id')
     .eq('id', item.checklist_id)
@@ -394,7 +390,7 @@ export async function toggleItemReturned(itemId: string): Promise<void> {
 
   if (!checklist) throw new Error('Unauthorized')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('packing_checklist_items')
     .update({ is_returned: !item.is_returned })
     .eq('id', itemId)
@@ -407,13 +403,13 @@ export async function addChecklistItem(
   input: { item_name: string; category?: string; notes?: string }
 ): Promise<PackingChecklistItem> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   if (!input.item_name?.trim()) throw new Error('Item name is required')
 
   // Verify checklist ownership
-  const { data: checklist } = await supabase
+  const { data: checklist } = await db
     .from('packing_checklists')
     .select('id')
     .eq('id', checklistId)
@@ -423,7 +419,7 @@ export async function addChecklistItem(
   if (!checklist) throw new Error('Checklist not found')
 
   // Get max sort_order for this checklist
-  const { data: maxItem } = await supabase
+  const { data: maxItem } = await db
     .from('packing_checklist_items')
     .select('sort_order')
     .eq('checklist_id', checklistId)
@@ -433,7 +429,7 @@ export async function addChecklistItem(
 
   const nextOrder = (maxItem?.sort_order ?? 0) + 1
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('packing_checklist_items')
     .insert({
       checklist_id: checklistId,
@@ -451,11 +447,11 @@ export async function addChecklistItem(
 
 export async function removeChecklistItem(itemId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Verify ownership
-  const { data: item } = await supabase
+  const { data: item } = await db
     .from('packing_checklist_items')
     .select('checklist_id')
     .eq('id', itemId)
@@ -463,7 +459,7 @@ export async function removeChecklistItem(itemId: string): Promise<void> {
 
   if (!item) throw new Error('Item not found')
 
-  const { data: checklist } = await supabase
+  const { data: checklist } = await db
     .from('packing_checklists')
     .select('id')
     .eq('id', item.checklist_id)
@@ -472,7 +468,7 @@ export async function removeChecklistItem(itemId: string): Promise<void> {
 
   if (!checklist) throw new Error('Unauthorized')
 
-  const { error } = await supabase.from('packing_checklist_items').delete().eq('id', itemId)
+  const { error } = await db.from('packing_checklist_items').delete().eq('id', itemId)
 
   if (error) throw new Error(`Failed to remove item: ${error.message}`)
 }
@@ -483,10 +479,10 @@ export async function getPackingHistory(): Promise<
   (PackingChecklist & { item_count: number; packed_count: number })[]
 > {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: checklists, error } = await supabase
+  const { data: checklists, error } = await db
     .from('packing_checklists')
     .select('*')
     .eq('chef_id', tenantId)
@@ -497,7 +493,7 @@ export async function getPackingHistory(): Promise<
   // Get item counts for each checklist
   const results = await Promise.all(
     (checklists ?? []).map(async (cl: any) => {
-      const { data: items } = await supabase
+      const { data: items } = await db
         .from('packing_checklist_items')
         .select('is_packed')
         .eq('checklist_id', cl.id)

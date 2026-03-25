@@ -7,7 +7,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createNotification } from '@/lib/notifications/actions'
 import { calculateFoodCostPercentage } from '@/lib/finance/food-cost-calculator'
 
@@ -36,9 +36,9 @@ export type VarianceCheckResult = {
  */
 export async function getVarianceAlertSettings(): Promise<VarianceAlertSettings> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('variance_alert_settings')
     .select('threshold_pct, is_enabled, notify_on_event_complete')
     .eq('chef_id', user.tenantId!)
@@ -62,9 +62,9 @@ export async function updateVarianceAlertSettings(
   settings: Partial<VarianceAlertSettings>
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('variance_alert_settings')
     .select('id')
     .eq('chef_id', user.tenantId!)
@@ -77,14 +77,11 @@ export async function updateVarianceAlertSettings(
     payload.notify_on_event_complete = settings.notifyOnEventComplete
 
   if (existing?.id) {
-    const { error } = await supabase
-      .from('variance_alert_settings')
-      .update(payload)
-      .eq('id', existing.id)
+    const { error } = await db.from('variance_alert_settings').update(payload).eq('id', existing.id)
 
     if (error) throw new Error(`Failed to update variance settings: ${error.message}`)
   } else {
-    const { error } = await supabase.from('variance_alert_settings').insert({
+    const { error } = await db.from('variance_alert_settings').insert({
       chef_id: user.tenantId!,
       threshold_pct: settings.thresholdPct ?? 15,
       is_enabled: settings.isEnabled ?? true,
@@ -108,13 +105,13 @@ export async function updateVarianceAlertSettings(
  */
 export async function checkVarianceAlerts(eventId: string): Promise<VarianceCheckResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get alert settings
   const settings = await getVarianceAlertSettings()
 
   // Get event financial data
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, title, tenant_id')
     .eq('id', eventId)
@@ -124,7 +121,7 @@ export async function checkVarianceAlerts(eventId: string): Promise<VarianceChec
   if (!event) throw new Error('Event not found')
 
   // Get estimated food cost from menu
-  const { data: menuCost } = await supabase
+  const { data: menuCost } = await db
     .from('menu_cost_summary')
     .select('total_recipe_cost_cents')
     .eq('event_id', eventId)
@@ -133,7 +130,7 @@ export async function checkVarianceAlerts(eventId: string): Promise<VarianceChec
   const estimatedCostCents = (menuCost?.total_recipe_cost_cents as number) ?? 0
 
   // Get actual grocery spend
-  const { data: spendEntries } = await supabase
+  const { data: spendEntries } = await db
     .from('grocery_spend_entries')
     .select('amount_cents')
     .eq('event_id', eventId)

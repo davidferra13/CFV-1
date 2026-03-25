@@ -1,8 +1,8 @@
-# Phase 3: Local Filesystem Storage (Replaces Supabase Storage)
+# Phase 3: Local Filesystem Storage (Replaces local file storage)
 
 ## What Changed
 
-All file storage operations (upload, download, signed URLs, public URLs) now use the local filesystem instead of Supabase Storage. Files are stored at `./storage/{bucket}/{path}` on disk.
+All file storage operations (upload, download, signed URLs, public URLs) now use the local filesystem instead of local file storage. Files are stored at `./storage/{bucket}/{path}` on disk.
 
 ## Files Created
 
@@ -18,9 +18,9 @@ All file storage operations (upload, download, signed URLs, public URLs) now use
 | -------------------------------------------- | --------------------------------------------------------------------------------- |
 | `lib/db/compat.ts`                           | `StorageBucketCompat` now delegates to `lib/storage/` instead of logging warnings |
 | `lib/db/compat.ts`                           | `StorageCompat` now has `createBucket()` and `listBuckets()` methods              |
-| `components/inquiries/inquiry-note-form.tsx` | Converted from browser Supabase client to server action                           |
-| `components/hub/hub-photo-gallery.tsx`       | Converted from browser Supabase client to server action                           |
-| `components/hub/hub-file-share.tsx`          | Converted from browser `@supabase/ssr` to server action                           |
+| `components/inquiries/inquiry-note-form.tsx` | Converted from browser database client to server action                           |
+| `components/hub/hub-photo-gallery.tsx`       | Converted from browser database client to server action                           |
+| `components/hub/hub-file-share.tsx`          | Converted from browser `@database/ssr` to server action                           |
 | `lib/inquiries/note-actions.ts`              | Added `uploadInquiryNoteAttachment()` server action                               |
 | `lib/hub/media-actions.ts`                   | Added `uploadHubMediaFile()` server action                                        |
 | `.gitignore`                                 | Added `/storage/` directory                                                       |
@@ -79,17 +79,17 @@ fs.readFile(STORAGE_ROOT/bucket/path) -> Response with Content-Type
 - `listBuckets()` lists subdirectories of storage root
 - Bucket config (fileSizeLimit, allowedMimeTypes) is informational only (validated at application layer)
 
-## What Still Uses Supabase SDK (Browser)
+## What Still Uses database SDK (Browser)
 
-The browser Supabase client (`lib/supabase/client.ts`) is still imported by files that use Supabase Realtime. These will be migrated in Phase 3b (SSE). No browser-side storage operations remain.
+The browser database client (`lib/database/client.ts`) is still imported by files that use SSE realtime. These will be migrated in Phase 3b (SSE). No browser-side storage operations remain.
 
 ## Migration for Existing Data
 
-Existing files in Supabase Storage Docker volumes can be copied to the local `storage/` directory:
+Existing files in local file storage Docker volumes can be copied to the local `storage/` directory:
 
 ```bash
-# Copy from Supabase Docker volume to local storage
-docker cp supabase_storage:/var/lib/storage/ ./storage/
+# Copy from PostgreSQL Docker volume to local storage
+docker cp database_storage:/var/lib/storage/ ./storage/
 ```
 
-Or use the migration script (Phase 4 task) to pull files via the Supabase Storage API.
+Or use the migration script (Phase 4 task) to pull files via the local file storage API.

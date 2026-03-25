@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -41,10 +41,10 @@ export async function updateNDA(clientId: string, input: NDAUpdateInput) {
   const tenantId = chef.tenantId!
   const validated = NDAUpdateSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the client belongs to this tenant
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('clients')
     .select('id')
     .eq('id', clientId)
@@ -53,7 +53,7 @@ export async function updateNDA(clientId: string, input: NDAUpdateInput) {
 
   if (!existing) throw new Error('Client not found or access denied')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .update(validated)
     .eq('id', clientId)
@@ -77,9 +77,9 @@ export async function getNDAStatus(clientId: string): Promise<NDAStatus> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .select(
       'nda_active, nda_coverage, nda_effective_date, nda_expiry_date, nda_document_url, photo_permission'
@@ -101,10 +101,10 @@ export async function getClientsRequiringNDA() {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all client IDs that have at least one event in this tenant
-  const { data: clientsWithEvents, error: eventsError } = await supabase
+  const { data: clientsWithEvents, error: eventsError } = await db
     .from('events')
     .select('client_id')
     .eq('tenant_id', tenantId)
@@ -123,7 +123,7 @@ export async function getClientsRequiringNDA() {
   if (clientIdsWithEvents.length === 0) return []
 
   // Fetch those clients that have nda_active = false or null
-  const { data: clients, error: clientsError } = await supabase
+  const { data: clients, error: clientsError } = await db
     .from('clients')
     .select('id, full_name, email, nda_active, photo_permission')
     .eq('tenant_id', tenantId)

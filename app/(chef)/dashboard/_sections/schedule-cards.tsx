@@ -11,7 +11,7 @@ import { getNextUpcomingEvent } from '@/lib/dashboard/actions'
 import { getDOPTaskDigest, type DOPTaskDigest } from '@/lib/scheduling/task-digest'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { getWeatherForEvents, type InlineWeather } from '@/lib/weather/open-meteo'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
@@ -57,8 +57,8 @@ export async function ScheduleCards() {
       const eventIds = new Set<string>()
       for (const task of dopTaskDigest.tasks) eventIds.add(task.eventId)
       if (eventIds.size === 0) return {}
-      const supabase: any = createServerClient()
-      const { data: eventCoords } = await supabase
+      const db: any = createServerClient()
+      const { data: eventCoords } = await db
         .from('events')
         .select('id, event_date, location_lat, location_lng')
         .in('id', Array.from(eventIds))

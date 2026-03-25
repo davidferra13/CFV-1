@@ -72,7 +72,7 @@ This plan is intentionally narrow. It does not cover POS parity, multi-day booki
     - `app/(chef)/quotes/[id]/page.tsx`
     - `app/(chef)/events/[id]/page.tsx`
     - `app/(client)/my-events/[id]/page.tsx`
-    - `supabase/migrations/*` if schema changes are required
+    - `database/migrations/*` if schema changes are required
   - Acceptance criteria:
     - The quote detail page shows the exact booked shape, not only total price and headcount.
     - The event detail page shows the same shape after conversion.
@@ -136,9 +136,9 @@ This plan is intentionally narrow. It does not cover POS parity, multi-day booki
     - `tests/integration/quote-event-pricing-integrity.integration.test.ts`
     - `tests/helpers/test-db.ts`
     - `package.json`
-    - `scripts/seed-e2e-remote.ts` or local Supabase bootstrap helpers
+    - `scripts/seed-e2e-remote.ts` or local database bootstrap helpers
   - Acceptance criteria:
-    - Local instructions exist for running the integration set against local Supabase.
+    - Local instructions exist for running the integration set against local database.
     - CI or a standard local verification command includes these tests.
     - Quote acceptance preserves event pricing and inquiry state every time.
 

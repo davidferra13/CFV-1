@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -60,9 +60,9 @@ const MilestonesArraySchema = z.array(MilestoneSchema)
 export async function updateClientMilestones(clientId: string, milestones: Milestone[]) {
   const user = await requireChef()
   const validated = MilestonesArraySchema.parse(milestones)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update({ personal_milestones: validated as any })
     .eq('id', clientId)
@@ -85,9 +85,9 @@ export async function updateClientMilestones(clientId: string, milestones: Miles
  */
 export async function getUpcomingMilestones(daysAhead: number = 30): Promise<UpcomingMilestone[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('id, full_name, preferred_name, personal_milestones')
     .eq('tenant_id', user.tenantId!)
@@ -210,9 +210,9 @@ export async function updateClientPersonalInfo(
   }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update(data)
     .eq('id', clientId)

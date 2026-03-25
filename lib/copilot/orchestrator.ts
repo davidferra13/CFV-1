@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { OPS_AUTONOMY_LEVEL } from '@/lib/features'
 import type { CopilotPlan, CopilotRecommendation, CopilotRunResult, CopilotSeverity } from './types'
 
@@ -44,7 +44,7 @@ function summarize(plan: Omit<CopilotPlan, 'summary'>): CopilotPlan['summary'] {
 }
 
 async function fetchOpsSignals(tenantId: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const now = new Date()
   const inThreeDays = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString()
   const inSevenDays = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString()
@@ -55,11 +55,11 @@ async function fetchOpsSignals(tenantId: string) {
     { data: expiringQuotes },
     { data: paymentRiskEvents },
   ] = await Promise.all([
-    supabase
+    db
       .from('communication_inbox_items' as any)
       .select('tab')
       .eq('tenant_id', tenantId),
-    supabase
+    db
       .from('inquiries')
       .select('id, follow_up_due_at, status')
       .eq('tenant_id', tenantId)
@@ -67,7 +67,7 @@ async function fetchOpsSignals(tenantId: string) {
       .not('follow_up_due_at', 'is', null)
       .lte('follow_up_due_at', now.toISOString())
       .limit(50),
-    supabase
+    db
       .from('quotes')
       .select('id, valid_until, total_quoted_cents')
       .eq('tenant_id', tenantId)
@@ -75,7 +75,7 @@ async function fetchOpsSignals(tenantId: string) {
       .not('valid_until', 'is', null)
       .lte('valid_until', inThreeDays)
       .limit(50),
-    supabase
+    db
       .from('event_financial_summary')
       .select('event_id, outstanding_balance_cents')
       .eq('tenant_id', tenantId)
@@ -98,7 +98,7 @@ async function fetchOpsSignals(tenantId: string) {
     const eventIds = paymentRiskEvents.map((x: any) => x.event_id).filter(Boolean)
 
     if (eventIds.length > 0) {
-      const { data: nearEvents } = await supabase
+      const { data: nearEvents } = await db
         .from('events')
         .select('id, event_date, status')
         .eq('tenant_id', tenantId)
@@ -257,10 +257,10 @@ async function persistRun(input: {
   errors: string[]
   startedAt: number
 }): Promise<string> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const durationMs = Date.now() - input.startedAt
 
-  const { data: run, error: runError } = await supabase
+  const { data: run, error: runError } = await db
     .from('copilot_runs' as any)
     .insert({
       tenant_id: input.tenantId,
@@ -296,11 +296,11 @@ async function persistRun(input: {
   }))
 
   if (recRows.length > 0) {
-    await supabase.from('copilot_recommendations' as any).insert(recRows)
+    await db.from('copilot_recommendations' as any).insert(recRows)
   }
 
   if (input.errors.length > 0) {
-    await supabase.from('copilot_run_errors' as any).insert(
+    await db.from('copilot_run_errors' as any).insert(
       input.errors.map((message) => ({
         tenant_id: input.tenantId,
         run_id: run.id,

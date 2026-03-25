@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,10 +49,10 @@ export interface NetworkIntelligenceResult {
 export async function getNetworkIntelligence(): Promise<NetworkIntelligenceResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch inquiries with referral data
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select(
       'id, status, channel, referral_source, referral_source_detail, confirmed_budget_cents, converted_to_event_id'
@@ -62,20 +62,20 @@ export async function getNetworkIntelligence(): Promise<NetworkIntelligenceResul
   if (error) return null
 
   // Fetch events for revenue calculation
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, quoted_price_cents, status, client_id')
     .eq('tenant_id', tenantId)
     .in('status', ['completed', 'confirmed', 'paid', 'in_progress'])
 
   // Fetch clients with NPS and loyalty data
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, total_events_count, loyalty_tier, referral_source')
     .eq('tenant_id', tenantId)
 
   // Fetch NPS scores
-  const { data: surveys } = await supabase
+  const { data: surveys } = await db
     .from('client_satisfaction_surveys')
     .select('client_id, nps_score, would_rebook')
     .eq('tenant_id', tenantId)
@@ -90,7 +90,7 @@ export async function getNetworkIntelligence(): Promise<NetworkIntelligenceResul
   }
 
   // Fetch backup chefs
-  const { data: backupChefs } = await supabase
+  const { data: backupChefs } = await db
     .from('backup_chefs')
     .select('id, name, cuisine_types, availability_status')
     .eq('tenant_id', tenantId)

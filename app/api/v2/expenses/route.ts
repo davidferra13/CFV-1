@@ -35,7 +35,7 @@ export const GET = withApiAuth(
     const dateFrom = url.searchParams.get('date_from')
     const dateTo = url.searchParams.get('date_to')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('expenses')
       .select('*', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)
@@ -74,7 +74,7 @@ export const POST = withApiAuth(
 
     // If event_id provided, verify it belongs to tenant
     if (input.event_id) {
-      const { data: event } = await ctx.supabase
+      const { data: event } = await ctx.db
         .from('events')
         .select('id')
         .eq('id', input.event_id)
@@ -90,7 +90,7 @@ export const POST = withApiAuth(
       }
     }
 
-    const { data: expense, error } = await ctx.supabase
+    const { data: expense, error } = await ctx.db
       .from('expenses')
       .insert({
         tenant_id: ctx.tenantId,

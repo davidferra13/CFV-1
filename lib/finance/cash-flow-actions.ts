@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -49,13 +49,13 @@ function periodLabel(start: string, end: string): string {
 
 export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<CashFlowForecast> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
   const endDate = addDays(today, days)
 
   // Get confirmed events (paid/confirmed status) with amounts
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, status, total_amount_cents')
     .eq('chef_id', user.tenantId!)
@@ -71,7 +71,7 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
   )
 
   // Get recurring invoices
-  const { data: recurring } = await supabase
+  const { data: recurring } = await db
     .from('recurring_invoices')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -79,7 +79,7 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
     .lte('next_send_date', endDate)
 
   // Get upcoming expenses (from expenses table)
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('amount_cents, expense_date')
     .eq('chef_id', user.tenantId!)
@@ -159,9 +159,9 @@ export async function getWhatIfScenario(params: {
   // If events are cancelled, reduce income
   if (params.cancelledEventIds?.length) {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data: cancelled } = await supabase
+    const { data: cancelled } = await db
       .from('events')
       .select('total_amount_cents')
       .eq('chef_id', user.tenantId!)

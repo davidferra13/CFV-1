@@ -50,7 +50,7 @@ type Tracker = {
   auditCalls: any[]
 }
 
-class SupabaseQueryBuilder implements PromiseLike<QueryResult> {
+class DbQueryBuilder implements PromiseLike<QueryResult> {
   private readonly table: string
   private readonly resolve: (ctx: QueryContext) => QueryResult
   private readonly tracker: Tracker
@@ -132,10 +132,10 @@ class SupabaseQueryBuilder implements PromiseLike<QueryResult> {
   }
 }
 
-function createMockSupabase(resolve: (ctx: QueryContext) => QueryResult, tracker: Tracker) {
+function createMockDb(resolve: (ctx: QueryContext) => QueryResult, tracker: Tracker) {
   return {
     from(table: string) {
-      return new SupabaseQueryBuilder(table, resolve, tracker)
+      return new DbQueryBuilder(table, resolve, tracker)
     },
   }
 }
@@ -150,7 +150,7 @@ function loadCheckoutActionsWithMocks(input: {
 
   const authPath = require.resolve('../../lib/auth/get-user.ts')
   const proPath = require.resolve('../../lib/billing/require-pro.ts')
-  const supabasePath = require.resolve('../../lib/supabase/server.ts')
+  const dbPath = require.resolve('../../lib/db/server.ts')
   const auditPath = require.resolve('../../lib/commerce/pos-audit-log.ts')
   const inventoryBridgePath = require.resolve('../../lib/commerce/inventory-bridge.ts')
   const cachePath = require.resolve('next/cache')
@@ -158,19 +158,19 @@ function loadCheckoutActionsWithMocks(input: {
 
   require(authPath)
   require(proPath)
-  require(supabasePath)
+  require(dbPath)
   require(auditPath)
   require(inventoryBridgePath)
   require(cachePath)
 
   const originalAuth = require.cache[authPath]!.exports
   const originalPro = require.cache[proPath]!.exports
-  const originalSupabase = require.cache[supabasePath]!.exports
+  const originalDb = require.cache[dbPath]!.exports
   const originalAudit = require.cache[auditPath]!.exports
   const originalInventoryBridge = require.cache[inventoryBridgePath]!.exports
   const originalCache = require.cache[cachePath]!.exports
 
-  const supabase = createMockSupabase(input.resolve, input.tracker)
+  const db = createMockDb(input.resolve, input.tracker)
 
   require.cache[authPath]!.exports = {
     requireChef: async () => ({ tenantId: 'tenant-1', id: 'auth-user-1' }),
@@ -178,8 +178,8 @@ function loadCheckoutActionsWithMocks(input: {
   require.cache[proPath]!.exports = {
     requirePro: async () => undefined,
   }
-  require.cache[supabasePath]!.exports = {
-    createServerClient: () => supabase,
+  require.cache[dbPath]!.exports = {
+    createServerClient: () => db,
   }
   require.cache[auditPath]!.exports = {
     appendPosAuditLog: async (payload: unknown) => {
@@ -205,7 +205,7 @@ function loadCheckoutActionsWithMocks(input: {
   const restore = () => {
     require.cache[authPath]!.exports = originalAuth
     require.cache[proPath]!.exports = originalPro
-    require.cache[supabasePath]!.exports = originalSupabase
+    require.cache[dbPath]!.exports = originalDb
     require.cache[auditPath]!.exports = originalAudit
     require.cache[inventoryBridgePath]!.exports = originalInventoryBridge
     require.cache[cachePath]!.exports = originalCache

@@ -29,7 +29,7 @@ const UPTIME_HISTORY_FILE = join(PROJECT_ROOT, 'docs', 'uptime-history.json')
 const ROLLBACK_HISTORY_FILE = join(PROJECT_ROOT, 'docs', 'rollback-history.json')
 const BUNDLE_SIZE_FILE = join(PROJECT_ROOT, 'docs', 'bundle-size-history.json')
 
-// Load .env.local for Supabase credentials
+// Load .env.local for database credentials
 try {
   const envContent = readFileSync(join(PROJECT_ROOT, '.env.local'), 'utf-8')
   for (const line of envContent.split('\n')) {
@@ -59,8 +59,8 @@ const CONFIG = {
   ollamaPcUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
   ollamaPcModel: process.env.OLLAMA_MODEL || 'qwen3-coder:30b',
   logFile: join(PROJECT_ROOT, 'mission-control.log'),
-  supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+  dbUrl: process.env.NEXT_PUBLIC_DB_URL || '',
+  dbServiceKey: process.env.DB_SERVICE_ROLE_KEY || '',
 }
 
 // ── Chat Configuration ───────────────────────────────────────────
@@ -98,7 +98,7 @@ function log(source, message, type = 'info') {
 
 const fileActivity = []
 const MAX_ACTIVITY = 500
-const WATCH_DIRS = ['app', 'components', 'lib', 'types', 'supabase/migrations']
+const WATCH_DIRS = ['app', 'components', 'lib', 'types', 'database/migrations']
 const IGNORE_PATTERNS = /node_modules|\.next|\.git|\.swp$|\.tmp$|~$/
 let watchDebounce = new Map()
 
@@ -755,7 +755,7 @@ async function dbBackup() {
   const filename = `backup-${timestamp}.sql`
   log('db', `Creating database backup: ${filename}...`, 'info')
   try {
-    await execAsync(`npx supabase db dump --linked > ${filename}`, {
+    await execAsync(`pg_dump > ${filename}`, {
       cwd: PROJECT_ROOT,
       timeout: 60000,
     })
@@ -890,8 +890,8 @@ async function generateTypes() {
   if (runningJobs.has('gen-types'))
     return { ok: false, error: 'Type generation already in progress' }
 
-  log('db', 'Generating database types from Supabase...', 'info')
-  const child = spawn('npx', ['supabase', 'gen', 'types', 'typescript', '--linked'], {
+  log('db', 'Generating database types from database...', 'info')
+  const child = spawn('npx', ['drizzle-kit', 'introspect'], {
     cwd: PROJECT_ROOT,
     shell: true,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -2172,22 +2172,22 @@ async function getCostStats() {
 }
 
 async function getFeedback() {
-  if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey) {
-    return { ok: false, error: 'Supabase credentials not configured', entries: [] }
+  if (!CONFIG.dbUrl || !CONFIG.dbServiceKey) {
+    return { ok: false, error: 'Database credentials not configured', entries: [] }
   }
   try {
-    const url = `${CONFIG.supabaseUrl}/rest/v1/user_feedback?select=id,created_at,sentiment,message,anonymous,user_role,page_context&order=created_at.desc&limit=200`
+    const url = `${CONFIG.dbUrl}/rest/v1/user_feedback?select=id,created_at,sentiment,message,anonymous,user_role,page_context&order=created_at.desc&limit=200`
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 10000)
     const res = await fetch(url, {
       headers: {
-        apikey: CONFIG.supabaseServiceKey,
-        Authorization: `Bearer ${CONFIG.supabaseServiceKey}`,
+        apikey: CONFIG.dbServiceKey,
+        Authorization: `Bearer ${CONFIG.dbServiceKey}`,
       },
       signal: controller.signal,
     })
     clearTimeout(timer)
-    if (!res.ok) return { ok: false, error: `Supabase returned ${res.status}`, entries: [] }
+    if (!res.ok) return { ok: false, error: `Database returned ${res.status}`, entries: [] }
     const data = await res.json()
     return { ok: true, entries: data, total: data.length }
   } catch (err) {
@@ -2195,14 +2195,14 @@ async function getFeedback() {
   }
 }
 
-// ── Supabase Query Helper ────────────────────────────────────────
+// ── DB Query Helper ────────────────────────────────────────
 
-async function supabaseQuery(
+async function dbQuery(
   endpoint,
   { select, filters = [], order, limit = 50, extra = '' } = {}
 ) {
-  if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey) {
-    return { ok: false, error: 'Supabase credentials not configured' }
+  if (!CONFIG.dbUrl || !CONFIG.dbServiceKey) {
+    return { ok: false, error: 'Database credentials not configured' }
   }
   try {
     const params = []
@@ -2210,14 +2210,14 @@ async function supabaseQuery(
     for (const f of filters) params.push(f) // filters are pre-formatted PostgREST syntax
     if (order) params.push(`order=${encodeURIComponent(order)}`)
     if (limit) params.push(`limit=${limit}`)
-    const url = `${CONFIG.supabaseUrl}/rest/v1/${endpoint}${params.length ? '?' + params.join('&') : ''}`
+    const url = `${CONFIG.dbUrl}/rest/v1/${endpoint}${params.length ? '?' + params.join('&') : ''}`
 
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 10000)
     const res = await fetch(url.toString(), {
       headers: {
-        apikey: CONFIG.supabaseServiceKey,
-        Authorization: `Bearer ${CONFIG.supabaseServiceKey}`,
+        apikey: CONFIG.dbServiceKey,
+        Authorization: `Bearer ${CONFIG.dbServiceKey}`,
         Accept: 'application/json',
       },
       signal: controller.signal,
@@ -2228,9 +2228,9 @@ async function supabaseQuery(
       // Truncate HTML error pages (Cloudflare worker crashes)
       const cleanErr =
         errBody.startsWith('<!DOCTYPE') || errBody.startsWith('<html')
-          ? `Cloudflare/Supabase error ${res.status} (may be rate-limited - try again in a moment)`
+          ? `Cloudflare/Database error ${res.status} (may be rate-limited - try again in a moment)`
           : errBody.slice(0, 300)
-      return { ok: false, error: `Supabase ${res.status}: ${cleanErr}` }
+      return { ok: false, error: `Database ${res.status}: ${cleanErr}` }
     }
     const data = await res.json()
     return { ok: true, data, count: data.length }
@@ -2243,7 +2243,7 @@ async function supabaseQuery(
 
 async function getUpcomingEvents() {
   const now = new Date().toISOString().slice(0, 10)
-  const result = await supabaseQuery('events', {
+  const result = await dbQuery('events', {
     select:
       'id,event_date,serve_time,status,guest_count,occasion,service_style,location_city,client:clients(full_name)',
     filters: [`event_date=gte.${now}`, 'status=neq.cancelled'],
@@ -2265,7 +2265,7 @@ async function getUpcomingEvents() {
 }
 
 async function getEventsByStatus() {
-  const result = await supabaseQuery('events', {
+  const result = await dbQuery('events', {
     select: 'status',
     limit: 1000,
   })
@@ -2283,7 +2283,7 @@ async function getEventsByStatus() {
 }
 
 async function getRevenueSummary() {
-  const result = await supabaseQuery('event_financial_summary', {
+  const result = await dbQuery('event_financial_summary', {
     select:
       'event_id,total_paid_cents,total_refunded_cents,net_revenue_cents,total_expenses_cents,profit_cents,profit_margin,food_cost_percentage,outstanding_balance_cents',
     limit: 1000,
@@ -2327,7 +2327,7 @@ async function getClients(param) {
     limit: 25,
   }
   opts.limit = 200 // Fetch more for local filtering
-  const result = await supabaseQuery('clients', opts)
+  const result = await dbQuery('clients', opts)
   if (!result.ok) return result
   let clients = result.data
   if (param && param.trim()) {
@@ -2351,7 +2351,7 @@ async function getClients(param) {
 }
 
 async function getOpenInquiries() {
-  const result = await supabaseQuery('inquiries', {
+  const result = await dbQuery('inquiries', {
     select:
       'id,created_at,event_type,event_date,guest_count,status,budget_range,client:clients(full_name)',
     filters: ['status=in.(new,open,pending,contacted)'],
@@ -2791,7 +2791,7 @@ async function healthCheckOnly() {
 async function listMigrations() {
   try {
     const { readdir } = await import('node:fs/promises')
-    const migrationsDir = join(PROJECT_ROOT, 'supabase', 'migrations')
+    const migrationsDir = join(PROJECT_ROOT, 'database', 'migrations')
     let files = await readdir(migrationsDir)
     files = files.filter((f) => f.endsWith('.sql')).sort()
     const latest = files.length > 0 ? files[files.length - 1] : 'none'
@@ -3181,7 +3181,7 @@ async function scheduledDbBackup() {
     await mkdir(backupDir, { recursive: true })
 
     log('backup', `Scheduled backup starting: ${filename}...`, 'info')
-    await execAsync(`npx supabase db dump --linked > "${join(backupDir, filename)}"`, {
+    await execAsync(`pg_dump > "${join(backupDir, filename)}"`, {
       cwd: PROJECT_ROOT,
       timeout: 120000,
     })
@@ -3230,7 +3230,7 @@ function startScheduledBackups() {
 
 async function readMigrationSql(filename) {
   try {
-    const filepath = join(PROJECT_ROOT, 'supabase', 'migrations', filename)
+    const filepath = join(PROJECT_ROOT, 'database', 'migrations', filename)
     const content = await readFile(filepath, 'utf-8')
     return { ok: true, filename, sql: content.slice(0, 100000), size: content.length }
   } catch (err) {
@@ -3238,20 +3238,20 @@ async function readMigrationSql(filename) {
   }
 }
 
-// ── Supabase Connection Health ───────────────────────────────────
+// ── Database Connection Health ───────────────────────────────────
 
-async function checkSupabaseHealth() {
-  if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey) {
-    return { ok: false, error: 'Supabase credentials not configured' }
+async function checkDbHealth() {
+  if (!CONFIG.dbUrl || !CONFIG.dbServiceKey) {
+    return { ok: false, error: 'Database credentials not configured' }
   }
   const start = Date.now()
   try {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 5000)
-    const res = await fetch(`${CONFIG.supabaseUrl}/rest/v1/?limit=0`, {
+    const res = await fetch(`${CONFIG.dbUrl}/rest/v1/?limit=0`, {
       headers: {
-        apikey: CONFIG.supabaseServiceKey,
-        Authorization: `Bearer ${CONFIG.supabaseServiceKey}`,
+        apikey: CONFIG.dbServiceKey,
+        Authorization: `Bearer ${CONFIG.dbServiceKey}`,
       },
       signal: controller.signal,
     })
@@ -3261,7 +3261,7 @@ async function checkSupabaseHealth() {
       ok: res.ok,
       status: res.status,
       latency,
-      message: `Supabase: ${res.ok ? 'healthy' : 'error'} (${latency}ms)`,
+      message: `DB: ${res.ok ? 'healthy' : 'error'} (${latency}ms)`,
     }
   } catch (err) {
     return { ok: false, latency: Date.now() - start, error: err.message }
@@ -3302,8 +3302,8 @@ async function checkStripeWebhookHealth() {
     const devOnline = await httpCheck(`http://localhost:${CONFIG.devPort}`)
     if (!devOnline.ok) return { ok: false, error: 'Dev server offline - cannot check webhooks' }
 
-    // Check if stripe webhook events table exists in Supabase
-    const result = await supabaseQuery('stripe_webhook_events', {
+    // Check if stripe webhook events table exists
+    const result = await dbQuery('stripe_webhook_events', {
       select: 'id,event_type,created_at,status',
       order: 'created_at.desc',
       limit: 5,
@@ -3429,7 +3429,7 @@ async function getClientDetails(param) {
     order: 'created_at.desc',
     limit: 200,
   }
-  const result = await supabaseQuery('clients', opts)
+  const result = await dbQuery('clients', opts)
   if (!result.ok) return result
   let clients = result.data
   if (param && param.trim()) {
@@ -3450,7 +3450,7 @@ async function getClientDetails(param) {
   // If searching for a specific client, also get their event history
   if (param && clients.length <= 3) {
     for (const c of clients) {
-      const evResult = await supabaseQuery('events', {
+      const evResult = await dbQuery('events', {
         select: 'id,event_date,status,occasion,guest_count,service_style',
         filters: [`client_id=eq.${c.id}`],
         order: 'event_date.desc',
@@ -3489,7 +3489,7 @@ async function getClientDetails(param) {
 }
 
 async function getInquiryPipeline() {
-  const result = await supabaseQuery('inquiries', {
+  const result = await dbQuery('inquiries', {
     select:
       'id,created_at,event_type,event_date,guest_count,status,budget_range,source,chef_likelihood,follow_up_due_at,unknown_fields,client:clients(full_name,email)',
     order: 'created_at.desc',
@@ -3526,7 +3526,7 @@ async function getInquiryPipeline() {
 }
 
 async function getQuoteStatus() {
-  const result = await supabaseQuery('quotes', {
+  const result = await dbQuery('quotes', {
     select:
       'id,created_at,status,total_cents,valid_until,notes,event:events(id,event_date,occasion,client:clients(full_name))',
     order: 'created_at.desc',
@@ -3565,12 +3565,12 @@ async function getQuoteStatus() {
 
 async function getMenuRecipeStats() {
   const [menuResult, recipeResult] = await Promise.all([
-    supabaseQuery('menus', {
+    dbQuery('menus', {
       select: 'id,name,created_at,status,course_count',
       order: 'created_at.desc',
       limit: 50,
     }),
-    supabaseQuery('recipes', {
+    dbQuery('recipes', {
       select:
         'id,name,created_at,cost_per_serving_cents,prep_time_minutes,cuisine_type,dietary_tags',
       order: 'created_at.desc',
@@ -3609,7 +3609,7 @@ async function getMenuRecipeStats() {
 }
 
 async function getExpenseBreakdown(param) {
-  const result = await supabaseQuery('expenses', {
+  const result = await dbQuery('expenses', {
     select: 'id,amount_cents,category,description,expense_date,vendor,event_id,created_at',
     order: 'expense_date.desc',
     limit: 200,
@@ -3657,13 +3657,13 @@ async function getCalendarOverview() {
   const now = new Date().toISOString().slice(0, 10)
   const twoWeeksOut = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
   const [eventsResult, protectedResult] = await Promise.all([
-    supabaseQuery('events', {
+    dbQuery('events', {
       select: 'id,event_date,serve_time,status,occasion,guest_count,client:clients(full_name)',
       filters: [`event_date=gte.${now}`, `event_date=lte.${twoWeeksOut}`, 'status=neq.cancelled'],
       order: 'event_date.asc',
       limit: 30,
     }),
-    supabaseQuery('protected_time_blocks', {
+    dbQuery('protected_time_blocks', {
       select: 'id,title,start_date,end_date,recurrence_type',
       filters: [`end_date=gte.${now}`],
       order: 'start_date.asc',
@@ -3700,12 +3700,12 @@ async function getCalendarOverview() {
 
 async function getStaffRoster() {
   const [staffResult, assignResult] = await Promise.all([
-    supabaseQuery('staff_members', {
+    dbQuery('staff_members', {
       select: 'id,full_name,email,phone,role,hourly_rate_cents,status,created_at',
       order: 'full_name.asc',
       limit: 50,
     }),
-    supabaseQuery('event_staff_assignments', {
+    dbQuery('event_staff_assignments', {
       select: 'staff_member_id,event:events(event_date,occasion)',
       filters: [`event.event_date=gte.${new Date().toISOString().slice(0, 10)}`],
       order: 'event.event_date.asc',
@@ -3743,12 +3743,12 @@ async function getStaffRoster() {
 
 async function getEmailDigest() {
   const [syncResult, emailResult] = await Promise.all([
-    supabaseQuery('gmail_sync_log', {
+    dbQuery('gmail_sync_log', {
       select: 'id,synced_at,messages_synced,status,error_message',
       order: 'synced_at.desc',
       limit: 5,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('gmail_messages', {
+    dbQuery('gmail_messages', {
       select: 'id,from_address,subject,received_at,classification,is_read',
       order: 'received_at.desc',
       limit: 20,
@@ -3788,17 +3788,17 @@ async function getEmailDigest() {
 
 async function getLoyaltyOverview() {
   const [configResult, txResult, rewardsResult] = await Promise.all([
-    supabaseQuery('loyalty_config', {
+    dbQuery('loyalty_config', {
       select: 'id,tier_name,points_per_dollar,min_lifetime_points,multiplier',
       order: 'min_lifetime_points.asc',
       limit: 10,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('loyalty_transactions', {
+    dbQuery('loyalty_transactions', {
       select: 'id,points,type,description,created_at,client:clients(full_name)',
       order: 'created_at.desc',
       limit: 30,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('loyalty_rewards', {
+    dbQuery('loyalty_rewards', {
       select: 'id,name,points_cost,reward_type,is_active',
       limit: 20,
     }).catch(() => ({ ok: false })),
@@ -3839,7 +3839,7 @@ async function getLoyaltyOverview() {
 }
 
 async function getDocumentSummary() {
-  const result = await supabaseQuery('chef_documents', {
+  const result = await dbQuery('chef_documents', {
     select: 'id,title,file_type,folder,created_at,file_size_bytes',
     order: 'created_at.desc',
     limit: 50,
@@ -3877,13 +3877,13 @@ async function getDocumentSummary() {
 
 async function getHubCircles(param) {
   const [groupsResult, membersResult] = await Promise.all([
-    supabaseQuery('hub_groups', {
+    dbQuery('hub_groups', {
       select:
         'id,name,description,emoji,visibility,is_active,allow_member_invites,allow_anonymous_posts,message_count,last_message_at,last_message_preview,event_id,tenant_id,created_at',
       order: 'last_message_at.desc.nullslast,created_at.desc',
       limit: 50,
     }),
-    supabaseQuery('hub_group_members', {
+    dbQuery('hub_group_members', {
       select: 'group_id,role,notifications_muted,last_read_at',
       limit: 1000,
     }),
@@ -3947,7 +3947,7 @@ async function getHubCircles(param) {
 
 async function getHubMessages(param) {
   // param can be a group name/id filter
-  const result = await supabaseQuery('hub_messages', {
+  const result = await dbQuery('hub_messages', {
     select:
       'id,group_id,message_type,body,is_pinned,is_anonymous,media_urls,reaction_counts,reply_to_message_id,created_at,deleted_at,author_profile_id',
     filters: ['deleted_at=is.null'],
@@ -3958,7 +3958,7 @@ async function getHubMessages(param) {
 
   // Get group names for context
   const groupIds = [...new Set(result.data.map((m) => m.group_id))]
-  const groupsResult = await supabaseQuery('hub_groups', {
+  const groupsResult = await dbQuery('hub_groups', {
     select: 'id,name',
     filters: groupIds.length ? [`id=in.(${groupIds.join(',')})`] : [],
     limit: 50,
@@ -4008,16 +4008,16 @@ async function getHubMessages(param) {
 
 async function getHubPolls() {
   const [pollsResult, optionsResult, votesResult] = await Promise.all([
-    supabaseQuery('hub_polls', {
+    dbQuery('hub_polls', {
       select: 'id,group_id,question,poll_type,is_closed,closes_at,created_at',
       order: 'created_at.desc',
       limit: 30,
     }),
-    supabaseQuery('hub_poll_options', {
+    dbQuery('hub_poll_options', {
       select: 'id,poll_id,label,sort_order',
       limit: 200,
     }),
-    supabaseQuery('hub_poll_votes', {
+    dbQuery('hub_poll_votes', {
       select: 'poll_id,option_id,profile_id',
       limit: 1000,
     }),
@@ -4026,7 +4026,7 @@ async function getHubPolls() {
 
   // Get group names
   const groupIds = [...new Set(pollsResult.data.map((p) => p.group_id))]
-  const groupsResult = await supabaseQuery('hub_groups', {
+  const groupsResult = await dbQuery('hub_groups', {
     select: 'id,name',
     filters: groupIds.length ? [`id=in.(${groupIds.join(',')})`] : [],
     limit: 50,
@@ -4087,17 +4087,17 @@ async function getHubPolls() {
 
 async function getHubProfiles() {
   const [profilesResult, friendsResult, membershipsResult] = await Promise.all([
-    supabaseQuery('hub_guest_profiles', {
+    dbQuery('hub_guest_profiles', {
       select:
         'id,email,display_name,avatar_url,notifications_enabled,known_allergies,known_dietary,auth_user_id,client_id,created_at',
       order: 'created_at.desc',
       limit: 100,
     }),
-    supabaseQuery('hub_guest_friends', {
+    dbQuery('hub_guest_friends', {
       select: 'id,requester_id,addressee_id,status,created_at',
       limit: 500,
     }),
-    supabaseQuery('hub_group_members', {
+    dbQuery('hub_group_members', {
       select: 'profile_id,group_id',
       limit: 1000,
     }),
@@ -4155,23 +4155,23 @@ async function getHubProfiles() {
 async function getHubActivity() {
   // Synthesize hub activity from multiple tables
   const [messagesResult, pollsResult, membersResult, friendsResult] = await Promise.all([
-    supabaseQuery('hub_messages', {
+    dbQuery('hub_messages', {
       select: 'id,group_id,message_type,created_at',
       filters: ['deleted_at=is.null'],
       order: 'created_at.desc',
       limit: 100,
     }),
-    supabaseQuery('hub_polls', {
+    dbQuery('hub_polls', {
       select: 'id,group_id,created_at',
       order: 'created_at.desc',
       limit: 50,
     }),
-    supabaseQuery('hub_group_members', {
+    dbQuery('hub_group_members', {
       select: 'id,group_id,joined_at',
       order: 'joined_at.desc',
       limit: 100,
     }),
-    supabaseQuery('hub_guest_friends', {
+    dbQuery('hub_guest_friends', {
       select: 'id,status,created_at,accepted_at',
       order: 'created_at.desc',
       limit: 50,
@@ -4228,7 +4228,7 @@ async function getHubActivity() {
   // Get names for top circles
   let topCircles = []
   if (topCircleIds.length) {
-    const namesResult = await supabaseQuery('hub_groups', {
+    const namesResult = await dbQuery('hub_groups', {
       select: 'id,name',
       filters: [`id=in.(${topCircleIds.join(',')})`],
       limit: 5,
@@ -4266,7 +4266,7 @@ async function getHubActivity() {
 // ══════════════════════════════════════════════════════════════════
 
 async function getRemyUsageMetrics() {
-  const result = await supabaseQuery('remy_usage_metrics', {
+  const result = await dbQuery('remy_usage_metrics', {
     select:
       'tenant_id,metric_date,conversation_count,message_count,feature_category,avg_response_time_ms,error_count,model_version',
     order: 'metric_date.desc',
@@ -4309,7 +4309,7 @@ async function getRemyUsageMetrics() {
 }
 
 async function getRemyGuardrailLog() {
-  const result = await supabaseQuery('remy_abuse_log', {
+  const result = await dbQuery('remy_abuse_log', {
     select: 'id,tenant_id,severity,category,message_preview,action_taken,created_at',
     order: 'created_at.desc',
     limit: 50,
@@ -4341,7 +4341,7 @@ async function getRemyGuardrailLog() {
 }
 
 async function getRemyMemoryStore() {
-  const result = await supabaseQuery('remy_memories', {
+  const result = await dbQuery('remy_memories', {
     select:
       'id,tenant_id,category,content,importance,access_count,is_active,created_at,last_accessed_at',
     order: 'created_at.desc',
@@ -4403,7 +4403,7 @@ async function runRemyTests(param) {
 
 async function getRemyPerformance() {
   // Aggregate from usage metrics
-  const result = await supabaseQuery('remy_usage_metrics', {
+  const result = await dbQuery('remy_usage_metrics', {
     select: 'metric_date,message_count,error_count,avg_response_time_ms,model_version',
     order: 'metric_date.desc',
     limit: 30,
@@ -4537,8 +4537,8 @@ async function readFileContent(param) {
   }
 }
 
-async function getSupabaseSchema() {
-  // Get table list with row counts using Supabase REST
+async function getDbSchema() {
+  // Get table list with row counts using REST API
   const tables = [
     'chefs',
     'clients',
@@ -4566,14 +4566,14 @@ async function getSupabaseSchema() {
   await Promise.all(
     tables.map(async (table) => {
       try {
-        const result = await supabaseQuery(table, { select: 'id', limit: 0, extra: '' })
+        const result = await dbQuery(table, { select: 'id', limit: 0, extra: '' })
         // Use HEAD request with Prefer: count=exact for actual counts
-        const url = `${CONFIG.supabaseUrl}/rest/v1/${table}?select=id&limit=0`
+        const url = `${CONFIG.dbUrl}/rest/v1/${table}?select=id&limit=0`
         const res = await fetch(url, {
           method: 'HEAD',
           headers: {
-            apikey: CONFIG.supabaseServiceKey,
-            Authorization: `Bearer ${CONFIG.supabaseServiceKey}`,
+            apikey: CONFIG.dbServiceKey,
+            Authorization: `Bearer ${CONFIG.dbServiceKey}`,
             Prefer: 'count=exact',
           },
         })
@@ -4728,7 +4728,7 @@ async function scanStaleCache() {
 // TIER 1: UNIVERSAL DATA ACCESS + DEEP OPERATIONAL VISIBILITY
 // ══════════════════════════════════════════════════════════════════
 
-// Universal table query - query ANY Supabase table by name
+// Universal table query - query ANY database table by name
 async function queryTable(param) {
   if (!param || !param.trim())
     return {
@@ -4755,7 +4755,7 @@ async function queryTable(param) {
   }
   opts.filters = filters
 
-  const result = await supabaseQuery(table, opts)
+  const result = await dbQuery(table, opts)
   if (!result.ok) return result
   return {
     ok: true,
@@ -4766,15 +4766,15 @@ async function queryTable(param) {
   }
 }
 
-// SQL-like query via Supabase RPC or raw PostgREST
+// SQL-like query via RPC or raw REST API
 async function sqlQuery(param) {
   if (!param || !param.trim())
     return {
       ok: false,
       error: "Usage: db/sql:SELECT count(*) FROM events WHERE status = 'completed'",
     }
-  if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey)
-    return { ok: false, error: 'Supabase not configured' }
+  if (!CONFIG.dbUrl || !CONFIG.dbServiceKey)
+    return { ok: false, error: 'Database not configured' }
 
   // Safety: read-only queries only
   const trimmed = param.trim()
@@ -4788,16 +4788,16 @@ async function sqlQuery(param) {
   }
 
   try {
-    // Use Supabase's RPC endpoint to run raw SQL via a database function
+    // Use RPC endpoint to run raw SQL via a database function
     // If the rpc function doesn't exist, fall back to explaining what's needed
-    const url = `${CONFIG.supabaseUrl}/rest/v1/rpc/execute_sql`
+    const url = `${CONFIG.dbUrl}/rest/v1/rpc/execute_sql`
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 15000)
     const res = await fetch(url, {
       method: 'POST',
       headers: {
-        apikey: CONFIG.supabaseServiceKey,
-        Authorization: `Bearer ${CONFIG.supabaseServiceKey}`,
+        apikey: CONFIG.dbServiceKey,
+        Authorization: `Bearer ${CONFIG.dbServiceKey}`,
         'Content-Type': 'application/json',
         Accept: 'application/json',
       },
@@ -4849,7 +4849,7 @@ async function getCronJobs() {
   }
 
   // Try to get execution history from cron_executions table
-  const execResult = await supabaseQuery('cron_executions', {
+  const execResult = await dbQuery('cron_executions', {
     select: 'id,job_name,started_at,completed_at,status,error_message,duration_ms',
     order: 'started_at.desc',
     limit: 30,
@@ -4920,7 +4920,7 @@ async function eventDeepDive(param) {
   // Try UUID first, then search by occasion
   let eventId = q
   if (!/^[0-9a-f-]{36}$/i.test(q)) {
-    const searchResult = await supabaseQuery('events', {
+    const searchResult = await dbQuery('events', {
       select: 'id,occasion,event_date',
       limit: 200,
     })
@@ -4935,43 +4935,43 @@ async function eventDeepDive(param) {
   // Fetch everything about this event in parallel
   const [event, ledger, expenses, tempLogs, transitions, staffAssign, quotes, contracts] =
     await Promise.all([
-      supabaseQuery('events', { select: '*', filters: [`id=eq.${eventId}`], limit: 1 }),
-      supabaseQuery('ledger_entries', {
+      dbQuery('events', { select: '*', filters: [`id=eq.${eventId}`], limit: 1 }),
+      dbQuery('ledger_entries', {
         select: 'id,entry_type,amount_cents,description,created_at',
         filters: [`event_id=eq.${eventId}`],
         order: 'created_at.desc',
         limit: 50,
       }).catch(() => ({ ok: false })),
-      supabaseQuery('expenses', {
+      dbQuery('expenses', {
         select: 'id,amount_cents,category,description,expense_date,vendor',
         filters: [`event_id=eq.${eventId}`],
         order: 'expense_date.desc',
         limit: 20,
       }).catch(() => ({ ok: false })),
-      supabaseQuery('event_temp_logs', {
+      dbQuery('event_temp_logs', {
         select: 'id,item_name,temperature_f,logged_at,is_safe',
         filters: [`event_id=eq.${eventId}`],
         order: 'logged_at.desc',
         limit: 20,
       }).catch(() => ({ ok: false })),
-      supabaseQuery('event_transitions', {
+      dbQuery('event_transitions', {
         select: 'id,from_status,to_status,created_at,reason',
         filters: [`event_id=eq.${eventId}`],
         order: 'created_at.asc',
         limit: 20,
       }).catch(() => ({ ok: false })),
-      supabaseQuery('event_staff_assignments', {
+      dbQuery('event_staff_assignments', {
         select: 'id,role,staff_member:staff_members(full_name,hourly_rate_cents)',
         filters: [`event_id=eq.${eventId}`],
         limit: 10,
       }).catch(() => ({ ok: false })),
-      supabaseQuery('quotes', {
+      dbQuery('quotes', {
         select: 'id,status,total_cents,valid_until,created_at',
         filters: [`event_id=eq.${eventId}`],
         order: 'created_at.desc',
         limit: 5,
       }).catch(() => ({ ok: false })),
-      supabaseQuery('event_contract_versions', {
+      dbQuery('event_contract_versions', {
         select: 'id,version,status,signed_at,created_at',
         filters: [`event_id=eq.${eventId}`],
         order: 'created_at.desc',
@@ -5061,7 +5061,7 @@ async function getLedgerEntries(param) {
     // Filter by entry_type
     opts.filters = [`entry_type=eq.${param.trim()}`]
   }
-  const result = await supabaseQuery('ledger_entries', opts)
+  const result = await dbQuery('ledger_entries', opts)
   if (!result.ok) return result
   const fmt = (c) => '$' + (Math.abs(c || 0) / 100).toFixed(2)
   const byType = {}
@@ -5092,12 +5092,12 @@ async function getLedgerEntries(param) {
 // Notification viewer
 async function getNotifications() {
   const [notifResult, pushResult] = await Promise.all([
-    supabaseQuery('notifications', {
+    dbQuery('notifications', {
       select: 'id,type,title,body,is_read,created_at,tenant_id',
       order: 'created_at.desc',
       limit: 30,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('push_subscriptions', {
+    dbQuery('push_subscriptions', {
       select: 'id,created_at,endpoint',
       limit: 50,
     }).catch(() => ({ ok: false })),
@@ -5128,17 +5128,17 @@ async function getNotifications() {
 // Automation viewer
 async function getAutomations() {
   const [rulesResult, execResult, seqResult] = await Promise.all([
-    supabaseQuery('automation_rules', {
+    dbQuery('automation_rules', {
       select: 'id,name,trigger_type,action_type,is_active,created_at',
       order: 'created_at.desc',
       limit: 30,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('automation_executions', {
+    dbQuery('automation_executions', {
       select: 'id,rule_id,status,started_at,completed_at,error_message',
       order: 'started_at.desc',
       limit: 20,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('automated_sequences', {
+    dbQuery('automated_sequences', {
       select: 'id,name,type,status,created_at',
       order: 'created_at.desc',
       limit: 20,
@@ -5178,17 +5178,17 @@ async function getAutomations() {
 // Inventory & equipment viewer
 async function getInventoryEquipment() {
   const [equipResult, inventoryResult, wasteResult] = await Promise.all([
-    supabaseQuery('equipment', {
+    dbQuery('equipment', {
       select: 'id,name,purchase_price_cents,purchase_date,condition,category,depreciation_method',
       order: 'purchase_date.desc',
       limit: 50,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('inventory_items', {
+    dbQuery('inventory_items', {
       select: 'id,name,quantity,unit,min_quantity,category,last_restocked_at',
       order: 'name.asc',
       limit: 50,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('waste_logs', {
+    dbQuery('waste_logs', {
       select: 'id,item_name,quantity,reason,waste_date,cost_cents',
       order: 'waste_date.desc',
       limit: 20,
@@ -5236,7 +5236,7 @@ async function getInventoryEquipment() {
 // Activity feed - recent system events
 async function getActivityFeed(param) {
   const limit = parseInt(param) || 30
-  const result = await supabaseQuery('activity_events', {
+  const result = await dbQuery('activity_events', {
     select: 'id,event_type,entity_type,entity_id,actor_type,description,created_at',
     order: 'created_at.desc',
     limit,
@@ -5269,12 +5269,12 @@ async function getActivityFeed(param) {
 // Webhook delivery history
 async function getWebhookHistory() {
   const [stripeResult, resendResult] = await Promise.all([
-    supabaseQuery('webhook_events', {
+    dbQuery('webhook_events', {
       select: 'id,source,event_type,status,received_at,error_message',
       order: 'received_at.desc',
       limit: 20,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('webhook_deliveries', {
+    dbQuery('webhook_deliveries', {
       select: 'id,endpoint,status,attempts,last_attempt_at,error_message',
       order: 'last_attempt_at.desc',
       limit: 20,
@@ -5309,20 +5309,20 @@ async function getWebhookHistory() {
 // Synthesized business intelligence - patterns, not just facts
 async function getBusinessIntelligence() {
   const [revenue, events, inquiries, clients] = await Promise.all([
-    supabaseQuery('event_financial_summary', {
+    dbQuery('event_financial_summary', {
       select:
         'event_id,net_revenue_cents,total_expenses_cents,profit_cents,profit_margin,food_cost_percentage',
       limit: 200,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('events', {
+    dbQuery('events', {
       select: 'id,event_date,status,guest_count,service_style,created_at',
       limit: 500,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('inquiries', {
+    dbQuery('inquiries', {
       select: 'id,status,created_at,event_date,chef_likelihood',
       limit: 200,
     }).catch(() => ({ ok: false })),
-    supabaseQuery('clients', {
+    dbQuery('clients', {
       select: 'id,created_at,loyalty_tier,lifetime_points',
       limit: 200,
     }).catch(() => ({ ok: false })),
@@ -5479,7 +5479,7 @@ async function callThePass() {
     getOpenInquiries().catch(() => ({ ok: false, error: 'failed' })),
     getGitDiff().catch(() => ({ ok: false, error: 'failed' })),
     getRemyUsageMetrics().catch(() => ({ ok: false, error: 'failed' })),
-    getSupabaseSchema().catch(() => ({ ok: false, error: 'failed' })),
+    getDbSchema().catch(() => ({ ok: false, error: 'failed' })),
   ])
   return {
     ok: true,
@@ -5659,8 +5659,8 @@ async function codeLoc() {
 // ══════════════════════════════════════════════════════════════════
 
 async function getClientRisk() {
-  const clients = await supabaseQuery('clients', 'id,name,loyalty_tier,created_at', '', 500)
-  const events = await supabaseQuery('events', 'id,client_id,event_date,status', '', 1000)
+  const clients = await dbQuery('clients', 'id,name,loyalty_tier,created_at', '', 500)
+  const events = await dbQuery('events', 'id,client_id,event_date,status', '', 1000)
   if (!clients.ok) return { ok: false, error: 'Failed to fetch clients' }
   const now = new Date()
   const atRisk = []
@@ -5702,13 +5702,13 @@ async function getClientRisk() {
 }
 
 async function getRevenueForecast() {
-  const events = await supabaseQuery(
+  const events = await dbQuery(
     'events',
     'id,event_date,status,guest_count',
     'status=in.(accepted,paid,confirmed)',
     200
   )
-  const revenue = await supabaseQuery(
+  const revenue = await dbQuery(
     'event_financial_summary',
     'event_id,net_revenue_cents',
     '',
@@ -5747,7 +5747,7 @@ async function getRevenueForecast() {
 }
 
 async function getSeasonalTrends() {
-  const events = await supabaseQuery('events', 'id,event_date,guest_count,status', '', 2000)
+  const events = await dbQuery('events', 'id,event_date,guest_count,status', '', 2000)
   if (!events.ok) return { ok: false, error: 'Failed to fetch events' }
   const monthly = {}
   for (const e of events.data) {
@@ -5775,13 +5775,13 @@ async function getSeasonalTrends() {
 }
 
 async function getPricingAnalysis() {
-  const events = await supabaseQuery(
+  const events = await dbQuery(
     'events',
     'id,guest_count,occasion_type,cuisine_type',
     'status=in.(completed,confirmed,paid,accepted)',
     1000
   )
-  const revenue = await supabaseQuery(
+  const revenue = await dbQuery(
     'event_financial_summary',
     'event_id,net_revenue_cents',
     '',
@@ -5832,7 +5832,7 @@ async function getPricingAnalysis() {
 
 async function getEventTimeline(param) {
   if (!param) return { ok: false, error: 'Usage: data/event-timeline:event_id' }
-  const transitions = await supabaseQuery(
+  const transitions = await dbQuery(
     'event_transitions',
     'id,from_status,to_status,created_at,changed_by',
     `event_id=eq.${param}`,
@@ -5849,7 +5849,7 @@ async function getEventTimeline(param) {
 }
 
 async function getRemyConversations() {
-  const metrics = await supabaseQuery(
+  const metrics = await dbQuery(
     'remy_usage_metrics',
     'id,tenant_id,messages_sent,conversations_started,created_at',
     '',
@@ -5868,13 +5868,13 @@ async function getRemyConversations() {
 }
 
 async function getRemyErrors() {
-  const errors = await supabaseQuery(
+  const errors = await dbQuery(
     'remy_usage_metrics',
     'id,tenant_id,errors_count,created_at',
     'errors_count=gt.0',
     50
   )
-  const abuse = await supabaseQuery(
+  const abuse = await dbQuery(
     'remy_abuse_log',
     'id,tenant_id,blocked_message,guardrail_matched,created_at',
     '',
@@ -5947,9 +5947,9 @@ async function getProdAnalytics() {
 
 async function validateEnv() {
   const required = [
-    'NEXT_PUBLIC_SUPABASE_URL',
-    'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-    'SUPABASE_SERVICE_ROLE_KEY',
+    'NEXT_PUBLIC_DB_URL',
+    'NEXT_PUBLIC_DB_ANON_KEY',
+    'DB_SERVICE_ROLE_KEY',
     'STRIPE_SECRET_KEY',
     'STRIPE_WEBHOOK_SECRET',
     'NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY',
@@ -5983,9 +5983,9 @@ async function validateEnv() {
 }
 
 async function findDbOrphans() {
-  const quotes = await supabaseQuery('quotes', 'id,event_id', '', 500)
-  const expenses = await supabaseQuery('expenses', 'id,event_id', '', 500)
-  const events = await supabaseQuery('events', 'id', '', 2000)
+  const quotes = await dbQuery('quotes', 'id,event_id', '', 500)
+  const expenses = await dbQuery('expenses', 'id,event_id', '', 500)
+  const events = await dbQuery('events', 'id', '', 2000)
   if (!events.ok) return { ok: false, error: 'Failed to fetch events' }
   const eventIds = new Set(events.data.map((e) => e.id))
   const orphanQuotes = (quotes.data || []).filter((q) => q.event_id && !eventIds.has(q.event_id))
@@ -6003,7 +6003,7 @@ async function findDbOrphans() {
 
 async function dbRlsAudit() {
   // Check which tables have RLS enabled by querying pg_tables
-  const result = await supabaseQuery(
+  const result = await dbQuery(
     'information_schema.tables',
     'table_name,table_schema',
     'table_schema=eq.public',
@@ -6034,7 +6034,7 @@ async function securityAudit() {
   let exposedSecrets = []
   try {
     const { stdout } = await execAsync(
-      'grep -rn "sk_live_\\|sk_test_\\|SUPABASE_SERVICE_ROLE_KEY.*=.*ey\\|password.*=.*[a-zA-Z0-9]" --include="*.ts" --include="*.tsx" --include="*.mjs" . 2>/dev/null | grep -v node_modules | grep -v .next | grep -v .env | head -10',
+      'grep -rn "sk_live_\\|sk_test_\\|DB_SERVICE_ROLE_KEY.*=.*ey\\|password.*=.*[a-zA-Z0-9]" --include="*.ts" --include="*.tsx" --include="*.mjs" . 2>/dev/null | grep -v node_modules | grep -v .next | grep -v .env | head -10',
       { cwd: PROJECT_ROOT, timeout: 10000 }
     )
     exposedSecrets = stdout.trim().split('\n').filter(Boolean)
@@ -6477,7 +6477,7 @@ const TOOLS = {
   // Maintenance
   'cache/clear': { fn: clearCache, desc: 'Clear the .next/ build cache (fixes ENOTEMPTY errors)' },
   'npm/install': { fn: npmInstall, desc: 'Run npm install to update dependencies' },
-  'db/gen-types': { fn: generateTypes, desc: 'Regenerate types/database.ts from Supabase schema' },
+  'db/gen-types': { fn: generateTypes, desc: 'Regenerate types/database.ts from database schema' },
   'prompts/queue': { fn: getPromptQueue, desc: 'Show pending prompts from the Claude Code queue' },
 
   // Status & Monitoring
@@ -6495,7 +6495,7 @@ const TOOLS = {
     desc: 'Show production server status',
   },
 
-  // Business Data (read-only Supabase queries)
+  // Business Data (read-only database queries)
   'data/events': {
     fn: getUpcomingEvents,
     desc: 'List upcoming events with client, date, status, guest count',
@@ -6515,7 +6515,7 @@ const TOOLS = {
   'data/inquiries': { fn: getOpenInquiries, desc: 'List open inquiries awaiting response' },
 
   // Database & History
-  'db/backup': { fn: dbBackup, desc: 'Backup the Supabase database to a local SQL file' },
+  'db/backup': { fn: dbBackup, desc: 'Backup the database to a local SQL file' },
   'history/all': { fn: getGitHistory, desc: 'Get the full project commit history' },
   'feedback/all': { fn: getFeedback, desc: 'Get all user feedback from the database' },
 
@@ -6659,7 +6659,7 @@ const TOOLS = {
     fn: (param) => readFileContent(param),
     desc: 'Read a file. Use code/read:lib/ai/remy-actions.ts',
   },
-  'db/schema': { fn: getSupabaseSchema, desc: 'Supabase schema - all tables with row counts' },
+  'db/schema': { fn: getDbSchema, desc: 'Database schema - all tables with row counts' },
 
   // App Health & Quality Scanners (Track 4)
   'scan/ts-nocheck': {
@@ -6682,7 +6682,7 @@ const TOOLS = {
   // Universal Data Access (Tier 1)
   'db/query': {
     fn: (param) => queryTable(param),
-    desc: 'Query any Supabase table. Use db/query:table_name or db/query:table_name?select=col1,col2&filter=status.eq.active&limit=10',
+    desc: 'Query any database table. Use db/query:table_name or db/query:table_name?select=col1,col2&filter=status.eq.active&limit=10',
   },
   'db/sql': {
     fn: (param) => sqlQuery(param),
@@ -6766,9 +6766,9 @@ const TOOLS = {
     fn: scheduledDbBackup,
     desc: 'Run a database backup right now (saves to backups/ with 7-day retention)',
   },
-  'supabase/health': {
-    fn: checkSupabaseHealth,
-    desc: 'Check Supabase database connection health and latency',
+  'db/health': {
+    fn: checkDbHealth,
+    desc: 'Check database connection health and latency',
   },
   'ssl/check': { fn: checkSSLCerts, desc: 'Check SSL certificate expiration for all domains' },
   'stripe/health': {
@@ -6919,7 +6919,7 @@ Start/stop dev server, deploy/rollback/restart beta, control Ollama on PC and Pi
 Push, commit, typecheck, full build, run tests (smoke, soak, e2e). Git diff, branch status.
 
 ### Station 3: Business Data (Full Visibility)
-Everything the business produces - clients (full profiles, loyalty, dietary, event history), inquiries (pipeline, lead scores, follow-ups), quotes (status, amounts, validity), events (upcoming, by status), revenue (profit, margins, outstanding), expenses (by category, by event), menus & recipes (counts, costs, cuisine), staff (roster, assignments, rates), email (sync status, recent, classifications), loyalty (tiers, points, redemptions), documents (folders, storage). All read-only, real-time from Supabase.
+Everything the business produces - clients (full profiles, loyalty, dietary, event history), inquiries (pipeline, lead scores, follow-ups), quotes (status, amounts, validity), events (upcoming, by status), revenue (profit, margins, outstanding), expenses (by category, by event), menus & recipes (counts, costs, cuisine), staff (roster, assignments, rates), email (sync status, recent, classifications), loyalty (tiers, points, redemptions), documents (folders, storage). All read-only, real-time from database.
 
 ### Station 4: Remy Oversight
 Remy is the sous chef - your station, your responsibility. Monitor his usage metrics, guardrail logs (what he's blocking), memory store (what he remembers), performance (error rates, response times), and run his test suite.
@@ -6934,7 +6934,7 @@ Scan for @ts-nocheck files with dangerous exports, startTransition calls missing
 App health (DB, Redis, circuit breakers), production status, uptime reports, error aggregation, bundle size trends.
 
 ### Station 8: Universal Data Access
-Query ANY Supabase table directly (db/query), run read-only SQL (db/sql), deep-dive into individual events (ledger, expenses, temps, transitions, staff, quotes), view raw ledger entries, notifications, automations, inventory/equipment, activity feed, webhook history. Cron jobs - list schedules and trigger manually. Business intelligence - synthesized patterns: revenue trends, conversion funnel, loyalty distribution, hot leads.
+Query ANY database table directly (db/query), run read-only SQL (db/sql), deep-dive into individual events (ledger, expenses, temps, transitions, staff, quotes), view raw ledger entries, notifications, automations, inventory/equipment, activity feed, webhook history. Cron jobs - list schedules and trigger manually. Business intelligence - synthesized patterns: revenue trends, conversion funnel, loyalty distribution, hot leads.
 
 ### Station 9: Git & Codebase Extended
 Git log (recent commits, configurable count), stash operations (list/pop/save), blame (author breakdown per file), TODO/FIXME/HACK scanner, lines of code counter.
@@ -6953,7 +6953,7 @@ For business AI questions (client follow-ups, draft emails, recipe lookup) - bri
 - **The pass** - the monitoring dashboard, where everything gets inspected
 - **Service** - a deploy cycle or work session
 - **Clean service** - successful deploy/session with zero errors (your highest compliment)
-- **The brigade** - the system architecture (Dev, Beta, Prod, Ollama, Supabase, Git)
+- **The brigade** - the system architecture (Dev, Beta, Prod, Ollama, PostgreSQL, Git)
 - **Stations** - individual systems, each one calls back
 - **Calling the pass** - status report across all stations
 - **Fire** - execute, deploy, run it
@@ -7355,7 +7355,7 @@ async function handleRequest(req, res) {
         ollama: { port: 11434, label: 'Ollama', url: 'http://localhost:11434' },
       },
       quickLinks: {
-        supabase: 'https://supabase.com/dashboard/project/luefkpakzvxcsqroxyhz',
+        database: 'http://localhost:54322',
         github: 'https://github.com/davidferra13/CFV1',
         cloudflare: 'https://dash.cloudflare.com',
         beta: 'https://beta.cheflowhq.com',
@@ -7690,8 +7690,8 @@ async function handleRequest(req, res) {
       return json(res, { ok: false, error: err.message })
     }
   }
-  if (path === '/api/supabase/health' && method === 'GET') {
-    return json(res, await checkSupabaseHealth())
+  if (path === '/api/db/health' && method === 'GET') {
+    return json(res, await checkDbHealth())
   }
   if (path === '/api/ssl/check' && method === 'GET') {
     return json(res, await checkSSLCerts())

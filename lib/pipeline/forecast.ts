@@ -4,7 +4,7 @@
 // Applies probability multipliers per stage to compute expected revenue.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // Probability multipliers by stage
 const INQUIRY_PROBABILITY: Record<string, number> = {
@@ -43,15 +43,15 @@ export interface PipelineRevenueForecast {
 
 export async function getPipelineRevenueForecast(): Promise<PipelineRevenueForecast> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [inquiriesResult, eventsResult] = await Promise.all([
-    supabase
+    db
       .from('inquiries')
       .select('id, status, confirmed_budget_cents')
       .eq('tenant_id', user.tenantId!)
       .not('status', 'in', '("declined","expired","converted")'),
-    supabase
+    db
       .from('events')
       .select('id, status, quoted_price_cents')
       .eq('tenant_id', user.tenantId!)

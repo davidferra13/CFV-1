@@ -39,4 +39,4 @@ Remy can now load repo-local memory from `memory/runtime/remy.json` on every req
 
 ## Why This Exists
 
-The existing memory path only read from `remy_memories` in Supabase. That made direct agent edits in the repo invisible at runtime. This file-backed layer gives Codex and Claude a shared memory surface inside the codebase itself.
+The existing memory path only read from `remy_memories` in the database. That made direct agent edits in the repo invisible at runtime. This file-backed layer gives Codex and Claude a shared memory surface inside the codebase itself.

@@ -6,7 +6,7 @@
 'use server'
 
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ============================================
 // TYPES
@@ -55,10 +55,10 @@ function getGuestBucket(count: number): [number, number] {
  */
 export async function detectPriceAnomalies(thresholdPercent = 20): Promise<PriceAnomalyReport> {
   const user = await requirePro('intelligence-hub')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all events with their financial data
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, occasion, guest_count, status')
     .eq('tenant_id', user.tenantId!)
@@ -77,7 +77,7 @@ export async function detectPriceAnomalies(thresholdPercent = 20): Promise<Price
 
   // Get quote totals for all events
   const eventIds = events.map((e: any) => e.id)
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select('event_id, total_cents')
     .in('event_id', eventIds)

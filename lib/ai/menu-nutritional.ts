@@ -6,7 +6,7 @@
 // Output is ESTIMATE ONLY - clearly labeled as approximate, not medical advice.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { GoogleGenAI } from '@google/genai'
 
 export interface CourseNutrition {
@@ -43,16 +43,16 @@ const getClient = () => {
 
 export async function getMenuNutritionalSummary(eventId: string): Promise<MenuNutritionalSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [eventResult, menuResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('guest_count, dietary_restrictions, allergies')
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase as any)
+    (db as any)
       .from('event_menu_components')
       .select(
         `

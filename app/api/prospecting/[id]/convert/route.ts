@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { validateProspectingAuth } from '@/lib/prospecting/api-auth'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   const auth = await validateProspectingAuth(request)
@@ -21,10 +21,10 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Body is optional
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Fetch prospect
-  const { data: prospect, error: fetchError } = await supabase
+  const { data: prospect, error: fetchError } = await db
     .from('prospects' as any)
     .select('*')
     .eq('id', params.id)
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     .filter(Boolean)
     .join('\n')
 
-  const { data: inquiry, error: inquiryError } = await supabase
+  const { data: inquiry, error: inquiryError } = await db
     .from('inquiries')
     .insert({
       tenant_id: auth.tenantId,
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   }
 
   // Update prospect with conversion link
-  await supabase
+  await db
     .from('prospects' as any)
     .update({
       status: 'converted',
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   // Add conversion note
   try {
-    await supabase.from('prospect_notes' as any).insert({
+    await db.from('prospect_notes' as any).insert({
       prospect_id: params.id,
       chef_id: auth.tenantId,
       note_type: 'general',
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   // Record stage history
   try {
-    await supabase.from('prospect_stage_history' as any).insert({
+    await db.from('prospect_stage_history' as any).insert({
       prospect_id: params.id,
       chef_id: auth.tenantId,
       from_stage: p.pipeline_stage ?? 'responded',
@@ -117,7 +117,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
   // Log outreach event
   try {
-    await supabase.from('prospect_outreach_log' as any).insert({
+    await db.from('prospect_outreach_log' as any).insert({
       prospect_id: params.id,
       chef_id: auth.tenantId,
       outreach_type: 'note',

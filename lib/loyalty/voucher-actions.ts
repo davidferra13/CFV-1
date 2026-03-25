@@ -4,7 +4,7 @@ import crypto from 'crypto'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireAuth, requireChef, type AuthUser } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { formatCurrency } from '@/lib/utils/currency'
 
 type IncentiveType = 'voucher' | 'gift_card'
@@ -44,7 +44,7 @@ type IncentiveDeliveryRecord = {
   sent_at: string
 }
 
-type UntypedSupabaseClient = any & {
+type UntypedDbClient = any & {
   from: (relation: string) => any
 }
 
@@ -101,8 +101,8 @@ export type CreateVoucherOrGiftCardInput = z.infer<typeof CreateVoucherOrGiftCar
 export type SendVoucherOrGiftCardInput = z.infer<typeof SendVoucherOrGiftCardSchema>
 export type { IncentiveRecord, IncentiveDeliveryRecord }
 
-function getUntypedSupabaseClient() {
-  return createServerClient() as unknown as UntypedSupabaseClient
+function getUntypedDbClient() {
+  return createServerClient() as unknown as UntypedDbClient
 }
 
 function normalizeCode(raw: string): string {
@@ -140,7 +140,7 @@ function isUniqueCodeViolation(error: { code?: string; message?: string } | null
   return error.code === '23505' || error.message?.includes('uq_client_incentives_tenant_code')
 }
 
-async function resolveTenantForUser(user: AuthUser, supabase: UntypedSupabaseClient) {
+async function resolveTenantForUser(user: AuthUser, db: UntypedDbClient) {
   if (user.role === 'chef') {
     if (!user.tenantId) {
       throw new Error('Chef account is missing tenant context')
@@ -148,7 +148,7 @@ async function resolveTenantForUser(user: AuthUser, supabase: UntypedSupabaseCli
     return { tenantId: user.tenantId, clientId: null as string | null }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .select('id, tenant_id')
     .eq('id', user.entityId)
@@ -171,11 +171,11 @@ async function resolveTenantForUser(user: AuthUser, supabase: UntypedSupabaseCli
 }
 
 async function ensureClientBelongsToTenant(
-  supabase: UntypedSupabaseClient,
+  db: UntypedDbClient,
   tenantId: string,
   clientId: string
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .select('id')
     .eq('id', clientId)
@@ -206,9 +206,9 @@ function formatIncentiveValueLabel(incentive: IncentiveRecord): string {
 export async function createVoucherOrGiftCard(input: CreateVoucherOrGiftCardInput) {
   const user = await requireAuth()
   const validated = CreateVoucherOrGiftCardSchema.parse(input)
-  const supabase = getUntypedSupabaseClient()
+  const db = getUntypedDbClient()
 
-  const { tenantId, clientId } = await resolveTenantForUser(user, supabase)
+  const { tenantId, clientId } = await resolveTenantForUser(user, db)
 
   let targetClientId = validated.target_client_id ?? null
 
@@ -218,7 +218,7 @@ export async function createVoucherOrGiftCard(input: CreateVoucherOrGiftCardInpu
     }
     targetClientId = clientId
   } else if (targetClientId) {
-    await ensureClientBelongsToTenant(supabase, tenantId, targetClientId)
+    await ensureClientBelongsToTenant(db, tenantId, targetClientId)
   }
 
   const expiresAtIso = parseExpiryToIso(validated.expires_at)
@@ -228,7 +228,7 @@ export async function createVoucherOrGiftCard(input: CreateVoucherOrGiftCardInpu
   let created: IncentiveRecord | null = null
 
   for (let attempt = 0; attempt < 5; attempt++) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('client_incentives')
       .insert({
         tenant_id: tenantId,
@@ -281,10 +281,10 @@ export async function createVoucherOrGiftCard(input: CreateVoucherOrGiftCardInpu
 
 export async function getVoucherAndGiftCards() {
   const user = await requireAuth()
-  const supabase = getUntypedSupabaseClient()
-  const { tenantId, clientId } = await resolveTenantForUser(user, supabase)
+  const db = getUntypedDbClient()
+  const { tenantId, clientId } = await resolveTenantForUser(user, db)
 
-  let query = supabase
+  let query = db
     .from('client_incentives')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -341,9 +341,9 @@ export type { IncentiveRedemptionRecord, IncentiveStats }
  */
 export async function deactivateIncentive(incentiveId: string) {
   const user = await requireChef()
-  const supabase = getUntypedSupabaseClient()
+  const db = getUntypedDbClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_incentives')
     .update({ is_active: false })
     .eq('id', incentiveId)
@@ -364,9 +364,9 @@ export async function deactivateIncentive(incentiveId: string) {
  */
 export async function getIncentiveRedemptions(incentiveId?: string) {
   const user = await requireChef()
-  const supabase = getUntypedSupabaseClient()
+  const db = getUntypedDbClient()
 
-  let query = supabase
+  let query = db
     .from('incentive_redemptions')
     .select(
       `
@@ -399,9 +399,9 @@ export async function getIncentiveRedemptions(incentiveId?: string) {
  */
 export async function getIncentiveStats(): Promise<IncentiveStats> {
   const user = await requireChef()
-  const supabase = getUntypedSupabaseClient()
+  const db = getUntypedDbClient()
 
-  const { data: incentives, error: incentivesError } = await supabase
+  const { data: incentives, error: incentivesError } = await db
     .from('client_incentives')
     .select('type, is_active')
     .eq('tenant_id', user.tenantId!)
@@ -411,7 +411,7 @@ export async function getIncentiveStats(): Promise<IncentiveStats> {
     throw new Error('Failed to fetch incentive stats')
   }
 
-  const { data: redemptions, error: redemptionsError } = await supabase
+  const { data: redemptions, error: redemptionsError } = await db
     .from('incentive_redemptions')
     .select('applied_amount_cents')
     .eq('tenant_id', user.tenantId!)
@@ -435,9 +435,9 @@ export async function getIncentiveStats(): Promise<IncentiveStats> {
 export async function sendVoucherOrGiftCardToAnyone(input: SendVoucherOrGiftCardInput) {
   const user = await requireChef()
   const validated = SendVoucherOrGiftCardSchema.parse(input)
-  const supabase = getUntypedSupabaseClient()
+  const db = getUntypedDbClient()
 
-  const { data: incentiveData, error: incentiveError } = await supabase
+  const { data: incentiveData, error: incentiveError } = await db
     .from('client_incentives')
     .select('*')
     .eq('id', validated.incentive_id)
@@ -458,7 +458,7 @@ export async function sendVoucherOrGiftCardToAnyone(input: SendVoucherOrGiftCard
     throw new Error('This voucher or gift card has expired')
   }
 
-  const { data: deliveryData, error: deliveryError } = await supabase
+  const { data: deliveryData, error: deliveryError } = await db
     .from('incentive_deliveries')
     .insert({
       incentive_id: incentive.id,
@@ -477,7 +477,7 @@ export async function sendVoucherOrGiftCardToAnyone(input: SendVoucherOrGiftCard
     throw new Error('Failed to record voucher or gift card delivery')
   }
 
-  const { data: chefData } = await supabase
+  const { data: chefData } = await db
     .from('chefs')
     .select('business_name, display_name')
     .eq('id', user.tenantId!)

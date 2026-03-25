@@ -24,7 +24,7 @@
 - Created `app/(public)/contact/_components/contact-form.tsx` with all client-side state
 - Server component renders the header instantly; form loads async
 - Added skeleton loading state matching the form layout
-- No sequential Supabase operations existed to parallelize (single `submitContactForm` call)
+- No sequential PostgreSQL operations existed to parallelize (single `submitContactForm` call)
 
 ### 4. Color Contrast Audit (WCAG AA)
 

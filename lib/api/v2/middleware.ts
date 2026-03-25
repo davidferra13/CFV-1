@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateApiKey, type ApiKeyContext } from '@/lib/api/auth-api-key'
 import { checkRateLimit } from '@/lib/api/rate-limit'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { hasAllScopes, LEGACY_DEFAULT_SCOPES, type ApiScope } from './scopes'
 import { apiUnauthorized, apiForbidden, apiRateLimited, apiServerError } from './response'
 
@@ -18,8 +18,8 @@ export interface ApiContext {
   scopes: string[]
   /** The API key record ID */
   keyId: string
-  /** Pre-built Supabase admin client (bypasses RLS, use tenantId for scoping) */
-  supabase: ReturnType<typeof createServerClient>
+  /** Pre-built admin DB client (bypasses RLS, use tenantId for scoping) */
+  db: ReturnType<typeof createServerClient>
 }
 
 export type ApiHandler = (
@@ -42,7 +42,7 @@ export interface ApiAuthOptions {
  * 3. Scope checking (if scopes option provided)
  * 4. Error catching (returns structured JSON errors)
  *
- * The handler receives an ApiContext with tenantId, scopes, and a pre-built Supabase client.
+ * The handler receives an ApiContext with tenantId, scopes, and a pre-built database client.
  */
 export function withApiAuth(handler: ApiHandler, options?: ApiAuthOptions) {
   return async (req: NextRequest, routeContext?: { params: Promise<Record<string, string>> }) => {
@@ -71,12 +71,12 @@ export function withApiAuth(handler: ApiHandler, options?: ApiAuthOptions) {
       }
 
       // 5. Build context
-      const supabase = createServerClient({ admin: true })
+      const db = createServerClient({ admin: true })
       const ctx: ApiContext = {
         tenantId: keyCtx.tenantId,
         scopes: effectiveScopes,
         keyId: keyCtx.keyId,
-        supabase,
+        db,
       }
 
       // 6. Resolve dynamic route params if present

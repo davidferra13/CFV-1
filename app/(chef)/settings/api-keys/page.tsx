@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { ApiKeyManager } from '@/components/settings/api-key-manager'
 
 export const metadata: Metadata = { title: 'API Keys - ChefFlow' }
 
 async function getApiKeys(tenantId: string) {
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('chef_api_keys' as any)
     .select('id, name, key_prefix, scopes, last_used_at, is_active, created_at')
     .eq('tenant_id', tenantId)

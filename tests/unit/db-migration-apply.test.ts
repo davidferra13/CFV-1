@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-import { buildApplyExecutionPlan } from '../../scripts/apply-supabase-migration-repair.mjs'
+import { buildApplyExecutionPlan } from '../../scripts/apply-db-migration-repair.mjs'
 
 function makeReport(overrides = {}) {
   return {
@@ -13,13 +13,13 @@ function makeReport(overrides = {}) {
         {
           version: '20260305',
           action: 'reverted',
-          command: 'npx supabase migration repair --linked --status reverted 20260305',
+          command: 'npx db migration repair --linked --status reverted 20260305',
           reason: 'legacy remote short version',
         },
         {
           version: '20260313000011',
           action: 'applied',
-          command: 'npx supabase migration repair --linked --status applied 20260313000011',
+          command: 'npx db migration repair --linked --status applied 20260313000011',
           reason: 'historical overlap',
         },
       ],
@@ -31,7 +31,7 @@ function makeReport(overrides = {}) {
   }
 }
 
-describe('Supabase migration repair apply plan', () => {
+describe('Database migration repair apply plan', () => {
   it('builds backup, repair, push, typegen, and test steps by default', () => {
     const report = makeReport()
     const plan = buildApplyExecutionPlan(report)
@@ -70,7 +70,7 @@ describe('Supabase migration repair apply plan', () => {
           {
             version: '20260305',
             action: 'reverted',
-            command: 'npx supabase migration repair --linked --status reverted 20260305',
+            command: 'npx db migration repair --linked --status reverted 20260305',
             reason: 'legacy remote short version',
           },
         ],

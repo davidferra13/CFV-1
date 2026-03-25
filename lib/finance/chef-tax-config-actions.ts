@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { COMMON_STATE_RATES_BPS } from '@/lib/finance/sales-tax-constants'
 
 // -- Types -------------------------------------------------------------------
@@ -31,9 +31,9 @@ export interface ResolvedTaxRate {
 /** Get all per-state tax rate overrides for the current chef. */
 export async function getChefTaxRates(): Promise<ChefTaxConfig[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_tax_config')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -50,9 +50,9 @@ export async function getChefTaxRates(): Promise<ChefTaxConfig[]> {
 /** Get a single state override for the current chef. */
 export async function getChefTaxRateForState(stateCode: string): Promise<ChefTaxConfig | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_tax_config')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -71,7 +71,7 @@ export async function updateChefTaxRate(input: {
   description?: string | null
 }): Promise<ChefTaxConfig> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const stateCode = input.stateCode.toUpperCase()
 
@@ -86,7 +86,7 @@ export async function updateChefTaxRate(input: {
     throw new Error('Local rate must be between 0 and 10000 bps')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_tax_config')
     .upsert(
       {
@@ -113,9 +113,9 @@ export async function updateChefTaxRate(input: {
 /** Delete a per-state tax rate override (reverts to default constant). */
 export async function deleteChefTaxRate(stateCode: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_tax_config')
     .delete()
     .eq('chef_id', user.entityId)

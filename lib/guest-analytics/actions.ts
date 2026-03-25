@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 /**
@@ -9,10 +9,10 @@ import { requireChef } from '@/lib/auth/get-user'
  */
 export async function getRepeatGuests() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all guests across all events for this chef, grouped by email
-  const { data: allGuests, error } = await supabase
+  const { data: allGuests, error } = await db
     .from('event_guests')
     .select(
       `
@@ -76,9 +76,9 @@ export async function getRepeatGuests() {
  */
 export async function getGuestFrequencyStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_guests')
     .select(
       `
@@ -120,10 +120,10 @@ export async function getGuestFrequencyStats() {
  */
 export async function getDinnerGroups() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all events with their attending guests
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_guests')
     .select(
       `

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 /**
@@ -13,12 +13,12 @@ export async function scanPendingAARs(): Promise<{
   events: Array<{ id: string; occasion: string | null; event_date: string }>
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
   // Get completed events older than 24 hours
-  const { data: events, error: eventsError } = await supabase
+  const { data: events, error: eventsError } = await db
     .from('events')
     .select('id, occasion, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -40,7 +40,7 @@ export async function scanPendingAARs(): Promise<{
   const pending: Array<{ id: string; occasion: string | null; event_date: string }> = []
 
   for (const event of events) {
-    const { data: existing, error: todoError } = await supabase
+    const { data: existing, error: todoError } = await db
       .from('chef_todos')
       .select('id')
       .eq('chef_id', user.entityId)

@@ -6,7 +6,7 @@
 // Allowed for any event state - restriction removed so chefs can capture receipts at any time.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { processReceiptOCR } from './actions'
 
@@ -30,7 +30,7 @@ export type QuickCaptureResult =
 
 /**
  * Upload a receipt photo during a live event.
- * Handles Supabase Storage upload, receipt_photos record creation, and background OCR.
+ * Handles local storage upload, receipt_photos record creation, and background OCR.
  * formData key: 'receipt' (File)
  */
 export async function quickCaptureReceipt(
@@ -38,10 +38,10 @@ export async function quickCaptureReceipt(
   formData: FormData
 ): Promise<QuickCaptureResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the event belongs to this chef
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id')
     .eq('id', eventId)
@@ -71,8 +71,8 @@ export async function quickCaptureReceipt(
   const ext = MIME_TO_EXT[file.type] ?? 'jpg'
   const storagePath = `${user.tenantId}/${eventId}/${pathKey}.${ext}`
 
-  // Upload to Supabase Storage
-  const { error: uploadError } = await supabase.storage
+  // Upload to local storage
+  const { error: uploadError } = await db.storage
     .from(RECEIPTS_BUCKET)
     .upload(storagePath, file, { contentType: file.type, upsert: false })
 
@@ -82,17 +82,17 @@ export async function quickCaptureReceipt(
   }
 
   // Create a signed URL long enough for OCR processing
-  const { data: signedData, error: signError } = await supabase.storage
+  const { data: signedData, error: signError } = await db.storage
     .from(RECEIPTS_BUCKET)
     .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS)
 
   if (signError || !signedData?.signedUrl) {
-    await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath])
+    await db.storage.from(RECEIPTS_BUCKET).remove([storagePath])
     return { success: false, error: 'Failed to generate access URL - please try again' }
   }
 
   // Register the receipt photo record (storage_path stored for future URL regeneration)
-  const { data: photoRecord, error: dbError } = await supabase
+  const { data: photoRecord, error: dbError } = await db
     .from('receipt_photos')
     .insert({
       event_id: eventId,
@@ -106,7 +106,7 @@ export async function quickCaptureReceipt(
 
   if (dbError || !photoRecord) {
     console.error('[quickCaptureReceipt] DB insert error:', dbError)
-    await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath])
+    await db.storage.from(RECEIPTS_BUCKET).remove([storagePath])
     return { success: false, error: 'Failed to register receipt - please try again' }
   }
 

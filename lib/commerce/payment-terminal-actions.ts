@@ -2,7 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { recordPayment } from './payment-actions'
 import { getPaymentTerminalAdapter } from './terminal'
 import { assertPosRoleAccess } from './pos-authorization'
@@ -17,16 +17,16 @@ export type ProcessTerminalPaymentInput = {
 export async function processTerminalCardPayment(input: ProcessTerminalPaymentInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'process a terminal card payment',
     requiredLevel: 'cashier',
   })
 
-  const { data: sale, error } = await (supabase
+  const { data: sale, error } = await (db
     .from('sales')
     .select('id, status')
     .eq('id', input.saleId)

@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { AutomationRule, AutomationExecution, TriggerEvent, ActionType } from './types'
@@ -34,9 +34,9 @@ const CreateRuleSchema = z.object({
 export async function createAutomationRule(input: z.infer<typeof CreateRuleSchema>) {
   const user = await requireChef()
   const validated = CreateRuleSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('automation_rules' as any)
     .insert({
       tenant_id: user.tenantId!,
@@ -67,9 +67,9 @@ export async function updateAutomationRule(
   input: Partial<z.infer<typeof CreateRuleSchema>>
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('automation_rules' as any)
     .update({
       ...input,
@@ -90,9 +90,9 @@ export async function updateAutomationRule(
 
 export async function toggleAutomationRule(ruleId: string, isActive: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('automation_rules' as any)
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
     .eq('id', ruleId)
@@ -110,9 +110,9 @@ export async function toggleAutomationRule(ruleId: string, isActive: boolean) {
 
 export async function deleteAutomationRule(ruleId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('automation_rules' as any)
     .delete()
     .eq('id', ruleId)
@@ -130,9 +130,9 @@ export async function deleteAutomationRule(ruleId: string) {
 
 export async function getAutomationRules(): Promise<AutomationRule[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('automation_rules' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -151,9 +151,9 @@ export async function getAutomationRules(): Promise<AutomationRule[]> {
 
 export async function getTemplatesForAutomations(): Promise<{ id: string; name: string }[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('response_templates')
     .select('id, name')
     .eq('tenant_id', user.tenantId!)
@@ -175,9 +175,9 @@ export async function getAutomationExecutions(options?: {
   limit?: number
 }): Promise<AutomationExecution[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('automation_executions' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)

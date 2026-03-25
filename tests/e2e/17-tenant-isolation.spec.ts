@@ -9,7 +9,7 @@
  *   - API routes return empty or 401/403 when queried with wrong tenant's IDs
  *   - Client portal tokens are scoped to their issuing chef
  *
- * Note: These tests require SUPABASE_E2E_ALLOW_REMOTE=true and seed data with two chefs.
+ * Note: These tests require DATABASE_E2E_ALLOW_REMOTE=true and seed data with two chefs.
  * The seed creates chefId (primary) and chefId2 (secondary) — two separate tenants.
  */
 
@@ -181,7 +181,7 @@ test.describe('Tenant Isolation — Cross-Tenant Access Prevention', () => {
   })
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // DIRECT SUPABASE QUERY ISOLATION (via middleware/server action boundary)
+  // DIRECT DATABASE QUERY ISOLATION (via middleware/server action boundary)
   // These verify that the middleware properly enforces role before server action runs
   // ─────────────────────────────────────────────────────────────────────────────
 

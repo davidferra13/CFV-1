@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { isOpsCopilotEnabled } from '@/lib/features'
 import { runCopilotForTenant } from '@/lib/copilot/orchestrator'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
@@ -12,8 +12,8 @@ async function handleCopilot(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ message: 'Ops Copilot is disabled', processed: 0 })
   }
 
-  const supabase: any = createServerClient({ admin: true })
-  const { data: chefs, error } = await supabase.from('chefs').select('id').limit(10000)
+  const db: any = createServerClient({ admin: true })
+  const { data: chefs, error } = await db.from('chefs').select('id').limit(10000)
 
   if (error) {
     return NextResponse.json({ error: 'Failed to fetch tenants' }, { status: 500 })

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { RecurringRule } from './actions'
 import type { Database } from '@/types/database'
@@ -23,11 +23,11 @@ import type { Database } from '@/types/database'
  */
 export async function generateRecurringTasks(date: string): Promise<number> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const chefId = user.tenantId!
 
   // Fetch all tasks with a recurring rule for this chef
-  const { data: recurringTasks, error: fetchError } = await supabase
+  const { data: recurringTasks, error: fetchError } = await db
     .from('tasks')
     .select('*')
     .eq('chef_id', chefId)
@@ -96,7 +96,7 @@ export async function generateRecurringTasks(date: string): Promise<number> {
   }
 
   // Check for existing tasks to avoid duplicates (idempotent)
-  const { data: existingTasks, error: existError } = await supabase
+  const { data: existingTasks, error: existError } = await db
     .from('tasks')
     .select('title, due_date')
     .eq('chef_id', chefId)
@@ -116,7 +116,7 @@ export async function generateRecurringTasks(date: string): Promise<number> {
     return 0
   }
 
-  const { error: insertError } = await supabase.from('tasks').insert(newTasks)
+  const { error: insertError } = await db.from('tasks').insert(newTasks)
 
   if (insertError) {
     console.error('[generateRecurringTasks] Insert error:', insertError)

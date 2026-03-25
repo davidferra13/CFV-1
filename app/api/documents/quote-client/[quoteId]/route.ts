@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { format, parseISO } from 'date-fns'
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from '@/lib/documents/pdf-layout'
 import { renderQuote, type QuoteDocumentData } from '@/lib/documents/generate-quote'
 
@@ -13,10 +13,10 @@ async function fetchQuoteDataForClient(
   quoteId: string,
   entityId: string
 ): Promise<QuoteDocumentData | null> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client owns this quote
-  const { data: quote } = await supabase
+  const { data: quote } = await db
     .from('quotes')
     .select(
       `
@@ -34,7 +34,7 @@ async function fetchQuoteDataForClient(
   if (!quote) return null
 
   // Fetch chef info + cancellation settings via tenant_id
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, email, phone, cancellation_cutoff_days, deposit_refundable')
     .eq('id', quote.tenant_id as string)
@@ -63,7 +63,7 @@ async function fetchQuoteDataForClient(
   let menuCourses: QuoteDocumentData['menu'] = []
 
   if (quote.event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select(
         `
@@ -92,7 +92,7 @@ async function fetchQuoteDataForClient(
       }
 
       // Fetch menu courses (FOH only - no recipe details)
-      const { data: menus } = await supabase
+      const { data: menus } = await db
         .from('menus')
         .select('id')
         .eq('event_id', quote.event_id)
@@ -100,7 +100,7 @@ async function fetchQuoteDataForClient(
         .limit(1)
 
       if (menus && menus.length > 0) {
-        const { data: dishes } = await supabase
+        const { data: dishes } = await db
           .from('dishes')
           .select('course_number, course_name, description, id')
           .eq('menu_id', menus[0].id)
@@ -131,7 +131,7 @@ async function fetchQuoteDataForClient(
           }
 
           const allDishIds = dishes.map((d: any) => d.id)
-          const { data: components } = await supabase
+          const { data: components } = await db
             .from('components')
             .select('dish_id, name')
             .in('dish_id', allDishIds)
@@ -156,7 +156,7 @@ async function fetchQuoteDataForClient(
       }
     }
   } else if (quote.inquiry_id) {
-    const { data: inquiry } = await supabase
+    const { data: inquiry } = await db
       .from('inquiries')
       .select(
         'confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_dietary_restrictions'

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -97,9 +97,9 @@ function daysBetween(a: string | null, b: string | null): number | null {
 
 export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('inquiries')
     .select('status, converted_to_event_id')
     .eq('tenant_id', chef.tenantId!)
@@ -114,7 +114,7 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
   const expiredCount = inquiries.filter((i: any) => i.status === 'expired').length
 
   // Count completed events linked to inquiries
-  const { count: completedFromInquiries } = await supabase
+  const { count: completedFromInquiries } = await db
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.tenantId!)
@@ -136,9 +136,9 @@ export async function getInquiryFunnelStats(): Promise<InquiryFunnelStats> {
 
 export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('quotes')
     .select('status, total_quoted_cents')
     .eq('tenant_id', chef.tenantId!)
@@ -174,10 +174,10 @@ export async function getQuoteAcceptanceStats(): Promise<QuoteAcceptanceStats> {
 // Returns safe defaults until the column migration is applied.
 export async function getGhostRateStats(): Promise<GhostRateStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // We can still count expired inquiries (ghosted) even without ghost_at
-  const { data } = await supabase
+  const { data } = await db
     .from('inquiries')
     .select('status, created_at')
     .eq('tenant_id', chef.tenantId!)
@@ -197,12 +197,12 @@ export async function getGhostRateStats(): Promise<GhostRateStats> {
 // Lead time calculation is deferred; sales cycle from quotes still works.
 export async function getLeadTimeStats(): Promise<LeadTimeStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const emptyBuckets = { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 }
 
   // Sales cycle: inquiry created -> quote accepted (this part works)
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select('created_at, accepted_at')
     .eq('tenant_id', chef.tenantId!)
@@ -250,10 +250,10 @@ export async function getNegotiationStats(): Promise<NegotiationStats> {
 
 export async function getAvgInquiryResponseTime(): Promise<ResponseTimeStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find first outbound message per inquiry
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, created_at')
     .eq('tenant_id', chef.tenantId!)
@@ -271,7 +271,7 @@ export async function getAvgInquiryResponseTime(): Promise<ResponseTimeStats> {
   }
 
   const inquiryIds = inquiries.map((i: any) => i.id)
-  const { data: messages } = await supabase
+  const { data: messages } = await db
     .from('messages')
     .select('inquiry_id, created_at')
     .in('inquiry_id', inquiryIds)

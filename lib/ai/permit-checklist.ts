@@ -7,7 +7,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { GoogleGenAI } from '@google/genai'
 
 const PermitChecklistItemSchema = z.object({
@@ -56,7 +56,7 @@ export async function generatePermitRenewalChecklist(
   permitId?: string
 ): Promise<PermitChecklistResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Try to fetch permit from health permits table
   let permitData: {
@@ -67,7 +67,7 @@ export async function generatePermitRenewalChecklist(
   } | null = null
 
   if (permitId) {
-    const { data } = await supabase
+    const { data } = await db
       .from('health_permits' as any)
       .select('permit_type, jurisdiction, expiry_date, notes')
       .eq('id', permitId)
@@ -76,7 +76,7 @@ export async function generatePermitRenewalChecklist(
     permitData = data
   } else {
     // Get soonest-expiring permit
-    const { data } = await supabase
+    const { data } = await db
       .from('health_permits' as any)
       .select('permit_type, jurisdiction, expiry_date, notes')
       .eq('tenant_id', user.tenantId!)

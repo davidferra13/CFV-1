@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { SCHEDULE_C_LINES } from './tax-prep-constants'
 
 // ── Expense category to Schedule C line mapping ──────────────────
@@ -130,20 +130,20 @@ function computeEstimateStatus(
 export async function getScheduleCBreakdown(year: number): Promise<ScheduleCBreakdown> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const yearStart = `${year}-01-01`
   const yearEnd = `${year}-12-31`
 
   // 1. Manual tax categorizations
-  const { data: manualCats } = await supabase
+  const { data: manualCats } = await db
     .from('expense_tax_categories')
     .select('schedule_c_line, amount_cents')
     .eq('tenant_id', tenantId)
     .eq('tax_year', year)
 
   // 2. Expenses table (auto-map by category)
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('category, amount_cents')
     .eq('tenant_id', tenantId)
@@ -152,7 +152,7 @@ export async function getScheduleCBreakdown(year: number): Promise<ScheduleCBrea
     .lte('expense_date', yearEnd)
 
   // 3. Mileage logs
-  const { data: mileageLogs } = await supabase
+  const { data: mileageLogs } = await db
     .from('mileage_logs')
     .select('deduction_cents')
     .eq('chef_id', tenantId)
@@ -232,13 +232,13 @@ export async function getScheduleCBreakdown(year: number): Promise<ScheduleCBrea
 export async function assignExpenseToTaxLine(input: z.infer<typeof CategorizeExpenseSchema>) {
   const user = await requireChef()
   const parsed = CategorizeExpenseSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!SCHEDULE_C_LINES[parsed.scheduleCLine]) {
     throw new Error(`Invalid Schedule C line: ${parsed.scheduleCLine}`)
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expense_tax_categories')
     .insert({
       tenant_id: user.tenantId!,
@@ -267,9 +267,9 @@ export async function assignExpenseToTaxLine(input: z.infer<typeof CategorizeExp
 export async function getQuarterlyEstimates(year: number): Promise<QuarterlyEstimateRow[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing, error } = await supabase
+  const { data: existing, error } = await db
     .from('tax_quarterly_estimates')
     .select('*')
     .eq('chef_id', tenantId)
@@ -303,12 +303,12 @@ export async function getQuarterlyEstimates(year: number): Promise<QuarterlyEsti
   }
 
   if (toInsert.length > 0) {
-    const { error: insertError } = await supabase.from('tax_quarterly_estimates').insert(toInsert)
+    const { error: insertError } = await db.from('tax_quarterly_estimates').insert(toInsert)
     if (insertError) throw new Error(`Failed to create estimates: ${insertError.message}`)
   }
 
   // Re-fetch all
-  const { data: all, error: refetchError } = await supabase
+  const { data: all, error: refetchError } = await db
     .from('tax_quarterly_estimates')
     .select('*')
     .eq('chef_id', tenantId)
@@ -326,7 +326,7 @@ export async function getQuarterlyEstimates(year: number): Promise<QuarterlyEsti
 export async function updateQuarterlyPayment(input: z.infer<typeof UpdatePaymentSchema>) {
   const user = await requireChef()
   const parsed = UpdatePaymentSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: any = {
     amount_paid_cents: parsed.paidCents,
@@ -337,7 +337,7 @@ export async function updateQuarterlyPayment(input: z.infer<typeof UpdatePayment
     updateData.paid_at = new Date().toISOString()
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tax_quarterly_estimates')
     .update(updateData)
     .eq('id', parsed.estimateId)
@@ -359,7 +359,7 @@ export async function updateQuarterlyPayment(input: z.infer<typeof UpdatePayment
 export async function getTaxPrepSummary(year: number): Promise<TaxPrepSummary> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const yearStart = `${year}-01-01`
   const yearEnd = `${year}-12-31`
@@ -368,7 +368,7 @@ export async function getTaxPrepSummary(year: number): Promise<TaxPrepSummary> {
   const [revenueResult, tipsResult, contractorResult, scheduleCBreakdown, quarterlyEstimates] =
     await Promise.all([
       // Revenue from completed events
-      supabase
+      db
         .from('ledger_entries')
         .select('amount_cents')
         .eq('tenant_id', tenantId)
@@ -377,7 +377,7 @@ export async function getTaxPrepSummary(year: number): Promise<TaxPrepSummary> {
         .gte('created_at', yearStart)
         .lte('created_at', `${yearEnd}T23:59:59`),
       // Tips
-      supabase
+      db
         .from('ledger_entries')
         .select('amount_cents')
         .eq('tenant_id', tenantId)
@@ -386,7 +386,7 @@ export async function getTaxPrepSummary(year: number): Promise<TaxPrepSummary> {
         .gte('created_at', yearStart)
         .lte('created_at', `${yearEnd}T23:59:59`),
       // Contractor payments (for 1099-NEC)
-      supabase
+      db
         .from('contractor_payments')
         .select('staff_member_id, amount_cents')
         .eq('chef_id', tenantId)

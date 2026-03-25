@@ -1,7 +1,7 @@
 # Tasting Menu Bridge
 
 **Date:** 2026-03-24
-**Status:** Migration pending (code complete, needs `supabase db push`)
+**Status:** Migration pending (code complete, needs `drizzle-kit push`)
 
 ## Problem
 
@@ -26,7 +26,7 @@ tasting_menus ──(event_id)──> events
 
 ### Migration
 
-File: `supabase/migrations/20260401000100_tasting_menu_bridge.sql`
+File: `database/migrations/20260401000100_tasting_menu_bridge.sql`
 
 Adds:
 

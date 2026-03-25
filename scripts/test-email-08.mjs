@@ -1,7 +1,7 @@
 // Test email-08 specifically: "Email thread with Garcia family"
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
-import { createAnonClient } from './lib/supabase.mjs'
+import { createAnonClient } from './lib/db.mjs'
 
 async function main() {
   const sb = createAnonClient()

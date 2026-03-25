@@ -14,7 +14,7 @@
 // All jobs are non-blocking side effects - failures are logged, never thrown.
 
 import { inngest } from './inngest-client'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { createLogger } from '@/lib/logger'
 
 const log = createLogger('inngest-jobs')
@@ -27,10 +27,10 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
  * client opted out of marketing, etc).
  */
 async function getPostEventContext(eventId: string, tenantId: string, clientId: string) {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Fetch event - verify it's still completed (not somehow cancelled after trigger)
-  const { data: event, error: eventErr } = await supabase
+  const { data: event, error: eventErr } = await db
     .from('events')
     .select('id, status, occasion, event_date, tenant_id, client_id')
     .eq('id', eventId)
@@ -47,7 +47,7 @@ async function getPostEventContext(eventId: string, tenantId: string, clientId: 
   }
 
   // Fetch client
-  const { data: client, error: clientErr } = await supabase
+  const { data: client, error: clientErr } = await db
     .from('clients')
     .select('id, email, full_name, marketing_unsubscribed, loyalty_tier, loyalty_points')
     .eq('id', clientId)
@@ -71,13 +71,9 @@ async function getPostEventContext(eventId: string, tenantId: string, clientId: 
   }
 
   // Fetch chef/business name
-  const { data: chef } = await supabase
-    .from('chefs')
-    .select('business_name')
-    .eq('id', tenantId)
-    .single()
+  const { data: chef } = await db.from('chefs').select('business_name').eq('id', tenantId).single()
 
-  const { data: loyaltyEarnRows } = await supabase
+  const { data: loyaltyEarnRows } = await db
     .from('loyalty_transactions')
     .select('points')
     .eq('tenant_id', tenantId)

@@ -40,7 +40,7 @@ function getRestApiKey(): string {
 
 /**
  * Send a push notification to a specific user by their external user ID.
- * The external ID should match the Supabase auth user ID.
+ * The external ID should match the Auth.js user ID.
  */
 export async function sendPushToUser(
   userId: string,

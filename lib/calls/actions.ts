@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
@@ -153,13 +153,13 @@ export type CreateCallInput = z.infer<typeof CreateCallSchema>
 export async function createCall(input: CreateCallInput) {
   const user = await requireChef()
   const validated = CreateCallSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Auto-seed agenda items from linked inquiry or event
   const agenda_items: AgendaItem[] = []
 
   if (validated.inquiry_id) {
-    const { data: inquiry } = (await supabase
+    const { data: inquiry } = (await db
       .from('inquiries')
       .select(
         'confirmed_occasion, guest_count_adults, guest_count_kids, budget_min, budget_max, dietary_restrictions, unknown_blocking_questions'
@@ -232,7 +232,7 @@ export async function createCall(input: CreateCallInput) {
   }
 
   if (validated.event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('event_date, guest_count, status')
       .eq('id', validated.event_id)
@@ -265,7 +265,7 @@ export async function createCall(input: CreateCallInput) {
     }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('scheduled_calls')
     .insert({
       tenant_id: user.tenantId!,
@@ -329,9 +329,9 @@ export async function createCall(input: CreateCallInput) {
  */
 export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('scheduled_calls')
     .select(
       `
@@ -384,9 +384,9 @@ export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
  */
 export async function getUpcomingCalls(limit = 5): Promise<ScheduledCall[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('scheduled_calls')
     .select(
       `
@@ -413,9 +413,9 @@ export async function getUpcomingCalls(limit = 5): Promise<ScheduledCall[]> {
  */
 export async function getCall(id: string): Promise<ScheduledCall | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('scheduled_calls')
     .select(
       `
@@ -449,9 +449,9 @@ export type UpdateCallInput = z.infer<typeof UpdateCallSchema>
 export async function updateCall(id: string, input: UpdateCallInput) {
   const user = await requireChef()
   const validated = UpdateCallSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('scheduled_calls')
     .update(validated)
     .eq('id', id)
@@ -489,10 +489,10 @@ const VALID_TRANSITIONS: Record<CallStatus, CallStatus[]> = {
  */
 export async function updateCallStatus(id: string, newStatus: CallStatus) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current status
-  const { data: current, error: fetchError } = await supabase
+  const { data: current, error: fetchError } = await db
     .from('scheduled_calls')
     .select('status, call_type, scheduled_at, client_id, contact_name')
     .eq('id', id)
@@ -512,7 +512,7 @@ export async function updateCallStatus(id: string, newStatus: CallStatus) {
   if (newStatus === 'completed') updates.completed_at = new Date().toISOString()
   if (newStatus === 'cancelled') updates.cancelled_at = new Date().toISOString()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('scheduled_calls')
     .update(updates)
     .eq('id', id)
@@ -557,9 +557,9 @@ export async function updateCallStatus(id: string, newStatus: CallStatus) {
  */
 export async function addAgendaItem(callId: string, itemText: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: current, error: fetchError } = await supabase
+  const { data: current, error: fetchError } = await db
     .from('scheduled_calls')
     .select('agenda_items')
     .eq('id', callId)
@@ -578,7 +578,7 @@ export async function addAgendaItem(callId: string, itemText: string) {
     source: 'manual',
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('scheduled_calls')
     .update({ agenda_items: [...existing, newItem] })
     .eq('id', callId)
@@ -599,9 +599,9 @@ export async function addAgendaItem(callId: string, itemText: string) {
  */
 export async function toggleAgendaItem(callId: string, itemId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: current, error: fetchError } = await supabase
+  const { data: current, error: fetchError } = await db
     .from('scheduled_calls')
     .select('agenda_items')
     .eq('id', callId)
@@ -617,7 +617,7 @@ export async function toggleAgendaItem(callId: string, itemId: string) {
     item.id === itemId ? { ...item, completed: !item.completed } : item
   )
 
-  const { error } = await supabase
+  const { error } = await db
     .from('scheduled_calls')
     .update({ agenda_items: updated })
     .eq('id', callId)
@@ -638,9 +638,9 @@ export async function toggleAgendaItem(callId: string, itemId: string) {
  */
 export async function removeAgendaItem(callId: string, itemId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: current, error: fetchError } = await supabase
+  const { data: current, error: fetchError } = await db
     .from('scheduled_calls')
     .select('agenda_items')
     .eq('id', callId)
@@ -654,7 +654,7 @@ export async function removeAgendaItem(callId: string, itemId: string) {
   const items: AgendaItem[] = (current.agenda_items as AgendaItem[]) || []
   const updated = items.filter((item) => item.id !== itemId)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('scheduled_calls')
     .update({ agenda_items: updated })
     .eq('id', callId)
@@ -683,9 +683,9 @@ export type LogOutcomeInput = z.infer<typeof LogOutcomeSchema>
 export async function logCallOutcome(id: string, input: LogOutcomeInput) {
   const user = await requireChef()
   const validated = LogOutcomeSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('scheduled_calls')
     .update({
       ...validated,
@@ -751,9 +751,9 @@ export async function cancelCall(id: string) {
  */
 async function _notifyClientOfCall(callId: string, tenantId: string) {
   try {
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data: call } = await supabase
+    const { data: call } = await db
       .from('scheduled_calls')
       .select(
         `
@@ -791,7 +791,7 @@ async function _notifyClientOfCall(callId: string, tenantId: string) {
     })
 
     // Mark notified
-    await supabase
+    await db
       .from('scheduled_calls')
       .update({ client_notified_at: new Date().toISOString() })
       .eq('id', callId)

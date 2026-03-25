@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
@@ -48,9 +48,9 @@ Return JSON: { "message": "your message text here" }`
 
 export async function generateFollowUpDraft(clientId: string): Promise<string> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('full_name, dietary_restrictions, allergies, vibe_notes')
     .eq('id', clientId)
@@ -59,7 +59,7 @@ export async function generateFollowUpDraft(clientId: string): Promise<string> {
 
   if (!client) throw new Error('Client not found')
 
-  const { data: lastEvent } = await supabase
+  const { data: lastEvent } = await db
     .from('events')
     .select('occasion, event_date, guest_count, status')
     .eq('client_id', clientId)

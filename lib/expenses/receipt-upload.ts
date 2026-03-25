@@ -1,28 +1,28 @@
-// Receipt Upload - Supabase Storage
+// Receipt Upload - local storage
 // Handles receipt photo upload, signed URL retrieval, and cleanup
 
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 const RECEIPTS_BUCKET = 'receipts'
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp']
 
 /**
- * Upload a receipt photo to Supabase Storage.
+ * Upload a receipt photo to local storage.
  * Returns the storage path (not a signed URL - use getReceiptUrl for that).
  *
- * NOTE: The 'receipts' bucket must be created in Supabase Storage:
- *   1. Go to Supabase Dashboard → Storage
+ * NOTE: The 'receipts' bucket must be created in local storage:
+ *   1. Go to the database Dashboard → Storage
  *   2. Create a new bucket named 'receipts' (private, not public)
  *   3. Add RLS policy: allow authenticated users to INSERT/SELECT where
  *      the path starts with their tenant_id
  */
 export async function uploadReceipt(eventId: string, expenseId: string, formData: FormData) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const file = formData.get('receipt') as File | null
   if (!file) {
@@ -43,13 +43,11 @@ export async function uploadReceipt(eventId: string, expenseId: string, formData
   const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
   const storagePath = `${user.tenantId}/${eventId}/${expenseId}.${ext}`
 
-  // Upload to Supabase Storage
-  const { error: uploadError } = await supabase.storage
-    .from(RECEIPTS_BUCKET)
-    .upload(storagePath, file, {
-      contentType: file.type,
-      upsert: true,
-    })
+  // Upload to local storage
+  const { error: uploadError } = await db.storage.from(RECEIPTS_BUCKET).upload(storagePath, file, {
+    contentType: file.type,
+    upsert: true,
+  })
 
   if (uploadError) {
     console.error('[uploadReceipt] Storage upload error:', uploadError)
@@ -57,7 +55,7 @@ export async function uploadReceipt(eventId: string, expenseId: string, formData
   }
 
   // Update the expense record with the storage path
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('expenses')
     .update({
       receipt_photo_url: storagePath,
@@ -81,10 +79,10 @@ export async function uploadReceipt(eventId: string, expenseId: string, formData
  */
 export async function getReceiptUrl(expenseId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the storage path from the expense record
-  const { data: expense, error } = await supabase
+  const { data: expense, error } = await db
     .from('expenses')
     .select('receipt_photo_url')
     .eq('id', expenseId)
@@ -96,7 +94,7 @@ export async function getReceiptUrl(expenseId: string) {
   }
 
   // Generate signed URL (1 hour expiry)
-  const { data: signedUrlData, error: signError } = await supabase.storage
+  const { data: signedUrlData, error: signError } = await db.storage
     .from(RECEIPTS_BUCKET)
     .createSignedUrl(expense.receipt_photo_url, 3600)
 
@@ -113,10 +111,10 @@ export async function getReceiptUrl(expenseId: string) {
  */
 export async function deleteReceipt(expenseId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the storage path
-  const { data: expense } = await supabase
+  const { data: expense } = await db
     .from('expenses')
     .select('receipt_photo_url')
     .eq('id', expenseId)
@@ -124,11 +122,11 @@ export async function deleteReceipt(expenseId: string) {
     .single()
 
   if (expense?.receipt_photo_url) {
-    await supabase.storage.from(RECEIPTS_BUCKET).remove([expense.receipt_photo_url])
+    await db.storage.from(RECEIPTS_BUCKET).remove([expense.receipt_photo_url])
   }
 
   // Clear the reference on the expense
-  const { error } = await supabase
+  const { error } = await db
     .from('expenses')
     .update({
       receipt_photo_url: null,

@@ -3,7 +3,7 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientEvents } from '@/lib/events/client-actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -20,12 +20,12 @@ export default async function MyEventsHistoryPage() {
   const { past, pastTotalCount } = await getClientEvents({ pastLimit: Infinity })
 
   // Outstanding balance check for all past events
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   let pastWithBalance: Set<string> = new Set()
 
   if (past.length > 0) {
     const pastIds = past.map((e: any) => e.id)
-    const { data: balanceRows } = await supabase
+    const { data: balanceRows } = await db
       .from('event_financial_summary')
       .select('event_id, outstanding_balance_cents')
       .in('event_id', pastIds)

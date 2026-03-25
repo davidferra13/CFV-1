@@ -4,7 +4,7 @@
 'use server'
 
 import { requireClient, requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
@@ -100,9 +100,9 @@ export type RecurringRecommendationEntry = {
  */
 export async function getMyProfile() {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: profile, error } = await supabase
+  const { data: profile, error } = await db
     .from('clients')
     .select(
       `
@@ -132,7 +132,7 @@ export async function getMyProfile() {
 export async function updateMyProfile(input: UpdateClientProfileInput) {
   const user = await requireClient()
   const validated = UpdateClientProfileSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Convert empty strings to null for optional text fields
   const cleanedData = {
@@ -152,13 +152,13 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
   }
 
   // Fetch current profile to detect allergy/dietary changes (food safety)
-  const { data: oldProfile } = await supabase
+  const { data: oldProfile } = await db
     .from('clients')
     .select('allergies, dietary_restrictions, tenant_id')
     .eq('id', user.entityId)
     .single()
 
-  const { error } = await supabase.from('clients').update(cleanedData).eq('id', user.entityId)
+  const { error } = await db.from('clients').update(cleanedData).eq('id', user.entityId)
 
   if (error) {
     console.error('[updateMyProfile] Error:', error)
@@ -212,20 +212,20 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
  */
 export async function getMyMealCollaborationData() {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [
     { data: history, error: historyError },
     { data: requests, error: requestsError },
     { data: recommendations, error: recommendationsError },
   ] = await Promise.all([
-    supabase
+    db
       .from('served_dish_history')
       .select('id, dish_name, served_date, client_reaction, notes')
       .eq('client_id', user.entityId)
       .order('served_date', { ascending: false })
       .limit(1000),
-    supabase
+    db
       .from('client_meal_requests')
       .select(
         'id, request_type, dish_name, notes, priority, status, requested_for_week_start, created_at, reviewed_at'
@@ -233,7 +233,7 @@ export async function getMyMealCollaborationData() {
       .eq('client_id', user.entityId)
       .order('created_at', { ascending: false })
       .limit(120),
-    supabase
+    db
       .from('recurring_menu_recommendations')
       .select(
         'id, week_start, recommendation_text, status, client_response_notes, sent_at, responded_at'
@@ -266,9 +266,9 @@ export async function getMyMealCollaborationData() {
 export async function createMyMealRequest(input: CreateMealRequestInput) {
   const user = await requireClient()
   const validated = CreateMealRequestSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: client, error: clientError } = await supabase
+  const { data: client, error: clientError } = await db
     .from('clients')
     .select('id, tenant_id, full_name')
     .eq('id', user.entityId)
@@ -279,7 +279,7 @@ export async function createMyMealRequest(input: CreateMealRequestInput) {
     throw new Error('Failed to resolve your profile')
   }
 
-  const { data: inserted, error } = await supabase
+  const { data: inserted, error } = await db
     .from('client_meal_requests')
     .insert({
       tenant_id: client.tenant_id,
@@ -342,9 +342,9 @@ export async function createMyMealRequest(input: CreateMealRequestInput) {
 export async function withdrawMyMealRequest(request_id: string) {
   const user = await requireClient()
   const validated = WithdrawMealRequestSchema.parse({ request_id })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_meal_requests')
     .update({ status: 'withdrawn' })
     .eq('id', validated.request_id)
@@ -373,9 +373,9 @@ export async function respondToMyRecurringRecommendation(input: {
 }) {
   const user = await requireClient()
   const validated = RespondRecurringRecommendationSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: client, error: clientError } = await supabase
+  const { data: client, error: clientError } = await db
     .from('clients')
     .select('id, full_name, tenant_id')
     .eq('id', user.entityId)
@@ -385,7 +385,7 @@ export async function respondToMyRecurringRecommendation(input: {
     throw new Error('Unable to resolve your account')
   }
 
-  const { data: updated, error } = await supabase
+  const { data: updated, error } = await db
     .from('recurring_menu_recommendations')
     .update({
       status: validated.decision,
@@ -452,7 +452,7 @@ export async function updateMyServedDishFeedback(input: {
 }) {
   const user = await requireClient()
   const validated = UpdateServedDishFeedbackSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updatePayload: Record<string, unknown> = {
     client_reaction: validated.client_reaction,
@@ -462,7 +462,7 @@ export async function updateMyServedDishFeedback(input: {
     updatePayload.notes = validated.notes.trim() || null
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('served_dish_history')
     .update(updatePayload)
     .eq('id', validated.history_id)
@@ -476,7 +476,7 @@ export async function updateMyServedDishFeedback(input: {
   }
 
   try {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('id, tenant_id, full_name')
       .eq('id', user.entityId)
@@ -520,9 +520,9 @@ export async function updateMyServedDishFeedback(input: {
  */
 export async function getMyFunQA(): Promise<FunQAAnswers> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .select('fun_qa_answers')
     .eq('id', user.entityId)
@@ -541,7 +541,7 @@ export async function getMyFunQA(): Promise<FunQAAnswers> {
  */
 export async function updateMyFunQA(answers: FunQAAnswers) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Strip blank strings so the object stays clean
   const cleaned: FunQAAnswers = {}
@@ -549,7 +549,7 @@ export async function updateMyFunQA(answers: FunQAAnswers) {
     if (v && v.trim()) cleaned[k as FunQAKey] = v.trim()
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update({ fun_qa_answers: cleaned } as any)
     .eq('id', user.entityId)
@@ -568,9 +568,9 @@ export async function updateMyFunQA(answers: FunQAAnswers) {
  */
 export async function getClientFunQA(clientId: string): Promise<FunQAAnswers> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .select('fun_qa_answers')
     .eq('id', clientId)

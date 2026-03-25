@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { extractTextFromFile } from './extract-text'
@@ -45,15 +45,15 @@ const ApproveDishesBatchSchema = z.object({
 
 /**
  * Create an upload job record and store the file.
- * Called after the file is uploaded to Supabase Storage.
+ * Called after the file is uploaded to local storage.
  */
 export async function createUploadJob(input: z.infer<typeof CreateUploadJobSchema>) {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const parsed = CreateUploadJobSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_upload_jobs')
     .insert({
       tenant_id: tenantId,
@@ -80,9 +80,9 @@ export async function createUploadJob(input: z.infer<typeof CreateUploadJobSchem
  */
 export async function getUploadJobs(statusFilter?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('menu_upload_jobs')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -102,9 +102,9 @@ export async function getUploadJobs(statusFilter?: string) {
  */
 export async function getUploadJobById(jobId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_upload_jobs')
     .select('*')
     .eq('id', jobId)
@@ -122,10 +122,10 @@ export async function getUploadJobById(jobId: string) {
 export async function processUploadJob(jobId: string, fileBuffer: Buffer, fileName: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Mark as extracting
-  await supabase
+  await db
     .from('menu_upload_jobs')
     .update({ status: 'extracting' })
     .eq('id', jobId)
@@ -140,7 +140,7 @@ export async function processUploadJob(jobId: string, fileBuffer: Buffer, fileNa
     extractedText = result.text
     ocrConfidence = result.confidence
   } catch (err) {
-    await supabase
+    await db
       .from('menu_upload_jobs')
       .update({
         status: 'failed',
@@ -153,7 +153,7 @@ export async function processUploadJob(jobId: string, fileBuffer: Buffer, fileNa
   }
 
   // Save extracted text and mark as parsing
-  await supabase
+  await db
     .from('menu_upload_jobs')
     .update({
       extracted_text: extractedText,
@@ -166,7 +166,7 @@ export async function processUploadJob(jobId: string, fileBuffer: Buffer, fileNa
   try {
     const parseResult = await parseMenuText(extractedText)
 
-    await supabase
+    await db
       .from('menu_upload_jobs')
       .update({
         parsed_dishes: parseResult.dishes as unknown as Record<string, unknown>[],
@@ -177,7 +177,7 @@ export async function processUploadJob(jobId: string, fileBuffer: Buffer, fileNa
       .eq('id', jobId)
       .eq('tenant_id', tenantId)
   } catch (err) {
-    await supabase
+    await db
       .from('menu_upload_jobs')
       .update({
         status: 'failed',
@@ -208,10 +208,10 @@ export async function processFromPastedText(
 ) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Create job record
-  const { data: job, error: jobError } = await supabase
+  const { data: job, error: jobError } = await db
     .from('menu_upload_jobs')
     .insert({
       tenant_id: tenantId,
@@ -233,7 +233,7 @@ export async function processFromPastedText(
   try {
     const parseResult = await parseMenuText(text)
 
-    await supabase
+    await db
       .from('menu_upload_jobs')
       .update({
         parsed_dishes: parseResult.dishes as unknown as Record<string, unknown>[],
@@ -247,7 +247,7 @@ export async function processFromPastedText(
     revalidatePath('/menus/upload')
     return { jobId: job.id, dishes: parseResult.dishes, warnings: parseResult.warnings }
   } catch (err) {
-    await supabase
+    await db
       .from('menu_upload_jobs')
       .update({
         status: 'failed',
@@ -267,7 +267,7 @@ export async function processFromPastedText(
 export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesBatchSchema>) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const parsed = ApproveDishesBatchSchema.parse(input)
 
   // Get job metadata for appearance records
@@ -278,7 +278,7 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
     const canonical = canonicalizeDishName(dish.dish_name)
 
     // Check if dish already exists (dedup by canonical name + course)
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('dish_index')
       .select('id, times_served, first_served')
       .eq('tenant_id', tenantId)
@@ -301,10 +301,10 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
           updates.first_served = job.event_date
         }
       }
-      await supabase.from('dish_index').update(updates).eq('id', dishId).eq('tenant_id', tenantId)
+      await db.from('dish_index').update(updates).eq('id', dishId).eq('tenant_id', tenantId)
     } else {
       // New dish - insert into index
-      const { data: newDish, error: insertError } = await supabase
+      const { data: newDish, error: insertError } = await db
         .from('dish_index')
         .insert({
           tenant_id: tenantId,
@@ -328,7 +328,7 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
     }
 
     // Create appearance record
-    await supabase.from('dish_appearances').insert({
+    await db.from('dish_appearances').insert({
       dish_id: dishId,
       tenant_id: tenantId,
       menu_upload_job_id: parsed.job_id,
@@ -341,7 +341,7 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
   }
 
   // Mark job as completed
-  await supabase
+  await db
     .from('menu_upload_jobs')
     .update({
       status: 'completed',
@@ -360,9 +360,9 @@ export async function approveAndIndexDishes(input: z.infer<typeof ApproveDishesB
  */
 export async function checkDuplicateUpload(fileHash: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('menu_upload_jobs')
     .select('id, file_name, created_at, status')
     .eq('tenant_id', user.tenantId!)
@@ -378,9 +378,9 @@ export async function checkDuplicateUpload(fileHash: string) {
  */
 export async function deleteUploadJob(jobId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('menu_upload_jobs')
     .delete()
     .eq('id', jobId)

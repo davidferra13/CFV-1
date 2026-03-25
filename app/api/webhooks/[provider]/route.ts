@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   createIntegrationEventFromWebhook,
   processIntegrationEvent,
@@ -38,8 +38,8 @@ export async function POST(req: NextRequest, { params }: { params: { provider: s
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase: any = createServerClient({ admin: true })
-  const { data: connection, error: connError } = await supabase
+  const db: any = createServerClient({ admin: true })
+  const { data: connection, error: connError } = await db
     .from('integration_connections')
     .select('id, tenant_id')
     .eq('provider', provider)

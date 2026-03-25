@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   assignGuestsToSeats,
   evaluateReconciliation,
@@ -162,14 +162,14 @@ function buildCoursePlanFromDishes(dishes: any[], courseCount: number): CoursePl
 }
 
 async function ensureEventCannabisCourseConfigRows(
-  supabase: any,
+  db: any,
   eventId: string,
   tenantId: string,
   courseCount: number
 ): Promise<CourseConfigRow[]> {
   const safeCourseCount = normalizeCourseCount(courseCount)
 
-  const { data: existingRows, error: existingError } = await (supabase
+  const { data: existingRows, error: existingError } = await (db
     .from('event_cannabis_course_config' as any)
     .select('*')
     .eq('event_id', eventId)
@@ -198,20 +198,18 @@ async function ensureEventCannabisCourseConfigRows(
     .map((row) => Number(row.course_index))
 
   if (rowsToInsert.length > 0) {
-    const { error: insertError } = await (supabase
-      .from('event_cannabis_course_config' as any)
-      .insert(
-        rowsToInsert.map((courseIndex) => ({
-          event_id: eventId,
-          tenant_id: tenantId,
-          course_index: courseIndex,
-          infusion_enabled: false,
-          planned_mg_per_guest: null,
-          notes: null,
-          is_active: true,
-          archived_at: null,
-        }))
-      ) as any)
+    const { error: insertError } = await (db.from('event_cannabis_course_config' as any).insert(
+      rowsToInsert.map((courseIndex) => ({
+        event_id: eventId,
+        tenant_id: tenantId,
+        course_index: courseIndex,
+        infusion_enabled: false,
+        planned_mg_per_guest: null,
+        notes: null,
+        is_active: true,
+        archived_at: null,
+      }))
+    ) as any)
 
     if (insertError) {
       throw new Error('Failed to create cannabis course overlay rows')
@@ -219,7 +217,7 @@ async function ensureEventCannabisCourseConfigRows(
   }
 
   if (rowsToReactivate.length > 0) {
-    const { error: reactivateError } = await (supabase
+    const { error: reactivateError } = await (db
       .from('event_cannabis_course_config' as any)
       .update({
         is_active: true,
@@ -235,7 +233,7 @@ async function ensureEventCannabisCourseConfigRows(
   }
 
   if (rowsToArchive.length > 0) {
-    const { error: archiveError } = await (supabase
+    const { error: archiveError } = await (db
       .from('event_cannabis_course_config' as any)
       .update({
         is_active: false,
@@ -250,7 +248,7 @@ async function ensureEventCannabisCourseConfigRows(
     }
   }
 
-  const { data: activeRows, error: activeRowsError } = await (supabase
+  const { data: activeRows, error: activeRowsError } = await (db
     .from('event_cannabis_course_config' as any)
     .select('*')
     .eq('event_id', eventId)
@@ -352,9 +350,9 @@ function sanitizeSnapshotPlan(snapshot: any): SnapshotPlan | null {
 }
 
 async function loadCannabisEventContext(eventId: string, tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event, error: eventError } = await (supabase
+  const { data: event, error: eventError } = await (db
     .from('events' as any)
     .select(
       `
@@ -382,7 +380,7 @@ async function loadCannabisEventContext(eventId: string, tenantId: string) {
     throw new Error('Cannabis event not found or access denied')
   }
 
-  const { data: guestRows, error: guestsError } = await supabase
+  const { data: guestRows, error: guestsError } = await db
     .from('event_guests')
     .select('id, full_name, guest_token, rsvp_status, created_at, updated_at')
     .eq('event_id', eventId)
@@ -406,7 +404,7 @@ async function loadCannabisEventContext(eventId: string, tenantId: string) {
   let profiles: any[] = []
 
   if (guestTokens.length > 0) {
-    const { data: profileRows, error: profileError } = await (supabase
+    const { data: profileRows, error: profileError } = await (db
       .from('guest_event_profile' as any)
       .select('*')
       .eq('event_id', eventId)
@@ -463,7 +461,7 @@ async function loadCannabisEventContext(eventId: string, tenantId: string) {
   let menu: { id: string; title: string } | null = null
 
   if (directMenuId) {
-    const { data: menuRow } = await (supabase
+    const { data: menuRow } = await (db
       .from('menus' as any)
       .select('id, name')
       .eq('id', directMenuId)
@@ -479,7 +477,7 @@ async function loadCannabisEventContext(eventId: string, tenantId: string) {
   }
 
   if (!menu) {
-    const { data: fallbackMenuRow } = await (supabase
+    const { data: fallbackMenuRow } = await (db
       .from('menus' as any)
       .select('id, name')
       .eq('event_id', eventId)
@@ -498,7 +496,7 @@ async function loadCannabisEventContext(eventId: string, tenantId: string) {
 
   let menuDishes: any[] = []
   if (menu) {
-    const { data: dishRows, error: dishError } = await (supabase
+    const { data: dishRows, error: dishError } = await (db
       .from('dishes' as any)
       .select('course_number, course_name, sort_order')
       .eq('menu_id', menu.id)
@@ -516,7 +514,7 @@ async function loadCannabisEventContext(eventId: string, tenantId: string) {
   const courseCount = normalizeCourseCount((event as any).course_count)
   const menuCourses = buildCoursePlanFromDishes(menuDishes, courseCount)
   const liveCourseConfig = await ensureEventCannabisCourseConfigRows(
-    supabase,
+    db,
     eventId,
     tenantId,
     courseCount
@@ -602,10 +600,10 @@ function buildSnapshotJsonPayload(args: {
 
 export async function getCannabisControlPacketData(eventId: string, snapshotId?: string | null) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const context = await loadCannabisEventContext(eventId, user.tenantId!)
 
-  const { data: snapshots, error: snapshotsError } = await (supabase
+  const { data: snapshots, error: snapshotsError } = await (db
     .from('cannabis_control_packet_snapshots' as any)
     .select('*')
     .eq('event_id', eventId)
@@ -628,13 +626,13 @@ export async function getCannabisControlPacketData(eventId: string, snapshotId?:
 
   if (activeSnapshot) {
     const [{ data: reconciliationRow }, { data: evidenceRows }] = await Promise.all([
-      supabase
+      db
         .from('cannabis_control_packet_reconciliations' as any)
         .select('*')
         .eq('snapshot_id', activeSnapshot.id)
         .eq('tenant_id', user.tenantId!)
         .maybeSingle() as any,
-      supabase
+      db
         .from('cannabis_control_packet_evidence' as any)
         .select('*')
         .eq('snapshot_id', activeSnapshot.id)
@@ -647,7 +645,7 @@ export async function getCannabisControlPacketData(eventId: string, snapshotId?:
 
     if (evidence.length > 0) {
       const paths = evidence.map((item) => item.storage_path as string).filter(Boolean)
-      const { data: signedData } = await supabase.storage
+      const { data: signedData } = await db.storage
         .from(CONTROL_PACKET_BUCKET)
         .createSignedUrls(paths, SIGNED_URL_EXPIRY_SECONDS)
 
@@ -716,9 +714,9 @@ export async function upsertEventCannabisCourseConfig(
 ) {
   const validated = UpsertCourseConfigSchema.parse(input)
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event, error: eventError } = await (supabase
+  const { data: event, error: eventError } = await (db
     .from('events' as any)
     .select('id, tenant_id, cannabis_preference, course_count, menu_id')
     .eq('id', validated.eventId)
@@ -736,7 +734,7 @@ export async function upsertEventCannabisCourseConfig(
   let hasAttachedMenu = typeof event.menu_id === 'string' && String(event.menu_id).trim().length > 0
 
   if (!hasAttachedMenu) {
-    const { data: fallbackMenu } = await (supabase
+    const { data: fallbackMenu } = await (db
       .from('menus' as any)
       .select('id')
       .eq('event_id', validated.eventId)
@@ -753,7 +751,7 @@ export async function upsertEventCannabisCourseConfig(
 
   const courseCount = normalizeCourseCount(event.course_count)
   const ensuredRows = await ensureEventCannabisCourseConfigRows(
-    supabase,
+    db,
     validated.eventId,
     user.tenantId!,
     courseCount
@@ -785,7 +783,7 @@ export async function upsertEventCannabisCourseConfig(
     }
   })
 
-  const { error: upsertError } = await (supabase
+  const { error: upsertError } = await (db
     .from('event_cannabis_course_config' as any)
     .upsert(rowsToPersist as any, { onConflict: 'event_id,course_index' }) as any)
 
@@ -805,14 +803,14 @@ export async function generateCannabisControlPacketSnapshot(
 ) {
   const validated = GenerateSnapshotSchema.parse(input)
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const context = await loadCannabisEventContext(validated.eventId, user.tenantId!)
 
   if (!context.menu) {
     throw new Error('Attach a menu to this event before generating a control packet snapshot')
   }
 
-  const { data: latestVersionRow } = await (supabase
+  const { data: latestVersionRow } = await (db
     .from('cannabis_control_packet_snapshots' as any)
     .select('version_number')
     .eq('event_id', validated.eventId)
@@ -870,7 +868,7 @@ export async function generateCannabisControlPacketSnapshot(
     customSeatCount: validated.customSeatIds?.length ?? 0,
   })
 
-  const { data: inserted, error: insertError } = await (supabase
+  const { data: inserted, error: insertError } = await (db
     .from('cannabis_control_packet_snapshots' as any)
     .insert({
       event_id: validated.eventId,
@@ -908,9 +906,9 @@ export async function generateCannabisControlPacketSnapshot(
 
 export async function uploadControlPacketEvidence(snapshotId: string, formData: FormData) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: snapshot, error: snapshotError } = await (supabase
+  const { data: snapshot, error: snapshotError } = await (db
     .from('cannabis_control_packet_snapshots' as any)
     .select('id, event_id, tenant_id, finalization_locked')
     .eq('id', snapshotId)
@@ -936,7 +934,7 @@ export async function uploadControlPacketEvidence(snapshotId: string, formData: 
   const evidenceId = crypto.randomUUID()
   const storagePath = `${user.tenantId}/${snapshot.event_id}/${snapshot.id}/${evidenceId}.${extension}`
 
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await db.storage
     .from(CONTROL_PACKET_BUCKET)
     .upload(storagePath, file, {
       contentType: file.type,
@@ -947,7 +945,7 @@ export async function uploadControlPacketEvidence(snapshotId: string, formData: 
     throw new Error(`Evidence upload failed: ${uploadError.message}`)
   }
 
-  const { data: inserted, error: insertError } = await (supabase
+  const { data: inserted, error: insertError } = await (db
     .from('cannabis_control_packet_evidence' as any)
     .insert({
       id: evidenceId,
@@ -963,7 +961,7 @@ export async function uploadControlPacketEvidence(snapshotId: string, formData: 
     .single() as any)
 
   if (insertError || !inserted) {
-    await supabase.storage.from(CONTROL_PACKET_BUCKET).remove([storagePath])
+    await db.storage.from(CONTROL_PACKET_BUCKET).remove([storagePath])
     throw new Error('Failed to save evidence record')
   }
 
@@ -976,9 +974,9 @@ export async function upsertControlPacketReconciliation(
 ) {
   const validated = SaveReconciliationSchema.parse(input)
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: snapshot, error: snapshotError } = await (supabase
+  const { data: snapshot, error: snapshotError } = await (db
     .from('cannabis_control_packet_snapshots' as any)
     .select('*')
     .eq('id', validated.snapshotId)
@@ -1054,7 +1052,7 @@ export async function upsertControlPacketReconciliation(
     safeCourseCount
   )
 
-  const { error: upsertError } = await (supabase
+  const { error: upsertError } = await (db
     .from('cannabis_control_packet_reconciliations' as any)
     .upsert(
       {
@@ -1092,9 +1090,9 @@ export async function upsertControlPacketReconciliation(
 export async function finalizeControlPacket(input: z.infer<typeof FinalizePacketSchema>) {
   const validated = FinalizePacketSchema.parse(input)
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: snapshot, error: snapshotError } = await (supabase
+  const { data: snapshot, error: snapshotError } = await (db
     .from('cannabis_control_packet_snapshots' as any)
     .select('*')
     .eq('id', validated.snapshotId)
@@ -1111,13 +1109,13 @@ export async function finalizeControlPacket(input: z.infer<typeof FinalizePacket
   }
 
   const [{ data: reconciliation }, { count: evidenceCount }] = await Promise.all([
-    supabase
+    db
       .from('cannabis_control_packet_reconciliations' as any)
       .select('*')
       .eq('snapshot_id', snapshot.id)
       .eq('tenant_id', user.tenantId!)
       .maybeSingle() as any,
-    supabase
+    db
       .from('cannabis_control_packet_evidence' as any)
       .select('id', { count: 'exact', head: true })
       .eq('snapshot_id', snapshot.id)
@@ -1138,7 +1136,7 @@ export async function finalizeControlPacket(input: z.infer<typeof FinalizePacket
 
   const finalizedAt = new Date().toISOString()
 
-  const { error: snapshotUpdateError } = await (supabase
+  const { error: snapshotUpdateError } = await (db
     .from('cannabis_control_packet_snapshots' as any)
     .update({
       finalization_locked: true,
@@ -1153,7 +1151,7 @@ export async function finalizeControlPacket(input: z.infer<typeof FinalizePacket
     throw new Error('Failed to finalize packet snapshot')
   }
 
-  const { error: reconciliationUpdateError } = await (supabase
+  const { error: reconciliationUpdateError } = await (db
     .from('cannabis_control_packet_reconciliations' as any)
     .update({
       finalized_at: finalizedAt,

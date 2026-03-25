@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 import { type SocialPlatform } from './social-template-constants'
@@ -46,9 +46,9 @@ export async function getSocialTemplates(filters?: {
   templateType?: TemplateType
 }): Promise<{ data: SocialTemplate[]; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('social_templates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -75,9 +75,9 @@ export async function createSocialTemplate(
   input: CreateTemplateData
 ): Promise<{ data: SocialTemplate | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_templates')
     .insert({
       chef_id: user.tenantId!,
@@ -104,7 +104,7 @@ export async function updateSocialTemplate(
   input: UpdateTemplateData
 ): Promise<{ data: SocialTemplate | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (input.platform !== undefined) updatePayload.platform = input.platform
@@ -113,7 +113,7 @@ export async function updateSocialTemplate(
   if (input.content !== undefined) updatePayload.content = input.content
   if (input.hashtags !== undefined) updatePayload.hashtags = input.hashtags
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_templates')
     .update(updatePayload)
     .eq('id', id)
@@ -132,9 +132,9 @@ export async function updateSocialTemplate(
 
 export async function deleteSocialTemplate(id: string): Promise<{ error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('social_templates')
     .delete()
     .eq('id', id)
@@ -153,10 +153,10 @@ export async function duplicateSocialTemplate(
   id: string
 ): Promise<{ data: SocialTemplate | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch original
-  const { data: original, error: fetchError } = await supabase
+  const { data: original, error: fetchError } = await db
     .from('social_templates')
     .select('*')
     .eq('id', id)
@@ -168,7 +168,7 @@ export async function duplicateSocialTemplate(
   }
 
   // Insert copy
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_templates')
     .insert({
       chef_id: user.tenantId!,
@@ -192,16 +192,16 @@ export async function duplicateSocialTemplate(
 
 export async function incrementUsedCount(id: string): Promise<{ error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.rpc('increment_social_template_used_count', {
+  const { error } = await db.rpc('increment_social_template_used_count', {
     template_id: id,
     p_chef_id: user.tenantId!,
   })
 
   // Fallback: if the rpc doesn't exist, do a manual increment
   if (error) {
-    const { data: current } = await supabase
+    const { data: current } = await db
       .from('social_templates')
       .select('used_count')
       .eq('id', id)
@@ -209,7 +209,7 @@ export async function incrementUsedCount(id: string): Promise<{ error: string | 
       .single()
 
     if (current) {
-      await supabase
+      await db
         .from('social_templates')
         .update({
           used_count: (current.used_count ?? 0) + 1,
@@ -377,7 +377,7 @@ export async function getDefaultTemplates(): Promise<DefaultTemplate[]> {
 
 export async function seedDefaultTemplates(): Promise<{ count: number; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const rows = DEFAULT_TEMPLATES.map((t) => ({
     chef_id: user.tenantId!,
@@ -389,7 +389,7 @@ export async function seedDefaultTemplates(): Promise<{ count: number; error: st
     is_default: true,
   }))
 
-  const { data, error } = await supabase.from('social_templates').insert(rows).select('id')
+  const { data, error } = await db.from('social_templates').insert(rows).select('id')
 
   if (error) {
     console.error('[social-templates] seed error:', error)

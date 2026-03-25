@@ -1,6 +1,6 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { startOfYear, endOfYear, format } from 'date-fns'
 import { getYearlyMileageSummary } from '@/lib/tax/actions'
 
@@ -51,7 +51,7 @@ const IRS_CATEGORY_MAP: Record<string, { label: string; code: string }> = {
 
 export async function getYearEndTaxPackage(taxYear: number): Promise<TaxPackage> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const yearStart = startOfYear(new Date(taxYear, 0, 1))
     .toISOString()
@@ -61,20 +61,20 @@ export async function getYearEndTaxPackage(taxYear: number): Promise<TaxPackage>
     .split('T')[0]
 
   const [eventsResult, expensesResult, tipsResult, mileageData] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('quoted_price_cents, status')
       .eq('tenant_id', user.entityId)
       .eq('status', 'completed')
       .gte('event_date', yearStart)
       .lte('event_date', yearEnd),
-    supabase
+    db
       .from('expenses')
       .select('amount_cents, category')
       .eq('tenant_id', user.entityId)
       .gte('date', yearStart)
       .lte('date', yearEnd),
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('tenant_id', user.entityId)

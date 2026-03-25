@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -83,9 +83,9 @@ export async function clockIn(
 ): Promise<ClockEntry> {
   const user = await requireChef()
   const parsed = ClockInSchema.parse({ staffMemberId, eventId, gpsLat, gpsLng })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_clock_entries')
     .insert({
       staff_member_id: parsed.staffMemberId,
@@ -124,10 +124,10 @@ export async function clockIn(
 export async function clockOut(entryId: string): Promise<ClockEntry> {
   const user = await requireChef()
   ClockOutSchema.parse({ entryId })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the existing entry to compute duration
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('staff_clock_entries')
     .select('*')
     .eq('id', entryId)
@@ -141,7 +141,7 @@ export async function clockOut(entryId: string): Promise<ClockEntry> {
   const clockInAt = new Date(existing.clock_in_at)
   const totalMinutes = Math.round((clockOutAt.getTime() - clockInAt.getTime()) / 60000)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_clock_entries')
     .update({
       clock_out_at: clockOutAt.toISOString(),
@@ -182,9 +182,9 @@ export async function getClockEntries(filters?: {
 }): Promise<ClockEntryWithStaff[]> {
   const user = await requireChef()
   ClockFiltersSchema.parse(filters)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('staff_clock_entries')
     .select(
       `
@@ -227,9 +227,9 @@ export async function getClockEntries(filters?: {
 export async function getEventClockSummary(eventId: string): Promise<EventClockSummary> {
   const user = await requireChef()
   z.string().uuid().parse(eventId)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_clock_entries')
     .select(
       `

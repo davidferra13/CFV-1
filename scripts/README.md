@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-You need a Supabase project with the ChefFlow migrations applied.
+You need a database project with the ChefFlow migrations applied.
 
 ## Running Verifications
 
@@ -11,7 +11,7 @@ You need a Supabase project with the ChefFlow migrations applied.
 Verifies all tables, enums, functions, triggers, and views exist.
 
 ```sql
--- Run in Supabase SQL Editor
+-- Run in the database SQL Editor
 -- File: verify-migrations.sql
 ```
 
@@ -26,7 +26,7 @@ Proves that:
 - Service role can bypass RLS for webhooks
 
 ```sql
--- Run in Supabase SQL Editor (as service role)
+-- Run in the database SQL Editor (as service role)
 -- File: verify-rls.sql
 ```
 
@@ -36,7 +36,7 @@ Proves that:
 - TEST 2 PASS ✓: Client A1 cannot see Client A2 events
 - TEST 3 PASS ✓: Service role sees all events
 
-**Note**: This script creates test data with placeholder auth_user_ids. In production, users must be created via Supabase Auth API.
+**Note**: This script creates test data with placeholder auth_user_ids. In production, users must be created via Auth.js API.
 
 ### 3. Immutability Verification
 
@@ -49,7 +49,7 @@ Proves that:
 - INSERT still works (append-only)
 
 ```sql
--- Run in Supabase SQL Editor (as service role)
+-- Run in the database SQL Editor (as service role)
 -- File: verify-immutability.sql
 ```
 
@@ -63,7 +63,7 @@ Proves that:
 
 ### 4. Role Resolution Verification
 
-This requires actual Supabase Auth users. See `test-role-resolution.md` for manual testing steps.
+This requires actual Auth.js users. See `test-role-resolution.md` for manual testing steps.
 
 ## Cleanup
 
@@ -96,7 +96,7 @@ This is expected when testing cross-tenant access. RLS policies should prevent r
 
 ### Tests fail with "permission denied"
 
-Ensure you're running the scripts as service role in Supabase SQL Editor.
+Ensure you're running the scripts as service role in the database SQL Editor.
 
 ### Migration scripts show errors
 

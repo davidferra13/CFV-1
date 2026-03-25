@@ -32,7 +32,7 @@ export const POST = withApiAuth(
     const input = parsed.data
 
     // Verify event belongs to tenant
-    const { data: event } = await ctx.supabase
+    const { data: event } = await ctx.db
       .from('events')
       .select('id, tenant_id')
       .eq('id', input.event_id)
@@ -42,7 +42,7 @@ export const POST = withApiAuth(
     if (!event) return apiNotFound('Event')
 
     // Append ledger entry (immutable, append-only)
-    const { data: entry, error } = await ctx.supabase
+    const { data: entry, error } = await ctx.db
       .from('ledger_entries')
       .insert({
         tenant_id: ctx.tenantId,

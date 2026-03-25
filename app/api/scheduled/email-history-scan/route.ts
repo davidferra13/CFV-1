@@ -7,7 +7,7 @@
 // one batch (100 emails) per chef. Processes up to 5 chefs per invocation.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { runHistoricalScanBatch } from '@/lib/gmail/historical-scan'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
@@ -17,11 +17,11 @@ async function handleEmailHistoryScan(request: NextRequest): Promise<NextRespons
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Find chefs with active historical scans
   // Status must NOT be completed or paused - idle and in_progress are eligible
-  const { data: connections, error } = await supabase
+  const { data: connections, error } = await db
     .from('google_connections')
     .select('chef_id, tenant_id, historical_scan_status')
     .eq('historical_scan_enabled', true)

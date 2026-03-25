@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getMealPrepProgram, getMealPrepWeeks } from '@/lib/meal-prep/program-actions'
 import { WeeklyPlanner } from '@/components/meal-prep/weekly-planner'
 import { ProgramStatusControls } from './status-controls'
@@ -36,8 +36,8 @@ export default async function MealPrepProgramPage({ params }: Props) {
   const weeks = await getMealPrepWeeks(params.programId)
 
   // Fetch available menus for the planner
-  const supabase: any = createServerClient()
-  const { data: menus } = await supabase
+  const db: any = createServerClient()
+  const { data: menus } = await db
     .from('menus')
     .select('id, title')
     .eq('tenant_id', user.tenantId!)

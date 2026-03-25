@@ -9,7 +9,7 @@
 # Prerequisites:
 #   - cloudflared installed (already done)
 #   - For named tunnel: cloudflared tunnel login (one-time)
-#   - .env.local configured with production Supabase credentials
+#   - .env.local configured with production the database credentials
 # =============================================================================
 
 set -e

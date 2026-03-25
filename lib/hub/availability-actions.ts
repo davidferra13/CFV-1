@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 
 // ---------------------------------------------------------------------------
@@ -47,9 +47,9 @@ export async function createAvailability(
   input: z.infer<typeof CreateAvailabilitySchema>
 ): Promise<HubAvailability> {
   const validated = CreateAvailabilitySchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', validated.profileToken)
@@ -58,7 +58,7 @@ export async function createAvailability(
   if (!profile) throw new Error('Invalid profile token')
 
   // Verify membership
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('can_post')
     .eq('group_id', validated.groupId)
@@ -69,7 +69,7 @@ export async function createAvailability(
     throw new Error('No permission to create availability polls')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_availability')
     .insert({
       group_id: validated.groupId,
@@ -86,7 +86,7 @@ export async function createAvailability(
 
   // Post system message
   try {
-    await supabase.from('hub_messages').insert({
+    await db.from('hub_messages').insert({
       group_id: validated.groupId,
       author_profile_id: profile.id,
       message_type: 'system',
@@ -104,9 +104,9 @@ export async function createAvailability(
  * Get all availability polls for a group.
  */
 export async function getGroupAvailability(groupId: string): Promise<HubAvailability[]> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_availability')
     .select('*, hub_guest_profiles!created_by_profile_id(display_name)')
     .eq('group_id', groupId)
@@ -127,9 +127,9 @@ export async function getGroupAvailability(groupId: string): Promise<HubAvailabi
 export async function getAvailabilityWithResponses(
   availabilityId: string
 ): Promise<HubAvailability | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: avail, error } = await supabase
+  const { data: avail, error } = await db
     .from('hub_availability')
     .select('*, hub_guest_profiles!created_by_profile_id(display_name)')
     .eq('id', availabilityId)
@@ -141,7 +141,7 @@ export async function getAvailabilityWithResponses(
   if (!avail) return null
 
   // Get responses
-  const { data: responses } = await supabase
+  const { data: responses } = await db
     .from('hub_availability_responses')
     .select('*, hub_guest_profiles!profile_id(display_name, avatar_url)')
     .eq('availability_id', availabilityId)
@@ -170,9 +170,9 @@ export async function setAvailabilityResponse(input: {
   responseDate: string
   status: 'available' | 'maybe' | 'unavailable'
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -181,7 +181,7 @@ export async function setAvailabilityResponse(input: {
   if (!profile) throw new Error('Invalid profile token')
 
   // Upsert response
-  const { error } = await supabase.from('hub_availability_responses').upsert(
+  const { error } = await db.from('hub_availability_responses').upsert(
     {
       availability_id: input.availabilityId,
       profile_id: profile.id,
@@ -201,9 +201,9 @@ export async function closeAvailability(input: {
   availabilityId: string
   profileToken: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -212,7 +212,7 @@ export async function closeAvailability(input: {
   if (!profile) throw new Error('Invalid profile token')
 
   // Check permission (creator or admin)
-  const { data: avail } = await supabase
+  const { data: avail } = await db
     .from('hub_availability')
     .select('group_id, created_by_profile_id')
     .eq('id', input.availabilityId)
@@ -222,7 +222,7 @@ export async function closeAvailability(input: {
 
   const isCreator = avail.created_by_profile_id === profile.id
   if (!isCreator) {
-    const { data: membership } = await supabase
+    const { data: membership } = await db
       .from('hub_group_members')
       .select('role')
       .eq('group_id', avail.group_id)
@@ -234,5 +234,5 @@ export async function closeAvailability(input: {
     }
   }
 
-  await supabase.from('hub_availability').update({ is_closed: true }).eq('id', input.availabilityId)
+  await db.from('hub_availability').update({ is_closed: true }).eq('id', input.availabilityId)
 }

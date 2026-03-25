@@ -30,7 +30,7 @@ The merged result (system defaults minus hidden, plus custom entries) is what ap
 
 ## Database Tables
 
-Migration: `supabase/migrations/20260401000093_chef_taxonomy_extensions.sql`
+Migration: `database/migrations/20260401000093_chef_taxonomy_extensions.sql`
 
 ### `chef_taxonomy_extensions`
 
@@ -127,4 +127,4 @@ Use this hook in any client component that needs a taxonomy dropdown or picker.
 | `components/settings/taxonomy-settings.tsx`                       | Client component with tabbed UI     |
 | `app/api/v2/settings/taxonomy/route.ts`                           | API v2: GET + POST                  |
 | `app/api/v2/settings/taxonomy/[id]/route.ts`                      | API v2: DELETE by ID                |
-| `supabase/migrations/20260401000093_chef_taxonomy_extensions.sql` | Database migration                  |
+| `database/migrations/20260401000093_chef_taxonomy_extensions.sql` | Database migration                  |

@@ -83,7 +83,7 @@ Endpoint: `app/api/v2/settings/notification-tiers/route.ts`
 
 | File                                                                      | Change                             |
 | ------------------------------------------------------------------------- | ---------------------------------- |
-| `supabase/migrations/20260320000012_chef_notification_tier_overrides.sql` | New table                          |
+| `database/migrations/20260320000012_chef_notification_tier_overrides.sql` | New table                          |
 | `lib/notifications/tier-actions.ts`                                       | New server actions                 |
 | `lib/notifications/resolve-preferences.ts`                                | Checks tier overrides at send time |
 | `components/settings/notification-tier-settings.tsx`                      | New UI component                   |

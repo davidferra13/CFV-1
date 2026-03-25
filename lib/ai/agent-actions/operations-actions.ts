@@ -4,7 +4,7 @@
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { searchClientsByName } from '@/lib/clients/actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
@@ -117,8 +117,8 @@ export const operationsAgentActions: AgentActionDefinition[] = [
           ? `${payload.scheduled_date}T${payload.scheduled_time}:00`
           : new Date().toISOString()
 
-      const supabase: any = createServerClient()
-      const { data, error } = await supabase
+      const db: any = createServerClient()
+      const { data, error } = await db
         .from('scheduled_calls')
         .insert({
           tenant_id: (await (await import('@/lib/auth/get-user')).requireChef()).tenantId,
@@ -176,9 +176,9 @@ export const operationsAgentActions: AgentActionDefinition[] = [
     },
 
     async commitAction(payload) {
-      const supabase: any = createServerClient()
+      const db: any = createServerClient()
       const user = await (await import('@/lib/auth/get-user')).requireChef()
-      const { error } = await supabase.from('chef_todos').insert({
+      const { error } = await db.from('chef_todos').insert({
         tenant_id: user.tenantId,
         title: payload.title,
         due_date: payload.due_date ?? null,
@@ -228,9 +228,9 @@ export const operationsAgentActions: AgentActionDefinition[] = [
     },
 
     async commitAction(payload) {
-      const supabase: any = createServerClient()
+      const db: any = createServerClient()
       const user = await (await import('@/lib/auth/get-user')).requireChef()
-      const { error } = await supabase.from('expenses').insert({
+      const { error } = await db.from('expenses').insert({
         tenant_id: user.tenantId,
         description: payload.description,
         amount_cents: payload.amount_cents,

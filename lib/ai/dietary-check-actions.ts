@@ -5,7 +5,7 @@
 // Validates a menu or recipe against a client's known dietary restrictions.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { DietaryFlag, DietaryCheckResult } from './dietary-check-types'
 
 // Common allergen keywords mapped to ingredient terms
@@ -156,10 +156,10 @@ export async function checkDietaryConflicts(
   menuItemNames: string[]
 ): Promise<DietaryCheckResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load client dietary restrictions
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('full_name, dietary_restrictions, allergies')
     .eq('id', clientId)
@@ -280,10 +280,10 @@ export async function checkEventDietaryConflicts(
   clientId: string
 ): Promise<DietaryCheckResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load menus linked to this event
-  const { data: eventMenus } = await (supabase
+  const { data: eventMenus } = await (db
     .from('event_menus' as any)
     .select('menu_id')
     .eq('event_id', eventId) as any)
@@ -301,7 +301,7 @@ export async function checkEventDietaryConflicts(
   }
 
   // Load menu items
-  const { data: menuItems } = await (supabase
+  const { data: menuItems } = await (db
     .from('menu_items' as any)
     .select('name')
     .eq('tenant_id', user.tenantId!)
@@ -329,11 +329,11 @@ export async function checkEventDietaryConflicts(
  */
 export async function checkDietaryByClientName(clientName: string): Promise<DietaryCheckResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find clients - include dietary fields directly
   // Use limit(5) to catch family members (e.g. "Garcia" matches David Garcia + Maria Garcia)
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, dietary_restrictions, allergies, vibe_notes')
     .eq('tenant_id', user.tenantId!)
@@ -423,7 +423,7 @@ export async function checkDietaryByClientName(clientName: string): Promise<Diet
     }
 
     // Check kitchen notes from most recent event
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('id, title, event_date, kitchen_notes')
       .eq('tenant_id', user.tenantId!)
@@ -463,7 +463,7 @@ export async function checkDietaryByClientName(clientName: string): Promise<Diet
   // If only one client, try menu cross-check
   if (clients.length === 1) {
     const client = clients[0]
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('id')
       .eq('tenant_id', user.tenantId!)

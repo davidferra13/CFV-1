@@ -5,7 +5,7 @@
 // Parses natural language grocery items and adds them to an event's shopping list.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { z } from 'zod'
@@ -100,10 +100,10 @@ export async function getEventGroceryList(
   eventId: string
 ): Promise<{ items: ParsedGroceryItem[]; summary: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Try to load from grocery_items table
-  const { data: groceryItems } = await (supabase
+  const { data: groceryItems } = await (db
     .from('grocery_items' as any)
     .select('*')
     .eq('event_id', eventId)
@@ -124,7 +124,7 @@ export async function getEventGroceryList(
   }
 
   // Fallback: extract from menu recipes
-  const { data: eventMenus } = await (supabase
+  const { data: eventMenus } = await (db
     .from('event_menus' as any)
     .select('menu_id')
     .eq('event_id', eventId) as any)
@@ -139,7 +139,7 @@ export async function getEventGroceryList(
   }
 
   // Get recipe ingredients via menu items
-  const { data: menuItems } = await (supabase
+  const { data: menuItems } = await (db
     .from('menu_items' as any)
     .select('recipe_id')
     .in('menu_id', menuIds)
@@ -155,7 +155,7 @@ export async function getEventGroceryList(
     }
   }
 
-  const { data: ingredients } = await (supabase
+  const { data: ingredients } = await (db
     .from('recipe_ingredients')
     .select('name, quantity, unit')
     .in('recipe_id', recipeIds) as any)

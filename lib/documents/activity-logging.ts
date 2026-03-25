@@ -4,7 +4,7 @@
 // Non-blocking audit trail for all document management operations.
 // Logs to the existing activity table for full traceability.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 type DocumentActivityAction =
   | 'receipt_uploaded'
@@ -36,9 +36,9 @@ type DocumentActivityInput = {
  */
 export async function logDocumentActivity(input: DocumentActivityInput): Promise<void> {
   try {
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    await supabase.from('activity' as any).insert({
+    await db.from('activity' as any).insert({
       tenant_id: input.tenantId,
       user_id: input.userId,
       action: input.action,
@@ -59,7 +59,7 @@ export async function logDocumentActivities(inputs: DocumentActivityInput[]): Pr
   if (inputs.length === 0) return
 
   try {
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     const rows = inputs.map((input) => ({
       tenant_id: input.tenantId,
@@ -70,7 +70,7 @@ export async function logDocumentActivities(inputs: DocumentActivityInput[]): Pr
       metadata: input.metadata ?? {},
     }))
 
-    await supabase.from('activity' as any).insert(rows as any)
+    await db.from('activity' as any).insert(rows as any)
   } catch (err) {
     console.error('[doc-activity] Non-blocking batch logging error:', err)
   }

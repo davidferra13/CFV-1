@@ -5,7 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { SALE_STATUS_LABELS, SALE_CHANNEL_LABELS } from './constants'
 import type { SaleStatus, SaleChannel } from './constants'
 import { csvRowSafe as toCsvRow } from '@/lib/security/csv-sanitize'
@@ -39,9 +39,9 @@ function parseReconciliationFlags(raw: unknown): Array<{ status?: string; messag
 export async function exportSalesCsv(from: string, to: string): Promise<string> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: sales } = await (supabase
+  const { data: sales } = await (db
     .from('sales')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -89,9 +89,9 @@ export async function exportSalesCsv(from: string, to: string): Promise<string> 
 export async function exportPaymentsCsv(from: string, to: string): Promise<string> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: payments } = await (supabase
+  const { data: payments } = await (db
     .from('commerce_payments')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -133,9 +133,9 @@ export async function exportPaymentsCsv(from: string, to: string): Promise<strin
 export async function exportRefundsCsv(from: string, to: string): Promise<string> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: refunds } = await (supabase
+  const { data: refunds } = await (db
     .from('commerce_refunds')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -164,9 +164,9 @@ export async function exportRefundsCsv(from: string, to: string): Promise<string
 export async function exportTaxSummaryCsv(from: string, to: string): Promise<string> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: taxRows } = await (supabase
+  const { data: taxRows } = await (db
     .from('daily_tax_summary' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -214,9 +214,9 @@ export async function exportTaxSummaryCsv(from: string, to: string): Promise<str
 export async function exportReconciliationCsv(from: string, to: string): Promise<string> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: reports } = await (supabase
+  const { data: reports } = await (db
     .from('daily_reconciliation_reports' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -283,12 +283,12 @@ export async function exportReconciliationCsv(from: string, to: string): Promise
 export async function exportShiftSessionsCsv(from: string, to: string): Promise<string> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const fromIso = `${from}T00:00:00.000Z`
   const toIso = `${to}T23:59:59.999Z`
 
-  const { data: sessions } = await (supabase
+  const { data: sessions } = await (db
     .from('register_sessions' as any)
     .select(
       'id, session_name, status, opened_at, closed_at, opening_cash_cents, expected_cash_cents, closing_cash_cents, cash_variance_cents, total_sales_count, total_revenue_cents, total_tips_cents, close_notes'

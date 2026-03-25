@@ -3,7 +3,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { recordPosAlert } from './observability-actions'
 import type { PosAlertSeverity } from './observability-core'
@@ -152,10 +152,10 @@ function resolveReportDate(input: GenerateReportInput, timeZone: string): string
 export async function generateDailyReconciliation(input: GenerateReportInput = {}) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: tenant } = await (supabase
+  const { data: tenant } = await (db
     .from('chefs')
     .select('timezone')
     .eq('id', tenantId)
@@ -165,7 +165,7 @@ export async function generateDailyReconciliation(input: GenerateReportInput = {
   const reportDate = resolveReportDate(input, timeZone)
   const { fromIso, toIso } = getWideUtcWindow(reportDate)
 
-  const { data: sales } = await (supabase
+  const { data: sales } = await (db
     .from('sales')
     .select('id, tax_cents, total_cents, tip_cents, status, created_at')
     .eq('tenant_id', tenantId)
@@ -186,7 +186,7 @@ export async function generateDailyReconciliation(input: GenerateReportInput = {
   const totalTipsCents = validSales.reduce((sum: number, row: any) => sum + (row.tip_cents ?? 0), 0)
   const totalTaxCents = validSales.reduce((sum: number, row: any) => sum + (row.tax_cents ?? 0), 0)
 
-  const { data: payments } = await (supabase
+  const { data: payments } = await (db
     .from('commerce_payments')
     .select('amount_cents, payment_method, status, created_at')
     .eq('tenant_id', tenantId)
@@ -208,7 +208,7 @@ export async function generateDailyReconciliation(input: GenerateReportInput = {
     else otherTotalCents += payment.amount_cents ?? 0
   }
 
-  const { data: refunds } = await (supabase
+  const { data: refunds } = await (db
     .from('commerce_refunds')
     .select('amount_cents, status, created_at')
     .eq('tenant_id', tenantId)
@@ -231,7 +231,7 @@ export async function generateDailyReconciliation(input: GenerateReportInput = {
   let expectedCashCents: number | null = null
   let cashVarianceCents: number | null = null
 
-  const { data: sessions } = await (supabase
+  const { data: sessions } = await (db
     .from('register_sessions' as any)
     .select(
       'opening_cash_cents, closing_cash_cents, expected_cash_cents, cash_variance_cents, closed_at'
@@ -263,7 +263,7 @@ export async function generateDailyReconciliation(input: GenerateReportInput = {
     )
   }
 
-  const { data: ledgerEntries } = await (supabase
+  const { data: ledgerEntries } = await (db
     .from('ledger_entries')
     .select('amount_cents, entry_type, is_refund, created_at')
     .eq('tenant_id', tenantId)
@@ -311,7 +311,7 @@ export async function generateDailyReconciliation(input: GenerateReportInput = {
     })
   }
 
-  const { data: report, error } = await (supabase
+  const { data: report, error } = await (db
     .from('daily_reconciliation_reports' as any)
     .upsert(
       {
@@ -357,12 +357,12 @@ export async function generateDailyReconciliation(input: GenerateReportInput = {
 export async function listReconciliationReports(opts?: { limit?: number; offset?: number }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const limit = opts?.limit ?? 30
   const offset = opts?.offset ?? 0
 
-  const { data, error, count } = await (supabase
+  const { data, error, count } = await (db
     .from('daily_reconciliation_reports' as any)
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
@@ -376,9 +376,9 @@ export async function listReconciliationReports(opts?: { limit?: number; offset?
 export async function getReconciliationReport(reportId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('daily_reconciliation_reports' as any)
     .select('*')
     .eq('id', reportId)
@@ -392,9 +392,9 @@ export async function getReconciliationReport(reportId: string) {
 export async function reviewReconciliationReport(reportId: string, notes?: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('daily_reconciliation_reports' as any)
     .update({
       reviewed: true,
@@ -416,9 +416,9 @@ export async function resolveReconciliationFlag(
 ) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: report, error: fetchErr } = await (supabase
+  const { data: report, error: fetchErr } = await (db
     .from('daily_reconciliation_reports' as any)
     .select('flags, report_date')
     .eq('id', reportId)
@@ -437,7 +437,7 @@ export async function resolveReconciliationFlag(
   flags[flagIndex].resolvedAt = new Date().toISOString()
   flags[flagIndex].resolvedBy = user.id
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('daily_reconciliation_reports' as any)
     .update({ flags } as any)
     .eq('id', reportId)
@@ -449,7 +449,7 @@ export async function resolveReconciliationFlag(
     String((report as any).report_date ?? '').slice(0, 10),
     targetFlag.type
   )
-  await (supabase
+  await (db
     .from('pos_alert_events' as any)
     .update({
       status: 'resolved',

@@ -6,7 +6,7 @@
 // MUST fit on ONE page - no exceptions.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, CONTENT_WIDTH, MARGIN_X } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 
@@ -24,9 +24,9 @@ export async function fetchContentShotListData(
   eventId: string
 ): Promise<ContentShotListData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `

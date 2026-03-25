@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -29,7 +29,7 @@ export type SaveTranscriptInput = z.infer<typeof SaveTranscriptSchema>
 export async function saveTacTranscript(input: SaveTranscriptInput) {
   const user = await requireChef()
   const validated = SaveTranscriptSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const rows = validated.messages.map((msg, i) => ({
@@ -46,7 +46,7 @@ export async function saveTacTranscript(input: SaveTranscriptInput) {
     to_user_id: msg.direction === 'inbound' ? user.id : null,
   }))
 
-  const { error } = await supabase.from('messages').insert(rows)
+  const { error } = await db.from('messages').insert(rows)
 
   if (error) {
     console.error('[saveTacTranscript] Error:', error)

@@ -4,10 +4,10 @@
 // Base URL of the target server
 export const BASE_URL = __ENV.BASE_URL || 'http://localhost:3100'
 
-// Supabase config (for direct auth)
-export const SUPABASE_URL = __ENV.SUPABASE_URL || 'http://127.0.0.1:54321'
-export const SUPABASE_ANON_KEY =
-  __ENV.SUPABASE_ANON_KEY ||
+// Database config (for direct auth)
+export const DB_URL = __ENV.DB_URL || 'http://127.0.0.1:54321'
+export const DB_ANON_KEY =
+  __ENV.DB_ANON_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
 
 // Agent test account

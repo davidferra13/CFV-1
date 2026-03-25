@@ -38,35 +38,35 @@ The build passes only because `ignoreBuildErrors: true` skips type checking. Eve
            b. Add @ts-expect-error with explanation if complex and admin-only
 [ ] 1.1.7  For errors in lib/ server actions:
            a. These WILL crash at runtime - fix every one
-           b. Pay special attention to database query types (supabase .from().select())
+           b. Pay special attention to database query types (database .from().select())
            c. Verify against types/database.ts for correct column names
 [ ] 1.1.8  Re-run full typecheck: `npm run typecheck`
 [ ] 1.1.9  Confirm zero errors
 [ ] 1.1.10 If types/database.ts is stale, regenerate:
-           a. `npx supabase gen types typescript --linked > types/database.ts`
+           a. `npx drizzle-kit introspect typescript --linked > types/database.ts`
            b. Re-run typecheck after regeneration
            c. Fix any new errors from schema changes
 [ ] 1.1.11 Commit: `fix: resolve all typecheck errors for production safety`
 ```
 
-### 1.2 Production Supabase Project
+### 1.2 Production the database Project
 
-Dev and beta share one Supabase project. A bad migration or test data leak hits real users.
+Dev and beta share one database project. A bad migration or test data leak hits real users.
 
 ```
-[ ] 1.2.1  Create new Supabase project:
-           a. Go to supabase.com/dashboard
+[ ] 1.2.1  Create new database project:
+           a. Go to database.com/dashboard
            b. Create new project named "chefflow-production" in same org
            c. Select region closest to users (us-east-1 to match Vercel iad1)
            d. Save the project ID, URL, anon key, and service role key
 [ ] 1.2.2  Apply all migrations to production project:
-           a. Link to new project: `npx supabase link --project-ref <new-project-id>`
+           a. Link to new project: `npx database link --project-ref <new-project-id>`
            b. WARNING: This changes the linked project. Save current link first.
-           c. Run: `npx supabase db push` (applies all migrations in order)
-           d. Verify all migrations applied: `npx supabase migration list`
-           e. Re-link back to dev project: `npx supabase link --project-ref luefkpakzvxcsqroxyhz`
+           c. Run: `npx drizzle-kit push` (applies all migrations in order)
+           d. Verify all migrations applied: `npx database migration list`
+           e. Re-link back to dev project: `npx database link --project-ref luefkpakzvxcsqroxyhz`
 [ ] 1.2.3  Configure production auth:
-           a. In Supabase dashboard for production project:
+           a. In database dashboard for production project:
            b. Set Site URL to `https://app.cheflowhq.com`
            c. Add redirect URLs: `https://app.cheflowhq.com/**`
            d. Configure Google OAuth provider with production credentials
@@ -78,18 +78,18 @@ Dev and beta share one Supabase project. A bad migration or test data leak hits 
            b. Verify tenant isolation policies exist on every table with tenant_id/chef_id
            c. Test: create two test chefs, verify one cannot read the other's data
 [ ] 1.2.5  Set production environment variables in Vercel:
-           a. NEXT_PUBLIC_SUPABASE_URL = production project URL
-           b. NEXT_PUBLIC_SUPABASE_ANON_KEY = production anon key
-           c. SUPABASE_SERVICE_ROLE_KEY = production service role key
+           a. NEXT_PUBLIC_DATABASE_URL = production project URL
+           b. NEXT_PUBLIC_DATABASE_ANON_KEY = production anon key
+           c. DATABASE_SERVICE_ROLE_KEY = production service role key
            d. Scope all three to "Production" environment only
 [ ] 1.2.6  Verify dev environment still uses dev project:
            a. Check .env.local has dev project URL
            b. Check .env.local.beta has dev project URL
            c. Neither should reference the production project
 [ ] 1.2.7  Set up production database backups:
-           a. Enable Point-in-Time Recovery in Supabase dashboard (Pro plan required)
+           a. Enable Point-in-Time Recovery in the database dashboard (Pro plan required)
            b. Set up daily automated backup script:
-              `npx supabase db dump --linked > backups/prod-$(date +%Y%m%d).sql`
+              `npx database db dump --linked > backups/prod-$(date +%Y%m%d).sql`
            c. Add to cron or scheduled task
 [ ] 1.2.8  Document the setup in docs/production-database.md
 ```
@@ -169,7 +169,7 @@ ToS and Privacy Policy exist with real legal content (last updated March 1, 2026
            g. Verify contact email (support@cheflowhq.com) actually receives mail
 [ ] 1.4.2  Review Privacy Policy (app/(public)/privacy/page.tsx):
            a. Verify all third-party services are disclosed:
-              - Supabase (database/auth) [x currently listed]
+              - PostgreSQL (database/auth) [x currently listed]
               - Stripe (payments) [x currently listed]
               - Resend (email) [x currently listed]
               - Vercel (hosting) [x currently listed]
@@ -204,9 +204,9 @@ Every env var must be correctly scoped. Missing or wrong values cause silent fai
            c. Categorize: required vs optional, public vs private
 [ ] 1.5.2  Set each in Vercel (Production scope only):
            Database:
-           a. NEXT_PUBLIC_SUPABASE_URL = production Supabase URL
-           b. NEXT_PUBLIC_SUPABASE_ANON_KEY = production anon key
-           c. SUPABASE_SERVICE_ROLE_KEY = production service role key
+           a. NEXT_PUBLIC_DATABASE_URL = production the database URL
+           b. NEXT_PUBLIC_DATABASE_ANON_KEY = production anon key
+           c. DATABASE_SERVICE_ROLE_KEY = production service role key
 
            Payments:
            d. STRIPE_SECRET_KEY = sk_live_...
@@ -249,7 +249,7 @@ Every env var must be correctly scoped. Missing or wrong values cause silent fai
 [ ] 1.5.3  Verify NO dev/test values leak to production:
            a. No sk_test_ keys in production
            b. No localhost URLs in production
-           c. No dev Supabase URL in production
+           c. No dev PostgreSQL URL in production
            d. NEXT_PUBLIC_SITE_URL is NOT localhost
 [ ] 1.5.4  Verify dev .env.local still has all dev values (unchanged)
 [ ] 1.5.5  Document all env vars in docs/environment-variables.md
@@ -488,7 +488,7 @@ Existing Playwright tests need to pass against the current codebase.
            c. Identify any page importing > 200KB of JS
            d. Split large imports with dynamic import()
 [ ] 3.2.5  Check for N+1 database queries:
-           a. Enable Supabase query logging temporarily
+           a. Enable PostgreSQL query logging temporarily
            b. Load dashboard page
            c. Count queries - should be < 10 for initial page load
            d. Fix any N+1 patterns with batch queries or joins
@@ -561,8 +561,8 @@ Existing Playwright tests need to pass against the current codebase.
 
 ```
 [ ] 3.5.1  Document database backup procedure:
-           a. Automated: Supabase PITR (if Pro plan)
-           b. Manual: `npx supabase db dump --linked > backup-YYYYMMDD.sql`
+           a. Automated: PostgreSQL PITR (if Pro plan)
+           b. Manual: `npx database db dump --linked > backup-YYYYMMDD.sql`
            c. Schedule: daily automated, manual before any migration
            d. Storage: keep 30 days of daily backups
            e. Test restoration: restore a backup to a test project, verify data integrity
@@ -588,7 +588,7 @@ Existing Playwright tests need to pass against the current codebase.
               - Alert if 503 (degraded) or timeout
               - Check interval: 5 minutes
            c. Stripe: enable webhook failure notifications
-           d. Supabase: enable database size and connection count alerts
+           d. PostgreSQL: enable database size and connection count alerts
 [ ] 3.5.5  Write docs/incident-response.md with all of the above
 ```
 
@@ -621,7 +621,7 @@ Existing Playwright tests need to pass against the current codebase.
 ```
 [ ] 4.2.1  Pre-deployment checklist (ALL must be true):
            a. [ ] All typecheck errors resolved (1.1)
-           b. [ ] Production Supabase project configured (1.2)
+           b. [ ] Production the database project configured (1.2)
            c. [ ] Stripe live mode configured (1.3)
            d. [ ] Legal pages reviewed (1.4)
            e. [ ] All Vercel env vars set (1.5)
@@ -675,7 +675,7 @@ Existing Playwright tests need to pass against the current codebase.
 [ ] 4.3.4  Monitor database:
            a. Check connection count (should be < 60% of limit)
            b. Check storage usage
-           c. Check for slow queries (> 1s) in Supabase logs
+           c. Check for slow queries (> 1s) in the database logs
 [ ] 4.3.5  Gather first user feedback:
            a. The app has a feedback form (components/feedback/)
            b. Check for submissions
@@ -688,7 +688,7 @@ Existing Playwright tests need to pass against the current codebase.
 
 ```
 1.1 (Type errors)     ─┐
-1.2 (Prod Supabase)   ─┤
+1.2 (Prod PostgreSQL)   ─┤
 1.3 (Stripe live)     ─┼──> 4.2 (Deploy to main) ──> 4.3 (Monitor)
 1.4 (Legal review)    ─┤
 1.5 (Env vars)        ─┘

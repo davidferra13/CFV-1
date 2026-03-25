@@ -3,7 +3,7 @@
 import { createHash } from 'crypto'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   CANNABIS_HOST_AGREEMENT_TEXT_SNAPSHOT,
   CANNABIS_HOST_AGREEMENT_VERSION,
@@ -55,13 +55,13 @@ export async function signCannabisHostAgreement(
     return { status: 'duplicate', agreement: existingAgreement }
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const signedAt = new Date().toISOString()
   const immutableHash = createHash('sha256')
     .update(CANNABIS_HOST_AGREEMENT_TEXT_SNAPSHOT)
     .digest('hex')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('cannabis_host_agreements')
     .insert({
       host_user_id: user.id,

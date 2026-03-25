@@ -2,7 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { TAX_CLASSES, type TaxClass } from './constants'
 import { PROMOTION_DISCOUNT_TYPES, type PromotionDiscountType } from './promotion-engine'
@@ -169,10 +169,10 @@ function mapPromotionRow(row: any): CommercePromotion {
 export async function createPromotion(input: CreatePromotionInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const normalized = normalizePromotionInput(input)
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('commerce_promotions' as any)
     .insert({
       tenant_id: user.tenantId!,
@@ -209,9 +209,9 @@ export async function createPromotion(input: CreatePromotionInput) {
 export async function updatePromotion(input: UpdatePromotionInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: current, error: currentErr } = await (supabase
+  const { data: current, error: currentErr } = await (db
     .from('commerce_promotions' as any)
     .select('*')
     .eq('id', input.id)
@@ -235,7 +235,7 @@ export async function updatePromotion(input: UpdatePromotionInput) {
     endsAt: input.endsAt ?? current.ends_at,
   })
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('commerce_promotions' as any)
     .update({
       code: normalized.code,
@@ -271,9 +271,9 @@ export async function updatePromotion(input: UpdatePromotionInput) {
 export async function togglePromotionActive(promotionId: string, isActive: boolean) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('commerce_promotions' as any)
     .update({ is_active: isActive } as any)
     .eq('id', promotionId)
@@ -287,9 +287,9 @@ export async function togglePromotionActive(promotionId: string, isActive: boole
 export async function listPromotions(options?: { activeOnly?: boolean; limit?: number }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('commerce_promotions' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
@@ -162,11 +162,11 @@ export type { ComponentCategory, TransportCategory } from './constants'
 export async function createMenu(input: CreateMenuInput) {
   const user = await requireChef()
   const validated = CreateMenuSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If event_id provided, verify event belongs to tenant
   if (validated.event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('tenant_id')
       .eq('id', validated.event_id)
@@ -180,13 +180,13 @@ export async function createMenu(input: CreateMenuInput) {
   }
 
   const result = await executeWithIdempotency({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     actionName: 'menus.create',
     idempotencyKey: validated.idempotency_key,
     execute: async () => {
-      const { data: menu, error } = await supabase
+      const { data: menu, error } = await db
         .from('menus')
         .insert({
           tenant_id: user.tenantId!,
@@ -211,7 +211,7 @@ export async function createMenu(input: CreateMenuInput) {
       }
 
       // Log initial transition to 'draft'
-      await supabase.from('menu_state_transitions').insert({
+      await db.from('menu_state_transitions').insert({
         tenant_id: user.tenantId!,
         menu_id: menu.id,
         from_status: null,
@@ -220,7 +220,7 @@ export async function createMenu(input: CreateMenuInput) {
       })
 
       if (validated.event_id) {
-        await (supabase
+        await (db
           .from('events' as any)
           .update({
             menu_id: menu.id,
@@ -326,10 +326,10 @@ export async function createMenuWithCourses(
  */
 export async function getMenus({ statusFilter }: { statusFilter?: MenuStatus } = {}) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const buildQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase.from('menus').select('*').eq('tenant_id', user.tenantId!)
+    let query = db.from('menus').select('*').eq('tenant_id', user.tenantId!)
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
@@ -360,10 +360,10 @@ export async function getMenus({ statusFilter }: { statusFilter?: MenuStatus } =
  */
 export async function getMenuById(menuId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase.from('menus').select('*').eq('id', menuId).eq('tenant_id', user.tenantId!)
+    let query = db.from('menus').select('*').eq('id', menuId).eq('tenant_id', user.tenantId!)
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
@@ -382,7 +382,7 @@ export async function getMenuById(menuId: string) {
   }
 
   // Fetch dishes for this menu
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('*')
     .eq('menu_id', menuId)
@@ -397,7 +397,7 @@ export async function getMenuById(menuId: string) {
   const componentRows =
     dishIds.length > 0
       ? (
-          await supabase
+          await db
             .from('components')
             .select('*')
             .in('dish_id', dishIds)
@@ -434,10 +434,10 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
   const validated = UpdateMenuSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify menu exists and is editable
-  const { data: currentMenu } = await (supabase
+  const { data: currentMenu } = await (db
     .from('menus')
     .select('*')
     .eq('id', menuId)
@@ -457,14 +457,14 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
   }
 
   const result = await executeWithIdempotency({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     actionName: 'menus.update',
     idempotencyKey: idempotency_key,
     execute: async () => {
       const runUpdate = async (withSoftDeleteFilter: boolean) => {
-        let query = supabase
+        let query = db
           .from('menus')
           .update({
             ...updateFields,
@@ -492,7 +492,7 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
       if (error || !menu) {
         if (expected_updated_at) {
           const getLatest = async (withSoftDeleteFilter: boolean) => {
-            let query = supabase
+            let query = db
               .from('menus')
               .select('updated_at')
               .eq('id', menuId)
@@ -575,10 +575,10 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
  */
 export async function deleteMenu(menuId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check menu status and event attachment
-  const { data: menu } = await (supabase
+  const { data: menu } = await (db
     .from('menus')
     .select('status, event_id, deleted_at')
     .eq('id', menuId)
@@ -598,7 +598,7 @@ export async function deleteMenu(menuId: string) {
   }
 
   // Soft delete menu
-  const { error } = await supabase
+  const { error } = await db
     .from('menus')
     .update({
       deleted_at: new Date().toISOString(),
@@ -620,9 +620,9 @@ export async function deleteMenu(menuId: string) {
 
 export async function restoreMenu(menuId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('menus')
     .update({
       deleted_at: null,
@@ -651,9 +651,9 @@ export async function restoreMenu(menuId: string) {
  */
 export async function attachMenuToEvent(eventId: string, menuId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.rpc('attach_menu_to_event_atomic', {
+  const { error } = await db.rpc('attach_menu_to_event_atomic', {
     p_event_id: eventId,
     p_menu_id: menuId,
     p_tenant_id: user.tenantId!,
@@ -675,9 +675,9 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
  */
 export async function detachMenuFromEvent(menuId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase.rpc('detach_menu_from_event_atomic', {
+  const { data, error } = await db.rpc('detach_menu_from_event_atomic', {
     p_menu_id: menuId,
     p_tenant_id: user.tenantId!,
     p_actor_id: user.id,
@@ -702,9 +702,9 @@ export async function detachMenuFromEvent(menuId: string) {
  */
 export async function getEventMenus(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: menus, error } = await supabase
+  const { data: menus, error } = await db
     .from('menus')
     .select('*')
     .eq('event_id', eventId)
@@ -725,9 +725,9 @@ export async function getEventMenus(eventId: string) {
  */
 export async function getMenuEvent(menuId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: menu, error } = await supabase
+  const { data: menu, error } = await db
     .from('menus')
     .select(
       `
@@ -764,10 +764,10 @@ const VALID_MENU_TRANSITIONS: Record<MenuStatus, MenuStatus[]> = {
  */
 export async function transitionMenu(menuId: string, toStatus: MenuStatus, reason?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current menu
-  const { data: menu } = await (supabase
+  const { data: menu } = await (db
     .from('menus')
     .select('status, deleted_at')
     .eq('id', menuId)
@@ -800,7 +800,7 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
     updatePayload.archived_at = new Date().toISOString()
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('menus')
     .update(updatePayload)
     .eq('id', menuId)
@@ -813,7 +813,7 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
   }
 
   // Log transition
-  await supabase.from('menu_state_transitions').insert({
+  await db.from('menu_state_transitions').insert({
     tenant_id: user.tenantId!,
     menu_id: menuId,
     from_status: currentStatus,
@@ -906,10 +906,10 @@ export async function addDishToMenu(input: CreateDishInput) {
   const user = await requireChef()
   const validated = CreateDishSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify menu belongs to tenant and is editable
-  const { data: menu } = await supabase
+  const { data: menu } = await db
     .from('menus')
     .select('status')
     .eq('id', validated.menu_id)
@@ -925,7 +925,7 @@ export async function addDishToMenu(input: CreateDishInput) {
     throw new UnknownAppError('Cannot add dishes to a locked menu')
   }
 
-  const { data: existingDish } = await supabase
+  const { data: existingDish } = await db
     .from('dishes')
     .select('id')
     .eq('menu_id', validated.menu_id)
@@ -937,7 +937,7 @@ export async function addDishToMenu(input: CreateDishInput) {
     throw new UnknownAppError(getDuplicateCourseError(validated.course_number))
   }
 
-  const { data: dish, error } = await supabase
+  const { data: dish, error } = await db
     .from('dishes')
     .insert({
       tenant_id: user.tenantId!,
@@ -979,9 +979,9 @@ export async function updateDish(dishId: string, input: UpdateDishInput) {
   const user = await requireChef()
   const validated = UpdateDishSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: dish, error } = await supabase
+  const { data: dish, error } = await db
     .from('dishes')
     .update({
       ...validated,
@@ -1007,10 +1007,10 @@ export async function updateDish(dishId: string, input: UpdateDishInput) {
  */
 export async function deleteDish(dishId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get menu_id for revalidation
-  const { data: dish } = await supabase
+  const { data: dish } = await db
     .from('dishes')
     .select('menu_id')
     .eq('id', dishId)
@@ -1021,7 +1021,7 @@ export async function deleteDish(dishId: string) {
     throw new UnknownAppError('Dish not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dishes')
     .delete()
     .eq('id', dishId)
@@ -1041,9 +1041,9 @@ export async function deleteDish(dishId: string) {
  */
 export async function getAllDishes(): Promise<{ id: string; name: string; menuName: string }[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dishes')
     .select('id, name, course_name, menu:menus(name)')
     .eq('tenant_id', user.tenantId!)
@@ -1072,9 +1072,9 @@ export async function addComponentToDish(input: CreateComponentInput) {
   const user = await requireChef()
   const validated = CreateComponentSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: component, error } = await supabase
+  const { data: component, error } = await db
     .from('components')
     .insert({
       tenant_id: user.tenantId!,
@@ -1116,9 +1116,9 @@ export async function updateComponent(componentId: string, input: UpdateComponen
   const user = await requireChef()
   const validated = UpdateComponentSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: component, error } = await supabase
+  const { data: component, error } = await db
     .from('components')
     .update({
       ...validated,
@@ -1143,9 +1143,9 @@ export async function updateComponent(componentId: string, input: UpdateComponen
  */
 export async function deleteComponent(componentId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('components')
     .delete()
     .eq('id', componentId)
@@ -1185,9 +1185,9 @@ export async function getAllComponents(filters?: {
   has_recipe?: boolean
 }): Promise<ComponentListItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('components')
     .select(
       `
@@ -1257,9 +1257,9 @@ export type MenuCostSummary = {
 
 export async function getMenuCostSummaries(): Promise<MenuCostSummary[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_cost_summary')
     .select(
       'menu_id, menu_name, event_id, total_component_count, total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, has_all_recipe_costs'
@@ -1293,10 +1293,10 @@ export async function duplicateMenu(menuId: string) {
     throw new UnknownAppError('Menu not found')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Create menu copy (no event attachment, draft status)
-  const { data: newMenu, error: menuError } = await supabase
+  const { data: newMenu, error: menuError } = await db
     .from('menus')
     .insert({
       tenant_id: user.tenantId!,
@@ -1321,7 +1321,7 @@ export async function duplicateMenu(menuId: string) {
   // Copy dishes and their components
   for (const dish of original.dishes) {
     const dishRaw = dish as any
-    const { data: newDish, error: dishError } = await supabase
+    const { data: newDish, error: dishError } = await db
       .from('dishes')
       .insert({
         tenant_id: user.tenantId!,
@@ -1351,7 +1351,7 @@ export async function duplicateMenu(menuId: string) {
     // Copy components for this dish
     for (const comp of dish.components) {
       const compRaw = comp as any
-      const { error } = await supabase.from('components').insert({
+      const { error } = await db.from('components').insert({
         tenant_id: user.tenantId!,
         dish_id: newDish.id,
         name: comp.name,
@@ -1380,7 +1380,7 @@ export async function duplicateMenu(menuId: string) {
   }
 
   // Log initial transition
-  await supabase.from('menu_state_transitions').insert({
+  await db.from('menu_state_transitions').insert({
     tenant_id: user.tenantId!,
     menu_id: newMenu.id,
     from_status: null,
@@ -1408,9 +1408,9 @@ export async function cloneMenu(menuId: string) {
 
   // Ensure the clone is not marked as a template
   try {
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
     const user = await requireChef()
-    await supabase
+    await db
       .from('menus')
       .update({ is_template: false, event_id: null })
       .eq('id', result.menu.id)
@@ -1430,9 +1430,9 @@ export async function cloneMenu(menuId: string) {
  */
 export async function saveMenuAsTemplate(menuId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('menus')
     .update({ is_template: true, updated_by: user.id })
     .eq('id', menuId)
@@ -1454,10 +1454,10 @@ export async function saveMenuAsTemplate(menuId: string) {
  */
 export async function listMenuTemplates() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   try {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('menus')
       .select('id, name, description, service_style, cuisine_type, target_guest_count, created_at')
       .eq('tenant_id', user.tenantId!)
@@ -1501,10 +1501,10 @@ export type PrepTimelineSlot = {
  */
 export async function getMenuPrepTimeline(menuId: string): Promise<PrepTimelineSlot[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all components for this menu with dish info
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, course_name')
     .eq('menu_id', menuId)
@@ -1515,7 +1515,7 @@ export async function getMenuPrepTimeline(menuId: string): Promise<PrepTimelineS
   const dishIds = dishes.map((d: any) => d.id)
   const dishMap = new Map<string, string>(dishes.map((d: any) => [d.id, d.course_name]))
 
-  const { data: components } = await (supabase
+  const { data: components } = await (db
     .from('components')
     .select('id, name, category, dish_id, prep_day_offset, prep_time_of_day, prep_station')
     .in('dish_id', dishIds)
@@ -1595,10 +1595,10 @@ export type MenuQuickViewData = {
  */
 export async function getMenuQuickViewData(menuId: string): Promise<MenuQuickViewData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch dishes with component counts
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select(
       'id, course_name, course_number, description, dietary_tags, allergen_flags, components(id)'
@@ -1608,7 +1608,7 @@ export async function getMenuQuickViewData(menuId: string): Promise<MenuQuickVie
     .order('course_number', { ascending: true })
 
   // Fetch menu for event_id
-  const { data: menu } = await supabase
+  const { data: menu } = await db
     .from('menus')
     .select('event_id')
     .eq('id', menuId)
@@ -1616,7 +1616,7 @@ export async function getMenuQuickViewData(menuId: string): Promise<MenuQuickVie
     .single()
 
   // Fetch cost summary
-  const { data: costData } = await supabase
+  const { data: costData } = await db
     .from('menu_cost_summary' as any)
     .select('cost_per_guest_cents, food_cost_percentage')
     .eq('menu_id', menuId)
@@ -1626,7 +1626,7 @@ export async function getMenuQuickViewData(menuId: string): Promise<MenuQuickVie
   // Fetch linked event if present
   let linkedEvent: MenuQuickViewData['linkedEvent'] = null
   if (menu?.event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('id, occasion, event_date, status, clients(full_name)')
       .eq('id', menu.event_id)
@@ -1686,9 +1686,9 @@ export async function getMenuQuickViewData(menuId: string): Promise<MenuQuickVie
  */
 export async function applyMenuToEvent(menuId: string, eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: menu } = await supabase
+  const { data: menu } = await db
     .from('menus')
     .select('id, is_template, is_showcase, name, times_used')
     .eq('id', menuId)
@@ -1706,7 +1706,7 @@ export async function applyMenuToEvent(menuId: string, eventId: string) {
     wasDuplicated = true
 
     // Rename the copy: remove " (Copy)" and mark it as event-specific
-    await supabase
+    await db
       .from('menus')
       .update({
         name: menu.name.replace(/ \(Copy\)$/, ''),
@@ -1720,7 +1720,7 @@ export async function applyMenuToEvent(menuId: string, eventId: string) {
 
   // Increment usage count on the source menu (non-blocking, informational)
   try {
-    await supabase
+    await db
       .from('menus')
       .update({ times_used: (menu.times_used ?? 0) + 1 })
       .eq('id', menuId)
@@ -1759,9 +1759,9 @@ export type DishIndexEntry = {
  */
 export async function getDishIndex(): Promise<DishIndexEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dishes')
     .select(
       `
@@ -1824,9 +1824,9 @@ export type MenuShoppingListResult = {
 
 export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingListResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: menu } = await supabase
+  const { data: menu } = await db
     .from('menus')
     .select('id, name, target_guest_count')
     .eq('id', menuId)
@@ -1837,7 +1837,7 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
 
   const guestCount = menu.target_guest_count || 1
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, course_name, course_number')
     .eq('menu_id', menuId)
@@ -1858,7 +1858,7 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
 
   const dishIds = dishes.map((d: any) => d.id)
 
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('id, name, scale_factor, recipe_id, dish_id')
     .in('dish_id', dishIds)
@@ -1893,7 +1893,7 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
 
   const recipeIds = [...new Set(linkedComponents.map((c: any) => c.recipe_id))] as string[]
 
-  const { data: recipes } = await supabase
+  const { data: recipes } = await db
     .from('recipes')
     .select('id, name, yield_quantity, yield_unit')
     .in('id', recipeIds)
@@ -1901,7 +1901,7 @@ export async function getMenuShoppingList(menuId: string): Promise<MenuShoppingL
 
   const recipeMap = new Map(((recipes as any[]) || []).map((r: any) => [r.id, r]))
 
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select(
       'id, recipe_id, quantity, unit, is_optional, ingredient:ingredients(id, name, category, average_price_cents, last_price_cents)'

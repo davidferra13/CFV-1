@@ -38,7 +38,7 @@ Unique constraint on `(chef_id, state_code)`. RLS enabled, scoped to chef's own 
 
 | File                                                     | Purpose                                        |
 | -------------------------------------------------------- | ---------------------------------------------- |
-| `supabase/migrations/20260320000013_chef_tax_config.sql` | Migration for the new table                    |
+| `database/migrations/20260320000013_chef_tax_config.sql` | Migration for the new table                    |
 | `lib/finance/chef-tax-config-actions.ts`                 | Server actions: CRUD + resolution functions    |
 | `app/api/v2/settings/tax-rates/route.ts`                 | REST API (GET/PATCH) for external integrations |
 

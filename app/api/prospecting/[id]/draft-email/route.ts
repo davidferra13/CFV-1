@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { validateProspectingAuth } from '@/lib/prospecting/api-auth'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   const auth = await validateProspectingAuth(request)
@@ -21,12 +21,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
     return NextResponse.json({ error: 'body required' }, { status: 400 })
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Build the draft_email field (subject + body combined)
   const draftEmail = body.subject ? `Subject: ${body.subject}\n\n${body.body}` : body.body
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects' as any)
     .update({ draft_email: draftEmail })
     .eq('id', params.id)

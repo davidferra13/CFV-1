@@ -4,7 +4,7 @@
 // Both methods run identical logic secured with CRON_SECRET bearer token.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { syncGmailInbox } from '@/lib/gmail/sync'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
@@ -12,10 +12,10 @@ async function handleGmailSync(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Find all chefs with Gmail connected
-  const { data: connections, error } = await supabase
+  const { data: connections, error } = await db
     .from('google_connections')
     .select('chef_id, tenant_id, connected_email')
     .eq('gmail_connected', true)

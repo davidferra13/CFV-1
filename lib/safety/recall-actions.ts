@@ -5,7 +5,7 @@
 // Dismissed recall IDs are stored in chefs.dismissed_recall_ids (TEXT[]).
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type RecallAlert = {
   id: string
@@ -77,10 +77,10 @@ export async function matchRecallsToIngredients(
  */
 export async function dismissRecall(recallId: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current dismissed IDs to avoid duplicates
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('dismissed_recall_ids')
     .eq('id', user.tenantId!)
@@ -91,7 +91,7 @@ export async function dismissRecall(recallId: string): Promise<{ success: boolea
     return { success: true } // already dismissed
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({ dismissed_recall_ids: [...current, recallId] })
     .eq('id', user.tenantId!)
@@ -109,9 +109,9 @@ export async function dismissRecall(recallId: string): Promise<{ success: boolea
  */
 export async function getDismissedRecallIds(): Promise<string[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('dismissed_recall_ids')
     .eq('id', user.tenantId!)

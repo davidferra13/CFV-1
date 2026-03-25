@@ -1,7 +1,7 @@
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getOrCreateClientHubProfile } from './client-hub-actions'
 import type { HubGuestProfile } from './types'
 
@@ -33,10 +33,10 @@ export interface ChefRecommendation {
  */
 export async function getMyChefsToShare(): Promise<ShareableChef[]> {
   const user = await requireClient()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Get all events for this client → distinct chefs
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('tenant_id')
     .eq('client_id', user.entityId)
@@ -52,10 +52,7 @@ export async function getMyChefsToShare(): Promise<ShareableChef[]> {
 
   const chefIds = Object.keys(chefCounts)
 
-  const { data: chefs } = await supabase
-    .from('chefs')
-    .select('id, business_name, slug')
-    .in('id', chefIds)
+  const { data: chefs } = await db.from('chefs').select('id, business_name, slug').in('id', chefIds)
 
   if (!chefs?.length) return []
 
@@ -78,10 +75,10 @@ export async function shareChefWithFriend(input: {
 }): Promise<{ success: boolean }> {
   await requireClient()
   const myProfile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Get chef info for the recommendation
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, slug')
     .eq('id', input.chefId)
@@ -90,7 +87,7 @@ export async function shareChefWithFriend(input: {
   if (!chef) throw new Error('Chef not found')
 
   // Insert recommendation
-  const { error } = await supabase.from('hub_chef_recommendations').insert({
+  const { error } = await db.from('hub_chef_recommendations').insert({
     chef_id: input.chefId,
     chef_business_name: chef.business_name,
     chef_slug: chef.slug,
@@ -115,9 +112,9 @@ export async function getMyChefRecommendations(): Promise<
 > {
   await requireClient()
   const myProfile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: recs } = await supabase
+  const { data: recs } = await db
     .from('hub_chef_recommendations')
     .select('*')
     .eq('to_profile_id', myProfile.id)
@@ -126,7 +123,7 @@ export async function getMyChefRecommendations(): Promise<
   if (!recs?.length) return []
 
   const fromIds = [...new Set(recs.map((r: any) => r.from_profile_id))]
-  const { data: profiles } = await supabase.from('hub_guest_profiles').select('*').in('id', fromIds)
+  const { data: profiles } = await db.from('hub_guest_profiles').select('*').in('id', fromIds)
 
   const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]))
 

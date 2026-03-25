@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getSalesTaxRate, calculateSalesTax } from '@/lib/tax/api-ninjas'
 import type { TaxCalculation } from '@/lib/tax/api-ninjas'
 import type { TaxClass } from './constants'
@@ -57,10 +57,10 @@ const TAX_CLASS_MULTIPLIERS: Record<TaxClass, number> = {
 export async function computeSaleLineTax(saleId: string): Promise<SaleTaxResult | null> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch sale with zip code
-  const { data: sale, error: saleErr } = await supabase
+  const { data: sale, error: saleErr } = await db
     .from('sales')
     .select('id, tax_zip_code, subtotal_cents')
     .eq('id', saleId)
@@ -77,7 +77,7 @@ export async function computeSaleLineTax(saleId: string): Promise<SaleTaxResult 
   if (!rates) return null
 
   // Fetch line items
-  const { data: items, error: itemsErr } = await supabase
+  const { data: items, error: itemsErr } = await db
     .from('sale_items')
     .select('id, tax_class, line_total_cents')
     .eq('sale_id', saleId)
@@ -125,21 +125,21 @@ export async function computeSaleLineTax(saleId: string): Promise<SaleTaxResult 
 export async function applySaleTax(saleId: string): Promise<SaleTaxResult | null> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const result = await computeSaleLineTax(saleId)
   if (!result) return null
 
   // Update each line item's tax
   for (const li of result.lineItems) {
-    await supabase
+    await db
       .from('sale_items')
       .update({ tax_cents: li.taxCents } as any)
       .eq('id', li.saleItemId)
   }
 
   // Update sale total tax
-  await supabase
+  await db
     .from('sales')
     .update({
       tax_cents: result.totalTaxCents,
@@ -169,8 +169,8 @@ export async function previewTax(
 // ─── Helper ───────────────────────────────────────────────────────
 
 async function getSaleSubtotal(saleId: string, tenantId: string): Promise<number> {
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('sales')
     .select('subtotal_cents, discount_cents')
     .eq('id', saleId)

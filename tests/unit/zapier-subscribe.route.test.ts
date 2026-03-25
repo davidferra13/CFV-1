@@ -14,7 +14,7 @@ function loadRouteModule() {
   const authPath = require.resolve('../../lib/auth/get-user.ts')
   const requireProPath = require.resolve('../../lib/billing/require-pro.ts')
   const tierPath = require.resolve('../../lib/billing/tier.ts')
-  const serverPath = require.resolve('../../lib/supabase/server.ts')
+  const serverPath = require.resolve('../../lib/db/server.ts')
   const routePath = require.resolve('../../app/api/integrations/zapier/subscribe/route.ts')
 
   const originalAuth = require.cache[authPath]

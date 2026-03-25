@@ -2,7 +2,7 @@
 
 import { requireClient } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getOrCreateClientHubProfile } from './client-hub-actions'
 
 // ---------------------------------------------------------------------------
@@ -22,10 +22,10 @@ export type HubUnreadCount = {
 }
 
 export async function getHubUnreadCounts(profileToken: string): Promise<HubUnreadCount[]> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Get profile
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', profileToken)
@@ -34,7 +34,7 @@ export async function getHubUnreadCounts(profileToken: string): Promise<HubUnrea
   if (!profile) return []
 
   // Get all memberships with last_read_at AND group info in one query
-  const { data: memberships } = await supabase
+  const { data: memberships } = await db
     .from('hub_group_members')
     .select('group_id, last_read_at, hub_groups!group_id(name, emoji, group_token)')
     .eq('profile_id', profile.id)
@@ -43,7 +43,7 @@ export async function getHubUnreadCounts(profileToken: string): Promise<HubUnrea
 
   // Batch: count unread messages for all groups in parallel
   const countPromises = memberships.map((membership: any) => {
-    let query = supabase
+    let query = db
       .from('hub_messages')
       .select('*', { count: 'exact', head: true })
       .eq('group_id', membership.group_id)
@@ -101,12 +101,12 @@ export async function markMyHubNotificationsRead(input?: {
 }): Promise<{ success: true }> {
   await requireClient()
   const profile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const nowIso = new Date().toISOString()
   const uniqueGroupIds = Array.from(new Set((input?.groupIds ?? []).filter(Boolean)))
 
-  let query = supabase
+  let query = db
     .from('hub_group_members')
     .update({ last_read_at: nowIso })
     .eq('profile_id', profile.id)
@@ -144,11 +144,11 @@ export async function notifyHubActivity(input: {
   authorName: string
   messagePreview: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   try {
     // Get members who have notifications enabled and haven't been notified recently
-    const { data: members } = await supabase
+    const { data: members } = await db
       .from('hub_group_members')
       .select(
         'profile_id, notifications_muted, hub_guest_profiles!profile_id(email, notifications_enabled)'

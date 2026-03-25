@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 
@@ -48,9 +48,9 @@ export type BookingSettings = {
 
 export async function getBookingSettings(): Promise<BookingSettings> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select(
       `
@@ -82,7 +82,7 @@ export async function upsertBookingSettings(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const validated = BookingSettingsSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Validation: instant-book requires base price and Stripe Connect
   if (validated.booking_model === 'instant_book') {
@@ -91,7 +91,7 @@ export async function upsertBookingSettings(
     }
 
     // Verify Stripe Connect is ready
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('stripe_onboarding_complete')
       .eq('id', user.entityId)
@@ -119,7 +119,7 @@ export async function upsertBookingSettings(
     update.booking_slug = validated.booking_slug.toLowerCase().trim()
   }
 
-  const { error } = await supabase.from('chefs').update(update).eq('id', user.entityId)
+  const { error } = await db.from('chefs').update(update).eq('id', user.entityId)
 
   if (error) return { success: false, error: error.message }
 
@@ -144,9 +144,9 @@ export type PublicBookingConfig = {
 export async function getPublicBookingConfig(
   chefSlug: string
 ): Promise<PublicBookingConfig | null> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select(
       `

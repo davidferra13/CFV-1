@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { Task } from './actions'
 
 export type CarriedTask = Task & {
@@ -18,9 +18,9 @@ export type CarriedTask = Task & {
  */
 export async function getCarriedOverTasks(today: string): Promise<CarriedTask[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tasks')
     .select('*, staff_member:staff_members!tasks_assigned_to_fkey(id, name, role)')
     .eq('chef_id', user.tenantId!)
@@ -53,10 +53,10 @@ export async function getCarriedOverTasks(today: string): Promise<CarriedTask[]>
  */
 export async function getOverdueTaskCount(): Promise<number> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
-  const { count, error } = await supabase
+  const { count, error } = await db
     .from('tasks')
     .select('id', { count: 'exact', head: true })
     .eq('chef_id', user.tenantId!)

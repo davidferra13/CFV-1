@@ -20,8 +20,8 @@ describe('Remy client-facing error sanitization', () => {
     assert.match(message, /ran into an issue/i)
   })
 
-  it('sanitizes errors containing supabase references', () => {
-    const message = sanitizeErrorForClient(new Error('supabase connection refused'))
+  it('sanitizes errors containing db references', () => {
+    const message = sanitizeErrorForClient(new Error('db connection refused'))
     assert.match(message, /ran into an issue/i)
   })
 

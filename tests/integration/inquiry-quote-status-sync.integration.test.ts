@@ -15,9 +15,9 @@ import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { testDb } from '../helpers/test-db.js'
 
-testDb.skipIfNoSupabase()
+testDb.skipIfNoDatabase()
 
-const supabase = testDb.getClient()
+const db = testDb.getClient()
 
 let actorUserId: string
 let chefAuthUserId: string
@@ -30,7 +30,7 @@ describe('Inquiry/Quote Status Sync', () => {
   before(async () => {
     const now = Date.now()
 
-    const { data: actorUser, error: actorError } = await supabase.auth.admin.createUser({
+    const { data: actorUser, error: actorError } = await db.auth.admin.createUser({
       email: `inq-quote-actor-${now}@chefflow.test`,
       password: `Tmp-${now}-Pass!`,
       email_confirm: true,
@@ -41,7 +41,7 @@ describe('Inquiry/Quote Status Sync', () => {
     }
     actorUserId = actorUser.user.id
 
-    const { data: chefAuthUser, error: chefAuthError } = await supabase.auth.admin.createUser({
+    const { data: chefAuthUser, error: chefAuthError } = await db.auth.admin.createUser({
       email: `inq-quote-chef-auth-${now}@chefflow.test`,
       password: `Tmp-${now}-ChefPass!`,
       email_confirm: true,
@@ -102,15 +102,15 @@ describe('Inquiry/Quote Status Sync', () => {
   after(async () => {
     await testDb.cleanup()
     if (chefAuthUserId) {
-      await supabase.auth.admin.deleteUser(chefAuthUserId)
+      await db.auth.admin.deleteUser(chefAuthUserId)
     }
     if (actorUserId) {
-      await supabase.auth.admin.deleteUser(actorUserId)
+      await db.auth.admin.deleteUser(actorUserId)
     }
   })
 
   it('accepting a quote linked to a new inquiry records quoted -> confirmed sync', async () => {
-    const { error: acceptError } = await supabase.rpc('respond_to_quote_atomic', {
+    const { error: acceptError } = await db.rpc('respond_to_quote_atomic', {
       p_quote_id: quoteId,
       p_client_id: clientId,
       p_new_status: 'accepted',
@@ -120,7 +120,7 @@ describe('Inquiry/Quote Status Sync', () => {
 
     assert.equal(acceptError, null, acceptError?.message)
 
-    const { data: inquiry, error: inquiryError } = await supabase
+    const { data: inquiry, error: inquiryError } = await db
       .from('inquiries')
       .select('status')
       .eq('id', inquiryId)
@@ -129,7 +129,7 @@ describe('Inquiry/Quote Status Sync', () => {
     assert.equal(inquiryError, null, inquiryError?.message)
     assert.equal(inquiry?.status, 'confirmed')
 
-    const { data: transitions, error: transitionError } = await supabase
+    const { data: transitions, error: transitionError } = await db
       .from('inquiry_state_transitions')
       .select('from_status, to_status, reason')
       .eq('inquiry_id', inquiryId)
@@ -161,7 +161,7 @@ describe('Inquiry/Quote Status Sync', () => {
       confirmed_occasion: 'Validator Dinner',
     })
 
-    const { error: legalError } = await supabase.from('inquiry_state_transitions').insert({
+    const { error: legalError } = await db.from('inquiry_state_transitions').insert({
       tenant_id: chefId,
       inquiry_id: extraInquiry.id,
       from_status: 'new',
@@ -172,7 +172,7 @@ describe('Inquiry/Quote Status Sync', () => {
 
     assert.equal(legalError, null, legalError?.message)
 
-    const { error: illegalError } = await supabase.from('inquiry_state_transitions').insert({
+    const { error: illegalError } = await db.from('inquiry_state_transitions').insert({
       tenant_id: chefId,
       inquiry_id: extraInquiry.id,
       from_status: 'new',
@@ -211,7 +211,7 @@ describe('Inquiry/Quote Status Sync', () => {
       sent_at: new Date().toISOString(),
     })
 
-    const { error: rejectError } = await supabase.rpc('respond_to_quote_atomic', {
+    const { error: rejectError } = await db.rpc('respond_to_quote_atomic', {
       p_quote_id: rejectQuote.id,
       p_client_id: clientId,
       p_new_status: 'rejected',
@@ -222,7 +222,7 @@ describe('Inquiry/Quote Status Sync', () => {
     assert.equal(rejectError, null, rejectError?.message)
 
     // Inquiry should still be 'new' (rejection does not touch it)
-    const { data: inquiry, error: inquiryError } = await supabase
+    const { data: inquiry, error: inquiryError } = await db
       .from('inquiries')
       .select('status')
       .eq('id', rejectInquiry.id)
@@ -236,7 +236,7 @@ describe('Inquiry/Quote Status Sync', () => {
     )
 
     // No inquiry_state_transitions should exist for this inquiry
-    const { data: transitions } = await supabase
+    const { data: transitions } = await db
       .from('inquiry_state_transitions')
       .select('id')
       .eq('inquiry_id', rejectInquiry.id)
@@ -263,7 +263,7 @@ describe('Inquiry/Quote Status Sync', () => {
     })
 
     // awaiting_client -> quoted should succeed
-    const { error: skipError } = await supabase.from('inquiry_state_transitions').insert({
+    const { error: skipError } = await db.from('inquiry_state_transitions').insert({
       tenant_id: chefId,
       inquiry_id: skipInquiry.id,
       from_status: 'awaiting_client',
@@ -279,7 +279,7 @@ describe('Inquiry/Quote Status Sync', () => {
     )
 
     // awaiting_client -> confirmed should be rejected
-    const { error: illegalSkip } = await supabase.from('inquiry_state_transitions').insert({
+    const { error: illegalSkip } = await db.from('inquiry_state_transitions').insert({
       tenant_id: chefId,
       inquiry_id: skipInquiry.id,
       from_status: 'awaiting_client',
@@ -294,7 +294,7 @@ describe('Inquiry/Quote Status Sync', () => {
   it('acceptance transitions carry quote_client_acceptance metadata source', async () => {
     // The main test (first test) already accepted the quote.
     // Check that the transitions have the correct metadata.
-    const { data: transitions, error } = await supabase
+    const { data: transitions, error } = await db
       .from('inquiry_state_transitions')
       .select('from_status, to_status, metadata')
       .eq('inquiry_id', inquiryId)

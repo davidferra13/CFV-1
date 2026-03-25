@@ -5,7 +5,7 @@
  * This is P2 — wrong pricing = quoting clients incorrectly.
  *
  * We import the actual function since it's a pure function with no
- * Supabase or server action dependencies. Only its async sibling
+ * database or server action dependencies. Only its async sibling
  * computePricing() needs the holiday cache (which we don't test here).
  *
  * Run: npm run test:unit

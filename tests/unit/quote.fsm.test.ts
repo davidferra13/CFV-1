@@ -5,7 +5,7 @@
  * This is P2 — wrong quote state = pricing confusion and lost deals.
  *
  * We test the pure state machine logic extracted from lib/quotes/actions.ts
- * without requiring Supabase or server action runtime.
+ * without requiring database or server action runtime.
  *
  * Run: npm run test:unit
  */

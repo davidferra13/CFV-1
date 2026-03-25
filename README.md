@@ -10,7 +10,7 @@ This project is governed by **CHEFFLOW_V1_SCOPE_LOCK.md**. All features, archite
 
 - **Framework**: Next.js 14+ (App Router)
 - **Language**: TypeScript (strict mode)
-- **Database**: Supabase (PostgreSQL + Auth + RLS + Storage)
+- **Database**: PostgreSQL (PostgreSQL + Auth + RLS + Storage)
 - **Payments**: Stripe
 - **Styling**: Tailwind CSS
 
@@ -20,7 +20,7 @@ This project is governed by **CHEFFLOW_V1_SCOPE_LOCK.md**. All features, archite
 
 - Node.js 20+
 - npm
-- Supabase account
+- PostgreSQL account
 - Stripe account
 
 ### Installation
@@ -38,7 +38,7 @@ This project is governed by **CHEFFLOW_V1_SCOPE_LOCK.md**. All features, archite
    cp .env.local.example .env.local
    ```
 
-4. Run database migrations (see `supabase/migrations/`)
+4. Run database migrations (see `database/migrations/`)
 
 5. Start the development server:
 
@@ -50,7 +50,7 @@ This project is governed by **CHEFFLOW_V1_SCOPE_LOCK.md**. All features, archite
 
 ### Local One-Command Bootstrap
 
-For a full local environment (Supabase + migrations + generated types + demo users/data):
+For a full local environment (PostgreSQL + migrations + generated types + demo users/data):
 
 ```bash
 npm run local:bootstrap
@@ -61,7 +61,7 @@ After bootstrap:
 - Chef login: `chef.demo@local.chefflow` / `ChefFlowLocal!123`
 - Client login: `client.demo@local.chefflow` / `ChefFlowLocal!123`
 - Public chef page: `http://localhost:3100/chef/chef-demo`
-- Supabase Studio: `http://127.0.0.1:54323`
+- PostgreSQL Studio: `http://127.0.0.1:54323`
 
 More details: `docs/LOCAL_TESTING_BOOTSTRAP.md`
 
@@ -76,13 +76,13 @@ app/
 └── api/webhooks/      # Stripe webhook endpoint
 
 lib/
-├── supabase/          # Supabase client utilities
+├── database/          # database client utilities
 ├── stripe/            # Stripe integration
 ├── ledger/            # Ledger-first financial system
 ├── auth/              # Auth and role resolution
 └── events/            # Event lifecycle management
 
-supabase/migrations/   # Database schema and RLS policies
+database/migrations/   # Database schema and RLS policies
 ```
 
 ## Non-Negotiable System Laws

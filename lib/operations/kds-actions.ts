@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -70,9 +70,9 @@ function mapServiceCourse(row: any): ServiceCourse {
  */
 export async function getServiceCourses(eventId: string): Promise<ServiceCourse[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('service_courses')
     .select('*')
     .eq('event_id', eventId)
@@ -97,7 +97,7 @@ export async function createServiceCourses(
 ) {
   const user = await requireChef()
   const validated = CreateServiceCoursesSchema.parse({ eventId, courses })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const rows = validated.courses.map((c) => ({
     event_id: validated.eventId,
@@ -107,7 +107,7 @@ export async function createServiceCourses(
     status: 'pending',
   }))
 
-  const { data, error } = await supabase.from('service_courses').insert(rows).select()
+  const { data, error } = await db.from('service_courses').insert(rows).select()
 
   if (error) {
     console.error('[createServiceCourses] Error:', error)
@@ -124,9 +124,9 @@ export async function createServiceCourses(
  */
 export async function fireCourse(courseId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('service_courses')
     .update({
       status: 'fired',
@@ -151,9 +151,9 @@ export async function fireCourse(courseId: string) {
  */
 export async function markCoursePlated(courseId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('service_courses')
     .update({ status: 'plated' })
     .eq('id', courseId)
@@ -176,9 +176,9 @@ export async function markCoursePlated(courseId: string) {
  */
 export async function markCourseServed(courseId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('service_courses')
     .update({
       status: 'served',
@@ -212,9 +212,9 @@ export async function markServed(courseId: string) {
  */
 export async function mark86(courseId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('service_courses')
     .update({ status: 'eighty_sixed' })
     .eq('id', courseId)

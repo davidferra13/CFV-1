@@ -5,7 +5,7 @@
 // Returns tasks grouped with event context so the chef can see what needs doing at a glance.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { getDOPSchedule } from './dop'
 import type { DOPTaskCategory, SchedulingEvent, ChefPreferences } from './types'
@@ -90,14 +90,14 @@ const PHASE_LABELS: Record<string, string> = {
  */
 export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Events from 7 days ago to any future date, excluding cancelled
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
   const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0]
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       `
@@ -127,7 +127,7 @@ export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
 
   // Fetch all manual completions for these events in one query
   const eventIds = events.map((e: any) => e.id)
-  const { data: completionRows } = await supabase
+  const { data: completionRows } = await db
     .from('dop_task_completions')
     .select('event_id, task_key')
     .eq('tenant_id', user.tenantId!)

@@ -1,7 +1,7 @@
 import { chromium } from 'playwright';
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
-import { createAdminClient } from './scripts/lib/supabase.mjs';
+import { createAdminClient } from './scripts/lib/db.mjs';
 
 const admin = createAdminClient();
 const chefId = '91ec0e6a-ce61-41ec-b9e5-eea3b415e5b8';

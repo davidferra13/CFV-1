@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -54,9 +54,9 @@ const KitchenAssessmentSchema = z.object({
 
 export async function getKitchenAssessments(clientId?: string): Promise<KitchenAssessment[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('kitchen_assessments')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -77,9 +77,9 @@ export async function getKitchenAssessments(clientId?: string): Promise<KitchenA
 
 export async function getKitchenAssessment(id: string): Promise<KitchenAssessment | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('kitchen_assessments')
     .select('*')
     .eq('id', id)
@@ -97,9 +97,9 @@ export async function createKitchenAssessment(
   const parsed = KitchenAssessmentSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid assessment data.' }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('kitchen_assessments')
     .insert({
       chef_id: user.entityId,
@@ -145,9 +145,9 @@ export async function updateKitchenAssessment(
   const parsed = KitchenAssessmentSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid assessment data.' }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('kitchen_assessments')
     .update({
       ...parsed.data,
@@ -168,9 +168,9 @@ export async function deleteKitchenAssessment(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('kitchen_assessments')
     .delete()
     .eq('id', id)

@@ -5,7 +5,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import type { RemyMessage } from '@/lib/ai/remy-types'
 
@@ -25,9 +25,9 @@ export interface RemyConversation {
 export async function createConversation(): Promise<{ id: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('remy_conversations')
     .insert({ tenant_id: tenantId })
     .select('id')
@@ -45,12 +45,12 @@ export async function listConversations(options?: {
 }): Promise<{ conversations: RemyConversation[]; total: number }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const limit = options?.limit ?? 30
   const offset = options?.offset ?? 0
 
-  const { data, error, count } = await supabase
+  const { data, error, count } = await db
     .from('remy_conversations')
     .select('*', { count: 'exact' })
     .eq('tenant_id', tenantId)
@@ -65,7 +65,7 @@ export async function listConversations(options?: {
 
   let lastMessages: Record<string, string> = {}
   if (conversationIds.length > 0) {
-    const { data: msgs } = await supabase
+    const { data: msgs } = await db
       .from('remy_messages')
       .select('conversation_id, content')
       .in('conversation_id', conversationIds)
@@ -98,9 +98,9 @@ export async function listConversations(options?: {
 export async function loadConversationMessages(conversationId: string): Promise<RemyMessage[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('remy_messages')
     .select('*')
     .eq('conversation_id', conversationId)
@@ -130,9 +130,9 @@ export async function saveConversationMessage(input: {
 }): Promise<{ id: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('remy_messages')
     .insert({
       conversation_id: input.conversationId,
@@ -148,7 +148,7 @@ export async function saveConversationMessage(input: {
   if (error) throw new Error(`Failed to save message: ${error.message}`)
 
   // Touch the conversation's updated_at so it sorts to the top
-  await supabase
+  await db
     .from('remy_conversations')
     .update({ updated_at: new Date().toISOString() })
     .eq('id', input.conversationId)
@@ -170,7 +170,7 @@ export async function autoTitleConversation(
 ): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   try {
     const result = await parseWithOllama(
@@ -180,7 +180,7 @@ export async function autoTitleConversation(
       { modelTier: 'fast', cache: false }
     )
 
-    await supabase
+    await db
       .from('remy_conversations')
       .update({ title: result.title })
       .eq('id', conversationId)
@@ -196,9 +196,9 @@ export async function autoTitleConversation(
 export async function deleteConversationMessage(messageId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('remy_messages')
     .delete()
     .eq('id', messageId)
@@ -266,9 +266,9 @@ export async function exportConversation(
 ): Promise<{ title: string; content: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: conv } = await supabase
+  const { data: conv } = await db
     .from('remy_conversations')
     .select('title')
     .eq('id', conversationId)
@@ -306,9 +306,9 @@ export async function exportConversation(
 export async function deleteConversation(conversationId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('remy_conversations')
     .update({ is_active: false })
     .eq('id', conversationId)

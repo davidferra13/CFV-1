@@ -1,14 +1,22 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export type GiftType = 'thank_you' | 'birthday' | 'holiday' | 'milestone' | 'apology' | 'custom'
 export type DeliveryMethod = 'hand_delivered' | 'shipped' | 'digital' | 'with_service'
-export type TriggerType = 'post_event' | 'birthday' | 'anniversary' | 'no_booking_30d' | 'no_booking_60d' | 'no_booking_90d' | 'holiday' | 'milestone_event_count'
+export type TriggerType =
+  | 'post_event'
+  | 'birthday'
+  | 'anniversary'
+  | 'no_booking_30d'
+  | 'no_booking_60d'
+  | 'no_booking_90d'
+  | 'holiday'
+  | 'milestone_event_count'
 export type RuleAction = 'reminder' | 'email_draft' | 'gift_suggestion'
 
 export type GiftEntry = {
@@ -47,9 +55,9 @@ export type GiftSuggestion = {
 
 export async function getGiftLog(clientId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('client_gift_log')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -76,21 +84,19 @@ export async function addGiftEntry(data: {
   notes?: string
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
-    .from('client_gift_log')
-    .insert({
-      chef_id: user.entityId,
-      client_id: data.client_id,
-      gift_type: data.gift_type,
-      occasion: data.occasion,
-      description: data.description,
-      cost_cents: data.cost_cents,
-      sent_at: data.sent_at,
-      delivery_method: data.delivery_method,
-      notes: data.notes || null,
-    })
+  const { error } = await db.from('client_gift_log').insert({
+    chef_id: user.entityId,
+    client_id: data.client_id,
+    gift_type: data.gift_type,
+    occasion: data.occasion,
+    description: data.description,
+    cost_cents: data.cost_cents,
+    sent_at: data.sent_at,
+    delivery_method: data.delivery_method,
+    notes: data.notes || null,
+  })
 
   if (error) throw new Error(`Failed to add gift: ${error.message}`)
   revalidatePath('/clients')
@@ -99,9 +105,9 @@ export async function addGiftEntry(data: {
 
 export async function deleteGiftEntry(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_gift_log')
     .delete()
     .eq('id', id)
@@ -116,9 +122,9 @@ export async function deleteGiftEntry(id: string) {
 
 export async function getFollowUpRules() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_followup_rules')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -136,7 +142,7 @@ export async function upsertFollowUpRule(data: {
   enabled?: boolean
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const row = {
     chef_id: user.entityId,
@@ -147,7 +153,7 @@ export async function upsertFollowUpRule(data: {
   }
 
   if (data.id) {
-    const { error } = await supabase
+    const { error } = await db
       .from('client_followup_rules')
       .update(row)
       .eq('id', data.id)
@@ -155,9 +161,7 @@ export async function upsertFollowUpRule(data: {
 
     if (error) throw new Error(`Failed to update rule: ${error.message}`)
   } else {
-    const { error } = await supabase
-      .from('client_followup_rules')
-      .insert(row)
+    const { error } = await db.from('client_followup_rules').insert(row)
 
     if (error) throw new Error(`Failed to create rule: ${error.message}`)
   }
@@ -168,9 +172,9 @@ export async function upsertFollowUpRule(data: {
 
 export async function deleteFollowUpRule(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_followup_rules')
     .delete()
     .eq('id', id)
@@ -185,13 +189,13 @@ export async function deleteFollowUpRule(id: string) {
 
 export async function getGiftSuggestions(clientId?: string): Promise<GiftSuggestion[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const suggestions: GiftSuggestion[] = []
 
   // Build client query
-  let clientQuery = supabase
+  let clientQuery = db
     .from('clients')
     .select('id, first_name, last_name, date_of_birth')
     .eq('tenant_id', user.tenantId!)
@@ -219,7 +223,10 @@ export async function getGiftSuggestions(clientId?: string): Promise<GiftSuggest
       if (daysUntil <= 14) {
         suggestions.push({
           type: 'birthday',
-          reason: daysUntil === 0 ? `${name}'s birthday is today!` : `${name}'s birthday is in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`,
+          reason:
+            daysUntil === 0
+              ? `${name}'s birthday is today!`
+              : `${name}'s birthday is in ${daysUntil} day${daysUntil === 1 ? '' : 's'}`,
           client_id: client.id,
           client_name: name,
           urgency: daysUntil <= 3 ? 'high' : daysUntil <= 7 ? 'medium' : 'low',
@@ -228,7 +235,7 @@ export async function getGiftSuggestions(clientId?: string): Promise<GiftSuggest
     }
 
     // No recent booking check: 60+ days since last event
-    const { data: recentEvents } = await supabase
+    const { data: recentEvents } = await db
       .from('events')
       .select('event_date')
       .eq('tenant_id', user.tenantId!)
@@ -238,7 +245,9 @@ export async function getGiftSuggestions(clientId?: string): Promise<GiftSuggest
 
     if (recentEvents && recentEvents.length > 0) {
       const lastEventDate = new Date(recentEvents[0].event_date)
-      const daysSince = Math.floor((now.getTime() - lastEventDate.getTime()) / (1000 * 60 * 60 * 24))
+      const daysSince = Math.floor(
+        (now.getTime() - lastEventDate.getTime()) / (1000 * 60 * 60 * 24)
+      )
 
       if (daysSince >= 60) {
         suggestions.push({
@@ -252,7 +261,7 @@ export async function getGiftSuggestions(clientId?: string): Promise<GiftSuggest
     }
 
     // Milestone check: event count milestones (5, 10, 25, 50)
-    const { count: eventCount } = await supabase
+    const { count: eventCount } = await db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', user.tenantId!)
@@ -285,10 +294,10 @@ export async function getGiftSuggestions(clientId?: string): Promise<GiftSuggest
 
 export async function getGiftingStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all gifts for this chef
-  const { data: gifts } = await supabase
+  const { data: gifts } = await db
     .from('client_gift_log')
     .select('client_id, cost_cents')
     .eq('chef_id', user.entityId)

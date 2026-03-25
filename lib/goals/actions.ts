@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import type {
@@ -124,8 +124,8 @@ export async function createGoal(input: CreateGoalInput): Promise<{ goalId: stri
 
   const trackingMethod = getTrackingMethod(parsed.data.goalType)
 
-  const supabase: any = createServerClient() as any
-  const { data, error } = await supabase
+  const db: any = createServerClient() as any
+  const { data, error } = await db
     .from('chef_goals')
     .insert({
       tenant_id: user.tenantId,
@@ -164,8 +164,8 @@ export async function updateGoal(goalId: string, input: Partial<CreateGoalInput>
   if (input.nudgeLevel !== undefined) updates.nudge_level = input.nudgeLevel
   if (input.notes !== undefined) updates.notes = input.notes
 
-  const supabase: any = createServerClient() as any
-  const { error } = await supabase
+  const db: any = createServerClient() as any
+  const { error } = await db
     .from('chef_goals')
     .update(updates)
     .eq('id', goalId)
@@ -178,8 +178,8 @@ export async function updateGoal(goalId: string, input: Partial<CreateGoalInput>
 export async function archiveGoal(goalId: string): Promise<void> {
   const user = await requireChef()
 
-  const supabase: any = createServerClient() as any
-  const { error } = await supabase
+  const db: any = createServerClient() as any
+  const { error } = await db
     .from('chef_goals')
     .update({ status: 'archived', updated_at: new Date().toISOString() })
     .eq('id', goalId)
@@ -191,9 +191,9 @@ export async function archiveGoal(goalId: string): Promise<void> {
 
 export async function getActiveGoals(): Promise<ChefGoal[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_goals')
     .select('*')
     .eq('tenant_id', user.tenantId)
@@ -207,9 +207,9 @@ export async function getActiveGoals(): Promise<ChefGoal[]> {
 // Fetch a single goal by ID regardless of status (used by history page).
 export async function getGoalById(goalId: string): Promise<ChefGoal | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_goals')
     .select('*')
     .eq('id', goalId)
@@ -224,9 +224,9 @@ export async function getGoalById(goalId: string): Promise<ChefGoal | null> {
 
 export async function getCategorySettings(): Promise<CategorySettings> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_preferences')
     .select('enabled_goal_categories, category_nudge_levels')
     .eq('chef_id', user.tenantId)
@@ -260,8 +260,8 @@ export async function updateCategorySettings(
   const alwaysOn = GOAL_CATEGORY_META.filter((c) => c.alwaysEnabled).map((c) => c.id)
   const merged = Array.from(new Set([...alwaysOn, ...enabledCategories])) as GoalCategory[]
 
-  const supabase: any = createServerClient() as any
-  const { error } = await supabase.from('chef_preferences').upsert(
+  const db: any = createServerClient() as any
+  const { error } = await db.from('chef_preferences').upsert(
     {
       chef_id: user.tenantId,
       enabled_goal_categories: merged,
@@ -301,12 +301,12 @@ function computeCategoryProgress(goals: GoalView[]): Partial<Record<GoalCategory
 
 export async function getGoalsDashboard(): Promise<GoalsDashboard> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
   const tenantId = user.tenantId!
   const now = new Date()
 
   const [{ data: goalRows, error }, categorySettings] = await Promise.all([
-    supabase
+    db
       .from('chef_goals')
       .select('*')
       .eq('tenant_id', tenantId)
@@ -320,11 +320,11 @@ export async function getGoalsDashboard(): Promise<GoalsDashboard> {
 
   const hasRevenueGoal = goals.some((g) => isRevenueGoal(g.goalType))
   const revenueSnapshot: RevenueGoalSnapshot | null = hasRevenueGoal
-    ? await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, supabase)
+    ? await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, db)
     : null
 
   const activeGoals = await Promise.all(
-    goals.map((goal) => computeGoalView(supabase, tenantId, goal, now, revenueSnapshot))
+    goals.map((goal) => computeGoalView(db, tenantId, goal, now, revenueSnapshot))
   )
 
   const categoryProgress = computeCategoryProgress(activeGoals)
@@ -338,30 +338,30 @@ export async function getGoalsDashboard(): Promise<GoalsDashboard> {
 }
 
 async function computeGoalView(
-  supabase: any,
+  db: any,
   tenantId: string,
   goal: ChefGoal,
   now: Date,
   revenueSnapshot: RevenueGoalSnapshot | null
 ): Promise<GoalView> {
   if (isRevenueGoal(goal.goalType)) {
-    return computeRevenueGoalView(supabase, tenantId, goal, now, revenueSnapshot)
+    return computeRevenueGoalView(db, tenantId, goal, now, revenueSnapshot)
   }
   if (isManualGoal(goal.trackingMethod)) {
-    return computeManualGoalView(supabase, tenantId, goal)
+    return computeManualGoalView(db, tenantId, goal)
   }
-  return computeAutoGoalView(supabase, tenantId, goal, now)
+  return computeAutoGoalView(db, tenantId, goal, now)
 }
 
 async function computeRevenueGoalView(
-  supabase: any,
+  db: any,
   tenantId: string,
   goal: ChefGoal,
   now: Date,
   precomputedSnapshot: RevenueGoalSnapshot | null
 ): Promise<GoalView> {
   const snapshot =
-    precomputedSnapshot ?? (await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, supabase))
+    precomputedSnapshot ?? (await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, db))
 
   let realizedCents = snapshot.monthly.realizedCents
   let projectedCents = snapshot.monthly.projectedCents
@@ -396,7 +396,7 @@ async function computeRevenueGoalView(
 
   const pricingScenarios: PricingScenario[] = buildPricingScenarios(gapCents, avgBookingValueCents)
   const clientSuggestions: ClientSuggestion[] = await buildClientSuggestions(
-    supabase,
+    db,
     tenantId,
     gapCents,
     goal.id
@@ -405,19 +405,11 @@ async function computeRevenueGoalView(
   return { goal, progress, enrichment, pricingScenarios, clientSuggestions, recentCheckIns: [] }
 }
 
-async function computeManualGoalView(
-  supabase: any,
-  tenantId: string,
-  goal: ChefGoal
-): Promise<GoalView> {
+async function computeManualGoalView(db: any, tenantId: string, goal: ChefGoal): Promise<GoalView> {
   const [currentValue, recentCheckIns] = await Promise.all([
-    getManualGoalCurrentValue(
-      supabase as unknown as { from: (t: string) => unknown },
-      tenantId,
-      goal
-    ),
+    getManualGoalCurrentValue(db as unknown as { from: (t: string) => unknown }, tenantId, goal),
     getManualGoalRecentCheckIns(
-      supabase as unknown as { from: (t: string) => unknown },
+      db as unknown as { from: (t: string) => unknown },
       tenantId,
       goal.id,
       3
@@ -445,7 +437,7 @@ async function computeManualGoalView(
 }
 
 async function computeAutoGoalView(
-  supabase: any,
+  db: any,
   tenantId: string,
   goal: ChefGoal,
   _now: Date
@@ -454,36 +446,31 @@ async function computeAutoGoalView(
 
   switch (goal.goalType) {
     case 'booking_count':
-      currentValue = await fetchBookingCount(supabase, tenantId, goal.periodStart, goal.periodEnd)
+      currentValue = await fetchBookingCount(db, tenantId, goal.periodStart, goal.periodEnd)
       break
     case 'new_clients':
-      currentValue = await fetchNewClientCount(supabase, tenantId, goal.periodStart, goal.periodEnd)
+      currentValue = await fetchNewClientCount(db, tenantId, goal.periodStart, goal.periodEnd)
       break
     case 'recipe_library':
-      currentValue = await fetchRecipeCount(supabase, tenantId)
+      currentValue = await fetchRecipeCount(db, tenantId)
       break
     case 'profit_margin':
-      currentValue = await fetchTrailingProfitMarginBp(supabase, tenantId, 90)
+      currentValue = await fetchTrailingProfitMarginBp(db, tenantId, 90)
       break
     case 'expense_ratio':
-      currentValue = await fetchTrailingExpenseRatioBp(supabase, tenantId, 90)
+      currentValue = await fetchTrailingExpenseRatioBp(db, tenantId, 90)
       break
     case 'repeat_booking_rate':
-      currentValue = await fetchRepeatBookingRateBp(supabase, tenantId)
+      currentValue = await fetchRepeatBookingRateBp(db, tenantId)
       break
     case 'total_reviews':
-      currentValue = await fetchTotalReviews(supabase, tenantId)
+      currentValue = await fetchTotalReviews(db, tenantId)
       break
     case 'review_average':
-      currentValue = await fetchReviewAverageBp(supabase, tenantId)
+      currentValue = await fetchReviewAverageBp(db, tenantId)
       break
     case 'workshops_attended':
-      currentValue = await fetchWorkshopsAttended(
-        supabase,
-        tenantId,
-        goal.periodStart,
-        goal.periodEnd
-      )
+      currentValue = await fetchWorkshopsAttended(db, tenantId, goal.periodStart, goal.periodEnd)
       break
     default:
       currentValue = 0
@@ -513,9 +500,9 @@ async function computeAutoGoalView(
 
 export async function getGoalHistory(goalId: string, limit = 12): Promise<GoalSnapshot[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
-  const { data: goal } = await supabase
+  const { data: goal } = await db
     .from('chef_goals')
     .select('id')
     .eq('id', goalId)
@@ -524,7 +511,7 @@ export async function getGoalHistory(goalId: string, limit = 12): Promise<GoalSn
 
   if (!goal) throw new Error('Goal not found')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('goal_snapshots')
     .select('*')
     .eq('goal_id', goalId)
@@ -553,10 +540,10 @@ export async function getGoalHistory(goalId: string, limit = 12): Promise<GoalSn
   }))
 }
 
-// ── Snapshot writing (called from cron with admin supabase client) ─────────────
+// ── Snapshot writing (called from cron with admin db client) ─────────────
 
 export async function writeGoalSnapshot(
-  supabase: any,
+  db: any,
   tenantId: string,
   goalId: string,
   goalView: GoalView,
@@ -566,7 +553,7 @@ export async function writeGoalSnapshot(
   const monthStr = dateStr.slice(0, 7)
   const { progress, enrichment, pricingScenarios, clientSuggestions } = goalView
 
-  await supabase.from('goal_snapshots').upsert(
+  await db.from('goal_snapshots').upsert(
     {
       tenant_id: tenantId,
       goal_id: goalId,
@@ -601,7 +588,7 @@ export async function updateSuggestionStatus(
   bookedEventId?: string
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
   const updates: Record<string, unknown> = {
     status,
@@ -610,7 +597,7 @@ export async function updateSuggestionStatus(
   if (status === 'contacted') updates.contacted_at = new Date().toISOString()
   if (status === 'booked' && bookedEventId) updates.booked_event_id = bookedEventId
 
-  const { error } = await supabase
+  const { error } = await db
     .from('goal_client_suggestions')
     .update(updates)
     .eq('id', suggestionId)

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 
-const supabaseAdmin = createAdminClient()
+const dbAdmin = createAdminClient()
 
 const SYSTEM_KEY = 'relationship_cooling'
 
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     const coolingPairs = new Map<string, { tenant_id: string; client_id: string }>()
 
     // Preferred path: RPC if available.
-    const { data: coolingClients, error } = await supabaseAdmin.rpc('get_cooling_clients', {
+    const { data: coolingClients, error } = await dbAdmin.rpc('get_cooling_clients', {
       cutoff_date: ninetyDaysAgo,
       today_date: today,
     })
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     } else {
       // Fallback: if RPC doesn't exist, use 2 queries instead of N+1.
       // Get all client-chef pairs with their latest completed event date
-      const { data: latestEvents } = await supabaseAdmin
+      const { data: latestEvents } = await dbAdmin
         .from('events')
         .select('tenant_id, client_id')
         .eq('status', 'completed')
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
       }
 
       // Check which candidates have NO upcoming events (batch query)
-      const { data: upcomingEvents } = await supabaseAdmin
+      const { data: upcomingEvents } = await dbAdmin
         .from('events')
         .select('tenant_id, client_id')
         .gte('event_date', today)
@@ -95,7 +95,7 @@ export async function GET(request: Request) {
     }
 
     const clientIds = Array.from(new Set(candidates.map((row) => row.client_id)))
-    const { data: clients } = await supabaseAdmin
+    const { data: clients } = await dbAdmin
       .from('clients')
       .select('id, full_name')
       .in('id', clientIds)
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
         continue
       }
 
-      const { data: existing } = await supabaseAdmin
+      const { data: existing } = await dbAdmin
         .from('notifications')
         .select('id')
         .eq('tenant_id', pair.tenant_id)

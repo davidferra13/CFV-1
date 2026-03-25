@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 type BudgetMode = 'not_sure' | 'unset'
 
@@ -51,9 +51,9 @@ function hasBudgetModeCondition(conditions: unknown, budgetMode: BudgetMode): bo
 export async function seedDefaultBudgetQualificationAutomations(
   tenantId: string
 ): Promise<{ created: number }> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: existingRules, error: existingError } = await supabase
+  const { data: existingRules, error: existingError } = await db
     .from('automation_rules' as any)
     .select('id, conditions')
     .eq('tenant_id', tenantId)
@@ -97,7 +97,7 @@ export async function seedDefaultBudgetQualificationAutomations(
     priority: rule.priority,
   }))
 
-  const { error: insertError } = await supabase.from('automation_rules' as any).insert(payload)
+  const { error: insertError } = await db.from('automation_rules' as any).insert(payload)
   if (insertError) {
     throw new Error(insertError.message || 'Failed to seed default budget automation rules')
   }

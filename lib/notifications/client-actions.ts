@@ -5,7 +5,7 @@
 
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createNotification } from './actions'
 import type { NotificationCategory, NotificationAction } from './types'
 
@@ -16,9 +16,9 @@ import type { NotificationCategory, NotificationAction } from './types'
  * Returns null if the client has no portal account (guest/imported contact).
  */
 export async function getClientAuthUserId(clientId: string): Promise<string | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('user_roles')
     .select('auth_user_id')
     .eq('entity_id', clientId)

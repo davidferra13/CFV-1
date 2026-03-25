@@ -20,7 +20,7 @@ export const GET = withApiAuth(
     if (!id) return apiNotFound('Loyalty member')
 
     // Fetch client with loyalty data
-    const { data: client, error } = await ctx.supabase
+    const { data: client, error } = await ctx.db
       .from('clients')
       .select(
         'id, full_name, email, phone, loyalty_points, loyalty_tier, total_events_completed, total_guests_served, created_at'
@@ -32,7 +32,7 @@ export const GET = withApiAuth(
     if (error || !client) return apiNotFound('Loyalty member')
 
     // Fetch transaction history
-    const { data: transactions } = await (ctx.supabase as any)
+    const { data: transactions } = await (ctx.db as any)
       .from('loyalty_transactions')
       .select('id, type, points, description, event_id, created_at')
       .eq('client_id', id)
@@ -66,7 +66,7 @@ export const PATCH = withApiAuth(
     const input = parsed.data
 
     // Verify client belongs to tenant
-    const { data: client } = await ctx.supabase
+    const { data: client } = await ctx.db
       .from('clients')
       .select('id, loyalty_points, loyalty_tier')
       .eq('id', id)
@@ -79,7 +79,7 @@ export const PATCH = withApiAuth(
     if (input.adjust_points && input.adjust_points !== 0) {
       const txType = input.adjust_points > 0 ? 'bonus' : 'adjustment'
 
-      const { error: txError } = await (ctx.supabase as any).from('loyalty_transactions').insert({
+      const { error: txError } = await (ctx.db as any).from('loyalty_transactions').insert({
         tenant_id: ctx.tenantId,
         client_id: id,
         type: txType,
@@ -107,7 +107,7 @@ export const PATCH = withApiAuth(
     }
 
     if (Object.keys(updates).length > 0) {
-      const { error } = await ctx.supabase
+      const { error } = await ctx.db
         .from('clients')
         .update(updates as any)
         .eq('id', id)
@@ -120,7 +120,7 @@ export const PATCH = withApiAuth(
     }
 
     // Re-fetch updated client
-    const { data: updated } = await ctx.supabase
+    const { data: updated } = await ctx.db
       .from('clients')
       .select('id, full_name, email, loyalty_points, loyalty_tier')
       .eq('id', id)

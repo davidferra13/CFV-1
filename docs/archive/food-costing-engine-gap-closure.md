@@ -69,9 +69,9 @@ Six gaps in the food costing and inventory engine were closed, completing the sy
 - `lib/inventory/vendor-comparison-actions.ts`
 - `lib/inventory/auto-reorder-actions.ts`
 - `lib/inventory/variance-alert-actions.ts`
-- `supabase/migrations/20260401000061_ingredient_price_history.sql`
-- `supabase/migrations/20260401000062_vendor_ingredient_pricing.sql`
-- `supabase/migrations/20260401000063_variance_alert_settings.sql`
+- `database/migrations/20260401000061_ingredient_price_history.sql`
+- `database/migrations/20260401000062_vendor_ingredient_pricing.sql`
+- `database/migrations/20260401000063_variance_alert_settings.sql`
 
 ## Files Modified
 
@@ -102,7 +102,7 @@ All UI components wired into their respective pages:
 
 ## Migrations Pending
 
-Three migrations need `supabase db push` before features go live:
+Three migrations need `drizzle-kit push` before features go live:
 
 1. `20260401000061_ingredient_price_history.sql` - Price history table + monthly avg view
 2. `20260401000062_vendor_ingredient_pricing.sql` - Vendor pricing columns + best price view

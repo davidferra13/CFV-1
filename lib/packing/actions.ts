@@ -6,7 +6,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export type PackingStatus = {
@@ -23,9 +23,9 @@ export async function markCarPacked(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       car_packed: true,
@@ -52,9 +52,9 @@ export async function resetPackingStatus(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       car_packed: false,
@@ -78,9 +78,9 @@ export async function resetPackingStatus(
  */
 export async function getPackingStatus(eventId: string): Promise<PackingStatus> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('car_packed, car_packed_at, packing_list_ready')
     .eq('id', eventId)
@@ -108,17 +108,17 @@ export async function togglePackingConfirmation(
   confirmed: boolean
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (confirmed) {
-    await supabase
+    await db
       .from('packing_confirmations')
       .upsert(
         { event_id: eventId, tenant_id: user.tenantId!, item_key: itemKey },
         { onConflict: 'event_id,item_key' }
       )
   } else {
-    await supabase
+    await db
       .from('packing_confirmations')
       .delete()
       .eq('event_id', eventId)
@@ -133,9 +133,9 @@ export async function togglePackingConfirmation(
  */
 export async function getPackingConfirmationCount(eventId: string): Promise<number> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { count } = await supabase
+  const { count } = await db
     .from('packing_confirmations')
     .select('id', { count: 'exact', head: true })
     .eq('event_id', eventId)

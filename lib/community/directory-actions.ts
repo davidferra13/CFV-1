@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ------------------------------------------------------------------
@@ -40,9 +40,9 @@ export interface DirectorySearchFilters {
 
 export async function getMyListing() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('chef_directory_listings')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -54,24 +54,24 @@ export async function getMyListing() {
 
 export async function updateListing(input: DirectoryListingInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check if listing exists
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await (db as any)
     .from('chef_directory_listings')
     .select('id')
     .eq('chef_id', user.tenantId!)
     .maybeSingle()
 
   if (existing) {
-    const { error } = await (supabase as any)
+    const { error } = await (db as any)
       .from('chef_directory_listings')
       .update({ ...input, updated_at: new Date().toISOString() })
       .eq('id', existing.id)
 
     if (error) throw new Error(`Failed to update listing: ${error.message}`)
   } else {
-    const { error } = await (supabase as any)
+    const { error } = await (db as any)
       .from('chef_directory_listings')
       .insert({ chef_id: user.tenantId!, ...input })
 
@@ -85,10 +85,10 @@ export async function updateListing(input: DirectoryListingInput) {
 
 export async function togglePublished(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current state (scoped to chef)
-  const { data: listing, error: fetchErr } = await (supabase as any)
+  const { data: listing, error: fetchErr } = await (db as any)
     .from('chef_directory_listings')
     .select('id, is_published')
     .eq('id', id)
@@ -97,7 +97,7 @@ export async function togglePublished(id: string) {
 
   if (fetchErr || !listing) throw new Error('Listing not found')
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('chef_directory_listings')
     .update({
       is_published: !listing.is_published,
@@ -117,9 +117,9 @@ export async function togglePublished(id: string) {
 // ------------------------------------------------------------------
 
 export async function searchDirectory(filters?: DirectorySearchFilters) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('chef_directory_listings')
     .select('*')
     .eq('is_published', true)
@@ -152,9 +152,9 @@ export async function searchDirectory(filters?: DirectorySearchFilters) {
 }
 
 export async function getDirectoryListing(id: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('chef_directory_listings')
     .select('*')
     .eq('id', id)
@@ -166,9 +166,9 @@ export async function getDirectoryListing(id: string) {
 }
 
 export async function getDirectoryStats() {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: listings, error } = await (supabase as any)
+  const { data: listings, error } = await (db as any)
     .from('chef_directory_listings')
     .select('state, cuisines')
     .eq('is_published', true)

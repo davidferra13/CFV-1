@@ -1,6 +1,6 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 /**
  * Comprehensive data export for GDPR/data portability compliance.
@@ -8,7 +8,7 @@ import { createServerClient } from '@/lib/supabase/server'
  */
 export async function exportMyData(): Promise<Record<string, unknown>> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.entityId
 
   // Helper to safely query a table - returns empty array if table doesn't exist
@@ -21,7 +21,7 @@ export async function exportMyData(): Promise<Record<string, unknown>> {
     fkColumn: string = 'tenant_id'
   ): Promise<Record<string, unknown>[]> {
     try {
-      const { data } = await (supabase as any)
+      const { data } = await (db as any)
         .from(table)
         .select(columns)
         .eq(fkColumn, tenantId)
@@ -64,7 +64,7 @@ export async function exportMyData(): Promise<Record<string, unknown>> {
     activityLog,
   ] = await Promise.all([
     // Core
-    supabase
+    db
       .from('chefs')
       .select('business_name, email, phone, display_name, bio, created_at')
       .eq('id', tenantId)
@@ -95,7 +95,7 @@ export async function exportMyData(): Promise<Record<string, unknown>> {
     // Calendar
     safeQuery('calendar_entries'),
     // Activity
-    supabase
+    db
       .from('chef_activity_log')
       .select('*')
       .eq('tenant_id', tenantId)

@@ -7,7 +7,7 @@
 
 ### 1. Recipe Families (Variations System)
 
-**Migration:** `supabase/migrations/20260401000101_recipe_families.sql`
+**Migration:** `database/migrations/20260401000101_recipe_families.sql`
 
 New `recipe_families` table:
 

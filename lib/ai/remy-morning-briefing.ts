@@ -4,7 +4,7 @@
 // Generates a daily briefing from business data. 100% deterministic - no LLM.
 // Designed to run at a configurable time (default 7 AM) via cron.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 interface BriefingSection {
   heading: string
@@ -13,7 +13,7 @@ interface BriefingSection {
 }
 
 export async function generateMorningBriefing(tenantId: string): Promise<string> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -22,7 +22,7 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
   const sections: BriefingSection[] = []
 
   // 1. Today's events
-  const { data: todayEvents } = await supabase
+  const { data: todayEvents } = await db
     .from('events')
     .select(
       'occasion, event_date, guest_count, status, prep_list_ready, grocery_list_ready, client:clients(full_name)'
@@ -49,7 +49,7 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
   const dayAfterTomorrow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000)
     .toISOString()
     .split('T')[0]
-  const { data: tomorrowEvents } = await supabase
+  const { data: tomorrowEvents } = await db
     .from('events')
     .select('occasion, event_date, guest_count, status, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -68,7 +68,7 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
   }
 
   // 3. Overdue invoices
-  const { data: overdue } = await supabase
+  const { data: overdue } = await db
     .from('invoices')
     .select('invoice_number, due_date, total_cents, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -92,7 +92,7 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
 
   // 4. Inquiries needing response
   const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000).toISOString()
-  const { data: staleInquiries } = await supabase
+  const { data: staleInquiries } = await db
     .from('inquiries')
     .select('lead_name, event_type, updated_at')
     .eq('tenant_id', tenantId)
@@ -111,7 +111,7 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
   }
 
   // 5. Client birthdays this week
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('full_name, date_of_birth')
     .eq('tenant_id', tenantId)
@@ -135,7 +135,7 @@ export async function generateMorningBriefing(tenantId: string): Promise<string>
   }
 
   // 6. This week's event count
-  const { count: weekEventCount } = await supabase
+  const { count: weekEventCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)

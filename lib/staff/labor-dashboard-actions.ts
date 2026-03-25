@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -74,9 +74,9 @@ const DateRangeSchema = z.object({
 export async function getLaborByEvent(eventId: string): Promise<LaborByEventResult> {
   const user = await requireChef()
   z.string().uuid().parse(eventId)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_staff_assignments')
     .select(
       `
@@ -140,7 +140,7 @@ export async function getLaborByEvent(eventId: string): Promise<LaborByEventResu
 export async function getLaborByMonth(year: number, month: number): Promise<LaborByMonthResult> {
   const user = await requireChef()
   LaborByMonthSchema.parse({ year, month })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build date range for the month
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`
@@ -149,7 +149,7 @@ export async function getLaborByMonth(year: number, month: number): Promise<Labo
   const endDate = `${endYear}-${String(endMonth).padStart(2, '0')}-01`
 
   // Get all events in this month for the chef
-  const { data: events, error: eventsError } = await supabase
+  const { data: events, error: eventsError } = await db
     .from('events')
     .select('id, title, date')
     .eq('chef_id', user.tenantId!)
@@ -172,7 +172,7 @@ export async function getLaborByMonth(year: number, month: number): Promise<Labo
   const eventIds = events.map((e: any) => e.id)
 
   // Get all staff assignments for these events
-  const { data: assignments, error: assignError } = await supabase
+  const { data: assignments, error: assignError } = await db
     .from('event_staff_assignments')
     .select('event_id, actual_hours, pay_amount_cents')
     .eq('chef_id', user.tenantId!)
@@ -230,10 +230,10 @@ export async function getLaborRevenueRatio(
 ): Promise<LaborRevenueRatioResult> {
   const user = await requireChef()
   DateRangeSchema.parse({ startDate, endDate })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get events in the date range with their revenue
-  const { data: events, error: eventsError } = await supabase
+  const { data: events, error: eventsError } = await db
     .from('events')
     .select('id, total_amount_cents')
     .eq('chef_id', user.tenantId!)
@@ -261,7 +261,7 @@ export async function getLaborRevenueRatio(
   const eventIds = events.map((e: any) => e.id)
 
   // Get labor cost for these events
-  const { data: assignments, error: assignError } = await supabase
+  const { data: assignments, error: assignError } = await db
     .from('event_staff_assignments')
     .select('pay_amount_cents')
     .eq('chef_id', user.tenantId!)

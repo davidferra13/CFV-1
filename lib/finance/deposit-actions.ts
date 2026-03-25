@@ -5,7 +5,7 @@
 // All financial state derived from ledger (System Law #3).
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { appendLedgerEntryForChef } from '@/lib/ledger/append'
 import type { PaymentMethod } from '@/lib/ledger/append'
 import { differenceInDays, subDays, format } from 'date-fns'
@@ -52,10 +52,10 @@ export type DepositSettings = {
  */
 export async function calculateDeposit(eventId: string): Promise<DepositSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event details
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, quoted_price_cents, event_date, deposit_amount_cents, client_id, status')
     .eq('id', eventId)
@@ -81,7 +81,7 @@ export async function calculateDeposit(eventId: string): Promise<DepositSummary>
   const balanceDueDate = subDays(eventDate, settings.balanceDueDaysBefore)
 
   // Fetch ledger entries for this event to classify payments
-  const { data: ledgerEntries, error: ledgerError } = await supabase
+  const { data: ledgerEntries, error: ledgerError } = await db
     .from('ledger_entries')
     .select('id, entry_type, amount_cents, created_at, is_refund')
     .eq('tenant_id', user.tenantId!)
@@ -188,10 +188,10 @@ export async function recordDeposit(
   }
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event to get client_id and validate ownership
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, client_id, occasion, quoted_price_cents')
     .eq('id', eventId)
@@ -253,10 +253,10 @@ export async function recordBalancePayment(
   }
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event to get client_id and validate ownership
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, client_id, occasion, quoted_price_cents')
     .eq('id', eventId)
@@ -311,9 +311,9 @@ export async function recordBalancePayment(
  */
 export async function getDepositSettings(): Promise<DepositSettings> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_deposit_settings')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -353,7 +353,7 @@ export async function updateDepositSettings(settings: {
   paymentTermsText: string | null
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Validate
   if (settings.depositPercentage < 0 || settings.depositPercentage > 100) {
@@ -363,7 +363,7 @@ export async function updateDepositSettings(settings: {
     throw new Error('Balance due days must be non-negative')
   }
 
-  const { error } = await supabase.from('chef_deposit_settings').upsert(
+  const { error } = await db.from('chef_deposit_settings').upsert(
     {
       chef_id: user.tenantId!,
       deposit_percentage: settings.depositPercentage,
@@ -405,13 +405,13 @@ export type OverdueDepositEvent = {
  */
 export async function getOverdueDeposits(): Promise<OverdueDepositEvent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const settings = await getDepositSettings()
 
   if (!settings.depositRequired) return []
 
   // Fetch non-terminal events with outstanding balances
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -450,7 +450,7 @@ export async function getOverdueDeposits(): Promise<OverdueDepositEvent[]> {
       Math.round(((event.quoted_price_cents ?? 0) * settings.depositPercentage) / 100)
 
     // Get total paid from ledger for this event
-    const { data: ledger } = await supabase
+    const { data: ledger } = await db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('tenant_id', user.tenantId!)

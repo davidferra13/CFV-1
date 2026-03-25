@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import historicalScanModule from '../lib/gmail/historical-scan'
 
 const { runHistoricalScanBatch } = historicalScanModule
@@ -20,10 +20,10 @@ async function main() {
   const batchSize = Number.parseInt(getArg('--batch-size') ?? '500', 10)
   const messageConcurrency = Number.parseInt(getArg('--message-concurrency') ?? '24', 10)
 
-  const supabase = createAdminClient()
+  const db = createAdminClient()
 
   for (let batchIndex = 1; batchIndex <= maxBatches; batchIndex += 1) {
-    const { data: before, error: beforeError } = await supabase
+    const { data: before, error: beforeError } = await db
       .from('google_connections')
       .select(
         'historical_scan_status, historical_scan_total_processed, historical_scan_total_seen, historical_scan_result_size_estimate'
@@ -44,7 +44,7 @@ async function main() {
       batchSize,
       messageConcurrency,
     })
-    const { data: after, error: afterError } = await supabase
+    const { data: after, error: afterError } = await db
       .from('google_connections')
       .select(
         'historical_scan_status, historical_scan_total_processed, historical_scan_total_seen, historical_scan_result_size_estimate, historical_scan_last_run_at'

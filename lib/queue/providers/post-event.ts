@@ -4,14 +4,11 @@
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 
-export async function getPostEventQueueItems(
-  supabase: any,
-  tenantId: string
-): Promise<QueueItem[]> {
+export async function getPostEventQueueItems(db: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       `

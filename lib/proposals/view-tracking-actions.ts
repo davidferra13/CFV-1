@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -55,9 +55,9 @@ export async function recordProposalView(
   })
 
   // Use admin client - no auth required for client-side tracking
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('proposal_views')
     .insert({
       quote_id: parsed.quoteId,
@@ -80,10 +80,10 @@ export async function recordProposalView(
  */
 export async function getProposalViewAnalytics(quoteId: string): Promise<ProposalViewAnalytics> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the quote belongs to this chef
-  const { data: quote, error: quoteError } = await supabase
+  const { data: quote, error: quoteError } = await db
     .from('quotes')
     .select('id')
     .eq('id', quoteId)
@@ -95,9 +95,9 @@ export async function getProposalViewAnalytics(quoteId: string): Promise<Proposa
   }
 
   // Fetch all views for this quote (using admin to avoid RLS issues on proposal_views)
-  const adminSupabase = createServerClient({ admin: true })
+  const adminDb = createServerClient({ admin: true })
 
-  const { data: views, error: viewsError } = await (adminSupabase as any)
+  const { data: views, error: viewsError } = await (adminDb as any)
     .from('proposal_views')
     .select('*')
     .eq('quote_id', quoteId)

@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { getCurrentUser } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -42,10 +42,10 @@ export async function getEventCountdown(eventId: string): Promise<EventCountdown
     throw new Error('Authentication required')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
-  let query = supabase
+  let query = db
     .from('events')
     .select('id, occasion, event_date, serve_time, status, countdown_enabled')
     .eq('id', validatedEventId)
@@ -90,12 +90,12 @@ export async function toggleCountdown(
   enabled: boolean
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validated = ToggleCountdownSchema.parse({ eventId, enabled })
 
   // Verify the event belongs to this tenant
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id')
     .eq('id', validated.eventId)
@@ -106,7 +106,7 @@ export async function toggleCountdown(
     throw new Error('Event not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       countdown_enabled: validated.enabled,
@@ -133,11 +133,11 @@ export async function toggleCountdown(
  */
 export async function getUpcomingCountdowns(): Promise<EventCountdown[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('id, occasion, event_date, serve_time, status, countdown_enabled')
     .eq('tenant_id', user.tenantId!)

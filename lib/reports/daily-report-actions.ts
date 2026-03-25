@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { computeDailyReport } from './compute-daily-report'
 import type { DailyReport, DailyReportContent, DailyReportSummary } from './types'
 
@@ -14,15 +14,15 @@ import type { DailyReport, DailyReportContent, DailyReportSummary } from './type
  */
 export async function generateDailyReport(date?: string): Promise<DailyReport> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const reportDate = date ?? new Date().toISOString().split('T')[0]
 
   // Compute the report
-  const content = await computeDailyReport(supabase, user.tenantId!, reportDate)
+  const content = await computeDailyReport(db, user.tenantId!, reportDate)
 
   // Upsert
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('daily_reports')
     .upsert(
       {
@@ -57,11 +57,11 @@ export async function generateDailyReport(date?: string): Promise<DailyReport> {
  */
 export async function getDailyReport(date?: string): Promise<DailyReport | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const reportDate = date ?? new Date().toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('daily_reports')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -90,9 +90,9 @@ export async function getDailyReport(date?: string): Promise<DailyReport | null>
  */
 export async function getDailyReportHistory(limit = 30): Promise<DailyReportSummary[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('daily_reports')
     .select('report_date, content')
     .eq('tenant_id', user.tenantId!)

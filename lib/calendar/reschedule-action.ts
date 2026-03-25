@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // Statuses that allow rescheduling - events that are confirmed, in-progress,
@@ -13,10 +13,10 @@ export async function rescheduleEvent(
   newDate: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Fetch event and verify ownership
-  const { data: event, error: fetchError } = await supabase
+  const { data: event, error: fetchError } = await db
     .from('events')
     .select('id, event_date, status, tenant_id')
     .eq('id', eventId)
@@ -49,7 +49,7 @@ export async function rescheduleEvent(
   }
 
   // 5. Update event_date
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('events')
     .update({ event_date: newDate })
     .eq('id', eventId)

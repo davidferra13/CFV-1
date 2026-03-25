@@ -15,7 +15,7 @@
 //   3. generateAllDrafts() → batches over all recipients for a campaign.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
@@ -129,10 +129,10 @@ export interface PersonalizedDraft {
  */
 export async function draftPersonalizedOutreach(recipientId: string): Promise<PersonalizedDraft> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Load recipient → client → campaign
-  const { data: recipient } = await supabase
+  const { data: recipient } = await db
     .from('campaign_recipients')
     .select('id, client_id, campaign_id')
     .eq('id', recipientId)
@@ -142,21 +142,21 @@ export async function draftPersonalizedOutreach(recipientId: string): Promise<Pe
   if (!recipient) throw new Error('Recipient not found')
 
   const [clientResult, campaignResult, chefResult] = await Promise.all([
-    supabase
+    db
       .from('clients')
       .select(
         'full_name, dietary_restrictions, allergies, vibe_notes, last_event_date, favorite_cuisines, dislikes'
       )
       .eq('id', recipient.client_id)
       .single(),
-    supabase
+    db
       .from('marketing_campaigns')
       .select(
         'name, occasion, proposed_date, proposed_time, price_per_person_cents, concept_description, guest_count_max'
       )
       .eq('id', recipient.campaign_id)
       .single(),
-    supabase.from('chefs').select('full_name, business_name').eq('id', chef.entityId).single(),
+    db.from('chefs').select('full_name, business_name').eq('id', chef.entityId).single(),
   ])
 
   const client = clientResult.data
@@ -166,7 +166,7 @@ export async function draftPersonalizedOutreach(recipientId: string): Promise<Pe
   if (!client || !campaign) throw new Error('Data not found')
 
   // Fetch last event for context
-  const { data: lastEvent } = await supabase
+  const { data: lastEvent } = await db
     .from('events')
     .select('occasion, event_date, service_style')
     .eq('chef_id', chef.entityId)
@@ -233,7 +233,7 @@ Return ONLY valid JSON: { "subject": "...", "body": "..." }`
   }
 
   // Store draft in campaign_recipients
-  await supabase
+  await db
     .from('campaign_recipients')
     .update({ draft_subject: draft.subject, draft_body: draft.body })
     .eq('id', recipientId)
@@ -253,10 +253,10 @@ export type GenerateAllResult = {
 
 export async function generateAllDrafts(campaignId: string): Promise<GenerateAllResult> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch recipients that don't have a draft yet
-  const { data: recipients } = await supabase
+  const { data: recipients } = await db
     .from('campaign_recipients')
     .select('id')
     .eq('campaign_id', campaignId)

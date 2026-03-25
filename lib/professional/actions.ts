@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { revalidatePath } from 'next/cache'
@@ -46,10 +46,10 @@ export type AchievementInput = z.infer<typeof AchievementSchema>
 export async function createAchievement(input: AchievementInput) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = AchievementSchema.parse(input)
 
-  const { error } = await supabase.from('professional_achievements').insert({
+  const { error } = await db.from('professional_achievements').insert({
     ...data,
     chef_id: chef.id,
     achieve_date: data.achieve_date ?? null,
@@ -64,10 +64,10 @@ export async function createAchievement(input: AchievementInput) {
 export async function updateAchievement(id: string, input: AchievementInput) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = AchievementSchema.parse(input)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('professional_achievements')
     .update({
       ...data,
@@ -85,9 +85,9 @@ export async function updateAchievement(id: string, input: AchievementInput) {
 export async function deleteAchievement(id: string) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('professional_achievements')
     .delete()
     .eq('id', id)
@@ -100,9 +100,9 @@ export async function deleteAchievement(id: string) {
 export async function listAchievements(publicOnly = false) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let q = supabase
+  let q = db
     .from('professional_achievements')
     .select('*')
     .eq('chef_id', chef.id)
@@ -149,10 +149,10 @@ export type LearningGoalInput = z.infer<typeof LearningGoalSchema>
 export async function createLearningGoal(input: LearningGoalInput) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = LearningGoalSchema.parse(input)
 
-  const { error } = await supabase.from('learning_goals').insert({
+  const { error } = await db.from('learning_goals').insert({
     ...data,
     chef_id: chef.id,
     target_date: data.target_date ?? null,
@@ -165,9 +165,9 @@ export async function createLearningGoal(input: LearningGoalInput) {
 export async function completeLearningGoal(id: string, notes?: string) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('learning_goals')
     .update({
       status: 'completed',
@@ -184,9 +184,9 @@ export async function completeLearningGoal(id: string, notes?: string) {
 export async function updateLearningGoal(id: string, input: Partial<LearningGoalInput>) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('learning_goals')
     .update(input)
     .eq('id', id)
@@ -199,13 +199,9 @@ export async function updateLearningGoal(id: string, input: Partial<LearningGoal
 export async function deleteLearningGoal(id: string) {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
-    .from('learning_goals')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', chef.id)
+  const { error } = await db.from('learning_goals').delete().eq('id', id).eq('chef_id', chef.id)
 
   if (error) throw new Error(error.message)
   revalidatePath('/settings/professional')
@@ -214,9 +210,9 @@ export async function deleteLearningGoal(id: string) {
 export async function listLearningGoals(status?: 'active' | 'completed' | 'abandoned') {
   const chef = await requireChef()
   await requirePro('professional')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let q = supabase
+  let q = db
     .from('learning_goals')
     .select('*')
     .eq('chef_id', chef.id)

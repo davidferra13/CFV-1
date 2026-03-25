@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { ZAPIER_EVENT_TYPES, type ZapierEventType } from '@/lib/integrations/zapier/zapier-events'
@@ -18,7 +18,7 @@ export async function createWebhookSubscription(input: {
 }) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // SECURITY: Validate URL to prevent SSRF - blocks private IPs, requires HTTPS
   const targetUrl = validateWebhookUrl(input.targetUrl).toString()
@@ -31,7 +31,7 @@ export async function createWebhookSubscription(input: {
     throw new Error('At least one valid event type is required')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('zapier_webhook_subscriptions')
     .insert({
       tenant_id: user.entityId,
@@ -49,9 +49,9 @@ export async function createWebhookSubscription(input: {
 export async function listWebhookSubscriptions() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('zapier_webhook_subscriptions')
     .select('id, target_url, event_types, is_active, created_at, updated_at')
     .eq('tenant_id', user.entityId)
@@ -65,9 +65,9 @@ export async function listWebhookSubscriptions() {
 export async function deleteWebhookSubscription(subscriptionId: string) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { error } = await supabase
+  const { error } = await db
     .from('zapier_webhook_subscriptions')
     .update({ is_active: false })
     .eq('id', subscriptionId)
@@ -81,9 +81,9 @@ export async function deleteWebhookSubscription(subscriptionId: string) {
 export async function getRecentDeliveries(subscriptionId: string, limit = 20) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('zapier_webhook_deliveries')
     .select('id, event_type, response_status, error, delivered_at, created_at')
     .eq('subscription_id', subscriptionId)
@@ -103,10 +103,10 @@ export async function dispatchWebhookEvent(
   eventType: ZapierEventType,
   payload: Record<string, unknown>
 ) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Find all active subscriptions for this tenant and event type
-  const { data: subs } = await supabase
+  const { data: subs } = await db
     .from('zapier_webhook_subscriptions')
     .select('id, target_url, secret')
     .eq('tenant_id', tenantId)
@@ -159,7 +159,7 @@ export async function dispatchWebhookEvent(
 
     // Log delivery
     try {
-      await supabase.from('zapier_webhook_deliveries').insert({
+      await db.from('zapier_webhook_deliveries').insert({
         id: deliveryId,
         subscription_id: sub.id,
         tenant_id: tenantId,
@@ -186,9 +186,9 @@ export async function dispatchWebhookEvent(
 export async function testWebhookSubscription(subscriptionId: string) {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: sub } = await supabase
+  const { data: sub } = await db
     .from('zapier_webhook_subscriptions')
     .select('id, target_url, secret')
     .eq('id', subscriptionId)

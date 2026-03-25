@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef, requireChefAdmin } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { WordCategory, WordTier } from './constants'
@@ -58,9 +58,9 @@ export type AddWordInput = z.infer<typeof AddWordSchema>
 /** Get all user-added words for the current chef */
 export async function getUserCulinaryWords(): Promise<UserCulinaryWord[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_culinary_words')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -80,9 +80,9 @@ export async function addCulinaryWord(
 ): Promise<{ success: boolean; word: UserCulinaryWord }> {
   const validated = AddWordSchema.parse(input)
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('chef_culinary_words')
     .insert({
       chef_id: user.tenantId!,
@@ -105,9 +105,9 @@ export async function addCulinaryWord(
 /** Remove a user-added word (own words only) */
 export async function removeCulinaryWord(id: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_culinary_words')
     .delete()
     .eq('id', id)
@@ -125,9 +125,9 @@ export async function removeCulinaryWord(id: string): Promise<{ success: boolean
 /** Admin: get ALL user-submitted words across all chefs */
 export async function getAllUserWords(): Promise<AdminWordView[]> {
   await requireChefAdmin()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_culinary_words')
     .select('*')
     .order('created_at', { ascending: false })

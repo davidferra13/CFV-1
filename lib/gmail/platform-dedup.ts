@@ -29,7 +29,7 @@ export interface PlatformDedupMatch {
  * Returns the existing inquiry ID if found, or null if this is a new inquiry.
  */
 export async function checkPlatformInquiryDuplicate(
-  supabase: any,
+  db: any,
   tenantId: string,
   opts: {
     channel: string
@@ -50,7 +50,7 @@ export async function checkPlatformInquiryDuplicate(
   // Layer 0: Check platform_records table first (canonical source after write-through)
   if (candidateIdentityKeys.length > 0) {
     const prMatch = await findInquiryViaPlatformRecords(
-      supabase,
+      db,
       tenantId,
       opts.channel,
       candidateIdentityKeys
@@ -63,7 +63,7 @@ export async function checkPlatformInquiryDuplicate(
   // Strategy 1: Match by stored platform identity key (most reliable)
   if (candidateIdentityKeys.length > 0) {
     const directMatch = await findInquiryByIdentityKeys(
-      supabase,
+      db,
       tenantId,
       opts.channel,
       candidateIdentityKeys
@@ -76,7 +76,7 @@ export async function checkPlatformInquiryDuplicate(
 
   // Strategy 2: Match by client name + date (fuzzy - for when we don't have an external ID)
   if (opts.clientName && opts.eventDate) {
-    const { data } = await supabase
+    const { data } = await db
       .from('inquiries')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -86,7 +86,7 @@ export async function checkPlatformInquiryDuplicate(
 
     if (data && data.length > 0) {
       for (const row of data) {
-        const { data: inquiry } = await supabase
+        const { data: inquiry } = await db
           .from('inquiries')
           .select('id, client_id, unknown_fields')
           .eq('id', row.id)
@@ -101,7 +101,7 @@ export async function checkPlatformInquiryDuplicate(
         }
 
         if (inquiry.client_id) {
-          const { data: client } = await supabase
+          const { data: client } = await db
             .from('clients')
             .select('full_name')
             .eq('id', inquiry.client_id)
@@ -123,7 +123,7 @@ export async function checkPlatformInquiryDuplicate(
  * Used for matching follow-up emails (messages, bookings, customer info) to existing inquiries.
  */
 export async function findPlatformInquiryByContext(
-  supabase: any,
+  db: any,
   tenantId: string,
   opts: {
     channel: string
@@ -138,7 +138,7 @@ export async function findPlatformInquiryByContext(
   // Layer 0: Check platform_records table first (canonical source after write-through)
   if (candidateIdentityKeys.length > 0) {
     const prMatch = await findInquiryViaPlatformRecords(
-      supabase,
+      db,
       tenantId,
       opts.channel,
       candidateIdentityKeys
@@ -149,7 +149,7 @@ export async function findPlatformInquiryByContext(
   // First try by platform identity key (order ID, quote ID, or link token)
   if (candidateIdentityKeys.length > 0) {
     const directMatch = await findInquiryByIdentityKeys(
-      supabase,
+      db,
       tenantId,
       opts.channel,
       candidateIdentityKeys
@@ -160,7 +160,7 @@ export async function findPlatformInquiryByContext(
   // Fall back to client name + date matching
   if (!opts.clientName) return null
 
-  const query = supabase
+  const query = db
     .from('inquiries')
     .select('id, client_id, unknown_fields')
     .eq('tenant_id', tenantId)
@@ -184,7 +184,7 @@ export async function findPlatformInquiryByContext(
     }
 
     if (row.client_id) {
-      const { data: client } = await supabase
+      const { data: client } = await db
         .from('clients')
         .select('full_name')
         .eq('id', row.client_id)
@@ -200,13 +200,13 @@ export async function findPlatformInquiryByContext(
 }
 
 async function findInquiryByIdentityKeys(
-  supabase: any,
+  db: any,
   tenantId: string,
   channel: string,
   identityKeys: string[]
 ): Promise<string | null> {
   for (const identityKey of identityKeys) {
-    const { data } = await supabase
+    const { data } = await db
       .from('inquiries')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -217,7 +217,7 @@ async function findInquiryByIdentityKeys(
 
     if (data) return data.id
 
-    const { data: linkMatch } = await supabase
+    const { data: linkMatch } = await db
       .from('inquiries')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -229,7 +229,7 @@ async function findInquiryByIdentityKeys(
     if (linkMatch) return linkMatch.id
   }
 
-  const { data: candidates } = await supabase
+  const { data: candidates } = await db
     .from('inquiries')
     .select('id, external_inquiry_id, external_link, unknown_fields')
     .eq('tenant_id', tenantId)
@@ -259,14 +259,14 @@ async function findInquiryByIdentityKeys(
  * on (tenant_id, platform, external_inquiry_id) and (tenant_id, platform, external_uri_token).
  */
 async function findInquiryViaPlatformRecords(
-  supabase: any,
+  db: any,
   tenantId: string,
   channel: string,
   identityKeys: string[]
 ): Promise<string | null> {
   for (const key of identityKeys) {
     // Try external_inquiry_id first
-    const { data: byId } = await supabase
+    const { data: byId } = await db
       .from('platform_records')
       .select('inquiry_id')
       .eq('tenant_id', tenantId)
@@ -278,7 +278,7 @@ async function findInquiryViaPlatformRecords(
     if (byId?.inquiry_id) return byId.inquiry_id
 
     // Try external_uri_token
-    const { data: byToken } = await supabase
+    const { data: byToken } = await db
       .from('platform_records')
       .select('inquiry_id')
       .eq('tenant_id', tenantId)

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -50,11 +50,11 @@ export async function computeBenchmarkSnapshot(): Promise<{
   snapshot: BenchmarkSnapshot
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
   // 1. Average event value: mean total_amount_cents of completed events
-  const { data: completedEvents } = await supabase
+  const { data: completedEvents } = await db
     .from('events')
     .select('id, quoted_price_cents, event_date, serve_time, departure_time')
     .eq('tenant_id', user.tenantId!)
@@ -77,7 +77,7 @@ export async function computeBenchmarkSnapshot(): Promise<{
   const eventIds = events.map((e: any) => e.id)
   let totalFoodExpenseCents = 0
   if (eventIds.length > 0) {
-    const { data: foodExpenses } = await supabase
+    const { data: foodExpenses } = await db
       .from('expenses')
       .select('amount_cents')
       .eq('tenant_id', user.tenantId!)
@@ -97,7 +97,7 @@ export async function computeBenchmarkSnapshot(): Promise<{
       : 0
 
   // 3. Booking conversion rate: completed events / total inquiries * 100
-  const { count: inquiryCount } = await supabase
+  const { count: inquiryCount } = await db
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -108,15 +108,12 @@ export async function computeBenchmarkSnapshot(): Promise<{
       : 0
 
   // 4. Client return rate: clients with 2+ events / total clients * 100
-  const { data: allClients } = await supabase
-    .from('clients')
-    .select('id')
-    .eq('tenant_id', user.tenantId!)
+  const { data: allClients } = await db.from('clients').select('id').eq('tenant_id', user.tenantId!)
 
   const totalClients = allClients?.length ?? 0
 
   // Count events per client
-  const { data: clientEvents } = await supabase
+  const { data: clientEvents } = await db
     .from('events')
     .select('client_id')
     .eq('tenant_id', user.tenantId!)
@@ -134,7 +131,7 @@ export async function computeBenchmarkSnapshot(): Promise<{
 
   // 5. Revenue per hour: total revenue / total event hours
   // Use time tracking fields if available, otherwise estimate from serve_time/departure_time
-  const { data: eventTimeData } = await supabase
+  const { data: eventTimeData } = await db
     .from('events')
     .select(
       'time_service_minutes, time_prep_minutes, time_shopping_minutes, time_travel_minutes, time_reset_minutes'
@@ -161,7 +158,7 @@ export async function computeBenchmarkSnapshot(): Promise<{
   const revenuePerHourCents = totalHours > 0 ? Math.round(totalRevenueCents / totalHours) : 0
 
   // Upsert into benchmark_snapshots
-  const { data: snapshot, error } = await supabase
+  const { data: snapshot, error } = await db
     .from('benchmark_snapshots')
     .upsert(
       {
@@ -209,13 +206,13 @@ export async function getBenchmarkHistory(months?: number): Promise<BenchmarkSna
   const monthCount = validated.months ?? 6
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const cutoffDate = new Date()
   cutoffDate.setMonth(cutoffDate.getMonth() - monthCount)
   const cutoffStr = cutoffDate.toISOString().split('T')[0]
 
-  const { data: snapshots, error } = await supabase
+  const { data: snapshots, error } = await db
     .from('benchmark_snapshots')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -246,7 +243,7 @@ export async function getBenchmarkHistory(months?: number): Promise<BenchmarkSna
  */
 export async function getConversionFunnel(): Promise<ConversionFunnel> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const periodStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
@@ -255,7 +252,7 @@ export async function getConversionFunnel(): Promise<ConversionFunnel> {
   const periodEnd = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`
 
   // Count inquiries created in the period
-  const { count: inquiryCount } = await supabase
+  const { count: inquiryCount } = await db
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -263,7 +260,7 @@ export async function getConversionFunnel(): Promise<ConversionFunnel> {
     .lt('created_at', periodEnd)
 
   // Count quotes sent (events with status >= proposed) in the period
-  const { count: quoteCount } = await supabase
+  const { count: quoteCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -272,7 +269,7 @@ export async function getConversionFunnel(): Promise<ConversionFunnel> {
     .not('status', 'eq', 'draft')
 
   // Count accepted events in the period
-  const { count: acceptedCount } = await supabase
+  const { count: acceptedCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -281,7 +278,7 @@ export async function getConversionFunnel(): Promise<ConversionFunnel> {
     .in('status', ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'])
 
   // Count paid events in the period
-  const { count: paidCount } = await supabase
+  const { count: paidCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -290,7 +287,7 @@ export async function getConversionFunnel(): Promise<ConversionFunnel> {
     .in('status', ['paid', 'confirmed', 'in_progress', 'completed'])
 
   // Count completed events in the period
-  const { count: completedCount } = await supabase
+  const { count: completedCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)

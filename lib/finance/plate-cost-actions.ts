@@ -4,7 +4,7 @@
 // Formula > AI: all calculations are pure math, zero LLM dependency.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   groupExpensesByCategory,
   calculatePlateCostFromTotals,
@@ -43,23 +43,23 @@ export interface PlateCostSummary {
 export async function getEventPlateCost(eventId: string): Promise<EventPlateCostRow | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event details, financial summary, and expenses in parallel
   const [eventRes, financialRes, expensesRes] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('id, event_date, occasion, guest_count, client_id, clients(full_name)')
       .eq('id', eventId)
       .eq('tenant_id', tenantId)
       .single(),
-    supabase
+    db
       .from('event_financial_summary')
       .select('net_revenue_cents, total_expenses_cents')
       .eq('event_id', eventId)
       .eq('tenant_id', tenantId)
       .single(),
-    supabase
+    db
       .from('expenses')
       .select('category, amount_cents')
       .eq('chef_id', tenantId)
@@ -115,10 +115,10 @@ export async function getEventPlateCost(eventId: string): Promise<EventPlateCost
 export async function getPlateCostSummary(): Promise<PlateCostSummary> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all events with guest counts (only those with guests > 0 are useful)
-  const { data: events, error: eventsErr } = await supabase
+  const { data: events, error: eventsErr } = await db
     .from('events')
     .select('id, event_date, occasion, guest_count, client_id, clients(full_name), status')
     .eq('tenant_id', tenantId)
@@ -142,12 +142,12 @@ export async function getPlateCostSummary(): Promise<PlateCostSummary> {
 
   // Fetch financials and expenses for all events in parallel
   const [financialsRes, expensesRes] = await Promise.all([
-    supabase
+    db
       .from('event_financial_summary')
       .select('event_id, net_revenue_cents, total_expenses_cents')
       .eq('tenant_id', tenantId)
       .in('event_id', eventIds),
-    supabase
+    db
       .from('expenses')
       .select('event_id, category, amount_cents')
       .eq('chef_id', tenantId)

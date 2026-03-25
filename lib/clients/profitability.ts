@@ -5,7 +5,7 @@
 // across all their completed events, for display on the client detail page.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type ClientProfitabilityHistory = {
   avgMarginPercent: number | null
@@ -27,10 +27,10 @@ export async function getClientProfitabilityHistory(
   clientId: string
 ): Promise<ClientProfitabilityHistory> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all completed events for this client
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       'id, occasion, event_date, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes'
@@ -53,7 +53,7 @@ export async function getClientProfitabilityHistory(
 
   const eventIds = events.map((e: any) => e.id)
 
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select('event_id, profit_margin, food_cost_percentage, profit_cents, tip_amount_cents')
     .eq('tenant_id', user.tenantId!)

@@ -34,7 +34,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Quote')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('quotes')
       .select('*, client:clients(id, full_name, email)')
       .eq('id', id)
@@ -62,7 +62,7 @@ export const PATCH = withApiAuth(
     const parsed = UpdateQuoteBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('quotes')
       .select('id, status')
       .eq('id', id)
@@ -76,7 +76,7 @@ export const PATCH = withApiAuth(
       return apiError('not_editable', 'Only draft quotes can be updated', 422)
     }
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('quotes')
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
@@ -99,7 +99,7 @@ export const DELETE = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Quote')
 
-    const { error } = await ctx.supabase
+    const { error } = await ctx.db
       .from('quotes')
       .update({ deleted_at: new Date().toISOString() } as any)
       .eq('id', id)

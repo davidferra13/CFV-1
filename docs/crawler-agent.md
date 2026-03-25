@@ -20,20 +20,20 @@ npm install
 DRY_RUN=1 node index.mjs
 
 # Crawl a specific region
-SUPABASE_SERVICE_ROLE_KEY=xxx node index.mjs --region "Austin"
+DATABASE_SERVICE_ROLE_KEY=xxx node index.mjs --region "Austin"
 
 # Crawl all regions
-SUPABASE_SERVICE_ROLE_KEY=xxx node index.mjs
+DATABASE_SERVICE_ROLE_KEY=xxx node index.mjs
 ```
 
 ## Running on a Raspberry Pi
 
 ```bash
 # Cron job: crawl all regions at 3am daily
-0 3 * * * cd /home/pi/crawler && SUPABASE_SERVICE_ROLE_KEY=xxx node index.mjs >> crawl.log 2>&1
+0 3 * * * cd /home/pi/crawler && DATABASE_SERVICE_ROLE_KEY=xxx node index.mjs >> crawl.log 2>&1
 ```
 
-Requirements: Node.js 18+, internet access, `SUPABASE_SERVICE_ROLE_KEY` env var.
+Requirements: Node.js 18+, internet access, `DATABASE_SERVICE_ROLE_KEY` env var.
 
 ## Configuration
 
@@ -65,5 +65,5 @@ Add an entry to `config.json` `regions` array. Use [bboxfinder.com](http://bboxf
 | `scripts/crawler/index.mjs`    | Main orchestrator, CLI argument parsing                       |
 | `scripts/crawler/osm.mjs`      | Overpass API queries with rate limiting and endpoint fallback |
 | `scripts/crawler/classify.mjs` | Deterministic OSM tag to ChefFlow category mapping            |
-| `scripts/crawler/insert.mjs`   | Supabase insertion with slug generation and deduplication     |
+| `scripts/crawler/insert.mjs`   | PostgreSQL insertion with slug generation and deduplication   |
 | `scripts/crawler/config.json`  | Regions, API settings, crawl parameters                       |

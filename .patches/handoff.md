@@ -5,7 +5,7 @@
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript
-- Supabase (Postgres + Auth)
+- PostgreSQL (Postgres + Auth)
 - Stripe (payments)
 - Tailwind CSS (dark mode permanent, stone-\* neutrals)
 - Ollama (local AI, privacy-first)

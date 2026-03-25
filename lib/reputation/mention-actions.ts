@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -42,9 +42,9 @@ export async function getMentions(filters?: {
 }): Promise<BrandMention[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('chef_brand_mentions')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -66,9 +66,9 @@ export async function getMentions(filters?: {
 export async function markReviewed(id: string): Promise<void> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_brand_mentions')
     .update({ is_reviewed: true })
     .eq('id', id)
@@ -88,9 +88,9 @@ export async function createMention(input: {
 }): Promise<BrandMention> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_brand_mentions')
     .insert({
       tenant_id: tenantId,
@@ -114,9 +114,9 @@ export async function createMention(input: {
 export async function getUnreviewedCount(): Promise<number> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { count, error } = await supabase
+  const { count, error } = await db
     .from('chef_brand_mentions')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)

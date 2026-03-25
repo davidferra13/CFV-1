@@ -38,7 +38,7 @@ export const GET = withApiAuth(
     const isPreferred = url.searchParams.get('is_preferred')
     const activeOnly = url.searchParams.get('active_only') !== 'false'
 
-    let query = (ctx.supabase as any)
+    let query = (ctx.db as any)
       .from('vendors')
       .select('*', { count: 'exact' })
       .eq('chef_id', ctx.tenantId)
@@ -78,7 +78,7 @@ export const POST = withApiAuth(
     const parsed = CreateVendorBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('vendors')
       .insert({
         ...parsed.data,

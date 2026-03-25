@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { SocialPillar } from '@/lib/social/types'
 
 export type SocialHashtagSet = {
@@ -17,9 +17,9 @@ export type SocialHashtagSet = {
 
 export async function getHashtagSets(): Promise<SocialHashtagSet[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_hashtag_sets')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -39,9 +39,9 @@ export async function createHashtagSet(input: {
   pillar?: SocialPillar
 }): Promise<SocialHashtagSet> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_hashtag_sets')
     .insert({
       tenant_id: user.tenantId!,
@@ -62,7 +62,7 @@ export async function updateHashtagSet(
   input: Partial<{ set_name: string; hashtags: string[]; pillar: SocialPillar | null }>
 ): Promise<SocialHashtagSet> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = {}
   if (input.set_name !== undefined) updates.set_name = input.set_name.trim()
@@ -70,7 +70,7 @@ export async function updateHashtagSet(
     updates.hashtags = input.hashtags.map((h) => h.trim()).filter(Boolean)
   if ('pillar' in input) updates.pillar = input.pillar ?? null
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_hashtag_sets')
     .update(updates)
     .eq('id', id)
@@ -84,9 +84,9 @@ export async function updateHashtagSet(
 
 export async function deleteHashtagSet(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('social_hashtag_sets')
     .delete()
     .eq('id', id)

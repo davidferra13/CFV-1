@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -63,9 +63,9 @@ export async function getComplianceStats(
   endDate?: string
 ): Promise<ComplianceStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('events')
     .select(
       `
@@ -118,7 +118,7 @@ export async function getComplianceStats(
   const eventIds = (events ?? []).map((e: any) => e.id)
   let receiptUploaded = 0
   if (eventIds.length > 0) {
-    const { data: expenses } = await supabase
+    const { data: expenses } = await db
       .from('expenses')
       .select('event_id, created_at, receipt_uploaded')
       .in('event_id', eventIds)
@@ -132,7 +132,7 @@ export async function getComplianceStats(
   // Temp log compliance
   let tempLogCount = 0
   if (eventIds.length > 0) {
-    const { data: tempLogs } = await supabase
+    const { data: tempLogs } = await db
       .from('event_temp_logs')
       .select('event_id')
       .in('event_id', eventIds)
@@ -156,9 +156,9 @@ export async function getTimePhaseStats(
   endDate?: string
 ): Promise<TimePhaseStats[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('events')
     .select(
       `
@@ -228,9 +228,9 @@ export async function getTimePhaseStats(
 
 export async function getWasteStats(startDate: string, endDate: string): Promise<WasteStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, leftover_value_carried_forward_cents')
     .eq('tenant_id', chef.tenantId!)
@@ -249,7 +249,7 @@ export async function getWasteStats(startDate: string, endDate: string): Promise
 
   let foodSpend = 0
   if (eventIds.length > 0) {
-    const { data: expenses } = await supabase
+    const { data: expenses } = await db
       .from('expenses')
       .select('amount_cents')
       .in('event_id', eventIds)
@@ -270,9 +270,9 @@ export async function getWasteStats(startDate: string, endDate: string): Promise
 
 export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, guest_count, occasion, dietary_restrictions')
     .eq('tenant_id', chef.tenantId!)
@@ -305,7 +305,7 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
   const eventIds = (events ?? []).map((e: any) => e.id)
   let avgCourses = 0
   if (eventIds.length > 0) {
-    const { data: menus } = await supabase
+    const { data: menus } = await db
       .from('menus')
       .select('event_id, dishes(id)')
       .in('event_id', eventIds)
@@ -330,12 +330,12 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
 
 export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRateByMonth[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const oneYearAgo = new Date()
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       `

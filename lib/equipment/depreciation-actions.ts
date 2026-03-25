@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -56,9 +56,9 @@ const SetMethodSchema = z.object({
 export async function setDepreciationMethod(input: z.infer<typeof SetMethodSchema>): Promise<void> {
   const user = await requireChef()
   const parsed = SetMethodSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('equipment_items')
     .update({
       depreciation_method: parsed.depreciationMethod,
@@ -81,10 +81,10 @@ export async function generateDepreciationSchedule(
   equipmentItemId: string
 ): Promise<DepreciationScheduleRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the equipment item
-  const { data: item, error: itemError } = await supabase
+  const { data: item, error: itemError } = await db
     .from('equipment_items')
     .select(
       'id, name, purchase_price_cents, depreciation_method, useful_life_years, salvage_value_cents, tax_year_placed_in_service'
@@ -147,14 +147,14 @@ export async function generateDepreciationSchedule(
   }
 
   // Delete existing schedule rows for this item, then re-insert
-  await supabase
+  await db
     .from('equipment_depreciation_schedules')
     .delete()
     .eq('equipment_item_id', equipmentItemId)
     .eq('chef_id', user.tenantId!)
 
   if (scheduleRows.length > 0) {
-    const { error: insertError } = await supabase
+    const { error: insertError } = await db
       .from('equipment_depreciation_schedules')
       .insert(scheduleRows)
 
@@ -166,9 +166,9 @@ export async function generateDepreciationSchedule(
 
 async function getScheduleForItem(equipmentItemId: string): Promise<DepreciationScheduleRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('equipment_depreciation_schedules')
     .select('*, equipment_items(name)')
     .eq('equipment_item_id', equipmentItemId)
@@ -194,9 +194,9 @@ async function getScheduleForItem(equipmentItemId: string): Promise<Depreciation
 
 export async function getDepreciationForYear(taxYear: number): Promise<DepreciationYearSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('equipment_depreciation_schedules')
     .select('*, equipment_items(name)')
     .eq('chef_id', user.tenantId!)
@@ -237,9 +237,9 @@ export async function getDepreciationForYear(taxYear: number): Promise<Depreciat
 
 export async function markDepreciationClaimed(scheduleId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('equipment_depreciation_schedules')
     .update({ claimed: true, claimed_at: new Date().toISOString() })
     .eq('id', scheduleId)
@@ -253,9 +253,9 @@ export async function getEquipmentWithDepreciation(
   taxYear: number
 ): Promise<EquipmentWithDepreciation[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: items, error } = await supabase
+  const { data: items, error } = await db
     .from('equipment_items')
     .select(
       'id, name, category, purchase_price_cents, purchase_date, depreciation_method, useful_life_years, salvage_value_cents, tax_year_placed_in_service'
@@ -267,7 +267,7 @@ export async function getEquipmentWithDepreciation(
   if (error) throw new Error(`Failed to fetch equipment: ${error.message}`)
 
   // Fetch current-year schedules
-  const { data: schedules } = await supabase
+  const { data: schedules } = await db
     .from('equipment_depreciation_schedules')
     .select('*')
     .eq('chef_id', user.tenantId!)

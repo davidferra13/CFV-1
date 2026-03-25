@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -97,9 +97,9 @@ export type PublicCreatePartnerInput = z.infer<typeof CreatePartnerSchema>
 export async function createPartner(input: CreatePartnerInput) {
   const user = await requireChef()
   const validated = CreatePartnerSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: partner, error } = await supabase
+  const { data: partner, error } = await db
     .from('referral_partners')
     .insert({
       tenant_id: user.tenantId!,
@@ -136,9 +136,9 @@ export async function createPublicPartnerProfile(
   input: PublicCreatePartnerInput
 ) {
   const validated = CreatePartnerSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: chef, error: chefError } = await supabase
+  const { data: chef, error: chefError } = await db
     .from('chefs')
     .select('id')
     .eq('slug', chefSlug)
@@ -148,7 +148,7 @@ export async function createPublicPartnerProfile(
     throw new Error('Chef profile not found')
   }
 
-  const { data: partner, error } = await supabase
+  const { data: partner, error } = await db
     .from('referral_partners')
     .insert({
       tenant_id: chef.id,
@@ -183,7 +183,7 @@ export async function createPublicPartnerProfile(
 export async function updatePartner(id: string, input: UpdatePartnerInput) {
   const user = await requireChef()
   const validated = UpdatePartnerSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Clean empty strings to null
   const updates: Record<string, unknown> = {}
@@ -193,7 +193,7 @@ export async function updatePartner(id: string, input: UpdatePartnerInput) {
     }
   }
 
-  const { data: partner, error } = await supabase
+  const { data: partner, error } = await db
     .from('referral_partners')
     .update(updates)
     .eq('id', id)
@@ -217,9 +217,9 @@ export async function updatePartner(id: string, input: UpdatePartnerInput) {
 
 export async function getPartners(filters?: { partner_type?: string; status?: string }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('referral_partners')
     .select(
       `
@@ -259,14 +259,14 @@ export async function getPartners(filters?: { partner_type?: string; status?: st
   }
 
   // Fetch inquiry counts
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('referral_partner_id')
     .eq('tenant_id', user.tenantId!)
     .in('referral_partner_id', partnerIds)
 
   // Fetch event counts and revenue
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('referral_partner_id, status, quoted_price_cents')
     .eq('tenant_id', user.tenantId!)
@@ -311,9 +311,9 @@ export async function getPartners(filters?: { partner_type?: string; status?: st
 
 export async function getPartnerById(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: partner, error } = await supabase
+  const { data: partner, error } = await db
     .from('referral_partners')
     .select(
       `
@@ -333,12 +333,12 @@ export async function getPartnerById(id: string) {
 
   // Get stats
   const [{ count: inquiryCount }, { count: eventCount }] = await Promise.all([
-    supabase
+    db
       .from('inquiries')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', user.tenantId!)
       .eq('referral_partner_id', id),
-    supabase
+    db
       .from('events')
       .select('*', { count: 'exact', head: true })
       .eq('tenant_id', user.tenantId!)
@@ -346,7 +346,7 @@ export async function getPartnerById(id: string) {
   ])
 
   // Get completed events for revenue and guest count
-  const { data: completedEvents } = await supabase
+  const { data: completedEvents } = await db
     .from('events')
     .select('id, quoted_price_cents, guest_count, status')
     .eq('tenant_id', user.tenantId!)
@@ -368,13 +368,13 @@ export async function getPartnerById(id: string) {
   if (partner.partner_locations && partner.partner_locations.length > 0) {
     const locIds = partner.partner_locations.map((l: { id: string }) => l.id)
 
-    const { data: locInquiries } = await supabase
+    const { data: locInquiries } = await db
       .from('inquiries')
       .select('partner_location_id')
       .eq('tenant_id', user.tenantId!)
       .in('partner_location_id', locIds)
 
-    const { data: locEvents } = await supabase
+    const { data: locEvents } = await db
       .from('events')
       .select('partner_location_id')
       .eq('tenant_id', user.tenantId!)
@@ -418,23 +418,17 @@ export async function getPartnerById(id: string) {
 
 export async function deletePartner(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check for linked inquiries or events
   const [{ count: inquiryCount }, { count: eventCount }] = await Promise.all([
-    supabase
-      .from('inquiries')
-      .select('*', { count: 'exact', head: true })
-      .eq('referral_partner_id', id),
-    supabase
-      .from('events')
-      .select('*', { count: 'exact', head: true })
-      .eq('referral_partner_id', id),
+    db.from('inquiries').select('*', { count: 'exact', head: true }).eq('referral_partner_id', id),
+    db.from('events').select('*', { count: 'exact', head: true }).eq('referral_partner_id', id),
   ])
 
   if ((inquiryCount || 0) > 0 || (eventCount || 0) > 0) {
     // Soft delete - set inactive to preserve historical data
-    const { error } = await supabase
+    const { error } = await db
       .from('referral_partners')
       .update({ status: 'inactive' })
       .eq('id', id)
@@ -450,7 +444,7 @@ export async function deletePartner(id: string) {
   }
 
   // Hard delete - no linked records
-  const { error } = await supabase
+  const { error } = await db
     .from('referral_partners')
     .delete()
     .eq('id', id)
@@ -472,10 +466,10 @@ export async function deletePartner(id: string) {
 export async function createPartnerLocation(input: CreateLocationInput) {
   const user = await requireChef()
   const validated = CreateLocationSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify partner belongs to this tenant
-  const { data: partner } = await supabase
+  const { data: partner } = await db
     .from('referral_partners')
     .select('id')
     .eq('id', validated.partner_id)
@@ -486,7 +480,7 @@ export async function createPartnerLocation(input: CreateLocationInput) {
     throw new Error('Partner not found')
   }
 
-  const { data: location, error } = await supabase
+  const { data: location, error } = await db
     .from('partner_locations')
     .insert({
       tenant_id: user.tenantId!,
@@ -520,7 +514,7 @@ export async function createPartnerLocation(input: CreateLocationInput) {
 export async function updatePartnerLocation(id: string, input: UpdateLocationInput) {
   const user = await requireChef()
   const validated = UpdateLocationSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(validated)) {
@@ -529,7 +523,7 @@ export async function updatePartnerLocation(id: string, input: UpdateLocationInp
     }
   }
 
-  const { data: location, error } = await supabase
+  const { data: location, error } = await db
     .from('partner_locations')
     .update(updates)
     .eq('id', id)
@@ -552,9 +546,9 @@ export async function updatePartnerLocation(id: string, input: UpdateLocationInp
 
 export async function getPartnerLocations(partnerId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: locations, error } = await supabase
+  const { data: locations, error } = await db
     .from('partner_locations')
     .select('*, partner_images(*)')
     .eq('partner_id', partnerId)
@@ -575,10 +569,10 @@ export async function getPartnerLocations(partnerId: string) {
 
 export async function deletePartnerLocation(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get location to find partner_id for revalidation
-  const { data: location } = await supabase
+  const { data: location } = await db
     .from('partner_locations')
     .select('partner_id')
     .eq('id', id)
@@ -591,19 +585,13 @@ export async function deletePartnerLocation(id: string) {
 
   // Check for linked inquiries or events
   const [{ count: inquiryCount }, { count: eventCount }] = await Promise.all([
-    supabase
-      .from('inquiries')
-      .select('*', { count: 'exact', head: true })
-      .eq('partner_location_id', id),
-    supabase
-      .from('events')
-      .select('*', { count: 'exact', head: true })
-      .eq('partner_location_id', id),
+    db.from('inquiries').select('*', { count: 'exact', head: true }).eq('partner_location_id', id),
+    db.from('events').select('*', { count: 'exact', head: true }).eq('partner_location_id', id),
   ])
 
   if ((inquiryCount || 0) > 0 || (eventCount || 0) > 0) {
     // Soft delete
-    const { error } = await supabase
+    const { error } = await db
       .from('partner_locations')
       .update({ is_active: false })
       .eq('id', id)
@@ -618,7 +606,7 @@ export async function deletePartnerLocation(id: string) {
     return { success: true, soft_deleted: true }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('partner_locations')
     .delete()
     .eq('id', id)
@@ -640,10 +628,10 @@ export async function deletePartnerLocation(id: string) {
 export async function addPartnerImage(input: AddImageInput) {
   const user = await requireChef()
   const validated = AddImageSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify partner belongs to this tenant
-  const { data: partner } = await supabase
+  const { data: partner } = await db
     .from('referral_partners')
     .select('id')
     .eq('id', validated.partner_id)
@@ -654,7 +642,7 @@ export async function addPartnerImage(input: AddImageInput) {
     throw new Error('Partner not found')
   }
 
-  const { data: image, error } = await supabase
+  const { data: image, error } = await db
     .from('partner_images')
     .insert({
       tenant_id: user.tenantId!,
@@ -683,10 +671,10 @@ export async function addPartnerImage(input: AddImageInput) {
 
 export async function removePartnerImage(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get image for partner_id revalidation
-  const { data: image } = await supabase
+  const { data: image } = await db
     .from('partner_images')
     .select('partner_id')
     .eq('id', id)
@@ -697,7 +685,7 @@ export async function removePartnerImage(id: string) {
     throw new Error('Image not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('partner_images')
     .delete()
     .eq('id', id)
@@ -718,11 +706,11 @@ export async function removePartnerImage(id: string) {
 
 export async function reorderPartnerImages(partnerId: string, imageIds: string[]) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Update display_order for each image
   const updates = imageIds.map((imageId, index) =>
-    supabase
+    db
       .from('partner_images')
       .update({ display_order: index })
       .eq('id', imageId)
@@ -745,9 +733,9 @@ export async function reorderPartnerImages(partnerId: string, imageIds: string[]
  */
 export async function getPartnersWithLocations() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: partners, error } = await supabase
+  const { data: partners, error } = await db
     .from('referral_partners')
     .select('id, name, partner_type, partner_locations(id, name, city, state, is_active)')
     .eq('tenant_id', user.tenantId!)
@@ -795,10 +783,10 @@ export async function getPartnersWithLocations() {
  */
 export async function getPartnerEvents(partnerId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify partner belongs to this tenant
-  const { data: partner } = await supabase
+  const { data: partner } = await db
     .from('referral_partners')
     .select('id')
     .eq('id', partnerId)
@@ -807,7 +795,7 @@ export async function getPartnerEvents(partnerId: string) {
 
   if (!partner) throw new Error('Partner not found')
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -847,10 +835,10 @@ export async function getPartnerEvents(partnerId: string) {
  */
 export async function getEventsNotAssignedToPartner(partnerId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify partner belongs to this tenant
-  const { data: partner } = await supabase
+  const { data: partner } = await db
     .from('referral_partners')
     .select('id')
     .eq('id', partnerId)
@@ -859,7 +847,7 @@ export async function getEventsNotAssignedToPartner(partnerId: string) {
 
   if (!partner) throw new Error('Partner not found')
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       'id, occasion, event_date, guest_count, status, location_city, location_state, referral_partner_id'
@@ -901,12 +889,12 @@ export async function bulkAssignEventsToPartner(
   eventIds: string[]
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!eventIds.length) return { success: true, count: 0 }
 
   // Verify partner belongs to this tenant
-  const { data: partner } = await supabase
+  const { data: partner } = await db
     .from('referral_partners')
     .select('id')
     .eq('id', partnerId)
@@ -917,7 +905,7 @@ export async function bulkAssignEventsToPartner(
 
   // If locationId provided, verify it belongs to this partner
   if (locationId) {
-    const { data: location } = await supabase
+    const { data: location } = await db
       .from('partner_locations')
       .select('id')
       .eq('id', locationId)
@@ -929,7 +917,7 @@ export async function bulkAssignEventsToPartner(
   }
 
   // Update events - only touches partner FK columns
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       referral_partner_id: partnerId,
@@ -958,9 +946,9 @@ export async function bulkAssignEventsToPartner(
  */
 export async function generatePartnerShareLink(partnerId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: partner, error: fetchError } = await supabase
+  const { data: partner, error: fetchError } = await db
     .from('referral_partners')
     .select('id, share_token')
     .eq('id', partnerId)
@@ -974,7 +962,7 @@ export async function generatePartnerShareLink(partnerId: string) {
   if (!token) {
     // Generate a new UUID token
     const newToken = crypto.randomUUID()
-    const { error: updateError } = await supabase
+    const { error: updateError } = await db
       .from('referral_partners')
       .update({ share_token: newToken } as any)
       .eq('id', partnerId)
@@ -998,10 +986,10 @@ export async function generatePartnerShareLink(partnerId: string) {
  * Uses admin client to bypass RLS (same pattern as event share pages).
  */
 export async function getPartnerContributionReport(token: string) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Find partner by share token
-  const { data: partner, error } = await supabase
+  const { data: partner, error } = await db
     .from('referral_partners')
     .select(
       `
@@ -1016,14 +1004,14 @@ export async function getPartnerContributionReport(token: string) {
   if (error || !partner) return null
 
   // Get chef info
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name, profile_image_url')
     .eq('id', partner.tenant_id)
     .single()
 
   // Get all events linked to this partner (excluding cancelled)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       'id, occasion, event_date, guest_count, status, quoted_price_cents, partner_location_id'
@@ -1101,10 +1089,10 @@ export async function getPartnerContributionReport(token: string) {
  * Uses admin client to bypass RLS (same pattern as event share pages).
  */
 export async function getShowcasePartners(chefSlug: string) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Find chef by slug
-  const { data: chef, error: chefError } = await supabase
+  const { data: chef, error: chefError } = await db
     .from('chefs')
     .select('id, business_name, display_name, bio, profile_image_url, tagline')
     .eq('slug', chefSlug)
@@ -1115,7 +1103,7 @@ export async function getShowcasePartners(chefSlug: string) {
   }
 
   // Get showcase-visible partners with locations and images
-  const { data: partners, error } = await supabase
+  const { data: partners, error } = await db
     .from('referral_partners')
     .select(
       `

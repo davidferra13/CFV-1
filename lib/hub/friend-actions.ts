@@ -1,7 +1,7 @@
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getOrCreateClientHubProfile } from './client-hub-actions'
 import type { HubGuestProfile } from './types'
 
@@ -21,14 +21,14 @@ export interface HubFriend {
 type FriendRequestInsertStatus = 'sent' | 'already_friends' | 'already_pending'
 
 async function createOrReuseFriendRequest(input: {
-  supabase: any
+  db: any
   requesterProfileId: string
   addresseeProfileId: string
 }): Promise<FriendRequestInsertStatus> {
-  const { supabase, requesterProfileId, addresseeProfileId } = input
+  const { db, requesterProfileId, addresseeProfileId } = input
 
   // Check if friendship already exists (in either direction)
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('hub_guest_friends')
     .select('id, status')
     .or(
@@ -42,7 +42,7 @@ async function createOrReuseFriendRequest(input: {
     if (existing.status === 'pending') return 'already_pending'
     // If declined, allow re-request by updating
     if (existing.status === 'declined') {
-      await supabase
+      await db
         .from('hub_guest_friends')
         .update({
           requester_id: requesterProfileId,
@@ -56,7 +56,7 @@ async function createOrReuseFriendRequest(input: {
     }
   }
 
-  const { error } = await supabase.from('hub_guest_friends').insert({
+  const { error } = await db.from('hub_guest_friends').insert({
     requester_id: requesterProfileId,
     addressee_id: addresseeProfileId,
   })
@@ -75,14 +75,14 @@ async function createOrReuseFriendRequest(input: {
 export async function sendFriendRequest(addresseeProfileId: string): Promise<{ success: boolean }> {
   await requireClient()
   const myProfile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   if (myProfile.id === addresseeProfileId) {
     throw new Error("You can't add yourself as a friend")
   }
 
   const status = await createOrReuseFriendRequest({
-    supabase,
+    db,
     requesterProfileId: myProfile.id,
     addresseeProfileId,
   })
@@ -115,9 +115,9 @@ export async function requestDinnerCircleInviteByProfileToken(
 }> {
   await requireClient()
   const myProfile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: addresseeProfile } = await supabase
+  const { data: addresseeProfile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', addresseeProfileToken)
@@ -132,7 +132,7 @@ export async function requestDinnerCircleInviteByProfileToken(
   }
 
   const status = await createOrReuseFriendRequest({
-    supabase,
+    db,
     requesterProfileId: myProfile.id,
     addresseeProfileId: addresseeProfile.id,
   })
@@ -146,9 +146,9 @@ export async function requestDinnerCircleInviteByProfileToken(
 export async function acceptFriendRequest(friendshipId: string): Promise<{ success: boolean }> {
   await requireClient()
   const myProfile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase
+  const { error } = await db
     .from('hub_guest_friends')
     .update({
       status: 'accepted',
@@ -168,9 +168,9 @@ export async function acceptFriendRequest(friendshipId: string): Promise<{ succe
 export async function declineFriendRequest(friendshipId: string): Promise<{ success: boolean }> {
   await requireClient()
   const myProfile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase
+  const { error } = await db
     .from('hub_guest_friends')
     .update({
       status: 'declined',
@@ -190,10 +190,10 @@ export async function declineFriendRequest(friendshipId: string): Promise<{ succ
 export async function removeFriend(friendshipId: string): Promise<{ success: boolean }> {
   await requireClient()
   const myProfile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Only allow removing if you're part of the friendship
-  const { error } = await supabase
+  const { error } = await db
     .from('hub_guest_friends')
     .delete()
     .eq('id', friendshipId)
@@ -209,9 +209,9 @@ export async function removeFriend(friendshipId: string): Promise<{ success: boo
 export async function getMyFriends(): Promise<HubFriend[]> {
   await requireClient()
   const myProfile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: friendships, error } = await supabase
+  const { data: friendships, error } = await db
     .from('hub_guest_friends')
     .select('*')
     .eq('status', 'accepted')
@@ -225,10 +225,7 @@ export async function getMyFriends(): Promise<HubFriend[]> {
     f.requester_id === myProfile.id ? f.addressee_id : f.requester_id
   )
 
-  const { data: profiles } = await supabase
-    .from('hub_guest_profiles')
-    .select('*')
-    .in('id', profileIds)
+  const { data: profiles } = await db.from('hub_guest_profiles').select('*').in('id', profileIds)
 
   const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]))
 
@@ -253,9 +250,9 @@ export async function getMyFriends(): Promise<HubFriend[]> {
 export async function getPendingFriendRequests(): Promise<HubFriend[]> {
   await requireClient()
   const myProfile = await getOrCreateClientHubProfile()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: requests, error } = await supabase
+  const { data: requests, error } = await db
     .from('hub_guest_friends')
     .select('*')
     .eq('addressee_id', myProfile.id)
@@ -265,10 +262,7 @@ export async function getPendingFriendRequests(): Promise<HubFriend[]> {
   if (error || !requests?.length) return []
 
   const requesterIds = requests.map((r: any) => r.requester_id)
-  const { data: profiles } = await supabase
-    .from('hub_guest_profiles')
-    .select('*')
-    .in('id', requesterIds)
+  const { data: profiles } = await db.from('hub_guest_profiles').select('*').in('id', requesterIds)
 
   const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]))
 

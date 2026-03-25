@@ -23,7 +23,7 @@ function deriveVendorItemUnit(
 }
 
 export async function recordVendorPricePoint(params: {
-  supabase: any
+  db: any
   tenantId: string
   vendorId: string
   ingredientId?: string | null
@@ -45,9 +45,7 @@ export async function recordVendorPricePoint(params: {
 
   const unit = deriveVendorItemUnit(params.unitMeasure ?? null, params.unitSize ?? null)
 
-  const { data: latest, error: latestError } = await (
-    params.supabase.from('vendor_price_points') as any
-  )
+  const { data: latest, error: latestError } = await (params.db.from('vendor_price_points') as any)
     .select('price_cents')
     .eq('chef_id', params.tenantId)
     .eq('vendor_id', params.vendorId)
@@ -65,7 +63,7 @@ export async function recordVendorPricePoint(params: {
     return { inserted: false, reason: 'unchanged_price' }
   }
 
-  const { error: insertError } = await (params.supabase.from('vendor_price_points') as any).insert({
+  const { error: insertError } = await (params.db.from('vendor_price_points') as any).insert({
     chef_id: params.tenantId,
     vendor_id: params.vendorId,
     ingredient_id: params.ingredientId ?? null,

@@ -7,7 +7,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -69,11 +69,11 @@ function classifySeverity(allergy: string): DietaryConflictSeverity {
  */
 export async function generateAndPersistDietaryAlerts(eventId: string): Promise<DietaryConflict[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
   // Fetch event with dietary info
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, dietary_restrictions, allergies, client:clients(full_name)')
     .eq('id', validatedEventId)
@@ -94,7 +94,7 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
   }
 
   // Fetch menus and dishes for this event
-  const { data: menus } = await supabase.from('menus').select('id').eq('event_id', validatedEventId)
+  const { data: menus } = await db.from('menus').select('id').eq('event_id', validatedEventId)
 
   if (!menus || menus.length === 0) {
     return []
@@ -102,7 +102,7 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
 
   const menuIds = menus.map((m: any) => m.id)
 
-  const { data: dishesRaw } = await supabase
+  const { data: dishesRaw } = await db
     .from('dishes')
     .select('id, name, description')
     .in('menu_id', menuIds)
@@ -119,7 +119,7 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
 
   // Also fetch recipe ingredients if available
   const dishIds = dishes.map((d) => d.id)
-  const { data: recipeLinks } = await supabase
+  const { data: recipeLinks } = await db
     .from('dish_recipes' as any)
     .select('dish_id, recipe_id')
     .in('dish_id', dishIds)
@@ -128,7 +128,7 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
 
   let ingredientNames: string[] = []
   if (recipeIds.length > 0) {
-    const { data: ingredients } = await supabase
+    const { data: ingredients } = await db
       .from('recipe_ingredients')
       .select('name, recipe_id')
       .in('recipe_id', recipeIds)
@@ -177,7 +177,7 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
   }
 
   // Clear previous alerts for this event before inserting new ones
-  await supabase
+  await db
     .from('dietary_conflict_alerts')
     .delete()
     .eq('event_id', validatedEventId)
@@ -194,7 +194,7 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
     acknowledged: false,
   }))
 
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await db
     .from('dietary_conflict_alerts')
     .insert(insertPayload)
     .select()
@@ -224,10 +224,10 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
  */
 export async function acknowledgeDietaryConflict(alertId: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validatedAlertId = AlertIdSchema.parse(alertId)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dietary_conflict_alerts')
     .update({ acknowledged: true })
     .eq('id', validatedAlertId)
@@ -248,10 +248,10 @@ export async function acknowledgeDietaryConflict(alertId: string): Promise<{ suc
  */
 export async function getDietaryConflicts(eventId: string): Promise<DietaryConflict[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dietary_conflict_alerts')
     .select('*')
     .eq('event_id', validatedEventId)

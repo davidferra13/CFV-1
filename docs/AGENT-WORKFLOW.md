@@ -9,7 +9,7 @@ This document defines the professional workflow that every Claude Code agent wor
 1. **Check the branch** — confirm you are on the right feature branch, not `main` directly
 2. **Check git status** — understand what's already staged or modified before touching anything
 3. **Check git log** — run `git log --oneline -10` to see what other agents may have already committed
-4. **Check migration timestamps** — run `glob supabase/migrations/*.sql` before creating any migration file. Your timestamp must be strictly higher than the highest existing one.
+4. **Check migration timestamps** — run `glob database/migrations/*.sql` before creating any migration file. Your timestamp must be strictly higher than the highest existing one.
 5. **Check for in-progress work on your target files** — if another agent has already modified a file you plan to edit, read it first to avoid clobbering their work
 
 ---
@@ -56,7 +56,7 @@ console.log('EXIT:', r.status, '| ERRORS:', (r.stdout.match(/error TS/g) || []).
 
 This is critical. Multiple agents run concurrently and can create timestamp collisions.
 
-1. Run `glob supabase/migrations/*.sql` and find the highest timestamp
+1. Run `glob database/migrations/*.sql` and find the highest timestamp
 2. Your new file timestamp must be **strictly higher** — never equal, never guessed
 3. Never write `DROP TABLE`, `DROP COLUMN`, `DELETE`, or `TRUNCATE` without explicit user approval
 4. All migrations must be additive by default
@@ -68,7 +68,7 @@ const { spawnSync } = require('child_process')
 const fs = require('fs')
 const r = spawnSync(
   'cmd',
-  ['/c', 'npx supabase gen types --lang=typescript --project-id luefkpakzvxcsqroxyhz'],
+  ['/c', 'npx drizzle-kit introspect --lang=typescript --project-id luefkpakzvxcsqroxyhz'],
   {
     maxBuffer: 15 * 1024 * 1024,
     encoding: 'buffer',
@@ -181,7 +181,7 @@ git merge --ff-only feature/your-branch
 | TypeScript check     | `npx tsc --noEmit --skipLibCheck`                         |
 | Production build     | `npx next build --no-lint`                                |
 | Regenerate types     | see Migration Safety section above                        |
-| Check migrations     | `glob supabase/migrations/*.sql`                          |
+| Check migrations     | `glob database/migrations/*.sql`                          |
 | Check recent commits | `git log --oneline -20`                                   |
 | See file changes     | `git diff HEAD -- <file>`                                 |
 | Enable build guard   | `touch .multi-agent-lock`                                 |

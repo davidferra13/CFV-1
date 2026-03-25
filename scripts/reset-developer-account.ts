@@ -1,4 +1,4 @@
-// @ts-nocheck - standalone script, Supabase client type mismatch with generated types
+// @ts-nocheck - standalone script, database client type mismatch with generated types
 // Developer Account Reset
 // Wipes ALL business data + chef profile for the developer's real account.
 // Preserves the auth.users record so login still works.
@@ -7,7 +7,7 @@
 // Usage: npx tsx scripts/reset-developer-account.ts
 // Prereq: .auth/developer.json must exist with email + password
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { readFileSync, writeFileSync } from 'fs'
 import dotenv from 'dotenv'
 
@@ -75,7 +75,7 @@ async function main() {
 
   // Ledger entries have immutability triggers - service role bypasses RLS but
   // we need to handle the trigger. Delete via raw SQL using rpc or direct delete.
-  // The service role client can delete even with triggers in Supabase.
+  // The service role client can delete even with triggers in the database.
   const restrictTables = [
     // These have ON DELETE RESTRICT from various parent tables
     { table: 'ledger_entries', col: 'tenant_id' },

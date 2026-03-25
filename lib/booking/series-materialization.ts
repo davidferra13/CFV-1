@@ -75,7 +75,7 @@ export function mergeSpecialRequestNotes(
 }
 
 export async function materializeSeriesSessions(params: {
-  supabase: any
+  db: any
   tenantId: string
   actorId?: string | null
   series: EventSeriesRow
@@ -83,9 +83,9 @@ export async function materializeSeriesSessions(params: {
   plannedSessions: SeriesSessionPlan[]
   parsedLocation: { city: string | null; state: string | null }
 }): Promise<EventSessionRow[]> {
-  const { supabase, tenantId, actorId, series, inquiry, plannedSessions, parsedLocation } = params
+  const { db, tenantId, actorId, series, inquiry, plannedSessions, parsedLocation } = params
 
-  const { data: existingSessions } = await supabase
+  const { data: existingSessions } = await db
     .from('event_service_sessions')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -125,10 +125,7 @@ export async function materializeSeriesSessions(params: {
 
   let insertedSessions: EventSessionRow[] = []
   if (toInsert.length > 0) {
-    const { data, error } = await supabase
-      .from('event_service_sessions')
-      .insert(toInsert)
-      .select('*')
+    const { data, error } = await db.from('event_service_sessions').insert(toInsert).select('*')
 
     if (error) {
       console.error('[materializeSeriesSessions] Insert error:', error)
@@ -146,7 +143,7 @@ export async function materializeSeriesSessions(params: {
 }
 
 export async function materializeSeriesEvents(params: {
-  supabase: any
+  db: any
   tenantId: string
   actorId?: string | null
   inquiry: InquiryLike
@@ -161,7 +158,7 @@ export async function materializeSeriesEvents(params: {
   cannabisPreference: boolean | null
 }): Promise<EventRow[]> {
   const {
-    supabase,
+    db,
     tenantId,
     actorId,
     inquiry,
@@ -176,7 +173,7 @@ export async function materializeSeriesEvents(params: {
     cannabisPreference,
   } = params
 
-  const { data: existingEvents } = await supabase
+  const { data: existingEvents } = await db
     .from('events')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -239,7 +236,7 @@ export async function materializeSeriesEvents(params: {
 
   let insertedEvents: EventRow[] = []
   if (payload.length > 0) {
-    const { data, error } = await supabase.from('events').insert(payload).select('*')
+    const { data, error } = await db.from('events').insert(payload).select('*')
 
     if (error) {
       console.error('[materializeSeriesEvents] Event creation error:', error)
@@ -249,7 +246,7 @@ export async function materializeSeriesEvents(params: {
   }
 
   if (insertedEvents.length > 0) {
-    await supabase.from('event_state_transitions').insert(
+    await db.from('event_state_transitions').insert(
       insertedEvents.map((event) => ({
         tenant_id: tenantId,
         event_id: event.id,
@@ -269,7 +266,7 @@ export async function materializeSeriesEvents(params: {
       insertedEvents
         .filter((event) => Boolean(event.source_session_id))
         .map((event) =>
-          supabase
+          db
             .from('event_service_sessions')
             .update({ event_id: event.id, updated_by: actorId || null })
             .eq('id', event.source_session_id)

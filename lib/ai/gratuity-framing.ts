@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { withAiFallback } from '@/lib/ai/with-ai-fallback'
 import { calculateGratuityFormula } from '@/lib/formulas/gratuity-calc'
@@ -33,9 +33,9 @@ const GratuityFramingSchema = z.object({
 
 export async function draftGratuityFraming(eventId: string): Promise<GratuityFramingDraft> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -55,7 +55,7 @@ export async function draftGratuityFraming(eventId: string): Promise<GratuityFra
   const firstName = clientName.split(' ')[0]
 
   // Get event count for this client (relationship depth)
-  const { count: eventCount } = await supabase
+  const { count: eventCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('client_id', event.client_id)

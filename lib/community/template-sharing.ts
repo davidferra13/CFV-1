@@ -1,6 +1,6 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export type CommunityTemplateType = 'menu' | 'recipe' | 'message' | 'quote'
@@ -23,8 +23,8 @@ export interface CommunityTemplate {
 export async function getCommunityTemplates(
   type?: CommunityTemplateType
 ): Promise<CommunityTemplate[]> {
-  const supabase: any = createServerClient()
-  let query = supabase
+  const db: any = createServerClient()
+  let query = db
     .from('community_templates' as any)
     .select(
       'id, template_type, title, description, tags, cuisine_type, occasion_type, dietary_tags, is_published, download_count, created_at'
@@ -41,9 +41,9 @@ export async function getCommunityTemplates(
 
 export async function getMyTemplates(): Promise<CommunityTemplate[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('community_templates' as any)
     .select('*')
     .eq('author_tenant_id', user.entityId)
@@ -63,9 +63,9 @@ export async function publishTemplate(input: {
   dietary_tags?: string[]
 }): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase.from('community_templates' as any).insert({
+  await db.from('community_templates' as any).insert({
     author_tenant_id: user.entityId,
     ...input,
     is_published: true,
@@ -77,18 +77,18 @@ export async function publishTemplate(input: {
 }
 
 export async function incrementDownloadCount(templateId: string): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   try {
-    await (supabase.rpc as any)('increment_template_downloads', { template_id: templateId })
+    await (db.rpc as any)('increment_template_downloads', { template_id: templateId })
   } catch {
     // Fallback: fetch current count and increment
-    const { data } = await supabase
+    const { data } = await db
       .from('community_templates' as any)
       .select('download_count')
       .eq('id', templateId)
       .single()
     const current = (data as any)?.download_count || 0
-    await supabase
+    await db
       .from('community_templates' as any)
       .update({ download_count: current + 1 })
       .eq('id', templateId)

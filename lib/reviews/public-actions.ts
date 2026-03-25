@@ -5,7 +5,7 @@
 
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ============================================
 // TYPES
@@ -87,11 +87,11 @@ function providerLabel(provider: string): string {
  * 4. guest_testimonials where is_approved = true
  */
 export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicReviewFeedResult> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const [clientResult, feedbackResult, externalResult, testimonialResult] = await Promise.all([
     // 1. Consented client reviews
-    supabase
+    db
       .from('client_reviews')
       .select('id, rating, feedback_text, what_they_loved, created_at, client:clients(full_name)')
       .eq('tenant_id', tenantId)
@@ -99,7 +99,7 @@ export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicR
       .order('created_at', { ascending: false }),
 
     // 2. Public chef-logged feedback
-    supabase
+    db
       .from('chef_feedback')
       .select(
         'id, source, rating, feedback_text, reviewer_name, source_url, feedback_date, created_at'
@@ -109,7 +109,7 @@ export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicR
       .order('feedback_date', { ascending: false }),
 
     // 3. External reviews (all public)
-    supabase
+    db
       .from('external_reviews')
       .select(
         'id, provider, source_url, author_name, rating, review_text, review_date, source_id, created_at'
@@ -118,7 +118,7 @@ export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicR
       .order('review_date', { ascending: false }),
 
     // 4. Approved guest testimonials
-    supabase
+    db
       .from('guest_testimonials')
       .select(
         'id, guest_name, testimonial, rating, food_rating, chef_rating, is_featured, created_at'

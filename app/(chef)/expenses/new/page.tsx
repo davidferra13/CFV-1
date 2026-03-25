@@ -2,14 +2,14 @@
 // Three modes: manual entry, receipt upload with AI extraction, and OCR receipt scan
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { ExpenseForm } from '@/components/expenses/expense-form'
 import { ReceiptScanner } from '@/components/expenses/receipt-scanner'
 import { NewExpenseClient } from './new-expense-client'
 
 async function getEventsForDropdown() {
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .order('event_date', { ascending: false })

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -41,10 +41,10 @@ export type CertificationInput = z.infer<typeof CertificationSchema>
 
 export async function createCertification(input: CertificationInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = CertificationSchema.parse(input)
 
-  const { error } = await supabase.from('chef_certifications').insert({
+  const { error } = await db.from('chef_certifications').insert({
     ...data,
     chef_id: chef.id,
     document_url: data.document_url || null,
@@ -58,10 +58,10 @@ export async function createCertification(input: CertificationInput) {
 
 export async function updateCertification(id: string, input: CertificationInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = CertificationSchema.parse(input)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_certifications')
     .update({
       ...data,
@@ -78,9 +78,9 @@ export async function updateCertification(id: string, input: CertificationInput)
 
 export async function deleteCertification(id: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_certifications')
     .delete()
     .eq('id', id)
@@ -92,9 +92,9 @@ export async function deleteCertification(id: string) {
 
 export async function listCertifications() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_certifications')
     .select('*')
     .eq('chef_id', chef.id)
@@ -106,13 +106,13 @@ export async function listCertifications() {
 
 export async function getExpiringCertifications(daysAhead = 60) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date()
   const threshold = addDays(today, daysAhead).toISOString().slice(0, 10)
   const todayStr = today.toISOString().slice(0, 10)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_certifications')
     .select('*')
     .eq('chef_id', chef.id)
@@ -145,10 +145,10 @@ export type TempLogInput = z.infer<typeof TempLogSchema>
 
 export async function logTemperature(input: TempLogInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = TempLogSchema.parse(input)
 
-  const { error } = await supabase.from('event_temp_logs').insert({ ...data, chef_id: chef.id })
+  const { error } = await db.from('event_temp_logs').insert({ ...data, chef_id: chef.id })
 
   if (error) throw new Error(error.message)
   revalidatePath(`/events/${data.event_id}`)
@@ -156,22 +156,18 @@ export async function logTemperature(input: TempLogInput) {
 
 export async function deleteTempLog(id: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
-    .from('event_temp_logs')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', chef.id)
+  const { error } = await db.from('event_temp_logs').delete().eq('id', id).eq('chef_id', chef.id)
 
   if (error) throw new Error(error.message)
 }
 
 export async function getEventTempLog(eventId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_temp_logs')
     .select('*')
     .eq('event_id', eventId)
@@ -188,10 +184,10 @@ export async function getEventTempLog(eventId: string) {
 
 export async function getAllergenRiskSummary(eventId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get event + linked client
-  const { data: event, error: evErr } = await supabase
+  const { data: event, error: evErr } = await db
     .from('events')
     .select('id, client_id, menu_id')
     .eq('id', eventId)
@@ -201,7 +197,7 @@ export async function getAllergenRiskSummary(eventId: string) {
   if (evErr || !event) throw new Error('Event not found')
 
   // Get client dietary restrictions / allergies
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('full_name, dietary_restrictions, allergies')
     .eq('id', event.client_id)
@@ -210,7 +206,7 @@ export async function getAllergenRiskSummary(eventId: string) {
   // Get menu dishes if menu is linked
   let dishes: Array<{ name: string; allergens: string[] }> = []
   if (event.menu_id) {
-    const { data: menuDishes } = await supabase
+    const { data: menuDishes } = await db
       .from('menu_items' as any)
       .select('name, allergen_notes')
       .eq('menu_id', event.menu_id)

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { appendLedgerEntryForChef } from '@/lib/ledger/append'
 import { z } from 'zod'
@@ -210,11 +210,11 @@ export async function inviteClient(input: InviteClientInput) {
   const user = await requireChef()
   const validated = InviteClientSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check if client already exists with this email in this tenant
   const findExistingClient = async (withSoftDeleteFilter: boolean) => {
-    let query = supabase
+    let query = db
       .from('clients')
       .select('id')
       .eq('tenant_id', user.tenantId!)
@@ -236,7 +236,7 @@ export async function inviteClient(input: InviteClientInput) {
   }
 
   // Check if pending invitation exists
-  const { data: existingInvitation } = await supabase
+  const { data: existingInvitation } = await db
     .from('client_invitations')
     .select('id, used_at')
     .eq('tenant_id', user.tenantId!)
@@ -256,7 +256,7 @@ export async function inviteClient(input: InviteClientInput) {
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + 7)
 
-  const { data: invitation, error } = await supabase
+  const { data: invitation, error } = await db
     .from('client_invitations')
     .insert({
       tenant_id: user.tenantId!,
@@ -280,7 +280,7 @@ export async function inviteClient(input: InviteClientInput) {
 
   // Send invitation email to client (non-blocking)
   try {
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('business_name')
       .eq('id', user.tenantId!)
@@ -328,12 +328,12 @@ export async function createClient(input: CreateClientInput) {
   const user = await requireChef()
   const validated = CreateClientSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If email provided, ensure no existing client with same email in tenant
   if (validated.email) {
     const findExisting = async (withSoftDeleteFilter: boolean) => {
-      let query = supabase
+      let query = db
         .from('clients')
         .select('id')
         .eq('tenant_id', user.tenantId!)
@@ -441,13 +441,13 @@ export async function createClient(input: CreateClientInput) {
   }
 
   const result = await executeWithIdempotency({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     actionName: 'clients.create',
     idempotencyKey: validated.idempotency_key,
     execute: async () => {
-      const { data: client, error } = await supabase
+      const { data: client, error } = await db
         .from('clients')
         .insert(insertData as any)
         .select('*')
@@ -530,10 +530,10 @@ export async function createClient(input: CreateClientInput) {
  */
 export async function getClients() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase.from('clients').select('*').eq('tenant_id', user.tenantId!)
+    let query = db.from('clients').select('*').eq('tenant_id', user.tenantId!)
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
@@ -559,14 +559,10 @@ export async function getClients() {
  */
 export async function getClientById(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = supabase
-      .from('clients')
-      .select('*')
-      .eq('id', clientId)
-      .eq('tenant_id', user.tenantId!)
+    let query = db.from('clients').select('*').eq('id', clientId).eq('tenant_id', user.tenantId!)
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
@@ -603,15 +599,11 @@ export async function createClientFromLead(
     source?: string | null
   }
 ) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Idempotent: check if client already exists with this email
   const findExisting = async (withSoftDeleteFilter: boolean) => {
-    let query = supabase
-      .from('clients')
-      .select('id')
-      .eq('tenant_id', tenantId)
-      .eq('email', lead.email)
+    let query = db.from('clients').select('id').eq('tenant_id', tenantId).eq('email', lead.email)
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
@@ -629,7 +621,7 @@ export async function createClientFromLead(
   }
 
   // Create the client record
-  const { data: client, error } = await supabase
+  const { data: client, error } = await db
     .from('clients')
     .insert({
       tenant_id: tenantId,
@@ -668,9 +660,9 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
   const validated = UpdateClientSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: currentClient } = await (supabase
+  const { data: currentClient } = await (db
     .from('clients')
     .select('*')
     .eq('id', clientId)
@@ -686,14 +678,14 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
   }
 
   const result = await executeWithIdempotency({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     actorId: user.id,
     actionName: 'clients.update',
     idempotencyKey: idempotency_key,
     execute: async () => {
       const runUpdate = async (withSoftDeleteFilter: boolean) => {
-        let query = supabase
+        let query = db
           .from('clients')
           .update({
             ...(updateFields as any),
@@ -720,7 +712,7 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
       if (error || !client) {
         if (expected_updated_at) {
           const getLatest = async (withSoftDeleteFilter: boolean) => {
-            let query = supabase
+            let query = db
               .from('clients')
               .select('updated_at')
               .eq('id', clientId)
@@ -806,9 +798,9 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
  */
 export async function deleteClient(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: client } = await (supabase
+  const { data: client } = await (db
     .from('clients')
     .select('id, deleted_at')
     .eq('id', clientId)
@@ -819,7 +811,7 @@ export async function deleteClient(clientId: string) {
     throw new ValidationError('Client not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update({
       deleted_at: new Date().toISOString(),
@@ -844,9 +836,9 @@ export async function deleteClient(clientId: string) {
  */
 export async function restoreClient(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update({
       deleted_at: null,
@@ -869,9 +861,9 @@ export async function restoreClient(clientId: string) {
  */
 export async function getPendingInvitations() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: invitations, error } = await supabase
+  const { data: invitations, error } = await db
     .from('client_invitations')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -893,9 +885,9 @@ export async function getPendingInvitations() {
  */
 export async function cancelInvitation(invitationId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_invitations')
     .delete()
     .eq('id', invitationId)
@@ -916,10 +908,10 @@ export async function cancelInvitation(invitationId: string) {
  */
 export async function getClientsWithStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all clients
-  const { data: clients, error: clientsError } = await supabase
+  const { data: clients, error: clientsError } = await db
     .from('clients')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -932,7 +924,7 @@ export async function getClientsWithStats() {
   }
 
   // Use the client_financial_summary view for stats
-  const { data: financialSummaries } = await supabase
+  const { data: financialSummaries } = await db
     .from('client_financial_summary')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -973,10 +965,10 @@ export async function getClientsWithStats() {
  */
 export async function getClientEvents(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to tenant
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id')
     .eq('id', clientId)
@@ -989,7 +981,7 @@ export async function getClientEvents(clientId: string) {
   }
 
   // Get events for this client
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('*')
     .eq('client_id', clientId)
@@ -1011,10 +1003,10 @@ export async function getClientEvents(clientId: string) {
  */
 export async function getClientWithStats(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get client
-  const { data: client, error: clientError } = await supabase
+  const { data: client, error: clientError } = await db
     .from('clients')
     .select('*')
     .eq('id', clientId)
@@ -1028,7 +1020,7 @@ export async function getClientWithStats(clientId: string) {
   }
 
   // Use the client_financial_summary view
-  const { data: financialSummary } = await supabase
+  const { data: financialSummary } = await db
     .from('client_financial_summary')
     .select('*')
     .eq('client_id', clientId)
@@ -1059,9 +1051,9 @@ export async function updateClientHousehold(formData: FormData) {
 
   if (!clientId) throw new ValidationError('Missing clientId')
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: client, error } = await supabase
+  const { data: client, error } = await db
     .from('clients')
     .update({ household: tag ? { tag } : null } as any)
     .eq('id', clientId)
@@ -1086,9 +1078,9 @@ export async function updateClientHousehold(formData: FormData) {
  */
 export async function getClientDormancyInfo(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('client_financial_summary')
     .select('last_event_date, days_since_last_event, is_dormant')
     .eq('client_id', clientId)
@@ -1115,9 +1107,9 @@ export async function updateClientStatus(clientId: string, status: string) {
     throw new ValidationError(`Invalid status: ${status}`)
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update({ status } as any)
     .eq('id', clientId)
@@ -1140,10 +1132,10 @@ export async function updateClientStatus(clientId: string, status: string) {
  */
 export async function getClientFinancialDetail(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to this tenant
-  const { data: clientCheck } = await supabase
+  const { data: clientCheck } = await db
     .from('clients')
     .select('id')
     .eq('id', clientId)
@@ -1155,7 +1147,7 @@ export async function getClientFinancialDetail(clientId: string) {
 
   // Parallel: events for this client + ledger entries for this client
   const [eventsResult, ledgerResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'id, occasion, event_date, status, quoted_price_cents, payment_status, deposit_amount_cents, guest_count'
@@ -1164,7 +1156,7 @@ export async function getClientFinancialDetail(clientId: string) {
       .eq('tenant_id', user.tenantId!)
       .is('deleted_at' as any, null)
       .order('event_date', { ascending: false }),
-    supabase
+    db
       .from('ledger_entries')
       .select(
         'id, entry_type, amount_cents, is_refund, description, payment_method, created_at, received_at, event_id, events(id, occasion, event_date)'
@@ -1181,7 +1173,7 @@ export async function getClientFinancialDetail(clientId: string) {
   const eventIds = events.map((e: any) => e.id)
   const { data: summaries } =
     eventIds.length > 0
-      ? await supabase
+      ? await db
           .from('event_financial_summary')
           .select(
             'event_id, total_paid_cents, total_refunded_cents, outstanding_balance_cents, tip_amount_cents, net_revenue_cents'
@@ -1275,9 +1267,9 @@ export async function getClientFinancialDetail(clientId: string) {
  */
 export async function setClientAutomatedEmails(clientId: string, enabled: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update({ automated_emails_enabled: enabled } as any)
     .eq('id', clientId)
@@ -1307,14 +1299,14 @@ export async function addClientFromInquiry(input: {
 }): Promise<{ success: true; clientId: string } | { success: false; error: string }> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     if (!input.full_name.trim() || !input.email.trim()) {
       return { success: false, error: 'Name and email are required' }
     }
 
     // Check for duplicate email in this tenant
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', user.tenantId!)
@@ -1324,7 +1316,7 @@ export async function addClientFromInquiry(input: {
 
     if (existing) {
       // Client already exists - just link the inquiry
-      await supabase
+      await db
         .from('inquiries')
         .update({ client_id: existing.id })
         .eq('id', input.inquiryId)
@@ -1336,7 +1328,7 @@ export async function addClientFromInquiry(input: {
     }
 
     // Create the client record
-    const { data: client, error: clientErr } = await supabase
+    const { data: client, error: clientErr } = await db
       .from('clients')
       .insert({
         tenant_id: user.tenantId!,
@@ -1353,7 +1345,7 @@ export async function addClientFromInquiry(input: {
     }
 
     // Link inquiry to new client
-    await supabase
+    await db
       .from('inquiries')
       .update({ client_id: client.id })
       .eq('id', input.inquiryId)
@@ -1390,10 +1382,10 @@ export async function createClientDirect(input: {
       return { success: false, error: 'Client email is required' }
     }
 
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Check for duplicate email in this tenant
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', user.tenantId!)
@@ -1405,7 +1397,7 @@ export async function createClientDirect(input: {
       return { success: false, error: 'A client with this email already exists' }
     }
 
-    const { data: client, error: clientErr } = await supabase
+    const { data: client, error: clientErr } = await db
       .from('clients')
       .insert({
         tenant_id: user.tenantId!,
@@ -1473,11 +1465,11 @@ export async function searchClientsQuick(query: string): Promise<ClientQuickResu
 
   if (!query || query.trim().length < 2) return []
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const q = query.trim()
 
   // Search clients by name, dietary_restrictions, or allergies
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('id, full_name, loyalty_tier, dietary_restrictions, allergies')
     .eq('tenant_id', user.tenantId!)
@@ -1495,7 +1487,7 @@ export async function searchClientsQuick(query: string): Promise<ClientQuickResu
   const enriched = await Promise.all(
     clients.map(async (client: any) => {
       // Get event count + last event date
-      const { data: eventData } = await supabase
+      const { data: eventData } = await db
         .from('events')
         .select('id, event_date')
         .eq('tenant_id', user.tenantId!)
@@ -1506,7 +1498,7 @@ export async function searchClientsQuick(query: string): Promise<ClientQuickResu
       const events = eventData ?? []
 
       // Get lifetime revenue from ledger
-      const { data: revenueData } = await supabase
+      const { data: revenueData } = await db
         .from('ledger_entries')
         .select('amount_cents')
         .eq('tenant_id', user.tenantId!)
@@ -1544,9 +1536,9 @@ export async function searchClientsByName(
   Array<{ id: string; full_name: string | null; email: string | null; status: string | null }>
 > {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .select('id, full_name, email, status')
     .eq('tenant_id', user.tenantId!)

@@ -7,7 +7,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { ArrowLeft, CalendarDays, ExternalLink } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -69,10 +69,10 @@ const PLATFORMS = [
 ]
 
 async function getUpcomingBookedDates(tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const today = new Date().toISOString().slice(0, 10)
 
-  const { data } = await supabase
+  const { data } = await db
     .from('events')
     .select('id, event_date, occasion, status, client:clients(full_name)')
     .eq('tenant_id', tenantId)

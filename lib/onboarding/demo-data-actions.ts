@@ -11,7 +11,7 @@ import {
   ONBOARDING_SAMPLE_INQUIRY,
   SeedDemoDataResult,
 } from '@/lib/onboarding/demo-data-core'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 export async function seedDemoData(): Promise<SeedDemoDataResult> {
   try {

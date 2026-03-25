@@ -1,6 +1,6 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { subMonths, addMonths, format } from 'date-fns'
 
 export interface MonthlyRevenue {
@@ -19,11 +19,11 @@ export interface RevenueForecast {
 
 export async function getRevenueForecast(): Promise<RevenueForecast> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch last 12 months of completed event revenue
   const twelveMonthsAgo = subMonths(new Date(), 12)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('event_date, quoted_price_cents')
     .eq('tenant_id', user.entityId)

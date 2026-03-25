@@ -38,7 +38,7 @@ export const GET = withApiAuth(
     const eventId = url.searchParams.get('event_id')
     const clientId = url.searchParams.get('client_id')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('quotes')
       .select(
         'id, quote_name, status, pricing_model, total_quoted_cents, deposit_amount_cents, valid_until, created_at, updated_at, client:clients(id, full_name, email)',
@@ -78,7 +78,7 @@ export const POST = withApiAuth(
     const input = parsed.data
 
     // Verify client belongs to tenant
-    const { data: client } = await ctx.supabase
+    const { data: client } = await ctx.db
       .from('clients')
       .select('id')
       .eq('id', input.client_id)
@@ -93,7 +93,7 @@ export const POST = withApiAuth(
       )
     }
 
-    const { data: quote, error } = await ctx.supabase
+    const { data: quote, error } = await ctx.db
       .from('quotes')
       .insert({
         tenant_id: ctx.tenantId,

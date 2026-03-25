@@ -9,7 +9,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
@@ -65,16 +65,18 @@ const SaveDraftSchema = z.object({
 export async function getContentReadyEvents(): Promise<ContentReadyEvent[]> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch completed events (not demo)
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, guest_count, client_id,
       clients!inner(first_name, last_name, nda_active, photo_permission),
       is_demo
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'completed')
     .eq('is_demo', false)
@@ -90,7 +92,7 @@ export async function getContentReadyEvents(): Promise<ContentReadyEvent[]> {
   const eventIds = events.map((e: any) => e.id)
 
   // Get photo counts per event
-  const { data: photoRows } = await supabase
+  const { data: photoRows } = await db
     .from('event_photos')
     .select('event_id')
     .in('event_id', eventIds)
@@ -103,7 +105,7 @@ export async function getContentReadyEvents(): Promise<ContentReadyEvent[]> {
   }
 
   // Get existing draft counts per event
-  const { data: draftRows } = await supabase
+  const { data: draftRows } = await db
     .from('event_content_drafts')
     .select('event_id')
     .in('event_id', eventIds)
@@ -147,16 +149,18 @@ export async function generateContentDraft(
 > {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event + client privacy info
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, guest_count, service_style, location_city,
       special_requests, course_count, client_id, status,
       clients(first_name, nda_active, nda_coverage, photo_permission)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -176,7 +180,7 @@ export async function generateContentDraft(
 
   // Fetch menu highlights if available
   let menuInfo: string | null = null
-  const { data: menu } = await supabase
+  const { data: menu } = await db
     .from('menus')
     .select('name, cuisine_type')
     .eq('event_id', eventId)
@@ -201,11 +205,12 @@ export async function generateContentDraft(
   contextParts.push(`Date: ${event.event_date}`)
 
   // Anonymize guest count to a range for privacy
-  const guestRange = event.guest_count <= 10
-    ? 'an intimate gathering'
-    : event.guest_count <= 30
-      ? 'a mid-size event'
-      : 'a large celebration'
+  const guestRange =
+    event.guest_count <= 10
+      ? 'an intimate gathering'
+      : event.guest_count <= 30
+        ? 'a mid-size event'
+        : 'a large celebration'
   contextParts.push(`Scale: ${guestRange}`)
 
   if (event.service_style) contextParts.push(`Style: ${event.service_style}`)
@@ -221,8 +226,7 @@ export async function generateContentDraft(
       'Write an Instagram caption. Keep it 2-4 sentences. No hashtags (chef adds their own). Warm, genuine, first-person voice.',
     story:
       'Write a short Instagram Story overlay text. 1-2 punchy sentences max. Casual and engaging. Think captions over a photo.',
-    blog:
-      'Write a short blog-style paragraph (4-6 sentences). More detailed and reflective. First person, professional but personable.',
+    blog: 'Write a short blog-style paragraph (4-6 sentences). More detailed and reflective. First person, professional but personable.',
   }
 
   const privacyNote = isRestricted
@@ -275,7 +279,7 @@ export async function saveContentDraft(input: {
 }): Promise<{ success: true; draft: ContentDraft } | { success: false; error: string }> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const parsed = SaveDraftSchema.safeParse(input)
   if (!parsed.success) {
@@ -285,7 +289,7 @@ export async function saveContentDraft(input: {
   const { eventId, platform, draftText, photoIds, aiGenerated } = parsed.data
 
   // Verify event belongs to this tenant and is completed
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, status')
     .eq('id', eventId)
@@ -300,7 +304,7 @@ export async function saveContentDraft(input: {
     return { success: false, error: 'Only completed events can have content drafts' }
   }
 
-  const { data: draft, error } = await supabase
+  const { data: draft, error } = await db
     .from('event_content_drafts')
     .insert({
       event_id: eventId,
@@ -336,9 +340,9 @@ export async function updateContentDraft(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: draft, error } = await supabase
+  const { data: draft, error } = await db
     .from('event_content_drafts')
     .update({ draft_text: draftText })
     .eq('id', draftId)
@@ -368,9 +372,9 @@ export async function updateDraftStatus(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: draft, error } = await supabase
+  const { data: draft, error } = await db
     .from('event_content_drafts')
     .update({ status })
     .eq('id', draftId)
@@ -396,9 +400,9 @@ export async function updateDraftStatus(
 export async function getEventContentDrafts(eventId: string): Promise<ContentDraft[]> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_content_drafts')
     .select('*')
     .eq('event_id', eventId)
@@ -423,9 +427,9 @@ export async function deleteContentDraft(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: draft, error: fetchError } = await supabase
+  const { data: draft, error: fetchError } = await db
     .from('event_content_drafts')
     .select('event_id')
     .eq('id', draftId)
@@ -436,7 +440,7 @@ export async function deleteContentDraft(
     return { success: false, error: 'Draft not found' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_content_drafts')
     .delete()
     .eq('id', draftId)

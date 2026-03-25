@@ -1,5 +1,5 @@
 import { requireChef, requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getUnreadCount } from '@/lib/notifications/actions'
 
 export type MobileChefDashboardData = {
@@ -36,11 +36,11 @@ export async function getMobileChefDashboardData(chefId: string): Promise<Mobile
     throw new Error('Unauthorized: cannot view another chef dashboard')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const today = new Date().toISOString().slice(0, 10)
 
   const [eventsResult, unreadCount] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('id, occasion, event_date, serve_time, status, clients(full_name)')
       .eq('tenant_id', user.tenantId!)
@@ -79,9 +79,9 @@ export async function getMobileClientEventsData(clientId: string): Promise<Mobil
     throw new Error('Unauthorized: cannot view another client event list')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('events')
     .select(
       'id, occasion, event_date, serve_time, status, quoted_price_cents, chefs(business_name)'

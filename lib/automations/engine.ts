@@ -3,7 +3,7 @@
 // Called as a non-blocking side effect from other server actions and processors.
 // Uses admin client (no user session required).
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { evaluateConditions } from './conditions'
 import { executeAction } from './action-handlers'
 import type { AutomationRule, AutomationContext, TriggerEvent, Condition } from './types'
@@ -30,11 +30,11 @@ export async function evaluateAutomations(
   context: Omit<AutomationContext, 'tenantId'>
 ): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
+    const db = createServerClient({ admin: true })
     const fullContext: AutomationContext = { ...context, tenantId }
 
     // 1. Find all active rules matching this trigger event for this tenant
-    const { data: rules, error } = await supabase
+    const { data: rules, error } = await db
       .from('automation_rules' as any)
       .select('*')
       .eq('tenant_id', tenantId)
@@ -54,7 +54,7 @@ export async function evaluateAutomations(
         const cooldownHours = COOLDOWN_HOURS[rule.trigger_event]
         if (cooldownHours && fullContext.entityId) {
           const cutoff = new Date(Date.now() - cooldownHours * 3_600_000).toISOString()
-          const { data: recentExecution } = await supabase
+          const { data: recentExecution } = await db
             .from('automation_executions' as any)
             .select('id')
             .eq('rule_id', rule.id)
@@ -76,7 +76,7 @@ export async function evaluateAutomations(
         // ── Evaluate conditions ─────────────────────────────────────────
         if (!evaluateConditions(conditions, fullContext)) {
           // Conditions not met - log as skipped
-          await logExecution(supabase, tenantId, rule, fullContext, 'skipped')
+          await logExecution(db, tenantId, rule, fullContext, 'skipped')
           continue
         }
 
@@ -85,7 +85,7 @@ export async function evaluateAutomations(
 
         // ── Log the execution ───────────────────────────────────────────
         await logExecution(
-          supabase,
+          db,
           tenantId,
           rule,
           fullContext,
@@ -96,7 +96,7 @@ export async function evaluateAutomations(
 
         // ── Update rule stats ───────────────────────────────────────────
         if (result.success) {
-          await supabase
+          await db
             .from('automation_rules' as any)
             .update({
               last_fired_at: new Date().toISOString(),
@@ -107,15 +107,7 @@ export async function evaluateAutomations(
       } catch (ruleErr) {
         const error = ruleErr as Error
         console.error(`[Automations] Rule "${rule.name}" (${rule.id}) failed:`, error.message)
-        await logExecution(
-          supabase,
-          tenantId,
-          rule,
-          fullContext,
-          'failed',
-          undefined,
-          error.message
-        )
+        await logExecution(db, tenantId, rule, fullContext, 'failed', undefined, error.message)
       }
     }
   } catch (err) {
@@ -127,7 +119,7 @@ export async function evaluateAutomations(
 // ─── Log Execution ───────────────────────────────────────────────────────
 
 async function logExecution(
-  supabase: any,
+  db: any,
   tenantId: string,
   rule: AutomationRule,
   context: AutomationContext,
@@ -135,7 +127,7 @@ async function logExecution(
   actionResult?: Record<string, unknown>,
   error?: string
 ) {
-  await supabase.from('automation_executions' as any).insert({
+  await db.from('automation_executions' as any).insert({
     tenant_id: tenantId,
     rule_id: rule.id,
     trigger_event: rule.trigger_event,

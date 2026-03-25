@@ -1,7 +1,7 @@
 // Chef notification when a social post fails 3 consecutive publish attempts.
 // Uses the centralized notification pipeline.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { createNotification } from '@/lib/notifications/actions'
 import type { SocialPlatform } from '@/lib/social/types'
 
@@ -21,10 +21,10 @@ export async function sendChefPublishFailureNotification(
   postTitle: string,
   platform: SocialPlatform
 ): Promise<void> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const label = PLATFORM_LABELS[platform] ?? platform
 
-  const { data: role } = await supabase
+  const { data: role } = await db
     .from('user_roles')
     .select('auth_user_id')
     .eq('entity_id', tenantId)

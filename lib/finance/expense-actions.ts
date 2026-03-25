@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -80,9 +80,9 @@ export interface MonthlyTrend {
 export async function getExpenses(filters?: ExpenseFilters): Promise<Expense[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
-  let query = supabase
+  let query = db
     .from('expenses')
     .select('*')
     .eq('chef_id', tenantId)
@@ -114,9 +114,9 @@ export async function getExpenses(filters?: ExpenseFilters): Promise<Expense[]> 
 export async function createExpense(input: CreateExpenseInput): Promise<Expense> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .insert({
       chef_id: tenantId,
@@ -160,7 +160,7 @@ export async function updateExpense(
 ): Promise<Expense> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (input.category !== undefined) updateData.category = input.category
@@ -176,7 +176,7 @@ export async function updateExpense(
   if (input.tax_deductible !== undefined) updateData.tax_deductible = input.tax_deductible
   if (input.notes !== undefined) updateData.notes = input.notes || null
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .update(updateData)
     .eq('id', id)
@@ -206,9 +206,9 @@ export async function updateExpense(
 export async function deleteExpense(id: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
-  const { error } = await supabase.from('expenses').delete().eq('id', id).eq('chef_id', tenantId)
+  const { error } = await db.from('expenses').delete().eq('id', id).eq('chef_id', tenantId)
 
   if (error) {
     console.error('[expense-actions] deleteExpense failed:', error)
@@ -233,9 +233,9 @@ export async function getExpenseSummary(
 ): Promise<ExpenseSummary[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
-  let query = supabase.from('expenses').select('category, amount_cents').eq('chef_id', tenantId)
+  let query = db.from('expenses').select('category, amount_cents').eq('chef_id', tenantId)
 
   if (dateFrom) {
     query = query.gte('date', dateFrom)
@@ -251,7 +251,7 @@ export async function getExpenseSummary(
     throw new Error('Failed to load expense summary')
   }
 
-  // Aggregate by category in JS since Supabase JS client doesn't support GROUP BY
+  // Aggregate by category in JS since query builder doesn't support GROUP BY
   const categoryMap = new Map<string, { total_cents: number; count: number }>()
   for (const row of data ?? []) {
     const existing = categoryMap.get(row.category) ?? { total_cents: 0, count: 0 }
@@ -277,14 +277,14 @@ export async function getExpenseSummary(
 export async function getMonthlyExpenseTrend(months: number = 12): Promise<MonthlyTrend[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
   // Calculate date range
   const now = new Date()
   const startDate = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
   const dateFrom = startDate.toISOString().slice(0, 10)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .select('date, amount_cents')
     .eq('chef_id', tenantId)
@@ -326,9 +326,9 @@ export async function getMonthlyExpenseTrend(months: number = 12): Promise<Month
 export async function getEventExpenses(eventId: string): Promise<Expense[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .select('*')
     .eq('chef_id', tenantId)
@@ -346,12 +346,12 @@ export async function getEventExpenses(eventId: string): Promise<Expense[]> {
 export async function getDeductibleTotal(year: number): Promise<number> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
   const dateFrom = `${year}-01-01`
   const dateTo = `${year}-12-31`
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .select('amount_cents')
     .eq('chef_id', tenantId)

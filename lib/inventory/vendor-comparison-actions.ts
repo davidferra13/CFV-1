@@ -6,7 +6,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,9 +46,9 @@ export async function getVendorPricesForIngredient(
   ingredientId?: string | null
 ): Promise<VendorIngredientPrice[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('vendor_preferred_ingredients')
     .select(
       `
@@ -167,10 +167,10 @@ export async function upsertVendorIngredientPricing(
   }
 ): Promise<{ id: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check for existing entry
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('vendor_preferred_ingredients')
     .select('id')
     .eq('chef_id', user.tenantId!)
@@ -180,7 +180,7 @@ export async function upsertVendorIngredientPricing(
 
   if (existing?.id) {
     // Update
-    const { error } = await supabase
+    const { error } = await db
       .from('vendor_preferred_ingredients')
       .update({
         ingredient_id: data.ingredientId ?? null,
@@ -201,7 +201,7 @@ export async function upsertVendorIngredientPricing(
   }
 
   // Insert new
-  const { data: inserted, error } = await supabase
+  const { data: inserted, error } = await db
     .from('vendor_preferred_ingredients')
     .insert({
       chef_id: user.tenantId!,
@@ -230,9 +230,9 @@ export async function upsertVendorIngredientPricing(
  */
 export async function deleteVendorIngredientPricing(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('vendor_preferred_ingredients')
     .delete()
     .eq('id', id)

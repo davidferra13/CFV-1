@@ -13,7 +13,7 @@
 // (offset to 30 min past the hour so it doesn't collide with other hourly crons)
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 // Expected max interval (minutes) for each cron, derived from cron config schedules.
@@ -67,11 +67,11 @@ async function handleMonitor(request: NextRequest): Promise<NextResponse> {
   if (authError) return authError
   const strict = request.nextUrl.searchParams.get('strict') === '1'
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const now = new Date()
 
   // Fetch the most recent execution for each cron name
-  const db = supabase as any
+  const db = db as any
   const { data: recentRunsRaw, error } = await db
     .from('cron_executions')
     .select('cron_name, executed_at, status')

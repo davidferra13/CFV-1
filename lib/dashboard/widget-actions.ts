@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { sendPaymentReminderEmail } from '@/lib/email/notifications'
 
@@ -25,9 +25,9 @@ export interface PaymentDueItem {
 
 export async function getUpcomingPaymentsDue(limit = 5): Promise<PaymentDueItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select('event_id, outstanding_balance_cents')
     .eq('tenant_id', user.tenantId!)
@@ -38,7 +38,7 @@ export async function getUpcomingPaymentsDue(limit = 5): Promise<PaymentDueItem[
 
   const eventIds = summaries.map((s: any) => s.event_id).filter(Boolean)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, status, client:clients(id, full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -78,13 +78,13 @@ export interface ExpiringQuote {
 
 export async function getExpiringQuotes(daysAhead = 7): Promise<ExpiringQuote[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() + daysAhead)
 
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select('id, event_id, valid_until, total_cents')
     .eq('tenant_id', user.tenantId!)
@@ -97,7 +97,7 @@ export async function getExpiringQuotes(daysAhead = 7): Promise<ExpiringQuote[]>
   if (!quotes || quotes.length === 0) return []
 
   const eventIds = quotes.map((q: any) => q.event_id).filter(Boolean)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, client:clients(id, full_name)')
     .in('id', eventIds)
@@ -141,13 +141,13 @@ export interface DietaryAlertItem {
 
 export async function getDietaryAlertSummary(daysAhead = 7): Promise<DietaryAlertItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() + daysAhead)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       'id, occasion, event_date, guest_count, dietary_notes, client:clients(id, full_name, dietary_restrictions, allergies)'
@@ -209,9 +209,9 @@ export interface UpcomingBirthday {
 
 export async function getUpcomingBirthdays(daysAhead = 14): Promise<UpcomingBirthday[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, personal_milestones')
     .eq('tenant_id', user.tenantId!)
@@ -289,13 +289,13 @@ export interface ShoppingWindowItem {
 
 export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWindowItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() + daysAhead)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, status, client:clients(id, full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -308,7 +308,7 @@ export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWin
 
   // Check which events have grocery lists
   const eventIds = events.map((e: any) => e.id)
-  const { data: groceryLists } = await supabase
+  const { data: groceryLists } = await db
     .from('grocery_lists')
     .select('event_id')
     .in('event_id', eventIds)
@@ -356,11 +356,11 @@ export async function quickCaptureExpense(data: {
   eventId?: string
 }): Promise<QuickExpenseResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const expenseDate = new Date().toISOString().slice(0, 10)
 
-  const { data: inserted, error } = await supabase
+  const { data: inserted, error } = await db
     .from('expenses')
     .insert({
       tenant_id: user.tenantId!,
@@ -405,9 +405,9 @@ export interface RecentExpenseItem {
 
 export async function getRecentExpenses(limit = 3): Promise<RecentExpenseItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .select('id, description, amount_cents, expense_date, category')
     .eq('tenant_id', user.tenantId!)
@@ -432,11 +432,11 @@ export async function getUpcomingEventsForExpense(): Promise<
   Array<{ id: string; occasion: string; date: string }>
 > {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('events')
     .select('id, occasion, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -490,14 +490,14 @@ export async function getActiveShoppingList(daysAhead = 5): Promise<{
   consolidatedEvents: string[]
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() + daysAhead)
 
   // Find upcoming events with grocery lists
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -514,7 +514,7 @@ export async function getActiveShoppingList(daysAhead = 5): Promise<{
   const eventMap = new Map(events.map((e: any) => [e.id, e]))
 
   // Fetch grocery list items for these events
-  const { data: groceryItems } = await supabase
+  const { data: groceryItems } = await db
     .from('grocery_list_items')
     .select(
       'id, name, quantity, category, purchased, substitute_note, grocery_list:grocery_lists!inner(event_id)'
@@ -557,10 +557,10 @@ export async function getActiveShoppingList(daysAhead = 5): Promise<{
 
 export async function toggleShoppingItem(itemId: string, purchased: boolean): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the item belongs to a grocery list owned by this tenant
-  const { data: item } = await supabase
+  const { data: item } = await db
     .from('grocery_list_items')
     .select('id, grocery_list:grocery_lists!inner(tenant_id)')
     .eq('id', itemId)
@@ -570,7 +570,7 @@ export async function toggleShoppingItem(itemId: string, purchased: boolean): Pr
     throw new Error('Item not found or unauthorized')
   }
 
-  const { error } = await supabase.from('grocery_list_items').update({ purchased }).eq('id', itemId)
+  const { error } = await db.from('grocery_list_items').update({ purchased }).eq('id', itemId)
 
   if (error) {
     throw new Error('Failed to update shopping item')
@@ -583,7 +583,7 @@ export async function toggleShoppingItem(itemId: string, purchased: boolean): Pr
 
 export async function getBookedDates(): Promise<{ booked: string[]; tentative: string[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const cutoff = new Date()
@@ -593,7 +593,7 @@ export async function getBookedDates(): Promise<{ booked: string[]; tentative: s
   const cutoffStr = cutoff.toISOString().split('T')[0]
 
   // Booked = confirmed pipeline events
-  const { data: bookedEvents } = await supabase
+  const { data: bookedEvents } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', user.tenantId!)
@@ -602,7 +602,7 @@ export async function getBookedDates(): Promise<{ booked: string[]; tentative: s
     .in('status', ['accepted', 'paid', 'confirmed', 'in_progress'])
 
   // Tentative = draft or proposed events
-  const { data: tentativeEvents } = await supabase
+  const { data: tentativeEvents } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', user.tenantId!)
@@ -626,10 +626,10 @@ export async function getBookedDates(): Promise<{ booked: string[]; tentative: s
 
 export async function getUnreadHubMessages(limit = 5): Promise<UnreadHubGroup[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get hub profile for this user
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_profiles')
     .select('id')
     .eq('user_id', user.id)
@@ -638,7 +638,7 @@ export async function getUnreadHubMessages(limit = 5): Promise<UnreadHubGroup[]>
   if (!profile) return []
 
   // Get groups this user is a member of with their last_read_at
-  const { data: memberships } = await supabase
+  const { data: memberships } = await db
     .from('hub_group_members')
     .select('group_id, last_read_at, group:hub_groups(id, name)')
     .eq('profile_id', profile.id)
@@ -652,7 +652,7 @@ export async function getUnreadHubMessages(limit = 5): Promise<UnreadHubGroup[]>
     if (!group) continue
 
     // Count messages after last_read_at
-    let query = supabase
+    let query = db
       .from('hub_group_messages')
       .select('id, content, created_at', { count: 'exact' })
       .eq('group_id', m.group_id)
@@ -706,14 +706,14 @@ export interface InvoicePulseData {
 
 export async function getInvoicePulse(): Promise<InvoicePulseData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
   const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10)
 
   // Get all events with financial summaries (non-void, non-draft)
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('event_financial_summary')
     .select(
       'event_id, quoted_price_cents, total_paid_cents, outstanding_balance_cents, payment_status'
@@ -731,7 +731,7 @@ export async function getInvoicePulse(): Promise<InvoicePulseData> {
   const eventIds = summaries.map((s: any) => s.event_id).filter(Boolean)
 
   // Get events with their quotes and clients
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, status, client:clients(id, full_name, email)')
     .eq('tenant_id', user.tenantId!)
@@ -740,7 +740,7 @@ export async function getInvoicePulse(): Promise<InvoicePulseData> {
     .limit(10)
 
   // Get quotes for sent_at dates
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select('event_id, sent_at, valid_until, status')
     .eq('tenant_id', user.tenantId!)
@@ -792,7 +792,7 @@ export async function getInvoicePulse(): Promise<InvoicePulseData> {
   }
 
   // Monthly stats: events with quotes sent this month
-  const { data: monthQuotes } = await supabase
+  const { data: monthQuotes } = await db
     .from('quotes')
     .select('event_id, total_quoted_cents, status')
     .eq('tenant_id', user.tenantId!)
@@ -810,7 +810,7 @@ export async function getInvoicePulse(): Promise<InvoicePulseData> {
   )
 
   if (monthEventIds.length > 0) {
-    const { data: monthFinancials } = await supabase
+    const { data: monthFinancials } = await db
       .from('event_financial_summary')
       .select('event_id, total_paid_cents')
       .eq('tenant_id', user.tenantId!)
@@ -835,10 +835,10 @@ export async function sendInvoiceReminder(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get event + client details
-  const { data: event, error: eventErr } = await supabase
+  const { data: event, error: eventErr } = await db
     .from('events')
     .select('id, occasion, event_date, status, client:clients(id, full_name, email)')
     .eq('id', eventId)
@@ -855,7 +855,7 @@ export async function sendInvoiceReminder(
   }
 
   // Get outstanding balance
-  const { data: fin } = await supabase
+  const { data: fin } = await db
     .from('event_financial_summary')
     .select('outstanding_balance_cents, quoted_price_cents')
     .eq('event_id', eventId)
@@ -864,7 +864,7 @@ export async function sendInvoiceReminder(
   const outstandingCents = fin?.outstanding_balance_cents ?? fin?.quoted_price_cents ?? 0
 
   // Get chef name
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, full_name')
     .eq('id', user.tenantId!)

@@ -7,7 +7,7 @@
 // a shortcut around authentication, only around RLS scoping.
 
 import { requirePartner } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -83,10 +83,10 @@ export type PartnerPortalData = {
  */
 export async function getPartnerPortalData(): Promise<PartnerPortalData> {
   const user = await requirePartner()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Fetch partner record with nested locations + images
-  const { data: partnerRecord, error } = await supabase
+  const { data: partnerRecord, error } = await db
     .from('referral_partners')
     .select(
       `
@@ -118,7 +118,7 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
   // Fetch events at this partner's locations (no client PII - privacy by design)
   let recentEvents: PartnerEvent[] = []
   if (locationIds.length > 0) {
-    const { data: eventsData } = await supabase
+    const { data: eventsData } = await db
       .from('events')
       .select('id, event_date, occasion, guest_count, status, partner_location_id')
       .in('partner_location_id', locationIds)
@@ -145,7 +145,7 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
   let originEventSummary: string | null = null
 
   if (record.origin_client_id) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('full_name')
       .eq('id', record.origin_client_id)
@@ -154,7 +154,7 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
   }
 
   if (record.origin_event_id) {
-    const { data: originEvent } = await supabase
+    const { data: originEvent } = await db
       .from('events')
       .select('event_date, occasion')
       .eq('id', record.origin_event_id)
@@ -180,10 +180,10 @@ export async function getPartnerPortalData(): Promise<PartnerPortalData> {
  */
 export async function getPartnerLocationEvents(locationId: string): Promise<PartnerEvent[]> {
   const user = await requirePartner()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify this location belongs to the requesting partner
-  const { data: loc } = await supabase
+  const { data: loc } = await db
     .from('partner_locations')
     .select('id, partner_id')
     .eq('id', locationId)
@@ -192,7 +192,7 @@ export async function getPartnerLocationEvents(locationId: string): Promise<Part
 
   if (!loc) throw new Error('Location not found or access denied')
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, occasion, guest_count, status, partner_location_id')
     .eq('partner_location_id', locationId)
@@ -218,7 +218,7 @@ export async function updatePartnerProfile(input: {
   cover_image_url?: string
 }): Promise<{ success: true }> {
   const user = await requirePartner()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Whitelist - never allow partners to change tenant_id, auth_user_id, is_showcase_visible, etc.
   const allowed = {
@@ -233,7 +233,7 @@ export async function updatePartnerProfile(input: {
   // Strip undefined fields
   const update = Object.fromEntries(Object.entries(allowed).filter(([, v]) => v !== undefined))
 
-  const { error } = await supabase.from('referral_partners').update(update).eq('id', user.partnerId)
+  const { error } = await db.from('referral_partners').update(update).eq('id', user.partnerId)
 
   if (error) throw new Error('Failed to update profile')
   return { success: true }
@@ -248,10 +248,10 @@ export async function updatePartnerLocationDescription(
   description: string
 ): Promise<{ success: true }> {
   const user = await requirePartner()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify ownership
-  const { data: loc } = await supabase
+  const { data: loc } = await db
     .from('partner_locations')
     .select('id')
     .eq('id', locationId)
@@ -260,7 +260,7 @@ export async function updatePartnerLocationDescription(
 
   if (!loc) throw new Error('Location not found')
 
-  await supabase.from('partner_locations').update({ description }).eq('id', locationId)
+  await db.from('partner_locations').update({ description }).eq('id', locationId)
 
   return { success: true }
 }

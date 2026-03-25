@@ -20,7 +20,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { createClient } from '../../../scripts/lib/supabase.mjs'
+import { createClient } from '../../../scripts/lib/db.mjs'
 import { parseSSEStream } from './sse-parser.mjs'
 import { evaluateResponse } from './evaluator.mjs'
 import { generateReports, printSummary } from './report-generator.mjs'
@@ -219,15 +219,15 @@ function loadEnv() {
     return m ? m[1].trim() : ''
   }
   return {
-    supabaseUrl: getEnv('NEXT_PUBLIC_SUPABASE_URL'),
-    supabaseKey: getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    dbUrl: getEnv('NEXT_PUBLIC_DB_URL'),
+    dbKey: getEnv('NEXT_PUBLIC_DB_ANON_KEY'),
     agentEmail: getEnv('AGENT_EMAIL') || 'agent@chefflow.test',
     agentPassword: getEnv('AGENT_PASSWORD') || 'AgentChefFlow!2026',
   }
 }
 
 async function authenticate(env) {
-  const sb = createClient(env.supabaseUrl, env.supabaseKey)
+  const sb = createClient(env.dbUrl, env.dbKey)
   const { data, error } = await sb.auth.signInWithPassword({
     email: env.agentEmail,
     password: env.agentPassword,

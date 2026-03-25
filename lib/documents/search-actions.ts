@@ -6,7 +6,7 @@
 // Returns a unified result set sorted by date.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,7 +57,7 @@ export async function searchAllDocuments(
   filters: UnifiedSearchFilters = {}
 ): Promise<UnifiedSearchResponse> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const limit = Math.min(filters.limit ?? DEFAULT_LIMIT, 100)
   const offset = filters.offset ?? 0
   const sourceType = filters.sourceType ?? 'all'
@@ -65,13 +65,13 @@ export async function searchAllDocuments(
   const promises: Promise<UnifiedSearchResult[]>[] = []
 
   if (sourceType === 'all' || sourceType === 'receipt') {
-    promises.push(searchReceipts(supabase, user.tenantId!, filters))
+    promises.push(searchReceipts(db, user.tenantId!, filters))
   }
   if (sourceType === 'all' || sourceType === 'document') {
-    promises.push(searchDocuments(supabase, user.tenantId!, filters))
+    promises.push(searchDocuments(db, user.tenantId!, filters))
   }
   if (sourceType === 'all' || sourceType === 'expense') {
-    promises.push(searchExpenses(supabase, user.tenantId!, filters))
+    promises.push(searchExpenses(db, user.tenantId!, filters))
   }
 
   const allResults = (await Promise.all(promises)).flat()
@@ -97,11 +97,11 @@ export async function searchAllDocuments(
 // ─── Individual source searches ───────────────────────────────────────────────
 
 async function searchReceipts(
-  supabase: any,
+  db: any,
   tenantId: string,
   filters: UnifiedSearchFilters
 ): Promise<UnifiedSearchResult[]> {
-  let query = supabase
+  let query = db
     .from('receipt_photos')
     .select(
       `
@@ -166,11 +166,11 @@ async function searchReceipts(
 }
 
 async function searchDocuments(
-  supabase: any,
+  db: any,
   tenantId: string,
   filters: UnifiedSearchFilters
 ): Promise<UnifiedSearchResult[]> {
-  let query = supabase
+  let query = db
     .from('chef_documents')
     .select(
       `
@@ -217,11 +217,11 @@ async function searchDocuments(
 }
 
 async function searchExpenses(
-  supabase: any,
+  db: any,
   tenantId: string,
   filters: UnifiedSearchFilters
 ): Promise<UnifiedSearchResult[]> {
-  let query = supabase
+  let query = db
     .from('expenses')
     .select(
       `

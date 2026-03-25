@@ -6,7 +6,7 @@
  * This is P1 - broken auth means wrong users see wrong data.
  *
  * We test the pure decision logic extracted from lib/auth/get-user.ts
- * and lib/auth/admin.ts without requiring Supabase or Next.js runtime.
+ * and lib/auth/admin.ts without requiring database or Next.js runtime.
  *
  * Run: npm run test:unit
  */
@@ -26,7 +26,7 @@ type AuthUser = {
 
 /**
  * Pure function mirroring getCurrentUser() role resolution logic.
- * Given raw Supabase auth data and role data, resolves the AuthUser.
+ * Given raw Auth.js data and role data, resolves the AuthUser.
  */
 function resolveAuthUser(
   authUser: { id: string; email: string } | null,

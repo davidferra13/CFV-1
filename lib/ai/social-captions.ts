@@ -6,7 +6,7 @@
 // Output is DRAFT ONLY - chef picks and edits before posting.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { GoogleGenAI } from '@google/genai'
 
 export type CaptionTone = 'warm_personal' | 'elegant_professional' | 'playful_casual'
@@ -43,21 +43,21 @@ export async function generateSocialCaptions(
   tone: CaptionTone = 'warm_personal'
 ): Promise<SocialCaptionsResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [eventResult, menuResult, chefResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('occasion, guest_count, event_date, service_style, location_address')
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase as any)
+    (db as any)
       .from('event_menu_components')
       .select('name, course_type, description')
       .eq('event_id', eventId)
       .limit(8),
-    supabase
+    db
       .from('chefs')
       .select('display_name, business_name, tagline')
       .eq('id', user.tenantId!)

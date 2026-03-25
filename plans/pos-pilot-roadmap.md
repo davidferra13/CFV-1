@@ -97,7 +97,7 @@ Target: First paid pilot readiness for a single convenience store
     - `docs/2026-03-04-pos-pilot-runbook-rollback-sop.md`
 - [x] `POS-017` Table-service foundation (zones/tables/open checks)
   - Added table-service data model:
-    - `supabase/migrations/20260330000031_commerce_table_service_foundation.sql`
+    - `database/migrations/20260330000031_commerce_table_service_foundation.sql`
   - Added table-service actions and management page:
     - `lib/commerce/table-service-actions.ts`
     - `/commerce/table-service`

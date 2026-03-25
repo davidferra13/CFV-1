@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -114,10 +114,10 @@ function emptyMonthlyMap(): Map<number, number> {
 export async function getYoyRevenue(year1: number, year2: number): Promise<YoyRevenueResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch ledger entries for both years (revenue = payments received, not refunds)
-  const { data: entries, error } = await supabase
+  const { data: entries, error } = await db
     .from('ledger_entries')
     .select('amount_cents, is_refund, created_at')
     .eq('tenant_id', tenantId)
@@ -171,10 +171,10 @@ export async function getYoyRevenue(year1: number, year2: number): Promise<YoyRe
 export async function getYoyEventCount(year1: number, year2: number): Promise<YoyEventCountResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Count events by month for both years (exclude drafts and cancelled)
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('event_date, status')
     .eq('tenant_id', tenantId)
@@ -231,10 +231,10 @@ export async function getYoyClientGrowth(
 ): Promise<YoyClientGrowthResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all events with client info for both years
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('event_date, client_id, status')
     .eq('tenant_id', tenantId)
@@ -246,7 +246,7 @@ export async function getYoyClientGrowth(
   if (error) throw new Error(`Failed to fetch client growth data: ${error.message}`)
 
   // Also fetch events before year1 to know which clients are "returning"
-  const { data: priorEvents } = await supabase
+  const { data: priorEvents } = await db
     .from('events')
     .select('client_id')
     .eq('tenant_id', tenantId)
@@ -308,10 +308,10 @@ export async function getYoyAvgEventValue(
 ): Promise<YoyAvgEventValueResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch events with quoted prices
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('event_date, quoted_price_cents, status')
     .eq('tenant_id', tenantId)
@@ -384,13 +384,13 @@ export async function getYoyAvgEventValue(
 export async function getSeasonalTrends(yearsBack: number = 3): Promise<SeasonalTrendsResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const currentYear = new Date().getFullYear()
   const startYear = currentYear - yearsBack + 1
 
   // Fetch events
-  const { data: events, error: evtError } = await supabase
+  const { data: events, error: evtError } = await db
     .from('events')
     .select('event_date, status')
     .eq('tenant_id', tenantId)
@@ -401,7 +401,7 @@ export async function getSeasonalTrends(yearsBack: number = 3): Promise<Seasonal
   if (evtError) throw new Error(`Failed to fetch seasonal event data: ${evtError.message}`)
 
   // Fetch revenue
-  const { data: ledger, error: ledgerError } = await supabase
+  const { data: ledger, error: ledgerError } = await db
     .from('ledger_entries')
     .select('amount_cents, is_refund, created_at')
     .eq('tenant_id', tenantId)
@@ -475,11 +475,11 @@ export async function getSeasonalTrends(yearsBack: number = 3): Promise<Seasonal
 export async function getGrowthMetrics(year: number): Promise<GrowthMetricsResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const previousYear = year - 1
 
   // Fetch revenue for both years
-  const { data: ledger, error: ledgerError } = await supabase
+  const { data: ledger, error: ledgerError } = await db
     .from('ledger_entries')
     .select('amount_cents, is_refund, created_at')
     .eq('tenant_id', tenantId)
@@ -490,7 +490,7 @@ export async function getGrowthMetrics(year: number): Promise<GrowthMetricsResul
   if (ledgerError) throw new Error(`Failed to fetch growth revenue data: ${ledgerError.message}`)
 
   // Fetch events for both years
-  const { data: events, error: evtError } = await supabase
+  const { data: events, error: evtError } = await db
     .from('events')
     .select('event_date, client_id, quoted_price_cents, status')
     .eq('tenant_id', tenantId)

@@ -4,7 +4,7 @@
 // Returns candidate client lists for each targeting segment.
 // All segments automatically exclude marketing_unsubscribed=true clients.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { subDays, addDays } from 'date-fns'
 
@@ -23,8 +23,8 @@ export type OpenDateSlot = {
 }
 
 // Base query: all subscribed clients for this chef
-function baseClients(chefId: string, supabase: ReturnType<typeof createServerClient>) {
-  return supabase
+function baseClients(chefId: string, db: ReturnType<typeof createServerClient>) {
+  return db
     .from('clients')
     .select('id, full_name, email, loyalty_tier')
     .eq('tenant_id', chefId)
@@ -39,9 +39,9 @@ function baseClients(chefId: string, supabase: ReturnType<typeof createServerCli
 /** Clients who have booked this exact occasion type before */
 export async function getClientsByOccasion(occasion: string): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, occasion, event_date')
     .eq('tenant_id', chef.entityId)
@@ -59,7 +59,7 @@ export async function getClientsByOccasion(occasion: string): Promise<TargetClie
   }
 
   const ids = Array.from(clientMap.keys())
-  const { data: clients } = await baseClients(chef.entityId, supabase).in('id', ids)
+  const { data: clients } = await baseClients(chef.entityId, db).in('id', ids)
 
   type ClientRow = { id: string; full_name: string; email: string; loyalty_tier: string | null }
   return ((clients ?? []) as ClientRow[]).map((c) => ({
@@ -75,11 +75,11 @@ export async function getClientsByOccasion(occasion: string): Promise<TargetClie
 /** Clients who haven't booked in N+ days */
 export async function getDormantClients(dayThreshold = 90): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const cutoff = subDays(new Date(), dayThreshold).toISOString().slice(0, 10)
 
-  const { data: recentEvents } = await supabase
+  const { data: recentEvents } = await db
     .from('events')
     .select('client_id')
     .eq('tenant_id', chef.entityId)
@@ -87,7 +87,7 @@ export async function getDormantClients(dayThreshold = 90): Promise<TargetClient
 
   const activeIds = new Set((recentEvents ?? []).map((r: any) => r.client_id))
 
-  const { data: clients } = await baseClients(chef.entityId, supabase)
+  const { data: clients } = await baseClients(chef.entityId, db)
   return (clients ?? [])
     .filter((c: any) => !activeIds.has(c.id))
     .map((c: any) => ({
@@ -101,12 +101,9 @@ export async function getDormantClients(dayThreshold = 90): Promise<TargetClient
 /** VIP / high-tier clients */
 export async function getVIPClients(): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await baseClients(chef.entityId, supabase).in('loyalty_tier', [
-    'gold',
-    'platinum',
-  ])
+  const { data } = await baseClients(chef.entityId, db).in('loyalty_tier', ['gold', 'platinum'])
 
   return (data ?? []).map((c: any) => ({
     id: c.id,
@@ -119,9 +116,9 @@ export async function getVIPClients(): Promise<TargetClient[]> {
 /** All active/subscribed clients */
 export async function getAllClients(): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await baseClients(chef.entityId, supabase).limit(200)
+  const { data } = await baseClients(chef.entityId, db).limit(200)
   return (data ?? []).map((c: any) => ({
     id: c.id,
     full_name: c.full_name,
@@ -133,10 +130,10 @@ export async function getAllClients(): Promise<TargetClient[]> {
 /** Clients who booked events in a given calendar month across any year */
 export async function getSeasonalClients(month: number): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all events for this chef (limited), then filter by month in JS
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, event_date, occasion')
     .eq('tenant_id', chef.entityId)
@@ -154,7 +151,7 @@ export async function getSeasonalClients(month: number): Promise<TargetClient[]>
   if (matchingClients.size === 0) return []
 
   const ids = Array.from(matchingClients.keys())
-  const { data: clients } = await baseClients(chef.entityId, supabase).in('id', ids)
+  const { data: clients } = await baseClients(chef.entityId, db).in('id', ids)
 
   return (clients ?? []).map((c: any) => ({
     id: c.id,
@@ -169,12 +166,12 @@ export async function getSeasonalClients(month: number): Promise<TargetClient[]>
 /** Search clients by name or email for handpick mode */
 export async function searchClientsForCampaign(query: string): Promise<TargetClient[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const q = query.toLowerCase().trim()
   if (!q) return []
 
-  const { data } = await supabase
+  const { data } = await db
     .from('clients')
     .select('id, full_name, email, loyalty_tier')
     .eq('tenant_id', chef.entityId)
@@ -201,13 +198,13 @@ export async function searchClientsForCampaign(query: string): Promise<TargetCli
 
 export async function getOpenDateSuggestions(): Promise<OpenDateSlot[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date()
   const endDate = addDays(today, 90)
 
   // Get all booked event dates in window
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', chef.entityId)

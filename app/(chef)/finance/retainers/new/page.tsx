@@ -1,16 +1,16 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { RetainerForm } from '@/components/retainers/retainer-form'
 
 export const metadata: Metadata = { title: 'New Retainer - ChefFlow' }
 
 export default async function NewRetainerPage() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch clients for dropdown
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', user.tenantId!)

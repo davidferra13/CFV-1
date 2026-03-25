@@ -9,7 +9,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { REMY_PERSONALITY } from '@/lib/ai/remy-personality'
@@ -92,11 +92,11 @@ Rules:
 export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
     const todayStr = new Date().toISOString().split('T')[0]
 
     // Check for existing drafts today - don't regenerate
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('daily_plan_drafts')
       .select('id')
       .eq('chef_id', user.tenantId!)
@@ -106,22 +106,22 @@ export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
 
     if (existing && existing.length > 0) {
       // Already have drafts for today - return them
-      return loadExistingDrafts(supabase, user.tenantId!, todayStr)
+      return loadExistingDrafts(db, user.tenantId!, todayStr)
     }
 
     const drafts: GeneratedDraft[] = []
 
     // 1. Follow-up drafts - completed events without follow-up
-    const followUpDrafts = await generateFollowUpDrafts(supabase, user.tenantId!)
+    const followUpDrafts = await generateFollowUpDrafts(db, user.tenantId!)
     drafts.push(...followUpDrafts)
 
     // 2. Confirmation drafts - upcoming confirmed events
-    const confirmDrafts = await generateConfirmationDrafts(supabase, user.tenantId!)
+    const confirmDrafts = await generateConfirmationDrafts(db, user.tenantId!)
     drafts.push(...confirmDrafts)
 
     // Save all drafts to DB in a single batch insert
     if (drafts.length > 0) {
-      await supabase.from('daily_plan_drafts').insert(
+      await db.from('daily_plan_drafts').insert(
         drafts.map((draft) => ({
           chef_id: user.tenantId!,
           plan_date: todayStr,
@@ -152,9 +152,9 @@ export async function generateDailyDrafts(): Promise<GeneratedDraft[]> {
  */
 export async function approveDraft(draftId: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('daily_plan_drafts')
     .update({ status: 'approved', approved_at: new Date().toISOString() })
     .eq('id', draftId)
@@ -173,9 +173,9 @@ export async function approveDraft(draftId: string): Promise<{ success: boolean 
  */
 export async function dismissDraft(draftId: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('daily_plan_drafts')
     .update({ status: 'dismissed' })
     .eq('id', draftId)
@@ -194,11 +194,11 @@ export async function dismissDraft(draftId: string): Promise<{ success: boolean 
 // ============================================
 
 async function loadExistingDrafts(
-  supabase: any,
+  db: any,
   chefId: string,
   planDate: string
 ): Promise<GeneratedDraft[]> {
-  const { data } = await supabase
+  const { data } = await db
     .from('daily_plan_drafts')
     .select('id, draft_type, body, subject, source_entity_type, source_entity_id')
     .eq('chef_id', chefId)
@@ -216,14 +216,14 @@ async function loadExistingDrafts(
   }))
 }
 
-async function generateFollowUpDrafts(supabase: any, tenantId: string): Promise<GeneratedDraft[]> {
+async function generateFollowUpDrafts(db: any, tenantId: string): Promise<GeneratedDraft[]> {
   const drafts: GeneratedDraft[] = []
 
   // Find completed events without follow-up (last 7 days)
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, guest_count, client:clients(id, full_name)')
     .eq('tenant_id', tenantId)
@@ -260,10 +260,7 @@ async function generateFollowUpDrafts(supabase: any, tenantId: string): Promise<
   return drafts
 }
 
-async function generateConfirmationDrafts(
-  supabase: any,
-  tenantId: string
-): Promise<GeneratedDraft[]> {
+async function generateConfirmationDrafts(db: any, tenantId: string): Promise<GeneratedDraft[]> {
   const drafts: GeneratedDraft[] = []
 
   // Find events happening in the next 3 days that are confirmed
@@ -271,7 +268,7 @@ async function generateConfirmationDrafts(
   threeDaysOut.setDate(threeDaysOut.getDate() + 3)
   const todayStr = new Date().toISOString().split('T')[0]
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, serve_time, guest_count, client:clients(id, full_name)')
     .eq('tenant_id', tenantId)

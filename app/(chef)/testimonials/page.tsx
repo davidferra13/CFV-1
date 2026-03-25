@@ -1,16 +1,16 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { getTestimonials } from '@/lib/testimonials/actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { TestimonialManager } from '@/components/testimonials/testimonial-manager'
 
 export default async function TestimonialsPage() {
   const user = await requireChef()
 
   // Fetch testimonials and events in parallel
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const [testimonials, { data: events }] = await Promise.all([
     getTestimonials(),
-    supabase
+    db
       .from('events')
       .select('id, occasion, event_date')
       .eq('tenant_id', user.entityId!)

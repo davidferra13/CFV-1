@@ -5,7 +5,7 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { PROSPECT_CATEGORIES, PROSPECT_STATUSES, PROSPECT_PRIORITIES } from './constants'
@@ -45,9 +45,9 @@ const UpdateProspectSchema = ManualProspectSchema.partial()
 export async function getProspects(filter?: ProspectsFilter): Promise<Prospect[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase.from('prospects').select('*').eq('chef_id', user.tenantId!)
+  let query = db.from('prospects').select('*').eq('chef_id', user.tenantId!)
 
   if (filter?.status) {
     if (Array.isArray(filter.status)) {
@@ -87,9 +87,9 @@ export async function getProspects(filter?: ProspectsFilter): Promise<Prospect[]
 export async function getProspect(id: string): Promise<Prospect | null> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects')
     .select('*')
     .eq('id', id)
@@ -106,12 +106,9 @@ export async function getProspect(id: string): Promise<Prospect | null> {
 export async function getProspectStats(): Promise<ProspectStats> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('prospects')
-    .select('status')
-    .eq('chef_id', user.tenantId!)
+  const { data, error } = await db.from('prospects').select('status').eq('chef_id', user.tenantId!)
 
   if (error || !data)
     return {
@@ -145,9 +142,9 @@ export async function getProspectStats(): Promise<ProspectStats> {
 export async function getProspectNotes(prospectId: string): Promise<ProspectNote[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospect_notes')
     .select('*')
     .eq('prospect_id', prospectId)
@@ -164,9 +161,9 @@ export async function getProspectNotes(prospectId: string): Promise<ProspectNote
 export async function getScrubSessions() {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospect_scrub_sessions')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -186,9 +183,9 @@ export async function addProspectManually(input: z.infer<typeof ManualProspectSc
   await requireAdmin()
   const user = await requireChef()
   const validated = ManualProspectSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects')
     .insert({
       ...validated,
@@ -210,9 +207,9 @@ export async function addProspectManually(input: z.infer<typeof ManualProspectSc
 export async function addProspectNote(prospectId: string, content: string, noteType = 'general') {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospect_notes')
     .insert({
       prospect_id: prospectId,
@@ -238,9 +235,9 @@ export async function updateProspect(id: string, input: z.infer<typeof UpdatePro
   await requireAdmin()
   const user = await requireChef()
   const validated = UpdateProspectSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects')
     .update(validated)
     .eq('id', id)
@@ -261,12 +258,12 @@ export async function updateProspect(id: string, input: z.infer<typeof UpdatePro
 export async function updateProspectStatus(id: string, status: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = { status }
   if (status === 'converted') updates.converted_at = new Date().toISOString()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects')
     .update(updates)
     .eq('id', id)
@@ -289,10 +286,10 @@ export async function updateProspectStatus(id: string, status: string) {
 export async function deleteScrubSession(sessionId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Delete associated prospects first (FK), then the session
-  const { error: prospectsError } = await supabase
+  const { error: prospectsError } = await db
     .from('prospects')
     .delete()
     .eq('scrub_session_id', sessionId)
@@ -303,7 +300,7 @@ export async function deleteScrubSession(sessionId: string) {
     throw new Error('Failed to delete session prospects')
   }
 
-  const { error: sessionError } = await supabase
+  const { error: sessionError } = await db
     .from('prospect_scrub_sessions')
     .delete()
     .eq('id', sessionId)
@@ -322,13 +319,9 @@ export async function deleteScrubSession(sessionId: string) {
 export async function deleteProspect(id: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
-    .from('prospects')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', user.tenantId!)
+  const { error } = await db.from('prospects').delete().eq('id', id).eq('chef_id', user.tenantId!)
 
   if (error) {
     console.error('[deleteProspect] Error:', error)

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -23,12 +23,12 @@ export type AddTagInput = z.infer<typeof AddTagSchema>
 
 export async function addTag(guestId: string, tag: string, color?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validated = AddTagSchema.parse({ guest_id: guestId, tag, color })
 
   // Check if tag already exists for this guest
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('guest_tags')
     .select('id')
     .eq('guest_id', validated.guest_id)
@@ -40,7 +40,7 @@ export async function addTag(guestId: string, tag: string, color?: string) {
     return // Tag already exists, no-op
   }
 
-  const { error } = await supabase.from('guest_tags').insert({
+  const { error } = await db.from('guest_tags').insert({
     guest_id: validated.guest_id,
     tag: validated.tag,
     color: validated.color || null,
@@ -58,9 +58,9 @@ export async function addTag(guestId: string, tag: string, color?: string) {
 
 export async function removeTag(guestId: string, tag: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('guest_tags')
     .delete()
     .eq('guest_id', guestId)
@@ -78,9 +78,9 @@ export async function removeTag(guestId: string, tag: string) {
 
 export async function listTags(guestId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_tags')
     .select('*')
     .eq('guest_id', guestId)

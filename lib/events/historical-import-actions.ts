@@ -11,7 +11,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -46,7 +46,7 @@ export type HistoricalEventResult = {
 // ============================================
 
 async function resolveClient(
-  supabase: any,
+  db: any,
   tenantId: string,
   userId: string,
   clientId: string | null,
@@ -54,7 +54,7 @@ async function resolveClient(
 ): Promise<{ id: string; created: boolean }> {
   // If a UUID was explicitly provided, trust it.
   if (clientId) {
-    const { data } = await supabase
+    const { data } = await db
       .from('clients')
       .select('id')
       .eq('id', clientId)
@@ -71,7 +71,7 @@ async function resolveClient(
   const name = clientName.trim()
 
   // Try to find an existing client by name (case-insensitive)
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('clients')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -84,7 +84,7 @@ async function resolveClient(
   // Create a minimal client record
   const placeholderEmail = `${name.toLowerCase().replace(/\s+/g, '.')}@placeholder.import`
 
-  const { data: newClient, error } = await supabase
+  const { data: newClient, error } = await db
     .from('clients')
     .insert({
       tenant_id: tenantId,
@@ -110,7 +110,7 @@ export async function importHistoricalEvent(
   input: HistoricalEventInput
 ): Promise<HistoricalEventResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const label = [input.event_date, input.client_name || 'Unknown client', input.occasion || '']
     .filter(Boolean)
@@ -119,7 +119,7 @@ export async function importHistoricalEvent(
   try {
     // 1. Resolve client
     const { id: resolvedClientId, created: clientCreated } = await resolveClient(
-      supabase,
+      db,
       user.tenantId!,
       user.id,
       input.client_id,
@@ -128,7 +128,7 @@ export async function importHistoricalEvent(
 
     // 2. Insert event directly as `completed`
     const city = input.location_city?.trim() || 'Imported'
-    const { data: event, error: eventError } = await supabase
+    const { data: event, error: eventError } = await db
       .from('events')
       .insert({
         tenant_id: user.tenantId!,
@@ -162,7 +162,7 @@ export async function importHistoricalEvent(
     // 3. Optionally create ledger entry for the payment
     if (input.amount_paid_cents && input.amount_paid_cents > 0) {
       const paymentMethod = input.payment_method || 'cash'
-      const { error: ledgerError } = await supabase.from('ledger_entries').insert({
+      const { error: ledgerError } = await db.from('ledger_entries').insert({
         tenant_id: user.tenantId!,
         client_id: resolvedClientId,
         event_id: event.id,
@@ -269,9 +269,9 @@ export async function getClientsForHistoricalImport(): Promise<
   { id: string; full_name: string }[]
 > {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', user.tenantId!)

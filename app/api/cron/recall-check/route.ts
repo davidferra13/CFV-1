@@ -3,7 +3,7 @@
 // Trigger daily via scheduled cron: { "path": "/api/cron/recall-check", "schedule": "0 9 * * *" }
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createNotification } from '@/lib/notifications/actions'
 import { getActiveRecalls, matchRecallsToIngredients } from '@/lib/safety/recall-actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   let matchCount = 0
   let tenantCount = 0
   const errors: string[] = []
@@ -24,10 +24,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'No active recalls found', matchCount: 0 })
     }
 
-    const { data: tenants, error: tenantError } = await supabase
-      .from('chefs')
-      .select('id')
-      .limit(10000)
+    const { data: tenants, error: tenantError } = await db.from('chefs').select('id').limit(10000)
 
     if (tenantError || !tenants) {
       return NextResponse.json({ error: 'Failed to fetch tenants' }, { status: 500 })
@@ -35,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     for (const tenant of tenants) {
       try {
-        const { data: ingredients } = await supabase
+        const { data: ingredients } = await db
           .from('ingredients')
           .select('name')
           .eq('tenant_id', tenant.id)
@@ -51,7 +48,7 @@ export async function GET(request: NextRequest) {
         matchCount += matches.length
         tenantCount++
 
-        const { data: role } = await supabase
+        const { data: role } = await db
           .from('user_roles')
           .select('auth_user_id')
           .eq('entity_id', tenant.id)

@@ -6,24 +6,24 @@
  *
  * Usage:
  *   import { mocks } from '../helpers/mocks.js'
- *   const supabase = mocks.supabase({ returnData: [...] })
+ *   const db = mocks.db({ returnData: [...] })
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SUPABASE MOCK
+// DATABASE MOCK
 // ─────────────────────────────────────────────────────────────────────────────
 
-type SupabaseMockOptions = {
+type DbMockOptions = {
   returnData?: unknown
   returnError?: { code: string; message: string } | null
   singleRow?: boolean
 }
 
 /**
- * Creates a mock Supabase client that returns controlled data.
+ * Creates a mock database client that returns controlled data.
  * Tracks all calls for assertion.
  */
-export function createMockSupabase(defaults: SupabaseMockOptions = {}) {
+export function createMockDb(defaults: DbMockOptions = {}) {
   const calls: { table: string; method: string; args: unknown[] }[] = []
   const data = defaults.returnData ?? null
   const error = defaults.returnError ?? null
@@ -343,7 +343,7 @@ export function createMockTurnstile(options: { shouldPass?: boolean } = {}) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const mocks = {
-  supabase: createMockSupabase,
+  db: createMockDb,
   ollama: createMockOllama,
   stripe: createMockStripe,
   email: createMockEmail,

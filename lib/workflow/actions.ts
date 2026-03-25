@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { EventContext, DashboardWorkSurface } from './types'
 import { getPreparableActions } from './preparable-actions'
 
@@ -14,10 +14,10 @@ import { getPreparableActions } from './preparable-actions'
  */
 export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch events with client data
-  const { data: events, error: eventsError } = await supabase
+  const { data: events, error: eventsError } = await db
     .from('events')
     .select(
       `
@@ -40,7 +40,7 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   // Fetch menus for all events via menus.event_id FK
   const eventIds = events.map((e: any) => e.id)
 
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id, name, status, event_id')
     .in('event_id', eventIds)
@@ -50,7 +50,7 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   const dishCountsByMenu = new Map<string, number>()
 
   if (menuIds.length > 0) {
-    const { data: dishes } = await supabase.from('dishes').select('menu_id').in('menu_id', menuIds)
+    const { data: dishes } = await db.from('dishes').select('menu_id').in('menu_id', menuIds)
 
     if (dishes) {
       for (const dish of dishes) {
@@ -60,7 +60,7 @@ export async function getDashboardWorkSurface(): Promise<DashboardWorkSurface> {
   }
 
   // Fetch financial summaries for all events in one query
-  const { data: financials } = await supabase
+  const { data: financials } = await db
     .from('event_financial_summary')
     .select('*')
     .in('event_id', eventIds)

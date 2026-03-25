@@ -5,7 +5,7 @@
 'use server'
 
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ============================================
 // TYPES
@@ -55,13 +55,13 @@ const FILING_THRESHOLD_CENTS = 60000
  */
 export async function generate1099Report(year: number): Promise<TaxReportResult> {
   const user = await requirePro('payroll')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const yearStart = `${year}-01-01`
   const yearEnd = `${year}-12-31`
 
   // Get all completed assignments with pay for the year, joined with event dates and staff info
-  const { data: assignments, error } = await (supabase as any)
+  const { data: assignments, error } = await (db as any)
     .from('event_staff_assignments')
     .select(
       `

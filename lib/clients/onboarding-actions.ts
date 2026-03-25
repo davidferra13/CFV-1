@@ -3,15 +3,15 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { generateOnboardingToken, verifyOnboardingToken } from '@/lib/clients/onboarding-tokens'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export async function generateOnboardingLink(
   clientId: string
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, full_name, email, onboarding_completed_at')
     .eq('id', clientId)
@@ -23,7 +23,7 @@ export async function generateOnboardingLink(
   }
 
   const token = generateOnboardingToken(clientId, user.tenantId!)
-  await supabase
+  await db
     .from('clients')
     .update({ onboarding_token: token } as any)
     .eq('id', clientId)
@@ -81,7 +81,7 @@ export async function submitOnboarding(
     return { success: false, error: 'This link has expired. Please ask your chef for a new one.' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const { clientId, tenantId } = tokenData
 
   const clientUpdate: Record<string, any> = {
@@ -132,7 +132,7 @@ export async function submitOnboarding(
     clientUpdate.personal_milestones = parsed.data.important_dates
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('clients')
     .update(clientUpdate)
     .eq('id', clientId)
@@ -153,20 +153,20 @@ export async function submitOnboarding(
       confirmed_by_chef: false,
     }))
 
-    await supabase.from('client_allergy_records').upsert(allergyRecords, {
+    await db.from('client_allergy_records').upsert(allergyRecords, {
       onConflict: 'client_id,allergen',
       ignoreDuplicates: true,
     })
   }
 
   try {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('full_name')
       .eq('id', clientId)
       .single()
 
-    await supabase.from('notifications').insert({
+    await db.from('notifications').insert({
       tenant_id: tenantId,
       recipient_id: tenantId,
       recipient_role: 'chef',

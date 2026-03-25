@@ -17,7 +17,7 @@ Build Remy a **fully curated onboarding experience** with hand-crafted dialogue 
 - There's an existing onboarding wizard (`components/onboarding/onboarding-wizard.tsx`) for setup tasks (profile, Stripe, import data) — Remy's onboarding is **separate and complementary**
 - Remy uses local Ollama for all AI processing (privacy-first architecture)
 - Chef-facing, client-facing, and public-facing Remy each have separate personality files
-- Remy has a persistent memory system (`lib/ai/remy-memory-actions.ts`) — Supabase-backed
+- Remy has a persistent memory system (`lib/ai/remy-memory-actions.ts`) — PostgreSQL-backed
 - Conversation management via IndexedDB (`lib/ai/remy-local-storage.ts`)
 - System prompt constructed in `lib/ai/remy-actions.ts`
 

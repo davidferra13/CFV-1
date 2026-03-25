@@ -2,7 +2,7 @@
 // Create, view, send, and deactivate incentive codes for your clients.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   getVoucherAndGiftCards,
   getIncentiveStats,
@@ -18,11 +18,11 @@ import { IssueButton, RowActions } from './gift-cards-client-shell'
 export default async function GiftCardsPage() {
   await requireChef()
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const user = await requireChef()
 
   // Fetch clients for the "for client" dropdown in the issue form
-  const { data: clientsRaw } = await supabase
+  const { data: clientsRaw } = await db
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', user.tenantId!)

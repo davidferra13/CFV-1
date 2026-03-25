@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import {
   syncTastingMenuToEngine,
@@ -90,9 +90,9 @@ export type TastingMenuWithCourses = TastingMenu & {
 
 export async function getTastingMenus(): Promise<TastingMenu[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tasting_menus')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -110,9 +110,9 @@ export async function getTastingMenus(): Promise<TastingMenu[]> {
 
 export async function getTastingMenu(id: string): Promise<TastingMenuWithCourses> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: menu, error: menuError } = await supabase
+  const { data: menu, error: menuError } = await db
     .from('tasting_menus')
     .select('*')
     .eq('id', id)
@@ -124,7 +124,7 @@ export async function getTastingMenu(id: string): Promise<TastingMenuWithCourses
     throw new Error('Tasting menu not found')
   }
 
-  const { data: courses, error: coursesError } = await supabase
+  const { data: courses, error: coursesError } = await db
     .from('tasting_menu_courses')
     .select('*')
     .eq('tasting_menu_id', id)
@@ -147,9 +147,9 @@ export async function createTastingMenu(
   input: TastingMenuInput
 ): Promise<{ success: true; id: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tasting_menus')
     .insert({
       chef_id: user.tenantId!,
@@ -180,9 +180,9 @@ export async function updateTastingMenu(
   input: Partial<TastingMenuInput>
 ): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('tasting_menus')
     .update({
       ...input,
@@ -199,7 +199,7 @@ export async function updateTastingMenu(
   // Sync name/metadata to materialized menu (non-blocking)
   if (input.name) {
     try {
-      const { data: tm } = await supabase
+      const { data: tm } = await db
         .from('tasting_menus')
         .select('materialized_menu_id')
         .eq('id', id)
@@ -207,7 +207,7 @@ export async function updateTastingMenu(
         .single()
 
       if (tm?.materialized_menu_id) {
-        await supabase
+        await db
           .from('menus')
           .update({ name: input.name, updated_by: user.id })
           .eq('id', tm.materialized_menu_id)
@@ -226,11 +226,11 @@ export async function updateTastingMenu(
 
 export async function deleteTastingMenu(id: string): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Clean up materialized menu first (before the tasting menu is deleted)
   try {
-    const { data: tm } = await supabase
+    const { data: tm } = await db
       .from('tasting_menus')
       .select('materialized_menu_id, event_id')
       .eq('id', id)
@@ -240,20 +240,20 @@ export async function deleteTastingMenu(id: string): Promise<{ success: true }> 
     if (tm?.materialized_menu_id) {
       // Clear event's menu_id if it points to our materialized menu
       if (tm.event_id) {
-        await supabase
+        await db
           .from('events')
           .update({ menu_id: null })
           .eq('id', tm.event_id)
           .eq('tenant_id', user.tenantId!)
           .eq('menu_id', tm.materialized_menu_id)
       }
-      await deleteMaterializedMenu(supabase, tm.materialized_menu_id, user.tenantId!)
+      await deleteMaterializedMenu(db, tm.materialized_menu_id, user.tenantId!)
     }
   } catch (err) {
     console.error('[deleteTastingMenu] Materialized menu cleanup failed (non-blocking):', err)
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('tasting_menus')
     .delete()
     .eq('id', id)
@@ -279,10 +279,10 @@ export async function linkTastingMenuToEvent(
   eventId: string
 ): Promise<{ success: true; materializedMenuId: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify tasting menu ownership
-  const { data: tm, error: tmErr } = await supabase
+  const { data: tm, error: tmErr } = await db
     .from('tasting_menus')
     .select('id, chef_id')
     .eq('id', tastingMenuId)
@@ -292,7 +292,7 @@ export async function linkTastingMenuToEvent(
   if (tmErr || !tm) throw new Error('Tasting menu not found')
 
   // Verify event ownership
-  const { data: event, error: evErr } = await supabase
+  const { data: event, error: evErr } = await db
     .from('events')
     .select('id')
     .eq('id', eventId)
@@ -302,7 +302,7 @@ export async function linkTastingMenuToEvent(
   if (evErr || !event) throw new Error('Event not found')
 
   // Set event_id on tasting menu
-  await supabase
+  await db
     .from('tasting_menus')
     .update({ event_id: eventId })
     .eq('id', tastingMenuId)
@@ -310,14 +310,14 @@ export async function linkTastingMenuToEvent(
 
   // Full sync: materialize courses into main engine
   const { materializedMenuId } = await syncTastingMenuToEngine(
-    supabase,
+    db,
     tastingMenuId,
     user.tenantId!,
     user.id
   )
 
   // Point the event's menu_id to the materialized menu
-  await supabase
+  await db
     .from('events')
     .update({ menu_id: materializedMenuId })
     .eq('id', eventId)
@@ -336,9 +336,9 @@ export async function unlinkTastingMenuFromEvent(
   tastingMenuId: string
 ): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: tm, error: tmErr } = await supabase
+  const { data: tm, error: tmErr } = await db
     .from('tasting_menus')
     .select('id, event_id, materialized_menu_id')
     .eq('id', tastingMenuId)
@@ -349,7 +349,7 @@ export async function unlinkTastingMenuFromEvent(
 
   // Clear event's menu_id if it points to our materialized menu
   if (tm.event_id && tm.materialized_menu_id) {
-    await supabase
+    await db
       .from('events')
       .update({ menu_id: null })
       .eq('id', tm.event_id)
@@ -359,11 +359,11 @@ export async function unlinkTastingMenuFromEvent(
 
   // Delete materialized menu (CASCADE cleans up dishes + components)
   if (tm.materialized_menu_id) {
-    await deleteMaterializedMenu(supabase, tm.materialized_menu_id, user.tenantId!)
+    await deleteMaterializedMenu(db, tm.materialized_menu_id, user.tenantId!)
   }
 
   // Clear links on tasting menu
-  await supabase
+  await db
     .from('tasting_menus')
     .update({ event_id: null, materialized_menu_id: null })
     .eq('id', tastingMenuId)
@@ -381,10 +381,10 @@ export async function addCourse(
   input: CourseInput
 ): Promise<{ success: true; id: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify menu ownership and get materialized menu link
-  const { data: menu, error: menuError } = await supabase
+  const { data: menu, error: menuError } = await db
     .from('tasting_menus')
     .select('id, materialized_menu_id')
     .eq('id', menuId)
@@ -395,7 +395,7 @@ export async function addCourse(
     throw new Error('Tasting menu not found')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tasting_menu_courses')
     .insert({
       tasting_menu_id: menuId,
@@ -420,7 +420,7 @@ export async function addCourse(
   // Sync new course to materialized menu (non-blocking)
   if (menu.materialized_menu_id) {
     try {
-      await syncSingleCourse(supabase, data.id, menu.materialized_menu_id, user.tenantId!, user.id)
+      await syncSingleCourse(db, data.id, menu.materialized_menu_id, user.tenantId!, user.id)
     } catch (err) {
       console.error('[addCourse] Bridge sync failed (non-blocking):', err)
     }
@@ -437,10 +437,10 @@ export async function updateCourse(
   input: Partial<CourseInput>
 ): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership via join (also fetch materialized_menu_id for bridge sync)
-  const { data: course, error: findError } = await supabase
+  const { data: course, error: findError } = await db
     .from('tasting_menu_courses')
     .select('id, tasting_menus!inner(chef_id, materialized_menu_id)')
     .eq('id', courseId)
@@ -458,7 +458,7 @@ export async function updateCourse(
     throw new Error('Not authorized')
   }
 
-  const { error } = await supabase.from('tasting_menu_courses').update(input).eq('id', courseId)
+  const { error } = await db.from('tasting_menu_courses').update(input).eq('id', courseId)
 
   if (error) {
     console.error('[updateCourse] Error:', error)
@@ -468,13 +468,7 @@ export async function updateCourse(
   // Sync changes to materialized dish (non-blocking)
   if (menuData.materialized_menu_id) {
     try {
-      await syncSingleCourse(
-        supabase,
-        courseId,
-        menuData.materialized_menu_id,
-        user.tenantId!,
-        user.id
-      )
+      await syncSingleCourse(db, courseId, menuData.materialized_menu_id, user.tenantId!, user.id)
     } catch (err) {
       console.error('[updateCourse] Bridge sync failed (non-blocking):', err)
     }
@@ -488,10 +482,10 @@ export async function updateCourse(
 
 export async function removeCourse(courseId: string): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership via join (also fetch materialized_menu_id for bridge sync)
-  const { data: course, error: findError } = await supabase
+  const { data: course, error: findError } = await db
     .from('tasting_menu_courses')
     .select('id, tasting_menus!inner(chef_id, materialized_menu_id)')
     .eq('id', courseId)
@@ -512,18 +506,13 @@ export async function removeCourse(courseId: string): Promise<{ success: true }>
   // Remove materialized dish BEFORE deleting the course (need the FK reference)
   if (menuData.materialized_menu_id) {
     try {
-      await removeMaterializedDish(
-        supabase,
-        courseId,
-        menuData.materialized_menu_id,
-        user.tenantId!
-      )
+      await removeMaterializedDish(db, courseId, menuData.materialized_menu_id, user.tenantId!)
     } catch (err) {
       console.error('[removeCourse] Bridge cleanup failed (non-blocking):', err)
     }
   }
 
-  const { error } = await supabase.from('tasting_menu_courses').delete().eq('id', courseId)
+  const { error } = await db.from('tasting_menu_courses').delete().eq('id', courseId)
 
   if (error) {
     console.error('[removeCourse] Error:', error)
@@ -541,10 +530,10 @@ export async function reorderCourses(
   courseIds: string[]
 ): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify menu ownership and get materialized menu link
-  const { data: menu, error: menuError } = await supabase
+  const { data: menu, error: menuError } = await db
     .from('tasting_menus')
     .select('id, materialized_menu_id')
     .eq('id', menuId)
@@ -557,7 +546,7 @@ export async function reorderCourses(
 
   // Update each course's course_number based on position in array
   const updates = courseIds.map((courseId, index) =>
-    supabase
+    db
       .from('tasting_menu_courses')
       .update({ course_number: index + 1 })
       .eq('id', courseId)
@@ -576,7 +565,7 @@ export async function reorderCourses(
   if (menu.materialized_menu_id) {
     try {
       for (const [index, courseId] of courseIds.entries()) {
-        await supabase
+        await db
           .from('dishes')
           .update({ course_number: index + 1, sort_order: index + 1 })
           .eq('source_tasting_course_id', courseId)
@@ -599,10 +588,10 @@ export async function duplicateTastingMenu(
   newName: string
 ): Promise<{ success: true; id: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the original menu
-  const { data: original, error: origError } = await supabase
+  const { data: original, error: origError } = await db
     .from('tasting_menus')
     .select('*')
     .eq('id', id)
@@ -614,7 +603,7 @@ export async function duplicateTastingMenu(
   }
 
   // Create the copy
-  const { data: copy, error: copyError } = await supabase
+  const { data: copy, error: copyError } = await db
     .from('tasting_menus')
     .insert({
       chef_id: user.tenantId!,
@@ -635,7 +624,7 @@ export async function duplicateTastingMenu(
   }
 
   // Copy all courses
-  const { data: courses, error: coursesError } = await supabase
+  const { data: courses, error: coursesError } = await db
     .from('tasting_menu_courses')
     .select('*')
     .eq('tasting_menu_id', id)
@@ -662,7 +651,7 @@ export async function duplicateTastingMenu(
       prep_notes: c.prep_notes,
     }))
 
-    const { error: insertError } = await supabase.from('tasting_menu_courses').insert(courseCopies)
+    const { error: insertError } = await db.from('tasting_menu_courses').insert(courseCopies)
 
     if (insertError) {
       console.error('[duplicateTastingMenu] Course copy error:', insertError)

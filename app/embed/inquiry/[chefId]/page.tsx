@@ -3,7 +3,7 @@
 // Submits to /api/embed/inquiry (CORS-enabled API route)
 
 import type { Metadata } from 'next'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { EmbedInquiryForm } from '@/components/embed/embed-inquiry-form'
 import { notFound } from 'next/navigation'
 
@@ -13,8 +13,8 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const supabase: any = createAdminClient()
-  const { data: chef } = await supabase
+  const db: any = createAdminClient()
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, display_name')
     .eq('id', params.chefId)
@@ -29,9 +29,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function EmbedInquiryPage({ params, searchParams }: Props) {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: chef, error } = await supabase
+  const { data: chef, error } = await db
     .from('chefs')
     .select('id, business_name, display_name, profile_image_url')
     .eq('id', params.chefId)

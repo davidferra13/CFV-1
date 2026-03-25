@@ -13,7 +13,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getCalendarColor, getCalendarBorderStyle } from './colors'
 import { DEFAULT_CALENDAR_FILTERS } from './constants'
 // CalendarFilters type is defined in and should be imported from './constants' directly.
@@ -72,7 +72,7 @@ export async function getUnifiedCalendar(
   endDate: string
 ): Promise<UnifiedCalendarItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const chefId = user.tenantId!
   const items: UnifiedCalendarItem[] = []
 
@@ -87,7 +87,7 @@ export async function getUnifiedCalendar(
     inquiriesResult,
   ] = await Promise.all([
     // 1. Events
-    supabase
+    db
       .from('events')
       .select('id, occasion, event_date, serve_time, status, location_city')
       .eq('tenant_id', chefId)
@@ -96,7 +96,7 @@ export async function getUnifiedCalendar(
       .not('status', 'eq', 'cancelled'),
 
     // 2. Prep blocks
-    supabase
+    db
       .from('event_prep_blocks' as any)
       .select('id, block_date, start_time, end_time, block_type, title, is_completed, event_id')
       .eq('chef_id', chefId)
@@ -104,7 +104,7 @@ export async function getUnifiedCalendar(
       .lte('block_date', endDate) as any,
 
     // 3. Scheduled calls
-    supabase
+    db
       .from('scheduled_calls')
       .select('id, title, call_type, scheduled_at, duration_minutes, status, client_id')
       .eq('tenant_id', chefId)
@@ -113,7 +113,7 @@ export async function getUnifiedCalendar(
       .not('status', 'in', '("cancelled","no_show")'),
 
     // 4. Manual availability blocks
-    supabase
+    db
       .from('chef_availability_blocks')
       .select('id, block_date, reason, is_event_auto')
       .eq('chef_id', chefId)
@@ -122,7 +122,7 @@ export async function getUnifiedCalendar(
       .eq('is_event_auto', false), // event-auto blocks already covered by events
 
     // 5. Waitlist entries (lead indicators)
-    supabase
+    db
       .from('waitlist_entries')
       .select('id, requested_date, requested_date_end, occasion, status')
       .eq('chef_id', chefId)
@@ -131,7 +131,7 @@ export async function getUnifiedCalendar(
       .lte('requested_date', endDate),
 
     // 6. Chef calendar entries
-    supabase
+    db
       .from('chef_calendar_entries')
       .select(
         'id, entry_type, title, start_date, end_date, all_day, start_time, end_time, blocks_bookings, color_override, is_completed'
@@ -141,7 +141,7 @@ export async function getUnifiedCalendar(
       .gte('end_date', startDate),
 
     // 7. Inquiries with an event date target
-    supabase
+    db
       .from('inquiries')
       .select('id, occasion, preferred_date, status')
       .eq('chef_id', chefId)

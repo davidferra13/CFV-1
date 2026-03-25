@@ -17,7 +17,7 @@ const CreateWebhookBody = z.object({
 
 export const GET = withApiAuth(
   async (req, ctx) => {
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('webhook_endpoints' as any)
       .select('*')
       .eq('tenant_id', ctx.tenantId)
@@ -52,7 +52,7 @@ export const POST = withApiAuth(
 
     const secret = randomBytes(32).toString('hex')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('webhook_endpoints' as any)
       .insert({
         tenant_id: ctx.tenantId,

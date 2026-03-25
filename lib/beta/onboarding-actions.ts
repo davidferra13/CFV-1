@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -51,10 +51,10 @@ export type BetaClientSummary = {
 export async function enrollBetaTester(clientId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Flag the client
-  const { error: clientErr } = await supabase
+  const { error: clientErr } = await db
     .from('clients')
     .update({
       is_beta_tester: true,
@@ -67,7 +67,7 @@ export async function enrollBetaTester(clientId: string) {
   if (clientErr) throw new Error(`Failed to enroll beta tester: ${clientErr.message}`)
 
   // Create checklist if it doesn't exist
-  const { error: checklistErr } = await supabase.from('beta_onboarding_checklist').upsert(
+  const { error: checklistErr } = await db.from('beta_onboarding_checklist').upsert(
     {
       tenant_id: tenantId,
       client_id: clientId,
@@ -88,9 +88,9 @@ export async function enrollBetaTester(clientId: string) {
 export async function unenrollBetaTester(clientId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update({
       is_beta_tester: false,
@@ -111,9 +111,9 @@ export async function unenrollBetaTester(clientId: string) {
 export async function getBetaTesters(): Promise<BetaClientSummary[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select(
       `
@@ -163,10 +163,10 @@ export async function getMyBetaChecklist(): Promise<{
   totalSteps: number
 } | null> {
   const user = await requireClient()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get client record
-  const { data: client, error: clientErr } = await supabase
+  const { data: client, error: clientErr } = await db
     .from('clients')
     .select('id, is_beta_tester, beta_discount_percent')
     .eq('auth_user_id', user.authUserId)
@@ -177,7 +177,7 @@ export async function getMyBetaChecklist(): Promise<{
   if (!client.is_beta_tester) return null
 
   // Get checklist
-  const { data: row } = await supabase
+  const { data: row } = await db
     .from('beta_onboarding_checklist')
     .select('*')
     .eq('client_id', client.id)
@@ -199,10 +199,10 @@ export async function getMyBetaChecklist(): Promise<{
  */
 export async function completeBetaStep(step: BetaChecklistStep, metadata?: { circleId?: string }) {
   const user = await requireClient()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get client
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, tenant_id, is_beta_tester')
     .eq('auth_user_id', user.authUserId)
@@ -230,7 +230,7 @@ export async function completeBetaStep(step: BetaChecklistStep, metadata?: { cir
   }
 
   // Update the step (don't overwrite if already completed)
-  const { error } = await supabase
+  const { error } = await db
     .from('beta_onboarding_checklist')
     .update(updates)
     .eq('client_id', client.id)
@@ -240,7 +240,7 @@ export async function completeBetaStep(step: BetaChecklistStep, metadata?: { cir
   if (error) throw new Error(`Failed to complete step: ${error.message}`)
 
   // Check if all steps are now complete
-  const { data: updated } = await supabase
+  const { data: updated } = await db
     .from('beta_onboarding_checklist')
     .select('*')
     .eq('client_id', client.id)
@@ -249,7 +249,7 @@ export async function completeBetaStep(step: BetaChecklistStep, metadata?: { cir
   if (updated) {
     const mapped = mapChecklist(updated)
     if (countCompleted(mapped) === 5 && !mapped.allStepsCompletedAt) {
-      await supabase
+      await db
         .from('beta_onboarding_checklist')
         .update({ all_steps_completed_at: now })
         .eq('id', updated.id)
@@ -265,9 +265,9 @@ export async function completeBetaStep(step: BetaChecklistStep, metadata?: { cir
  */
 export async function dismissBetaChecklist() {
   const user = await requireClient()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, tenant_id')
     .eq('auth_user_id', user.authUserId)
@@ -276,7 +276,7 @@ export async function dismissBetaChecklist() {
 
   if (!client) return { success: false }
 
-  await supabase
+  await db
     .from('beta_onboarding_checklist')
     .update({ dismissed_at: new Date().toISOString() })
     .eq('client_id', client.id)
@@ -296,9 +296,9 @@ export async function dismissBetaChecklist() {
  */
 export async function syncBetaChecklistProgress() {
   const user = await requireClient()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, tenant_id, is_beta_tester, dietary_restrictions, allergies, favorite_cuisines')
     .eq('auth_user_id', user.authUserId)
@@ -307,7 +307,7 @@ export async function syncBetaChecklistProgress() {
 
   if (!client?.is_beta_tester) return null
 
-  const { data: checklist } = await supabase
+  const { data: checklist } = await db
     .from('beta_onboarding_checklist')
     .select('*')
     .eq('client_id', client.id)
@@ -332,14 +332,14 @@ export async function syncBetaChecklistProgress() {
   // Step 2: Circle created - check if client has created any hub group
   if (!checklist.circle_created_at) {
     // Find hub_guest_profile for this client
-    const { data: profile } = await supabase
+    const { data: profile } = await db
       .from('hub_guest_profiles')
       .select('id')
       .eq('client_id', client.id)
       .maybeSingle()
 
     if (profile) {
-      const { data: ownedGroups } = await supabase
+      const { data: ownedGroups } = await db
         .from('hub_group_members')
         .select('group_id')
         .eq('profile_id', profile.id)
@@ -359,7 +359,7 @@ export async function syncBetaChecklistProgress() {
     (checklist.primary_circle_id || updates.primary_circle_id)
   ) {
     const circleId = (updates.primary_circle_id ?? checklist.primary_circle_id) as string
-    const { count } = await supabase
+    const { count } = await db
       .from('hub_group_members')
       .select('id', { count: 'exact', head: true })
       .eq('group_id', circleId)
@@ -371,7 +371,7 @@ export async function syncBetaChecklistProgress() {
 
   // Step 4: First event booked - check if client has any events
   if (!checklist.first_event_booked_at) {
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('id')
       .eq('client_id', client.id)
@@ -385,7 +385,7 @@ export async function syncBetaChecklistProgress() {
 
   // Step 5: Post-event review - check if client has left any review
   if (!checklist.post_event_review_at) {
-    const { data: reviews } = await supabase
+    const { data: reviews } = await db
       .from('client_reviews')
       .select('id')
       .eq('client_id', client.id)
@@ -400,7 +400,7 @@ export async function syncBetaChecklistProgress() {
   if (Object.keys(updates).length > 0) {
     updates.updated_at = now
 
-    await supabase.from('beta_onboarding_checklist').update(updates).eq('id', checklist.id)
+    await db.from('beta_onboarding_checklist').update(updates).eq('id', checklist.id)
 
     // Check if all complete now
     const allComplete =
@@ -411,7 +411,7 @@ export async function syncBetaChecklistProgress() {
       (checklist.post_event_review_at || updates.post_event_review_at)
 
     if (allComplete && !checklist.all_steps_completed_at) {
-      await supabase
+      await db
         .from('beta_onboarding_checklist')
         .update({ all_steps_completed_at: now })
         .eq('id', checklist.id)
@@ -421,7 +421,7 @@ export async function syncBetaChecklistProgress() {
   }
 
   // Return current state
-  const { data: final } = await supabase
+  const { data: final } = await db
     .from('beta_onboarding_checklist')
     .select('*')
     .eq('id', checklist.id)
@@ -485,27 +485,23 @@ export type DietaryRollup = {
 export async function getDietaryRollupForEvent(eventId: string): Promise<DietaryRollup> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get event guests
-  const { data: guests } = await supabase
+  const { data: guests } = await db
     .from('event_guests')
     .select('dietary_restrictions, allergies')
     .eq('event_id', eventId)
     .eq('tenant_id', tenantId)
 
   // Get client dietary info
-  const { data: event } = await supabase
-    .from('events')
-    .select('client_id')
-    .eq('id', eventId)
-    .single()
+  const { data: event } = await db.from('events').select('client_id').eq('id', eventId).single()
 
   let clientDietary: string[] = []
   let clientAllergies: string[] = []
 
   if (event?.client_id) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('dietary_restrictions, allergies')
       .eq('id', event.client_id)
@@ -518,7 +514,7 @@ export async function getDietaryRollupForEvent(eventId: string): Promise<Dietary
   }
 
   // Also check hub group members linked to this event
-  const { data: hubGroupEvents } = await supabase
+  const { data: hubGroupEvents } = await db
     .from('hub_group_events')
     .select('group_id')
     .eq('event_id', eventId)
@@ -528,7 +524,7 @@ export async function getDietaryRollupForEvent(eventId: string): Promise<Dietary
 
   if (hubGroupEvents && hubGroupEvents.length > 0) {
     const groupIds = hubGroupEvents.map((g: any) => g.group_id)
-    const { data: members } = await supabase
+    const { data: members } = await db
       .from('hub_group_members')
       .select('profile_id, hub_guest_profiles(known_dietary, known_allergies)')
       .in('group_id', groupIds)
@@ -588,14 +584,14 @@ export async function recordReferralSource(
   referredByClientId: string | null,
   fromGroupId: string | null
 ) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const updates: Record<string, unknown> = {}
   if (referredByClientId) updates.referred_by_client_id = referredByClientId
   if (fromGroupId) updates.referred_from_group_id = fromGroupId
 
   if (Object.keys(updates).length > 0) {
-    await supabase.from('clients').update(updates).eq('id', newClientId)
+    await db.from('clients').update(updates).eq('id', newClientId)
   }
 }
 

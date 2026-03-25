@@ -82,12 +82,12 @@ function computeChangeDueCents(input: {
 }
 
 async function findExistingCheckoutResult(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   idempotencyKey: string
   amountTenderedCents: number
 }): Promise<ExistingCheckoutResult | null> {
-  const { data: payment, error: paymentLookupError } = await (ctx.supabase
+  const { data: payment, error: paymentLookupError } = await (ctx.db
     .from('commerce_payments' as any)
     .select('id, sale_id, amount_cents, tip_cents, status, payment_method')
     .eq('tenant_id', ctx.tenantId)
@@ -103,7 +103,7 @@ async function findExistingCheckoutResult(ctx: {
     throw new Error('Existing checkout is not finalized yet. Try again in a moment.')
   }
 
-  const { data: sale, error: saleLookupError } = await (ctx.supabase
+  const { data: sale, error: saleLookupError } = await (ctx.db
     .from('sales' as any)
     .select('id, sale_number, register_session_id')
     .eq('tenant_id', ctx.tenantId)
@@ -134,13 +134,13 @@ async function findExistingCheckoutResult(ctx: {
 }
 
 async function markSaleAsCheckoutFailed(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   saleId: string
   reason: string
 }) {
   try {
-    await (ctx.supabase
+    await (ctx.db
       .from('sales' as any)
       .update({
         status: 'voided',
@@ -201,7 +201,7 @@ function canonicalizeModifiers(
 
 export async function POST(request: Request) {
   try {
-    const { supabase, device } = await authenticateOrderKioskRequest(request)
+    const { db, device } = await authenticateOrderKioskRequest(request)
 
     const body = await request.json()
     const parsed = CheckoutSchema.parse(body)
@@ -212,7 +212,7 @@ export async function POST(request: Request) {
     )
 
     const staffSession = await assertStaffSession({
-      supabase,
+      db,
       deviceId: device.deviceId,
       tenantId: device.tenantId,
       requireStaffPin: device.requireStaffPin,
@@ -220,7 +220,7 @@ export async function POST(request: Request) {
     })
 
     const existing = await findExistingCheckoutResult({
-      supabase,
+      db,
       tenantId: device.tenantId,
       idempotencyKey: paymentIdempotencyKey,
       amountTenderedCents: parsed.amount_tendered_cents,
@@ -238,13 +238,13 @@ export async function POST(request: Request) {
     }
 
     const registerSession = await getOpenRegisterSession({
-      supabase,
+      db,
       tenantId: device.tenantId,
     })
 
     const productIds = [...new Set(parsed.items.map((item) => item.product_projection_id))]
 
-    const { data: products, error: productsError } = await (supabase
+    const { data: products, error: productsError } = await (db
       .from('product_projections' as any)
       .select('id, name, price_cents, tax_class, cost_cents, modifiers, is_active')
       .eq('tenant_id', device.tenantId)
@@ -303,7 +303,7 @@ export async function POST(request: Request) {
     let combinedTaxRate = 0
 
     if (hasTaxableCheckoutItems) {
-      const { data: chef, error: chefError } = await (supabase
+      const { data: chef, error: chefError } = await (db
         .from('chefs' as any)
         .select('zip')
         .eq('id', device.tenantId)
@@ -351,7 +351,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Amount tendered is less than total due' }, { status: 400 })
     }
 
-    const { data: sale, error: saleError } = await (supabase
+    const { data: sale, error: saleError } = await (db
       .from('sales' as any)
       .insert({
         tenant_id: device.tenantId,
@@ -377,12 +377,10 @@ export async function POST(request: Request) {
     }
 
     const saleItems = finalizedItemRows.map((row) => ({ ...row, sale_id: (sale as any).id }))
-    const { error: itemInsertError } = await (supabase as any)
-      .from('sale_items')
-      .insert(saleItems as any)
+    const { error: itemInsertError } = await (db as any).from('sale_items').insert(saleItems as any)
     if (itemInsertError) {
       await markSaleAsCheckoutFailed({
-        supabase,
+        db,
         tenantId: device.tenantId,
         saleId: (sale as any).id,
         reason: `sale_items_insert_failed:${itemInsertError.message}`,
@@ -390,7 +388,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to save cart items' }, { status: 500 })
     }
 
-    const { error: saleTotalsError } = await (supabase as any)
+    const { error: saleTotalsError } = await (db as any)
       .from('sales')
       .update({
         subtotal_cents: subtotalCents,
@@ -402,7 +400,7 @@ export async function POST(request: Request) {
       .eq('tenant_id', device.tenantId)
     if (saleTotalsError) {
       await markSaleAsCheckoutFailed({
-        supabase,
+        db,
         tenantId: device.tenantId,
         saleId: (sale as any).id,
         reason: `sale_totals_update_failed:${saleTotalsError.message}`,
@@ -410,7 +408,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to update sale totals' }, { status: 500 })
     }
 
-    const { data: payment, error: paymentError } = await (supabase
+    const { data: payment, error: paymentError } = await (db
       .from('commerce_payments')
       .insert({
         tenant_id: device.tenantId,
@@ -431,7 +429,7 @@ export async function POST(request: Request) {
 
     if (paymentError || !payment) {
       const idempotentRetry = await findExistingCheckoutResult({
-        supabase,
+        db,
         tenantId: device.tenantId,
         idempotencyKey: paymentIdempotencyKey,
         amountTenderedCents: parsed.amount_tendered_cents,
@@ -449,7 +447,7 @@ export async function POST(request: Request) {
       }
 
       await markSaleAsCheckoutFailed({
-        supabase,
+        db,
         tenantId: device.tenantId,
         saleId: (sale as any).id,
         reason: paymentError?.message ?? 'payment_insert_failed',
@@ -457,7 +455,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Failed to record payment' }, { status: 500 })
     }
 
-    const { error: saleStatusError } = await (supabase as any)
+    const { error: saleStatusError } = await (db as any)
       .from('sales')
       .update({ status: 'captured' } as any)
       .eq('id', (sale as any).id)
@@ -471,7 +469,7 @@ export async function POST(request: Request) {
 
     try {
       await syncRegisterSessionTotals({
-        supabase,
+        db,
         tenantId: device.tenantId,
         registerSessionId: registerSession.id,
       })
@@ -480,7 +478,7 @@ export async function POST(request: Request) {
     }
 
     try {
-      await (supabase as any).from('device_events').insert({
+      await (db as any).from('device_events').insert({
         device_id: device.deviceId,
         tenant_id: device.tenantId,
         staff_member_id: (staffSession as any)?.staff_member_id ?? null,

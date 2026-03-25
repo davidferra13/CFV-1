@@ -86,13 +86,13 @@ function formatAccessLevel(level: PosAccessLevel): string {
   return 'Manager'
 }
 
-async function resolvePosActorRole(ctx: { supabase: any; user: AuthUser }): Promise<string> {
+async function resolvePosActorRole(ctx: { db: any; user: AuthUser }): Promise<string> {
   if (!ctx.user.tenantId) return 'unknown'
   if (ctx.user.entityId === ctx.user.tenantId) {
     return 'owner'
   }
 
-  const baseQuery = ctx.supabase
+  const baseQuery = ctx.db
     .from('chef_team_members')
     .select('role')
     .eq('tenant_id', ctx.user.tenantId)
@@ -129,17 +129,13 @@ async function resolvePosActorRole(ctx: { supabase: any; user: AuthUser }): Prom
   return byEmail?.role ? String(byEmail.role) : 'unknown'
 }
 
-export async function assertPosManagerAccess(ctx: {
-  supabase: any
-  user: AuthUser
-  action: string
-}) {
+export async function assertPosManagerAccess(ctx: { db: any; user: AuthUser; action: string }) {
   if (!isPosManagerApprovalRequired() && !isPosRoleMatrixRequired()) {
     return
   }
 
   const role = await resolvePosActorRole({
-    supabase: ctx.supabase,
+    db: ctx.db,
     user: ctx.user,
   })
   const managerRoles = readPosManagerRoleSetFromEnv()
@@ -154,7 +150,7 @@ export async function assertPosManagerAccess(ctx: {
 }
 
 export async function assertPosRoleAccess(ctx: {
-  supabase: any
+  db: any
   user: AuthUser
   action: string
   requiredLevel: PosAccessLevel
@@ -164,7 +160,7 @@ export async function assertPosRoleAccess(ctx: {
   }
 
   const role = await resolvePosActorRole({
-    supabase: ctx.supabase,
+    db: ctx.db,
     user: ctx.user,
   })
 

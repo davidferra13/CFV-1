@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface DishFeedbackSummary {
   avgRating: number
@@ -19,9 +19,9 @@ export async function getDishFeedbackSummary(
   if (!dishIds.length) return {}
 
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dish_feedback')
     .select('dish_id, rating, would_serve_again')
     .eq('tenant_id', user.tenantId!)

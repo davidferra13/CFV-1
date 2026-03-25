@@ -1,16 +1,16 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { randomUUID } from 'crypto'
 
 export async function getOrCreateAlcoholLog(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('event_alcohol_logs')
     .select('*')
     .eq('event_id', eventId)
@@ -25,7 +25,7 @@ export async function getOrCreateAlcoholLog(eventId: string) {
     return existing
   }
 
-  const { data: created, error: createError } = await supabase
+  const { data: created, error: createError } = await db
     .from('event_alcohol_logs')
     .insert({
       event_id: eventId,
@@ -49,9 +49,9 @@ export async function addAlcoholLogEntry(
 ) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: log, error: fetchError } = await supabase
+  const { data: log, error: fetchError } = await db
     .from('event_alcohol_logs')
     .select('*')
     .eq('id', logId)
@@ -81,7 +81,7 @@ export async function addAlcoholLogEntry(
 
   const updatedEntries = [...existingEntries, newEntry]
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('event_alcohol_logs')
     .update({ log_entries: updatedEntries, updated_at: new Date().toISOString() })
     .eq('id', logId)
@@ -97,9 +97,9 @@ export async function addAlcoholLogEntry(
 export async function setLastCall(logId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: log, error: fetchError } = await supabase
+  const { data: log, error: fetchError } = await db
     .from('event_alcohol_logs')
     .select('event_id')
     .eq('id', logId)
@@ -110,7 +110,7 @@ export async function setLastCall(logId: string) {
     throw new Error('Alcohol log not found')
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('event_alcohol_logs')
     .update({
       last_call_at: new Date().toISOString(),
@@ -129,9 +129,9 @@ export async function setLastCall(logId: string) {
 export async function updateLogNotes(logId: string, notes: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: log, error: fetchError } = await supabase
+  const { data: log, error: fetchError } = await db
     .from('event_alcohol_logs')
     .select('event_id')
     .eq('id', logId)
@@ -142,7 +142,7 @@ export async function updateLogNotes(logId: string, notes: string) {
     throw new Error('Alcohol log not found')
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('event_alcohol_logs')
     .update({ notes, updated_at: new Date().toISOString() })
     .eq('id', logId)

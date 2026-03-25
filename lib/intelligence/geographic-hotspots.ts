@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -39,9 +39,9 @@ export interface GeographicIntelligence {
 export async function getGeographicIntelligence(): Promise<GeographicIntelligence | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       'id, location_text, event_date, occasion, quoted_price_cents, guest_count, time_travel_minutes, status'
@@ -57,10 +57,7 @@ export async function getGeographicIntelligence(): Promise<GeographicIntelligenc
   const completedIds = events.filter((e: any) => e.status === 'completed').map((e: any) => e.id)
   const { data: expenses } =
     completedIds.length > 0
-      ? await supabase
-          .from('expenses')
-          .select('event_id, amount_cents')
-          .in('event_id', completedIds)
+      ? await db.from('expenses').select('event_id, amount_cents').in('event_id', completedIds)
       : { data: [] }
 
   const expenseByEvent = new Map<string, number>()

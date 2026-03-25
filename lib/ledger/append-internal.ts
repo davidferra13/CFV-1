@@ -2,7 +2,7 @@
 // These functions run on the server but are NOT directly callable from the client.
 // Only import from other server-side code (webhook routes, server actions).
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger'
 import type { AppendLedgerEntryInput } from './append'
 
@@ -13,14 +13,14 @@ import type { AppendLedgerEntryInput } from './append'
 export async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
   // Use service role for webhook calls (created_by === null), otherwise anon key
   const useServiceRole = input.created_by === null
-  const supabase = createServerClient({ admin: useServiceRole })
+  const db = createServerClient({ admin: useServiceRole })
 
   // Validate amounts are integers (minor units only)
   if (!Number.isInteger(input.amount_cents)) {
     throw new Error('Amount must be in minor units (cents, integer only)')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ledger_entries')
     .insert({
       tenant_id: input.tenant_id,

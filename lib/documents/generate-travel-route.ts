@@ -4,7 +4,7 @@
 // Unlike other documents this ALLOWS multiple pages - one per leg plus a cover summary.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 import {
@@ -34,10 +34,10 @@ type TravelRouteData = {
 
 export async function fetchTravelRouteData(eventId: string): Promise<TravelRouteData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Event + client
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, occasion, event_date, location_address, location_city, clients(full_name)')
     .eq('id', eventId)
@@ -47,7 +47,7 @@ export async function fetchTravelRouteData(eventId: string): Promise<TravelRoute
   if (!event) return null
 
   // Chef name
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', user.entityId!)
@@ -58,7 +58,7 @@ export async function fetchTravelRouteData(eventId: string): Promise<TravelRoute
   // Travel legs (primary + any consolidated leg that includes this event)
   let legs: TravelLegWithIngredients[] = []
   try {
-    const { data: legsRaw } = await supabase
+    const { data: legsRaw } = await db
       .from('event_travel_legs')
       .select('*')
       .or(`primary_event_id.eq.${eventId},linked_event_ids.cs.{${eventId}}`)
@@ -69,7 +69,7 @@ export async function fetchTravelRouteData(eventId: string): Promise<TravelRoute
 
     // For each leg, fetch ingredients (specialty legs only)
     for (const leg of (legsRaw ?? []) as any[]) {
-      const { data: ings } = await supabase
+      const { data: ings } = await db
         .from('travel_leg_ingredients')
         .select('*, ingredients(name)')
         .eq('leg_id', leg.id)

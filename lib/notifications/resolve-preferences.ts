@@ -9,7 +9,7 @@
 //   3. Special overrides: EMAIL_SUPPRESSED_ACTIONS always disables email
 //   4. SMS gate: requires chef_preferences.sms_opt_in = true AND sms_notify_phone set
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { NotificationAction, NotificationCategory } from './types'
 import {
   DEFAULT_TIER_MAP,
@@ -49,10 +49,10 @@ export async function resolveChannels(
   let tier = DEFAULT_TIER_MAP[action]
 
   try {
-    const supabase = createServerClient({ admin: true })
+    const db = createServerClient({ admin: true })
 
     // 0. Check for per-chef tier override before computing channel defaults
-    const { data: tierOverride } = await (supabase as any)
+    const { data: tierOverride } = await (db as any)
       .from('chef_notification_tier_overrides')
       .select('tier')
       .eq('chef_id', tenantId)
@@ -77,10 +77,10 @@ export async function resolveChannels(
   let resolved: ChannelSet = { ...defaults }
 
   try {
-    const supabase = createServerClient({ admin: true })
+    const db = createServerClient({ admin: true })
 
     // 1. Load category-level channel overrides from notification_preferences
-    const { data: pref } = await supabase
+    const { data: pref } = await db
       .from('notification_preferences')
       .select('email_enabled, push_enabled, sms_enabled')
       .eq('auth_user_id', authUserId)
@@ -108,7 +108,7 @@ export async function resolveChannels(
     // 3. SMS gate - requires explicit opt-in and phone number
     let smsPhone: string | null = null
     if (resolved.sms) {
-      const { data: prefs } = await supabase
+      const { data: prefs } = await db
         .from('chef_preferences')
         .select('sms_opt_in, sms_notify_phone')
         .eq('tenant_id', tenantId)

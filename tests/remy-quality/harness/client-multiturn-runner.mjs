@@ -15,7 +15,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { createClient } from '../../../scripts/lib/supabase.mjs'
+import { createClient } from '../../../scripts/lib/db.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -32,7 +32,7 @@ const REQUEST_TIMEOUT_MS = 180_000
 function loadEnv() {
   const env = fs.readFileSync(path.join(ROOT, '.env.local'), 'utf8')
   const get = (k) => { const m = env.match(new RegExp(`^${k}=(.+)$`, 'm')); return m ? m[1].trim() : '' }
-  return { supabaseUrl: get('NEXT_PUBLIC_SUPABASE_URL'), supabaseAnonKey: get('NEXT_PUBLIC_SUPABASE_ANON_KEY') }
+  return { dbUrl: get('NEXT_PUBLIC_DB_URL'), dbAnonKey: get('NEXT_PUBLIC_DB_ANON_KEY') }
 }
 
 function loadClientCredentials() {
@@ -45,10 +45,10 @@ function loadClientCredentials() {
 }
 
 async function authenticate() {
-  const { supabaseUrl, supabaseAnonKey } = loadEnv()
+  const { dbUrl, dbAnonKey } = loadEnv()
   const creds = loadClientCredentials()
   console.log(`Authenticating as client: ${creds.email}`)
-  const sb = createClient(supabaseUrl, supabaseAnonKey)
+  const sb = createClient(dbUrl, dbAnonKey)
   const { data, error } = await sb.auth.signInWithPassword(creds)
   if (error) { console.error(`Auth failed: ${error.message}`); process.exit(1) }
   const session = data.session

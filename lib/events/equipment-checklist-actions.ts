@@ -11,7 +11,7 @@
 //     _eq_id: "<uuid>", _eq_name: "<name>", _eq_has_backup: <bool>, _eq_notes: "<str>" }
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { randomUUID } from 'crypto'
 
@@ -58,12 +58,12 @@ function fromStored(stored: StoredEqItem): EquipmentItem {
 export async function saveEquipmentChecklist(eventId: string, items: EquipmentItem[]) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const eqItems: StoredEqItem[] = items.map(toStored)
 
   // Check if a checklist record exists for this event
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('event_safety_checklists')
     .select('*')
     .eq('event_id', eventId)
@@ -76,7 +76,7 @@ export async function saveEquipmentChecklist(eventId: string, items: EquipmentIt
     const nonEqItems = currentItems.filter((i) => !i.key.startsWith('EQ_'))
     const merged = [...nonEqItems, ...eqItems]
 
-    const { error } = await supabase
+    const { error } = await db
       .from('event_safety_checklists')
       .update({ items: merged, updated_at: new Date().toISOString() })
       .eq('id', existing.id)
@@ -86,7 +86,7 @@ export async function saveEquipmentChecklist(eventId: string, items: EquipmentIt
       throw new Error('Failed to save equipment checklist')
     }
   } else {
-    const { error } = await supabase.from('event_safety_checklists').insert({
+    const { error } = await db.from('event_safety_checklists').insert({
       event_id: eventId,
       tenant_id: tenantId,
       items: eqItems,
@@ -103,9 +103,9 @@ export async function saveEquipmentChecklist(eventId: string, items: EquipmentIt
 export async function getEquipmentChecklist(eventId: string): Promise<EquipmentItem[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: checklist } = await supabase
+  const { data: checklist } = await db
     .from('event_safety_checklists')
     .select('items')
     .eq('event_id', eventId)

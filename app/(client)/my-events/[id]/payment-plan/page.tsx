@@ -5,13 +5,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireClient } from '@/lib/auth/get-user'
 import { PaymentPlanCalculator } from '@/components/clients/payment-plan-calculator'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export const metadata: Metadata = { title: 'Payment Plan - ChefFlow' }
 
 export default async function PaymentPlanPage({ params }: { params: { id: string } }) {
   await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   let eventResult: {
     id: string
@@ -20,7 +20,7 @@ export default async function PaymentPlanPage({ params }: { params: { id: string
     occasion: string | null
   } | null = null
   try {
-    const { data } = await supabase
+    const { data } = await db
       .from('events')
       .select('id, quoted_price_cents, event_date, occasion')
       .eq('id', params.id)

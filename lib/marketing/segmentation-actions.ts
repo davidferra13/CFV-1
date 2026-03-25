@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -55,12 +55,12 @@ export type EvaluatedSegment = {
  * Returns matching client IDs and their basic info.
  */
 async function applyBehavioralFilters(
-  supabase: any,
+  db: any,
   tenantId: string,
   filters: BehavioralFilters
 ): Promise<{ id: string; fullName: string; email: string | null }[]> {
   // Fetch all clients for this chef
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, email')
     .eq('tenant_id', tenantId)
@@ -70,7 +70,7 @@ async function applyBehavioralFilters(
   const clientIds = clients.map((c: any) => c.id)
 
   // Fetch event counts and spend per client
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, client_id, event_date, quoted_price_cents')
     .eq('tenant_id', tenantId)
@@ -105,7 +105,7 @@ async function applyBehavioralFilters(
 
   // If tag filtering is requested, fetch client tags
   if (filters.tags && filters.tags.length > 0) {
-    const { data: tagRows } = await supabase
+    const { data: tagRows } = await db
       .from('client_tags')
       .select('client_id, tag')
       .eq('chef_id', tenantId)
@@ -163,7 +163,7 @@ async function applyBehavioralFilters(
 export async function buildBehavioralSegment(input: BuildBehavioralSegmentInput) {
   const user = await requireChef()
   const validated = BuildBehavioralSegmentSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Convert behavioral filters into the stored JSONB format
   const filterEntries: { field: string; op: string; value: string | number }[] = []
@@ -203,7 +203,7 @@ export async function buildBehavioralSegment(input: BuildBehavioralSegmentInput)
     })
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_segments')
     .insert({
       tenant_id: user.tenantId!,
@@ -237,9 +237,9 @@ export async function buildBehavioralSegment(input: BuildBehavioralSegmentInput)
 export async function getSegmentPreview(filters: BehavioralFilters): Promise<SegmentPreview> {
   const user = await requireChef()
   const validated = BehavioralFiltersSchema.parse(filters)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const matching = await applyBehavioralFilters(supabase, user.tenantId!, validated)
+  const matching = await applyBehavioralFilters(db, user.tenantId!, validated)
 
   return {
     count: matching.length,
@@ -252,9 +252,9 @@ export async function getSegmentPreview(filters: BehavioralFilters): Promise<Seg
  */
 export async function deleteBehavioralSegment(segmentId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_segments')
     .delete()
     .eq('id', segmentId)
@@ -275,10 +275,10 @@ export async function deleteBehavioralSegment(segmentId: string) {
  */
 export async function evaluateSegmentFilters(segmentId: string): Promise<EvaluatedSegment> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the segment
-  const { data: segment, error } = await supabase
+  const { data: segment, error } = await db
     .from('client_segments')
     .select('*')
     .eq('id', segmentId)
@@ -314,7 +314,7 @@ export async function evaluateSegmentFilters(segmentId: string): Promise<Evaluat
     }
   }
 
-  const matching = await applyBehavioralFilters(supabase, user.tenantId!, behavioralFilters)
+  const matching = await applyBehavioralFilters(db, user.tenantId!, behavioralFilters)
 
   return {
     segmentId: segment.id,

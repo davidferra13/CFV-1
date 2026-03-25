@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // -- Types --
 
@@ -56,9 +56,9 @@ export async function getClientMenuHistory(
   clientId: string
 ): Promise<{ data: MenuHistoryEntry[]; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_service_history')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -80,9 +80,9 @@ export async function addMenuHistoryEntry(
   input: AddMenuHistoryInput
 ): Promise<{ data: MenuHistoryEntry | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_service_history')
     .insert({
       chef_id: user.tenantId!,
@@ -115,10 +115,10 @@ export async function autoLogMenuFromEvent(
   eventId: string
 ): Promise<{ data: MenuHistoryEntry | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with client info and menu link
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, client_id, event_date, guest_count, status, menu_id')
     .eq('id', eventId)
@@ -131,7 +131,7 @@ export async function autoLogMenuFromEvent(
   }
 
   // Check if already logged for this event
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('menu_service_history')
     .select('id')
     .eq('chef_id', user.tenantId!)
@@ -145,7 +145,7 @@ export async function autoLogMenuFromEvent(
   // Fetch dishes from the assigned menu (via the real menu model: menus > dishes)
   let dishes: DishEntry[] = []
   if (event.menu_id) {
-    const { data: menuDishes } = await supabase
+    const { data: menuDishes } = await db
       .from('dishes')
       .select('name, course_name')
       .eq('menu_id', event.menu_id)
@@ -159,7 +159,7 @@ export async function autoLogMenuFromEvent(
   }
 
   // Create the history entry
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_service_history')
     .insert({
       chef_id: user.tenantId!,
@@ -189,7 +189,7 @@ export async function updateMenuFeedback(
   feedback: FeedbackInput
 ): Promise<{ success: boolean; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateFields: Record<string, unknown> = {}
   if (feedback.overall_rating !== undefined) updateFields.overall_rating = feedback.overall_rating
@@ -202,7 +202,7 @@ export async function updateMenuFeedback(
     return { success: false, error: 'No fields to update' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('menu_service_history')
     .update(updateFields)
     .eq('id', historyId)
@@ -224,9 +224,9 @@ export async function getDishFrequency(
   clientId: string
 ): Promise<{ data: { name: string; count: number; lastServed: string }[]; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: entries, error } = await supabase
+  const { data: entries, error } = await db
     .from('menu_service_history')
     .select('dishes_served, served_date')
     .eq('chef_id', user.tenantId!)
@@ -269,10 +269,10 @@ export async function getNeverServedDishes(clientId: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all chef's recipes
-  const { data: recipes, error: recipeError } = await supabase
+  const { data: recipes, error: recipeError } = await db
     .from('recipes')
     .select('id, name, category')
     .eq('tenant_id', user.tenantId!)
@@ -283,7 +283,7 @@ export async function getNeverServedDishes(clientId: string): Promise<{
   }
 
   // Get all dishes served to this client
-  const { data: entries, error: historyError } = await supabase
+  const { data: entries, error: historyError } = await db
     .from('menu_service_history')
     .select('dishes_served')
     .eq('chef_id', user.tenantId!)
@@ -325,9 +325,9 @@ export async function getMenuHistoryStats(clientId?: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('menu_service_history')
     .select('dishes_served, overall_rating, served_date')
     .eq('chef_id', user.tenantId!)
@@ -395,14 +395,14 @@ export async function searchMenuHistory(
   query: string
 ): Promise<{ data: MenuHistoryEntry[]; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!query.trim()) {
     return { data: [], error: null }
   }
 
   // Fetch all history and filter in-app (JSONB dish name search)
-  const { data: entries, error } = await supabase
+  const { data: entries, error } = await db
     .from('menu_service_history')
     .select('*')
     .eq('chef_id', user.tenantId!)

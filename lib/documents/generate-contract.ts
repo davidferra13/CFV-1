@@ -3,7 +3,7 @@
 // Both chef and client can access - ownership is verified by the caller.
 // Multi-page allowed: contracts can be long.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, MARGIN_X, CONTENT_WIDTH } from './pdf-layout'
 import { format } from 'date-fns'
 
@@ -37,8 +37,8 @@ export async function fetchContractData(
   contractId: string,
   owner: { chefId: string | null; clientEntityId: string | null }
 ): Promise<ContractDocumentData | null> {
-  const supabase: any = createServerClient()
-  const db = supabase as any
+  const db: any = createServerClient()
+  const db = db as any
 
   let query = db
     .from('event_contracts')
@@ -62,7 +62,7 @@ export async function fetchContractData(
   const { data: contract } = await query.single()
   if (!contract) return null
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, email, phone')
     .eq('id', contract.chef_id)

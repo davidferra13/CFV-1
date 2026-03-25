@@ -1,7 +1,7 @@
-// Syncs local crawler_findings to Supabase directory_listings table.
+// Syncs local crawler_findings to PostgreSQL directory_listings table.
 // Runs periodically, pushing new findings in batches.
 
-import { createClient } from '../../lib/supabase.mjs'
+import { createClient } from '../../lib/db.mjs'
 import { readFileSync, readdirSync, existsSync, statSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
@@ -10,15 +10,15 @@ import config from '../config.json' with { type: 'json' }
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const BASE_DIR = join(__dirname, '..', config.storage.findingsDir)
 
-let supabase = null
+let db = null
 
 function getClient() {
-  if (supabase) return supabase
-  const url = config.supabase.url
-  const key = process.env[config.supabase.serviceRoleKeyEnv]
+  if (db) return db
+  const url = config.database.url
+  const key = process.env[config.database.serviceRoleKeyEnv]
   if (!key) return null
-  supabase = createClient(url, key)
-  return supabase
+  db = createClient(url, key)
+  return db
 }
 
 function slugify(text) {
@@ -57,7 +57,7 @@ function classifyBusiness(biz) {
 }
 
 /**
- * Sync a single city JSON file to Supabase.
+ * Sync a single city JSON file to PostgreSQL.
  */
 async function syncFile(sb, filePath, regionCode, existing) {
   let synced = 0, skipped = 0, failed = 0
@@ -109,13 +109,13 @@ async function syncFile(sb, filePath, regionCode, existing) {
 }
 
 /**
- * Sync all local findings to Supabase.
+ * Sync all local findings to PostgreSQL.
  * Returns { synced, skipped, failed }.
  */
-export async function syncToSupabase() {
+export async function syncToDatabase() {
   const sb = getClient()
   if (!sb) {
-    console.log('[sync] No Supabase key, skipping sync')
+    console.log('[sync] No database key, skipping sync')
     return { synced: 0, skipped: 0, failed: 0 }
   }
 

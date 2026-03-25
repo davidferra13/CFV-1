@@ -6,7 +6,7 @@
 // Output is DRAFT ONLY - requires chef confirmation, never writes canon data.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from './parse-ollama'
 import { withAiFallback } from './with-ai-fallback'
 import { buildAllergenMatrixFormula } from '@/lib/formulas/allergen-matrix'
@@ -39,11 +39,11 @@ export type DishRisk = z.infer<typeof DishRiskSchema>
 
 export async function getEventAllergenRisk(eventId: string): Promise<AllergenRiskResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event + guests + menu components
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
+  const db = db as any
   const [eventResult, guestsResult, menuResult]: [
     { data: { occasion: string | null; dietary_restrictions: unknown; allergies: unknown } | null },
     {

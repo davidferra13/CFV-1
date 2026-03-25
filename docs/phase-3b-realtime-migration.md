@@ -1,8 +1,8 @@
-# Phase 3b: SSE Realtime (Replaces Supabase Realtime)
+# Phase 3b: SSE Realtime (Replaces SSE realtime)
 
 ## What Changed
 
-All real-time features (live updates, typing indicators, presence tracking) now use Server-Sent Events (SSE) with an in-memory event bus instead of Supabase Realtime channels.
+All real-time features (live updates, typing indicators, presence tracking) now use Server-Sent Events (SSE) with an in-memory event bus instead of SSE realtime channels.
 
 ## Architecture
 
@@ -50,23 +50,23 @@ Client POST /api/realtime/presence (every 30s)  ->  trackPresence()  ->  SSE syn
 
 ## Files Modified (Library)
 
-| File                            | Change                                                         |
-| ------------------------------- | -------------------------------------------------------------- |
-| `lib/realtime/subscriptions.ts` | 5 hooks rewritten to use useSSE() instead of Supabase channels |
-| `lib/hub/realtime.ts`           | 4 functions rewritten to use EventSource + POST endpoints      |
-| `lib/chat/realtime.ts`          | 4 functions rewritten (messages, inbox, typing, presence)      |
-| `lib/notifications/realtime.ts` | subscribeToNotifications uses EventSource                      |
-| `lib/messages/realtime.ts`      | subscribeToMessages uses EventSource                           |
+| File                            | Change                                                           |
+| ------------------------------- | ---------------------------------------------------------------- |
+| `lib/realtime/subscriptions.ts` | 5 hooks rewritten to use useSSE() instead of PostgreSQL channels |
+| `lib/hub/realtime.ts`           | 4 functions rewritten to use EventSource + POST endpoints        |
+| `lib/chat/realtime.ts`          | 4 functions rewritten (messages, inbox, typing, presence)        |
+| `lib/notifications/realtime.ts` | subscribeToNotifications uses EventSource                        |
+| `lib/messages/realtime.ts`      | subscribeToMessages uses EventSource                             |
 
 ## Files Modified (Components)
 
-| File                                              | Change                                                 |
-| ------------------------------------------------- | ------------------------------------------------------ |
-| `components/activity/live-presence-panel.tsx`     | useSSE() replaces Supabase channel                     |
-| `components/activity/client-presence-monitor.tsx` | useSSE() replaces Supabase channel                     |
-| `components/admin/admin-presence-panel.tsx`       | useSSEPresence() replaces Supabase presence            |
-| `components/admin/presence-beacon.tsx`            | POST /api/realtime/presence replaces Supabase .track() |
-| `components/dashboard/live-inbox-widget.tsx`      | useSSE() replaces @supabase/ssr createBrowserClient    |
+| File                                              | Change                                                   |
+| ------------------------------------------------- | -------------------------------------------------------- |
+| `components/activity/live-presence-panel.tsx`     | useSSE() replaces PostgreSQL channel                     |
+| `components/activity/client-presence-monitor.tsx` | useSSE() replaces PostgreSQL channel                     |
+| `components/admin/admin-presence-panel.tsx`       | useSSEPresence() replaces PostgreSQL presence            |
+| `components/admin/presence-beacon.tsx`            | POST /api/realtime/presence replaces PostgreSQL .track() |
+| `components/dashboard/live-inbox-widget.tsx`      | useSSE() replaces @database/ssr createBrowserClient      |
 
 ## Components Unchanged
 
@@ -102,7 +102,7 @@ import { broadcastInsert } from '@/lib/realtime/broadcast'
 broadcastInsert('notifications', tenantId, newNotification)
 ```
 
-This is the application-level replacement for Supabase's `postgres_changes`. Instead of the database broadcasting changes, the application code does it explicitly after each mutation.
+This is the application-level replacement for PostgreSQL's `postgres_changes`. Instead of the database broadcasting changes, the application code does it explicitly after each mutation.
 
 ## Presence Lifecycle
 
@@ -112,16 +112,16 @@ This is the application-level replacement for Supabase's `postgres_changes`. Ins
 4. Server-side cleanup (every 30s) -> entries older than 2 minutes are evicted
 5. Eviction broadcasts `presence_leave` to SSE listeners
 
-## Limitations vs Supabase Realtime
+## Limitations vs SSE realtime
 
 - **Single process only**: The in-memory EventEmitter doesn't work across multiple Node.js processes. For ChefFlow (single PC deployment), this is fine.
 - **No automatic DB change detection**: Server actions must explicitly call `broadcast()` after mutations. If a mutation doesn't broadcast, SSE clients won't see the update.
 - **Presence is approximate**: 30-second heartbeat means up to 30 seconds of staleness for online/offline status.
 
-## What Still Uses Supabase SDK
+## What Still Uses database SDK
 
-After this phase, the only remaining Supabase SDK usage is in:
+After this phase, the only remaining database SDK usage is in:
 
-- Scripts and tests that import directly from `@supabase/supabase-js`
-- The browser client file `lib/supabase/client.ts` (can be deleted in Phase 4)
+- Scripts and tests that import directly from `@database/database-js`
+- The browser client file `lib/database/client.ts` (can be deleted in Phase 4)
 - Queue providers and cron jobs (Phase 4 cleanup)

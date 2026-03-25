@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -15,19 +15,19 @@ export const metadata: Metadata = { title: 'Reservations | ChefFlow' }
 
 export default async function ReservationsPage() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 
   const [{ data: upcoming }, { data: past }] = await Promise.all([
-    supabase
+    db
       .from('guest_reservations')
       .select('*, guests(id, name, phone)')
       .eq('chef_id', user.tenantId!)
       .gte('reservation_date', today)
       .order('reservation_date', { ascending: true })
       .limit(50),
-    supabase
+    db
       .from('guest_reservations')
       .select('*, guests(id, name, phone)')
       .eq('chef_id', user.tenantId!)

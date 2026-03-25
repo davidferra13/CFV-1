@@ -5,7 +5,7 @@
 // All deduction amounts computed at the precise rate, stored in cents.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { MILEAGE_PURPOSE_LABELS, type MileagePurpose } from './mileage-constants'
 
@@ -85,13 +85,13 @@ export async function addMileageLog(data: {
   notes?: string
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!data.tripDate || !data.miles || data.miles <= 0) {
     return { success: false, error: 'Trip date and positive miles are required.' }
   }
 
-  const { error } = await supabase.from('mileage_logs' as any).insert({
+  const { error } = await db.from('mileage_logs' as any).insert({
     tenant_id: user.tenantId!,
     event_id: data.eventId || null,
     trip_date: data.tripDate,
@@ -126,9 +126,9 @@ export async function getMileageLogs(dateRange?: {
   to: string
 }): Promise<MileageEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('mileage_logs' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -158,7 +158,7 @@ export async function updateMileageLog(
   }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, any> = { updated_at: new Date().toISOString() }
   if (data.eventId !== undefined) updates.event_id = data.eventId || null
@@ -177,7 +177,7 @@ export async function updateMileageLog(
     updates.description = [purpose, route].filter(Boolean).join(' - ') || null
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('mileage_logs' as any)
     .update(updates)
     .eq('id', id)
@@ -197,9 +197,9 @@ export async function updateMileageLog(
 // ---------------------------------------------------------------------------
 export async function deleteMileageLog(id: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('mileage_logs' as any)
     .delete()
     .eq('id', id)
@@ -219,9 +219,9 @@ export async function deleteMileageLog(id: string): Promise<{ success: boolean }
 // ---------------------------------------------------------------------------
 export async function getMileageSummary(year: number): Promise<MileageSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('mileage_logs' as any)
     .select('miles, purpose, trip_date')
     .eq('tenant_id', user.tenantId!)
@@ -294,9 +294,9 @@ export async function getYtdMileageSummary(): Promise<MileageSummary> {
 // ---------------------------------------------------------------------------
 export async function getMileageForEvent(eventId: string): Promise<MileageEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('mileage_logs' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)

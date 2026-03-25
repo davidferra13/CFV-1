@@ -4,7 +4,7 @@
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { acceptProposal, transitionEvent } from '@/lib/events/transitions'
 import { clientGetOrCreateConversation, sendChatMessage } from '@/lib/chat/actions'
 import { revalidatePath } from 'next/cache'
@@ -18,9 +18,9 @@ import { revalidatePath } from 'next/cache'
 export async function getClientEvents(options?: { pastLimit?: number }) {
   const pastLimit = options?.pastLimit ?? 5
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -66,10 +66,10 @@ export async function getClientEvents(options?: { pastLimit?: number }) {
  */
 export async function getClientEventById(eventId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with client data
-  const { data: event, error } = await supabase
+  const { data: event, error } = await db
     .from('events')
     .select(
       `
@@ -99,39 +99,36 @@ export async function getClientEventById(eventId: string) {
     { data: contract },
     { count: reviewCount },
   ] = await Promise.all([
-    supabase
+    db
       .from('menus')
       .select(
         `id, name, description, service_style, cuisine_type, status,
         dishes (id, course_name, course_number, description, dietary_tags, allergen_flags, sort_order)`
       )
       .eq('event_id', eventId),
-    supabase
+    db
       .from('ledger_entries')
       .select('*')
       .eq('event_id', eventId)
       .order('created_at', { ascending: false }),
-    supabase.from('event_financial_summary').select('*').eq('event_id', eventId).single(),
-    supabase
+    db.from('event_financial_summary').select('*').eq('event_id', eventId).single(),
+    db
       .from('event_state_transitions')
       .select('to_status, transitioned_at')
       .eq('event_id', eventId)
       .order('transitioned_at', { ascending: true }),
-    supabase
+    db
       .from('event_photos')
       .select('id', { count: 'exact', head: true })
       .eq('event_id', eventId)
       .is('deleted_at', null),
-    supabase
+    db
       .from('event_contracts')
       .select('id, status, signed_at')
       .eq('event_id', eventId)
       .not('status', 'eq', 'voided')
       .maybeSingle(),
-    supabase
-      .from('client_reviews')
-      .select('id', { count: 'exact', head: true })
-      .eq('event_id', eventId),
+    db.from('client_reviews').select('id', { count: 'exact', head: true }).eq('event_id', eventId),
   ])
 
   return {
@@ -180,9 +177,9 @@ export async function cancelEventAsClient(eventId: string, reason: string) {
     throw new Error('Cancellation reason is required')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, status, client_id')
     .eq('id', eventId)
@@ -223,9 +220,9 @@ export async function requestCancellationViaChat(eventId: string, reason: string
     throw new Error('Cancellation reason is required')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, status, occasion, event_date')
     .eq('id', eventId)

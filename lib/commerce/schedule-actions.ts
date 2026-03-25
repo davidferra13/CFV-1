@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { ScheduleStatus } from './constants'
 
@@ -27,7 +27,7 @@ export type CreateScheduleInput = {
  */
 export async function createPaymentSchedule(input: CreateScheduleInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!input.saleId && !input.eventId) {
     throw new Error('Either saleId or eventId is required')
@@ -53,7 +53,7 @@ export async function createPaymentSchedule(input: CreateScheduleInput) {
     status: 'pending' as const,
   }))
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('commerce_payment_schedules')
     .insert(rows as any)
     .select('id, installment_number, due_date, amount_cents')
@@ -68,9 +68,9 @@ export async function createPaymentSchedule(input: CreateScheduleInput) {
 
 export async function markInstallmentPaid(installmentId: string, paymentId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('commerce_payment_schedules')
     .update({
       status: 'paid',
@@ -88,9 +88,9 @@ export async function markInstallmentPaid(installmentId: string, paymentId?: str
 
 export async function waiveInstallment(installmentId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('commerce_payment_schedules')
     .update({ status: 'waived' } as any)
     .eq('id', installmentId)
@@ -105,9 +105,9 @@ export async function waiveInstallment(installmentId: string) {
 
 export async function getPaymentSchedule(filters: { saleId?: string; eventId?: string }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('commerce_payment_schedules')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -125,11 +125,11 @@ export async function getPaymentSchedule(filters: { saleId?: string; eventId?: s
 
 export async function getOverdueInstallments() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('commerce_payment_schedules')
     .select('*')
     .eq('tenant_id', user.tenantId!)

@@ -9,7 +9,7 @@ export const POST = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Quote')
 
-    const { data: quote, error: fetchErr } = await ctx.supabase
+    const { data: quote, error: fetchErr } = await ctx.db
       .from('quotes')
       .select('id, status, client_id, tenant_id')
       .eq('id', id)
@@ -26,7 +26,7 @@ export const POST = withApiAuth(
       )
     }
 
-    const { data: updated, error } = await ctx.supabase
+    const { data: updated, error } = await ctx.db
       .from('quotes')
       .update({
         status: 'sent',
@@ -45,7 +45,7 @@ export const POST = withApiAuth(
 
     // Log state transition (non-blocking)
     try {
-      await ctx.supabase.from('quote_state_transitions' as any).insert({
+      await ctx.db.from('quote_state_transitions' as any).insert({
         tenant_id: ctx.tenantId,
         quote_id: id,
         from_status: 'draft',

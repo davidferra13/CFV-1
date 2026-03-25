@@ -506,7 +506,7 @@ Every function available in the ChefFlow platform, organized by section.
 | Activity heat map          | 7x24 grid showing activity density by day and hour                        |
 | Session retrace            | Breadcrumb timeline of actions taken in a specific session                |
 | Activity logging toggle    | Enable or disable personal activity tracking                              |
-| Real-time activity feed    | Live Supabase subscription for new activity                               |
+| Real-time activity feed    | Live PostgreSQL subscription for new activity                             |
 | Priority queue             | Master list of all actions requiring attention, scored by urgency         |
 | Queue summary bar          | Total items, critical count, high priority count, active domains          |
 | Domain and urgency filters | Filter queue by business domain and urgency level                         |
@@ -1155,7 +1155,7 @@ Real-time two-way messaging between chef and client, threaded by conversation.
 | Needs First Contact panel | Inquiries awaiting the chef's initial response, surfaced at the top of the inbox                                                                       |
 | New conversation          | Chef can start a conversation with any client                                                                                                          |
 | Message types             | Text, image (up to 10MB: jpg, png, heic, heif, webp), file (up to 25MB: pdf, doc, docx, xls, xlsx, txt, csv), link with metadata, event reference card |
-| Real-time delivery        | Supabase realtime subscription; messages appear instantly without page refresh                                                                         |
+| Real-time delivery        | PostgreSQL realtime subscription; messages appear instantly without page refresh                                                                       |
 | Read receipts             | Per-message read tracking; conversations marked as read on open                                                                                        |
 | Optimistic updates        | Message appears immediately; rolls back with error if server write fails                                                                               |
 | Conversation context      | Conversations are typed: standalone (free-form), inquiry-linked, or event-linked                                                                       |
@@ -1232,7 +1232,7 @@ Centralized in-app alert center for all system events.
 | -------------------- | ------------------------------------------------------------------------------------------------------------ |
 | Alert inbox          | Paginated list of all notifications with type, category, and timestamp                                       |
 | Read/unread tracking | Unread indicators per notification; mark as read individually or in bulk                                     |
-| Real-time updates    | Supabase realtime subscription delivers new notifications without page refresh                               |
+| Real-time updates    | PostgreSQL realtime subscription delivers new notifications without page refresh                             |
 | Push notifications   | Web push via OneSignal service worker integration; click navigates to relevant page                          |
 | Toast alerts         | Time-sensitive notifications (new inquiry, payment received) surface as immediate toasts anywhere in the app |
 | Category filtering   | Filter by notification type (inquiry, quote, event, payment, client, loyalty, etc.)                          |
@@ -1974,19 +1974,19 @@ ChefFlow exposes 70 public-facing pages and flows accessible without an account.
 
 ## Part 6: Technical Identity
 
-| Property    | Value                                                           |
-| ----------- | --------------------------------------------------------------- |
-| App name    | ChefFlow                                                        |
-| Live domain | app.cheflowhq.com                                               |
-| Beta domain | beta.cheflowhq.com                                              |
-| Tagline     | Ops for Artists                                                 |
-| Brand color | Terracotta orange #e88f47                                       |
-| Stack       | Next.js 14, Supabase (PostgreSQL), Stripe, Ollama, Tailwind CSS |
-| Private AI  | Ollama (local, never cloud)                                     |
-| Cloud AI    | Google Gemini (non-private tasks only)                          |
-| Payments    | Stripe Connect                                                  |
-| Email       | Resend                                                          |
-| Hosting     | Self-hosted on developer's PC via Cloudflare Tunnel             |
+| Property    | Value                                                             |
+| ----------- | ----------------------------------------------------------------- |
+| App name    | ChefFlow                                                          |
+| Live domain | app.cheflowhq.com                                                 |
+| Beta domain | beta.cheflowhq.com                                                |
+| Tagline     | Ops for Artists                                                   |
+| Brand color | Terracotta orange #e88f47                                         |
+| Stack       | Next.js 14, PostgreSQL (PostgreSQL), Stripe, Ollama, Tailwind CSS |
+| Private AI  | Ollama (local, never cloud)                                       |
+| Cloud AI    | Google Gemini (non-private tasks only)                            |
+| Payments    | Stripe Connect                                                    |
+| Email       | Resend                                                            |
+| Hosting     | Self-hosted on developer's PC via Cloudflare Tunnel               |
 
 ---
 
@@ -2556,7 +2556,7 @@ Execution logging: Every evaluation logged with result (success / failed / skipp
 
 5 delivery channels:
 
-1. In-app (Supabase real-time subscription, instant)
+1. In-app (PostgreSQL real-time subscription, instant)
 2. Email (Resend API, HTML templates)
 3. Push (OneSignal, web and mobile)
 4. SMS (Twilio, opt-in, rate-limited per category)
@@ -2575,7 +2575,7 @@ Route to all enabled channels in parallel:
   Email: route-email.ts → Resend API
   Push: resolve push_subscriptions → OneSignal API
   SMS: rate limit check → Twilio REST API
-  In-app: insert to notifications table → Supabase real-time
+  In-app: insert to notifications table → PostgreSQL real-time
   ↓
 Log every delivery attempt to notification_delivery_log
   (status: sent / failed / skipped, error message if failed)
@@ -2707,7 +2707,7 @@ Status = published
 
 Annual content calendar: Chef configures posts per week, posting days, and times. System auto-generates target slots across the year. Each slot gets a week number, slot number, and scheduled timestamp.
 
-Media vault: Reusable photos and videos stored in Supabase storage bucket (`social-media-vault`). Assets can be used across multiple posts. Usage counts tracked per asset. Supports JPEG, PNG, WebP, HEIC, HEIF, MP4, MOV, WebM up to 100MB per file.
+Media vault: Reusable photos and videos stored in the database storage bucket (`social-media-vault`). Assets can be used across multiple posts. Usage counts tracked per asset. Supports JPEG, PNG, WebP, HEIC, HEIF, MP4, MOV, WebM up to 100MB per file.
 
 ---
 
@@ -3183,7 +3183,7 @@ ChefFlow exposes the following categories of API endpoints (all under `/api/*`):
 
 ### 11.2 Database Layer
 
-**Platform:** Supabase PostgreSQL (remote hosted, no local Docker)
+**Platform:** PostgreSQL PostgreSQL (remote hosted, no local Docker)
 **Project ID:** `luefkpakzvxcsqroxyhz`
 
 **Schema Layers:**
@@ -3218,7 +3218,7 @@ ChefFlow exposes the following categories of API endpoints (all under `/api/*`):
 
 ### 11.3 Authentication System
 
-**Provider:** Supabase Auth (JWT sessions)
+**Provider:** Auth.js (JWT sessions)
 
 **Role system** via `user_roles` table:
 
@@ -3245,7 +3245,7 @@ ChefFlow exposes the following categories of API endpoints (all under `/api/*`):
 
 Defense in depth across three layers:
 
-1. **Row Level Security (RLS):** Supabase enforces tenant scoping at the database level. Even if application code has a bug, RLS blocks cross-tenant data access.
+1. **Row Level Security (RLS):** PostgreSQL enforces tenant scoping at the database level. Even if application code has a bug, RLS blocks cross-tenant data access.
 
 2. **Server action scoping:** Every server action derives `tenant_id` from the authenticated session (never from request body). Every DB query includes `.eq('tenant_id', user.tenantId!)` or `.eq('chef_id', user.entityId)`.
 
@@ -3401,7 +3401,7 @@ ChefFlow runs across three environments, all hosted on the developer's local PC:
 **Beta directory:** `C:\Users\david\Documents\CFv1-beta\`
 **Production directory:** `C:\Users\david\Documents\CFv1-prod\`
 
-All three environments share the same Supabase database and Ollama instance (`localhost:11434`).
+All three environments share the same PostgreSQL database and Ollama instance (`localhost:11434`).
 
 **Deployment:**
 
@@ -3413,25 +3413,25 @@ All three environments share the same Supabase database and Ollama instance (`lo
 
 ### 11.12 Technology Stack
 
-| Layer           | Technology            | Version       |
-| --------------- | --------------------- | ------------- |
-| Framework       | Next.js App Router    | 14            |
-| Database        | Supabase (PostgreSQL) | hosted        |
-| Auth            | Supabase Auth         | hosted        |
-| Payments        | Stripe Connect        | API v3        |
-| Email           | Resend                | transactional |
-| SMS             | Twilio                | API           |
-| Push            | OneSignal             | API           |
-| AI (private)    | Ollama                | local         |
-| AI (cloud)      | Google Gemini         | API           |
-| Nutrition       | Spoonacular           | API           |
-| Styling         | Tailwind CSS          | v3            |
-| Background jobs | Inngest               | hosted        |
-| Reviews         | Yelp Fusion API       | -             |
-| E-signatures    | DocuSign              | API           |
-| Accounting      | QuickBooks            | OAuth         |
-| Payments alt    | Square                | OAuth         |
-| Webhooks        | Zapier                | outbound      |
+| Layer           | Technology              | Version       |
+| --------------- | ----------------------- | ------------- |
+| Framework       | Next.js App Router      | 14            |
+| Database        | PostgreSQL (PostgreSQL) | hosted        |
+| Auth            | Auth.js                 | hosted        |
+| Payments        | Stripe Connect          | API v3        |
+| Email           | Resend                  | transactional |
+| SMS             | Twilio                  | API           |
+| Push            | OneSignal               | API           |
+| AI (private)    | Ollama                  | local         |
+| AI (cloud)      | Google Gemini           | API           |
+| Nutrition       | Spoonacular             | API           |
+| Styling         | Tailwind CSS            | v3            |
+| Background jobs | Inngest                 | hosted        |
+| Reviews         | Yelp Fusion API         | -             |
+| E-signatures    | DocuSign                | API           |
+| Accounting      | QuickBooks              | OAuth         |
+| Payments alt    | Square                  | OAuth         |
+| Webhooks        | Zapier                  | outbound      |
 
 ---
 

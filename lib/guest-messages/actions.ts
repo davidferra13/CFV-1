@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { z } from 'zod'
 
@@ -28,10 +28,10 @@ export async function postGuestMessage(input: {
   emoji?: string
 }) {
   const validated = PostMessageSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Resolve share token → event + tenant
-  const { data: share } = await supabase
+  const { data: share } = await db
     .from('event_shares')
     .select('event_id, tenant_id')
     .eq('token', validated.shareToken)
@@ -45,7 +45,7 @@ export async function postGuestMessage(input: {
   // If guest token provided, link to guest record
   let guestId: string | null = null
   if (validated.guestToken) {
-    const { data: guest } = await supabase
+    const { data: guest } = await db
       .from('event_guests')
       .select('id')
       .eq('guest_token', validated.guestToken)
@@ -58,7 +58,7 @@ export async function postGuestMessage(input: {
   }
 
   // Rate limit: max 10 messages per guest per event (by name, loose limit)
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('guest_messages')
     .select('id', { count: 'exact' })
     .eq('event_id', share.event_id)
@@ -68,7 +68,7 @@ export async function postGuestMessage(input: {
     throw new Error('Message limit reached for this event')
   }
 
-  const { error } = await supabase.from('guest_messages').insert({
+  const { error } = await db.from('guest_messages').insert({
     tenant_id: share.tenant_id,
     event_id: share.event_id,
     guest_id: guestId,
@@ -92,10 +92,10 @@ export async function postGuestMessage(input: {
  * Only returns visible (non-hidden) messages.
  */
 export async function getEventMessages(shareToken: string) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Resolve share token → event
-  const { data: share } = await supabase
+  const { data: share } = await db
     .from('event_shares')
     .select('event_id')
     .eq('token', shareToken)
@@ -104,7 +104,7 @@ export async function getEventMessages(shareToken: string) {
 
   if (!share) return []
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_messages')
     .select('id, guest_name, message, emoji, is_pinned, created_at')
     .eq('event_id', share.event_id)
@@ -130,9 +130,9 @@ export async function getEventMessages(shareToken: string) {
  */
 export async function getEventMessagesForChef(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_messages')
     .select('id, guest_name, message, emoji, is_visible, is_pinned, guest_id, created_at')
     .eq('event_id', eventId)
@@ -152,9 +152,9 @@ export async function getEventMessagesForChef(eventId: string) {
  */
 export async function toggleMessageVisibility(messageId: string, visible: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('guest_messages')
     .update({ is_visible: visible })
     .eq('id', messageId)
@@ -171,9 +171,9 @@ export async function toggleMessageVisibility(messageId: string, visible: boolea
  */
 export async function toggleMessagePin(messageId: string, pinned: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('guest_messages')
     .update({ is_pinned: pinned })
     .eq('id', messageId)
@@ -190,9 +190,9 @@ export async function toggleMessagePin(messageId: string, pinned: boolean) {
  */
 export async function deleteGuestMessage(messageId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('guest_messages')
     .delete()
     .eq('id', messageId)
@@ -209,9 +209,9 @@ export async function deleteGuestMessage(messageId: string) {
  */
 export async function getExcitementWallStats(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('guest_messages')
     .select('id, is_visible')
     .eq('event_id', eventId)

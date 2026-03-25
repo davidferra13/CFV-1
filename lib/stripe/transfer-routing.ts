@@ -3,7 +3,7 @@
 // and transfer/fee recording for the stripe_transfers and platform_fee_ledger tables.
 // Note: Not a 'use server' boundary - imported as a library by server action files.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type ChefStripeConfig = {
   stripeAccountId: string | null
@@ -18,9 +18,9 @@ export type ChefStripeConfig = {
  * Uses admin client - caller is responsible for authorization context.
  */
 export async function getChefStripeConfig(tenantId: string): Promise<ChefStripeConfig> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select(
       'stripe_account_id, stripe_onboarding_complete, platform_fee_percent, platform_fee_fixed_cents'
@@ -69,9 +69,9 @@ export async function recordStripeTransfer(params: {
   isDeferred?: boolean
   metadata?: Record<string, unknown>
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  await supabase.from('stripe_transfers').insert({
+  await db.from('stripe_transfers').insert({
     tenant_id: params.tenantId,
     event_id: params.eventId,
     stripe_transfer_id: params.stripeTransferId,
@@ -100,9 +100,9 @@ export async function recordPlatformFee(params: {
   transactionReference: string
   entryType?: 'fee' | 'fee_refund' | 'adjustment'
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  await supabase.from('platform_fee_ledger').insert({
+  await db.from('platform_fee_ledger').insert({
     tenant_id: params.tenantId,
     event_id: params.eventId,
     stripe_transfer_id: params.stripeTransferId,

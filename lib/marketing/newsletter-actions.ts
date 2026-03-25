@@ -2,7 +2,7 @@
 
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 type NewsletterSubscribeInput = {
   email: string
@@ -34,9 +34,9 @@ export async function subscribeToNewsletter(
     await checkRateLimit(`newsletter:ip:${ip}`, 12, 5 * 60_000)
     await checkRateLimit(`newsletter:email:${email}`, 4, 60 * 60_000)
 
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
 
-    const { error } = await supabase
+    const { error } = await db
       .from('newsletter_subscribers')
       .upsert({ email, subscribed_at: new Date().toISOString() }, { onConflict: 'email' })
 

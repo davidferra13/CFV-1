@@ -5,7 +5,7 @@
 // CRUD for chef_folders + chef_documents management via Remy commands.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { ChefFolder, ChefDocument } from './document-management-types'
 
 // ─── Folder Actions ────────────────────────────────────────────────────────────
@@ -15,9 +15,9 @@ import type { ChefFolder, ChefDocument } from './document-management-types'
  */
 export async function listFolders(): Promise<ChefFolder[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await (supabase
+  const { data } = await (db
     .from('chef_folders' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -44,9 +44,9 @@ export async function createFolder(
   icon?: string
 ): Promise<{ success: boolean; folder?: ChefFolder; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('chef_folders' as any)
     .insert({
       tenant_id: user.tenantId!,
@@ -85,9 +85,9 @@ export async function moveDocumentToFolder(
   folderId: string | null
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_documents')
     .update({ folder_id: folderId } as any)
     .eq('id', documentId)
@@ -106,9 +106,9 @@ export async function moveDocumentToFolder(
  */
 export async function listDocuments(folderId?: string | null): Promise<ChefDocument[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('chef_documents')
     .select('id, title, type, folder_id, created_at, updated_at')
     .eq('tenant_id', user.tenantId!)
@@ -141,9 +141,9 @@ export async function listDocuments(folderId?: string | null): Promise<ChefDocum
  */
 export async function searchDocuments(query: string): Promise<ChefDocument[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_documents')
     .select('id, title, type, folder_id, created_at, updated_at')
     .eq('tenant_id', user.tenantId!)
@@ -169,17 +169,17 @@ export async function deleteFolder(
   folderId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Move documents out of folder first
-  await supabase
+  await db
     .from('chef_documents')
     .update({ folder_id: null } as any)
     .eq('folder_id', folderId)
     .eq('tenant_id', user.tenantId!)
 
   // Delete the folder
-  const { error } = await (supabase
+  const { error } = await (db
     .from('chef_folders' as any)
     .delete()
     .eq('id', folderId)

@@ -6,7 +6,7 @@
 // Called by the auto-scheduler every 6 hours. Lightweight - no simulation work done here.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000
@@ -15,18 +15,18 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(req.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Only include ACTIVE tenants - those with at least one event or inquiry
   // created in the last 6 months. This excludes demo, test, and empty accounts.
   const activeSince = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: activeEvents } = await supabase
+  const { data: activeEvents } = await db
     .from('events')
     .select('tenant_id')
     .gte('created_at', activeSince)
 
-  const { data: activeInquiries } = await supabase
+  const { data: activeInquiries } = await db
     .from('inquiries')
     .select('tenant_id')
     .gte('created_at', activeSince)
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const dueFor: string[] = []
 
   for (const tenantId of activeTenantIds) {
-    const { data: lastRun } = await supabase
+    const { data: lastRun } = await db
       .from('simulation_runs')
       .select('started_at')
       .eq('tenant_id', tenantId)

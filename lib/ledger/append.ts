@@ -9,7 +9,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { Database } from '@/types/database'
 import { appendLedgerEntryInternal } from './append-internal'
 
@@ -73,10 +73,10 @@ export async function createAdjustment({
   idempotency_key?: string
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event to validate ownership
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('tenant_id, client_id')
     .eq('id', event_id)
@@ -150,9 +150,9 @@ export async function createAdjustment({
  */
 export async function getEventLedger(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: entries, error } = await supabase
+  const { data: entries, error } = await db
     .from('ledger_entries')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -173,9 +173,9 @@ export async function getEventLedger(eventId: string) {
  */
 export async function getTenantLedger(limit = 100) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: entries, error } = await supabase
+  const { data: entries, error } = await db
     .from('ledger_entries')
     .select(
       `

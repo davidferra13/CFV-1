@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
 import Link from 'next/link'
@@ -248,8 +248,8 @@ export default async function ChefDashboard() {
 
   // Redirect brand-new chefs to onboarding on first login
   try {
-    const supabase: any = createServerClient()
-    const { count } = await supabase
+    const db: any = createServerClient()
+    const { count } = await db
       .from('onboarding_progress')
       .select('*', { count: 'exact', head: true })
       .eq('chef_id', user.tenantId!)

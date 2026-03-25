@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -31,9 +31,9 @@ export type LogModificationInput = z.infer<typeof LogModificationSchema>
 export async function logMenuModification(input: LogModificationInput) {
   const user = await requireChef()
   const validated = LogModificationSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_modifications')
     .insert({
       ...validated,
@@ -56,9 +56,9 @@ export async function logMenuModification(input: LogModificationInput) {
  */
 export async function getEventModifications(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_modifications')
     .select('*')
     .eq('event_id', eventId)
@@ -78,9 +78,9 @@ export async function getEventModifications(eventId: string) {
  */
 export async function deleteMenuModification(id: string, eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('menu_modifications')
     .delete()
     .eq('id', id)
@@ -123,10 +123,10 @@ export async function uploadModificationPhoto(
   formData: FormData
 ): Promise<ModificationPhotoResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify modification belongs to this chef
-  const { data: mod } = await supabase
+  const { data: mod } = await db
     .from('menu_modifications')
     .select('id')
     .eq('id', modId)
@@ -148,7 +148,7 @@ export async function uploadModificationPhoto(
   const ext = MIME_TO_EXT[file.type] ?? 'jpg'
   const storagePath = `${user.tenantId}/${eventId}/mods/${modId}.${ext}`
 
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await db.storage
     .from(MOD_PHOTO_BUCKET)
     .upload(storagePath, file, { contentType: file.type, upsert: true })
 
@@ -157,14 +157,14 @@ export async function uploadModificationPhoto(
   }
 
   // Get a 1-hour signed URL to return immediately for display
-  const { data: signedData } = await supabase.storage
+  const { data: signedData } = await db.storage
     .from(MOD_PHOTO_BUCKET)
     .createSignedUrl(storagePath, 3600)
 
   const signedUrl = signedData?.signedUrl ?? ''
 
   // Store the storage path (not the signed URL) so it can be re-signed later
-  await supabase
+  await db
     .from('menu_modifications')
     .update({ photo_url: storagePath })
     .eq('id', modId)
@@ -180,9 +180,9 @@ export async function uploadModificationPhoto(
  */
 export async function getModificationStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_modifications')
     .select('modification_type, reason, original_description, actual_description')
     .eq('tenant_id', user.tenantId!)

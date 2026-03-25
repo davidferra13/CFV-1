@@ -257,7 +257,7 @@
 #### Activity Section
 
 - **Widget ID:** `activity`
-- 3-column grid: My Recent Activity (links by entity type), Live Client Presence (real-time Supabase, links to `/clients/${id}`), Recent Activity Feed
+- 3-column grid: My Recent Activity (links by entity type), Live Client Presence (real-time PostgreSQL, links to `/clients/${id}`), Recent Activity Feed
 - "View all →" → `/activity`
 
 #### AI Business Insights Panel
@@ -510,7 +510,7 @@
 | `/clients/loyalty/points`                     | Points balance table                                                                                                                                                                                                                       |
 | `/clients/loyalty/rewards`                    | Reward codes table                                                                                                                                                                                                                         |
 | `/clients/loyalty/referrals`                  | Referral source analysis with bars + top referrer cards                                                                                                                                                                                    |
-| `/clients/presence`                           | Real-time client portal monitoring (Supabase Realtime), online count, activity stream with high-intent badges                                                                                                                              |
+| `/clients/presence`                           | Real-time client portal monitoring (SSE realtime), online count, activity stream with high-intent badges                                                                                                                                   |
 
 ---
 
@@ -1075,7 +1075,7 @@ Completion state stored in localStorage per event. Progress bar. Critical items 
 
 ## 12. ACTIVITY & QUEUE
 
-**Route:** `/activity` — Activity log with Summary/Retrace toggle. Summary: tab selector (My/Client/All), domain filter, time range, activity heat map (7×24 grid), feeds with "Load more". Retrace: breadcrumb session timeline. Activity logging on/off toggle. Real-time Supabase subscription.
+**Route:** `/activity` — Activity log with Summary/Retrace toggle. Summary: tab selector (My/Client/All), domain filter, time range, activity heat map (7×24 grid), feeds with "Load more". Retrace: breadcrumb session timeline. Activity logging on/off toggle. Real-time PostgreSQL subscription.
 
 **Route:** `/queue` — Priority Queue with `QueueSummaryBar` (4 stat cards) + `QueueList` (domain/urgency filters, items as links with colored borders). Per-item snooze button via `snooze-popover.tsx` (1h, 4h, Tomorrow, Next Week). Snoozed items hidden with "X snoozed" count chip.
 

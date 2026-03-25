@@ -7,7 +7,7 @@
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { findChefByPublicSlug } from '@/lib/profile/public-chef'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import {
   BookingServiceModeSchema,
@@ -71,7 +71,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     60 * 60_000
   )
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const allergiesList = validated.allergies_food_restrictions
     ? validated.allergies_food_restrictions
         .split(/[\n,]/)
@@ -130,16 +130,16 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   if (validated.chef_slug) {
     const lookup = await findChefByPublicSlug<{ id: string; business_name: string | null }>(
-      supabase,
+      db,
       validated.chef_slug,
       'id, business_name'
     )
     chef = lookup.data
     chefError = lookup.error
   } else {
-    const ownerChefId = await resolveOwnerChefId(supabase)
+    const ownerChefId = await resolveOwnerChefId(db)
     if (ownerChefId) {
-      const lookup = await supabase
+      const lookup = await db
         .from('chefs')
         .select('id, business_name')
         .eq('id', ownerChefId)
@@ -149,7 +149,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     }
 
     if (!chef) {
-      const founderLookup = await supabase
+      const founderLookup = await db
         .from('chefs')
         .select('id, business_name')
         .ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
@@ -166,7 +166,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   const tenantId = chef.id as string
   const chefName = (chef.business_name as string | null) || 'Your Chef'
 
-  const { data: discoveryProfile, error: discoveryError } = await (supabase as any)
+  const { data: discoveryProfile, error: discoveryError } = await (db as any)
     .from('chef_marketplace_profiles')
     .select('accepting_inquiries')
     .eq('chef_id', tenantId)
@@ -201,7 +201,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   const budgetKnown = budgetMode === 'exact' || budgetMode === 'range'
 
   // 3. Create inquiry record linked to client
-  const { data: inquiry, error: inquiryError } = await supabase
+  const { data: inquiry, error: inquiryError } = await db
     .from('inquiries')
     .insert({
       tenant_id: tenantId,
@@ -285,7 +285,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   }
 
   // 4. Create draft event with available info (TBD for missing required fields)
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .insert({
       tenant_id: tenantId,
@@ -313,7 +313,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   }
 
   // 5. Log initial event state transition (null → draft)
-  await supabase.from('event_state_transitions').insert({
+  await db.from('event_state_transitions').insert({
     tenant_id: tenantId,
     event_id: event.id,
     from_status: null,
@@ -322,7 +322,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   })
 
   // 6. Link inquiry to the created event
-  await supabase.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
+  await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
 
   // 7. Enqueue Remy reactive AI task - auto-score lead (non-blocking)
   try {

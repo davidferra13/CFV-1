@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -30,14 +30,14 @@ export async function getSmartQuoteSuggestion(params: {
 }): Promise<QuotePricingSuggestion | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const { guestCount, occasion, serviceStyle } = params
 
   if (!guestCount || guestCount <= 0) return null
 
   // Fetch historical accepted quotes and completed events
   const [quotesRes, eventsRes] = await Promise.all([
-    supabase
+    db
       .from('quotes')
       .select('id, total_quoted_cents, guest_count_estimated, status, inquiry_id')
       .eq('tenant_id', tenantId)
@@ -46,7 +46,7 @@ export async function getSmartQuoteSuggestion(params: {
       .gt('total_quoted_cents', 0)
       .not('guest_count_estimated', 'is', null)
       .gt('guest_count_estimated', 0),
-    supabase
+    db
       .from('events')
       .select('id, quoted_price_cents, guest_count, occasion, service_style, event_date, status')
       .eq('tenant_id', tenantId)

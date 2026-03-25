@@ -1,8 +1,8 @@
-# Phase 1: Auth Migration (Supabase GoTrue to Auth.js v5)
+# Phase 1: Auth Migration (Auth.js to Auth.js v5)
 
 ## What Changed
 
-The entire authentication layer was migrated from Supabase GoTrue to Auth.js v5 (NextAuth) with direct PostgreSQL access via Drizzle ORM. The database itself is unchanged; only the API layer was replaced.
+The entire authentication layer was migrated from Auth.js to Auth.js v5 (NextAuth) with direct PostgreSQL access via Drizzle ORM. The database itself is unchanged; only the API layer was replaced.
 
 ## Files Created
 
@@ -17,12 +17,12 @@ The entire authentication layer was migrated from Supabase GoTrue to Auth.js v5 
 
 | File                               | Change                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `middleware.ts`                    | Replaced Supabase `createServerClient` + `getUser()` with Auth.js `auth()` wrapper. No more per-request DB queries; role/tenant cached in JWT. Removed all pending cookie management (Auth.js handles its own cookies).                                                                                                                                                                                                                                                               |
-| `lib/auth/get-user.ts`             | `getCurrentUser()` fast path unchanged (reads request headers). Fallback: Auth.js `auth()` + Drizzle queries instead of Supabase. `requireChef()`: Drizzle query for suspension check. `requirePartner()`/`requireStaff()`: Auth.js session + Drizzle queries (no more admin client needed since no RLS).                                                                                                                                                                             |
+| `middleware.ts`                    | Replaced PostgreSQL `createServerClient` + `getUser()` with Auth.js `auth()` wrapper. No more per-request DB queries; role/tenant cached in JWT. Removed all pending cookie management (Auth.js handles its own cookies).                                                                                                                                                                                                                                                             |
+| `lib/auth/get-user.ts`             | `getCurrentUser()` fast path unchanged (reads request headers). Fallback: Auth.js `auth()` + Drizzle queries instead of PostgreSQL. `requireChef()`: Drizzle query for suspension check. `requirePartner()`/`requireStaff()`: Auth.js session + Drizzle queries (no more admin client needed since no RLS).                                                                                                                                                                           |
 | `lib/auth/actions.ts`              | `signUpChef()`: direct INSERT into `auth.users` via Drizzle + bcrypt hash. `signUpClient()`: same pattern. `signIn()`: Auth.js `signIn('credentials')`. `signOut()`: Auth.js `signOut()`. `requestPasswordReset()`: generates token, stores in `auth.users.recovery_token`, sends email. `updatePassword()`: supports both token-based recovery and authenticated session. `changePassword()`: bcrypt verify + update via Drizzle. `assignRole()`: Drizzle INSERT for profile + role. |
-| `lib/auth/admin.ts`                | Uses `auth()` instead of `supabase.auth.getUser()`                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `lib/auth/admin-access.ts`         | Uses Drizzle query on `platform_admins` instead of Supabase PostgREST                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `lib/supabase/client.ts`           | `signInWithGoogle()` now uses Auth.js `signIn('google')`. Browser Supabase client kept (deprecated) for Phase 2 query migration.                                                                                                                                                                                                                                                                                                                                                      |
+| `lib/auth/admin.ts`                | Uses `auth()` instead of `database.auth.getUser()`                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `lib/auth/admin-access.ts`         | Uses Drizzle query on `platform_admins` instead of query builder                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `lib/database/client.ts`           | `signInWithGoogle()` now uses Auth.js `signIn('google')`. Browser database client kept (deprecated) for Phase 2 query migration.                                                                                                                                                                                                                                                                                                                                                      |
 | `app/auth/callback/route.ts`       | Simplified to redirect handler (Auth.js handles OAuth callbacks at `/api/auth/callback/*`)                                                                                                                                                                                                                                                                                                                                                                                            |
 | `app/auth/reset-password/page.tsx` | Reads `?token=` from URL for recovery token flow                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `app/api/e2e/auth/route.ts`        | Creates Auth.js session token directly (bcrypt verify + JWT encode)                                                                                                                                                                                                                                                                                                                                                                                                                   |
@@ -42,11 +42,11 @@ Auth.js uses JWT (not database sessions). Role, entityId, and tenantId are resol
 
 ### Password Compatibility
 
-Supabase stores bcrypt hashes in `auth.users.encrypted_password`. `bcryptjs.compare()` works directly against them. Zero migration needed for existing passwords. New passwords are hashed with `bcrypt.hash(password, 10)`.
+PostgreSQL stores bcrypt hashes in `auth.users.encrypted_password`. `bcryptjs.compare()` works directly against them. Zero migration needed for existing passwords. New passwords are hashed with `bcrypt.hash(password, 10)`.
 
 ### Password Reset Flow
 
-Changed from Supabase's code-exchange flow to a simpler token-based flow:
+Changed from the database's code-exchange flow to a simpler token-based flow:
 
 1. `requestPasswordReset()` generates a random token, stores in `auth.users.recovery_token`
 2. Email contains link to `/auth/reset-password?token=xxx`
@@ -56,11 +56,11 @@ Changed from Supabase's code-exchange flow to a simpler token-based flow:
 
 Auth.js handles the full OAuth flow at `/api/auth/callback/google`. Existing Google-only users are matched by email via `allowDangerousEmailAccountLinking: true`. New OAuth users without a role are redirected to `/auth/role-selection`.
 
-### What Still Uses Supabase
+### What Still Uses PostgreSQL
 
-The browser Supabase client (`lib/supabase/client.ts`) is kept but deprecated. It's used by 4 client components that make direct DB queries. These will be converted to server actions in Phase 2.
+The browser database client (`lib/database/client.ts`) is kept but deprecated. It's used by 4 client components that make direct DB queries. These will be converted to server actions in Phase 2.
 
-The server Supabase client (`lib/supabase/server.ts`) is still imported by 580+ files for data queries. Phase 2 will convert these to Drizzle.
+The server database client (`lib/database/server.ts`) is still imported by 580+ files for data queries. Phase 2 will convert these to Drizzle.
 
 ## New Environment Variables
 

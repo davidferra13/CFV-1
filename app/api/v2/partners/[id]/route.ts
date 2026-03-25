@@ -40,7 +40,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Partner')
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('referral_partners')
       .select('*')
       .eq('id', id)
@@ -68,7 +68,7 @@ export const PATCH = withApiAuth(
     const parsed = UpdatePartnerBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data: existing } = await (ctx.supabase as any)
+    const { data: existing } = await (ctx.db as any)
       .from('referral_partners')
       .select('id')
       .eq('id', id)
@@ -85,7 +85,7 @@ export const PATCH = withApiAuth(
       }
     }
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('referral_partners')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -108,7 +108,7 @@ export const DELETE = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Partner')
 
-    const { error } = await (ctx.supabase as any)
+    const { error } = await (ctx.db as any)
       .from('referral_partners')
       .delete()
       .eq('id', id)

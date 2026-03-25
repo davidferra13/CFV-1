@@ -2,7 +2,7 @@
 // Creates shareable payment links for email correspondence.
 // Not a server action module - called internally by server actions.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { breakers } from '@/lib/resilience/circuit-breaker'
 import { isConnectOnboardingRequiredForPayments } from '@/lib/stripe/payment-policy'
 import type Stripe from 'stripe'
@@ -28,10 +28,10 @@ export async function createPaymentCheckoutUrl(
   eventId: string,
   tenantId: string
 ): Promise<string | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Fetch event with client info
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('*, client:clients(email, full_name)')
     .eq('id', eventId)
@@ -42,7 +42,7 @@ export async function createPaymentCheckoutUrl(
   if (event.status !== 'accepted') return null
 
   // Determine payment amount
-  const { data: financial } = await supabase
+  const { data: financial } = await db
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', eventId)
@@ -114,7 +114,7 @@ export async function createPaymentCheckoutUrl(
   }
 
   // Check chef's Apple Pay / Google Pay preferences
-  const { data: chefPrefs } = await supabase
+  const { data: chefPrefs } = await db
     .from('chefs')
     .select('apple_pay_enabled, google_pay_enabled')
     .eq('id', tenantId)

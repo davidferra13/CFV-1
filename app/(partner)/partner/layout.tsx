@@ -4,7 +4,7 @@
 
 import { requirePartner } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PartnerSidebar, PartnerMobileNav } from '@/components/navigation/partner-nav'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
@@ -19,8 +19,8 @@ export default async function PartnerLayout({ children }: { children: React.Reac
   }
 
   // Fetch partner name for sidebar display
-  const supabase = createServerClient({ admin: true })
-  const { data: partner } = await supabase
+  const db = createServerClient({ admin: true })
+  const { data: partner } = await db
     .from('referral_partners')
     .select('name')
     .eq('id', user.partnerId)

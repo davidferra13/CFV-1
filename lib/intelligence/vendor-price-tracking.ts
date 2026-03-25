@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -48,11 +48,11 @@ export interface VendorPriceIntelligence {
 export async function getVendorPriceIntelligence(): Promise<VendorPriceIntelligence | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const twelveMonthsAgo = new Date(Date.now() - 365 * 86400000).toISOString()
 
-  const { data: expenses, error } = await supabase
+  const { data: expenses, error } = await db
     .from('expenses')
     .select('id, vendor_name, category, amount_cents, created_at, event_id')
     .eq('tenant_id', tenantId)

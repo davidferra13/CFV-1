@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ────────────────────────────────────────────────────────
@@ -40,12 +40,12 @@ export type SaleDeductionPreview = {
  * Handles sub-recipes recursively with cycle prevention.
  */
 async function walkSaleRecipeChain(
-  supabase: ReturnType<typeof import('@/lib/supabase/server').createServerClient>,
+  db: ReturnType<typeof import('@/lib/db/server').createServerClient>,
   saleId: string,
   tenantId: string
 ): Promise<Map<string, IngredientNeed>> {
   // Step 1: Get sale items with their product projections
-  const { data: saleItems } = await (supabase
+  const { data: saleItems } = await (db
     .from('sale_items')
     .select('quantity, product_projection_id')
     .eq('sale_id', saleId)
@@ -58,7 +58,7 @@ async function walkSaleRecipeChain(
 
   if (ppIds.length === 0) return new Map()
 
-  const { data: products } = await (supabase
+  const { data: products } = await (db
     .from('product_projections')
     .select('id, recipe_id')
     .in('id', ppIds) as any)
@@ -95,7 +95,7 @@ async function walkSaleRecipeChain(
     if (batch.length === 0) break
     batch.forEach((id) => visited.add(id))
 
-    const { data: subRecipes } = await (supabase
+    const { data: subRecipes } = await (db
       .from('recipe_sub_recipes')
       .select('parent_recipe_id, child_recipe_id, quantity')
       .in('parent_recipe_id', batch) as any)
@@ -120,7 +120,7 @@ async function walkSaleRecipeChain(
 
   // Step 4: Get recipe_ingredients for all collected recipes
   const allRecipeIds = Array.from(allRecipeMultipliers.keys())
-  const { data: recipeIngredients } = await (supabase
+  const { data: recipeIngredients } = await (db
     .from('recipe_ingredients')
     .select('recipe_id, ingredient_id, quantity, unit')
     .in('recipe_id', allRecipeIds) as any)
@@ -131,7 +131,7 @@ async function walkSaleRecipeChain(
   const ingredientIds: string[] = [
     ...new Set<string>(recipeIngredients.map((ri: any) => ri.ingredient_id)),
   ]
-  const { data: ingredients } = await (supabase
+  const { data: ingredients } = await (db
     .from('ingredients')
     .select('id, name')
     .in('id', ingredientIds) as any)
@@ -174,9 +174,9 @@ async function walkSaleRecipeChain(
  */
 export async function previewSaleDeduction(saleId: string): Promise<SaleDeductionPreview> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const needs = await walkSaleRecipeChain(supabase, saleId, user.tenantId!)
+  const needs = await walkSaleRecipeChain(db, saleId, user.tenantId!)
 
   if (needs.size === 0) {
     return { items: [], totalCostCents: 0 }
@@ -185,7 +185,7 @@ export async function previewSaleDeduction(saleId: string): Promise<SaleDeductio
   // Get current stock levels
   const ingredientIds = [...new Set([...needs.values()].map((n) => n.ingredientId))]
 
-  const { data: stockData } = await (supabase
+  const { data: stockData } = await (db
     .from('inventory_current_stock' as any)
     .select('ingredient_id, unit, current_qty')
     .eq('chef_id', user.tenantId!)
@@ -197,7 +197,7 @@ export async function previewSaleDeduction(saleId: string): Promise<SaleDeductio
   }
 
   // Get ingredient prices
-  const { data: priceData } = await (supabase
+  const { data: priceData } = await (db
     .from('ingredients')
     .select('id, last_price_cents, price_unit')
     .in('id', ingredientIds) as any)
@@ -242,15 +242,15 @@ export async function previewSaleDeduction(saleId: string): Promise<SaleDeductio
  */
 export async function executeSaleDeduction(saleId: string): Promise<{ transactionIds: string[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const needs = await walkSaleRecipeChain(supabase, saleId, user.tenantId!)
+  const needs = await walkSaleRecipeChain(db, saleId, user.tenantId!)
 
   if (needs.size === 0) return { transactionIds: [] }
 
   // Get ingredient prices for cost tracking
   const ingredientIds = [...new Set([...needs.values()].map((n) => n.ingredientId))]
-  const { data: priceData } = await (supabase
+  const { data: priceData } = await (db
     .from('ingredients')
     .select('id, last_price_cents')
     .in('id', ingredientIds) as any)
@@ -276,7 +276,7 @@ export async function executeSaleDeduction(saleId: string): Promise<{ transactio
     created_by: user.id,
   }))
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('inventory_transactions')
     .insert(transactions as any)
     .select('id') as any)
@@ -295,10 +295,10 @@ export async function executeSaleDeduction(saleId: string): Promise<{ transactio
  */
 export async function reverseSaleDeduction(saleId: string): Promise<{ transactionIds: string[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find all deduction transactions for this sale
-  const { data: deductions, error: fetchErr } = await (supabase
+  const { data: deductions, error: fetchErr } = await (db
     .from('inventory_transactions')
     .select('ingredient_id, ingredient_name, quantity, unit, cost_cents')
     .eq('sale_id' as any, saleId)
@@ -322,7 +322,7 @@ export async function reverseSaleDeduction(saleId: string): Promise<{ transactio
     created_by: user.id,
   }))
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('inventory_transactions')
     .insert(reversals as any)
     .select('id') as any)
@@ -341,10 +341,10 @@ export async function reverseSaleDeduction(saleId: string): Promise<{ transactio
  */
 export async function deductProductStock(saleId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get sale items with product projections that track inventory
-  const { data: saleItems } = await (supabase
+  const { data: saleItems } = await (db
     .from('sale_items')
     .select('product_projection_id, quantity')
     .eq('sale_id', saleId)
@@ -355,7 +355,7 @@ export async function deductProductStock(saleId: string) {
   const ppIds = saleItems.map((si: any) => si.product_projection_id).filter(Boolean)
   if (ppIds.length === 0) return
 
-  const { data: products } = await (supabase
+  const { data: products } = await (db
     .from('product_projections')
     .select('id, track_inventory, available_qty, recipe_id')
     .in('id', ppIds)
@@ -374,7 +374,7 @@ export async function deductProductStock(saleId: string) {
     const currentQty = (product as any).available_qty ?? 0
     const newQty = Math.max(0, currentQty - (saleItem as any).quantity)
 
-    await (supabase
+    await (db
       .from('product_projections')
       .update({ available_qty: newQty } as any)
       .eq('id', product.id)

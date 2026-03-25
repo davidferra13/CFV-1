@@ -96,8 +96,8 @@ export default function PrivacyPage() {
           </p>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
             <li>
-              <strong>Supabase</strong> - our database and authentication provider. Your account
-              data and chef/client records are stored on Supabase infrastructure.
+              <strong>PostgreSQL</strong> - our database. Your account data and chef/client records
+              are stored securely on self-hosted infrastructure.
             </li>
             <li>
               <strong>Stripe</strong> - our payment processor. Client payment details are submitted

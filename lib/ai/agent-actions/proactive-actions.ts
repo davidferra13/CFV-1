@@ -6,7 +6,7 @@ import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { createEmergencyContact } from '@/lib/contingency/actions'
 import { createFolder, searchDocuments } from '@/lib/ai/document-management-actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
@@ -25,7 +25,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
     tierNote: 'Tier 2 - presents recommendation, chef decides to act.',
 
     async executor(_inputs, ctx) {
-      const supabase: any = createServerClient()
+      const db: any = createServerClient()
       const now = new Date().toISOString().slice(0, 10)
 
       // Gather data in parallel
@@ -35,7 +35,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
         { data: overdueTodos },
         { data: recentCompleted },
       ] = await Promise.all([
-        supabase
+        db
           .from('events')
           .select('id, occasion, event_date, status, client:clients(full_name)')
           .eq('tenant_id', ctx.tenantId)
@@ -43,14 +43,14 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
           .not('status', 'in', '("cancelled","completed")')
           .order('event_date', { ascending: true })
           .limit(5),
-        supabase
+        db
           .from('inquiries')
           .select('id, occasion, lead_name, status, created_at')
           .eq('tenant_id', ctx.tenantId)
           .in('status', ['new', 'awaiting_chef'])
           .order('created_at', { ascending: true })
           .limit(5),
-        supabase
+        db
           .from('chef_todos')
           .select('id, title, due_date, priority')
           .eq('tenant_id', ctx.tenantId)
@@ -58,7 +58,7 @@ export const proactiveAgentActions: AgentActionDefinition[] = [
           .lte('due_date', now)
           .order('due_date', { ascending: true })
           .limit(5),
-        supabase
+        db
           .from('events')
           .select('id, occasion, event_date, status')
           .eq('tenant_id', ctx.tenantId)

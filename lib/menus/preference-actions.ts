@@ -5,7 +5,7 @@
 'use server'
 
 import { requireAuth, requireChef, requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
@@ -40,10 +40,10 @@ export type SubmitPreferencesInput = z.infer<typeof SubmitPreferencesSchema>
 export async function submitMenuPreferences(input: SubmitPreferencesInput) {
   const user = await requireClient()
   const validated = SubmitPreferencesSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client owns this event
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id, occasion')
     .eq('id', validated.eventId)
@@ -55,7 +55,7 @@ export async function submitMenuPreferences(input: SubmitPreferencesInput) {
   const now = new Date().toISOString()
 
   // Upsert preferences (unique on event_id)
-  const { error } = await supabase.from('menu_preferences').upsert(
+  const { error } = await db.from('menu_preferences').upsert(
     {
       event_id: validated.eventId,
       client_id: user.id,
@@ -120,9 +120,9 @@ export async function submitMenuPreferences(input: SubmitPreferencesInput) {
  */
 export async function getMenuPreferences(eventId: string) {
   await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_preferences')
     .select('*')
     .eq('event_id', eventId)
@@ -141,9 +141,9 @@ export async function getMenuPreferences(eventId: string) {
  */
 export async function markPreferencesViewed(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase
+  await db
     .from('menu_preferences')
     .update({ chef_viewed_at: new Date().toISOString() })
     .eq('event_id', eventId)

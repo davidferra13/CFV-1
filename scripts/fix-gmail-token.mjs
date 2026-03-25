@@ -1,7 +1,7 @@
 // Quick fix: reset Gmail error count, force token refresh, test API access
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
-import { createAdminClient } from './lib/supabase.mjs'
+import { createAdminClient } from './lib/db.mjs'
 
 const CHEF_ID = '166a7621-c81d-41a8-a510-c488ef53bb74'
 

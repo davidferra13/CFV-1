@@ -4,7 +4,7 @@
 // 12 structured Q&A questions that Remy reads to understand the chef deeply.
 // Injected into Remy's system prompt as the CULINARY PROFILE section.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { CULINARY_QUESTIONS } from '@/lib/ai/chef-profile-constants'
 import type { CulinaryQuestionKey, CulinaryProfileAnswer } from '@/lib/ai/chef-profile-constants'
@@ -29,9 +29,9 @@ interface CulinaryProfileRow {
  */
 export async function getCulinaryProfile(): Promise<CulinaryProfileAnswer[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await (supabase
+  const { data } = await (db
     .from('chef_culinary_profiles' as any)
     .select('question_key, answer')
     .eq('chef_id', user.entityId) as any)
@@ -57,7 +57,7 @@ export async function saveCulinaryProfileAnswer(
   answer: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Validate question key
   const valid = CULINARY_QUESTIONS.some((q) => q.key === questionKey)
@@ -65,7 +65,7 @@ export async function saveCulinaryProfileAnswer(
     return { success: false, error: `Invalid question key: ${questionKey}` }
   }
 
-  const { error } = await (supabase.from('chef_culinary_profiles' as any).upsert(
+  const { error } = await (db.from('chef_culinary_profiles' as any).upsert(
     {
       chef_id: user.entityId,
       question_key: questionKey,
@@ -89,7 +89,7 @@ export async function saveCulinaryProfileBulk(
   answers: Record<string, string>
 ): Promise<{ success: boolean; saved: number; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const rows = Object.entries(answers)
     .filter(([key]) => CULINARY_QUESTIONS.some((q) => q.key === key))
@@ -104,7 +104,7 @@ export async function saveCulinaryProfileBulk(
     return { success: true, saved: 0 }
   }
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('chef_culinary_profiles' as any)
     .upsert(rows, { onConflict: 'chef_id,question_key' }) as any)
 
@@ -121,9 +121,9 @@ export async function saveCulinaryProfileBulk(
  * Returns null if no answers exist yet.
  */
 export async function getCulinaryProfileForPrompt(chefId: string): Promise<string | null> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await (supabase
+  const { data } = await (db
     .from('chef_culinary_profiles' as any)
     .select('question_key, answer')
     .eq('chef_id', chefId)

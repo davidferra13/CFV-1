@@ -1,6 +1,6 @@
 'use server'
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 
 type PaginationInput = {
@@ -60,11 +60,11 @@ export async function getGlobalConversationList(
     } = {}
 ): Promise<GlobalConversationListResult> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const pagination = normalizePagination(input)
   const q = normalizeSearchTerm(input.q)
 
-  let query = supabase
+  let query = db
     .from('conversations')
     .select(
       'id, tenant_id, context_type, event_id, inquiry_id, last_message_at, last_message_preview, created_at, updated_at'
@@ -96,7 +96,7 @@ export async function getGlobalConversationList(
 
   const tenantIds = Array.from(new Set(rows.map((row) => row.tenant_id)))
   const { data: chefs } = tenantIds.length
-    ? await supabase.from('chefs').select('id, display_name, business_name').in('id', tenantIds)
+    ? await db.from('chefs').select('id, display_name, business_name').in('id', tenantIds)
     : { data: [] }
   const chefNameById = new Map<string, string | null>()
   for (const chef of (chefs ?? []) as Array<{
@@ -150,11 +150,11 @@ export async function getConversationTranscript(
   input: PaginationInput & { q?: string; includeDeleted?: boolean } = {}
 ): Promise<ConversationTranscriptResult> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const pagination = normalizePagination(input)
   const q = normalizeSearchTerm(input.q)
 
-  const { data: conversation } = await supabase
+  const { data: conversation } = await db
     .from('conversations')
     .select(
       'id, tenant_id, context_type, event_id, inquiry_id, last_message_at, last_message_preview, created_at, updated_at'
@@ -172,13 +172,13 @@ export async function getConversationTranscript(
     }
   }
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('id, display_name, business_name')
     .eq('id', conversation.tenant_id)
     .maybeSingle()
 
-  let messageQuery = supabase
+  let messageQuery = db
     .from('chat_messages')
     .select(
       'id, sender_id, message_type, body, referenced_event_id, system_event_type, created_at, deleted_at'
@@ -209,7 +209,7 @@ export async function getConversationTranscript(
 
   const senderIds = Array.from(new Set(messageRows.map((row) => row.sender_id).filter(Boolean)))
   const { data: senderRoles } = senderIds.length
-    ? await supabase
+    ? await db
         .from('user_roles')
         .select('auth_user_id, role, entity_id')
         .in('auth_user_id', senderIds)
@@ -249,10 +249,10 @@ export async function getConversationTranscript(
 
   const [chefRows, clientRows] = await Promise.all([
     chefEntityIds.length
-      ? supabase.from('chefs').select('id, display_name, business_name').in('id', chefEntityIds)
+      ? db.from('chefs').select('id, display_name, business_name').in('id', chefEntityIds)
       : Promise.resolve({ data: [] }),
     clientEntityIds.length
-      ? supabase.from('clients').select('id, full_name, email').in('id', clientEntityIds)
+      ? db.from('clients').select('id, full_name, email').in('id', clientEntityIds)
       : Promise.resolve({ data: [] }),
   ])
 
@@ -336,11 +336,11 @@ export async function getGlobalSocialFeed(
     } = {}
 ): Promise<GlobalSocialFeedResult> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const pagination = normalizePagination(input)
   const q = normalizeSearchTerm(input.q)
 
-  let query = supabase
+  let query = db
     .from('chef_social_posts')
     .select(
       'id, chef_id, channel_id, post_type, visibility, content, reactions_count, comments_count, shares_count, created_at, updated_at'
@@ -371,7 +371,7 @@ export async function getGlobalSocialFeed(
 
   const chefIds = Array.from(new Set(rows.map((row) => row.chef_id)))
   const { data: chefs } = chefIds.length
-    ? await supabase.from('chefs').select('id, display_name, business_name').in('id', chefIds)
+    ? await db.from('chefs').select('id, display_name, business_name').in('id', chefIds)
     : { data: [] }
   const chefNameById = new Map<string, string | null>()
   for (const row of (chefs ?? []) as Array<{
@@ -429,11 +429,11 @@ export async function getGlobalHubGroups(
     } = {}
 ): Promise<GlobalHubGroupsResult> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const pagination = normalizePagination(input)
   const q = normalizeSearchTerm(input.q)
 
-  let query = supabase
+  let query = db
     .from('hub_groups')
     .select(
       'id, tenant_id, name, description, visibility, is_active, message_count, last_message_at, created_at, updated_at'
@@ -465,7 +465,7 @@ export async function getGlobalHubGroups(
     new Set(rows.map((row) => row.tenant_id).filter(Boolean))
   ) as string[]
   const { data: chefs } = tenantIds.length
-    ? await supabase.from('chefs').select('id, display_name, business_name').in('id', tenantIds)
+    ? await db.from('chefs').select('id, display_name, business_name').in('id', tenantIds)
     : { data: [] }
   const chefNameById = new Map<string, string | null>()
   for (const row of (chefs ?? []) as Array<{
@@ -518,11 +518,11 @@ export async function getHubGroupTranscript(
   input: PaginationInput & { q?: string; includeDeleted?: boolean } = {}
 ): Promise<HubTranscriptResult> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const pagination = normalizePagination(input)
   const q = normalizeSearchTerm(input.q)
 
-  const { data: group } = await supabase
+  const { data: group } = await db
     .from('hub_groups')
     .select(
       'id, tenant_id, name, description, visibility, is_active, message_count, last_message_at, created_at, updated_at'
@@ -540,7 +540,7 @@ export async function getHubGroupTranscript(
     }
   }
 
-  let messageQuery = supabase
+  let messageQuery = db
     .from('hub_messages')
     .select(
       'id, author_profile_id, is_anonymous, message_type, body, system_event_type, created_at, deleted_at'
@@ -571,10 +571,7 @@ export async function getHubGroupTranscript(
 
   const profileIds = Array.from(new Set(messageRows.map((row) => row.author_profile_id)))
   const { data: profiles } = profileIds.length
-    ? await supabase
-        .from('hub_guest_profiles')
-        .select('id, display_name, email')
-        .in('id', profileIds)
+    ? await db.from('hub_guest_profiles').select('id, display_name, email').in('id', profileIds)
     : { data: [] }
   const profileNameById = new Map<string, string | null>()
   for (const row of (profiles ?? []) as Array<{
@@ -587,7 +584,7 @@ export async function getHubGroupTranscript(
 
   let tenantName: string | null = null
   if (group.tenant_id) {
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('display_name, business_name')
       .eq('id', group.tenant_id)
@@ -656,11 +653,11 @@ export async function getGlobalNotificationFeed(
     } = {}
 ): Promise<GlobalNotificationFeedResult> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const pagination = normalizePagination(input)
   const q = normalizeSearchTerm(input.q)
 
-  let query = supabase
+  let query = db
     .from('notifications')
     .select(
       'id, tenant_id, recipient_id, category, action, title, body, action_url, metadata, read_at, created_at'
@@ -694,7 +691,7 @@ export async function getGlobalNotificationFeed(
 
   const tenantIds = Array.from(new Set(rows.map((row) => row.tenant_id)))
   const { data: chefs } = tenantIds.length
-    ? await supabase.from('chefs').select('id, display_name, business_name').in('id', tenantIds)
+    ? await db.from('chefs').select('id, display_name, business_name').in('id', tenantIds)
     : { data: [] }
   const chefNameById = new Map<string, string | null>()
   for (const row of (chefs ?? []) as Array<{

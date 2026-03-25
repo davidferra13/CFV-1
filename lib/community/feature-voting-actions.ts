@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef, requireAuth } from '@/lib/auth/get-user'
 import { isAdmin } from '@/lib/auth/admin'
 
@@ -38,9 +38,9 @@ export async function getFeatureRequests(
   category?: string
 ): Promise<FeatureRequest[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('feature_requests')
     .select('*')
     .order('vote_count', { ascending: false })
@@ -61,7 +61,7 @@ export async function getFeatureRequests(
   }
 
   // Check which ones the current chef has voted on
-  const { data: votes } = await supabase
+  const { data: votes } = await db
     .from('feature_votes')
     .select('feature_id')
     .eq('chef_id', user.entityId)
@@ -76,9 +76,9 @@ export async function getFeatureRequests(
 
 export async function getFeatureRequest(id: string): Promise<FeatureRequest | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase.from('feature_requests').select('*').eq('id', id).single()
+  const { data, error } = await db.from('feature_requests').select('*').eq('id', id).single()
 
   if (error) {
     console.error('[feature-voting] Failed to fetch feature request:', error)
@@ -86,7 +86,7 @@ export async function getFeatureRequest(id: string): Promise<FeatureRequest | nu
   }
 
   // Check if current chef voted
-  const { data: vote } = await supabase
+  const { data: vote } = await db
     .from('feature_votes')
     .select('id')
     .eq('feature_id', id)
@@ -98,9 +98,9 @@ export async function getFeatureRequest(id: string): Promise<FeatureRequest | nu
 
 export async function getMyVotes(): Promise<FeatureRequest[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: votes, error: votesError } = await supabase
+  const { data: votes, error: votesError } = await db
     .from('feature_votes')
     .select('feature_id')
     .eq('chef_id', user.entityId)
@@ -111,7 +111,7 @@ export async function getMyVotes(): Promise<FeatureRequest[]> {
 
   const featureIds = votes.map((v: { feature_id: string }) => v.feature_id)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('feature_requests')
     .select('*')
     .in('id', featureIds)
@@ -127,9 +127,9 @@ export async function getMyVotes(): Promise<FeatureRequest[]> {
 
 export async function getVotingStats(): Promise<VotingStats> {
   await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: all, error } = await supabase
+  const { data: all, error } = await db
     .from('feature_requests')
     .select('*')
     .order('vote_count', { ascending: false })
@@ -158,9 +158,9 @@ export async function getRoadmap(): Promise<{
   shipped: FeatureRequest[]
 }> {
   await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('feature_requests')
     .select('*')
     .in('status', ['planned', 'in_progress', 'shipped'])
@@ -190,13 +190,13 @@ export async function submitFeatureRequest(
   category: string
 ): Promise<{ success: boolean; error?: string; id?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!title.trim()) {
     return { success: false, error: 'Title is required' }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('feature_requests')
     .insert({
       title: title.trim(),
@@ -219,10 +219,10 @@ export async function voteForFeature(
   featureId: string
 ): Promise<{ success: boolean; voted: boolean; newCount: number; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check if already voted
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('feature_votes')
     .select('id')
     .eq('feature_id', featureId)
@@ -231,10 +231,7 @@ export async function voteForFeature(
 
   if (existing) {
     // Remove vote
-    const { error: deleteError } = await supabase
-      .from('feature_votes')
-      .delete()
-      .eq('id', existing.id)
+    const { error: deleteError } = await db.from('feature_votes').delete().eq('id', existing.id)
 
     if (deleteError) {
       console.error('[feature-voting] Failed to remove vote:', deleteError)
@@ -242,23 +239,20 @@ export async function voteForFeature(
     }
 
     // Decrement vote_count using admin client to bypass RLS for update
-    const adminSupabase = createServerClient({ admin: true })
-    const { data: current } = await adminSupabase
+    const adminDb = createServerClient({ admin: true })
+    const { data: current } = await adminDb
       .from('feature_requests')
       .select('vote_count')
       .eq('id', featureId)
       .single()
 
     const newCount = Math.max(0, (current?.vote_count ?? 1) - 1)
-    await adminSupabase
-      .from('feature_requests')
-      .update({ vote_count: newCount })
-      .eq('id', featureId)
+    await adminDb.from('feature_requests').update({ vote_count: newCount }).eq('id', featureId)
 
     return { success: true, voted: false, newCount }
   } else {
     // Add vote
-    const { error: insertError } = await supabase
+    const { error: insertError } = await db
       .from('feature_votes')
       .insert({ feature_id: featureId, chef_id: user.entityId })
 
@@ -268,18 +262,15 @@ export async function voteForFeature(
     }
 
     // Increment vote_count
-    const adminSupabase = createServerClient({ admin: true })
-    const { data: current } = await adminSupabase
+    const adminDb = createServerClient({ admin: true })
+    const { data: current } = await adminDb
       .from('feature_requests')
       .select('vote_count')
       .eq('id', featureId)
       .single()
 
     const newCount = (current?.vote_count ?? 0) + 1
-    await adminSupabase
-      .from('feature_requests')
-      .update({ vote_count: newCount })
-      .eq('id', featureId)
+    await adminDb.from('feature_requests').update({ vote_count: newCount }).eq('id', featureId)
 
     return { success: true, voted: true, newCount }
   }
@@ -296,7 +287,7 @@ export async function updateFeatureStatus(
     return { success: false, error: 'Admin access required' }
   }
 
-  const adminSupabase = createServerClient({ admin: true })
+  const adminDb = createServerClient({ admin: true })
 
   const updateData: Record<string, unknown> = { status }
   if (adminResponse !== undefined) {
@@ -306,10 +297,7 @@ export async function updateFeatureStatus(
     updateData.shipped_at = new Date().toISOString()
   }
 
-  const { error } = await adminSupabase
-    .from('feature_requests')
-    .update(updateData)
-    .eq('id', featureId)
+  const { error } = await adminDb.from('feature_requests').update(updateData).eq('id', featureId)
 
   if (error) {
     console.error('[feature-voting] Failed to update feature status:', error)

@@ -6,7 +6,7 @@
 // Output is DRAFT ONLY - displayed to chef as insight surface, never writes canon data.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from './parse-ollama'
 import { z } from 'zod'
 
@@ -32,11 +32,11 @@ export async function buildClientPreferenceProfile(
   clientId: string
 ): Promise<ClientPreferenceProfile> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Gather all historical data for this client
   const [clientResult, eventsResult, messagesResult, inquiriesResult] = await Promise.all([
-    supabase
+    db
       .from('clients')
       .select(
         'full_name, dietary_restrictions, allergies, what_they_care_about, communication_style_notes, created_at'
@@ -44,7 +44,7 @@ export async function buildClientPreferenceProfile(
       .eq('id', clientId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase
+    db
       .from('events')
       .select(
         'occasion, guest_count, event_date, status, quoted_price_cents, dietary_restrictions, allergies, special_requests, service_style'
@@ -53,14 +53,14 @@ export async function buildClientPreferenceProfile(
       .eq('tenant_id', user.tenantId!)
       .order('event_date', { ascending: false })
       .limit(20),
-    supabase
+    db
       .from('messages')
       .select('body, direction, created_at')
       .eq('client_id', clientId)
       .eq('tenant_id', user.tenantId!)
       .order('created_at', { ascending: false })
       .limit(30),
-    supabase
+    db
       .from('inquiries')
       .select('status, created_at')
       .eq('client_id', clientId)

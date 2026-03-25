@@ -35,13 +35,13 @@ const COURSE_TYPE_LABELS: Record<string, string> = {
  * Called when a tasting menu is first linked to an event, or for a full re-sync.
  */
 export async function syncTastingMenuToEngine(
-  supabase: any,
+  db: any,
   tastingMenuId: string,
   tenantId: string,
   userId: string
 ): Promise<{ materializedMenuId: string }> {
   // 1. Fetch tasting menu with all courses
-  const { data: tastingMenu, error: tmErr } = await supabase
+  const { data: tastingMenu, error: tmErr } = await db
     .from('tasting_menus')
     .select('id, name, event_id, materialized_menu_id, chef_id, price_per_person_cents')
     .eq('id', tastingMenuId)
@@ -52,7 +52,7 @@ export async function syncTastingMenuToEngine(
     throw new Error(`Tasting menu not found: ${tmErr?.message}`)
   }
 
-  const { data: courses } = await supabase
+  const { data: courses } = await db
     .from('tasting_menu_courses')
     .select(
       'id, course_number, course_type, dish_name, description, recipe_id, wine_pairing, pairing_notes, prep_notes'
@@ -67,7 +67,7 @@ export async function syncTastingMenuToEngine(
 
   if (!materializedMenuId) {
     // Create new shadow menu
-    const { data: newMenu, error: menuErr } = await supabase
+    const { data: newMenu, error: menuErr } = await db
       .from('menus')
       .insert({
         tenant_id: tenantId,
@@ -89,14 +89,14 @@ export async function syncTastingMenuToEngine(
     materializedMenuId = newMenu.id
 
     // Link back
-    await supabase
+    await db
       .from('tasting_menus')
       .update({ materialized_menu_id: materializedMenuId })
       .eq('id', tastingMenuId)
       .eq('chef_id', tenantId)
   } else {
     // Update existing shadow menu (name/event may have changed)
-    await supabase
+    await db
       .from('menus')
       .update({
         name: tastingMenu.name,
@@ -108,7 +108,7 @@ export async function syncTastingMenuToEngine(
   }
 
   // 3. Fetch existing materialized dishes for diffing
-  const { data: existingDishes } = await supabase
+  const { data: existingDishes } = await db
     .from('dishes')
     .select('id, source_tasting_course_id, course_number')
     .eq('menu_id', materializedMenuId)
@@ -125,7 +125,7 @@ export async function syncTastingMenuToEngine(
   const recipeIds = allCourses.map((c: any) => c.recipe_id).filter(Boolean) as string[]
   const recipeNameMap = new Map<string, string>()
   if (recipeIds.length > 0) {
-    const { data: recipes } = await supabase
+    const { data: recipes } = await db
       .from('recipes')
       .select('id, name')
       .in('id', [...new Set(recipeIds)])
@@ -146,7 +146,7 @@ export async function syncTastingMenuToEngine(
 
     if (existing) {
       // Update existing dish
-      await supabase
+      await db
         .from('dishes')
         .update({
           course_number: course.course_number,
@@ -161,10 +161,10 @@ export async function syncTastingMenuToEngine(
         .eq('tenant_id', tenantId)
 
       // Sync component (recipe link)
-      await syncCourseComponent(supabase, existing.id, course, tenantId, userId, recipeNameMap)
+      await syncCourseComponent(db, existing.id, course, tenantId, userId, recipeNameMap)
     } else {
       // Insert new dish
-      const { data: newDish, error: dishErr } = await supabase
+      const { data: newDish, error: dishErr } = await db
         .from('dishes')
         .insert({
           tenant_id: tenantId,
@@ -190,7 +190,7 @@ export async function syncTastingMenuToEngine(
       // Create component if recipe is linked
       if (course.recipe_id) {
         const recipeName = recipeNameMap.get(course.recipe_id) ?? course.dish_name
-        await supabase.from('components').insert({
+        await db.from('components').insert({
           tenant_id: tenantId,
           dish_id: newDish.id,
           recipe_id: course.recipe_id,
@@ -208,7 +208,7 @@ export async function syncTastingMenuToEngine(
   for (const [sourceId, dish] of existingBySource) {
     if (!processedCourseIds.has(sourceId)) {
       // CASCADE will clean up components
-      await supabase.from('dishes').delete().eq('id', dish.id).eq('tenant_id', tenantId)
+      await db.from('dishes').delete().eq('id', dish.id).eq('tenant_id', tenantId)
     }
   }
 
@@ -225,14 +225,14 @@ export async function syncTastingMenuToEngine(
  * Lightweight delta update (O(1) queries).
  */
 export async function syncSingleCourse(
-  supabase: any,
+  db: any,
   courseId: string,
   materializedMenuId: string,
   tenantId: string,
   userId: string
 ): Promise<void> {
   // Fetch the updated course
-  const { data: course } = await supabase
+  const { data: course } = await db
     .from('tasting_menu_courses')
     .select('id, course_number, course_type, dish_name, description, recipe_id, prep_notes')
     .eq('id', courseId)
@@ -243,7 +243,7 @@ export async function syncSingleCourse(
   const courseName = COURSE_TYPE_LABELS[course.course_type] || course.course_type
 
   // Find the corresponding materialized dish
-  const { data: dish } = await supabase
+  const { data: dish } = await db
     .from('dishes')
     .select('id')
     .eq('source_tasting_course_id', courseId)
@@ -256,7 +256,7 @@ export async function syncSingleCourse(
     // Fetch recipe name if needed
     let recipeName = course.dish_name
     if (course.recipe_id) {
-      const { data: recipe } = await supabase
+      const { data: recipe } = await db
         .from('recipes')
         .select('name')
         .eq('id', course.recipe_id)
@@ -264,7 +264,7 @@ export async function syncSingleCourse(
       if (recipe) recipeName = recipe.name
     }
 
-    const { data: newDish } = await supabase
+    const { data: newDish } = await db
       .from('dishes')
       .insert({
         tenant_id: tenantId,
@@ -283,7 +283,7 @@ export async function syncSingleCourse(
       .single()
 
     if (newDish && course.recipe_id) {
-      await supabase.from('components').insert({
+      await db.from('components').insert({
         tenant_id: tenantId,
         dish_id: newDish.id,
         recipe_id: course.recipe_id,
@@ -298,7 +298,7 @@ export async function syncSingleCourse(
   }
 
   // Update existing dish
-  await supabase
+  await db
     .from('dishes')
     .update({
       course_number: course.course_number,
@@ -315,7 +315,7 @@ export async function syncSingleCourse(
   // Sync the component
   const recipeNameMap = new Map<string, string>()
   if (course.recipe_id) {
-    const { data: recipe } = await supabase
+    const { data: recipe } = await db
       .from('recipes')
       .select('name')
       .eq('id', course.recipe_id)
@@ -323,7 +323,7 @@ export async function syncSingleCourse(
     if (recipe) recipeNameMap.set(course.recipe_id, recipe.name)
   }
 
-  await syncCourseComponent(supabase, dish.id, course, tenantId, userId, recipeNameMap)
+  await syncCourseComponent(db, dish.id, course, tenantId, userId, recipeNameMap)
 }
 
 // ============================================
@@ -334,13 +334,13 @@ export async function syncSingleCourse(
  * Remove the materialized dish for a deleted course.
  */
 export async function removeMaterializedDish(
-  supabase: any,
+  db: any,
   courseId: string,
   materializedMenuId: string,
   tenantId: string
 ): Promise<void> {
   // CASCADE on dish delete will clean up components
-  await supabase
+  await db
     .from('dishes')
     .delete()
     .eq('source_tasting_course_id', courseId)
@@ -356,11 +356,11 @@ export async function removeMaterializedDish(
  * Delete the entire materialized menu (and all its dishes/components via CASCADE).
  */
 export async function deleteMaterializedMenu(
-  supabase: any,
+  db: any,
   materializedMenuId: string,
   tenantId: string
 ): Promise<void> {
-  await supabase.from('menus').delete().eq('id', materializedMenuId).eq('tenant_id', tenantId)
+  await db.from('menus').delete().eq('id', materializedMenuId).eq('tenant_id', tenantId)
 
   revalidatePath('/menus')
 }
@@ -373,7 +373,7 @@ export async function deleteMaterializedMenu(
  * Sync the component (recipe link) for a single dish/course pair.
  */
 async function syncCourseComponent(
-  supabase: any,
+  db: any,
   dishId: string,
   course: { id: string; recipe_id: string | null; dish_name: string },
   tenantId: string,
@@ -381,7 +381,7 @@ async function syncCourseComponent(
   recipeNameMap: Map<string, string>
 ): Promise<void> {
   // Find existing component for this course
-  const { data: existingComp } = await supabase
+  const { data: existingComp } = await db
     .from('components')
     .select('id, recipe_id')
     .eq('source_tasting_course_id', course.id)
@@ -395,7 +395,7 @@ async function syncCourseComponent(
     if (existingComp) {
       // Update if recipe changed
       if (existingComp.recipe_id !== course.recipe_id) {
-        await supabase
+        await db
           .from('components')
           .update({
             recipe_id: course.recipe_id,
@@ -407,7 +407,7 @@ async function syncCourseComponent(
       }
     } else {
       // Create new component
-      await supabase.from('components').insert({
+      await db.from('components').insert({
         tenant_id: tenantId,
         dish_id: dishId,
         recipe_id: course.recipe_id,
@@ -420,6 +420,6 @@ async function syncCourseComponent(
     }
   } else if (existingComp) {
     // Recipe was unlinked, remove the component
-    await supabase.from('components').delete().eq('id', existingComp.id).eq('tenant_id', tenantId)
+    await db.from('components').delete().eq('id', existingComp.id).eq('tenant_id', tenantId)
   }
 }

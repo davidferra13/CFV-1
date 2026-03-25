@@ -4,7 +4,7 @@
 // Status: Code complete, but database tables not yet created (migration 20260330000021 pending).
 // Tables required: beta_survey_definitions, beta_survey_responses, beta_survey_invites
 // This file can be type-checked once the core database schema (tenants, etc.) is migrated.
-// See: supabase/migrations/20260330000021_beta_survey_system.sql
+// See: db/migrations/20260330000021_beta_survey_system.sql
 // TODO: Apply pending migrations once dev server is free
 
 // Beta Survey Actions
@@ -12,7 +12,7 @@
 // admin results, invite management, and CSV export.
 // Tables: beta_survey_definitions, beta_survey_responses, beta_survey_invites
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAuth } from '@/lib/auth/get-user'
 import { requireAdmin } from '@/lib/auth/admin'
 import { headers } from 'next/headers'
@@ -49,13 +49,13 @@ function checkRateLimit(ip: string): boolean {
   return bucket.count <= RATE_LIMIT_MAX
 }
 
-type SupabaseErrorLike = { code?: string; message?: string } | null | undefined
+type DbErrorLike = { code?: string; message?: string } | null | undefined
 
-function isMissingBetaSurveyTableError(error: SupabaseErrorLike): boolean {
+function isMissingBetaSurveyTableError(error: DbErrorLike): boolean {
   return error?.code === 'PGRST205' && /beta_survey_/i.test(error?.message ?? '')
 }
 
-function shouldLogBetaSurveyError(error: SupabaseErrorLike): boolean {
+function shouldLogBetaSurveyError(error: DbErrorLike): boolean {
   return !!error && !isMissingBetaSurveyTableError(error)
 }
 
@@ -66,9 +66,9 @@ function shouldLogBetaSurveyError(error: SupabaseErrorLike): boolean {
  * Returns null if no active survey exists.
  */
 export async function getActiveSurvey(type: SurveyType): Promise<BetaSurveyDefinition | null> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('beta_survey_definitions')
     .select('*')
     .eq('survey_type', type)
@@ -94,9 +94,9 @@ export async function getActiveSurvey(type: SurveyType): Promise<BetaSurveyDefin
  * Fetch a survey definition by slug.
  */
 export async function getSurveyBySlug(slug: string): Promise<BetaSurveyDefinition | null> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('beta_survey_definitions')
     .select('*')
     .eq('slug', slug)
@@ -128,9 +128,9 @@ export async function getSurveyByInviteToken(token: string): Promise<{
   invite: { id: string; name: string | null; email: string | null; role: string }
   alreadySubmitted: boolean
 } | null> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: invite, error } = await supabase
+  const { data: invite, error } = await db
     .from('beta_survey_invites')
     .select('*, beta_survey_definitions(*)')
     .eq('token', token)
@@ -153,7 +153,7 @@ export async function getSurveyByInviteToken(token: string): Promise<{
 
   // Mark as claimed if not already
   if (!invite.claimed_at) {
-    await supabase
+    await db
       .from('beta_survey_invites')
       .update({ claimed_at: new Date().toISOString() })
       .eq('id', invite.id)
@@ -188,10 +188,10 @@ export async function submitBetaSurveyAuthenticated(
   answers: Record<string, unknown>
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireAuth()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Look up the survey
-  const { data: survey } = await supabase
+  const { data: survey } = await db
     .from('beta_survey_definitions')
     .select('id, survey_type')
     .eq('slug', surveySlug)
@@ -205,7 +205,7 @@ export async function submitBetaSurveyAuthenticated(
   const fixed = extractFixedColumns(answers)
 
   // Derive respondent role from user_roles
-  const { data: roleRow } = await supabase
+  const { data: roleRow } = await db
     .from('user_roles')
     .select('role')
     .eq('auth_user_id', user.id)
@@ -214,7 +214,7 @@ export async function submitBetaSurveyAuthenticated(
   const respondentRole = roleRow?.role || 'tester'
 
   // Upsert - if the user already started a response, update it
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('beta_survey_responses')
     .select('id')
     .eq('survey_id', survey.id)
@@ -222,7 +222,7 @@ export async function submitBetaSurveyAuthenticated(
     .maybeSingle()
 
   if (existing) {
-    const { error } = await supabase
+    const { error } = await db
       .from('beta_survey_responses')
       .update({
         answers,
@@ -239,7 +239,7 @@ export async function submitBetaSurveyAuthenticated(
       return { success: false, error: 'Failed to submit survey.' }
     }
   } else {
-    const { error } = await supabase.from('beta_survey_responses').insert({
+    const { error } = await db.from('beta_survey_responses').insert({
       survey_id: survey.id,
       auth_user_id: user.id,
       respondent_role: respondentRole,
@@ -276,10 +276,10 @@ export async function submitBetaSurveyPublic(
     return { success: false, error: 'Too many submissions. Please try again later.' }
   }
 
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Validate invite
-  const { data: invite } = await supabase
+  const { data: invite } = await db
     .from('beta_survey_invites')
     .select('id, survey_id, role, response_id, expires_at')
     .eq('token', inviteToken)
@@ -301,7 +301,7 @@ export async function submitBetaSurveyPublic(
   const fixed = extractFixedColumns(answers)
 
   // Create the response
-  const { data: response, error: insertError } = await supabase
+  const { data: response, error: insertError } = await db
     .from('beta_survey_responses')
     .insert({
       survey_id: invite.survey_id,
@@ -321,7 +321,7 @@ export async function submitBetaSurveyPublic(
   }
 
   // Link response to invite
-  await supabase
+  await db
     .from('beta_survey_invites')
     .update({
       response_id: response.id,
@@ -343,10 +343,10 @@ export async function getMyBetaSurveyStatus(
 ): Promise<{ hasSubmitted: boolean; surveySlug: string | null }> {
   try {
     const user = await requireAuth()
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
 
     // Get active survey for this type
-    const { data: survey } = await supabase
+    const { data: survey } = await db
       .from('beta_survey_definitions')
       .select('id, slug')
       .eq('survey_type', type)
@@ -358,7 +358,7 @@ export async function getMyBetaSurveyStatus(
     }
 
     // Check if user has a submitted response
-    const { data: response } = await supabase
+    const { data: response } = await db
       .from('beta_survey_responses')
       .select('submitted_at')
       .eq('survey_id', survey.id)
@@ -382,9 +382,9 @@ export async function getMyBetaSurveyStatus(
  */
 export async function getBetaSurveyResults(surveyId: string) {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: responses, error } = await supabase
+  const { data: responses, error } = await db
     .from('beta_survey_responses')
     .select('*')
     .eq('survey_id', surveyId)
@@ -407,9 +407,9 @@ export async function getBetaSurveyResults(surveyId: string) {
  */
 export async function getAllBetaSurveys() {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: surveys, error } = await supabase
+  const { data: surveys, error } = await db
     .from('beta_survey_definitions')
     .select('*')
     .order('created_at', { ascending: false })
@@ -422,12 +422,12 @@ export async function getAllBetaSurveys() {
   // Get response counts per survey
   const result = await Promise.all(
     (surveys || []).map(async (s: any) => {
-      const { count: totalCount } = await supabase
+      const { count: totalCount } = await db
         .from('beta_survey_responses')
         .select('*', { count: 'exact', head: true })
         .eq('survey_id', s.id)
 
-      const { count: submittedCount } = await supabase
+      const { count: submittedCount } = await db
         .from('beta_survey_responses')
         .select('*', { count: 'exact', head: true })
         .eq('survey_id', s.id)
@@ -464,10 +464,10 @@ export async function createBetaSurveyInvites(
   sendEmails = false
 ): Promise<{ success: boolean; tokens: string[]; error?: string }> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get survey for context
-  const { data: survey } = await supabase
+  const { data: survey } = await db
     .from('beta_survey_definitions')
     .select('title, slug')
     .eq('id', surveyId)
@@ -480,7 +480,7 @@ export async function createBetaSurveyInvites(
   const tokens: string[] = []
 
   for (const invite of invites) {
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('beta_survey_invites')
       .insert({
         survey_id: surveyId,
@@ -532,11 +532,11 @@ export async function toggleBetaSurveyActive(
   active: boolean
 ): Promise<{ success: boolean; error?: string }> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   if (active) {
     // Get the survey type to deactivate others
-    const { data: survey } = await supabase
+    const { data: survey } = await db
       .from('beta_survey_definitions')
       .select('survey_type')
       .eq('id', surveyId)
@@ -545,14 +545,14 @@ export async function toggleBetaSurveyActive(
     if (!survey) return { success: false, error: 'Survey not found.' }
 
     // Deactivate other surveys of the same type
-    await supabase
+    await db
       .from('beta_survey_definitions')
       .update({ is_active: false })
       .eq('survey_type', survey.survey_type)
       .neq('id', surveyId)
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('beta_survey_definitions')
     .update({ is_active: active })
     .eq('id', surveyId)
@@ -575,10 +575,10 @@ export async function exportBetaSurveyResultsCsv(
   surveyId: string
 ): Promise<{ success: boolean; csv?: string; error?: string }> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get survey definition for question labels
-  const { data: survey } = await supabase
+  const { data: survey } = await db
     .from('beta_survey_definitions')
     .select('questions')
     .eq('id', surveyId)
@@ -589,7 +589,7 @@ export async function exportBetaSurveyResultsCsv(
   )
 
   // Get all responses
-  const { data: responses, error } = await supabase
+  const { data: responses, error } = await db
     .from('beta_survey_responses')
     .select('*')
     .eq('survey_id', surveyId)
@@ -652,9 +652,9 @@ export async function exportBetaSurveyResultsCsv(
  */
 export async function getBetaSurveyInvites(surveyId: string) {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('beta_survey_invites')
     .select('*')
     .eq('survey_id', surveyId)

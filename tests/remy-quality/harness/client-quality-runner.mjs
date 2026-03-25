@@ -21,7 +21,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { createClient } from '../../../scripts/lib/supabase.mjs'
+import { createClient } from '../../../scripts/lib/db.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -50,8 +50,8 @@ function loadEnv() {
     return m ? m[1].trim() : ''
   }
   return {
-    supabaseUrl: get('NEXT_PUBLIC_SUPABASE_URL'),
-    supabaseAnonKey: get('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+    dbUrl: get('NEXT_PUBLIC_DB_URL'),
+    dbAnonKey: get('NEXT_PUBLIC_DB_ANON_KEY'),
   }
 }
 
@@ -74,7 +74,7 @@ function loadClientCredentials() {
 
 // ─── Authentication ────────────────────────────────────────────────────────
 
-/** @type {{ supabaseUrl: string, supabaseAnonKey: string } | null} */
+/** @type {{ dbUrl: string, dbAnonKey: string } | null} */
 let _envCache = null
 /** @type {{ email: string, password: string } | null} */
 let _credsCache = null
@@ -82,12 +82,12 @@ let _credsCache = null
 async function authenticate() {
   if (!_envCache) _envCache = loadEnv()
   if (!_credsCache) _credsCache = loadClientCredentials()
-  const { supabaseUrl, supabaseAnonKey } = _envCache
+  const { dbUrl, dbAnonKey } = _envCache
   const creds = _credsCache
 
   console.log(`Authenticating as client: ${creds.email}`)
 
-  const sb = createClient(supabaseUrl, supabaseAnonKey)
+  const sb = createClient(dbUrl, dbAnonKey)
   const { data, error } = await sb.auth.signInWithPassword({
     email: creds.email,
     password: creds.password,
@@ -346,7 +346,7 @@ function evaluateResponse(prompt, result, defaults) {
     'tenant_id',
     'entity_id',
     'auth_user_id',
-    'supabase',
+    'database',
     'migration',
     'ledger_entries',
     'event_transitions',

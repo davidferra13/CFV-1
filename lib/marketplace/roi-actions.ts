@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { MARKETPLACE_PLATFORMS, getMarketplacePlatform, isMarketplaceSource } from './platforms'
 
 export type MarketplaceROISummary = {
@@ -32,13 +32,13 @@ export type MarketplaceROISummary = {
 export async function getMarketplaceROI(): Promise<MarketplaceROISummary> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const allChannels = MARKETPLACE_PLATFORMS.map((p) => p.channel)
 
   // 1. Find all clients who originally came from a marketplace
   //    (either client.referral_source or their first inquiry channel)
-  const { data: marketplaceInquiries } = await supabase
+  const { data: marketplaceInquiries } = await db
     .from('inquiries')
     .select('id, client_id, channel, converted_to_event_id')
     .eq('tenant_id', tenantId)
@@ -78,7 +78,7 @@ export async function getMarketplaceROI(): Promise<MarketplaceROISummary> {
   }
 
   // 2. Find ALL events for these clients
-  const { data: allEvents } = await supabase
+  const { data: allEvents } = await db
     .from('events')
     .select('id, client_id, inquiry_id, event_date, status, quoted_price_cents')
     .eq('tenant_id', tenantId)

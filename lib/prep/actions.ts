@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export type PrepTimer = {
@@ -31,9 +31,9 @@ export type PrepTimer = {
  */
 export async function getActivePrepTimers(): Promise<PrepTimer[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prep_timeline')
     .select('*, station:stations(id, name), event:events(id, title)')
     .eq('chef_id', user.tenantId!)
@@ -53,12 +53,12 @@ export async function getActivePrepTimers(): Promise<PrepTimer[]> {
  */
 export async function getPrepTimersForDate(date: string): Promise<PrepTimer[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const startOfDay = date + 'T00:00:00'
   const endOfDay = new Date(new Date(startOfDay).getTime() + 24 * 60 * 60 * 1000).toISOString()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prep_timeline')
     .select('*, station:stations(id, name), event:events(id, title)')
     .eq('chef_id', user.tenantId!)
@@ -88,13 +88,13 @@ export async function createPrepTimer(input: {
   alert_before_minutes?: number
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!input.title.trim()) {
     throw new Error('Title is required')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prep_timeline')
     .insert({
       chef_id: user.tenantId!,
@@ -126,9 +126,9 @@ export async function createPrepTimer(input: {
  */
 export async function completePrepTimer(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prep_timeline')
     .update({
       status: 'completed',
@@ -154,9 +154,9 @@ export async function completePrepTimer(id: string) {
  */
 export async function deletePrepTimer(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('prep_timeline')
     .delete()
     .eq('id', id)
@@ -176,9 +176,9 @@ export async function deletePrepTimer(id: string) {
  */
 export async function markMissedPrepTimers() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('prep_timeline')
     .update({ status: 'missed' })
     .eq('chef_id', user.tenantId!)

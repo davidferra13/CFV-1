@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface TouchpointReminder {
   clientId: string
@@ -17,11 +17,11 @@ export interface TouchpointReminder {
  */
 export async function getUpcomingTouchpointReminders(): Promise<TouchpointReminder[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Load all clients with a date_of_birth
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('id, first_name, last_name, date_of_birth')
     .eq('tenant_id', tenantId)
@@ -59,7 +59,7 @@ export async function getUpcomingTouchpointReminders(): Promise<TouchpointRemind
   // Anniversary check: find each client's first event date
   const clientIds = clients.map((c: { id: string }) => c.id)
   if (clientIds.length > 0) {
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('client_id, event_date')
       .eq('tenant_id', tenantId)

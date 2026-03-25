@@ -1,6 +1,6 @@
 // Auth Test Utilities
-// Adapted from legacy BillyBob8 patterns for Supabase auth
-// Provides both UI-based and direct Supabase auth helpers
+// Adapted from legacy BillyBob8 patterns for Auth.js
+// Provides both UI-based and direct Auth.js helpers
 
 import { Page, expect } from '@playwright/test'
 import { ROUTES, generateUniqueEmail, generateValidPassword } from './test-utils'
@@ -52,9 +52,9 @@ export async function signInViaUI(page: Page, email: string, password: string): 
 }
 
 /**
- * Create a user directly via Supabase Admin API.
+ * Create a user directly via the database Admin API.
  * Bypasses the UI for faster, more reliable test setup.
- * Requires SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in env.
+ * Requires DB_URL and DB_SERVICE_ROLE_KEY in env.
  */
 export async function createUserDirect(opts?: {
   email?: string
@@ -64,17 +64,15 @@ export async function createUserDirect(opts?: {
   const email = opts?.email ?? generateUniqueEmail()
   const password = opts?.password ?? generateValidPassword()
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const dbUrl = process.env.NEXT_PUBLIC_DB_URL
+  const serviceRoleKey = process.env.DB_SERVICE_ROLE_KEY
 
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error(
-      'NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY required for direct user creation'
-    )
+  if (!dbUrl || !serviceRoleKey) {
+    throw new Error('NEXT_PUBLIC_DB_URL and DB_SERVICE_ROLE_KEY required for direct user creation')
   }
 
-  // Create auth user via Supabase Admin API
-  const response = await fetch(`${supabaseUrl}/auth/v1/admin/users`, {
+  // Create auth user via the database Admin API
+  const response = await fetch(`${dbUrl}/auth/v1/admin/users`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -112,12 +110,12 @@ export async function createChefDirect(opts?: {
     role: 'chef',
   })
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+  const dbUrl = process.env.NEXT_PUBLIC_DB_URL!
+  const serviceRoleKey = process.env.DB_SERVICE_ROLE_KEY!
   const businessName = opts?.businessName ?? `Test Chef ${Date.now()}`
 
   // Create chef record
-  const chefRes = await fetch(`${supabaseUrl}/rest/v1/chefs`, {
+  const chefRes = await fetch(`${dbUrl}/rest/v1/chefs`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -139,7 +137,7 @@ export async function createChefDirect(opts?: {
   const [chef] = await chefRes.json()
 
   // Create user_role entry
-  await fetch(`${supabaseUrl}/rest/v1/user_roles`, {
+  await fetch(`${dbUrl}/rest/v1/user_roles`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -161,7 +159,7 @@ export async function createChefDirect(opts?: {
  */
 export async function ensureSignedOut(page: Page): Promise<void> {
   await page.goto('/')
-  // Clear Supabase auth cookies/storage
+  // Clear Auth.js cookies/storage
   await page.evaluate(() => {
     localStorage.clear()
     sessionStorage.clear()

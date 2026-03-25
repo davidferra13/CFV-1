@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createHash } from 'crypto'
 
 export interface ApiKeyContext {
@@ -27,8 +27,8 @@ export async function validateApiKey(authHeader: string | null): Promise<ApiKeyC
   const key = authHeader.replace('Bearer ', '').trim()
   const keyHash = hashApiKey(key)
 
-  const supabase = createServerClient({ admin: true })
-  const { data: rawData } = await supabase
+  const db = createServerClient({ admin: true })
+  const { data: rawData } = await db
     .from('chef_api_keys' as any)
     .select('id, tenant_id, scopes, is_active, expires_at')
     .eq('key_hash', keyHash)
@@ -39,8 +39,7 @@ export async function validateApiKey(authHeader: string | null): Promise<ApiKeyC
   if (data.expires_at && new Date(data.expires_at) < new Date()) return null
 
   // Update last_used_at (non-blocking)
-  supabase
-    .from('chef_api_keys' as any)
+  db.from('chef_api_keys' as any)
     .update({ last_used_at: new Date().toISOString() })
     .eq('id', data.id)
     .then(() => {})

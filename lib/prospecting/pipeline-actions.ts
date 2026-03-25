@@ -6,7 +6,7 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
@@ -36,10 +36,10 @@ export async function updatePipelineStage(
 ) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current stage for history tracking
-  const { data: current } = await supabase
+  const { data: current } = await db
     .from('prospects')
     .select('pipeline_stage')
     .eq('id', prospectId)
@@ -62,7 +62,7 @@ export async function updatePipelineStage(
     }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('prospects')
     .update(updates)
     .eq('id', prospectId)
@@ -72,7 +72,7 @@ export async function updatePipelineStage(
 
   // Record stage history (non-blocking)
   try {
-    await supabase.from('prospect_stage_history' as any).insert({
+    await db.from('prospect_stage_history' as any).insert({
       prospect_id: prospectId,
       chef_id: user.tenantId!,
       from_stage: fromStage,
@@ -84,7 +84,7 @@ export async function updatePipelineStage(
   }
 
   // Log the stage change
-  await supabase.from('prospect_outreach_log').insert({
+  await db.from('prospect_outreach_log').insert({
     prospect_id: prospectId,
     chef_id: user.tenantId!,
     outreach_type: 'note',
@@ -101,9 +101,9 @@ export async function updatePipelineStage(
 export async function getProspectsByPipelineStage(): Promise<Record<PipelineStage, Prospect[]>> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -158,9 +158,9 @@ export async function logOutreach(
 ) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('prospect_outreach_log').insert({
+  const { error } = await db.from('prospect_outreach_log').insert({
     prospect_id: prospectId,
     chef_id: user.tenantId!,
     outreach_type: outreachType,
@@ -175,7 +175,7 @@ export async function logOutreach(
 
   // Auto-advance pipeline stage based on outreach type
   if (outreachType === 'email' || outreachType === 'call') {
-    const { data: prospect } = await supabase
+    const { data: prospect } = await db
       .from('prospects')
       .select('pipeline_stage')
       .eq('id', prospectId)
@@ -183,20 +183,20 @@ export async function logOutreach(
       .single()
 
     if (prospect?.pipeline_stage === 'new' || prospect?.pipeline_stage === 'researched') {
-      await supabase
+      await db
         .from('prospects')
         .update({ pipeline_stage: 'contacted' })
         .eq('id', prospectId)
         .eq('chef_id', user.tenantId!)
     }
   } else if (outreachType === 'response_received') {
-    await supabase
+    await db
       .from('prospects')
       .update({ pipeline_stage: 'responded' })
       .eq('id', prospectId)
       .eq('chef_id', user.tenantId!)
   } else if (outreachType === 'meeting_scheduled') {
-    await supabase
+    await db
       .from('prospects')
       .update({ pipeline_stage: 'meeting_set' })
       .eq('id', prospectId)
@@ -212,9 +212,9 @@ export async function logOutreach(
 export async function getOutreachLog(prospectId: string): Promise<OutreachLogEntry[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospect_outreach_log')
     .select('*')
     .eq('prospect_id', prospectId)
@@ -241,9 +241,9 @@ const FollowUpSequenceSchema = z.object({
 export async function generateFollowUpSequence(prospectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: prospect, error: fetchError } = await supabase
+  const { data: prospect, error: fetchError } = await db
     .from('prospects')
     .select('*')
     .eq('id', prospectId)
@@ -295,7 +295,7 @@ export async function generateFollowUpSequence(prospectId: string) {
     ],
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('prospects')
     .update({ follow_up_sequence: fullSequence })
     .eq('id', prospectId)
@@ -325,9 +325,9 @@ const CallScriptSchema = z.object({
 export async function generateAICallScript(prospectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: prospect, error: fetchError } = await supabase
+  const { data: prospect, error: fetchError } = await db
     .from('prospects')
     .select('*')
     .eq('id', prospectId)
@@ -384,7 +384,7 @@ export async function generateAICallScript(prospectId: string) {
     script.voicemailScript,
   ].join('\n')
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('prospects')
     .update({ ai_call_script: formattedScript })
     .eq('id', prospectId)
@@ -486,14 +486,14 @@ function parseCSVLine(line: string): string[] {
 export async function importProspectsFromCSV(csvText: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const rows = parseCSV(csvText)
   if (rows.length === 0) throw new Error('No valid rows found in CSV')
   if (rows.length > 500) throw new Error('CSV too large - max 500 prospects per import')
 
   // Fetch all existing prospect names for fuzzy dedup (one query, not N queries)
-  const { data: existingProspects } = await supabase
+  const { data: existingProspects } = await db
     .from('prospects')
     .select('id, name')
     .eq('chef_id', user.tenantId!)
@@ -522,7 +522,7 @@ export async function importProspectsFromCSV(csvText: string) {
 
   // Batch insert all non-duplicate rows in one query
   if (rowsToInsert.length > 0) {
-    const { error } = await supabase.from('prospects').insert(
+    const { error } = await db.from('prospects').insert(
       rowsToInsert.map((row) => ({
         chef_id: user.tenantId!,
         name: row.name,
@@ -569,9 +569,9 @@ export async function importProspectsFromCSV(csvText: string) {
 export async function getGeoClusters(): Promise<GeoCluster[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -612,9 +612,9 @@ export async function getGeoClusters(): Promise<GeoCluster[]> {
 export async function geocodeProspect(prospectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: prospect, error: fetchError } = await supabase
+  const { data: prospect, error: fetchError } = await db
     .from('prospects')
     .select('*')
     .eq('id', prospectId)
@@ -648,7 +648,7 @@ export async function geocodeProspect(prospectId: string) {
     const lat = parseFloat(results[0].lat)
     const lng = parseFloat(results[0].lon)
 
-    await supabase
+    await db
       .from('prospects')
       .update({ latitude: lat, longitude: lng })
       .eq('id', prospectId)
@@ -666,10 +666,10 @@ export async function geocodeProspect(prospectId: string) {
 export async function batchGeocode() {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find prospects without coordinates that have addresses
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects')
     .select('id, address, city, state, zip')
     .eq('chef_id', user.tenantId!)
@@ -702,9 +702,9 @@ export async function exportProspectsToCSV(filters?: {
 }): Promise<string> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('prospects')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -759,9 +759,9 @@ export async function getPipelineRevenueByStage(): Promise<
 > {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects')
     .select('pipeline_stage, avg_event_budget, annual_events_estimate')
     .eq('chef_id', user.tenantId!)
@@ -814,7 +814,7 @@ export async function runAutoPipelineRules(): Promise<{
 }> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   let staleToLost = 0
   let followUpBumped = 0
@@ -823,7 +823,7 @@ export async function runAutoPipelineRules(): Promise<{
   const fourteenDaysAgo = new Date()
   fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14)
 
-  const { data: staleContacted } = await supabase
+  const { data: staleContacted } = await db
     .from('prospects')
     .select('id, pipeline_stage')
     .eq('chef_id', user.tenantId!)
@@ -833,7 +833,7 @@ export async function runAutoPipelineRules(): Promise<{
   if (staleContacted && staleContacted.length > 0) {
     // Batch fetch recent outreach for ALL stale prospects in one query
     const staleIds = staleContacted.map((p: any) => p.id)
-    const { data: recentOutreachLogs } = await supabase
+    const { data: recentOutreachLogs } = await db
       .from('prospect_outreach_log')
       .select('prospect_id')
       .in('prospect_id', staleIds)
@@ -848,14 +848,14 @@ export async function runAutoPipelineRules(): Promise<{
     for (const prospect of staleContacted) {
       if (hasRecentOutreach.has(prospect.id)) continue
 
-      await supabase
+      await db
         .from('prospects')
         .update({ pipeline_stage: 'lost' })
         .eq('id', prospect.id)
         .eq('chef_id', user.tenantId!)
 
       // Log the auto-change
-      await supabase.from('prospect_outreach_log').insert({
+      await db.from('prospect_outreach_log').insert({
         prospect_id: prospect.id,
         chef_id: user.tenantId!,
         outreach_type: 'note',
@@ -870,7 +870,7 @@ export async function runAutoPipelineRules(): Promise<{
   const sevenDaysAgo = new Date()
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
 
-  const { data: overdueFollowUps } = await supabase
+  const { data: overdueFollowUps } = await db
     .from('prospects')
     .select('id')
     .eq('chef_id', user.tenantId!)
@@ -880,7 +880,7 @@ export async function runAutoPipelineRules(): Promise<{
 
   if (overdueFollowUps && overdueFollowUps.length > 0) {
     const overdueIds = overdueFollowUps.map((p: any) => p.id)
-    await supabase
+    await db
       .from('prospects')
       .update({ priority: 'high' })
       .in('id', overdueIds)
@@ -899,12 +899,12 @@ export async function runAutoPipelineRules(): Promise<{
 export async function mergeProspects(keepId: string, mergeId: string): Promise<{ success: true }> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch both prospects
   const [keepResult, mergeResult] = await Promise.all([
-    supabase.from('prospects').select('*').eq('id', keepId).eq('chef_id', user.tenantId!).single(),
-    supabase.from('prospects').select('*').eq('id', mergeId).eq('chef_id', user.tenantId!).single(),
+    db.from('prospects').select('*').eq('id', keepId).eq('chef_id', user.tenantId!).single(),
+    db.from('prospects').select('*').eq('id', mergeId).eq('chef_id', user.tenantId!).single(),
   ])
 
   if (keepResult.error || !keepResult.data) throw new Error('Primary prospect not found')
@@ -985,25 +985,25 @@ export async function mergeProspects(keepId: string, mergeId: string): Promise<{
 
   // Apply updates to the kept prospect
   if (Object.keys(updates).length > 0) {
-    await supabase.from('prospects').update(updates).eq('id', keepId).eq('chef_id', user.tenantId!)
+    await db.from('prospects').update(updates).eq('id', keepId).eq('chef_id', user.tenantId!)
   }
 
   // Move outreach log entries from merge to keep
-  await supabase
+  await db
     .from('prospect_outreach_log')
     .update({ prospect_id: keepId })
     .eq('prospect_id', mergeId)
     .eq('chef_id', user.tenantId!)
 
   // Move notes from merge to keep
-  await supabase
+  await db
     .from('prospect_notes')
     .update({ prospect_id: keepId })
     .eq('prospect_id', mergeId)
     .eq('chef_id', user.tenantId!)
 
   // Add merge note
-  await supabase.from('prospect_notes').insert({
+  await db.from('prospect_notes').insert({
     prospect_id: keepId,
     chef_id: user.tenantId!,
     note_type: 'general',
@@ -1011,7 +1011,7 @@ export async function mergeProspects(keepId: string, mergeId: string): Promise<{
   })
 
   // Delete the merged prospect
-  await supabase.from('prospects').delete().eq('id', mergeId).eq('chef_id', user.tenantId!)
+  await db.from('prospects').delete().eq('id', mergeId).eq('chef_id', user.tenantId!)
 
   revalidatePath('/prospecting')
   revalidatePath(`/prospecting/${keepId}`)
@@ -1024,9 +1024,9 @@ export async function mergeProspects(keepId: string, mergeId: string): Promise<{
 export async function snapshotLeadScores(): Promise<{ updated: number }> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects')
     .select('id, lead_score, previous_lead_score')
     .eq('chef_id', user.tenantId!)
@@ -1037,7 +1037,7 @@ export async function snapshotLeadScores(): Promise<{ updated: number }> {
   for (const p of data) {
     // Only snapshot if score has changed
     if (p.lead_score !== p.previous_lead_score) {
-      await supabase
+      await db
         .from('prospects')
         .update({ previous_lead_score: p.lead_score })
         .eq('id', p.id)
@@ -1054,9 +1054,9 @@ export async function snapshotLeadScores(): Promise<{ updated: number }> {
 export async function findSimilarProspects(prospectId: string): Promise<Prospect[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: prospect } = await supabase
+  const { data: prospect } = await db
     .from('prospects')
     .select('name, city, region')
     .eq('id', prospectId)
@@ -1066,7 +1066,7 @@ export async function findSimilarProspects(prospectId: string): Promise<Prospect
   if (!prospect) return []
 
   // Fetch all other prospects to check for fuzzy name matches
-  const { data: allProspects } = await supabase
+  const { data: allProspects } = await db
     .from('prospects')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -1083,9 +1083,9 @@ export async function findSimilarProspects(prospectId: string): Promise<Prospect
 export async function sendProspectEmail(prospectId: string, subject: string, body: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: prospect, error: fetchError } = await supabase
+  const { data: prospect, error: fetchError } = await db
     .from('prospects')
     .select('*')
     .eq('id', prospectId)
@@ -1110,7 +1110,7 @@ export async function sendProspectEmail(prospectId: string, subject: string, bod
   })
 
   // Log the outreach
-  await supabase.from('prospect_outreach_log').insert({
+  await db.from('prospect_outreach_log').insert({
     prospect_id: prospectId,
     chef_id: user.tenantId!,
     outreach_type: 'email',
@@ -1121,7 +1121,7 @@ export async function sendProspectEmail(prospectId: string, subject: string, bod
 
   // Auto-advance pipeline if still in early stages
   if (prospect.pipeline_stage === 'new' || prospect.pipeline_stage === 'researched') {
-    await supabase
+    await db
       .from('prospects')
       .update({ pipeline_stage: 'contacted' })
       .eq('id', prospectId)
@@ -1129,7 +1129,7 @@ export async function sendProspectEmail(prospectId: string, subject: string, bod
 
     // Record stage history (non-blocking)
     try {
-      await supabase.from('prospect_stage_history' as any).insert({
+      await db.from('prospect_stage_history' as any).insert({
         prospect_id: prospectId,
         chef_id: user.tenantId!,
         from_stage: prospect.pipeline_stage,
@@ -1169,9 +1169,9 @@ export async function sendProspectEmail(prospectId: string, subject: string, bod
 export async function updateProspectTags(prospectId: string, tags: string[]) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('prospects')
     .update({ tags })
     .eq('id', prospectId)
@@ -1190,9 +1190,9 @@ export async function updateProspectTags(prospectId: string, tags: string[]) {
 export async function getStageHistory(prospectId: string): Promise<StageHistoryEntry[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospect_stage_history' as any)
     .select('*')
     .eq('prospect_id', prospectId)
@@ -1216,7 +1216,7 @@ export async function bulkUpdateProspects(
 ) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (prospectIds.length === 0) throw new Error('No prospects selected')
   if (prospectIds.length > 100) throw new Error('Max 100 prospects per batch')
@@ -1232,7 +1232,7 @@ export async function bulkUpdateProspects(
   // Fetch current stages before update (for accurate stage history)
   let currentStages = new Map<string, string | null>()
   if (updates.pipeline_stage) {
-    const { data: current } = await supabase
+    const { data: current } = await db
       .from('prospects')
       .select('id, pipeline_stage')
       .in('id', prospectIds)
@@ -1245,7 +1245,7 @@ export async function bulkUpdateProspects(
     }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('prospects')
     .update(updatePayload)
     .in('id', prospectIds)
@@ -1263,7 +1263,7 @@ export async function bulkUpdateProspects(
         to_stage: updates.pipeline_stage!,
         notes: 'Bulk update',
       }))
-      await supabase.from('prospect_stage_history' as any).insert(historyRows)
+      await db.from('prospect_stage_history' as any).insert(historyRows)
     } catch (err) {
       console.error('[bulkUpdateProspects] Stage history failed (non-blocking):', err)
     }
@@ -1278,12 +1278,12 @@ export async function bulkUpdateProspects(
 export async function bulkDeleteProspects(prospectIds: string[]) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (prospectIds.length === 0) throw new Error('No prospects selected')
   if (prospectIds.length > 100) throw new Error('Max 100 prospects per batch')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('prospects')
     .delete()
     .in('id', prospectIds)
@@ -1302,11 +1302,11 @@ export async function bulkDeleteProspects(prospectIds: string[]) {
 export async function createFollowUpReminders(): Promise<{ created: number }> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find prospects with follow-ups due today or overdue
   const now = new Date().toISOString()
-  const { data: dueProspects, error } = await supabase
+  const { data: dueProspects, error } = await db
     .from('prospects')
     .select('id, name, next_follow_up_at')
     .eq('chef_id', user.tenantId!)
@@ -1318,7 +1318,7 @@ export async function createFollowUpReminders(): Promise<{ created: number }> {
   if (error || !dueProspects || dueProspects.length === 0) return { created: 0 }
 
   // Check which prospects already have a pending todo (avoid duplicates)
-  const { data: existingTodos } = await supabase
+  const { data: existingTodos } = await db
     .from('chef_todos')
     .select('text')
     .eq('chef_id', user.tenantId!)
@@ -1334,7 +1334,7 @@ export async function createFollowUpReminders(): Promise<{ created: number }> {
 
   let created = 0
   if (todosToInsert.length > 0) {
-    const { error: insertError } = await supabase.from('chef_todos').insert(
+    const { error: insertError } = await db.from('chef_todos').insert(
       todosToInsert.map((todo: any) => ({
         chef_id: user.tenantId!,
         text: todo.text,
@@ -1364,10 +1364,10 @@ export async function getConversionFunnelStats(): Promise<{
 }> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Count prospects per pipeline stage
-  const { data: prospects, error } = await supabase
+  const { data: prospects, error } = await db
     .from('prospects')
     .select('pipeline_stage')
     .eq('chef_id', user.tenantId!)
@@ -1381,7 +1381,7 @@ export async function getConversionFunnelStats(): Promise<{
   }
 
   // Calculate avg days in stage from stage history
-  const { data: history } = await supabase
+  const { data: history } = await db
     .from('prospect_stage_history' as any)
     .select('from_stage, to_stage, changed_at')
     .eq('chef_id', user.tenantId!)
@@ -1451,9 +1451,9 @@ export async function getConversionFunnelStats(): Promise<{
 export async function getHotPipelineCount(): Promise<number> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { count, error } = await supabase
+  const { count, error } = await db
     .from('prospects')
     .select('id', { count: 'exact', head: true })
     .eq('chef_id', user.tenantId!)
@@ -1468,9 +1468,9 @@ export async function getHotPipelineCount(): Promise<number> {
 export async function checkGmailConnected(): Promise<boolean> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('google_connections')
     .select('gmail_connected')
     .eq('chef_id', user.entityId!)

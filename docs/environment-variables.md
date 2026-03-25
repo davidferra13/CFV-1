@@ -7,9 +7,9 @@ All values should be set in `.env.local` on the production server.
 
 | Variable                             | Source                                   | Format                      |
 | ------------------------------------ | ---------------------------------------- | --------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`           | Supabase dashboard > Settings > API      | `https://xxxxx.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`      | Supabase dashboard > Settings > API      | `eyJ...`                    |
-| `SUPABASE_SERVICE_ROLE_KEY`          | Supabase dashboard > Settings > API      | `eyJ...`                    |
+| `NEXT_PUBLIC_DATABASE_URL`           | database dashboard > Settings > API      | `https://xxxxx.database.co` |
+| `NEXT_PUBLIC_DATABASE_ANON_KEY`      | database dashboard > Settings > API      | `eyJ...`                    |
+| `DATABASE_SERVICE_ROLE_KEY`          | database dashboard > Settings > API      | `eyJ...`                    |
 | `STRIPE_SECRET_KEY`                  | Stripe dashboard > Developers > API keys | `sk_live_...`               |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe dashboard > Developers > API keys | `pk_live_...`               |
 | `STRIPE_WEBHOOK_SECRET`              | Stripe dashboard > Developers > Webhooks | `whsec_...`                 |
@@ -21,11 +21,11 @@ All values should be set in `.env.local` on the production server.
 
 ## Required for specific features
 
-| Variable                 | Feature                    | Source                     |
-| ------------------------ | -------------------------- | -------------------------- |
-| `GOOGLE_CLIENT_ID`       | Gmail sync, Google sign-in | Google Cloud Console       |
-| `GOOGLE_CLIENT_SECRET`   | Gmail sync, Google sign-in | Google Cloud Console       |
-| `PLATFORM_OWNER_CHEF_ID` | Contact form routing       | Supabase: `chefs` table ID |
+| Variable                 | Feature                    | Source                       |
+| ------------------------ | -------------------------- | ---------------------------- |
+| `GOOGLE_CLIENT_ID`       | Gmail sync, Google sign-in | Google Cloud Console         |
+| `GOOGLE_CLIENT_SECRET`   | Gmail sync, Google sign-in | Google Cloud Console         |
+| `PLATFORM_OWNER_CHEF_ID` | Contact form routing       | PostgreSQL: `chefs` table ID |
 
 ## Optional (graceful degradation if missing)
 

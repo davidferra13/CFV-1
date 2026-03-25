@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getEventFinancialSummary } from '@/lib/ledger/compute'
 import { revalidatePath } from 'next/cache'
 
@@ -100,10 +100,10 @@ export async function getCancellationPolicy(
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     if (policyId) {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('cancellation_policies')
         .select('*')
         .eq('id', policyId)
@@ -115,7 +115,7 @@ export async function getCancellationPolicy(
     }
 
     // Get the default policy
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('cancellation_policies')
       .select('*')
       .eq('chef_id', tenantId)
@@ -124,7 +124,7 @@ export async function getCancellationPolicy(
 
     if (error && error.code === 'PGRST116') {
       // No default policy exists, create one
-      const { data: newPolicy, error: createErr } = await supabase
+      const { data: newPolicy, error: createErr } = await db
         .from('cancellation_policies')
         .insert({ chef_id: tenantId })
         .select()
@@ -156,7 +156,7 @@ export async function updateCancellationPolicy(
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Validate tiers if provided
     if (updates.tiers) {
@@ -197,7 +197,7 @@ export async function updateCancellationPolicy(
       updatePayload.grace_period_hours = updates.gracePeriodHours
     if (updates.notes !== undefined) updatePayload.notes = updates.notes
 
-    const { error } = await supabase
+    const { error } = await db
       .from('cancellation_policies')
       .update(updatePayload)
       .eq('id', policyId)
@@ -231,10 +231,10 @@ export async function calculateCancellationFee(eventId: string): Promise<{
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Get event details
-    const { data: event, error: eventErr } = await supabase
+    const { data: event, error: eventErr } = await db
       .from('events')
       .select('id, event_date, created_at')
       .eq('id', eventId)
@@ -316,10 +316,10 @@ export async function getEventCancellationPreview(eventId: string): Promise<{
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Get event with details
-    const { data: event, error: eventErr } = await supabase
+    const { data: event, error: eventErr } = await db
       .from('events')
       .select('id, title, event_date, created_at')
       .eq('id', eventId)
@@ -376,10 +376,10 @@ export async function getCancellationHistory(): Promise<{
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Get all cancelled events
-    const { data: events, error: eventsErr } = await supabase
+    const { data: events, error: eventsErr } = await db
       .from('events')
       .select(
         `

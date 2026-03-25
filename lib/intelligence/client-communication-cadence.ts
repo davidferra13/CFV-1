@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -32,10 +32,10 @@ export interface CommunicationCadenceResult {
 export async function getCommunicationCadence(): Promise<CommunicationCadenceResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch inquiries with timing data
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select(
       `
@@ -49,7 +49,7 @@ export async function getCommunicationCadence(): Promise<CommunicationCadenceRes
   if (error || !inquiries || inquiries.length === 0) return null
 
   // Fetch quotes for response time tracking
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select('id, inquiry_id, sent_at, accepted_at, rejected_at, status')
     .eq('tenant_id', tenantId)

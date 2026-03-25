@@ -3,16 +3,16 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { ContinuityPlanForm } from '@/components/protection/continuity-plan-form'
 
 export const metadata: Metadata = { title: 'Business Continuity | ChefFlow' }
 
 export default async function BusinessContinuityPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: chefRow } = await supabase
+  const { data: chefRow } = await db
     .from('chefs')
     .select('business_continuity_plan')
     .eq('id', chef.tenantId!)

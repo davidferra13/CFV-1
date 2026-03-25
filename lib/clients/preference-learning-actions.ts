@@ -8,7 +8,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -39,11 +39,11 @@ const ClientIdSchema = z.string().uuid()
  */
 export async function learnClientPreferences(clientId: string): Promise<ClientPattern[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validatedClientId = ClientIdSchema.parse(clientId)
 
   // Verify client belongs to this tenant
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, dietary_restrictions, allergies, favorite_cuisines, favorite_dishes')
     .eq('id', validatedClientId)
@@ -55,7 +55,7 @@ export async function learnClientPreferences(clientId: string): Promise<ClientPa
   }
 
   // Fetch all events for this client (non-cancelled)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, guest_count, occasion, service_style, serve_time, status')
     .eq('client_id', validatedClientId)
@@ -166,7 +166,7 @@ export async function learnClientPreferences(clientId: string): Promise<ClientPa
   }
 
   // Upsert all patterns
-  const { data: upserted, error } = await supabase
+  const { data: upserted, error } = await db
     .from('client_preference_patterns')
     .upsert(upsertPayloads, {
       onConflict: 'chef_id,client_id,pattern_type,pattern_value',
@@ -197,10 +197,10 @@ export async function learnClientPreferences(clientId: string): Promise<ClientPa
  */
 export async function getClientPatterns(clientId: string): Promise<ClientPattern[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validatedClientId = ClientIdSchema.parse(clientId)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_preference_patterns')
     .select('*')
     .eq('chef_id', user.tenantId!)

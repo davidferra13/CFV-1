@@ -1,4 +1,4 @@
-// @ts-nocheck - standalone script, Supabase client type mismatch with generated types
+// @ts-nocheck - standalone script, database client type mismatch with generated types
 // Demo Data Clear
 // Removes all business data from the demo chef's tenant.
 // Preserves the demo chef and demo client accounts themselves.
@@ -6,7 +6,7 @@
 // Usage: npx tsx scripts/demo-data-clear.ts
 // Prereq: npm run demo:setup (creates demo accounts first)
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { readFileSync } from 'fs'
 import dotenv from 'dotenv'
 

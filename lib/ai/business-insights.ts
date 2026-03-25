@@ -13,7 +13,7 @@
 // it won't hallucinate an insight that sounds smart but is wrong.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   generateInsights,
   type BusinessInsights,
@@ -27,32 +27,32 @@ export type { BusinessInsights, InsightCard }
 
 export async function getBusinessInsights(): Promise<BusinessInsights> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const thisYear = now.getFullYear()
   const ytdStart = `${thisYear}-01-01`
 
   const [eventsResult, clientsResult, expensesResult, inquiriesResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('status, event_date, quoted_price_cents, occasion, guest_count')
       .eq('tenant_id', user.tenantId!)
       .order('event_date', { ascending: false })
       .limit(50),
-    supabase
+    db
       .from('clients')
       .select('id, full_name, created_at')
       .eq('tenant_id', user.tenantId!)
       .order('created_at', { ascending: false })
       .limit(50),
-    supabase
+    db
       .from('expenses')
       .select('amount_cents, category, created_at')
       .eq('tenant_id', user.tenantId!)
       .gte('created_at', ytdStart)
       .limit(200),
-    supabase
+    db
       .from('inquiries')
       .select('status, created_at, confirmed_budget_cents')
       .eq('tenant_id', user.tenantId!)

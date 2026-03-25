@@ -1,8 +1,8 @@
 // Kiosk Pairing API - verifies pairing code, issues device token
-// No Supabase auth required - uses admin client
+// No Auth.js required - uses admin client
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { generateDeviceToken, hashToken } from '@/lib/devices/token'
 import { checkRateLimit } from '@/lib/rateLimit'
 import type { KioskConfig } from '@/lib/devices/types'
@@ -25,10 +25,10 @@ export async function POST(request: NextRequest) {
     }
 
     const codeHash = hashToken(pairing_code.toUpperCase().trim())
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
 
     // Find device by pairing code hash
-    const { data: device, error } = await supabase
+    const { data: device, error } = await db
       .from('devices')
       .select(
         'id, tenant_id, status, pairing_expires_at, mode, kiosk_flow, idle_timeout_seconds, require_staff_pin'
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const tokenHash = hashToken(rawToken)
 
     // Get business name for kiosk display
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('business_name')
       .eq('id', device.tenant_id)
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     // Mark device as claimed
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-    const { error: updateError } = await supabase
+    const { error: updateError } = await db
       .from('devices')
       .update({
         status: 'active',
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Log pairing event
     try {
-      await supabase.from('device_events').insert({
+      await db.from('device_events').insert({
         device_id: device.id,
         tenant_id: device.tenant_id,
         type: 'paired',

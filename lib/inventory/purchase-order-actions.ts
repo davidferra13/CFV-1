@@ -7,7 +7,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -107,14 +107,14 @@ export type AddPOItemInput = z.infer<typeof AddPOItemSchema>
 export type UpdatePOItemInput = z.infer<typeof UpdatePOItemSchema>
 export type ReceiveItemInput = z.infer<typeof ReceiveItemSchema>
 
-// ─── Supabase helper ────────────────────────────────────────────
+// ─── DB helper ────────────────────────────────────────────
 // All inventory tables are pre-built for planned schema.
-// Cast .from() to bypass strict Supabase type checking.
-function db(supabase: any) {
+// Cast .from() to bypass strict type checking.
+function db(db: any) {
   return {
-    purchaseOrders: () => supabase.from('purchase_orders' as any) as any,
-    purchaseOrderItems: () => supabase.from('purchase_order_items' as any) as any,
-    inventoryTransactions: () => supabase.from('inventory_transactions' as any) as any,
+    purchaseOrders: () => db.from('purchase_orders' as any) as any,
+    purchaseOrderItems: () => db.from('purchase_order_items' as any) as any,
+    inventoryTransactions: () => db.from('inventory_transactions' as any) as any,
   }
 }
 
@@ -126,9 +126,9 @@ function db(supabase: any) {
 export async function createPurchaseOrder(input: CreatePOInput): Promise<PurchaseOrder> {
   const user = await requireChef()
   const parsed = CreatePOSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await db(supabase)
+  const { data, error } = await db(db)
     .purchaseOrders()
     .insert({
       chef_id: user.tenantId!,
@@ -163,10 +163,10 @@ export async function createPurchaseOrder(input: CreatePOInput): Promise<Purchas
  */
 export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event ownership
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, tenant_id, occasion')
     .eq('id', eventId)
@@ -176,7 +176,7 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
   if (eventError || !event) throw new Error('Event not found')
 
   // Step 1: Get menus for this event
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -189,10 +189,7 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
   const menuIds = menus.map((m: any) => m.id)
 
   // Step 2: Get dishes for those menus
-  const { data: dishes } = await supabase
-    .from('dishes')
-    .select('id, menu_id')
-    .in('menu_id', menuIds)
+  const { data: dishes } = await db.from('dishes').select('id, menu_id').in('menu_id', menuIds)
 
   if (!dishes || dishes.length === 0) {
     throw new Error('No dishes found in the event menus.')
@@ -201,7 +198,7 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
   const dishIds = dishes.map((d: any) => d.id)
 
   // Step 3: Get components with recipe_id and scale_factor
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('id, recipe_id, scale_factor')
     .in('dish_id', dishIds)
@@ -234,7 +231,7 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
     if (batch.length === 0) break
     batch.forEach((id) => visited.add(id))
 
-    const { data: subRecipes } = await supabase
+    const { data: subRecipes } = await db
       .from('recipe_sub_recipes')
       .select('parent_recipe_id, child_recipe_id, quantity')
       .in('parent_recipe_id', batch)
@@ -254,7 +251,7 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
 
   // Step 5: Get recipe_ingredients for all collected recipes
   const allRecipeIds = Array.from(allRecipeMultipliers.keys())
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select('recipe_id, ingredient_id, quantity, unit')
     .in('recipe_id', allRecipeIds)
@@ -267,7 +264,7 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
   const ingredientIds = [
     ...new Set((recipeIngredients as any[]).map((ri: any) => ri.ingredient_id)),
   ]
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await db
     .from('ingredients')
     .select('id, name, last_price_cents')
     .in('id', ingredientIds)
@@ -337,7 +334,7 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
   }
 
   // Create PO header
-  const { data: po, error: poError } = await db(supabase)
+  const { data: po, error: poError } = await db(db)
     .purchaseOrders()
     .insert({
       chef_id: user.tenantId!,
@@ -359,7 +356,7 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
       ...item,
     }))
 
-    const { error: itemsError } = await db(supabase).purchaseOrderItems().insert(itemRows)
+    const { error: itemsError } = await db(db).purchaseOrderItems().insert(itemRows)
 
     if (itemsError) throw new Error(`Failed to create PO items: ${(itemsError as any).message}`)
   }
@@ -378,17 +375,17 @@ export async function createPOFromEvent(eventId: string): Promise<PurchaseOrder>
 export async function addPOItem(poId: string, input: AddPOItemInput): Promise<POItem> {
   const user = await requireChef()
   const parsed = AddPOItemSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify PO ownership and status
-  await verifyPOOwnership(supabase, poId, user.tenantId!)
+  await verifyPOOwnership(db, poId, user.tenantId!)
 
   const estimatedTotal =
     parsed.estimatedUnitPriceCents != null
       ? Math.round(parsed.orderedQty * parsed.estimatedUnitPriceCents)
       : null
 
-  const { data, error } = await db(supabase)
+  const { data, error } = await db(db)
     .purchaseOrderItems()
     .insert({
       purchase_order_id: poId,
@@ -406,7 +403,7 @@ export async function addPOItem(poId: string, input: AddPOItemInput): Promise<PO
   if (error) throw new Error(`Failed to add PO item: ${(error as any).message}`)
 
   // Recalculate PO estimated total
-  await recalcPOEstimatedTotal(supabase, poId, user.tenantId!)
+  await recalcPOEstimatedTotal(db, poId, user.tenantId!)
 
   revalidatePath('/inventory')
   revalidatePath('/inventory/purchase-orders')
@@ -421,17 +418,17 @@ export async function addPOItem(poId: string, input: AddPOItemInput): Promise<PO
 export async function updatePOItem(itemId: string, input: UpdatePOItemInput): Promise<POItem> {
   const user = await requireChef()
   const parsed = UpdatePOItemSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the item to find its PO, then verify ownership
-  const { data: item, error: fetchError } = await db(supabase)
+  const { data: item, error: fetchError } = await db(db)
     .purchaseOrderItems()
     .select('purchase_order_id, ordered_qty, estimated_unit_price_cents')
     .eq('id', itemId)
     .single()
 
   if (fetchError || !item) throw new Error('PO item not found')
-  await verifyPOOwnership(supabase, (item as any).purchase_order_id, user.tenantId!)
+  await verifyPOOwnership(db, (item as any).purchase_order_id, user.tenantId!)
 
   // Build update payload
   const updatePayload: Record<string, any> = {}
@@ -452,7 +449,7 @@ export async function updatePOItem(itemId: string, input: UpdatePOItemInput): Pr
   updatePayload.estimated_total_cents =
     finalPrice != null ? Math.round(finalQty * finalPrice) : null
 
-  const { data, error } = await db(supabase)
+  const { data, error } = await db(db)
     .purchaseOrderItems()
     .update(updatePayload)
     .eq('id', itemId)
@@ -461,7 +458,7 @@ export async function updatePOItem(itemId: string, input: UpdatePOItemInput): Pr
 
   if (error) throw new Error(`Failed to update PO item: ${(error as any).message}`)
 
-  await recalcPOEstimatedTotal(supabase, (item as any).purchase_order_id, user.tenantId!)
+  await recalcPOEstimatedTotal(db, (item as any).purchase_order_id, user.tenantId!)
 
   revalidatePath('/inventory')
   revalidatePath('/inventory/purchase-orders')
@@ -475,23 +472,23 @@ export async function updatePOItem(itemId: string, input: UpdatePOItemInput): Pr
  */
 export async function removePOItem(itemId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the item to find its PO
-  const { data: item, error: fetchError } = await db(supabase)
+  const { data: item, error: fetchError } = await db(db)
     .purchaseOrderItems()
     .select('purchase_order_id')
     .eq('id', itemId)
     .single()
 
   if (fetchError || !item) throw new Error('PO item not found')
-  await verifyPOOwnership(supabase, (item as any).purchase_order_id, user.tenantId!)
+  await verifyPOOwnership(db, (item as any).purchase_order_id, user.tenantId!)
 
-  const { error } = await db(supabase).purchaseOrderItems().delete().eq('id', itemId)
+  const { error } = await db(db).purchaseOrderItems().delete().eq('id', itemId)
 
   if (error) throw new Error(`Failed to remove PO item: ${(error as any).message}`)
 
-  await recalcPOEstimatedTotal(supabase, (item as any).purchase_order_id, user.tenantId!)
+  await recalcPOEstimatedTotal(db, (item as any).purchase_order_id, user.tenantId!)
 
   revalidatePath('/inventory')
   revalidatePath('/inventory/purchase-orders')
@@ -502,14 +499,14 @@ export async function removePOItem(itemId: string): Promise<void> {
  */
 export async function submitPO(poId: string): Promise<PurchaseOrder> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const po = await verifyPOOwnership(supabase, poId, user.tenantId!)
+  const po = await verifyPOOwnership(db, poId, user.tenantId!)
   if (po.status !== 'draft') {
     throw new Error(`Cannot submit PO in "${po.status}" status - must be draft`)
   }
 
-  const { data, error } = await db(supabase)
+  const { data, error } = await db(db)
     .purchaseOrders()
     .update({
       status: 'submitted',
@@ -543,9 +540,9 @@ export async function receivePOItems(
 ): Promise<PurchaseOrder> {
   const user = await requireChef()
   const parsedItems = items.map((item) => ReceiveItemSchema.parse(item))
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const po = await verifyPOOwnership(supabase, poId, user.tenantId!)
+  const po = await verifyPOOwnership(db, poId, user.tenantId!)
   if (po.status === 'cancelled') {
     throw new Error('Cannot receive items on a cancelled PO')
   }
@@ -553,7 +550,7 @@ export async function receivePOItems(
   // Process each item
   for (const item of parsedItems) {
     // Get the PO item details
-    const { data: poItem, error: itemError } = await db(supabase)
+    const { data: poItem, error: itemError } = await db(db)
       .purchaseOrderItems()
       .select('*')
       .eq('id', item.itemId)
@@ -569,7 +566,7 @@ export async function receivePOItems(
       actualUnitPrice != null ? Math.round(item.receivedQty * actualUnitPrice) : null
 
     // Update the PO item
-    const { error: updateError } = await db(supabase)
+    const { error: updateError } = await db(db)
       .purchaseOrderItems()
       .update({
         received_qty: item.receivedQty,
@@ -592,7 +589,7 @@ export async function receivePOItems(
       const totalCostCents =
         actualUnitPrice != null ? Math.round(item.receivedQty * actualUnitPrice) : null
 
-      const { error: txError } = await db(supabase)
+      const { error: txError } = await db(db)
         .inventoryTransactions()
         .insert({
           chef_id: user.tenantId!,
@@ -617,13 +614,13 @@ export async function receivePOItems(
     // Update ingredient.last_price_cents if actual price provided and ingredient is linked
     if (item.actualUnitPriceCents != null && (poItem as any).ingredient_id) {
       try {
-        await supabase
+        await db
           .from('ingredients')
           .update({ last_price_cents: item.actualUnitPriceCents } as any)
           .eq('id', (poItem as any).ingredient_id)
 
         // Record price history entry (non-blocking)
-        await supabase.from('ingredient_price_history').insert({
+        await db.from('ingredient_price_history').insert({
           chef_id: user.tenantId!,
           ingredient_id: (poItem as any).ingredient_id,
           price_cents: item.actualUnitPriceCents,
@@ -642,7 +639,7 @@ export async function receivePOItems(
   }
 
   // Determine new PO status: check if all items are received
-  const { data: allItems, error: allItemsError } = await db(supabase)
+  const { data: allItems, error: allItemsError } = await db(db)
     .purchaseOrderItems()
     .select('is_received, actual_total_cents')
     .eq('purchase_order_id', poId)
@@ -658,7 +655,7 @@ export async function receivePOItems(
   }, 0)
 
   // Update PO status and actual total
-  const { data: updatedPO, error: poUpdateError } = await db(supabase)
+  const { data: updatedPO, error: poUpdateError } = await db(db)
     .purchaseOrders()
     .update({
       status: newStatus,
@@ -689,9 +686,9 @@ export async function getPurchaseOrders(filters?: {
   eventId?: string
 }): Promise<PurchaseOrder[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = db(supabase)
+  let query = db(db)
     .purchaseOrders()
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -721,7 +718,7 @@ export async function getPurchaseOrders(filters?: {
   // Get vendor names
   const vendorNameMap = new Map<string, string>()
   if (vendorIds.length > 0) {
-    const { data: vendors } = await (supabase.from('vendors') as any)
+    const { data: vendors } = await (db.from('vendors') as any)
       .select('id, name')
       .in('id', vendorIds)
 
@@ -731,7 +728,7 @@ export async function getPurchaseOrders(filters?: {
   }
 
   // Get item counts per PO
-  const { data: itemCounts } = await db(supabase)
+  const { data: itemCounts } = await db(db)
     .purchaseOrderItems()
     .select('purchase_order_id')
     .in('purchase_order_id', poIds)
@@ -745,7 +742,7 @@ export async function getPurchaseOrders(filters?: {
   const eventIds = [...new Set(pos.map((p: any) => p.event_id).filter(Boolean))]
   const eventTitleMap = new Map<string, string>()
   if (eventIds.length > 0) {
-    const { data: events } = await supabase.from('events').select('id, occasion').in('id', eventIds)
+    const { data: events } = await db.from('events').select('id, occasion').in('id', eventIds)
 
     for (const e of (events || []) as any[]) {
       eventTitleMap.set(e.id, e.occasion)
@@ -767,9 +764,9 @@ export async function getPurchaseOrder(
   poId: string
 ): Promise<{ po: PurchaseOrder; items: POItem[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: po, error: poError } = await db(supabase)
+  const { data: po, error: poError } = await db(db)
     .purchaseOrders()
     .select('*')
     .eq('id', poId)
@@ -778,7 +775,7 @@ export async function getPurchaseOrder(
 
   if (poError || !po) throw new Error('Purchase order not found')
 
-  const { data: items, error: itemsError } = await db(supabase)
+  const { data: items, error: itemsError } = await db(db)
     .purchaseOrderItems()
     .select('*')
     .eq('purchase_order_id', poId)
@@ -789,7 +786,7 @@ export async function getPurchaseOrder(
   // Get vendor name if applicable
   let vendorName: string | undefined
   if ((po as any).vendor_id) {
-    const { data: vendor } = await supabase
+    const { data: vendor } = await db
       .from('vendors')
       .select('name')
       .eq('id', (po as any).vendor_id)
@@ -800,7 +797,7 @@ export async function getPurchaseOrder(
   // Get event title if applicable
   let eventTitle: string | undefined
   if ((po as any).event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('occasion')
       .eq('id', (po as any).event_id)
@@ -825,14 +822,14 @@ export async function getPurchaseOrder(
  */
 export async function cancelPO(poId: string): Promise<PurchaseOrder> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const po = await verifyPOOwnership(supabase, poId, user.tenantId!)
+  const po = await verifyPOOwnership(db, poId, user.tenantId!)
   if (po.status === 'received' || po.status === 'cancelled') {
     throw new Error(`Cannot cancel PO in "${po.status}" status`)
   }
 
-  const { data, error } = await db(supabase)
+  const { data, error } = await db(db)
     .purchaseOrders()
     .update({ status: 'cancelled' })
     .eq('id', poId)
@@ -850,8 +847,8 @@ export async function cancelPO(poId: string): Promise<PurchaseOrder> {
 
 // ─── Helpers ─────────────────────────────────────────────────────
 
-async function verifyPOOwnership(supabase: any, poId: string, tenantId: string): Promise<any> {
-  const { data, error } = await db(supabase)
+async function verifyPOOwnership(db: any, poId: string, tenantId: string): Promise<any> {
+  const { data, error } = await db(db)
     .purchaseOrders()
     .select('*')
     .eq('id', poId)
@@ -862,12 +859,8 @@ async function verifyPOOwnership(supabase: any, poId: string, tenantId: string):
   return data
 }
 
-async function recalcPOEstimatedTotal(
-  supabase: any,
-  poId: string,
-  tenantId: string
-): Promise<void> {
-  const { data: items } = await db(supabase)
+async function recalcPOEstimatedTotal(db: any, poId: string, tenantId: string): Promise<void> {
+  const { data: items } = await db(db)
     .purchaseOrderItems()
     .select('estimated_total_cents')
     .eq('purchase_order_id', poId)
@@ -876,7 +869,7 @@ async function recalcPOEstimatedTotal(
     return sum + (i.estimated_total_cents ?? 0)
   }, 0)
 
-  await db(supabase)
+  await db(db)
     .purchaseOrders()
     .update({ estimated_total_cents: total })
     .eq('id', poId)

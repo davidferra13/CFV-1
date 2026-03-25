@@ -6,7 +6,7 @@
 // holiday outreach template. The chef reviews and sends - never auto-fired.
 // This is AI-policy-compliant: system drafts, chef approves.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getUpcomingHolidays } from '@/lib/holidays/upcoming'
 import { SYSTEM_TEMPLATES } from '@/lib/marketing/constants'
 
@@ -21,8 +21,8 @@ export async function processHolidayCampaignDrafts(): Promise<{
   drafted: number
   skipped: number
 }> {
-  const supabase = createServerClient({ admin: true })
-  const db = supabase as any
+  const db = createServerClient({ admin: true })
+  const db = db as any
 
   let drafted = 0
   let skipped = 0

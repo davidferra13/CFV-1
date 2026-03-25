@@ -3,7 +3,7 @@
 
 import { NextResponse } from 'next/server'
 import { createElement } from 'react'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { computeDailyReport } from '@/lib/reports/compute-daily-report'
 import { sendEmail } from '@/lib/email/send'
 import { DailyReportEmail } from '@/lib/email/templates/daily-report'
@@ -16,11 +16,11 @@ export async function GET(request: Request) {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const today = new Date().toISOString().split('T')[0]
 
   // Fetch all chefs
-  const { data: chefs, error: chefsError } = await supabase
+  const { data: chefs, error: chefsError } = await db
     .from('chefs')
     .select('id, auth_user_id, business_name')
 
@@ -35,10 +35,10 @@ export async function GET(request: Request) {
   for (const chef of chefs) {
     try {
       // Compute report
-      const content = await computeDailyReport(supabase, chef.id, today)
+      const content = await computeDailyReport(db, chef.id, today)
 
       // Upsert into daily_reports
-      await supabase.from('daily_reports').upsert(
+      await db.from('daily_reports').upsert(
         {
           tenant_id: chef.id,
           report_date: today,
@@ -50,7 +50,7 @@ export async function GET(request: Request) {
 
       // Resolve chef email
       if (!chef.auth_user_id) continue
-      const { data: authUser } = await supabase.auth.admin.getUserById(chef.auth_user_id)
+      const { data: authUser } = await db.auth.admin.getUserById(chef.auth_user_id)
       if (!authUser?.user?.email) continue
 
       const chefName = chef.business_name || 'Chef'
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
 
       if (emailSent) {
         // Mark email_sent_at
-        await supabase
+        await db
           .from('daily_reports')
           .update({ email_sent_at: new Date().toISOString() })
           .eq('tenant_id', chef.id)

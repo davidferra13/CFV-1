@@ -12,7 +12,7 @@
 // (e.g. DB connection issue), it logs the error and returns. It must
 // never cause a cron job to fail.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export async function recordCronHeartbeat(
   cronName: string,
@@ -20,8 +20,8 @@ export async function recordCronHeartbeat(
   durationMs?: number
 ): Promise<void> {
   try {
-    const supabase: any = createServerClient({ admin: true })
-    const { error } = await supabase.from('cron_executions').insert({
+    const db: any = createServerClient({ admin: true })
+    const { error } = await db.from('cron_executions').insert({
       cron_name: cronName,
       status: 'success',
       duration_ms: durationMs ?? null,
@@ -41,8 +41,8 @@ export async function recordCronError(
   durationMs?: number
 ): Promise<void> {
   try {
-    const supabase: any = createServerClient({ admin: true })
-    const { error } = await supabase.from('cron_executions').insert({
+    const db: any = createServerClient({ admin: true })
+    const { error } = await db.from('cron_executions').insert({
       cron_name: cronName,
       status: 'error',
       duration_ms: durationMs ?? null,

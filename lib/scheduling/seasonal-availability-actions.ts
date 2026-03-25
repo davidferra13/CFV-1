@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -64,9 +64,9 @@ function getLocationColor(location: string, allLocations: string[]): string {
 /** Get all seasonal periods for the current chef */
 export async function getSeasonalPeriods(): Promise<SeasonalPeriod[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('seasonal_availability_periods')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -79,10 +79,10 @@ export async function getSeasonalPeriods(): Promise<SeasonalPeriod[]> {
 /** Get the active seasonal period based on today's date */
 export async function getActiveSeasonalPeriod(): Promise<SeasonalPeriod | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('seasonal_availability_periods')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -102,9 +102,9 @@ export async function getAvailabilityForDate(date: string): Promise<{
   location: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('seasonal_availability_periods')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -130,13 +130,13 @@ export async function getAvailabilityForDate(date: string): Promise<{
 /** Get all periods for the current year, color-coded by location */
 export async function getYearOverview(): Promise<YearOverviewPeriod[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const year = new Date().getFullYear()
   const yearStart = `${year}-01-01`
   const yearEnd = `${year}-12-31`
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('seasonal_availability_periods')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -163,10 +163,10 @@ export async function checkBookingConflict(date: string): Promise<{
   maxEventsPerWeek: number
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find the seasonal period covering this date
-  const { data: periodData, error: periodError } = await supabase
+  const { data: periodData, error: periodError } = await db
     .from('seasonal_availability_periods')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -206,7 +206,7 @@ export async function checkBookingConflict(date: string): Promise<{
   const weekStartStr = weekStart.toISOString().split('T')[0]
   const weekEndStr = weekEnd.toISOString().split('T')[0]
 
-  const { count, error: countError } = await supabase
+  const { count, error: countError } = await db
     .from('events')
     .select('*', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -247,7 +247,7 @@ export async function createSeasonalPeriod(
   input: SeasonalPeriodInput
 ): Promise<{ success: boolean; error?: string; period?: SeasonalPeriod }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Validate dates
   if (input.end_date <= input.start_date) {
@@ -255,7 +255,7 @@ export async function createSeasonalPeriod(
   }
 
   // Check for overlapping periods
-  const { data: overlaps, error: overlapError } = await supabase
+  const { data: overlaps, error: overlapError } = await db
     .from('seasonal_availability_periods')
     .select('id, period_name, start_date, end_date')
     .eq('chef_id', user.tenantId!)
@@ -269,7 +269,7 @@ export async function createSeasonalPeriod(
     return { success: false, error: `Dates overlap with existing period(s): ${names}` }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('seasonal_availability_periods')
     .insert({
       chef_id: user.tenantId!,
@@ -298,7 +298,7 @@ export async function updateSeasonalPeriod(
   input: Partial<SeasonalPeriodInput>
 ): Promise<{ success: boolean; error?: string; period?: SeasonalPeriod }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Validate dates if both provided
   if (input.start_date && input.end_date && input.end_date <= input.start_date) {
@@ -308,7 +308,7 @@ export async function updateSeasonalPeriod(
   // If dates are changing, check for overlaps (excluding this period)
   if (input.start_date || input.end_date) {
     // Fetch current period to get full date range
-    const { data: current, error: fetchErr } = await supabase
+    const { data: current, error: fetchErr } = await db
       .from('seasonal_availability_periods')
       .select('*')
       .eq('id', id)
@@ -322,7 +322,7 @@ export async function updateSeasonalPeriod(
     const startDate = input.start_date ?? current.start_date
     const endDate = input.end_date ?? current.end_date
 
-    const { data: overlaps, error: overlapError } = await supabase
+    const { data: overlaps, error: overlapError } = await db
       .from('seasonal_availability_periods')
       .select('id, period_name, start_date, end_date')
       .eq('chef_id', user.tenantId!)
@@ -338,7 +338,7 @@ export async function updateSeasonalPeriod(
     }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('seasonal_availability_periods')
     .update({
       ...input,
@@ -360,9 +360,9 @@ export async function deleteSeasonalPeriod(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('seasonal_availability_periods')
     .delete()
     .eq('id', id)

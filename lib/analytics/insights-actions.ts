@@ -1,12 +1,12 @@
 // Clientele Intelligence Server Actions
 // Statistics across all dimensions: dining patterns, occasions, client demographics,
 // seasonal trends, retention, financials, and operational efficiency.
-// All aggregation is done in JS after minimal Supabase fetches (no RPC calls, no migrations needed).
+// All aggregation is done in JS after minimal database fetches (no RPC calls, no migrations needed).
 
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { format, subMonths, startOfMonth } from 'date-fns'
 import { extractTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-defaults'
 
@@ -134,9 +134,9 @@ const STATUS_LABELS: Record<string, string> = {
 
 export async function getDinnerTimeDistribution(): Promise<DinnerTimeSlot[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('serve_time')
     .eq('tenant_id', user.tenantId!)
@@ -168,9 +168,9 @@ export async function getDinnerTimeDistribution(): Promise<DinnerTimeSlot[]> {
 
 export async function getOccasionStats(): Promise<OccasionStat[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('occasion, quoted_price_cents')
     .eq('tenant_id', user.tenantId!)
@@ -210,9 +210,9 @@ export async function getOccasionStats(): Promise<OccasionStat[]> {
 
 export async function getServiceStyleDistribution(): Promise<ServiceStyleStat[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('service_style')
     .eq('tenant_id', user.tenantId!)
@@ -241,9 +241,9 @@ export async function getServiceStyleDistribution(): Promise<ServiceStyleStat[]>
 
 export async function getGuestCountDistribution(): Promise<GuestCountBucket[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('guest_count')
     .eq('tenant_id', user.tenantId!)
@@ -282,16 +282,16 @@ export async function getGuestCountDistribution(): Promise<GuestCountBucket[]> {
 
 export async function getDietaryRestrictionFrequency(): Promise<DietaryFrequency[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [{ data: clientRows, error: clientErr }, { data: eventRows, error: eventErr }] =
     await Promise.all([
-      supabase
+      db
         .from('clients')
         .select('dietary_restrictions')
         .eq('tenant_id', user.tenantId!)
         .not('dietary_restrictions', 'is', null),
-      supabase
+      db
         .from('events')
         .select('dietary_restrictions')
         .eq('tenant_id', user.tenantId!)
@@ -327,9 +327,9 @@ export async function getDietaryRestrictionFrequency(): Promise<DietaryFrequency
 
 export async function getMonthlyEventVolume(): Promise<MonthlyVolume[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('event_date, quoted_price_cents, status')
     .eq('tenant_id', user.tenantId!)
@@ -384,9 +384,9 @@ export async function getMonthlyEventVolume(): Promise<MonthlyVolume[]> {
 
 export async function getDayOfWeekDistribution(): Promise<DayOfWeekStat[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', user.tenantId!)
@@ -415,12 +415,12 @@ export async function getDayOfWeekDistribution(): Promise<DayOfWeekStat[]> {
 
 export async function getMonthlyRevenueTrend(months = 18): Promise<RevenueTrendPoint[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const from = startOfMonth(subMonths(now, months - 1)).toISOString()
 
-  const { data: ledger, error } = await supabase
+  const { data: ledger, error } = await db
     .from('ledger_entries')
     .select('entry_type, amount_cents, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -455,9 +455,9 @@ export async function getMonthlyRevenueTrend(months = 18): Promise<RevenueTrendP
 
 export async function getClientAcquisitionStats(): Promise<ClientAcquisitionStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('referral_source, status, loyalty_tier')
     .eq('tenant_id', user.tenantId!)
@@ -506,9 +506,9 @@ export async function getClientAcquisitionStats(): Promise<ClientAcquisitionStat
 
 export async function getRetentionStats(): Promise<RetentionStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('total_events_count, last_event_date')
     .eq('tenant_id', user.tenantId!)
@@ -571,9 +571,9 @@ export async function getRetentionStats(): Promise<RetentionStats> {
 
 export async function getClientLTVDistribution(): Promise<LTVBucket[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('lifetime_value_cents')
     .eq('tenant_id', user.tenantId!)
@@ -609,9 +609,9 @@ export async function getClientLTVDistribution(): Promise<LTVBucket[]> {
 
 export async function getPhaseTimeStats(): Promise<PhaseTimeStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       'time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes, guest_count'
@@ -695,12 +695,12 @@ export async function getPhaseTimeStats(): Promise<PhaseTimeStats> {
 
 export async function getAARRatingTrends(months = 12): Promise<AARTrends> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const from = startOfMonth(subMonths(now, months - 1)).toISOString()
 
-  const { data: aars, error } = await supabase
+  const { data: aars, error } = await db
     .from('after_action_reviews')
     .select('calm_rating, preparation_rating, execution_rating, forgotten_items, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -755,9 +755,9 @@ export async function getAARRatingTrends(months = 12): Promise<AARTrends> {
 
 export async function getFinancialIntelligenceStats(): Promise<FinancialIntelligence> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('occasion, service_style, quoted_price_cents, tip_amount_cents, guest_count')
     .eq('tenant_id', user.tenantId!)
@@ -847,7 +847,7 @@ export type TakeAChefROI = {
 
 export async function getTakeAChefROI(): Promise<TakeAChefROI> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const empty: TakeAChefROI = {
@@ -864,7 +864,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
   }
 
   try {
-    const { data: tenantSettings } = await supabase
+    const { data: tenantSettings } = await db
       .from('tenant_settings')
       .select('integration_connection_settings')
       .eq('tenant_id', tenantId)
@@ -877,7 +877,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
     empty.defaultCommissionPercent = defaultCommissionPercent
 
     // 1. Get all TakeaChef-sourced clients
-    const { data: tacClients, error: clientErr } = await supabase
+    const { data: tacClients, error: clientErr } = await db
       .from('clients')
       .select('id, full_name')
       .eq('tenant_id', tenantId)
@@ -888,7 +888,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
     const tacClientIds = tacClients.map((c: any) => c.id)
 
     // 2. Get all events from TAC clients (completed/non-cancelled)
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('id, client_id, inquiry_id, quoted_price_cents, status')
       .eq('tenant_id', tenantId)
@@ -902,7 +902,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
 
     let inquiryChannelMap: Record<string, string> = {}
     if (inquiryIds.length > 0) {
-      const { data: inquiries } = await supabase
+      const { data: inquiries } = await db
         .from('inquiries')
         .select('id, channel')
         .in('id', inquiryIds)
@@ -946,7 +946,7 @@ export async function getTakeAChefROI(): Promise<TakeAChefROI> {
     }
 
     // 5. Get actual commission expenses
-    const { data: commissionExpenses } = await supabase
+    const { data: commissionExpenses } = await db
       .from('expenses')
       .select('amount_cents')
       .eq('tenant_id', tenantId)

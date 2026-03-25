@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -27,10 +27,10 @@ export type UpdateGuestInput = z.infer<typeof UpdateGuestSchema>
 
 export async function createGuest(input: CreateGuestInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = CreateGuestSchema.parse(input)
 
-  const { data: guest, error } = await supabase
+  const { data: guest, error } = await db
     .from('guests')
     .insert({
       name: data.name,
@@ -53,7 +53,7 @@ export async function createGuest(input: CreateGuestInput) {
 
 export async function updateGuest(id: string, input: UpdateGuestInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = UpdateGuestSchema.parse(input)
 
   const updateData: Record<string, unknown> = {}
@@ -63,7 +63,7 @@ export async function updateGuest(id: string, input: UpdateGuestInput) {
   if (data.notes !== undefined) updateData.notes = data.notes || null
   updateData.updated_at = new Date().toISOString()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('guests')
     .update(updateData)
     .eq('id', id)
@@ -80,13 +80,9 @@ export async function updateGuest(id: string, input: UpdateGuestInput) {
 
 export async function deleteGuest(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
-    .from('guests')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', user.tenantId!)
+  const { error } = await db.from('guests').delete().eq('id', id).eq('chef_id', user.tenantId!)
 
   if (error) {
     console.error('[guests] deleteGuest error:', error)
@@ -98,9 +94,9 @@ export async function deleteGuest(id: string) {
 
 export async function listGuests(search?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let q = supabase
+  let q = db
     .from('guests')
     .select('*, guest_tags(tag, color), guest_comps(id, description, redeemed_at)')
     .eq('chef_id', user.tenantId!)
@@ -125,9 +121,9 @@ export async function listGuests(search?: string) {
 
 export async function getGuest(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: guest, error } = await supabase
+  const { data: guest, error } = await db
     .from('guests')
     .select('*')
     .eq('id', id)
@@ -140,7 +136,7 @@ export async function getGuest(id: string) {
   }
 
   // Fetch tags
-  const { data: tags } = await supabase
+  const { data: tags } = await db
     .from('guest_tags')
     .select('*')
     .eq('guest_id', id)
@@ -148,7 +144,7 @@ export async function getGuest(id: string) {
     .order('tag', { ascending: true })
 
   // Fetch active comps
-  const { data: comps } = await supabase
+  const { data: comps } = await db
     .from('guest_comps')
     .select('*')
     .eq('guest_id', id)
@@ -156,7 +152,7 @@ export async function getGuest(id: string) {
     .order('created_at', { ascending: false })
 
   // Fetch recent visits
-  const { data: visits } = await supabase
+  const { data: visits } = await db
     .from('guest_visits')
     .select('*')
     .eq('guest_id', id)
@@ -165,7 +161,7 @@ export async function getGuest(id: string) {
     .limit(20)
 
   // Fetch reservations
-  const { data: reservations } = await supabase
+  const { data: reservations } = await db
     .from('guest_reservations')
     .select('*')
     .eq('guest_id', id)
@@ -199,11 +195,11 @@ export async function getGuest(id: string) {
 
 export async function searchGuests(query: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!query.trim()) return []
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guests')
     .select('id, name, phone, email, guest_tags(tag, color), guest_comps(id, redeemed_at)')
     .eq('chef_id', user.tenantId!)

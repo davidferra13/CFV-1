@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { extractTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-defaults'
 import {
   calculateTakeAChefFinanceSummary,
@@ -92,12 +92,12 @@ function extractTakeAChefWorkflow(unknownFields: unknown) {
 export async function getTakeAChefCommandCenter(): Promise<TakeAChefCommandCenterData> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = Date.now()
   const today = new Date().toISOString().slice(0, 10)
 
   const [{ data: inquiries }, { data: tenantSettings }] = await Promise.all([
-    supabase
+    db
       .from('inquiries')
       .select(
         `
@@ -111,7 +111,7 @@ export async function getTakeAChefCommandCenter(): Promise<TakeAChefCommandCente
       .eq('channel', 'take_a_chef')
       .in('status', ['new', 'awaiting_chef', 'confirmed', 'awaiting_client', 'quoted'])
       .order('created_at', { ascending: false }),
-    supabase
+    db
       .from('tenant_settings')
       .select('integration_connection_settings')
       .eq('tenant_id', tenantId)
@@ -253,14 +253,14 @@ export async function getTakeAChefCommandCenter(): Promise<TakeAChefCommandCente
   }
 
   const [{ data: events }, { data: expenses }] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'id, inquiry_id, event_date, status, occasion, quoted_price_cents, client:clients(full_name)'
       )
       .eq('tenant_id', tenantId)
       .in('id', linkedEventIds),
-    supabase
+    db
       .from('expenses')
       .select('event_id, amount_cents')
       .eq('tenant_id', tenantId)

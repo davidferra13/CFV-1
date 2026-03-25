@@ -3,7 +3,7 @@
 // Uses a consistent template for all confirmed menus.
 
 import { requireChef, requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, LETTER_WIDTH, MARGIN_X, MAX_Y } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 
@@ -28,9 +28,9 @@ export async function fetchFrontOfHouseMenuData(
   eventId: string
 ): Promise<FrontOfHouseMenuData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -44,7 +44,7 @@ export async function fetchFrontOfHouseMenuData(
 
   if (!event) return null
 
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -56,7 +56,7 @@ export async function fetchFrontOfHouseMenuData(
 
   const menuId = menus[0].id
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('course_number, course_name, description, dietary_tags, allergen_flags, sort_order')
     .eq('menu_id', menuId)
@@ -90,9 +90,9 @@ export async function fetchFrontOfHouseMenuDataForClient(
   eventId: string
 ): Promise<FrontOfHouseMenuData | null> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -106,7 +106,7 @@ export async function fetchFrontOfHouseMenuDataForClient(
 
   if (!event) return null
 
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -117,7 +117,7 @@ export async function fetchFrontOfHouseMenuDataForClient(
 
   const menuId = menus[0].id
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('course_number, course_name, description, dietary_tags, allergen_flags, sort_order')
     .eq('menu_id', menuId)

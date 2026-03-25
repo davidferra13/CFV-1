@@ -99,7 +99,7 @@ Zero risk either way — your real branch is never touched until you explicitly 
 
 ### Red (Claude Code only)
 
-- Anything touching `supabase/migrations/`
+- Anything touching `database/migrations/`
 - Auth logic (`middleware.ts`, `lib/auth/`)
 - Financial logic (`lib/ledger/`, payment routes)
 - Multi-file refactors

@@ -46,7 +46,7 @@ npm run rl:report
 
 ## Data Storage
 
-All data is local SQLite. Nothing touches Supabase or any cloud service.
+All data is local SQLite. Nothing touches PostgreSQL or any cloud service.
 
 ```
 data/rl-db/chefflow-rl.sqlite    -- Main database

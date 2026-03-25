@@ -9,10 +9,10 @@
 //   DRY_RUN=1 node index.mjs         # Preview without inserting
 //
 // Environment:
-//   SUPABASE_SERVICE_ROLE_KEY   Required (unless dry run)
+//   DB_SERVICE_ROLE_KEY   Required (unless dry run)
 //
 // Designed to run on a Raspberry Pi via cron:
-//   0 3 * * * cd /home/pi/crawler && SUPABASE_SERVICE_ROLE_KEY=xxx node index.mjs >> crawl.log 2>&1
+//   0 3 * * * cd /home/pi/crawler && DB_SERVICE_ROLE_KEY=xxx node index.mjs >> crawl.log 2>&1
 
 import config from './config.json' with { type: 'json' }
 import { crawlRegion } from './osm.mjs'

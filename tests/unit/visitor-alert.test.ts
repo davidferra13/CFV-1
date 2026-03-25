@@ -53,7 +53,7 @@ class VisitorQueryBuilder {
   }
 }
 
-function createVisitorSupabase(options: VisitorMockOptions) {
+function createVisitorDb(options: VisitorMockOptions) {
   return {
     from(table: string) {
       return new VisitorQueryBuilder(table, options)
@@ -68,7 +68,7 @@ function loadVisitorAlertWithMocks(input: {
   const react = require('react')
   react.cache = react.cache || ((fn: unknown) => fn)
 
-  const supabasePath = require.resolve('../../lib/supabase/server.ts')
+  const dbPath = require.resolve('../../lib/db/server.ts')
   const sendPath = require.resolve('../../lib/notifications/send.ts')
   const visitorPath = require.resolve('../../lib/activity/visitor-alert.ts')
 
@@ -76,13 +76,13 @@ function loadVisitorAlertWithMocks(input: {
   delete require.cache[visitorPath]
 
   // Ensure both modules are loaded in cache, then replace their exports.
-  require(supabasePath)
+  require(dbPath)
   require(sendPath)
 
-  const originalSupabaseExports = require.cache[supabasePath]!.exports
+  const originalDbExports = require.cache[dbPath]!.exports
   const originalSendExports = require.cache[sendPath]!.exports
 
-  require.cache[supabasePath]!.exports = {
+  require.cache[dbPath]!.exports = {
     createServerClient: input.createServerClient,
   }
   require.cache[sendPath]!.exports = {
@@ -92,7 +92,7 @@ function loadVisitorAlertWithMocks(input: {
   const { triggerVisitorAlert } = require(visitorPath)
 
   const restore = () => {
-    require.cache[supabasePath]!.exports = originalSupabaseExports
+    require.cache[dbPath]!.exports = originalDbExports
     require.cache[sendPath]!.exports = originalSendExports
     delete require.cache[visitorPath]
   }
@@ -106,7 +106,7 @@ test('triggerVisitorAlert skips non-alertable events before DB work', async () =
   const { triggerVisitorAlert, restore } = loadVisitorAlertWithMocks({
     createServerClient: () => {
       createCalls++
-      return createVisitorSupabase({})
+      return createVisitorDb({})
     },
     sendNotification: async () => {
       sendCalls++
@@ -132,7 +132,7 @@ test('triggerVisitorAlert skips when debounce finds a recent alert', async () =>
   let sendCalls = 0
   const { triggerVisitorAlert, restore } = loadVisitorAlertWithMocks({
     createServerClient: () =>
-      createVisitorSupabase({
+      createVisitorDb({
         recentAlert: { id: 'notif-1' },
         prefs: { visitor_alerts_enabled: true },
         chef: { auth_user_id: 'chef-auth-1' },
@@ -160,7 +160,7 @@ test('triggerVisitorAlert respects visitor_alerts_enabled=false preference', asy
   let sendCalls = 0
   const { triggerVisitorAlert, restore } = loadVisitorAlertWithMocks({
     createServerClient: () =>
-      createVisitorSupabase({
+      createVisitorDb({
         recentAlert: null,
         prefs: { visitor_alerts_enabled: false },
         chef: { auth_user_id: 'chef-auth-1' },
@@ -188,7 +188,7 @@ test('triggerVisitorAlert sends high-intent payload with resolved client name', 
   const sent: any[] = []
   const { triggerVisitorAlert, restore } = loadVisitorAlertWithMocks({
     createServerClient: () =>
-      createVisitorSupabase({
+      createVisitorDb({
         recentAlert: null,
         prefs: { visitor_alerts_enabled: true },
         chef: { auth_user_id: 'chef-auth-1' },
@@ -222,7 +222,7 @@ test('triggerVisitorAlert sends high-intent payload with resolved client name', 
 test('triggerVisitorAlert swallows sendNotification errors (non-blocking)', async () => {
   const { triggerVisitorAlert, restore } = loadVisitorAlertWithMocks({
     createServerClient: () =>
-      createVisitorSupabase({
+      createVisitorDb({
         recentAlert: null,
         prefs: { visitor_alerts_enabled: true },
         chef: { auth_user_id: 'chef-auth-1' },

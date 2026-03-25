@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -79,7 +79,7 @@ export async function updateClientDates(
   input: z.infer<typeof UpdateClientDatesSchema>
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = UpdateClientDatesSchema.parse(input)
 
   const updatePayload: Record<string, unknown> = {}
@@ -88,7 +88,7 @@ export async function updateClientDates(
   if (validated.importantDates !== undefined)
     updatePayload.important_dates = validated.importantDates
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update(updatePayload)
     .eq('id', clientId)
@@ -106,9 +106,9 @@ export async function updateClientDates(
  */
 export async function getClientDateInfo(clientId: string): Promise<ClientDateInfo> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .select('id, birthday, anniversary, important_dates')
     .eq('id', clientId)
@@ -131,9 +131,9 @@ export async function getClientDateInfo(clientId: string): Promise<ClientDateInf
  */
 export async function getUpcomingReminders(daysAhead: number = 30): Promise<UpcomingReminder[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, birthday, anniversary, important_dates')
     .eq('tenant_id', user.tenantId!)
@@ -211,10 +211,10 @@ export async function getUpcomingReminders(daysAhead: number = 30): Promise<Upco
  */
 export async function detectAnniversaries(daysAhead: number = 30): Promise<UpcomingReminder[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get earliest event per client
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, event_date, clients!inner(full_name)')
     .eq('tenant_id', user.tenantId!)

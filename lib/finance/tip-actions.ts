@@ -5,7 +5,7 @@
 // Tip requests: chef sends a link to client post-service, client submits tip (tip_requests table).
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { appendLedgerEntryForChef } from '@/lib/ledger/append'
 import { createLogger } from '@/lib/logger'
@@ -23,9 +23,9 @@ export interface TipEntry {
 
 export async function getEventTips(eventId: string): Promise<TipEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('event_tips' as any)
     .select('id, event_id, amount_cents, method, received_at, notes')
     .eq('event_id', eventId)
@@ -49,11 +49,11 @@ export async function getYtdTipSummary(): Promise<{
   byMethod: Record<string, number>
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const year = new Date().getFullYear()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('event_tips' as any)
     .select('amount_cents, method')
     .eq('tenant_id', user.tenantId!)
@@ -72,7 +72,7 @@ export async function getYtdTipSummary(): Promise<{
 
 export async function addTip(formData: FormData): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const eventId = formData.get('eventId') as string
   const amountDollars = parseFloat(formData.get('amountDollars') as string)
@@ -83,7 +83,7 @@ export async function addTip(formData: FormData): Promise<{ success: boolean; er
     return { success: false, error: 'Invalid input: event ID and positive amount are required' }
   }
 
-  const { error } = await supabase.from('event_tips' as any).insert({
+  const { error } = await db.from('event_tips' as any).insert({
     event_id: eventId,
     tenant_id: user.tenantId!,
     amount_cents: Math.round(amountDollars * 100),
@@ -105,9 +105,9 @@ export async function deleteTip(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_tips' as any)
     .delete()
     .eq('id', id)
@@ -173,10 +173,10 @@ export async function createTipRequest(
   }
 ): Promise<TipRequest> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event to validate ownership and get client_id
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, client_id, status')
     .eq('id', eventId)
@@ -205,7 +205,7 @@ export async function createTipRequest(
     insertData.suggested_percentages = options.suggestedPercentages
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tip_requests' as any)
     .insert(insertData)
     .select()
@@ -249,9 +249,9 @@ export async function getTipRequests(dateRange?: {
   to: string
 }): Promise<TipRequest[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('tip_requests' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -282,9 +282,9 @@ export async function getTipRequestByToken(token: string): Promise<{
   eventOccasion: string | null
   eventTotalCents: number | null
 } | null> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tip_requests' as any)
     .select(
       `
@@ -325,10 +325,10 @@ export async function recordTip(
     return { success: false, error: 'Invalid tip amount' }
   }
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Fetch the tip request
-  const { data: request, error: fetchError } = await supabase
+  const { data: request, error: fetchError } = await db
     .from('tip_requests' as any)
     .select('*, event:events!event_id(client_id, tenant_id)')
     .eq('id', requestId)
@@ -347,7 +347,7 @@ export async function recordTip(
   }
 
   // Update the tip request (CAS guard: only if still pending/sent, prevents double-recording)
-  const { data: updated, error: updateError } = await supabase
+  const { data: updated, error: updateError } = await db
     .from('tip_requests' as any)
     .update({
       tip_amount_cents: amountCents,
@@ -388,7 +388,7 @@ export async function recordTip(
 
   // Also record in event_tips for the existing tip log system
   try {
-    await supabase.from('event_tips' as any).insert({
+    await db.from('event_tips' as any).insert({
       event_id: request.event_id,
       tenant_id: request.tenant_id,
       amount_cents: amountCents,
@@ -407,9 +407,9 @@ export async function recordTip(
  */
 export async function markTipRequestSent(requestId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase
+  await db
     .from('tip_requests' as any)
     .update({
       status: 'sent',
@@ -425,9 +425,9 @@ export async function markTipRequestSent(requestId: string): Promise<void> {
  */
 export async function getEventTipRequest(eventId: string): Promise<TipRequest | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tip_requests' as any)
     .select('*')
     .eq('event_id', eventId)
@@ -452,10 +452,10 @@ export async function getTipSummary(year: number): Promise<{
   byMonth: { month: number; totalCents: number; count: number }[]
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all completed tip requests for the year
-  const { data: tipRequests } = await supabase
+  const { data: tipRequests } = await db
     .from('tip_requests' as any)
     .select('tip_amount_cents, completed_at')
     .eq('tenant_id', user.tenantId!)
@@ -464,7 +464,7 @@ export async function getTipSummary(year: number): Promise<{
     .lt('completed_at', `${year + 1}-01-01T00:00:00Z`)
 
   // Get total completed events for the year (for tip rate)
-  const { count: totalEvents } = await supabase
+  const { count: totalEvents } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)

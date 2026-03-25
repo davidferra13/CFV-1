@@ -13,12 +13,12 @@ type ContactRow = {
   created_at: string
 }
 
-export async function getContactQueueItems(supabase: any, _tenantId: string): Promise<QueueItem[]> {
+export async function getContactQueueItems(db: any, _tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 
   // contact_submissions not yet in generated types -- cast needed
-  const { data } = await supabase
+  const { data } = await db
     .from('contact_submissions')
     .select('id, name, email, subject, created_at')
     .is('claimed_by_chef_id', null)

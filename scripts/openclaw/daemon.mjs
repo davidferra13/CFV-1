@@ -3,7 +3,7 @@
 // OpenClaw - Autonomous US Food Business Crawler (Acquisition-Only Mode)
 // Runs continuously on Raspberry Pi, systematically covering every US state.
 // States are crawled in population-ranked order for maximum early impact.
-// All data stays LOCAL - no Supabase sync. Pure data acquisition.
+// All data stays LOCAL - no remote sync. Pure data acquisition.
 //
 // Usage:
 //   node daemon.mjs              # Start crawling (resumes where it left off)

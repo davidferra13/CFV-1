@@ -48,7 +48,7 @@ These sections are always displayed regardless of feature toggles because they'r
 
 | File                                                          | Change                                                                          |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `supabase/migrations/20260401000085_menu_engine_features.sql` | Adds `menu_engine_features` JSONB column with defaults                          |
+| `database/migrations/20260401000085_menu_engine_features.sql` | Adds `menu_engine_features` JSONB column with defaults                          |
 | `lib/scheduling/types.ts`                                     | `MenuEngineFeatures` interface, `DEFAULT_MENU_ENGINE_FEATURES`, feature labels  |
 | `lib/chef/actions.ts`                                         | Zod schema, `getMenuEngineFeatures()`, merge logic in `updateChefPreferences()` |
 | `components/settings/menu-engine-form.tsx`                    | Toggle form with enable/disable all, per-feature switches                       |

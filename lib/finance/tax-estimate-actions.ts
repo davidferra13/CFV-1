@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -82,9 +82,9 @@ export async function getQuarterlyEstimate(
   quarter: number
 ): Promise<QuarterlyEstimate | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tax_quarterly_estimates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -103,9 +103,9 @@ export async function saveQuarterlyEstimate(
 ): Promise<QuarterlyEstimate> {
   const user = await requireChef()
   const parsed = SaveEstimateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tax_quarterly_estimates')
     .upsert(
       {
@@ -134,9 +134,9 @@ export async function recordQuarterlyPayment(
 ): Promise<QuarterlyEstimate> {
   const user = await requireChef()
   const parsed = RecordPaymentSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tax_quarterly_estimates')
     .update({
       amount_paid_cents: parsed.amountPaidCents,
@@ -156,9 +156,9 @@ export async function recordQuarterlyPayment(
 
 export async function getTaxSummaryForYear(taxYear: number): Promise<TaxYearSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tax_quarterly_estimates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -210,12 +210,12 @@ export async function exportTaxPackage(taxYear: number): Promise<{
   expensesByCategory: Record<string, number>
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const summary = await getTaxSummaryForYear(taxYear)
 
   // Contractor payments for 1099s
-  const { data: contractors } = await supabase
+  const { data: contractors } = await db
     .from('contractor_payments')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -223,7 +223,7 @@ export async function exportTaxPackage(taxYear: number): Promise<{
     .order('payment_date', { ascending: true })
 
   // Mileage logs
-  const { data: mileage } = await supabase
+  const { data: mileage } = await db
     .from('mileage_logs')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -231,7 +231,7 @@ export async function exportTaxPackage(taxYear: number): Promise<{
     .lte('driven_at', `${taxYear}-12-31`)
 
   // Expenses grouped by category
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('category, amount_cents')
     .eq('chef_id', user.tenantId!)

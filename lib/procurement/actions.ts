@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createVendor, listVendors } from '@/lib/vendors/actions'
 import {
   createPurchaseOrder,
@@ -73,12 +73,12 @@ function toWorkflowStatus(status: string): ProcurementOrder['workflowStatus'] {
 
 export async function getSupplierDirectoryData(): Promise<SupplierDirectoryEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [vendors, vendorItems, poRows] = await Promise.all([
     listVendors(false),
-    supabase.from('vendor_items').select('vendor_id').eq('chef_id', user.tenantId!),
-    supabase
+    db.from('vendor_items').select('vendor_id').eq('chef_id', user.tenantId!),
+    db
       .from('purchase_orders')
       .select('vendor_id, status')
       .eq('chef_id', user.tenantId!)
@@ -138,17 +138,17 @@ export async function createSupplier(input: {
 
 export async function getProcurementReferenceData(): Promise<ProcurementReferenceData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [vendors, ingredients, events] = await Promise.all([
     listVendors(true),
-    supabase
+    db
       .from('ingredients')
       .select('id, name, category, default_unit')
       .eq('tenant_id', user.tenantId!)
       .eq('archived', false)
       .order('name'),
-    supabase
+    db
       .from('events')
       .select('id, occasion, event_date')
       .eq('tenant_id', user.tenantId!)
@@ -232,7 +232,7 @@ export async function sendProcurementOrder(orderId: string) {
 
 export async function fulfillProcurementOrder(orderId: string, autoUpdateStock = true) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const { po, items } = await getPurchaseOrder(orderId)
 
@@ -252,7 +252,7 @@ export async function fulfillProcurementOrder(orderId: string, autoUpdateStock =
   } else {
     // Mark as fulfilled without creating inventory transactions.
     for (const item of items) {
-      await supabase
+      await db
         .from('purchase_order_items')
         .update({
           received_qty: item.receivedQty ?? item.orderedQty,
@@ -269,7 +269,7 @@ export async function fulfillProcurementOrder(orderId: string, autoUpdateStock =
         .eq('id', item.id)
     }
 
-    await supabase
+    await db
       .from('purchase_orders')
       .update({
         status: 'received',

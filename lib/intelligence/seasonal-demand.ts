@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -57,10 +57,10 @@ const MONTH_NAMES = [
 export async function getSeasonalDemandForecast(): Promise<SeasonalDemandForecast | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all completed events (need historical depth for seasonal patterns)
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('event_date, quoted_price_cents, guest_count, occasion, status')
     .eq('tenant_id', tenantId)

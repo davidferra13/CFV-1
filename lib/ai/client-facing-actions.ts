@@ -4,7 +4,7 @@
 // PRIVACY: Handles client/event data → local Ollama only.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ============================================
 // 1. EVENT RECAP SUMMARY (pure DB - no Ollama)
@@ -27,10 +27,10 @@ export interface EventRecapResult {
 
 export async function getEventRecap(eventName: string): Promise<EventRecapResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find event
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       'id, occasion, event_date, guest_count, status, quoted_price_cents, client:clients(full_name)'
@@ -57,13 +57,13 @@ export async function getEventRecap(eventName: string): Promise<EventRecapResult
   const clientName = event.client?.full_name ?? 'Unknown'
 
   // Load menu items
-  const { data: menuItems } = await (supabase
+  const { data: menuItems } = await (db
     .from('menu_items' as any)
     .select('name')
     .eq('event_id', event.id) as any)
 
   // Load payments
-  const { data: payments } = await supabase
+  const { data: payments } = await db
     .from('ledger_entries')
     .select('amount_cents')
     .eq('tenant_id', user.tenantId!)
@@ -105,10 +105,10 @@ export interface MenuExplanationResult {
 
 export async function explainMenu(menuName: string): Promise<MenuExplanationResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find menu
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id, name, event_id')
     .eq('tenant_id', user.tenantId!)
@@ -129,7 +129,7 @@ export async function explainMenu(menuName: string): Promise<MenuExplanationResu
   // Get event name if linked
   let eventName: string | null = null
   if (menu.event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('occasion')
       .eq('id', menu.event_id)
@@ -138,7 +138,7 @@ export async function explainMenu(menuName: string): Promise<MenuExplanationResu
   }
 
   // Load menu items
-  const { data: items } = await (supabase
+  const { data: items } = await (db
     .from('menu_items' as any)
     .select('name, description, course, dietary_tags')
     .eq('menu_id', menu.id)

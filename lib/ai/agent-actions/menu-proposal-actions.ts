@@ -4,7 +4,7 @@
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { generateMenuProposalMessage, type MenuOption } from '@/lib/templates/menu-proposal-message'
 
 // ─── Resolve menus for an inquiry or event ──────────────────────────────────
@@ -14,13 +14,10 @@ async function resolveMenus(
   inquiryId?: string | null,
   eventId?: string | null
 ): Promise<{ menus: MenuOption[]; menuIds: string[] }> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find menus linked to the event, or draft menus for the tenant
-  let menuQuery = supabase
-    .from('menus')
-    .select('id, name, description, status')
-    .eq('tenant_id', tenantId)
+  let menuQuery = db.from('menus').select('id, name, description, status').eq('tenant_id', tenantId)
 
   if (eventId) {
     menuQuery = menuQuery.eq('event_id', eventId)
@@ -39,7 +36,7 @@ async function resolveMenus(
   const menuIds: string[] = []
 
   for (const row of menuRows) {
-    const { data: courses } = await supabase
+    const { data: courses } = await db
       .from('menu_courses')
       .select('id, name, display_order')
       .eq('menu_id', row.id)
@@ -47,7 +44,7 @@ async function resolveMenus(
 
     const menuCourses: MenuOption['courses'] = []
     for (const course of courses ?? []) {
-      const { data: dishes } = await supabase
+      const { data: dishes } = await db
         .from('menu_dishes')
         .select('name')
         .eq('course_id', course.id)
@@ -84,10 +81,10 @@ async function resolveContext(
   eventId: string | null
   inquiryId: string | null
 }> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (inquiryId) {
-    const { data: inquiry } = await supabase
+    const { data: inquiry } = await db
       .from('inquiries')
       .select('*, clients(full_name)')
       .eq('id', inquiryId)
@@ -135,8 +132,8 @@ const draftMenuProposal: AgentActionDefinition = {
     const [context, chefData] = await Promise.all([
       resolveContext(ctx.tenantId, inquiryId),
       (async () => {
-        const supabase: any = createServerClient()
-        const { data } = await supabase
+        const db: any = createServerClient()
+        const { data } = await db
           .from('chefs')
           .select('display_name, business_name')
           .eq('id', ctx.tenantId)

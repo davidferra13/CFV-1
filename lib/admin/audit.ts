@@ -3,7 +3,7 @@
 // Admin Audit Log - append-only record of sensitive platform actions
 // Writes to admin_audit_log table (protected by a no-delete rule)
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 
 export type AuditActionType =
@@ -47,8 +47,8 @@ export async function logAdminAction({
 }) {
   try {
     await requireAdmin()
-    const supabase: any = createAdminClient()
-    await supabase.from('admin_audit_log').insert({
+    const db: any = createAdminClient()
+    await db.from('admin_audit_log').insert({
       actor_email: actorEmail,
       actor_user_id: actorUserId,
       action_type: actionType,

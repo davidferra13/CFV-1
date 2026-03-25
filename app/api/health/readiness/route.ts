@@ -9,9 +9,9 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 const REQUIRED_ENV_VARS = [
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-  'SUPABASE_SERVICE_ROLE_KEY',
+  'NEXT_PUBLIC_DB_URL',
+  'NEXT_PUBLIC_DB_ANON_KEY',
+  'DB_SERVICE_ROLE_KEY',
 ] as const
 
 function isStrict(request: NextRequest): boolean {

@@ -28,7 +28,7 @@ export const DOCUMENT_REQUEST_LABELS: Record<DocumentRequestType, string> = {
 }
 
 export type StartDocumentGenerationJobInput = {
-  supabase: any
+  db: any
   tenantId: string
   eventId: string
   requestedType: DocumentRequestType
@@ -47,7 +47,7 @@ export type StartDocumentGenerationJobResult = {
 }
 
 export type MarkGenerationJobSucceededInput = {
-  supabase: any
+  db: any
   tenantId: string
   jobId: string
   attempts: number
@@ -58,7 +58,7 @@ export type MarkGenerationJobSucceededInput = {
 }
 
 export type MarkGenerationJobFailedInput = {
-  supabase: any
+  db: any
   tenantId: string
   jobId: string
   attempts: number
@@ -284,7 +284,7 @@ export async function startEventDocumentGenerationJob(
   const idempotencyKey = input.idempotencyKey?.trim() || null
 
   const fetchExisting = async () => {
-    const { data, error } = await input.supabase
+    const { data, error } = await input.db
       .from('event_document_generation_jobs')
       .select('id, status, attempts, max_attempts')
       .eq('tenant_id', input.tenantId)
@@ -316,7 +316,7 @@ export async function startEventDocumentGenerationJob(
     if (existing) return existing
   }
 
-  const { data, error } = await input.supabase
+  const { data, error } = await input.db
     .from('event_document_generation_jobs')
     .insert({
       tenant_id: input.tenantId,
@@ -358,7 +358,7 @@ export async function startEventDocumentGenerationJob(
 export async function markEventDocumentGenerationJobSucceeded(
   input: MarkGenerationJobSucceededInput
 ): Promise<void> {
-  const { error } = await input.supabase
+  const { error } = await input.db
     .from('event_document_generation_jobs')
     .update({
       status: 'succeeded',
@@ -381,7 +381,7 @@ export async function markEventDocumentGenerationJobSucceeded(
 export async function markEventDocumentGenerationJobFailed(
   input: MarkGenerationJobFailedInput
 ): Promise<void> {
-  const { error } = await input.supabase
+  const { error } = await input.db
     .from('event_document_generation_jobs')
     .update({
       status: 'failed',
@@ -404,12 +404,12 @@ export async function getEventDocumentGenerationHealth(
 ): Promise<EventDocumentGenerationHealthSummary> {
   const [{ requireChef }, { createServerClient }] = await Promise.all([
     import('@/lib/auth/get-user'),
-    import('@/lib/supabase/server'),
+    import('@/lib/db/server'),
   ])
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_document_generation_jobs')
     .select('requested_type, status, error_message, created_at, completed_at')
     .eq('tenant_id', user.tenantId!)
@@ -502,13 +502,13 @@ export async function getEventDocumentBulkRunHistory(
 ): Promise<EventDocumentBulkRunSummary[]> {
   const [{ requireChef }, { createServerClient }] = await Promise.all([
     import('@/lib/auth/get-user'),
-    import('@/lib/supabase/server'),
+    import('@/lib/db/server'),
   ])
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const safeRowLimit = Math.max(50, Math.min(1000, Math.floor(rowLimit)))
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_document_generation_jobs')
     .select(
       'requested_type, status, error_message, created_at, completed_at, idempotency_key, result_metadata'

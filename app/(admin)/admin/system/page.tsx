@@ -217,15 +217,6 @@ export default async function AdminSystemPage() {
         <h2 className="text-sm font-semibold text-slate-700 mb-4">External Dashboards</h2>
         <div className="space-y-2">
           <a
-            href="https://supabase.com/dashboard"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all group"
-          >
-            <span className="text-sm font-medium text-slate-700">Supabase Dashboard</span>
-            <ExternalLink size={14} className="text-slate-400 group-hover:text-slate-600" />
-          </a>
-          <a
             href="https://dashboard.stripe.com"
             target="_blank"
             rel="noopener noreferrer"

@@ -5,7 +5,7 @@
 // Formula > AI: all calculations are deterministic math.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { buildProductionReportPdf } from './production-report-pdf'
 
 // -- Types --
@@ -54,10 +54,10 @@ export type ProductionReport = {
 export async function generateProductionReport(eventId: string): Promise<ProductionReport> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
   // 1. Fetch event with client name
-  const { data: event, error: eventErr } = await supabase
+  const { data: event, error: eventErr } = await db
     .from('events')
     .select(
       `
@@ -90,7 +90,7 @@ export async function generateProductionReport(eventId: string): Promise<Product
   const clientName = `${client.first_name} ${client.last_name}`.trim()
 
   // 2. Fetch dishes for the menu, ordered by course
-  const { data: dishes, error: dishErr } = await supabase
+  const { data: dishes, error: dishErr } = await db
     .from('dishes')
     .select(
       `
@@ -129,7 +129,7 @@ export async function generateProductionReport(eventId: string): Promise<Product
   const dishIds = dishes.map((d: any) => d.id)
 
   // 3. Fetch components for all dishes
-  const { data: components, error: compErr } = await supabase
+  const { data: components, error: compErr } = await db
     .from('components')
     .select(
       `
@@ -167,7 +167,7 @@ export async function generateProductionReport(eventId: string): Promise<Product
   > = new Map()
 
   if (uniqueRecipeIds.length > 0) {
-    const { data: recipes, error: recipeErr } = await supabase
+    const { data: recipes, error: recipeErr } = await db
       .from('recipes')
       .select(
         `
@@ -203,7 +203,7 @@ export async function generateProductionReport(eventId: string): Promise<Product
   > = new Map()
 
   if (uniqueRecipeIds.length > 0) {
-    const { data: recipeIngredients, error: riErr } = await supabase
+    const { data: recipeIngredients, error: riErr } = await db
       .from('recipe_ingredients')
       .select(
         `

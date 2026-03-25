@@ -51,7 +51,7 @@ const UpdatePricingBody = z
 
 export const GET = withApiAuth(
   async (_req, ctx) => {
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('chef_pricing_config' as any)
       .select('*')
       .eq('chef_id', ctx.tenantId)
@@ -106,7 +106,7 @@ export const PATCH = withApiAuth(
     const parsed = UpdatePricingBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('chef_pricing_config' as any)
       .upsert(
         { chef_id: ctx.tenantId, ...parsed.data, updated_at: new Date().toISOString() } as any,

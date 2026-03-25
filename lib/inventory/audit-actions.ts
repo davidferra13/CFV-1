@@ -7,7 +7,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -69,14 +69,14 @@ const UpdateAuditItemSchema = z.object({
 export type CreateAuditInput = z.infer<typeof CreateAuditSchema>
 export type UpdateAuditItemInput = z.infer<typeof UpdateAuditItemSchema>
 
-// ─── Supabase helper ────────────────────────────────────────────
+// ─── DB helper ────────────────────────────────────────────
 // All inventory tables are pre-built for planned schema.
-// Cast .from() to bypass strict Supabase type checking.
-function db(supabase: any) {
+// Cast .from() to bypass strict type checking.
+function db(db: any) {
   return {
-    audits: () => supabase.from('inventory_audits' as any) as any,
-    auditItems: () => supabase.from('inventory_audit_items' as any) as any,
-    transactions: () => supabase.from('inventory_transactions' as any) as any,
+    audits: () => db.from('inventory_audits' as any) as any,
+    auditItems: () => db.from('inventory_audit_items' as any) as any,
+    transactions: () => db.from('inventory_transactions' as any) as any,
   }
 }
 
@@ -92,10 +92,10 @@ export async function createAudit(
 ): Promise<{ audit: InventoryAudit; items: AuditItem[] }> {
   const user = await requireChef()
   const parsed = CreateAuditSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Create the audit record
-  const { data: audit, error: auditError } = await db(supabase)
+  const { data: audit, error: auditError } = await db(db)
     .audits()
     .insert({
       chef_id: user.tenantId!,
@@ -115,7 +115,7 @@ export async function createAudit(
 
   // Get current stock from the inventory ledger
   // SUM(quantity) grouped by ingredient, filtered by location if specified
-  let stockQuery = db(supabase)
+  let stockQuery = db(db)
     .transactions()
     .select('ingredient_id, ingredient_name, unit, quantity, cost_cents')
     .eq('chef_id', user.tenantId!)
@@ -185,10 +185,7 @@ export async function createAudit(
 
   let createdItems: AuditItem[] = []
   if (auditItems.length > 0) {
-    const { data: items, error: itemsError } = await db(supabase)
-      .auditItems()
-      .insert(auditItems)
-      .select()
+    const { data: items, error: itemsError } = await db(db).auditItems().insert(auditItems).select()
 
     if (itemsError) throw new Error(`Failed to create audit items: ${(itemsError as any).message}`)
     createdItems = ((items || []) as any[]).map(mapAuditItem)
@@ -213,10 +210,10 @@ export async function updateAuditItem(
 ): Promise<AuditItem> {
   const user = await requireChef()
   const parsed = UpdateAuditItemSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the item and verify ownership via the parent audit
-  const { data: item, error: fetchError } = await db(supabase)
+  const { data: item, error: fetchError } = await db(db)
     .auditItems()
     .select('*, inventory_audits!inner(chef_id, status)')
     .eq('id', itemId)
@@ -238,7 +235,7 @@ export async function updateAuditItem(
   const unitCostCents = (item as any).unit_cost_cents ?? 0
   const varianceCostCents = Math.round(varianceQty * unitCostCents)
 
-  const { data, error } = await db(supabase)
+  const { data, error } = await db(db)
     .auditItems()
     .update({
       actual_qty: parsed.actualQty,
@@ -268,10 +265,10 @@ export async function updateAuditItem(
  */
 export async function finalizeAudit(auditId: string): Promise<InventoryAudit> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership and status
-  const { data: audit, error: auditError } = await db(supabase)
+  const { data: audit, error: auditError } = await db(db)
     .audits()
     .select('*')
     .eq('id', auditId)
@@ -282,7 +279,7 @@ export async function finalizeAudit(auditId: string): Promise<InventoryAudit> {
   if ((audit as any).status === 'finalized') throw new Error('Audit is already finalized')
 
   // Get all audit items
-  const { data: items, error: itemsError } = await db(supabase)
+  const { data: items, error: itemsError } = await db(db)
     .auditItems()
     .select('*')
     .eq('audit_id', auditId)
@@ -323,13 +320,13 @@ export async function finalizeAudit(auditId: string): Promise<InventoryAudit> {
 
   // Insert all adjustment transactions
   if (adjustmentRows.length > 0) {
-    const { error: txError } = await db(supabase).transactions().insert(adjustmentRows)
+    const { error: txError } = await db(db).transactions().insert(adjustmentRows)
 
     if (txError) throw new Error(`Failed to create audit adjustments: ${(txError as any).message}`)
   }
 
   // Update audit summary and finalize
-  const { data: finalized, error: finalizeError } = await db(supabase)
+  const { data: finalized, error: finalizeError } = await db(db)
     .audits()
     .update({
       status: 'finalized',
@@ -360,9 +357,9 @@ export async function getAudits(filters?: {
   auditType?: InventoryAuditType
 }): Promise<InventoryAudit[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = db(supabase)
+  let query = db(db)
     .audits()
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -389,9 +386,9 @@ export async function getAuditDetail(
   auditId: string
 ): Promise<{ audit: InventoryAudit; items: AuditItem[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: audit, error: auditError } = await db(supabase)
+  const { data: audit, error: auditError } = await db(db)
     .audits()
     .select('*')
     .eq('id', auditId)
@@ -400,7 +397,7 @@ export async function getAuditDetail(
 
   if (auditError || !audit) throw new Error('Audit not found')
 
-  const { data: items, error: itemsError } = await db(supabase)
+  const { data: items, error: itemsError } = await db(db)
     .auditItems()
     .select('*')
     .eq('audit_id', auditId)

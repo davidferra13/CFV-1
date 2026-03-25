@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getMyLoyaltyStatus, type LoyaltyReward } from '@/lib/loyalty/actions'
 import { getVoucherAndGiftCards } from '@/lib/loyalty/voucher-actions'
 import { getMyPendingRedemptions } from '@/lib/loyalty/auto-award'
@@ -72,7 +72,7 @@ function getTierProgress(
 
 export default async function MyRewardsPage() {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const status = await getMyLoyaltyStatus()
   if (!status) {
@@ -96,7 +96,7 @@ export default async function MyRewardsPage() {
     )
   }
 
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('tenant_id')
     .eq('id', user.entityId)
@@ -105,13 +105,13 @@ export default async function MyRewardsPage() {
   const [incentivesSettled, rewardsSettled, configSettled, pendingSettled, raffleSettled] =
     await Promise.allSettled([
       getVoucherAndGiftCards(),
-      supabase
+      db
         .from('loyalty_rewards')
         .select('*')
         .eq('tenant_id', client?.tenant_id || '')
         .eq('is_active', true)
         .order('points_required', { ascending: true }),
-      supabase
+      db
         .from('loyalty_config')
         .select(
           'tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, milestone_bonuses, earn_mode, points_per_dollar, points_per_event'

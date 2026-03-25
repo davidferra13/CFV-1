@@ -4,16 +4,16 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = { title: 'Import History | ChefFlow' }
 
 export default async function ImportHistoryPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: imports } = await supabase
+  const { data: imports } = await db
     .from('import_logs')
     .select('id, import_type, status, record_count, error_count, created_at, summary')
     .eq('tenant_id', chef.tenantId!)

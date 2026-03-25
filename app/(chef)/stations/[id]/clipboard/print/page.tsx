@@ -5,7 +5,7 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PrintableDocument } from '@/components/print/printable-document'
 import { getDocumentContext } from '@/lib/print/actions'
 
@@ -19,7 +19,7 @@ export default async function PrintClipboardPage({
   searchParams: { date?: string; mode?: string }
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const date = searchParams.date ?? new Date().toISOString().split('T')[0]
 
@@ -29,7 +29,7 @@ export default async function PrintClipboardPage({
     searchParams.mode === 'thermal' ? ('thermal-80' as const) : (defaultMode ?? 'standard')
 
   // Load station
-  const { data: station } = await supabase
+  const { data: station } = await db
     .from('stations')
     .select('id, name')
     .eq('id', params.id)
@@ -41,14 +41,14 @@ export default async function PrintClipboardPage({
   }
 
   // Load components for this station
-  const { data: menuItems } = await supabase
+  const { data: menuItems } = await db
     .from('station_menu_items')
     .select('id, name, station_components(id, name, unit, par_level, par_unit, shelf_life_days)')
     .eq('station_id', params.id)
     .eq('chef_id', user.tenantId!)
 
   // Load clipboard entries for this date
-  const { data: entries } = await supabase
+  const { data: entries } = await db
     .from('clipboard_entries')
     .select('*')
     .eq('station_id', params.id)

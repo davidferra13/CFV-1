@@ -38,7 +38,7 @@ export const POST = withApiAuth(
     const { new_date, new_client_id } = parsed.data
 
     // Fetch source event (verify ownership)
-    const { data: source, error: sourceError } = await ctx.supabase
+    const { data: source, error: sourceError } = await ctx.db
       .from('events')
       .select('*')
       .eq('id', id)
@@ -51,7 +51,7 @@ export const POST = withApiAuth(
     // If a new client is specified, verify they belong to this tenant
     const clientId = new_client_id ?? (source as any).client_id
     if (new_client_id) {
-      const { data: client } = await ctx.supabase
+      const { data: client } = await ctx.db
         .from('clients')
         .select('id')
         .eq('id', new_client_id)
@@ -104,7 +104,7 @@ export const POST = withApiAuth(
     }
 
     // Insert the new event (status defaults to 'draft' in DB)
-    const { data: newEvent, error: insertError } = await ctx.supabase
+    const { data: newEvent, error: insertError } = await ctx.db
       .from('events')
       .insert(newEventPayload as any)
       .select()
@@ -119,7 +119,7 @@ export const POST = withApiAuth(
 
     // Log initial transition to 'draft' (non-blocking)
     try {
-      await ctx.supabase.from('event_state_transitions').insert({
+      await ctx.db.from('event_state_transitions').insert({
         tenant_id: ctx.tenantId,
         event_id: newEventId,
         from_status: null,
@@ -131,11 +131,11 @@ export const POST = withApiAuth(
 
     // Clone menus and dishes (non-blocking, best effort)
     try {
-      const { data: sourceMenus } = await ctx.supabase.from('menus').select('*').eq('event_id', id)
+      const { data: sourceMenus } = await ctx.db.from('menus').select('*').eq('event_id', id)
 
       if (sourceMenus && (sourceMenus as any[]).length > 0) {
         for (const sourceMenu of sourceMenus as any[]) {
-          const { data: newMenu } = await ctx.supabase
+          const { data: newMenu } = await ctx.db
             .from('menus')
             .insert({
               event_id: newEventId,
@@ -148,7 +148,7 @@ export const POST = withApiAuth(
 
           if (!newMenu) continue
 
-          const { data: sourceDishes } = await ctx.supabase
+          const { data: sourceDishes } = await ctx.db
             .from('dishes')
             .select(
               'name, description, course_name, course_number, allergen_flags, dietary_tags, sort_order'
@@ -168,7 +168,7 @@ export const POST = withApiAuth(
               sort_order: dish.sort_order,
             }))
 
-            await ctx.supabase.from('dishes').insert(dishInserts as any)
+            await ctx.db.from('dishes').insert(dishInserts as any)
           }
         }
       }

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -42,9 +42,9 @@ export type UpdateItemInput = z.infer<typeof UpdateItemSchema>
 export async function createGroceryTrip(input: CreateTripInput) {
   const user = await requireChef()
   const validated = CreateTripSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('grocery_trips')
     .insert({
       chef_id: user.tenantId!,
@@ -66,9 +66,9 @@ export async function createGroceryTrip(input: CreateTripInput) {
 
 export async function getGroceryTrips(dateRange?: { from: string; to: string }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('grocery_trips')
     .select('*, grocery_trip_splits(client_id)')
     .eq('chef_id', user.tenantId!)
@@ -93,9 +93,9 @@ export async function getGroceryTrips(dateRange?: { from: string; to: string }) 
 
 export async function getGroceryTrip(tripId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('grocery_trips')
     .select(
       `
@@ -118,9 +118,9 @@ export async function getGroceryTrip(tripId: string) {
 
 export async function deleteGroceryTrip(tripId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('grocery_trips')
     .delete()
     .eq('id', tripId)
@@ -141,10 +141,10 @@ export async function deleteGroceryTrip(tripId: string) {
 export async function addTripItem(tripId: string, input: AddItemInput) {
   const user = await requireChef()
   const validated = AddItemSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify trip belongs to this chef
-  const { data: trip } = await (supabase as any)
+  const { data: trip } = await (db as any)
     .from('grocery_trips')
     .select('id')
     .eq('id', tripId)
@@ -153,7 +153,7 @@ export async function addTripItem(tripId: string, input: AddItemInput) {
 
   if (!trip) throw new Error('Trip not found')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('grocery_trip_items')
     .insert({
       trip_id: tripId,
@@ -172,7 +172,7 @@ export async function addTripItem(tripId: string, input: AddItemInput) {
   }
 
   // Recalculate trip total
-  await recalcTripTotal(supabase, tripId)
+  await recalcTripTotal(db, tripId)
 
   revalidatePath('/grocery')
   return data
@@ -181,10 +181,10 @@ export async function addTripItem(tripId: string, input: AddItemInput) {
 export async function updateTripItem(itemId: string, input: UpdateItemInput) {
   const user = await requireChef()
   const validated = UpdateItemSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get item with trip ownership check
-  const { data: item } = await (supabase as any)
+  const { data: item } = await (db as any)
     .from('grocery_trip_items')
     .select('trip_id, grocery_trips!inner(chef_id)')
     .eq('id', itemId)
@@ -201,7 +201,7 @@ export async function updateTripItem(itemId: string, input: UpdateItemInput) {
   if (validated.price_cents !== undefined) updates.price_cents = validated.price_cents
   if (validated.category !== undefined) updates.category = validated.category || null
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('grocery_trip_items')
     .update(updates)
     .eq('id', itemId)
@@ -213,7 +213,7 @@ export async function updateTripItem(itemId: string, input: UpdateItemInput) {
     throw new Error('Failed to update item')
   }
 
-  await recalcTripTotal(supabase, item.trip_id)
+  await recalcTripTotal(db, item.trip_id)
 
   revalidatePath('/grocery')
   return data
@@ -221,10 +221,10 @@ export async function updateTripItem(itemId: string, input: UpdateItemInput) {
 
 export async function removeTripItem(itemId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get item with trip ownership check
-  const { data: item } = await (supabase as any)
+  const { data: item } = await (db as any)
     .from('grocery_trip_items')
     .select('trip_id, grocery_trips!inner(chef_id)')
     .eq('id', itemId)
@@ -234,14 +234,14 @@ export async function removeTripItem(itemId: string) {
     throw new Error('Item not found')
   }
 
-  const { error } = await (supabase as any).from('grocery_trip_items').delete().eq('id', itemId)
+  const { error } = await (db as any).from('grocery_trip_items').delete().eq('id', itemId)
 
   if (error) {
     console.error('[removeTripItem] Error:', error)
     throw new Error('Failed to remove item')
   }
 
-  await recalcTripTotal(supabase, item.trip_id)
+  await recalcTripTotal(db, item.trip_id)
 
   revalidatePath('/grocery')
 }
@@ -253,10 +253,10 @@ export async function removeTripItem(itemId: string) {
 export async function splitEquallyAcrossClients(tripId: string, clientIds: string[]) {
   const user = await requireChef()
   if (clientIds.length === 0) throw new Error('At least one client required')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify trip and get total
-  const { data: trip } = await (supabase as any)
+  const { data: trip } = await (db as any)
     .from('grocery_trips')
     .select('id, total_cents')
     .eq('id', tripId)
@@ -266,7 +266,7 @@ export async function splitEquallyAcrossClients(tripId: string, clientIds: strin
   if (!trip) throw new Error('Trip not found')
 
   // Clear existing splits
-  await (supabase as any).from('grocery_trip_splits').delete().eq('trip_id', tripId)
+  await (db as any).from('grocery_trip_splits').delete().eq('trip_id', tripId)
 
   // Equal split with remainder going to first client
   const perClient = Math.floor(trip.total_cents / clientIds.length)
@@ -279,7 +279,7 @@ export async function splitEquallyAcrossClients(tripId: string, clientIds: strin
     split_method: 'equal',
   }))
 
-  const { error } = await (supabase as any).from('grocery_trip_splits').insert(splits)
+  const { error } = await (db as any).from('grocery_trip_splits').insert(splits)
 
   if (error) {
     console.error('[splitEquallyAcrossClients] Error:', error)
@@ -295,9 +295,9 @@ export async function splitProportionally(
 ) {
   const user = await requireChef()
   if (clientWeights.length === 0) throw new Error('At least one client required')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: trip } = await (supabase as any)
+  const { data: trip } = await (db as any)
     .from('grocery_trips')
     .select('id, total_cents')
     .eq('id', tripId)
@@ -307,7 +307,7 @@ export async function splitProportionally(
   if (!trip) throw new Error('Trip not found')
 
   // Clear existing splits
-  await (supabase as any).from('grocery_trip_splits').delete().eq('trip_id', tripId)
+  await (db as any).from('grocery_trip_splits').delete().eq('trip_id', tripId)
 
   const totalWeight = clientWeights.reduce((sum, cw) => sum + cw.weight, 0)
   if (totalWeight <= 0) throw new Error('Total weight must be positive')
@@ -331,7 +331,7 @@ export async function splitProportionally(
     splits[0].amount_cents += leftover
   }
 
-  const { error } = await (supabase as any).from('grocery_trip_splits').insert(splits)
+  const { error } = await (db as any).from('grocery_trip_splits').insert(splits)
 
   if (error) {
     console.error('[splitProportionally] Error:', error)
@@ -343,10 +343,10 @@ export async function splitProportionally(
 
 export async function assignItemToClient(itemId: string, clientId: string, eventId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify item ownership
-  const { data: item } = await (supabase as any)
+  const { data: item } = await (db as any)
     .from('grocery_trip_items')
     .select('id, trip_id, price_cents, grocery_trips!inner(chef_id)')
     .eq('id', itemId)
@@ -357,9 +357,9 @@ export async function assignItemToClient(itemId: string, clientId: string, event
   }
 
   // Remove any existing split for this item
-  await (supabase as any).from('grocery_trip_splits').delete().eq('item_id', itemId)
+  await (db as any).from('grocery_trip_splits').delete().eq('item_id', itemId)
 
-  const { error } = await (supabase as any).from('grocery_trip_splits').insert({
+  const { error } = await (db as any).from('grocery_trip_splits').insert({
     trip_id: item.trip_id,
     item_id: itemId,
     client_id: clientId,
@@ -379,10 +379,10 @@ export async function assignItemToClient(itemId: string, clientId: string, event
 export async function autoSplitByEvent(tripId: string, eventIds: string[]) {
   const user = await requireChef()
   if (eventIds.length === 0) throw new Error('At least one event required')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify trip
-  const { data: trip } = await (supabase as any)
+  const { data: trip } = await (db as any)
     .from('grocery_trips')
     .select('id, total_cents')
     .eq('id', tripId)
@@ -392,7 +392,7 @@ export async function autoSplitByEvent(tripId: string, eventIds: string[]) {
   if (!trip) throw new Error('Trip not found')
 
   // Get events with guest counts
-  const { data: events } = await (supabase as any)
+  const { data: events } = await (db as any)
     .from('events')
     .select('id, client_id, guest_count')
     .in('id', eventIds)
@@ -401,7 +401,7 @@ export async function autoSplitByEvent(tripId: string, eventIds: string[]) {
   if (!events || events.length === 0) throw new Error('No matching events found')
 
   // Clear existing splits
-  await (supabase as any).from('grocery_trip_splits').delete().eq('trip_id', tripId)
+  await (db as any).from('grocery_trip_splits').delete().eq('trip_id', tripId)
 
   // Use guest_count as weight; default to 1 if not set
   const totalGuests = events.reduce(
@@ -431,7 +431,7 @@ export async function autoSplitByEvent(tripId: string, eventIds: string[]) {
     splits[0].amount_cents += leftover
   }
 
-  const { error } = await (supabase as any).from('grocery_trip_splits').insert(splits)
+  const { error } = await (db as any).from('grocery_trip_splits').insert(splits)
 
   if (error) {
     console.error('[autoSplitByEvent] Error:', error)
@@ -443,10 +443,10 @@ export async function autoSplitByEvent(tripId: string, eventIds: string[]) {
 
 export async function getTripSplitSummary(tripId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify trip ownership
-  const { data: trip } = await (supabase as any)
+  const { data: trip } = await (db as any)
     .from('grocery_trips')
     .select('id, total_cents')
     .eq('id', tripId)
@@ -455,7 +455,7 @@ export async function getTripSplitSummary(tripId: string) {
 
   if (!trip) throw new Error('Trip not found')
 
-  const { data: splits, error } = await (supabase as any)
+  const { data: splits, error } = await (db as any)
     .from('grocery_trip_splits')
     .select('client_id, amount_cents, split_method, clients:client_id(id, name)')
     .eq('trip_id', tripId)
@@ -501,8 +501,8 @@ export async function getTripSplitSummary(tripId: string) {
 // INTERNAL HELPERS
 // ============================================
 
-async function recalcTripTotal(supabase: any, tripId: string) {
-  const { data: items } = await supabase
+async function recalcTripTotal(db: any, tripId: string) {
+  const { data: items } = await db
     .from('grocery_trip_items')
     .select('price_cents')
     .eq('trip_id', tripId)
@@ -512,5 +512,5 @@ async function recalcTripTotal(supabase: any, tripId: string) {
     0
   )
 
-  await supabase.from('grocery_trips').update({ total_cents: total }).eq('id', tripId)
+  await db.from('grocery_trips').update({ total_cents: total }).eq('id', tripId)
 }

@@ -157,7 +157,7 @@ export interface DLQEntry {
  * try {
  *   await withRetry(() => sendWebhook(url, payload), { maxAttempts: 5 })
  * } catch (err) {
- *   await pushToDLQ(supabase, {
+ *   await pushToDLQ(db, {
  *     tenantId: webhook.tenant_id,
  *     jobType: 'webhook_delivery',
  *     jobId: webhook.id,
@@ -168,10 +168,10 @@ export interface DLQEntry {
  * }
  */
 export async function pushToDLQ(
-  supabase: { from: (table: string) => unknown },
+  db: { from: (table: string) => unknown },
   entry: DLQEntry
 ): Promise<void> {
-  const client = supabase.from('dead_letter_queue') as {
+  const client = db.from('dead_letter_queue') as {
     insert: (data: unknown) => Promise<{ error: unknown }>
   }
   const { error } = await client.insert({

@@ -2,7 +2,7 @@
 // Handles generation, hashing, and validation for device API tokens and staff PINs.
 
 import { createHash, randomBytes } from 'crypto'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 /**
  * Generate a random device API token (64 hex chars = 32 bytes).
@@ -49,9 +49,9 @@ export async function validateDeviceToken(bearerToken: string): Promise<{
   if (!bearerToken) return null
 
   const tokenHash = hashToken(bearerToken)
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('devices')
     .select('id, tenant_id, mode, kiosk_flow, status, idle_timeout_seconds, require_staff_pin')
     .eq('token_hash', tokenHash)
@@ -61,11 +61,7 @@ export async function validateDeviceToken(bearerToken: string): Promise<{
   if (data.status !== 'active') return null
 
   // Verify tenant still exists (owner may have been deleted)
-  const { data: tenant } = await supabase
-    .from('chefs')
-    .select('id')
-    .eq('id', data.tenant_id)
-    .single()
+  const { data: tenant } = await db.from('chefs').select('id').eq('id', data.tenant_id).single()
 
   if (!tenant) return null
 
@@ -100,9 +96,9 @@ export async function validateStaffPin(
   if (!pin || pin.length < 4 || pin.length > 6) return null
 
   const pinHash = hashToken(pin)
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_members')
     .select('id, name, role')
     .eq('chef_id', tenantId)

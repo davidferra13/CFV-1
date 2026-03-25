@@ -80,7 +80,7 @@ class DailyReportsQueryBuilder implements PromiseLike<{ data: any; error: unknow
   }
 }
 
-function createMockSupabase(config: ActionsMockConfig, tracker: ActionsTracker) {
+function createMockDb(config: ActionsMockConfig, tracker: ActionsTracker) {
   return {
     from(table: string) {
       if (table !== 'daily_reports') throw new Error(`Unexpected table: ${table}`)
@@ -98,20 +98,20 @@ function loadDailyReportActionsWithMocks(input: {
   react.cache = react.cache || ((fn: unknown) => fn)
 
   const authPath = require.resolve('../../lib/auth/get-user.ts')
-  const supabasePath = require.resolve('../../lib/supabase/server.ts')
+  const dbPath = require.resolve('../../lib/db/server.ts')
   const computePath = require.resolve('../../lib/reports/compute-daily-report.ts')
   const actionsPath = require.resolve('../../lib/reports/daily-report-actions.ts')
 
   require(authPath)
-  require(supabasePath)
+  require(dbPath)
   require(computePath)
 
   const originalAuthExports = require.cache[authPath]!.exports
-  const originalSupabaseExports = require.cache[supabasePath]!.exports
+  const originalDbExports = require.cache[dbPath]!.exports
   const originalComputeExports = require.cache[computePath]!.exports
 
   require.cache[authPath]!.exports = { requireChef: input.requireChef }
-  require.cache[supabasePath]!.exports = { createServerClient: input.createServerClient }
+  require.cache[dbPath]!.exports = { createServerClient: input.createServerClient }
   require.cache[computePath]!.exports = { computeDailyReport: input.computeDailyReport }
 
   delete require.cache[actionsPath]
@@ -119,7 +119,7 @@ function loadDailyReportActionsWithMocks(input: {
 
   const restore = () => {
     require.cache[authPath]!.exports = originalAuthExports
-    require.cache[supabasePath]!.exports = originalSupabaseExports
+    require.cache[dbPath]!.exports = originalDbExports
     require.cache[computePath]!.exports = originalComputeExports
     delete require.cache[actionsPath]
   }
@@ -148,13 +148,13 @@ test('generateDailyReport upserts computed content and maps response', async () 
     },
   }
 
-  const supabase = createMockSupabase(config, tracker)
+  const db = createMockDb(config, tracker)
   const { actions, restore } = loadDailyReportActionsWithMocks({
     requireChef: async () => ({ tenantId: 'tenant-1' }),
     computeDailyReport: async () => content,
     createServerClient: (opts?: { admin?: boolean }) => {
       tracker.createServerClientArgs.push(opts)
-      return supabase
+      return db
     },
   })
 
@@ -184,13 +184,13 @@ test('generateDailyReport throws when upsert fails', async () => {
     },
   }
 
-  const supabase = createMockSupabase(config, tracker)
+  const db = createMockDb(config, tracker)
   const { actions, restore } = loadDailyReportActionsWithMocks({
     requireChef: async () => ({ tenantId: 'tenant-1' }),
     computeDailyReport: async () => ({ eventsToday: [] }),
     createServerClient: (opts?: { admin?: boolean }) => {
       tracker.createServerClientArgs.push(opts)
-      return supabase
+      return db
     },
   })
 
@@ -220,13 +220,13 @@ test('getDailyReport returns mapped row when present', async () => {
     },
   }
 
-  const supabase = createMockSupabase(config, tracker)
+  const db = createMockDb(config, tracker)
   const { actions, restore } = loadDailyReportActionsWithMocks({
     requireChef: async () => ({ tenantId: 'tenant-1' }),
     computeDailyReport: async () => ({}),
     createServerClient: (opts?: { admin?: boolean }) => {
       tracker.createServerClientArgs.push(opts)
-      return supabase
+      return db
     },
   })
 
@@ -251,11 +251,11 @@ test('getDailyReport returns null when query errors', async () => {
     },
   }
 
-  const supabase = createMockSupabase(config, tracker)
+  const db = createMockDb(config, tracker)
   const { actions, restore } = loadDailyReportActionsWithMocks({
     requireChef: async () => ({ tenantId: 'tenant-1' }),
     computeDailyReport: async () => ({}),
-    createServerClient: () => supabase,
+    createServerClient: () => db,
   })
 
   try {
@@ -292,11 +292,11 @@ test('getDailyReportHistory maps summaries and applies requested limit', async (
     },
   }
 
-  const supabase = createMockSupabase(config, tracker)
+  const db = createMockDb(config, tracker)
   const { actions, restore } = loadDailyReportActionsWithMocks({
     requireChef: async () => ({ tenantId: 'tenant-1' }),
     computeDailyReport: async () => ({}),
-    createServerClient: () => supabase,
+    createServerClient: () => db,
   })
 
   try {

@@ -11,7 +11,7 @@
 // and as a trigger condition for automations.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type ClientHealthTier = 'champion' | 'loyal' | 'at_risk' | 'dormant' | 'new'
 
@@ -88,18 +88,18 @@ function median(arr: number[]): number {
  */
 export async function getClientHealthScores(): Promise<ClientHealthSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch client financial summary + event counts
   // cast as any - total_events/days_since_last_event may not be in generated types
-  const { data: summaries } = await supabase
+  const { data: summaries } = await db
     .from('client_financial_summary')
     .select('client_id, lifetime_value_cents, total_events, days_since_last_event')
     .eq('tenant_id', user.tenantId!)
 
   // Fetch client profile completeness indicators
   // cast as any - some columns may not be in generated types yet
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select(
       'id, allergies, dietary_preferences, kitchen_constraints, what_they_care_about, personal_milestones'
@@ -109,7 +109,7 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
 
   // Fetch referral counts per client (how many new clients they've referred)
   // cast as any - referred_by_client_id not in generated types yet
-  const { data: referrals } = await supabase
+  const { data: referrals } = await db
     .from('clients')
     .select('referred_by_client_id')
     .eq('tenant_id', user.tenantId!)

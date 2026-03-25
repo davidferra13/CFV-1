@@ -10,7 +10,7 @@
 // spamming if a lead is already stale from a previous run.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
@@ -46,12 +46,12 @@ async function handleStaleLeads(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const staleThreshold = new Date(Date.now() - STALE_THRESHOLD_HOURS * 60 * 60 * 1000).toISOString()
 
   // Find all marketplace leads older than 24h that haven't been actioned
-  const { data: staleLeads, error } = await supabase
+  const { data: staleLeads, error } = await db
     .from('inquiries')
     .select('id, tenant_id, channel, confirmed_occasion, confirmed_date, created_at')
     .in('channel', [...MARKETPLACE_CHANNELS])
@@ -99,7 +99,7 @@ async function handleStaleLeads(request: NextRequest): Promise<NextResponse> {
       // Check if we already sent a stale-lead notification in the last 6 hours
       // to avoid spamming the chef on every hourly run
       const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString()
-      const { data: recentNotif } = await supabase
+      const { data: recentNotif } = await db
         .from('notifications')
         .select('id')
         .eq('tenant_id', tenantId)

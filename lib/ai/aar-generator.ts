@@ -7,7 +7,7 @@
 // Output is DRAFT ONLY - chef edits and confirms before the AAR is finalized.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import { parseWithOllama } from './parse-ollama'
 import { OllamaOfflineError } from './ollama-errors'
@@ -37,9 +37,9 @@ const AARDraftAISchema = z.object({
 
 export async function generateAARDraft(eventId: string): Promise<AARDraft> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const eventResult = await supabase
+  const eventResult = await db
     .from('events')
     .select(
       `
@@ -54,19 +54,19 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
     .single()
 
   // event_menu_components is not in generated types - table exists in DB but not yet in types/database.ts
-  const menuResult = (await (supabase.from as Function)('event_menu_components')
+  const menuResult = (await (db.from as Function)('event_menu_components')
     .select('name, course_type, description')
     .eq('event_id', eventId)) as {
     data: Array<{ name: string; course_type: string | null; description: string | null }> | null
   }
 
-  const expensesResult = await supabase
+  const expensesResult = await db
     .from('expenses')
     .select('description, amount_cents, category')
     .eq('event_id', eventId)
 
   // aars table is not in generated types - table exists in DB but not yet in types/database.ts
-  const debrief = (await (supabase.from as Function)('aars')
+  const debrief = (await (db.from as Function)('aars')
     .select('chef_notes, client_feedback, rating')
     .eq('event_id', eventId)
     .maybeSingle()) as {
@@ -78,7 +78,7 @@ export async function generateAARDraft(eventId: string): Promise<AARDraft> {
   }
 
   // event_temp_logs exists in schema
-  const tempLog = await supabase
+  const tempLog = await db
     .from('event_temp_logs')
     .select('item_description, temp_fahrenheit, phase, logged_at')
     .eq('event_id', eventId)

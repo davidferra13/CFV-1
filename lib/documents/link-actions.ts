@@ -5,7 +5,7 @@
 // Supports batch linking and retrieval of all documents for a given entity.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Link/Unlink ──────────────────────────────────────────────────────────────
@@ -25,7 +25,7 @@ export async function linkDocument(
   input: LinkDocumentInput
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = {}
   if (input.eventId !== undefined) updates.event_id = input.eventId
@@ -37,7 +37,7 @@ export async function linkDocument(
   }
 
   // Verify document belongs to this chef
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_documents')
     .update(updates)
     .eq('id', input.documentId)
@@ -59,9 +59,9 @@ export async function unlinkDocument(
   documentId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_documents')
     .update({ event_id: null, client_id: null, inquiry_id: null } as any)
     .eq('id', documentId)
@@ -92,9 +92,9 @@ export type LinkedDocument = {
  */
 export async function getDocumentsForEvent(eventId: string): Promise<LinkedDocument[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_documents')
     .select('id, title, document_type, summary, created_at, chef_folders(name)')
     .eq('tenant_id', user.tenantId!)
@@ -110,9 +110,9 @@ export async function getDocumentsForEvent(eventId: string): Promise<LinkedDocum
  */
 export async function getDocumentsForClient(clientId: string): Promise<LinkedDocument[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_documents')
     .select('id, title, document_type, summary, created_at, chef_folders(name)')
     .eq('tenant_id', user.tenantId!)
@@ -128,9 +128,9 @@ export async function getDocumentsForClient(clientId: string): Promise<LinkedDoc
  */
 export async function getDocumentsForInquiry(inquiryId: string): Promise<LinkedDocument[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_documents')
     .select('id, title, document_type, summary, created_at, chef_folders(name)')
     .eq('tenant_id', user.tenantId!)

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -65,9 +65,9 @@ export interface MentorshipStats {
 
 export async function getMentorshipProfile(): Promise<MentorshipProfile | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('mentorship_profiles' as any)
     .select('*')
     .eq('chef_id', user.entityId)
@@ -86,7 +86,7 @@ export async function updateMentorshipProfile(profileData: {
   is_active?: boolean
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const payload = {
     chef_id: user.entityId,
@@ -101,7 +101,7 @@ export async function updateMentorshipProfile(profileData: {
   }
 
   // Upsert: create if not exists, update if exists
-  const { error } = await supabase
+  const { error } = await db
     .from('mentorship_profiles' as any)
     .upsert(payload, { onConflict: 'chef_id' })
 
@@ -123,9 +123,9 @@ export async function searchMentors(filters?: {
   maxExperience?: number
 }): Promise<MentorSearchResult[]> {
   await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('mentorship_profiles' as any)
     .select(
       'id, chef_id, role, expertise_areas, goals, availability, years_experience, max_mentees'
@@ -149,14 +149,12 @@ export async function searchMentors(filters?: {
 
   // Fetch chef display names for results
   const chefIds = (data as any[]).map((d: any) => d.chef_id)
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs' as any)
     .select('id, display_name, business_name')
     .in('id', chefIds)
 
-  const chefMap = new Map(
-    ((chefs as any[]) || []).map((c: any) => [c.id, c])
-  )
+  const chefMap = new Map(((chefs as any[]) || []).map((c: any) => [c.id, c]))
 
   return (data as any[]).map((profile: any) => {
     const chef = chefMap.get(profile.chef_id) as any
@@ -177,14 +175,14 @@ export async function requestMentorship(
   message: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (mentorId === user.entityId) {
     return { success: false, error: 'You cannot mentor yourself' }
   }
 
   // Check if connection already exists
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('mentorship_connections' as any)
     .select('id, status')
     .eq('mentor_id', mentorId)
@@ -201,14 +199,12 @@ export async function requestMentorship(
     }
   }
 
-  const { error } = await supabase
-    .from('mentorship_connections' as any)
-    .insert({
-      mentor_id: mentorId,
-      mentee_id: user.entityId,
-      message: message || null,
-      status: 'pending',
-    })
+  const { error } = await db.from('mentorship_connections' as any).insert({
+    mentor_id: mentorId,
+    mentee_id: user.entityId,
+    message: message || null,
+    status: 'pending',
+  })
 
   if (error) {
     console.error('[mentorship] Failed to request mentorship:', error)
@@ -224,10 +220,10 @@ export async function respondToRequest(
   accept: boolean
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the user is the mentor on this connection
-  const { data: connection } = await supabase
+  const { data: connection } = await db
     .from('mentorship_connections' as any)
     .select('id, mentor_id, status')
     .eq('id', connectionId)
@@ -249,7 +245,7 @@ export async function respondToRequest(
     ? { status: 'active', started_at: new Date().toISOString() }
     : { status: 'declined' }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('mentorship_connections' as any)
     .update(updateData)
     .eq('id', connectionId)
@@ -263,13 +259,11 @@ export async function respondToRequest(
   return { success: true }
 }
 
-export async function getConnections(
-  role?: 'mentor' | 'mentee'
-): Promise<MentorshipConnection[]> {
+export async function getConnections(role?: 'mentor' | 'mentee'): Promise<MentorshipConnection[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('mentorship_connections' as any)
     .select('*')
     .order('created_at', { ascending: false })
@@ -279,9 +273,7 @@ export async function getConnections(
   } else if (role === 'mentee') {
     query = query.eq('mentee_id', user.entityId)
   } else {
-    query = query.or(
-      `mentor_id.eq.${user.entityId},mentee_id.eq.${user.entityId}`
-    )
+    query = query.or(`mentor_id.eq.${user.entityId},mentee_id.eq.${user.entityId}`)
   }
 
   const { data } = await query
@@ -294,14 +286,12 @@ export async function getConnections(
     allChefIds.add(conn.mentee_id)
   }
 
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs' as any)
     .select('id, display_name, business_name')
     .in('id', Array.from(allChefIds))
 
-  const chefMap = new Map(
-    ((chefs as any[]) || []).map((c: any) => [c.id, c])
-  )
+  const chefMap = new Map(((chefs as any[]) || []).map((c: any) => [c.id, c]))
 
   return (data as any[]).map((conn: any) => {
     const mentor = chefMap.get(conn.mentor_id) as any
@@ -318,10 +308,10 @@ export async function endConnection(
   connectionId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify user is part of this connection
-  const { data: connection } = await supabase
+  const { data: connection } = await db
     .from('mentorship_connections' as any)
     .select('id, mentor_id, mentee_id, status')
     .eq('id', connectionId)
@@ -340,7 +330,7 @@ export async function endConnection(
     return { success: false, error: 'Only active connections can be ended' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('mentorship_connections' as any)
     .update({
       status: 'completed',
@@ -363,30 +353,24 @@ export async function endConnection(
 
 export async function getMentorshipStats(): Promise<MentorshipStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: connections } = await supabase
+  const { data: connections } = await db
     .from('mentorship_connections' as any)
     .select('id, mentor_id, mentee_id, status')
-    .or(
-      `mentor_id.eq.${user.entityId},mentee_id.eq.${user.entityId}`
-    )
+    .or(`mentor_id.eq.${user.entityId},mentee_id.eq.${user.entityId}`)
 
   const conns = (connections as any[]) || []
 
   return {
-    active_as_mentor: conns.filter(
-      (c) => c.mentor_id === user.entityId && c.status === 'active'
-    ).length,
-    active_as_mentee: conns.filter(
-      (c) => c.mentee_id === user.entityId && c.status === 'active'
-    ).length,
-    pending_incoming: conns.filter(
-      (c) => c.mentor_id === user.entityId && c.status === 'pending'
-    ).length,
-    pending_outgoing: conns.filter(
-      (c) => c.mentee_id === user.entityId && c.status === 'pending'
-    ).length,
+    active_as_mentor: conns.filter((c) => c.mentor_id === user.entityId && c.status === 'active')
+      .length,
+    active_as_mentee: conns.filter((c) => c.mentee_id === user.entityId && c.status === 'active')
+      .length,
+    pending_incoming: conns.filter((c) => c.mentor_id === user.entityId && c.status === 'pending')
+      .length,
+    pending_outgoing: conns.filter((c) => c.mentee_id === user.entityId && c.status === 'pending')
+      .length,
     total_completed: conns.filter((c) => c.status === 'completed').length,
   }
 }

@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -12,15 +12,15 @@ export const metadata: Metadata = { title: 'Proposal Builder | ChefFlow' }
 
 export default async function ProposalBuilderPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: templates } = await supabase
+  const { data: templates } = await db
     .from('proposal_templates')
     .select('id, name, description, updated_at')
     .eq('chef_id', chef.entityId)
     .order('updated_at', { ascending: false })
 
-  const { data: addons } = await supabase
+  const { data: addons } = await db
     .from('proposal_addons')
     .select('id, name, price_cents, description')
     .eq('chef_id', chef.entityId)

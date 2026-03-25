@@ -57,18 +57,18 @@ A unified communication system that eliminates the 5-8 tool fragmentation privat
 
 ### What Already Works (Build On, Don't Replace)
 
-| Component           | Current State                                               | Extension Needed                                       |
-| ------------------- | ----------------------------------------------------------- | ------------------------------------------------------ |
-| **Inquiry System**  | 7-state FSM, 4 creation paths, GOLDMINE scoring             | Add auto-response trigger, template selection          |
-| **Client Profiles** | 30+ preference fields, allergy records, milestones          | Add communication preferences, quiet hours             |
-| **Event FSM**       | 8-state with 74 side effects, full lifecycle                | Add menu approval sub-states, guest count change flow  |
-| **Quotes**          | 5-state FSM, PDF generation, email templates                | Add client-facing interactive approval                 |
-| **Conversations**   | `conversations` + `chat_messages` tables, Supabase Realtime | Add context linking (inquiry/event), message templates |
-| **Notifications**   | 40+ email templates, in-app bell, OneSignal push            | Add scheduled sends, business hours routing            |
-| **Remy**            | Deterministic classifier + Ollama, 3-tier action system     | Add auto-response drafting, follow-up suggestions      |
-| **Embed Widget**    | Public iframe, CORS-enabled, creates inquiry + client       | Add auto-acknowledge flow                              |
-| **Ledger**          | Immutable append-only, computed balances                    | Add milestone definitions, automated reminders         |
-| **Client Reviews**  | Rating + dimensions + feedback text                         | Add post-event automation trigger                      |
+| Component           | Current State                                           | Extension Needed                                       |
+| ------------------- | ------------------------------------------------------- | ------------------------------------------------------ |
+| **Inquiry System**  | 7-state FSM, 4 creation paths, GOLDMINE scoring         | Add auto-response trigger, template selection          |
+| **Client Profiles** | 30+ preference fields, allergy records, milestones      | Add communication preferences, quiet hours             |
+| **Event FSM**       | 8-state with 74 side effects, full lifecycle            | Add menu approval sub-states, guest count change flow  |
+| **Quotes**          | 5-state FSM, PDF generation, email templates            | Add client-facing interactive approval                 |
+| **Conversations**   | `conversations` + `chat_messages` tables, SSE realtime  | Add context linking (inquiry/event), message templates |
+| **Notifications**   | 40+ email templates, in-app bell, OneSignal push        | Add scheduled sends, business hours routing            |
+| **Remy**            | Deterministic classifier + Ollama, 3-tier action system | Add auto-response drafting, follow-up suggestions      |
+| **Embed Widget**    | Public iframe, CORS-enabled, creates inquiry + client   | Add auto-acknowledge flow                              |
+| **Ledger**          | Immutable append-only, computed balances                | Add milestone definitions, automated reminders         |
+| **Client Reviews**  | Rating + dimensions + feedback text                     | Add post-event automation trigger                      |
 
 ### Key Tables We'll Extend
 
@@ -115,7 +115,7 @@ follow_up_sequences      - Automated follow-up chains (post-event, dormant clien
                             v
     +---------------------------------------------------------+
     |              UNIFIED CONVERSATION LAYER                  |
-    |  conversations table  |  chat_messages  |  Supabase RT  |
+    |  conversations table  |  chat_messages  |  PostgreSQL RT  |
     |  Context: inquiry_id / event_id / standalone             |
     |  Templates  |  Scheduling  |  Business hours routing     |
     +---------------------------------------------------------+
@@ -233,7 +233,7 @@ export async function triggerAutoResponse(inquiryId: string, tenantId: string) {
   })
 
   // 6. Record auto-response
-  await supabase
+  await database
     .from('inquiries')
     .update({ auto_responded_at: new Date().toISOString() })
     .eq('id', inquiryId)
@@ -1514,15 +1514,15 @@ context.dormantClients = await getDormantClients(tenantId, 90) // 90+ days
 
 ### Data Classification
 
-| Data Type                       | Privacy Level             | AI Backend  | Storage                      |
-| ------------------------------- | ------------------------- | ----------- | ---------------------------- |
-| Client names, emails, phones    | PRIVATE                   | Ollama only | Supabase (encrypted at rest) |
-| Dietary restrictions, allergies | PRIVATE + SAFETY-CRITICAL | Ollama only | Supabase                     |
-| Payment amounts, invoices       | PRIVATE                   | Ollama only | Supabase + Ledger            |
-| Survey responses, feedback      | PRIVATE                   | Ollama only | Supabase                     |
-| Response templates (chef's)     | SEMI-PRIVATE              | Ollama only | Supabase                     |
-| Business hours config           | NON-SENSITIVE             | N/A (no AI) | Supabase                     |
-| System default templates        | PUBLIC                    | N/A         | Code                         |
+| Data Type                       | Privacy Level             | AI Backend  | Storage                        |
+| ------------------------------- | ------------------------- | ----------- | ------------------------------ |
+| Client names, emails, phones    | PRIVATE                   | Ollama only | PostgreSQL (encrypted at rest) |
+| Dietary restrictions, allergies | PRIVATE + SAFETY-CRITICAL | Ollama only | PostgreSQL                     |
+| Payment amounts, invoices       | PRIVATE                   | Ollama only | PostgreSQL + Ledger            |
+| Survey responses, feedback      | PRIVATE                   | Ollama only | PostgreSQL                     |
+| Response templates (chef's)     | SEMI-PRIVATE              | Ollama only | PostgreSQL                     |
+| Business hours config           | NON-SENSITIVE             | N/A (no AI) | PostgreSQL                     |
+| System default templates        | PUBLIC                    | N/A         | Code                           |
 
 ### Token-Based Access (Onboarding + Surveys)
 
@@ -1749,7 +1749,7 @@ tests/
     post-event.test.ts
     client-onboarding.test.ts
 
-supabase/
+database/
   migrations/
     2026XXXX000001_communication_foundation.sql
     2026XXXX000002_menu_collaboration.sql

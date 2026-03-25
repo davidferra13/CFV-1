@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -47,12 +47,12 @@ export async function saveEmailTemplate(
   input: SaveEmailTemplateInput
 ): Promise<{ success: boolean; template: EmailTemplate }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validated = SaveEmailTemplateSchema.parse(input)
 
   // Check if a template with this name already exists (non-system)
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('campaign_templates')
     .select('id, is_system')
     .eq('chef_id', user.tenantId!)
@@ -67,7 +67,7 @@ export async function saveEmailTemplate(
 
   if (existing) {
     // Update existing template
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('campaign_templates')
       .update({
         subject: validated.subject,
@@ -86,7 +86,7 @@ export async function saveEmailTemplate(
     result = data
   } else {
     // Create new template
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('campaign_templates')
       .insert({
         chef_id: user.tenantId!,
@@ -131,9 +131,9 @@ export async function saveEmailTemplate(
  */
 export async function listEmailTemplates(): Promise<EmailTemplate[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('campaign_templates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -165,12 +165,12 @@ export async function listEmailTemplates(): Promise<EmailTemplate[]> {
  */
 export async function deleteEmailTemplate(id: string): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validatedId = TemplateIdSchema.parse(id)
 
   // Verify the template exists, belongs to this chef, and is not a system template
-  const { data: template } = await supabase
+  const { data: template } = await db
     .from('campaign_templates')
     .select('id, is_system')
     .eq('id', validatedId)
@@ -185,7 +185,7 @@ export async function deleteEmailTemplate(id: string): Promise<{ success: boolea
     throw new Error('Cannot delete system templates')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('campaign_templates')
     .delete()
     .eq('id', validatedId)

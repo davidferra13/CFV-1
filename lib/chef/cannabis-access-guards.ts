@@ -3,7 +3,7 @@ import 'server-only'
 import { redirect } from 'next/navigation'
 import { requireChef, type AuthUser } from '@/lib/auth/get-user'
 import { hasCannabisAccess } from '@/lib/chef/cannabis-actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { CANNABIS_HOST_AGREEMENT_VERSION } from '@/lib/cannabis/host-agreement'
 
 export type CannabisHostAgreementRecord = {
@@ -31,8 +31,8 @@ export async function getCannabisHostAgreement(
   hostUserId: string,
   agreementVersion = CANNABIS_HOST_AGREEMENT_VERSION
 ): Promise<CannabisHostAgreementRecord | null> {
-  const supabase: any = createServerClient()
-  const { data, error } = await (supabase as any)
+  const db: any = createServerClient()
+  const { data, error } = await (db as any)
     .from('cannabis_host_agreements')
     .select(
       'id, host_user_id, signed_at, signature_name, agreement_version, agreement_text_snapshot, immutable_hash, ip_address, created_at'

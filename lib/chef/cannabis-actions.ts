@@ -3,7 +3,7 @@
 // Chef Cannabis Actions
 // Used by chef portal pages in app/(chef)/cannabis/
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { isAdmin } from '@/lib/auth/admin'
 import { revalidatePath } from 'next/cache'
@@ -76,8 +76,8 @@ export async function hasCannabisAccess(authUserId: string): Promise<boolean> {
     const adminCheck = await isAdmin().catch(() => false)
     if (adminCheck) return true
 
-    const supabase: any = createServerClient()
-    const { data, error } = await supabase
+    const db: any = createServerClient()
+    const { data, error } = await db
       .from('cannabis_tier_users')
       .select('status')
       .eq('auth_user_id', authUserId)
@@ -98,9 +98,9 @@ export async function hasCannabisAccess(authUserId: string): Promise<boolean> {
  */
 export async function getCannabisEvents() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('events')
     .select(
       `
@@ -129,7 +129,7 @@ export async function getCannabisEvents() {
   let details: any[] = []
 
   if (eventIds.length > 0) {
-    const { data: detailData } = await supabase
+    const { data: detailData } = await db
       .from('cannabis_event_details')
       .select('*')
       .in('event_id', eventIds)
@@ -149,9 +149,9 @@ export async function getCannabisEvents() {
 
 export async function getCannabisEventDetails(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('cannabis_event_details')
     .select('*')
     .eq('event_id', eventId)
@@ -170,9 +170,9 @@ export async function upsertCannabisEventDetails(input: {
   compliancePlaceholderAcknowledged?: boolean
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('cannabis_event_details').upsert(
+  const { error } = await db.from('cannabis_event_details').upsert(
     {
       event_id: input.eventId,
       tenant_id: user.tenantId!,
@@ -197,10 +197,10 @@ export async function upsertCannabisEventDetails(input: {
  */
 export async function getCannabisLedger() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // First get all cannabis event IDs
-  const { data: cannabisEvents, error: eventsError } = await supabase
+  const { data: cannabisEvents, error: eventsError } = await db
     .from('events')
     .select('id, event_date, occasion, clients!inner(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -213,7 +213,7 @@ export async function getCannabisLedger() {
     return { events: [], entries: [], totals: { revenue: 0, expenses: 0, profit: 0 } }
 
   // Fetch ledger entries for those events
-  const { data: entries, error: ledgerError } = await supabase
+  const { data: entries, error: ledgerError } = await db
     .from('ledger_entries')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -269,10 +269,10 @@ export async function sendCannabisInvite(input: {
   const hasAccess = await hasCannabisAccess(user.id)
   if (!hasAccess) throw new Error('Cannabis tier access required to send invites')
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check if an invite for this email is already pending or approved
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('cannabis_tier_invitations')
     .select('id, admin_approval_status, claimed_at')
     .eq('invitee_email', input.inviteeEmail.toLowerCase())
@@ -287,7 +287,7 @@ export async function sendCannabisInvite(input: {
     throw new Error('An active invite for this email already exists.')
   }
 
-  const { error } = await supabase.from('cannabis_tier_invitations').insert({
+  const { error } = await db.from('cannabis_tier_invitations').insert({
     invited_by_auth_user_id: user.id,
     invited_by_user_type: 'chef',
     invitee_email: input.inviteeEmail.toLowerCase(),
@@ -306,9 +306,9 @@ export async function sendCannabisInvite(input: {
 
 export async function getMySentCannabisInvites() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('cannabis_tier_invitations')
     .select('*')
     .eq('invited_by_auth_user_id', user.id)
@@ -329,9 +329,9 @@ export async function getMySentCannabisInvites() {
 // RSVP Dashboard (chef-facing cannabis intake overview)
 export async function getCannabisRSVPDashboardData(selectedEventId?: string | null) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: eventRows, error: eventsError } = await supabase
+  const { data: eventRows, error: eventsError } = await db
     .from('events')
     .select('id, event_date, serve_time, arrival_time, occasion, status, guest_count')
     .eq('tenant_id', user.tenantId!)
@@ -381,7 +381,7 @@ export async function getCannabisRSVPDashboardData(selectedEventId?: string | nu
   )
   const editWindowOpen = new Date() <= editCutoff
 
-  const { data: guestRows, error: guestsError } = await supabase
+  const { data: guestRows, error: guestsError } = await db
     .from('event_guests')
     .select(
       'id, full_name, rsvp_status, guest_token, dietary_restrictions, notes, created_at, updated_at'
@@ -409,7 +409,7 @@ export async function getCannabisRSVPDashboardData(selectedEventId?: string | nu
   const guestTokens = guests.map((guest) => guest.guest_token)
 
   if (guestTokens.length > 0) {
-    const { data: profileRows, error: profileError } = await (supabase
+    const { data: profileRows, error: profileError } = await (db
       .from('guest_event_profile' as any)
       .select('*')
       .eq('event_id', selectedEvent.id)
@@ -502,9 +502,9 @@ export async function updateChefCannabisGuestProfile(
 ) {
   const validated = UpdateChefCannabisGuestSchema.parse(input)
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, event_date, serve_time, arrival_time, tenant_id, cannabis_preference')
     .eq('id', validated.eventId)
@@ -521,7 +521,7 @@ export async function updateChefCannabisGuestProfile(
     throw new Error('This guest intake is now read-only.')
   }
 
-  const { data: guest, error: guestError } = await supabase
+  const { data: guest, error: guestError } = await db
     .from('event_guests')
     .select('id, event_id, tenant_id, guest_token, rsvp_status')
     .eq('id', validated.guestId)
@@ -549,7 +549,7 @@ export async function updateChefCannabisGuestProfile(
   }
 
   if (Object.keys(guestUpdatePayload).length > 0) {
-    const { error: guestUpdateError } = await supabase
+    const { error: guestUpdateError } = await db
       .from('event_guests')
       .update(guestUpdatePayload)
       .eq('id', guest.id)
@@ -560,7 +560,7 @@ export async function updateChefCannabisGuestProfile(
     }
   }
 
-  const { data: existingProfile } = await (supabase
+  const { data: existingProfile } = await (db
     .from('guest_event_profile' as any)
     .select('*')
     .eq('event_id', validated.eventId)
@@ -620,7 +620,7 @@ export async function updateChefCannabisGuestProfile(
     transportation_acknowledgment: existingProfile?.transportation_acknowledgment ?? false,
   }
 
-  const { error: profileError } = await (supabase
+  const { error: profileError } = await (db
     .from('guest_event_profile' as any)
     .upsert(profilePayload, { onConflict: 'event_id,guest_token' }) as any)
 

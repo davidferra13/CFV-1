@@ -3,7 +3,7 @@
 // Each handler executes the configured action and returns a result.
 // AI Policy: send_template_message creates DRAFT messages (not auto-sent).
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
 import type { AutomationRule, AutomationContext } from './types'
 
@@ -84,14 +84,14 @@ async function handleCreateFollowUpTask(
     due_hours?: number
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const dueHours = config.due_hours || 48
 
   // Set follow_up_due_at on the inquiry
   if (context.entityType === 'inquiry' && context.entityId) {
     const dueAt = new Date(Date.now() + dueHours * 60 * 60 * 1000).toISOString()
 
-    await supabase
+    await db
       .from('inquiries')
       .update({
         follow_up_due_at: dueAt,
@@ -127,10 +127,10 @@ async function handleSendTemplateMessage(
     return { success: false, error: 'No template_id configured' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Fetch the template
-  const { data: template, error: templateError } = await supabase
+  const { data: template, error: templateError } = await db
     .from('response_templates')
     .select('template_text, name')
     .eq('id', config.template_id)
@@ -142,7 +142,7 @@ async function handleSendTemplateMessage(
   }
 
   // Create a draft message (NOT sent - chef must approve)
-  const { error: msgError } = await supabase.from('messages').insert({
+  const { error: msgError } = await db.from('messages').insert({
     tenant_id: context.tenantId,
     inquiry_id: context.entityType === 'inquiry' ? context.entityId : null,
     event_id: context.entityType === 'event' ? context.entityId : null,
@@ -192,9 +192,9 @@ async function handleCreateInternalNote(
     return { success: false, error: 'No note text configured' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase.from('messages').insert({
+  const { error } = await db.from('messages').insert({
     tenant_id: context.tenantId,
     inquiry_id: context.entityType === 'inquiry' ? context.entityId : null,
     event_id: context.entityType === 'event' ? context.entityId : null,

@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import {
   geocodeAddress as geocodeWithGeocodio,
   reverseGeocode as reverseWithGeocodio,
@@ -227,8 +227,8 @@ function asResolvedLocation(data: GeocodedLocation | CachedLocationRow): Resolve
 }
 
 async function getCachedLocation(lookupKey: string) {
-  const supabase: any = createAdminClient()
-  const { data, error } = await supabase
+  const db: any = createAdminClient()
+  const { data, error } = await db
     .from('public_location_references')
     .select(
       'lookup_key, input_address, normalized_address, matched_address, city, state, zip, lat, lng, source_name'
@@ -245,7 +245,7 @@ async function getCachedLocation(lookupKey: string) {
 }
 
 async function storeCachedLocation(keys: string[], location: GeocodedLocation) {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const rows = keys.map((lookupKey) => ({
     lookup_key: lookupKey,
     input_address: location.query,
@@ -262,7 +262,7 @@ async function storeCachedLocation(keys: string[], location: GeocodedLocation) {
     },
   }))
 
-  const { error } = await supabase
+  const { error } = await db
     .from('public_location_references')
     .upsert(rows, { onConflict: 'lookup_key' })
 

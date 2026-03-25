@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   // Accept both old and new env var names for backward compatibility
   if (
     process.env.E2E_ALLOW_TEST_AUTH !== 'true' &&
-    process.env.SUPABASE_E2E_ALLOW_REMOTE !== 'true'
+    process.env.DATABASE_E2E_ALLOW_REMOTE !== 'true'
   ) {
     return new NextResponse('Forbidden', { status: 403 })
   }

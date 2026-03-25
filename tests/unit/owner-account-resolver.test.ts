@@ -11,13 +11,13 @@ type MockConfig = {
   ownerAuthUserId: string | null
 }
 
-function createSupabaseMock(config: MockConfig) {
+function createDbMock(config: MockConfig) {
   const calls = {
     chefLookup: 0,
     roleLookup: 0,
   }
 
-  const supabase = {
+  const db = {
     from(table: string) {
       const filters: Record<string, string> = {}
       const ilikeFilters: Record<string, string> = {}
@@ -61,7 +61,7 @@ function createSupabaseMock(config: MockConfig) {
     },
   }
 
-  return { supabase, calls }
+  return { db, calls }
 }
 
 const originalOwnerChefEnv = process.env.PLATFORM_OWNER_CHEF_ID
@@ -79,12 +79,12 @@ describe('owner-account resolver', () => {
   })
 
   it('resolves founder chef and auth user IDs from canonical founder email', async () => {
-    const { supabase } = createSupabaseMock({
+    const { db } = createDbMock({
       founderChefId: 'chef-founder-123',
       ownerAuthUserId: 'auth-founder-123',
     })
 
-    const identity = await resolveOwnerIdentity(supabase)
+    const identity = await resolveOwnerIdentity(db)
 
     assert.equal(identity.ownerChefId, 'chef-founder-123')
     assert.equal(identity.ownerAuthUserId, 'auth-founder-123')
@@ -93,25 +93,25 @@ describe('owner-account resolver', () => {
 
   it('ignores mismatched env owner ID and emits warning', async () => {
     process.env.PLATFORM_OWNER_CHEF_ID = 'legacy-mismatched-id'
-    const { supabase } = createSupabaseMock({
+    const { db } = createDbMock({
       founderChefId: 'chef-founder-xyz',
       ownerAuthUserId: 'auth-founder-xyz',
     })
 
-    const identity = await resolveOwnerIdentity(supabase)
+    const identity = await resolveOwnerIdentity(db)
 
     assert.equal(identity.ownerChefId, 'chef-founder-xyz')
     assert.ok(identity.warnings.includes('owner_env_mismatch_ignored'))
   })
 
   it('uses resolver cache for repeated owner lookups', async () => {
-    const { supabase, calls } = createSupabaseMock({
+    const { db, calls } = createDbMock({
       founderChefId: 'chef-cache-1',
       ownerAuthUserId: 'auth-cache-1',
     })
 
-    const first = await resolveOwnerChefId(supabase)
-    const second = await resolveOwnerChefId(supabase)
+    const first = await resolveOwnerChefId(db)
+    const second = await resolveOwnerChefId(db)
 
     assert.equal(first, 'chef-cache-1')
     assert.equal(second, 'chef-cache-1')

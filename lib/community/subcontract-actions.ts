@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 type SubcontractRole =
@@ -67,9 +67,9 @@ type UpdateSubcontractInput = Partial<
 // List agreements for the current chef, with optional filters
 export async function getSubcontracts(filters?: SubcontractFilters) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('subcontract_agreements')
     .select('*')
     .eq('hiring_chef_id', user.tenantId!)
@@ -95,7 +95,7 @@ export async function getSubcontracts(filters?: SubcontractFilters) {
 // Create a new subcontract agreement
 export async function createSubcontract(input: CreateSubcontractInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!input.subcontractor_name?.trim()) {
     throw new Error('Subcontractor name is required')
@@ -104,7 +104,7 @@ export async function createSubcontract(input: CreateSubcontractInput) {
     throw new Error('Rate must be a positive amount')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('subcontract_agreements')
     .insert({
       hiring_chef_id: user.tenantId!,
@@ -135,7 +135,7 @@ export async function createSubcontract(input: CreateSubcontractInput) {
 // Update an existing agreement
 export async function updateSubcontract(id: string, input: UpdateSubcontractInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
 
@@ -157,7 +157,7 @@ export async function updateSubcontract(id: string, input: UpdateSubcontractInpu
     updateData.insurance_required = input.insurance_required
   if (input.notes !== undefined) updateData.notes = input.notes?.trim() || null
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('subcontract_agreements')
     .update(updateData)
     .eq('id', id)
@@ -177,10 +177,10 @@ export async function updateSubcontract(id: string, input: UpdateSubcontractInpu
 // Delete a draft agreement only
 export async function deleteSubcontract(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify it's in draft status before deleting
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('subcontract_agreements')
     .select('status')
     .eq('id', id)
@@ -195,7 +195,7 @@ export async function deleteSubcontract(id: string) {
     throw new Error('Only draft agreements can be deleted')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('subcontract_agreements')
     .delete()
     .eq('id', id)
@@ -221,10 +221,10 @@ const VALID_TRANSITIONS: Record<SubcontractStatus, SubcontractStatus[]> = {
 
 export async function updateSubcontractStatus(id: string, newStatus: SubcontractStatus) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current status
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('subcontract_agreements')
     .select('status')
     .eq('id', id)
@@ -242,7 +242,7 @@ export async function updateSubcontractStatus(id: string, newStatus: Subcontract
     throw new Error(`Cannot transition from ${currentStatus} to ${newStatus}`)
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('subcontract_agreements')
     .update({ status: newStatus, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -262,7 +262,7 @@ export async function updateSubcontractStatus(id: string, newStatus: Subcontract
 // Mark COI as verified with document URL and expiry
 export async function verifyCOI(id: string, documentUrl: string, expiryDate: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!documentUrl?.trim()) {
     throw new Error('COI document URL is required')
@@ -271,7 +271,7 @@ export async function verifyCOI(id: string, documentUrl: string, expiryDate: str
     throw new Error('COI expiry date is required')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('subcontract_agreements')
     .update({
       coi_document_url: documentUrl.trim(),
@@ -296,9 +296,9 @@ export async function verifyCOI(id: string, documentUrl: string, expiryDate: str
 // Get total subcontractor costs for an event
 export async function getSubcontractCosts(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('subcontract_agreements')
     .select('rate_type, rate_cents, estimated_hours')
     .eq('hiring_chef_id', user.tenantId!)
@@ -327,9 +327,9 @@ export async function getSubcontractCosts(eventId: string) {
 // Get unique subcontractor roster with usage stats
 export async function getSubcontractorRoster() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('subcontract_agreements')
     .select(
       'subcontractor_name, subcontractor_email, subcontractor_phone, subcontractor_chef_id, status, coi_verified, coi_expiry_date, created_at'
@@ -391,13 +391,13 @@ export async function getSubcontractorRoster() {
 // Get COIs that are expiring within the given number of days
 export async function getExpiringCOIs(daysAhead: number = 30) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const futureDate = new Date()
   futureDate.setDate(futureDate.getDate() + daysAhead)
   const futureDateStr = futureDate.toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('subcontract_agreements')
     .select('*')
     .eq('hiring_chef_id', user.tenantId!)

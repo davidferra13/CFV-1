@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -29,10 +29,10 @@ export type UpdateReservationInput = z.infer<typeof UpdateReservationSchema>
 
 export async function createReservation(input: CreateReservationInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = CreateReservationSchema.parse(input)
 
-  const { data: reservation, error } = await supabase
+  const { data: reservation, error } = await db
     .from('guest_reservations')
     .insert({
       guest_id: data.guest_id,
@@ -59,7 +59,7 @@ export async function createReservation(input: CreateReservationInput) {
 
 export async function updateReservation(id: string, input: UpdateReservationInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = UpdateReservationSchema.parse(input)
 
   const updateData: Record<string, unknown> = {}
@@ -71,7 +71,7 @@ export async function updateReservation(id: string, input: UpdateReservationInpu
   if (data.notes !== undefined) updateData.notes = data.notes || null
   updateData.updated_at = new Date().toISOString()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('guest_reservations')
     .update(updateData)
     .eq('id', id)
@@ -87,9 +87,9 @@ export async function updateReservation(id: string, input: UpdateReservationInpu
 
 export async function cancelReservation(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: reservation, error } = await supabase
+  const { data: reservation, error } = await db
     .from('guest_reservations')
     .update({
       status: 'cancelled',
@@ -113,9 +113,9 @@ export async function cancelReservation(id: string) {
 
 export async function listReservations(date?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let q = supabase
+  let q = db
     .from('guest_reservations')
     .select('*, guests(name, phone)')
     .eq('chef_id', user.tenantId!)
@@ -138,9 +138,9 @@ export async function listReservations(date?: string) {
 
 export async function getReservation(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_reservations')
     .select('*, guests(name, phone, email)')
     .eq('id', id)

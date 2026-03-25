@@ -3,7 +3,7 @@
 // Uses the generic notification template so it works for any action type.
 
 import { createElement } from 'react'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { sendEmail } from './send'
 import { NotificationGenericEmail } from './templates/notification-generic'
 import type { RouteInput } from '@/lib/notifications/channel-router'
@@ -12,12 +12,12 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 /**
  * Resolve the email address for a given auth_user_id.
- * Uses the admin Supabase client to access auth.users.
+ * Uses the admin DB client to access auth.users.
  */
 async function resolveRecipientEmail(authUserId: string): Promise<string | null> {
   try {
-    const supabase = createServerClient({ admin: true })
-    const { data, error } = await supabase.auth.admin.getUserById(authUserId)
+    const db = createServerClient({ admin: true })
+    const { data, error } = await db.auth.admin.getUserById(authUserId)
     if (error || !data.user?.email) return null
     return data.user.email
   } catch {

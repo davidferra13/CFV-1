@@ -3,7 +3,7 @@
 // URL: POST /api/webhooks/twilio (configure in Twilio console)
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { parseInboundWebhook } from '@/lib/sms/twilio-client'
 import { createHmac, timingSafeEqual } from 'crypto'
 
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
 
     // Try to match inbound phone to a client
     // Strip formatting: +1 (555) 123-4567 → search for various formats
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     let tenantId: string | null = null
 
     for (const pattern of searchPatterns) {
-      const { data: client } = await (supabase
+      const { data: client } = await (db
         .from('clients')
         .select('id, tenant_id')
         .ilike('phone', `%${pattern.slice(-10)}%`)
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Store the message (even if we can't match a client - it'll show as unlinked)
-    const { error: insertError } = await (supabase as any).from('messages').insert({
+    const { error: insertError } = await (db as any).from('messages').insert({
       tenant_id: tenantId,
       client_id: clientId,
       direction: 'inbound',

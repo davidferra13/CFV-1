@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -135,12 +135,12 @@ export async function confirmPhotoTag(
   tags: string[]
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validated = ConfirmPhotoTagSchema.parse({ photoId, tags })
 
   // Try to update the event_photos table
-  const { data: photo, error: fetchError } = await supabase
+  const { data: photo, error: fetchError } = await db
     .from('event_photos')
     .select('id, event_id')
     .eq('id', validated.photoId)
@@ -154,7 +154,7 @@ export async function confirmPhotoTag(
     return { success: true }
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('event_photos')
     .update({ tags: validated.tags })
     .eq('id', validated.photoId)

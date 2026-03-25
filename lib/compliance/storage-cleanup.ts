@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger'
 
 const STORAGE_BUCKETS = [
@@ -20,7 +20,7 @@ const STORAGE_BUCKETS = [
 ]
 
 /**
- * Remove all files belonging to a chef from all Supabase Storage buckets.
+ * Remove all files belonging to a chef from all local storage buckets.
  * Non-blocking - logs failures but does not throw.
  * Files are organized under `{chefId}/` prefixes.
  */

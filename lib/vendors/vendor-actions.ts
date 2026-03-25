@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -55,10 +55,10 @@ export type PriceEntryInput = z.infer<typeof PriceEntrySchema>
 
 export async function getVendors(filters?: { category?: VendorCategory; isPreferred?: boolean }) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const tenantId = user.tenantId!
 
-  let query = supabase.from('vendors').select('*').eq('chef_id', tenantId).order('name')
+  let query = db.from('vendors').select('*').eq('chef_id', tenantId).order('name')
 
   if (filters?.category) {
     query = query.eq('category', filters.category)
@@ -74,11 +74,11 @@ export async function getVendors(filters?: { category?: VendorCategory; isPrefer
 
 export async function createVendor(input: VendorInput) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const tenantId = user.tenantId!
   const data = VendorSchema.parse(input)
 
-  const { data: vendor, error } = await supabase
+  const { data: vendor, error } = await db
     .from('vendors')
     .insert({ ...data, chef_id: tenantId })
     .select()
@@ -91,11 +91,11 @@ export async function createVendor(input: VendorInput) {
 
 export async function updateVendor(id: string, input: VendorInput) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const tenantId = user.tenantId!
   const data = VendorSchema.parse(input)
 
-  const { data: vendor, error } = await supabase
+  const { data: vendor, error } = await db
     .from('vendors')
     .update({ ...data, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -110,10 +110,10 @@ export async function updateVendor(id: string, input: VendorInput) {
 
 export async function deleteVendor(id: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const tenantId = user.tenantId!
 
-  const { error } = await supabase.from('vendors').delete().eq('id', id).eq('chef_id', tenantId)
+  const { error } = await db.from('vendors').delete().eq('id', id).eq('chef_id', tenantId)
 
   if (error) throw new Error(`Failed to delete vendor: ${error.message}`)
   revalidatePath('/vendors')
@@ -122,11 +122,11 @@ export async function deleteVendor(id: string) {
 
 export async function togglePreferred(id: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const tenantId = user.tenantId!
 
   // Fetch current state
-  const { data: vendor, error: fetchError }: any = await supabase
+  const { data: vendor, error: fetchError }: any = await db
     .from('vendors')
     .select('is_preferred')
     .eq('id', id)
@@ -135,7 +135,7 @@ export async function togglePreferred(id: string) {
 
   if (fetchError || !vendor) throw new Error('Vendor not found')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('vendors')
     .update({
       is_preferred: !vendor.is_preferred,
@@ -155,12 +155,12 @@ export async function togglePreferred(id: string) {
 
 export async function addPriceEntry(vendorId: string, input: PriceEntryInput) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const tenantId = user.tenantId!
   const data = PriceEntrySchema.parse(input)
 
   // Verify vendor belongs to this chef
-  const { data: vendor, error: vendorError } = await supabase
+  const { data: vendor, error: vendorError } = await db
     .from('vendors')
     .select('id')
     .eq('id', vendorId)
@@ -169,7 +169,7 @@ export async function addPriceEntry(vendorId: string, input: PriceEntryInput) {
 
   if (vendorError || !vendor) throw new Error('Vendor not found')
 
-  const { data: entry, error } = await supabase
+  const { data: entry, error } = await db
     .from('vendor_price_entries')
     .insert({
       chef_id: tenantId,
@@ -190,10 +190,10 @@ export async function addPriceEntry(vendorId: string, input: PriceEntryInput) {
 
 export async function getPriceHistory(vendorId: string, itemName?: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const tenantId = user.tenantId!
 
-  let query = supabase
+  let query = db
     .from('vendor_price_entries')
     .select('*')
     .eq('chef_id', tenantId)
@@ -211,12 +211,12 @@ export async function getPriceHistory(vendorId: string, itemName?: string) {
 
 export async function comparePrices(itemName: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const tenantId = user.tenantId!
 
   // Get the latest price entry for each vendor for this item
   // Using a subquery approach: get all entries, then deduplicate in JS
-  const { data: entries, error }: any = await supabase
+  const { data: entries, error }: any = await db
     .from('vendor_price_entries')
     .select('*, vendors!inner(id, name, is_preferred, category)')
     .eq('chef_id', tenantId)
@@ -243,17 +243,17 @@ export async function comparePrices(itemName: string) {
 
 export async function getVendorStats() {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const tenantId = user.tenantId!
 
   const [vendorsResult, preferredResult, pricesResult] = await Promise.all([
-    supabase.from('vendors').select('id', { count: 'exact', head: true }).eq('chef_id', tenantId),
-    supabase
+    db.from('vendors').select('id', { count: 'exact', head: true }).eq('chef_id', tenantId),
+    db
       .from('vendors')
       .select('id', { count: 'exact', head: true })
       .eq('chef_id', tenantId)
       .eq('is_preferred', true),
-    supabase
+    db
       .from('vendor_price_entries')
       .select('id', { count: 'exact', head: true })
       .eq('chef_id', tenantId),

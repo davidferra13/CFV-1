@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { convertQuantity, normalizeUnit } from '@/lib/units/conversion-engine'
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -43,7 +43,7 @@ export type VarianceTrendPoint = {
  * Returns Map<ingredientId, { ingredientName, unit, expectedQty, lastPriceCents }>
  */
 async function getExpectedForEvent(
-  supabase: any,
+  db: any,
   tenantId: string,
   eventId: string
 ): Promise<
@@ -55,7 +55,7 @@ async function getExpectedForEvent(
   >()
 
   // Fetch menus for this event
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -66,7 +66,7 @@ async function getExpectedForEvent(
   const menuIds = (menus as any[]).map((m: any) => m.id)
 
   // Fetch dishes
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -77,7 +77,7 @@ async function getExpectedForEvent(
   const dishIds = (dishes as any[]).map((d: any) => d.id)
 
   // Fetch components with recipe links
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('recipe_id, scale_factor')
     .eq('tenant_id', tenantId)
@@ -96,7 +96,7 @@ async function getExpectedForEvent(
   const recipeIds = [...recipeScaleMap.keys()]
 
   // Fetch recipe_ingredients with ingredient details
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select(
       `
@@ -139,13 +139,13 @@ async function getExpectedForEvent(
  */
 export async function getEventVarianceReport(eventId: string): Promise<EventVarianceReport> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get expected ingredient quantities from the recipe chain
-  const expectedMap = await getExpectedForEvent(supabase, user.tenantId!, eventId)
+  const expectedMap = await getExpectedForEvent(db, user.tenantId!, eventId)
 
   // Get actual deductions from inventory_transactions for this event
-  const { data: transactions, error: txError } = await supabase
+  const { data: transactions, error: txError } = await db
     .from('inventory_transactions' as any)
     .select('ingredient_id, ingredient_name, quantity, unit')
     .eq('chef_id', user.tenantId!)
@@ -232,7 +232,7 @@ export async function getEventVarianceReport(eventId: string): Promise<EventVari
  */
 export async function getVarianceTrend(months: number = 6): Promise<VarianceTrendPoint[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Compute date range
   const now = new Date()
@@ -240,7 +240,7 @@ export async function getVarianceTrend(months: number = 6): Promise<VarianceTren
   const startDate = start.toISOString().split('T')[0]
 
   // Fetch all event_deduction transactions in the range
-  const { data: transactions, error: txError } = await supabase
+  const { data: transactions, error: txError } = await db
     .from('inventory_transactions' as any)
     .select('event_id, ingredient_id, quantity, cost_cents, created_at')
     .eq('chef_id', user.tenantId!)
@@ -268,7 +268,7 @@ export async function getVarianceTrend(months: number = 6): Promise<VarianceTren
   }
 
   // Fetch completed events in the range for expected cost calculation
-  const { data: events, error: eventsError } = await supabase
+  const { data: events, error: eventsError } = await db
     .from('events')
     .select('id, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -286,7 +286,7 @@ export async function getVarianceTrend(months: number = 6): Promise<VarianceTren
     const eventDate = new Date(event.event_date)
     const key = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}`
 
-    const expectedMap = await getExpectedForEvent(supabase, user.tenantId!, event.id)
+    const expectedMap = await getExpectedForEvent(db, user.tenantId!, event.id)
     let eventExpectedCost = 0
     for (const info of expectedMap.values()) {
       eventExpectedCost += Math.round(info.expectedQty * info.lastPriceCents)
@@ -331,7 +331,7 @@ export async function getIngredientVarianceHistory(
   months: number = 6
 ): Promise<Array<{ month: string; totalUsed: number; eventCount: number }>> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Compute date range
   const now = new Date()
@@ -339,7 +339,7 @@ export async function getIngredientVarianceHistory(
   const startDate = start.toISOString().split('T')[0]
 
   // Fetch event_deduction transactions for this ingredient
-  const { data: transactions, error } = await supabase
+  const { data: transactions, error } = await db
     .from('inventory_transactions' as any)
     .select('event_id, quantity, created_at')
     .eq('chef_id', user.tenantId!)

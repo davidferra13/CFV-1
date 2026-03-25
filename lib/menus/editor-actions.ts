@@ -5,7 +5,7 @@
 // All mutations enforce tenant scoping and chef-only access.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -81,10 +81,10 @@ export type EditorContext = {
 
 export async function getEditorContext(menuId: string): Promise<EditorContext | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Menu with dishes
-  const { data: menu, error: menuErr } = await supabase
+  const { data: menu, error: menuErr } = await db
     .from('menus')
     .select('*')
     .eq('id', menuId)
@@ -93,7 +93,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
 
   if (menuErr || !menu) return null
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select(
       'id, course_number, course_name, name, description, dietary_tags, allergen_flags, chef_notes, sort_order, photo_url, plating_instructions, beverage_pairing, beverage_pairing_notes'
@@ -110,7 +110,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
   > = {}
 
   if (dishIds.length > 0) {
-    const { data: components } = await supabase
+    const { data: components } = await db
       .from('components')
       .select('id, dish_id, recipe_id, name')
       .in('dish_id', dishIds)
@@ -164,7 +164,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
   }
 
   // Load event with client
-  const { data: ev } = (await supabase
+  const { data: ev } = (await db
     .from('events')
     .select(
       'id, occasion, event_date, serve_time, guest_count, quoted_price_cents, status, venue_name, venue_address, client_id'
@@ -181,7 +181,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
     let clientData: EditorEvent['client'] = null
 
     if (clientId) {
-      const { data: client } = await supabase
+      const { data: client } = await db
         .from('clients')
         .select('id, full_name, dietary_restrictions, allergies')
         .eq('id', clientId)
@@ -216,7 +216,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
   // Previous menus for this client
   let previousMenus: PreviousMenu[] = []
   if (clientId) {
-    const { data: prevEvents } = await supabase
+    const { data: prevEvents } = await db
       .from('events')
       .select('id, event_date')
       .eq('client_id', clientId)
@@ -227,7 +227,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
       const prevEventIds = prevEvents.map((e: any) => e.id)
       const eventDateMap = Object.fromEntries(prevEvents.map((e: any) => [e.id, e.event_date]))
 
-      const { data: prevMenus } = await supabase
+      const { data: prevMenus } = await db
         .from('menus')
         .select('id, name, cuisine_type, created_at, event_id')
         .in('event_id', prevEventIds)
@@ -265,9 +265,9 @@ export async function updateMenuMeta(
   }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('menus')
     .update({
       ...(data as any),
@@ -302,9 +302,9 @@ export async function updateDishEditorContent(
   }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dishes')
     .update({
       ...data,
@@ -330,9 +330,9 @@ export async function addEditorCourse(
   }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: dish, error } = (await supabase
+  const { data: dish, error } = (await db
     .from('dishes')
     .insert({
       menu_id: menuId,
@@ -380,9 +380,9 @@ export async function addEditorCourse(
 
 export async function deleteEditorCourse(dishId: string, menuId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dishes')
     .delete()
     .eq('id', dishId)
@@ -404,9 +404,9 @@ export async function reorderEditorCourse(
   direction: 'up' | 'down'
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, sort_order')
     .eq('menu_id', menuId)
@@ -424,13 +424,13 @@ export async function reorderEditorCourse(
   const a = dishes[idx]
   const b = dishes[swapIdx]
 
-  await supabase
+  await db
     .from('dishes')
     .update({ sort_order: b.sort_order })
     .eq('id', a.id)
     .eq('tenant_id', user.tenantId!)
 
-  await supabase
+  await db
     .from('dishes')
     .update({ sort_order: a.sort_order })
     .eq('id', b.id)
@@ -441,9 +441,9 @@ export async function reorderEditorCourse(
 
 export async function searchRecipesForEditor(query: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipes } = await (supabase as any)
+  const { data: recipes } = await (db as any)
     .from('recipes')
     .select('id, name, category, servings')
     .eq('tenant_id', user.tenantId!)
@@ -455,7 +455,7 @@ export async function searchRecipesForEditor(query: string) {
   if (!recipes?.length) return []
 
   const recipeIds = recipes.map((r: any) => r.id)
-  const { data: costs } = await (supabase as any)
+  const { data: costs } = await (db as any)
     .from('recipe_cost_summary')
     .select('recipe_id, total_ingredient_cost_cents, has_all_prices, ingredient_count')
     .in('recipe_id', recipeIds)
@@ -480,9 +480,9 @@ export async function searchRecipesForEditor(query: string) {
 
 export async function linkRecipeToEditorDish(dishId: string, recipeId: string, recipeName: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('components')
     .select('id')
     .eq('dish_id', dishId)
@@ -492,7 +492,7 @@ export async function linkRecipeToEditorDish(dishId: string, recipeId: string, r
 
   if (existing) return { success: true, alreadyLinked: true }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('components')
     .insert({
       tenant_id: user.tenantId!,
@@ -521,9 +521,9 @@ export async function linkRecipeToEditorDish(dishId: string, recipeId: string, r
 
 export async function unlinkRecipeFromEditorDish(dishId: string, recipeId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('components')
     .delete()
     .eq('dish_id', dishId)
@@ -542,9 +542,9 @@ export async function unlinkRecipeFromEditorDish(dishId: string, recipeId: strin
 
 export async function getEditorMenuCost(menuId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('menu_cost_summary')
     .select(
       'total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, has_all_recipe_costs, total_component_count'

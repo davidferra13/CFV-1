@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from '@/lib/admin/audit'
 
@@ -22,9 +22,9 @@ export async function adminSoftDeleteChatMessage(messageId: string, reason: stri
   const admin = await requireAdmin()
   const parsedMessageId = uuidSchema.parse(messageId)
   const parsedReason = parseModerationReason(reason)
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: message, error: messageError } = await supabase
+  const { data: message, error: messageError } = await db
     .from('chat_messages')
     .select('id, conversation_id, sender_id, deleted_at')
     .eq('id', parsedMessageId)
@@ -38,7 +38,7 @@ export async function adminSoftDeleteChatMessage(messageId: string, reason: stri
   }
 
   if (!message.deleted_at) {
-    const { error: updateError } = await supabase
+    const { error: updateError } = await db
       .from('chat_messages')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', parsedMessageId)
@@ -73,9 +73,9 @@ export async function adminHideSocialPost(postId: string, reason: string) {
   const admin = await requireAdmin()
   const parsedPostId = uuidSchema.parse(postId)
   const parsedReason = parseModerationReason(reason)
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: post, error: postError } = await supabase
+  const { data: post, error: postError } = await db
     .from('chef_social_posts')
     .select('id, chef_id, visibility')
     .eq('id', parsedPostId)
@@ -89,7 +89,7 @@ export async function adminHideSocialPost(postId: string, reason: string) {
   }
 
   if (post.visibility !== 'private') {
-    const { error: updateError } = await supabase
+    const { error: updateError } = await db
       .from('chef_social_posts')
       .update({ visibility: 'private' })
       .eq('id', parsedPostId)
@@ -121,9 +121,9 @@ export async function adminDeactivateHubGroup(groupId: string, reason: string) {
   const admin = await requireAdmin()
   const parsedGroupId = uuidSchema.parse(groupId)
   const parsedReason = parseModerationReason(reason)
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: group, error: groupError } = await supabase
+  const { data: group, error: groupError } = await db
     .from('hub_groups')
     .select('id, tenant_id, is_active, name')
     .eq('id', parsedGroupId)
@@ -137,7 +137,7 @@ export async function adminDeactivateHubGroup(groupId: string, reason: string) {
   }
 
   if (group.is_active) {
-    const { error: updateError } = await supabase
+    const { error: updateError } = await db
       .from('hub_groups')
       .update({ is_active: false })
       .eq('id', parsedGroupId)

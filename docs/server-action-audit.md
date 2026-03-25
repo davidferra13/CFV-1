@@ -96,7 +96,7 @@ These are security, data integrity, or financial accuracy issues.
 
 ### C2. Missing Authorization on Admin Functions
 
-**`lib/stripe/deferred-transfers.ts`** - `listDeferredTransferChefs()` and `resolveDeferredTransfers()` are `'use server'` functions that use admin Supabase client but have NO `requireAdmin()` check. Any authenticated user could invoke these.
+**`lib/stripe/deferred-transfers.ts`** - `listDeferredTransferChefs()` and `resolveDeferredTransfers()` are `'use server'` functions that use admin database client but have NO `requireAdmin()` check. Any authenticated user could invoke these.
 
 ### C3. Missing Authorization on AI Queue
 

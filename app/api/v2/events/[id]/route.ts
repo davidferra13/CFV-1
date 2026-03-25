@@ -51,7 +51,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Event')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('events')
       .select('*, client:clients(id, full_name, email, phone, dietary_restrictions, allergies)')
       .eq('id', id)
@@ -81,7 +81,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     // Verify event belongs to tenant
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('events')
       .select('id')
       .eq('id', id)
@@ -91,7 +91,7 @@ export const PATCH = withApiAuth(
 
     if (!existing) return apiNotFound('Event')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('events')
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
@@ -115,7 +115,7 @@ export const DELETE = withApiAuth(
     if (!id) return apiNotFound('Event')
 
     // Soft delete
-    const { error } = await ctx.supabase
+    const { error } = await ctx.db
       .from('events')
       .update({ deleted_at: new Date().toISOString() } as any)
       .eq('id', id)

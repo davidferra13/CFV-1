@@ -39,7 +39,7 @@ export function isCharityRelated(text: string | null | undefined): boolean {
 }
 
 /**
- * Build a Supabase `.or()` filter string for ILIKE matching across columns.
+ * Build a database `.or()` filter string for ILIKE matching across columns.
  * Example output: "occasion.ilike.%charity%,occasion.ilike.%nonprofit%,notes.ilike.%charity%,..."
  */
 export function buildCharityOrFilter(columns: string[]): string {

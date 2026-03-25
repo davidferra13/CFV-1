@@ -6,7 +6,7 @@
 // Output is INSIGHT ONLY - flags for chef review, never modifies temp log records.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from './parse-ollama'
 import { withAiFallback } from './with-ai-fallback'
 import { analyzeTempLogFormula } from '@/lib/formulas/temp-anomaly'
@@ -37,9 +37,9 @@ export type TempLogAnomalyResult = z.infer<typeof TempLogAnomalyResultSchema>
 
 export async function analyzeTempLog(eventId: string): Promise<TempLogAnomalyResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: tempLog } = await supabase
+  const { data: tempLog } = await db
     .from('event_temp_logs')
     .select('item_description, temp_fahrenheit, logged_at, phase, notes')
     .eq('event_id', eventId)

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ---------------------------------------------------------------------------
 // Hub Integration Actions
@@ -20,7 +20,7 @@ export async function syncRSVPToHubProfile(input: {
   allergies?: string[]
   dietaryRestrictions?: string[]
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   try {
     let profileId: string | null = null
@@ -28,7 +28,7 @@ export async function syncRSVPToHubProfile(input: {
     // Try to find existing profile by email
     if (input.email) {
       const normalized = input.email.toLowerCase().trim()
-      const { data: existing } = await supabase
+      const { data: existing } = await db
         .from('hub_guest_profiles')
         .select('id')
         .eq('email_normalized', normalized)
@@ -42,7 +42,7 @@ export async function syncRSVPToHubProfile(input: {
         if (input.allergies?.length) updates.known_allergies = input.allergies
         if (input.dietaryRestrictions?.length) updates.known_dietary = input.dietaryRestrictions
         if (Object.keys(updates).length > 0) {
-          await supabase
+          await db
             .from('hub_guest_profiles')
             .update({ ...updates, updated_at: new Date().toISOString() })
             .eq('id', profileId)
@@ -52,7 +52,7 @@ export async function syncRSVPToHubProfile(input: {
 
     // Create profile if not found
     if (!profileId) {
-      const { data: newProfile } = await supabase
+      const { data: newProfile } = await db
         .from('hub_guest_profiles')
         .insert({
           display_name: input.displayName,
@@ -69,14 +69,14 @@ export async function syncRSVPToHubProfile(input: {
     if (!profileId) return
 
     // Upsert event history entry
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('occasion, event_date')
       .eq('id', input.eventId)
       .single()
 
     // Get chef name
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('business_name, display_name')
       .eq('id', input.tenantId)
@@ -84,7 +84,7 @@ export async function syncRSVPToHubProfile(input: {
 
     const chefName = chef?.business_name ?? chef?.display_name ?? 'Chef'
 
-    await supabase.from('hub_guest_event_history').upsert(
+    await db.from('hub_guest_event_history').upsert(
       {
         profile_id: profileId,
         event_id: input.eventId,
@@ -98,7 +98,7 @@ export async function syncRSVPToHubProfile(input: {
     )
 
     // Auto-join hub group for this event (if one exists)
-    const { data: eventGroup } = await supabase
+    const { data: eventGroup } = await db
       .from('hub_groups')
       .select('id, group_token')
       .eq('event_id', input.eventId)
@@ -107,7 +107,7 @@ export async function syncRSVPToHubProfile(input: {
 
     if (eventGroup) {
       // Check if already a member
-      const { data: existingMember } = await supabase
+      const { data: existingMember } = await db
         .from('hub_group_members')
         .select('id')
         .eq('group_id', eventGroup.id)
@@ -115,7 +115,7 @@ export async function syncRSVPToHubProfile(input: {
         .single()
 
       if (!existingMember) {
-        await supabase.from('hub_group_members').insert({
+        await db.from('hub_group_members').insert({
           group_id: eventGroup.id,
           profile_id: profileId,
           role: 'member',
@@ -125,13 +125,13 @@ export async function syncRSVPToHubProfile(input: {
         })
 
         // System message
-        const { data: profile } = await supabase
+        const { data: profile } = await db
           .from('hub_guest_profiles')
           .select('display_name')
           .eq('id', profileId)
           .single()
 
-        await supabase.from('hub_messages').insert({
+        await db.from('hub_messages').insert({
           group_id: eventGroup.id,
           author_profile_id: profileId,
           message_type: 'system',
@@ -157,17 +157,17 @@ export async function snapshotEventToHub(input: {
   eventId: string
   tenantId: string
 }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   try {
     // Get menu items for snapshot via menus → dishes
-    const { data: menus } = await supabase.from('menus').select('id').eq('event_id', input.eventId)
+    const { data: menus } = await db.from('menus').select('id').eq('event_id', input.eventId)
 
     const menuIds = (menus ?? []).map((m: any) => m.id)
     let coursesServed: { name: string | null; course: string; description: string | null }[] = []
 
     if (menuIds.length > 0) {
-      const { data: dishes } = await supabase
+      const { data: dishes } = await db
         .from('dishes')
         .select('name, course_name, description')
         .in('menu_id', menuIds)
@@ -182,14 +182,14 @@ export async function snapshotEventToHub(input: {
 
     // Update all history entries for this event with courses snapshot
     if (coursesServed.length > 0) {
-      await supabase
+      await db
         .from('hub_guest_event_history')
         .update({ courses_served: coursesServed })
         .eq('event_id', input.eventId)
     }
 
     // Post system message to hub group
-    const { data: eventGroup } = await supabase
+    const { data: eventGroup } = await db
       .from('hub_groups')
       .select('id')
       .eq('event_id', input.eventId)
@@ -197,7 +197,7 @@ export async function snapshotEventToHub(input: {
 
     if (eventGroup) {
       // Find any member to be author of system message
-      const { data: anyMember } = await supabase
+      const { data: anyMember } = await db
         .from('hub_group_members')
         .select('profile_id')
         .eq('group_id', eventGroup.id)
@@ -205,7 +205,7 @@ export async function snapshotEventToHub(input: {
         .single()
 
       if (anyMember) {
-        await supabase.from('hub_messages').insert({
+        await db.from('hub_messages').insert({
           group_id: eventGroup.id,
           author_profile_id: anyMember.profile_id,
           message_type: 'system',
@@ -231,10 +231,10 @@ export async function getOrCreateEventHubGroup(input: {
   tenantId: string
   eventTitle: string
 }): Promise<{ groupToken: string }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Check if a group already exists for this event
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('hub_groups')
     .select('group_token')
     .eq('event_id', input.eventId)
@@ -244,7 +244,7 @@ export async function getOrCreateEventHubGroup(input: {
   if (existing) return { groupToken: existing.group_token }
 
   // Find or create a system profile for the chef
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('id, business_name, display_name, auth_user_id')
     .eq('id', input.tenantId)
@@ -255,7 +255,7 @@ export async function getOrCreateEventHubGroup(input: {
   // Check if chef already has a hub profile
   let chefProfileId: string | null = null
   if (chef?.auth_user_id) {
-    const { data: chefProfile } = await supabase
+    const { data: chefProfile } = await db
       .from('hub_guest_profiles')
       .select('id')
       .eq('auth_user_id', chef.auth_user_id)
@@ -265,7 +265,7 @@ export async function getOrCreateEventHubGroup(input: {
   }
 
   if (!chefProfileId) {
-    const { data: newProfile } = await supabase
+    const { data: newProfile } = await db
       .from('hub_guest_profiles')
       .insert({
         display_name: chefName,
@@ -281,7 +281,7 @@ export async function getOrCreateEventHubGroup(input: {
   if (!chefProfileId) throw new Error('Failed to create chef profile for hub')
 
   // Create the group
-  const { data: group, error } = await supabase
+  const { data: group, error } = await db
     .from('hub_groups')
     .insert({
       name: input.eventTitle || 'Dinner Group',
@@ -296,7 +296,7 @@ export async function getOrCreateEventHubGroup(input: {
   if (error) throw new Error(`Failed to create hub group: ${error.message}`)
 
   // Add chef as owner
-  await supabase.from('hub_group_members').insert({
+  await db.from('hub_group_members').insert({
     group_id: group.id,
     profile_id: chefProfileId,
     role: 'chef',
@@ -312,9 +312,9 @@ export async function getOrCreateEventHubGroup(input: {
  * Get hub group info for an event (used by share page and event detail).
  */
 export async function getEventHubGroupToken(eventId: string): Promise<string | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('hub_groups')
     .select('group_token')
     .eq('event_id', eventId)
@@ -341,9 +341,9 @@ export async function getStubsSeekingChef(): Promise<
     group_member_count: number
   }[]
 > {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_stubs')
     .select('*, hub_guest_profiles!created_by_profile_id(display_name)')
     .eq('status', 'seeking_chef')
@@ -356,7 +356,7 @@ export async function getStubsSeekingChef(): Promise<
     (data ?? []).map(async (stub: any) => {
       let memberCount = 0
       if (stub.hub_group_id) {
-        const { count } = await supabase
+        const { count } = await db
           .from('hub_group_members')
           .select('*', { count: 'exact', head: true })
           .eq('group_id', stub.hub_group_id)
@@ -400,23 +400,20 @@ export async function getHubStats(): Promise<{
     created_at: string
   }[]
 }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const [profiles, groups, activeGroups, messages, mediaCount, stubs, recentMessages] =
     await Promise.all([
-      supabase.from('hub_guest_profiles').select('*', { count: 'exact', head: true }),
-      supabase.from('hub_groups').select('*', { count: 'exact', head: true }),
-      supabase.from('hub_groups').select('*', { count: 'exact', head: true }).eq('is_active', true),
-      supabase
-        .from('hub_messages')
-        .select('*', { count: 'exact', head: true })
-        .is('deleted_at', null),
-      supabase.from('hub_media').select('*', { count: 'exact', head: true }),
-      supabase
+      db.from('hub_guest_profiles').select('*', { count: 'exact', head: true }),
+      db.from('hub_groups').select('*', { count: 'exact', head: true }),
+      db.from('hub_groups').select('*', { count: 'exact', head: true }).eq('is_active', true),
+      db.from('hub_messages').select('*', { count: 'exact', head: true }).is('deleted_at', null),
+      db.from('hub_media').select('*', { count: 'exact', head: true }),
+      db
         .from('event_stubs')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'seeking_chef'),
-      supabase
+      db
         .from('hub_messages')
         .select(
           'id, body, created_at, hub_guest_profiles!author_profile_id(display_name), hub_groups!group_id(name)'

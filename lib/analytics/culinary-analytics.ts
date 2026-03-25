@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -54,9 +54,9 @@ function pct(n: number, d: number) {
 
 export async function getRecipeUsageStats(): Promise<RecipeUsageStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipes } = await supabase
+  const { data: recipes } = await db
     .from('recipes')
     .select('id, name, times_cooked, last_cooked_at')
     .eq('tenant_id', chef.id)
@@ -98,27 +98,27 @@ export async function getRecipeUsageStats(): Promise<RecipeUsageStats> {
 
 export async function getDishPerformanceStats(): Promise<DishPerformanceStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
   const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString()
 
   // New dishes this month / year (from dishes table, non-template menus)
-  const { count: dishesThisMonth } = await supabase
+  const { count: dishesThisMonth } = await db
     .from('dishes')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.id)
     .gte('created_at', startOfMonth)
 
-  const { count: dishesThisYear } = await supabase
+  const { count: dishesThisYear } = await db
     .from('dishes')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.id)
     .gte('created_at', startOfYear)
 
   // Menu modification rate: menus with revision_notes / total sent
-  const { data: approvals } = await supabase
+  const { data: approvals } = await db
     .from('menu_approval_requests')
     .select('status, revision_notes, sent_at, responded_at')
     .eq('chef_id', chef.id)
@@ -128,7 +128,7 @@ export async function getDishPerformanceStats(): Promise<DishPerformanceStats> {
   const withRevisions = (approvals ?? []).filter((a: any) => a.revision_notes).length
 
   // Avg dishes per sent menu
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('tenant_id', chef.id)
@@ -139,7 +139,7 @@ export async function getDishPerformanceStats(): Promise<DishPerformanceStats> {
   let avgDishes = 0
 
   if (menuIds.length > 0) {
-    const { data: dishes } = await supabase.from('dishes').select('menu_id').in('menu_id', menuIds)
+    const { data: dishes } = await db.from('dishes').select('menu_id').in('menu_id', menuIds)
 
     const dishCountPerMenu = new Map<string, number>()
     for (const d of dishes ?? []) {
@@ -162,9 +162,9 @@ export async function getDishPerformanceStats(): Promise<DishPerformanceStats> {
 
 export async function getIngredientCostStats(): Promise<IngredientCostStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await db
     .from('ingredients')
     .select('name, last_price_cents, price_unit, last_price_date, average_price_cents')
     .eq('tenant_id', chef.id)
@@ -201,9 +201,9 @@ export async function getIngredientCostStats(): Promise<IngredientCostStats> {
 
 export async function getMenuApprovalStats(): Promise<MenuApprovalStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('menu_approval_requests')
     .select('status, sent_at, responded_at, revision_notes')
     .eq('chef_id', chef.id)
@@ -245,9 +245,9 @@ export async function getMostCommonDietaryRestrictions(): Promise<
   Array<{ restriction: string; count: number; percent: number }>
 > {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('dietary_restrictions')
     .eq('tenant_id', chef.id)

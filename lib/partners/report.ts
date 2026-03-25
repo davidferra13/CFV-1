@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { startOfMonth, endOfMonth, format } from 'date-fns'
 
 export type PartnerReportData = {
@@ -49,14 +49,14 @@ export async function getPartnerReportData(
   month?: Date
 ): Promise<PartnerReportData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const targetMonth = month || new Date()
   const from = startOfMonth(targetMonth).toISOString()
   const to = endOfMonth(targetMonth).toISOString()
 
   // Get partner
-  const { data: partner, error } = await supabase
+  const { data: partner, error } = await db
     .from('referral_partners')
     .select('id, name, partner_type, contact_name, email')
     .eq('id', partnerId)
@@ -66,7 +66,7 @@ export async function getPartnerReportData(
   if (error || !partner) return null
 
   // Get inquiries for this partner in the period
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, partner_location_id, status')
     .eq('tenant_id', user.tenantId!)
@@ -75,7 +75,7 @@ export async function getPartnerReportData(
     .lte('created_at', to)
 
   // Get events for this partner (all time, for comprehensive view)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       'id, event_date, occasion, guest_count, status, quoted_price_cents, partner_location_id, location_address'
@@ -87,7 +87,7 @@ export async function getPartnerReportData(
     .order('event_date', { ascending: true })
 
   // Get partner locations for breakdown
-  const { data: locations } = await supabase
+  const { data: locations } = await db
     .from('partner_locations')
     .select('id, name')
     .eq('partner_id', partnerId)

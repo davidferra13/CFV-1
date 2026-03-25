@@ -5,7 +5,7 @@
 'use server'
 
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ============================================
 // TYPES
@@ -65,10 +65,10 @@ function getQuarter(dateStr: string): string {
  */
 export async function getDietaryTrendsReport(): Promise<DietaryTrendsReport> {
   const user = await requirePro('intelligence-hub')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all clients with their dietary data
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, dietary_restrictions, allergies')
     .eq('tenant_id', user.tenantId!)
@@ -143,7 +143,7 @@ export async function getDietaryTrendsReport(): Promise<DietaryTrendsReport> {
 
   // Quarterly trends: track how dietary restrictions appear in events over time
   // Join clients with events to see trends by quarter
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, event_date')
     .eq('tenant_id', user.tenantId!)

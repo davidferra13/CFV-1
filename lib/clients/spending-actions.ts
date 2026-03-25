@@ -1,7 +1,7 @@
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { startOfYear, endOfYear } from 'date-fns'
 
 export interface SpendingEvent {
@@ -30,10 +30,10 @@ export interface SpendingSummary {
  */
 export async function getClientSpendingSummary(): Promise<SpendingSummary> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all non-draft, non-cancelled events for this client with financials
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -67,7 +67,7 @@ export async function getClientSpendingSummary(): Promise<SpendingSummary> {
       events: [],
     }
 
-  const { data: financials } = await supabase
+  const { data: financials } = await db
     .from('event_financial_summary')
     .select('event_id, total_paid_cents, outstanding_balance_cents, quoted_price_cents')
     .in('event_id', eventIds)

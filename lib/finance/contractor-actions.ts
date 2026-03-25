@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -45,9 +45,9 @@ export async function recordContractorPayment(
 ): Promise<ContractorPayment> {
   const user = await requireChef()
   const parsed = RecordPaymentSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('contractor_payments')
     .insert({
       chef_id: user.tenantId!,
@@ -64,12 +64,12 @@ export async function recordContractorPayment(
   if (error) throw new Error(`Failed to record payment: ${error.message}`)
 
   // Update YTD on staff_members
-  await supabase.from('staff_members').update({
-    ytd_payments_cents: supabase.rpc ? undefined : undefined, // handled via SQL below
+  await db.from('staff_members').update({
+    ytd_payments_cents: db.rpc ? undefined : undefined, // handled via SQL below
   })
 
   // Recalculate YTD
-  const { data: ytdData } = await supabase
+  const { data: ytdData } = await db
     .from('contractor_payments')
     .select('amount_cents')
     .eq('chef_id', user.tenantId!)
@@ -78,7 +78,7 @@ export async function recordContractorPayment(
 
   const ytdTotal = (ytdData || []).reduce((s: number, r: any) => s + r.amount_cents, 0)
 
-  await supabase
+  await db
     .from('staff_members')
     .update({ ytd_payments_cents: ytdTotal })
     .eq('id', parsed.staffMemberId)
@@ -102,9 +102,9 @@ export async function getContractorPayments(filters?: {
   taxYear?: number
 }): Promise<ContractorPayment[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('contractor_payments')
     .select('*, staff_members(name)')
     .eq('chef_id', user.tenantId!)
@@ -131,10 +131,10 @@ export async function getContractorPayments(filters?: {
 
 export async function get1099Summary(taxYear: number): Promise<Contractor1099Summary[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all staff marked as contractors
-  const { data: staff } = await supabase
+  const { data: staff } = await db
     .from('staff_members')
     .select('id, name, contractor_type, ytd_payments_cents')
     .eq('chef_id', user.tenantId!)
@@ -143,7 +143,7 @@ export async function get1099Summary(taxYear: number): Promise<Contractor1099Sum
   if (!staff?.length) return []
 
   // Get actual payments for the year per staff
-  const { data: payments } = await supabase
+  const { data: payments } = await db
     .from('contractor_payments')
     .select('staff_member_id, amount_cents')
     .eq('chef_id', user.tenantId!)
@@ -212,9 +212,9 @@ export async function saveW9Data(
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
   const parsed = SaveW9Schema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('staff_members')
     .update({
       contractor_type: parsed.contractorType ?? null,

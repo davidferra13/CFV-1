@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -48,9 +48,9 @@ export async function getTemplates(category?: TemplateCategory): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('response_templates')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -83,9 +83,9 @@ export async function getTemplateById(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('response_templates')
     .select('*')
     .eq('id', id)
@@ -114,9 +114,9 @@ export async function createTemplate(input: {
   is_default?: boolean
 }): Promise<{ data: ResponseTemplate | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('response_templates')
     .insert({
       chef_id: user.entityId,
@@ -153,7 +153,7 @@ export async function updateTemplate(
   }
 ): Promise<{ data: ResponseTemplate | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (input.name !== undefined) updateData.name = input.name
@@ -164,7 +164,7 @@ export async function updateTemplate(
   if (input.variables !== undefined) updateData.variables = input.variables
   if (input.is_default !== undefined) updateData.is_default = input.is_default
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('response_templates')
     .update(updateData)
     .eq('id', id)
@@ -183,10 +183,10 @@ export async function updateTemplate(
 
 export async function deleteTemplate(id: string): Promise<{ error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Don't allow deleting system templates
-  const { data: template } = await supabase
+  const { data: template } = await db
     .from('response_templates')
     .select('is_system')
     .eq('id', id)
@@ -197,7 +197,7 @@ export async function deleteTemplate(id: string): Promise<{ error: string | null
     return { error: 'Cannot delete system templates' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('response_templates')
     .delete()
     .eq('id', id)
@@ -214,10 +214,10 @@ export async function deleteTemplate(id: string): Promise<{ error: string | null
 
 export async function incrementTemplateUsage(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   try {
-    await supabase.rpc('increment_template_usage', {
+    await db.rpc('increment_template_usage', {
       template_id: id,
       p_chef_id: user.entityId,
     })

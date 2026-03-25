@@ -26,7 +26,7 @@ const PatchBody = z.object({
 export const GET = withApiAuth(
   async (_req, ctx) => {
     // Load all overrides for this chef
-    const { data: overrides, error } = await ctx.supabase
+    const { data: overrides, error } = await ctx.db
       .from('chef_notification_tier_overrides' as any)
       .select('action, tier')
       .eq('chef_id', ctx.tenantId)
@@ -79,7 +79,7 @@ export const PATCH = withApiAuth(
 
       if (tier === defaultTier) {
         // Remove override (revert to default)
-        const { error } = await ctx.supabase
+        const { error } = await ctx.db
           .from('chef_notification_tier_overrides' as any)
           .delete()
           .eq('chef_id', ctx.tenantId)
@@ -88,7 +88,7 @@ export const PATCH = withApiAuth(
         if (error) errors.push(`${action}: ${error.message}`)
       } else {
         // Upsert override
-        const { error } = await ctx.supabase.from('chef_notification_tier_overrides' as any).upsert(
+        const { error } = await ctx.db.from('chef_notification_tier_overrides' as any).upsert(
           {
             chef_id: ctx.tenantId,
             action,

@@ -46,7 +46,7 @@ interface ApiContext {
   tenantId: string
   scopes: string[]
   keyId: string
-  supabase: SupabaseClient // pre-built, admin, tenant-scoped
+  database: PostgreSQLClient // pre-built, admin, tenant-scoped
 }
 
 type ApiHandler = (req: NextRequest, ctx: ApiContext) => Promise<NextResponse>
@@ -72,8 +72,8 @@ export function withApiAuth(
 // In any v2 route file:
 export const GET = withApiAuth(
   async (req, ctx) => {
-    // ctx.tenantId, ctx.supabase already available
-    const { data } = await ctx.supabase.from('events').select('*').eq('tenant_id', ctx.tenantId)
+    // ctx.tenantId, ctx.database already available
+    const { data } = await ctx.database.from('events').select('*').eq('tenant_id', ctx.tenantId)
     return apiSuccess(data)
   },
   { requiredScopes: ['events:read'] }
@@ -166,7 +166,7 @@ lib/api/v2/pagination.ts     - Pagination utilities
 
 ### Task 2.1: Migration - `chef_pricing_config` table
 
-**File:** `supabase/migrations/20260401000087_chef_pricing_config.sql`
+**File:** `database/migrations/20260401000087_chef_pricing_config.sql`
 
 ```sql
 CREATE TABLE IF NOT EXISTS chef_pricing_config (
@@ -339,7 +339,7 @@ Add entry to nav config under Settings section:
 ### Files created/modified in Phase 2:
 
 ```
-supabase/migrations/20260401000087_chef_pricing_config.sql  - NEW migration
+database/migrations/20260401000087_chef_pricing_config.sql  - NEW migration
 lib/pricing/config-actions.ts   - NEW server actions
 lib/pricing/config-types.ts     - NEW types for pricing config
 lib/pricing/compute.ts          - MODIFIED to accept config
@@ -544,7 +544,7 @@ Scopes: `documents:read`, `documents:write`, `settings:read`, `settings:write`
 
 ### Task 4.1: Migration - webhook subscriptions table
 
-**File:** `supabase/migrations/20260401000088_outbound_webhooks.sql`
+**File:** `database/migrations/20260401000088_outbound_webhooks.sql`
 
 ```sql
 CREATE TABLE IF NOT EXISTS chef_webhook_subscriptions (
@@ -710,7 +710,7 @@ Scope: `webhooks:manage`
 ### Files created/modified in Phase 4:
 
 ```
-supabase/migrations/20260401000088_outbound_webhooks.sql  - NEW migration
+database/migrations/20260401000088_outbound_webhooks.sql  - NEW migration
 lib/webhooks/emitter.ts          - NEW webhook emitter
 lib/webhooks/actions.ts          - NEW server actions
 lib/webhooks/types.ts            - NEW types

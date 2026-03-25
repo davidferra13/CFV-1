@@ -14,7 +14,7 @@
  * client names, recipe details, or any PII.
  */
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 type FeatureCategory = 'recipe' | 'event' | 'client' | 'menu' | 'finance' | 'general'
@@ -35,13 +35,13 @@ export async function recordRemyMetric(input: MetricInput): Promise<void> {
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     const category = input.category ?? 'general'
     const today = new Date().toISOString().split('T')[0]
 
     // Upsert: increment counts for today's category
-    const { error } = await supabase.rpc('increment_remy_metrics', {
+    const { error } = await db.rpc('increment_remy_metrics', {
       p_tenant_id: tenantId,
       p_metric_date: today,
       p_feature_category: category,
@@ -53,7 +53,7 @@ export async function recordRemyMetric(input: MetricInput): Promise<void> {
 
     // If RPC doesn't exist yet, fall back to direct upsert
     if (error?.code === '42883') {
-      await supabase.from('remy_usage_metrics').upsert(
+      await db.from('remy_usage_metrics').upsert(
         {
           tenant_id: tenantId,
           metric_date: today,
@@ -83,12 +83,12 @@ export async function recordConversationStart(
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     const today = new Date().toISOString().split('T')[0]
 
     // Try direct upsert with conversation_count increment
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('remy_usage_metrics')
       .select('id, conversation_count')
       .eq('tenant_id', tenantId)
@@ -97,12 +97,12 @@ export async function recordConversationStart(
       .maybeSingle()
 
     if (existing) {
-      await supabase
+      await db
         .from('remy_usage_metrics')
         .update({ conversation_count: (existing.conversation_count ?? 0) + 1 })
         .eq('id', existing.id)
     } else {
-      await supabase.from('remy_usage_metrics').insert({
+      await db.from('remy_usage_metrics').insert({
         tenant_id: tenantId,
         metric_date: today,
         feature_category: category,
@@ -130,9 +130,9 @@ export async function getRemyMetricsSummary(): Promise<{
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data: metrics } = await supabase
+    const { data: metrics } = await db
       .from('remy_usage_metrics')
       .select('*')
       .eq('tenant_id', tenantId)

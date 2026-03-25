@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -57,9 +57,9 @@ const REVALIDATE_PATH = '/email/sequences'
 
 export async function getSequences() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('email_sequences')
     .select(
       `
@@ -81,9 +81,9 @@ export async function getSequences() {
 
 export async function getSequence(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('email_sequences')
     .select(
       `
@@ -110,9 +110,9 @@ export async function getSequence(id: string) {
 
 export async function createSequence(input: SequenceInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('email_sequences')
     .insert({
       chef_id: user.tenantId!,
@@ -134,9 +134,9 @@ export async function createSequence(input: SequenceInput) {
 
 export async function updateSequence(id: string, input: Partial<SequenceInput>) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('email_sequences')
     .update(input)
     .eq('id', id)
@@ -155,9 +155,9 @@ export async function updateSequence(id: string, input: Partial<SequenceInput>) 
 
 export async function deleteSequence(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('email_sequences')
     .delete()
     .eq('id', id)
@@ -177,10 +177,10 @@ export async function deleteSequence(id: string) {
 
 export async function addStep(sequenceId: string, input: StepInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: seq } = await (supabase as any)
+  const { data: seq } = await (db as any)
     .from('email_sequences')
     .select('id')
     .eq('id', sequenceId)
@@ -189,7 +189,7 @@ export async function addStep(sequenceId: string, input: StepInput) {
 
   if (!seq) throw new Error('Sequence not found')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('email_sequence_steps')
     .insert({
       sequence_id: sequenceId,
@@ -212,10 +212,10 @@ export async function addStep(sequenceId: string, input: StepInput) {
 
 export async function updateStep(stepId: string, input: Partial<Omit<StepInput, 'step_number'>>) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership via join
-  const { data: step } = await (supabase as any)
+  const { data: step } = await (db as any)
     .from('email_sequence_steps')
     .select('id, sequence_id, email_sequences!inner(chef_id)')
     .eq('id', stepId)
@@ -225,7 +225,7 @@ export async function updateStep(stepId: string, input: Partial<Omit<StepInput, 
     throw new Error('Step not found')
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('email_sequence_steps')
     .update(input)
     .eq('id', stepId)
@@ -243,10 +243,10 @@ export async function updateStep(stepId: string, input: Partial<Omit<StepInput, 
 
 export async function removeStep(stepId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: step } = await (supabase as any)
+  const { data: step } = await (db as any)
     .from('email_sequence_steps')
     .select('id, sequence_id, email_sequences!inner(chef_id)')
     .eq('id', stepId)
@@ -256,7 +256,7 @@ export async function removeStep(stepId: string) {
     throw new Error('Step not found')
   }
 
-  const { error } = await (supabase as any).from('email_sequence_steps').delete().eq('id', stepId)
+  const { error } = await (db as any).from('email_sequence_steps').delete().eq('id', stepId)
 
   if (error) {
     console.error('[removeStep] Error:', error)
@@ -268,10 +268,10 @@ export async function removeStep(stepId: string) {
 
 export async function reorderSteps(sequenceId: string, stepIds: string[]) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: seq } = await (supabase as any)
+  const { data: seq } = await (db as any)
     .from('email_sequences')
     .select('id')
     .eq('id', sequenceId)
@@ -282,7 +282,7 @@ export async function reorderSteps(sequenceId: string, stepIds: string[]) {
 
   // Update each step's step_number to match its index in the array
   const updates = stepIds.map((id, index) =>
-    (supabase as any)
+    (db as any)
       .from('email_sequence_steps')
       .update({ step_number: index + 1 })
       .eq('id', id)
@@ -305,10 +305,10 @@ export async function reorderSteps(sequenceId: string, stepIds: string[]) {
 
 export async function enrollClient(sequenceId: string, clientId: string, inquiryId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify sequence ownership
-  const { data: seq } = await (supabase as any)
+  const { data: seq } = await (db as any)
     .from('email_sequences')
     .select('id')
     .eq('id', sequenceId)
@@ -318,7 +318,7 @@ export async function enrollClient(sequenceId: string, clientId: string, inquiry
   if (!seq) throw new Error('Sequence not found')
 
   // Get first step delay to calculate next_send_at
-  const { data: firstStep } = await (supabase as any)
+  const { data: firstStep } = await (db as any)
     .from('email_sequence_steps')
     .select('delay_days')
     .eq('sequence_id', sequenceId)
@@ -329,7 +329,7 @@ export async function enrollClient(sequenceId: string, clientId: string, inquiry
   const nextSendAt = new Date()
   nextSendAt.setDate(nextSendAt.getDate() + delayDays)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('email_sequence_enrollments')
     .insert({
       chef_id: user.tenantId!,
@@ -354,9 +354,9 @@ export async function enrollClient(sequenceId: string, clientId: string, inquiry
 
 export async function getEnrollments(sequenceId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('email_sequence_enrollments')
     .select(
       `
@@ -384,9 +384,9 @@ export async function getEnrollments(sequenceId?: string) {
 
 export async function pauseEnrollment(enrollmentId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('email_sequence_enrollments')
     .update({ status: 'paused', next_send_at: null })
     .eq('id', enrollmentId)
@@ -406,9 +406,9 @@ export async function pauseEnrollment(enrollmentId: string) {
 
 export async function cancelEnrollment(enrollmentId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('email_sequence_enrollments')
     .update({ status: 'cancelled', next_send_at: null })
     .eq('id', enrollmentId)
@@ -432,10 +432,10 @@ export async function cancelEnrollment(enrollmentId: string) {
 
 export async function getSequenceStats(sequenceId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: seq } = await (supabase as any)
+  const { data: seq } = await (db as any)
     .from('email_sequences')
     .select('id')
     .eq('id', sequenceId)
@@ -444,7 +444,7 @@ export async function getSequenceStats(sequenceId: string) {
 
   if (!seq) throw new Error('Sequence not found')
 
-  const { data: enrollments, error } = await (supabase as any)
+  const { data: enrollments, error } = await (db as any)
     .from('email_sequence_enrollments')
     .select('status')
     .eq('sequence_id', sequenceId)
@@ -468,10 +468,10 @@ export async function getSequenceStats(sequenceId: string) {
 
 export async function previewStep(stepId: string, clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get step
-  const { data: step } = await (supabase as any)
+  const { data: step } = await (db as any)
     .from('email_sequence_steps')
     .select('*, email_sequences!inner(chef_id)')
     .eq('id', stepId)
@@ -482,7 +482,7 @@ export async function previewStep(stepId: string, clientId: string) {
   }
 
   // Get client info
-  const { data: client } = await (supabase as any)
+  const { data: client } = await (db as any)
     .from('clients')
     .select('full_name, email')
     .eq('id', clientId)
@@ -490,7 +490,7 @@ export async function previewStep(stepId: string, clientId: string) {
     .single()
 
   // Get chef info
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = await (db as any)
     .from('chefs')
     .select('business_name')
     .eq('id', user.tenantId!)

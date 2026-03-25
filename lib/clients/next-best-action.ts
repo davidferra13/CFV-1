@@ -5,7 +5,7 @@
 // Based on health tier, open inquiries, event history, and milestone data.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getClientHealthScores } from '@/lib/clients/health-score'
 import type { ClientHealthTier } from '@/lib/clients/health-score'
 
@@ -40,13 +40,13 @@ export type NextBestAction = {
  */
 export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch health scores for all clients
   const { scores } = await getClientHealthScores()
 
   // Fetch clients basic info
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', user.tenantId!)
@@ -58,7 +58,7 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
   }
 
   // Fetch open inquiries per client
-  const { data: openInquiries } = await supabase
+  const { data: openInquiries } = await db
     .from('inquiries')
     .select('id, client_id, status')
     .eq('tenant_id', user.tenantId!)
@@ -74,7 +74,7 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
   // Fetch expiring quotes (next 7 days) per client
   const sevenDaysOut = new Date()
   sevenDaysOut.setDate(sevenDaysOut.getDate() + 7)
-  const { data: expiringQuotes } = await supabase
+  const { data: expiringQuotes } = await db
     .from('quotes')
     .select('id, event_id, valid_until')
     .eq('tenant_id', user.tenantId!)
@@ -88,7 +88,7 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
     .filter((id: any): id is string => id != null)
   const expiringClientIds = new Set<string>()
   if (quoteEventIds.length > 0) {
-    const { data: quoteEvents } = await supabase
+    const { data: quoteEvents } = await db
       .from('events')
       .select('id, client_id')
       .in('id', quoteEventIds)
@@ -98,7 +98,7 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
   }
 
   // Fetch upcoming milestones (next 14 days) - using personal_milestones field
-  const { data: milestonesData } = await supabase
+  const { data: milestonesData } = await db
     .from('clients')
     .select('id, personal_milestones')
     .eq('tenant_id', user.tenantId!)

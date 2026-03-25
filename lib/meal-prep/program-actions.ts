@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -103,11 +103,11 @@ const assignWeekMenuSchema = z.object({
 
 export async function createMealPrepProgram(input: z.infer<typeof createProgramSchema>) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const parsed = createProgramSchema.parse(input)
 
   // Verify the recurring service belongs to this tenant
-  const { data: service, error: serviceErr } = await supabase
+  const { data: service, error: serviceErr } = await db
     .from('recurring_services')
     .select('id, client_id')
     .eq('id', parsed.recurring_service_id)
@@ -118,7 +118,7 @@ export async function createMealPrepProgram(input: z.infer<typeof createProgramS
     return { error: 'Recurring service not found or not yours' }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('meal_prep_programs')
     .insert({
       tenant_id: user.tenantId!,
@@ -151,7 +151,7 @@ export async function createMealPrepProgram(input: z.infer<typeof createProgramS
     containers_back: 0,
   }))
 
-  await supabase.from('meal_prep_weeks').insert(weekInserts)
+  await db.from('meal_prep_weeks').insert(weekInserts)
 
   revalidatePath('/meal-prep')
   return { id: data.id }
@@ -159,9 +159,9 @@ export async function createMealPrepProgram(input: z.infer<typeof createProgramS
 
 export async function listMealPrepPrograms(): Promise<MealPrepProgram[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('meal_prep_programs')
     .select(
       `
@@ -184,9 +184,9 @@ export async function listMealPrepPrograms(): Promise<MealPrepProgram[]> {
 
 export async function getMealPrepProgram(id: string): Promise<MealPrepProgram | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('meal_prep_programs')
     .select(
       `
@@ -205,9 +205,9 @@ export async function getMealPrepProgram(id: string): Promise<MealPrepProgram | 
 
 export async function getMealPrepWeeks(programId: string): Promise<MealPrepWeek[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('meal_prep_weeks')
     .select(
       `
@@ -232,7 +232,7 @@ export async function updateMealPrepProgram(
   updates: z.infer<typeof updateProgramSchema>
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const parsed = updateProgramSchema.parse(updates)
 
   // Remove undefined fields
@@ -242,7 +242,7 @@ export async function updateMealPrepProgram(
     return { error: 'No updates provided' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_programs')
     .update(cleanUpdates)
     .eq('id', id)
@@ -259,9 +259,9 @@ export async function updateMealPrepProgram(
 
 export async function pauseMealPrepProgram(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_programs')
     .update({ status: 'paused' })
     .eq('id', id)
@@ -279,9 +279,9 @@ export async function pauseMealPrepProgram(id: string) {
 
 export async function resumeMealPrepProgram(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_programs')
     .update({ status: 'active' })
     .eq('id', id)
@@ -299,9 +299,9 @@ export async function resumeMealPrepProgram(id: string) {
 
 export async function endMealPrepProgram(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_programs')
     .update({ status: 'ended' })
     .eq('id', id)
@@ -318,14 +318,14 @@ export async function endMealPrepProgram(id: string) {
 
 export async function recordContainerReturn(programId: string, count: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (count <= 0) {
     return { error: 'Count must be positive' }
   }
 
   // Get current program
-  const { data: program, error: fetchErr } = await supabase
+  const { data: program, error: fetchErr } = await db
     .from('meal_prep_programs')
     .select('containers_returned, containers_out')
     .eq('id', programId)
@@ -339,7 +339,7 @@ export async function recordContainerReturn(programId: string, count: number) {
   const newReturned = (program.containers_returned ?? 0) + count
   const newOut = Math.max(0, (program.containers_out ?? 0) - count)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_programs')
     .update({
       containers_returned: newReturned,
@@ -359,7 +359,7 @@ export async function recordContainerReturn(programId: string, count: number) {
 
 export async function assignWeekMenu(input: z.infer<typeof assignWeekMenuSchema>) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const parsed = assignWeekMenuSchema.parse(input)
 
   const updates: Record<string, any> = {}
@@ -367,7 +367,7 @@ export async function assignWeekMenu(input: z.infer<typeof assignWeekMenuSchema>
   if (parsed.customDishes !== undefined) updates.custom_dishes = parsed.customDishes
   if (parsed.notes !== undefined) updates.notes = parsed.notes
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_weeks')
     .update(updates)
     .eq('program_id', parsed.programId)
@@ -384,9 +384,9 @@ export async function assignWeekMenu(input: z.infer<typeof assignWeekMenuSchema>
 
 export async function markWeekPrepped(programId: string, rotationWeek: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_weeks')
     .update({ prepped_at: new Date().toISOString() })
     .eq('program_id', programId)
@@ -407,10 +407,10 @@ export async function markWeekDelivered(
   containersSent: number
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Mark the week as delivered
-  const { error: weekErr } = await supabase
+  const { error: weekErr } = await db
     .from('meal_prep_weeks')
     .update({
       delivered_at: new Date().toISOString(),
@@ -425,7 +425,7 @@ export async function markWeekDelivered(
   }
 
   // Update the program container count
-  const { data: program } = await supabase
+  const { data: program } = await db
     .from('meal_prep_programs')
     .select('containers_out')
     .eq('id', programId)
@@ -433,7 +433,7 @@ export async function markWeekDelivered(
     .single()
 
   if (program) {
-    await supabase
+    await db
       .from('meal_prep_programs')
       .update({ containers_out: (program.containers_out ?? 0) + containersSent })
       .eq('id', programId)
@@ -447,9 +447,9 @@ export async function markWeekDelivered(
 
 export async function advanceRotation(programId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: program, error: fetchErr } = await supabase
+  const { data: program, error: fetchErr } = await db
     .from('meal_prep_programs')
     .select('current_rotation_week, rotation_weeks')
     .eq('id', programId)
@@ -464,7 +464,7 @@ export async function advanceRotation(programId: string) {
   const nextWeek =
     program.current_rotation_week >= program.rotation_weeks ? 1 : program.current_rotation_week + 1
 
-  const { error } = await supabase
+  const { error } = await db
     .from('meal_prep_programs')
     .update({ current_rotation_week: nextWeek })
     .eq('id', programId)

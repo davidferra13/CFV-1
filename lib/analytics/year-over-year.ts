@@ -6,7 +6,7 @@
 // average event value.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface YoYMetric {
   label: string
@@ -39,14 +39,14 @@ function calcChange(
 
 export async function getYoYData(): Promise<YoYData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const currentYear = now.getFullYear()
   const previousYear = currentYear - 1
 
   const [ledgerRes, eventsRes] = await Promise.all([
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents, entry_type, created_at')
       .eq('tenant_id', user.tenantId!)
@@ -54,7 +54,7 @@ export async function getYoYData(): Promise<YoYData> {
       .gte('created_at', `${previousYear}-01-01`)
       .lt('created_at', `${currentYear + 1}-01-01`),
 
-    supabase
+    db
       .from('events')
       .select('event_date, quoted_price_cents, status')
       .eq('tenant_id', user.tenantId!)

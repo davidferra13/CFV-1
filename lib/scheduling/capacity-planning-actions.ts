@@ -6,7 +6,7 @@
 // that standard service businesses don't need.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ── Types ───────────────────────────────────────────────────────────────────────
@@ -218,10 +218,10 @@ function detectConflicts(blocks: TimeBlock[]): string[] {
 
 export async function getCapacityPlanningSettings(): Promise<CapacityPlanningSettings> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('chef_capacity_settings')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -248,7 +248,7 @@ export async function getCapacityPlanningSettings(): Promise<CapacityPlanningSet
   }
 
   // Create defaults
-  const { data: created, error: insertError } = await (supabase as any)
+  const { data: created, error: insertError } = await (db as any)
     .from('chef_capacity_settings')
     .insert({ tenant_id: tenantId })
     .select()
@@ -286,7 +286,7 @@ export async function updateCapacityPlanningSettings(input: {
   blocked_days?: string[]
 }): Promise<{ success: boolean }> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
   // Ensure row exists first
@@ -311,7 +311,7 @@ export async function updateCapacityPlanningSettings(input: {
 
   if (Object.keys(updateData).length === 0) return { success: true }
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('chef_capacity_settings')
     .update(updateData)
     .eq('tenant_id', tenantId)
@@ -330,7 +330,7 @@ export async function updateCapacityPlanningSettings(input: {
 
 export async function getDateAvailability(date: string): Promise<DayAvailability> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
   const settings = await getCapacityPlanningSettings()
@@ -338,7 +338,7 @@ export async function getDateAvailability(date: string): Promise<DayAvailability
   const isBlocked = settings.blocked_days.includes(dayName)
 
   // Fetch events on this date
-  const { data: events } = await (supabase as any)
+  const { data: events } = await (db as any)
     .from('events')
     .select('id, serve_time, guest_count, occasion, status')
     .eq('tenant_id', tenantId)
@@ -392,14 +392,14 @@ export async function getDateAvailability(date: string): Promise<DayAvailability
 
 export async function getWeekAvailability(weekStart: string): Promise<DayAvailability[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
   const settings = await getCapacityPlanningSettings()
   const weekEnd = addDays(weekStart, 6)
 
   // Fetch all events in the week range
-  const { data: events } = await (supabase as any)
+  const { data: events } = await (db as any)
     .from('events')
     .select('id, event_date, serve_time, guest_count, occasion, status')
     .eq('tenant_id', tenantId)
@@ -458,7 +458,7 @@ export async function getWeekAvailability(weekStart: string): Promise<DayAvailab
 
 export async function getMonthCapacity(year: number, month: number): Promise<MonthDayCapacity[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
   const settings = await getCapacityPlanningSettings()
@@ -468,7 +468,7 @@ export async function getMonthCapacity(year: number, month: number): Promise<Mon
   const endDate = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
 
   // Fetch event counts grouped by date
-  const { data: events } = await (supabase as any)
+  const { data: events } = await (db as any)
     .from('events')
     .select('event_date')
     .eq('tenant_id', tenantId)
@@ -521,7 +521,7 @@ export async function checkBookingConflict(
   estimatedDurationMinutes: number
 ): Promise<BookingConflictResult> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
   const settings = await getCapacityPlanningSettings()
@@ -537,7 +537,7 @@ export async function checkBookingConflict(
   }
 
   // Fetch existing events on this date
-  const { data: events } = await (supabase as any)
+  const { data: events } = await (db as any)
     .from('events')
     .select('id, event_date, serve_time, guest_count, occasion, status, client_id')
     .eq('tenant_id', tenantId)
@@ -562,7 +562,7 @@ export async function checkBookingConflict(
 
   // Check weekly limit
   const week = getWeekRange(proposedDate)
-  const { count: weekCount } = await (supabase as any)
+  const { count: weekCount } = await (db as any)
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -630,12 +630,12 @@ export async function getCapacityUtilization(dateRange: {
   end: string
 }): Promise<CapacityUtilization> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
   const settings = await getCapacityPlanningSettings()
 
-  const { data: events } = await (supabase as any)
+  const { data: events } = await (db as any)
     .from('events')
     .select('event_date')
     .eq('tenant_id', tenantId)

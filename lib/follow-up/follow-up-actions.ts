@@ -4,7 +4,7 @@
 // CRUD + trigger actions for the follow-up sequence system.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { schedulePostEventFollowUp, cancelFollowUpSends } from './sequence-engine'
 
 type FollowUpSend = {
@@ -31,9 +31,9 @@ export async function getEventFollowUpSends(
   eventId: string
 ): Promise<{ data: FollowUpSend[]; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('follow_up_sends')
     .select('*')
     .eq('event_id', eventId)
@@ -55,10 +55,10 @@ export async function cancelEventFollowUp(
   eventId: string
 ): Promise<{ success: boolean; cancelled: number; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the client_id from the event
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('client_id')
     .eq('id', eventId)
@@ -70,7 +70,7 @@ export async function cancelEventFollowUp(
   }
 
   // Cancel only pending sends for this specific event
-  const { data: pending } = await supabase
+  const { data: pending } = await db
     .from('follow_up_sends')
     .select('id')
     .eq('event_id', eventId)
@@ -83,7 +83,7 @@ export async function cancelEventFollowUp(
 
   const ids = pending.map((s: any) => s.id)
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('follow_up_sends')
     .update({
       status: 'skipped',
@@ -108,10 +108,10 @@ export async function triggerFollowUpForEvent(
   eventId: string
 ): Promise<{ success: boolean; scheduled: number; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event belongs to tenant and is completed
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, status')
     .eq('id', eventId)
@@ -148,11 +148,11 @@ export async function getFollowUpStats(): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const empty = { total: 0, pending: 0, sent: 0, opened: 0, skipped: 0, bounced: 0 }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('follow_up_sends')
     .select('status')
     .eq('tenant_id', user.tenantId!)

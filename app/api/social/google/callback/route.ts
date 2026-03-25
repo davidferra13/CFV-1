@@ -1,7 +1,7 @@
 // Google Business OAuth: Step 2 - Exchange code for tokens, store connection
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -14,10 +14,10 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.redirect(`${redirectBase}?error=google_denied`)
   if (!code || !state) return NextResponse.redirect(`${redirectBase}?error=google_invalid_callback`)
 
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Validate state
-  const { data: stateRow } = await supabase
+  const { data: stateRow } = await db
     .from('social_oauth_states')
     .select('tenant_id, expires_at')
     .eq('state', state)
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   }
 
   const chefId = stateRow.tenant_id
-  await supabase.from('social_oauth_states').delete().eq('state', state)
+  await db.from('social_oauth_states').delete().eq('state', state)
 
   // Exchange code for tokens
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -63,7 +63,7 @@ export async function GET(req: NextRequest) {
   const profile: { id?: string; name?: string; email?: string } = await profileRes.json()
 
   // Upsert in social_platform_credentials (used by Google for reviews)
-  await supabase.from('social_platform_credentials').upsert(
+  await db.from('social_platform_credentials').upsert(
     {
       tenant_id: chefId,
       platform: 'google_business',

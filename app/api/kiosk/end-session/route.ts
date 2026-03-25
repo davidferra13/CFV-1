@@ -2,7 +2,7 @@
 // Requires device token in Authorization header
 
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
 
 export async function POST(request: Request) {
@@ -20,19 +20,19 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}))
     const { session_id, reason } = body
 
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
     const now = new Date().toISOString()
 
     if (session_id) {
       // End specific session
-      await supabase
+      await db
         .from('device_sessions')
         .update({ status: 'ended', ended_at: now })
         .eq('id', session_id)
         .eq('device_id', device.deviceId)
     } else {
       // End all active sessions for this device
-      await supabase
+      await db
         .from('device_sessions')
         .update({ status: 'ended', ended_at: now })
         .eq('device_id', device.deviceId)
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
 
     // Log event
     try {
-      await supabase.from('device_events').insert({
+      await db.from('device_events').insert({
         device_id: device.deviceId,
         tenant_id: device.tenantId,
         type: 'session_ended',

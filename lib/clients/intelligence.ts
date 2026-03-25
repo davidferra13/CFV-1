@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 // ==========================================
@@ -50,13 +50,13 @@ export async function getRepeatClientIntelligence(
   clientId: string
 ): Promise<RepeatClientIntelligence | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Parallel queries for all data sources
   const [clientResult, eventsResult, allergensResult, preferencesResult, feedbackResult] =
     await Promise.all([
       // Client profile
-      supabase
+      db
         .from('clients')
         .select(
           'id, full_name, client_status, vibe_notes, tipping_pattern, what_they_care_about, personal_milestones'
@@ -66,7 +66,7 @@ export async function getRepeatClientIntelligence(
         .single(),
 
       // Event history
-      supabase
+      db
         .from('events')
         .select('id, event_status, event_date, quoted_price_cents')
         .eq('client_id', clientId)
@@ -74,21 +74,21 @@ export async function getRepeatClientIntelligence(
         .order('event_date', { ascending: false }),
 
       // Allergen records
-      supabase
+      db
         .from('client_allergy_records')
         .select('allergen, severity, confirmed_by_chef')
         .eq('client_id', clientId)
         .eq('tenant_id', user.entityId),
 
       // Dish preferences
-      supabase
+      db
         .from('client_preferences')
         .select('item_name, rating')
         .eq('client_id', clientId)
         .eq('tenant_id', user.entityId),
 
       // Feedback history
-      supabase
+      db
         .from('post_event_surveys')
         .select(
           'overall, food_quality, communication_rating, what_they_loved, what_could_improve, would_book_again, completed_at, events(event_date)'

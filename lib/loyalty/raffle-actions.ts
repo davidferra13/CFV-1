@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import crypto from 'crypto'
 
@@ -68,7 +68,7 @@ export async function createRaffle(input: {
   await requirePro('raffle')
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Parse month into start/end dates
   const [year, monthNum] = input.month.split('-').map(Number)
@@ -82,7 +82,7 @@ export async function createRaffle(input: {
     timeZone: 'UTC',
   })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('raffle_rounds')
     .insert({
       tenant_id: tenantId,
@@ -116,9 +116,9 @@ export async function createRaffle(input: {
 export async function getRaffles(): Promise<RaffleRound[]> {
   await requirePro('raffle')
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('raffle_rounds')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -137,9 +137,9 @@ export async function getRaffles(): Promise<RaffleRound[]> {
 export async function getCurrentRaffle(): Promise<RaffleRound | null> {
   await requirePro('raffle')
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('raffle_rounds')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -161,10 +161,10 @@ export async function getCurrentRaffle(): Promise<RaffleRound | null> {
 export async function getEligibleEntries(raffleId: string): Promise<EligibleEntry[]> {
   await requirePro('raffle')
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the round belongs to this tenant
-  const { data: round, error: roundErr } = await supabase
+  const { data: round, error: roundErr } = await db
     .from('raffle_rounds')
     .select('id')
     .eq('id', raffleId)
@@ -176,7 +176,7 @@ export async function getEligibleEntries(raffleId: string): Promise<EligibleEntr
   }
 
   // Get all entries with client names
-  const { data: entries, error: entriesErr } = await supabase
+  const { data: entries, error: entriesErr } = await db
     .from('raffle_entries')
     .select('client_id, alias_emoji, game_score, clients(full_name)')
     .eq('round_id', raffleId)
@@ -225,10 +225,10 @@ export async function drawWinner(
   await requirePro('raffle')
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the round exists, is active, and belongs to this tenant
-  const { data: round, error: roundErr } = await supabase
+  const { data: round, error: roundErr } = await db
     .from('raffle_rounds')
     .select('id, status')
     .eq('id', raffleId)
@@ -244,7 +244,7 @@ export async function drawWinner(
   }
 
   // Get all entries
-  const { data: entries, error: entriesErr } = await supabase
+  const { data: entries, error: entriesErr } = await db
     .from('raffle_entries')
     .select('id, client_id, alias_emoji, game_score, clients(full_name)')
     .eq('round_id', raffleId)
@@ -266,7 +266,7 @@ export async function drawWinner(
   const uniqueParticipants = new Set(entries.map((e: { client_id: string }) => e.client_id)).size
 
   // Update the round
-  const { error: updateErr } = await supabase
+  const { error: updateErr } = await db
     .from('raffle_rounds')
     .update({
       status: 'completed',
@@ -304,9 +304,9 @@ export async function getRaffleResults(raffleId: string): Promise<{
 }> {
   await requirePro('raffle')
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: round, error } = await supabase
+  const { data: round, error } = await db
     .from('raffle_rounds')
     .select('*')
     .eq('id', raffleId)
@@ -319,7 +319,7 @@ export async function getRaffleResults(raffleId: string): Promise<{
 
   let winnerName: string | null = null
   if (round.winner_client_id) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('full_name')
       .eq('id', round.winner_client_id)

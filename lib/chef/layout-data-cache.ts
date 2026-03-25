@@ -6,7 +6,7 @@
 // and cannot access per-request cookies.
 
 import { unstable_cache } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { hasPersistedAdminAccessForAuthUser } from '@/lib/auth/admin-access'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
@@ -16,10 +16,10 @@ import type { ArchetypeId } from '@/lib/archetypes/presets'
 export function getCachedCannabisAccess(authUserId: string): Promise<boolean> {
   return unstable_cache(
     async (): Promise<boolean> => {
-      const supabase: any = createAdminClient()
+      const db: any = createAdminClient()
       if (await hasPersistedAdminAccessForAuthUser(authUserId)) return true
 
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('cannabis_tier_users')
         .select('status')
         .eq('auth_user_id', authUserId)
@@ -38,8 +38,8 @@ export function getCachedCannabisAccess(authUserId: string): Promise<boolean> {
 export function getCachedChefArchetype(chefId: string): Promise<ArchetypeId | null> {
   return unstable_cache(
     async (): Promise<ArchetypeId | null> => {
-      const supabase: any = createAdminClient()
-      const { data } = await supabase
+      const db: any = createAdminClient()
+      const { data } = await db
         .from('chef_preferences')
         .select('archetype')
         .eq('chef_id', chefId)
@@ -69,8 +69,8 @@ export type CachedDeletionStatus = {
 export function getCachedDeletionStatus(chefId: string): Promise<CachedDeletionStatus> {
   return unstable_cache(
     async (): Promise<CachedDeletionStatus> => {
-      const supabase: any = createAdminClient()
-      const { data: chef } = await supabase
+      const db: any = createAdminClient()
+      const { data: chef } = await db
         .from('chefs')
         .select('deletion_requested_at, deletion_scheduled_for, deletion_reason')
         .eq('id', chefId)

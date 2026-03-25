@@ -2,7 +2,7 @@
 import fs from 'fs'
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
-import { createAnonClient } from './lib/supabase.mjs'
+import { createAnonClient } from './lib/db.mjs'
 
 // 2 minutes per test - Ollama can be slow on complex queries
 const PER_TEST_TIMEOUT_MS = 120_000

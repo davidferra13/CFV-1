@@ -9,12 +9,12 @@
 // DO NOT import or call these functions until the table migration is complete.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
-type AnySupabase = ReturnType<typeof createServerClient> & { from: (t: string) => any }
-function db(): AnySupabase {
-  return createServerClient() as AnySupabase
+type AnyDbClient = ReturnType<typeof createServerClient> & { from: (t: string) => any }
+function db(): AnyDbClient {
+  return createServerClient() as AnyDbClient
 }
 
 export type InsurancePolicyType =
@@ -74,9 +74,9 @@ function withComputedStatus(policy: InsurancePolicy): InsurancePolicy {
 
 export async function getInsurancePolicies(): Promise<InsurancePolicy[]> {
   const user = await requireChef()
-  const supabase = db()
+  const db = db()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('insurance_policies')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -88,12 +88,12 @@ export async function getInsurancePolicies(): Promise<InsurancePolicy[]> {
 
 export async function getExpiringPolicies(daysAhead: number = 30): Promise<InsurancePolicy[]> {
   const user = await requireChef()
-  const supabase = db()
+  const db = db()
 
   const futureDate = new Date()
   futureDate.setDate(futureDate.getDate() + daysAhead)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('insurance_policies')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -141,9 +141,9 @@ export interface CreateInsurancePolicyInput {
 
 export async function createPolicy(input: CreateInsurancePolicyInput) {
   const user = await requireChef()
-  const supabase = db()
+  const db = db()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('insurance_policies')
     .insert({
       chef_id: user.tenantId!,
@@ -170,9 +170,9 @@ export async function createPolicy(input: CreateInsurancePolicyInput) {
 
 export async function updatePolicy(id: string, input: Partial<CreateInsurancePolicyInput>) {
   const user = await requireChef()
-  const supabase = db()
+  const db = db()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('insurance_policies')
     .update({
       ...input,
@@ -192,9 +192,9 @@ export async function updatePolicy(id: string, input: Partial<CreateInsurancePol
 
 export async function deletePolicy(id: string) {
   const user = await requireChef()
-  const supabase = db()
+  const db = db()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('insurance_policies')
     .delete()
     .eq('id', id)

@@ -8,7 +8,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { CharityHourEntry, CharityOrganization, CharityHoursSummary } from './hours-types'
 
 // ─── Schemas ──────────────────────────────────────────────────
@@ -53,9 +53,9 @@ export async function logCharityHours(
 ): Promise<CharityHourEntry> {
   const user = await requireChef()
   const parsed = LogHoursSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('charity_hours' as any)
     .insert({
       chef_id: user.tenantId!,
@@ -85,9 +85,9 @@ export async function updateCharityHours(
 ): Promise<CharityHourEntry> {
   const user = await requireChef()
   const parsed = UpdateHoursSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('charity_hours' as any)
     .update({
       organization_name: parsed.organizationName,
@@ -117,9 +117,9 @@ export async function updateCharityHours(
 export async function deleteCharityHours(id: string): Promise<void> {
   const user = await requireChef()
   z.string().uuid().parse(id)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('charity_hours' as any)
     .delete()
     .eq('id', id)
@@ -138,9 +138,9 @@ export async function getCharityHours(filters?: {
   organizationName?: string
 }): Promise<CharityHourEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('charity_hours' as any)
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -160,9 +160,9 @@ export async function getCharityHours(filters?: {
 /** Get recent organizations the chef has logged hours at (for autocomplete) */
 export async function getRecentCharityOrgs(): Promise<CharityOrganization[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('charity_hours' as any)
     .select(
       'organization_name, organization_address, google_place_id, ein, is_verified_501c, service_date, hours'

@@ -2,7 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { appendPosAuditLog } from './pos-audit-log'
 import {
@@ -39,8 +39,8 @@ type MovementRecord = {
 }
 
 async function assertOpenRegisterSession(tenantId: string, registerSessionId: string) {
-  const supabase: any = createServerClient()
-  const { data: session, error } = await (supabase
+  const db: any = createServerClient()
+  const { data: session, error } = await (db
     .from('register_sessions' as any)
     .select('id, status')
     .eq('id', registerSessionId)
@@ -83,9 +83,9 @@ export async function getCashDrawerSummary(registerSessionId: string): Promise<C
   const user = await requireChef()
   await requirePro('commerce')
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: session, error: sessionError } = await (supabase
+  const { data: session, error: sessionError } = await (db
     .from('register_sessions' as any)
     .select('id, status, opening_cash_cents')
     .eq('id', registerSessionId)
@@ -96,7 +96,7 @@ export async function getCashDrawerSummary(registerSessionId: string): Promise<C
     throw new Error('Register session not found')
   }
 
-  const { data: movements, error: movementError } = await (supabase
+  const { data: movements, error: movementError } = await (db
     .from('cash_drawer_movements' as any)
     .select('movement_type, amount_cents')
     .eq('tenant_id', user.tenantId!)
@@ -128,11 +128,11 @@ export async function listCashDrawerMovements(input: {
   const user = await requireChef()
   await requirePro('commerce')
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const limit = Math.max(1, Math.min(input.limit ?? 50, 250))
   const offset = Math.max(0, input.offset ?? 0)
 
-  const { data, error, count } = await (supabase
+  const { data, error, count } = await (db
     .from('cash_drawer_movements' as any)
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
@@ -165,26 +165,26 @@ async function insertMovement(input: {
     throw new Error('Amount must be a non-zero integer (cents)')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   await assertOpenRegisterSession(user.tenantId!, input.registerSessionId)
 
   if (input.requireManager) {
     await assertPosManagerAccess({
-      supabase,
+      db,
       user,
       action: `record ${input.movementType.replace('_', ' ')} drawer movement`,
     })
   }
   if (input.requiredLevel) {
     await assertPosRoleAccess({
-      supabase,
+      db,
       user,
       action: `record ${input.movementType.replace('_', ' ')} drawer movement`,
       requiredLevel: input.requiredLevel,
     })
   }
 
-  const { data: inserted, error } = await (supabase
+  const { data: inserted, error } = await (db
     .from('cash_drawer_movements' as any)
     .insert({
       tenant_id: user.tenantId!,

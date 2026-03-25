@@ -5,14 +5,14 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getTravelPlan } from '@/lib/travel/actions'
 import { TravelPlanClient } from '@/components/events/travel-plan-client'
 import { Button } from '@/components/ui/button'
 
 async function getEventForTravel(eventId: string, tenantId: string) {
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('events')
     .select(
       `
@@ -28,8 +28,8 @@ async function getEventForTravel(eventId: string, tenantId: string) {
 }
 
 async function getChefHomeAddress(chefId: string) {
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('chef_preferences')
     .select('home_address, home_city, home_state')
     .eq('chef_id', chefId)

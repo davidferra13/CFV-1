@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { PaymentMethod } from '@/lib/ledger/append'
 import { SALE_CHANNELS, type SaleChannel, type TaxClass } from './constants'
@@ -402,11 +402,11 @@ function toPromotionRule(row: PromotionRow): PromotionRule {
 }
 
 async function loadPromotionByCode(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   code: string
 }): Promise<PromotionRule> {
-  const { data: promotion, error } = await (ctx.supabase
+  const { data: promotion, error } = await (ctx.db
     .from('commerce_promotions' as any)
     .select(
       'id, code, name, discount_type, discount_percent, discount_cents, min_subtotal_cents, max_discount_cents, target_tax_classes, is_active, starts_at, ends_at'
@@ -436,10 +436,10 @@ async function loadPromotionByCode(ctx: {
 }
 
 async function loadAutoApplyPromotions(ctx: {
-  supabase: any
+  db: any
   tenantId: string
 }): Promise<PromotionRule[]> {
-  const { data: rows, error } = await (ctx.supabase
+  const { data: rows, error } = await (ctx.db
     .from('commerce_promotions' as any)
     .select(
       'id, code, name, discount_type, discount_percent, discount_cents, min_subtotal_cents, max_discount_cents, target_tax_classes, is_active, starts_at, ends_at'
@@ -463,13 +463,13 @@ async function loadAutoApplyPromotions(ctx: {
 }
 
 async function recordAppliedPromotion(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   saleId: string
   promotion: AppliedCheckoutPromotion
 }) {
   try {
-    await (ctx.supabase.from('sale_applied_promotions' as any).insert({
+    await (ctx.db.from('sale_applied_promotions' as any).insert({
       tenant_id: ctx.tenantId,
       sale_id: ctx.saleId,
       promotion_id: ctx.promotion.id,
@@ -483,11 +483,7 @@ async function recordAppliedPromotion(ctx: {
   }
 }
 
-async function loadCheckoutProductsById(ctx: {
-  supabase: any
-  tenantId: string
-  items: CheckoutItem[]
-}) {
+async function loadCheckoutProductsById(ctx: { db: any; tenantId: string; items: CheckoutItem[] }) {
   const productIds = Array.from(
     new Set(
       ctx.items
@@ -499,7 +495,7 @@ async function loadCheckoutProductsById(ctx: {
   const map = new Map<string, ProductProjectionCheckoutRow>()
   if (productIds.length === 0) return map
 
-  const { data: rows } = await (ctx.supabase
+  const { data: rows } = await (ctx.db
     .from('product_projections')
     .select(
       'id, name, price_cents, tax_class, cost_cents, is_active, track_inventory, available_qty, modifiers'
@@ -521,7 +517,7 @@ async function loadCheckoutProductsById(ctx: {
 }
 
 async function normalizeCheckoutItems(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   items: CheckoutItem[]
 }): Promise<NormalizedCheckoutItem[]> {
@@ -604,14 +600,14 @@ async function normalizeCheckoutItems(ctx: {
 }
 
 async function findExistingCheckoutResult(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   idempotencyKey: string
   paymentMethod: PaymentMethod
   amountTenderedCents: number
   splitTenders: NormalizedSplitTenderLine[] | null
 }): Promise<ExistingCheckoutResult | null> {
-  const { data: payment } = await (ctx.supabase
+  const { data: payment } = await (ctx.db
     .from('commerce_payments' as any)
     .select('id, sale_id, amount_cents, tip_cents, status')
     .eq('tenant_id', ctx.tenantId)
@@ -624,7 +620,7 @@ async function findExistingCheckoutResult(ctx: {
     throw new Error('Existing checkout is not finalized yet. Try again in a moment.')
   }
 
-  const { data: salePayments } = await (ctx.supabase
+  const { data: salePayments } = await (ctx.db
     .from('commerce_payments' as any)
     .select('id, amount_cents, tip_cents, status')
     .eq('tenant_id', ctx.tenantId)
@@ -637,7 +633,7 @@ async function findExistingCheckoutResult(ctx: {
     ) ?? []
   const effectivePayments = finalizedPayments.length > 0 ? finalizedPayments : [payment]
 
-  const { data: sale } = await (ctx.supabase
+  const { data: sale } = await (ctx.db
     .from('sales' as any)
     .select('id, sale_number')
     .eq('tenant_id', ctx.tenantId)
@@ -650,7 +646,7 @@ async function findExistingCheckoutResult(ctx: {
 
   let appliedPromotion: AppliedCheckoutPromotion | null = null
   try {
-    const { data: promotionRow } = await (ctx.supabase
+    const { data: promotionRow } = await (ctx.db
       .from('sale_applied_promotions' as any)
       .select('promotion_id, code, name, discount_type, discount_cents')
       .eq('tenant_id', ctx.tenantId)
@@ -699,14 +695,14 @@ async function findExistingCheckoutResult(ctx: {
 }
 
 async function markSaleAsCheckoutFailed(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   saleId: string
   userId: string
   reason: string
 }) {
   try {
-    await (ctx.supabase
+    await (ctx.db
       .from('sales' as any)
       .update({
         status: 'voided',
@@ -723,11 +719,11 @@ async function markSaleAsCheckoutFailed(ctx: {
 }
 
 async function assertOpenRegisterSession(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   registerSessionId: string
 }) {
-  const { data: session, error } = await (ctx.supabase
+  const { data: session, error } = await (ctx.db
     .from('register_sessions' as any)
     .select('id, status')
     .eq('id', ctx.registerSessionId)
@@ -744,11 +740,11 @@ async function assertOpenRegisterSession(ctx: {
 }
 
 async function isRegisterSessionOpen(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   registerSessionId: string
 }): Promise<boolean> {
-  const { data: session, error } = await (ctx.supabase
+  const { data: session, error } = await (ctx.db
     .from('register_sessions' as any)
     .select('status')
     .eq('id', ctx.registerSessionId)
@@ -760,11 +756,11 @@ async function isRegisterSessionOpen(ctx: {
 }
 
 async function syncRegisterSessionTotals(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   registerSessionId: string
 }) {
-  const { data: sales } = await (ctx.supabase
+  const { data: sales } = await (ctx.db
     .from('sales' as any)
     .select('id, status')
     .eq('tenant_id', ctx.tenantId)
@@ -774,7 +770,7 @@ async function syncRegisterSessionTotals(ctx: {
 
   let payments: any[] = []
   if (saleIds.length > 0) {
-    const { data } = await (ctx.supabase
+    const { data } = await (ctx.db
       .from('commerce_payments' as any)
       .select('sale_id, amount_cents, tip_cents, status')
       .eq('tenant_id', ctx.tenantId)
@@ -787,7 +783,7 @@ async function syncRegisterSessionTotals(ctx: {
     payments,
   })
 
-  await (ctx.supabase
+  await (ctx.db
     .from('register_sessions' as any)
     .update({
       total_sales_count: totals.totalSalesCount,
@@ -816,10 +812,10 @@ async function syncRegisterSessionTotals(ctx: {
 export async function counterCheckout(input: CounterCheckoutInput): Promise<CounterCheckoutResult> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'run POS checkout',
     requiredLevel: 'cashier',
@@ -843,7 +839,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
   })
 
   const existing = await findExistingCheckoutResult({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     idempotencyKey: paymentIdempotencyKey,
     paymentMethod: input.paymentMethod,
@@ -856,14 +852,14 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
 
   if (input.registerSessionId) {
     await assertOpenRegisterSession({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       registerSessionId: input.registerSessionId,
     })
   }
 
   const normalizedItems = await normalizeCheckoutItems({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     items: input.items,
   })
@@ -906,7 +902,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
   }
 
   // 1. Create sale
-  const { data: sale, error: saleErr } = await (supabase
+  const { data: sale, error: saleErr } = await (db
     .from('sales')
     .insert({
       tenant_id: user.tenantId!,
@@ -961,7 +957,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
 
   if (promotionCode) {
     const promotion = await loadPromotionByCode({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       code: promotionCode,
     })
@@ -987,7 +983,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     }
   } else if (isAutoPromotionEnabled()) {
     const autoPromotions = await loadAutoApplyPromotions({
-      supabase,
+      db,
       tenantId: user.tenantId!,
     })
 
@@ -1060,11 +1056,11 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     }
   })
 
-  const { error: itemsErr } = await (supabase.from('sale_items').insert(itemRows as any) as any)
+  const { error: itemsErr } = await (db.from('sale_items').insert(itemRows as any) as any)
 
   if (itemsErr) {
     await markSaleAsCheckoutFailed({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       saleId: sale.id,
       userId: user.id,
@@ -1091,7 +1087,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
   const taxCents = itemRows.reduce((sum, r) => sum + r.tax_cents, 0)
   const totalCents = discountedSubtotalCents + taxCents
 
-  const { error: totalsErr } = await (supabase
+  const { error: totalsErr } = await (db
     .from('sales')
     .update({
       subtotal_cents: preDiscountSubtotalCents,
@@ -1115,7 +1111,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
 
   if (totalsErr) {
     await markSaleAsCheckoutFailed({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       saleId: sale.id,
       userId: user.id,
@@ -1138,7 +1134,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
 
   if (appliedPromotion) {
     await recordAppliedPromotion({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       saleId: sale.id,
       promotion: appliedPromotion,
@@ -1157,7 +1153,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       finalTotalCents = discountedSubtotalCents + taxResult.totalTaxCents
     } catch {
       // Prevent accidental charge when tax is required but unavailable.
-      await (supabase
+      await (db
         .from('sales')
         .update({
           status: 'voided',
@@ -1200,13 +1196,13 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
 
   if (input.registerSessionId) {
     const registerStillOpen = await isRegisterSessionOpen({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       registerSessionId: input.registerSessionId,
     })
     if (!registerStillOpen) {
       await markSaleAsCheckoutFailed({
-        supabase,
+        db,
         tenantId: user.tenantId!,
         saleId: sale.id,
         userId: user.id,
@@ -1237,7 +1233,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     )
     if (splitAllocatedCents !== totalDueCents) {
       await markSaleAsCheckoutFailed({
-        supabase,
+        db,
         tenantId: user.tenantId!,
         saleId: sale.id,
         userId: user.id,
@@ -1253,7 +1249,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     input.amountTenderedCents < totalDueCents
   ) {
     await markSaleAsCheckoutFailed({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       saleId: sale.id,
       userId: user.id,
@@ -1321,7 +1317,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       if (plan.cardEntryMode === 'manual_keyed') {
         if (!plan.manualCardReference) {
           await markSaleAsCheckoutFailed({
-            supabase,
+            db,
             tenantId: user.tenantId!,
             saleId: sale.id,
             userId: user.id,
@@ -1343,7 +1339,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
           const terminalHealth = await terminalAdapter.healthCheck()
           if (!terminalHealth.healthy) {
             await markSaleAsCheckoutFailed({
-              supabase,
+              db,
               tenantId: user.tenantId!,
               saleId: sale.id,
               userId: user.id,
@@ -1379,7 +1375,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
 
         if (terminalResult.status !== 'captured') {
           await markSaleAsCheckoutFailed({
-            supabase,
+            db,
             tenantId: user.tenantId!,
             saleId: sale.id,
             userId: user.id,
@@ -1418,7 +1414,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
 
     const txnRef = `commerce_${plan.idempotencyKey}`
 
-    const { data: payment, error: payErr } = await (supabase
+    const { data: payment, error: payErr } = await (db
       .from('commerce_payments')
       .insert({
         tenant_id: user.tenantId!,
@@ -1441,7 +1437,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
 
     if (payErr || !payment) {
       const idempotentRetry = await findExistingCheckoutResult({
-        supabase,
+        db,
         tenantId: user.tenantId!,
         idempotencyKey: paymentIdempotencyKey,
         paymentMethod: input.paymentMethod,
@@ -1453,7 +1449,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
       }
 
       await markSaleAsCheckoutFailed({
-        supabase,
+        db,
         tenantId: user.tenantId!,
         saleId: sale.id,
         userId: user.id,
@@ -1489,7 +1485,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
   const primaryPayment = recordedPayments[0]
   if (!primaryPayment) {
     await markSaleAsCheckoutFailed({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       saleId: sale.id,
       userId: user.id,
@@ -1524,7 +1520,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
     : null
 
   // 6. Update sale status to captured
-  const { error: saleStatusErr } = await (supabase
+  const { error: saleStatusErr } = await (db
     .from('sales')
     .update({ status: 'captured' } as any)
     .eq('id', sale.id)
@@ -1554,7 +1550,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
 
   if (input.registerSessionId && cashDrawerSaleMovementCents > 0) {
     try {
-      await (supabase.from('cash_drawer_movements').insert({
+      await (db.from('cash_drawer_movements').insert({
         tenant_id: user.tenantId!,
         register_session_id: input.registerSessionId,
         movement_type: 'sale_payment',
@@ -1593,7 +1589,7 @@ export async function counterCheckout(input: CounterCheckoutInput): Promise<Coun
   if (input.registerSessionId) {
     try {
       await syncRegisterSessionTotals({
-        supabase,
+        db,
         tenantId: user.tenantId!,
         registerSessionId: input.registerSessionId,
       })
@@ -1684,10 +1680,10 @@ export async function quickSale(input: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch product
-  const { data: product, error: prodErr } = await (supabase
+  const { data: product, error: prodErr } = await (db
     .from('product_projections')
     .select('id, name, price_cents, tax_class, cost_cents, modifiers')
     .eq('id', input.productProjectionId)

@@ -8,7 +8,7 @@ System that helps chefs create social media content from completed events. AI as
 
 ### New Table: `event_content_drafts`
 
-Migration: `supabase/migrations/20260401000089_content_pipeline.sql`
+Migration: `database/migrations/20260401000089_content_pipeline.sql`
 
 - Stores AI-generated or manually written content drafts
 - Fields: event_id, tenant_id, platform (instagram/story/blog), draft_text, status (draft/approved/posted), photo_ids, ai_generated flag
@@ -19,19 +19,20 @@ Migration: `supabase/migrations/20260401000089_content_pipeline.sql`
 
 All actions require `requireChef()` + tenant scoping + `requirePro('marketing')`.
 
-| Action | Purpose |
-|--------|---------|
-| `getContentReadyEvents()` | Lists completed events with photos, includes NDA/privacy flags |
+| Action                                    | Purpose                                                         |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| `getContentReadyEvents()`                 | Lists completed events with photos, includes NDA/privacy flags  |
 | `generateContentDraft(eventId, platform)` | Uses Ollama to draft content. Checks NDA/photo_permission first |
-| `saveContentDraft(input)` | Saves a draft (AI or manual) |
-| `updateContentDraft(draftId, text)` | Chef edits draft text |
-| `updateDraftStatus(draftId, status)` | Moves through draft -> approved -> posted |
-| `getEventContentDrafts(eventId)` | Gets all drafts for an event |
-| `deleteContentDraft(draftId)` | Removes a draft |
+| `saveContentDraft(input)`                 | Saves a draft (AI or manual)                                    |
+| `updateContentDraft(draftId, text)`       | Chef edits draft text                                           |
+| `updateDraftStatus(draftId, status)`      | Moves through draft -> approved -> posted                       |
+| `getEventContentDrafts(eventId)`          | Gets all drafts for an event                                    |
+| `deleteContentDraft(draftId)`             | Removes a draft                                                 |
 
 ### UI Component: `components/content/content-pipeline-panel.tsx`
 
 Client component that shows:
+
 - Completed events eligible for content (with photo counts)
 - NDA/privacy restriction badges
 - Platform selector (Instagram, Story, Blog)

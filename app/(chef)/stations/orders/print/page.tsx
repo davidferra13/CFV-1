@@ -6,7 +6,7 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PrintableDocument } from '@/components/print/printable-document'
 import { getDocumentContext } from '@/lib/print/actions'
 
@@ -18,7 +18,7 @@ export default async function PrintOrderSheetPage({
   searchParams: { mode?: string }
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   // Resolve all print context - attribution, default mode, custom footer
   const { generatedBy, printMode: defaultMode, customFooter } = await getDocumentContext()
   const printMode =
@@ -27,7 +27,7 @@ export default async function PrintOrderSheetPage({
   const today = new Date().toISOString().split('T')[0]
 
   // Load all pending order requests
-  const { data: orders } = await supabase
+  const { data: orders } = await db
     .from('order_requests')
     .select(
       `
@@ -41,7 +41,7 @@ export default async function PrintOrderSheetPage({
     .order('created_at', { ascending: false })
 
   // Also load clipboard entries with need_to_order > 0 from today
-  const { data: clipboardNeeds } = await supabase
+  const { data: clipboardNeeds } = await db
     .from('clipboard_entries')
     .select(
       `

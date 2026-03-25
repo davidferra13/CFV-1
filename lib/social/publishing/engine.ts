@@ -4,7 +4,7 @@
 // For each post x platform: fetches credential, refreshes token if needed, calls adapter.
 // Updates post record with results. Sets status=published when all platforms succeed.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import {
   getCredential,
   updateTokens,
@@ -148,13 +148,13 @@ async function publishToPlatform(
 // ── Post-level update helpers ─────────────────────────────────────────────────
 
 async function markPlatformPublished(
-  supabase: any,
+  db: any,
   postId: string,
   tenantId: string,
   platform: SocialPlatform,
   externalId: string
 ): Promise<void> {
-  const { data } = await supabase
+  const { data } = await db
     .from('social_posts')
     .select('published_to_platforms, published_external_ids, platforms')
     .eq('id', postId)
@@ -172,7 +172,7 @@ async function markPlatformPublished(
 
   const allDone = allPlatforms.every((p) => publishedTo.includes(p))
 
-  await supabase
+  await db
     .from('social_posts')
     .update({
       published_to_platforms: publishedTo,
@@ -186,14 +186,14 @@ async function markPlatformPublished(
 }
 
 async function markPlatformError(
-  supabase: any,
+  db: any,
   postId: string,
   tenantId: string,
   platform: SocialPlatform,
   errorMsg: string,
   currentAttempts: number
 ): Promise<void> {
-  const { data } = await supabase
+  const { data } = await db
     .from('social_posts')
     .select('publish_errors')
     .eq('id', postId)
@@ -203,7 +203,7 @@ async function markPlatformError(
   const errors: Record<string, string> = data?.publish_errors ?? {}
   errors[platform] = errorMsg
 
-  await supabase
+  await db
     .from('social_posts')
     .update({
       publish_errors: errors,
@@ -217,13 +217,13 @@ async function markPlatformError(
 // ── Main engine run ───────────────────────────────────────────────────────────
 
 export async function runPublishingEngine(): Promise<EngineRun> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const run: EngineRun = { processed: 0, succeeded: 0, failed: 0, skipped: 0, errors: [] }
 
   // 5-minute lookahead so a post scheduled at :00 is caught by the :55 cron run
   const cutoff = new Date(Date.now() + 5 * 60 * 1000).toISOString()
 
-  const { data: posts, error: queryErr } = await supabase
+  const { data: posts, error: queryErr } = await db
     .from('social_posts')
     .select(
       'id, tenant_id, platforms, published_to_platforms, publish_attempts, title, ' +
@@ -263,7 +263,7 @@ export async function runPublishingEngine(): Promise<EngineRun> {
 
         if (result.success) {
           await markPlatformPublished(
-            supabase,
+            db,
             post.id,
             tenantId,
             platform,
@@ -273,7 +273,7 @@ export async function runPublishingEngine(): Promise<EngineRun> {
           run.succeeded++
         } else {
           await markPlatformError(
-            supabase,
+            db,
             post.id,
             tenantId,
             platform,

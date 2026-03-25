@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // Per-platform target response time in hours
 const PLATFORM_SLA_TARGETS: Record<string, number> = {
@@ -45,10 +45,10 @@ export interface InquiryUrgencyWithSLA {
  */
 export async function getInquiryUrgenciesWithSLA(): Promise<InquiryUrgencyWithSLA[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch open inquiries with channel info
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, created_at, status, channel')
     .eq('tenant_id', user.tenantId!)
@@ -60,7 +60,7 @@ export async function getInquiryUrgenciesWithSLA(): Promise<InquiryUrgencyWithSL
 
   // Fetch first outbound message per inquiry
   const inquiryIds = inquiries.map((i: any) => i.id)
-  const { data: messages } = await supabase
+  const { data: messages } = await db
     .from('messages')
     .select('inquiry_id, created_at')
     .in('inquiry_id', inquiryIds)
@@ -154,10 +154,10 @@ export interface PlatformSLAStat {
  */
 export async function getPlatformSLAStats(): Promise<PlatformSLAStat[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all inquiries with channel info
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, created_at, channel, status')
     .eq('tenant_id', user.tenantId!)
@@ -167,7 +167,7 @@ export async function getPlatformSLAStats(): Promise<PlatformSLAStat[]> {
 
   // Fetch first outbound message per inquiry
   const inquiryIds = inquiries.map((i: any) => i.id)
-  const { data: messages } = await supabase
+  const { data: messages } = await db
     .from('messages')
     .select('inquiry_id, created_at')
     .in('inquiry_id', inquiryIds)

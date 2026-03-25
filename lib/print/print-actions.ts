@@ -1,16 +1,16 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ---------- Recipe ----------
 
 export async function getRecipePrintData(recipeId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipe, error: recipeError } = await supabase
+  const { data: recipe, error: recipeError } = await db
     .from('recipes')
     .select('*')
     .eq('id', recipeId)
@@ -21,7 +21,7 @@ export async function getRecipePrintData(recipeId: string) {
     throw new Error('Recipe not found')
   }
 
-  const { data: recipeIngredients, error: riError } = await supabase
+  const { data: recipeIngredients, error: riError } = await db
     .from('recipe_ingredients')
     .select('*, ingredients(name, category, allergen_flags, dietary_tags)')
     .eq('recipe_id', recipeId)
@@ -42,10 +42,10 @@ export async function getRecipePrintData(recipeId: string) {
 export async function getGroceryListPrintData(eventId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with client info
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       'id, event_date, serve_time, guest_count, occasion, location_address, location_city, location_state, client_id, menu_id, dietary_restrictions, allergies, clients(full_name)'
@@ -71,7 +71,7 @@ export async function getGroceryListPrintData(eventId: string) {
 
   if (event.menu_id) {
     // Get all dishes for this menu
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('id, name, course_name')
       .eq('menu_id', event.menu_id)
@@ -85,7 +85,7 @@ export async function getGroceryListPrintData(eventId: string) {
       const dishNames = dishes.map((d: any) => d.name).filter(Boolean) as string[]
 
       if (dishNames.length > 0) {
-        const { data: recipes } = await supabase
+        const { data: recipes } = await db
           .from('recipes')
           .select('id, name')
           .eq('tenant_id', tenantId)
@@ -94,7 +94,7 @@ export async function getGroceryListPrintData(eventId: string) {
         if (recipes && recipes.length > 0) {
           const recipeIds = recipes.map((r: any) => r.id)
 
-          const { data: recipeIngredients } = await supabase
+          const { data: recipeIngredients } = await db
             .from('recipe_ingredients')
             .select(
               'quantity, unit, is_optional, preparation_notes, recipe_id, ingredients(name, category)'
@@ -201,9 +201,9 @@ export async function getGroceryListPrintData(eventId: string) {
 export async function getMenuPrintData(menuId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: menu, error: menuError } = await supabase
+  const { data: menu, error: menuError } = await db
     .from('menus')
     .select('*')
     .eq('id', menuId)
@@ -214,7 +214,7 @@ export async function getMenuPrintData(menuId: string) {
     throw new Error('Menu not found')
   }
 
-  const { data: dishes, error: dishesError } = await supabase
+  const { data: dishes, error: dishesError } = await db
     .from('dishes')
     .select('*')
     .eq('menu_id', menuId)
@@ -227,7 +227,7 @@ export async function getMenuPrintData(menuId: string) {
   }
 
   // Get chef info for the footer
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', tenantId)
@@ -255,9 +255,9 @@ export async function getMenuPrintData(menuId: string) {
 export async function getEventBriefPrintData(eventId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       `
@@ -286,7 +286,7 @@ export async function getEventBriefPrintData(eventId: string) {
     allergenFlags: string[]
   }[] = []
   if (event.menu_id) {
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('name, course_name, dietary_tags, allergen_flags')
       .eq('menu_id', event.menu_id)

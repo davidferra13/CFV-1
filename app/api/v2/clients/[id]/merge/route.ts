@@ -32,7 +32,7 @@ export const POST = withApiAuth(
     }
 
     // Verify both clients belong to tenant
-    const { data: keepClient } = await ctx.supabase
+    const { data: keepClient } = await ctx.db
       .from('clients')
       .select('id')
       .eq('id', keepId)
@@ -41,7 +41,7 @@ export const POST = withApiAuth(
 
     if (!keepClient) return apiNotFound('Client (keep)')
 
-    const { data: mergeClient } = await ctx.supabase
+    const { data: mergeClient } = await ctx.db
       .from('clients')
       .select('id')
       .eq('id', mergeId)
@@ -51,39 +51,35 @@ export const POST = withApiAuth(
     if (!mergeClient) return apiNotFound('Client (merge)')
 
     // Move all events from merge client to keep client
-    await ctx.supabase
+    await ctx.db
       .from('events')
       .update({ client_id: keepId } as any)
       .eq('client_id', mergeId)
       .eq('tenant_id', ctx.tenantId)
 
     // Move all inquiries
-    await (ctx.supabase as any)
+    await (ctx.db as any)
       .from('inquiries')
       .update({ client_id: keepId })
       .eq('client_id', mergeId)
       .eq('tenant_id', ctx.tenantId)
 
     // Move all quotes
-    await (ctx.supabase as any)
+    await (ctx.db as any)
       .from('quotes')
       .update({ client_id: keepId })
       .eq('client_id', mergeId)
       .eq('tenant_id', ctx.tenantId)
 
     // Soft-delete the merged client
-    await ctx.supabase
+    await ctx.db
       .from('clients')
       .update({ deleted_at: new Date().toISOString() } as any)
       .eq('id', mergeId)
       .eq('tenant_id' as any, ctx.tenantId)
 
     // Return the kept client
-    const { data: result } = await ctx.supabase
-      .from('clients')
-      .select('*')
-      .eq('id', keepId)
-      .single()
+    const { data: result } = await ctx.db.from('clients').select('*').eq('id', keepId).single()
 
     return apiSuccess(result)
   },

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -24,11 +24,11 @@ export type UpsertDailyRevenueInput = z.infer<typeof UpsertDailyRevenueSchema>
 
 export async function upsertDailyRevenue(input: UpsertDailyRevenueInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = UpsertDailyRevenueSchema.parse(input)
 
   // Check if entry already exists for this date
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('daily_revenue')
     .select('id')
     .eq('chef_id', user.tenantId!)
@@ -37,7 +37,7 @@ export async function upsertDailyRevenue(input: UpsertDailyRevenueInput) {
 
   if (existing) {
     // Update existing entry
-    const { error } = await supabase
+    const { error } = await db
       .from('daily_revenue')
       .update({
         total_revenue_cents: data.total_revenue_cents,
@@ -54,7 +54,7 @@ export async function upsertDailyRevenue(input: UpsertDailyRevenueInput) {
     }
   } else {
     // Insert new entry
-    const { error } = await supabase.from('daily_revenue').insert({
+    const { error } = await db.from('daily_revenue').insert({
       date: data.date,
       total_revenue_cents: data.total_revenue_cents,
       source: data.source,
@@ -73,9 +73,9 @@ export async function upsertDailyRevenue(input: UpsertDailyRevenueInput) {
 
 export async function listDailyRevenue(startDate: string, endDate: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('daily_revenue')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -93,9 +93,9 @@ export async function listDailyRevenue(startDate: string, endDate: string) {
 
 export async function getDailyRevenue(date: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('daily_revenue')
     .select('*')
     .eq('chef_id', user.tenantId!)

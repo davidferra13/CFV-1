@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getSourceLabel } from '@/lib/constants/booking-sources'
 import { subMonths, format, startOfMonth } from 'date-fns'
 
@@ -72,13 +72,13 @@ export async function getChannelAnalytics(
   dateRange: DateRangePreset = 'all_time'
 ): Promise<ChannelAnalyticsData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const rangeStart = getDateRangeStart(dateRange)
 
   // Fetch inquiries with channel info
-  let inqQuery = supabase
+  let inqQuery = db
     .from('inquiries')
     .select('id, channel, referral_source, converted_to_event_id, created_at')
     .eq('tenant_id', tenantId)
@@ -111,14 +111,14 @@ export async function getChannelAnalytics(
   let eventMap: Record<string, { status: string; netRevenueCents: number }> = {}
   if (eventIds.length > 0) {
     // Get events with their financial summaries
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('id, status, quoted_price_cents')
       .eq('tenant_id', tenantId)
       .in('id', eventIds)
 
     // Get financial summaries for revenue data
-    const { data: financials } = await supabase
+    const { data: financials } = await db
       .from('event_financial_summary')
       .select('event_id, net_revenue_cents')
       .in('event_id', eventIds)
@@ -222,9 +222,9 @@ export async function getChannelAnalytics(
 
 export async function getSourceBreakdown(): Promise<SourceBreakdownEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select('channel')
     .eq('tenant_id', user.tenantId!)

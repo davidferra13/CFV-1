@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ============================================
 // TYPES
@@ -49,7 +49,7 @@ export interface ClientMenuHistoryEntry {
  * Issues 4 queries total regardless of how many menus.
  */
 async function getRecipeMapsForMenus(
-  supabase: any,
+  db: any,
   menuIds: string[],
   tenantId: string
 ): Promise<{
@@ -61,7 +61,7 @@ async function getRecipeMapsForMenus(
   }
 
   // Bulk query 1: all menu names
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id, name')
     .in('id', menuIds)
@@ -73,7 +73,7 @@ async function getRecipeMapsForMenus(
   }
 
   // Bulk query 2: all dishes for all menus
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, menu_id')
     .in('menu_id', menuIds)
@@ -93,7 +93,7 @@ async function getRecipeMapsForMenus(
   }
 
   // Bulk query 3: all components with recipe links for all dishes
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('dish_id, recipe_id')
     .in('dish_id', allDishIds)
@@ -120,7 +120,7 @@ async function getRecipeMapsForMenus(
   }
 
   // Bulk query 4: all recipe names
-  const { data: recipes } = await supabase
+  const { data: recipes } = await db
     .from('recipes')
     .select('id, name')
     .in('id', [...allRecipeIds])
@@ -164,10 +164,10 @@ async function getRecipeMapsForMenus(
 export async function checkRepeatMenu(eventId: string): Promise<RepeatMenuResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Get the current event and its menu
-  const { data: currentEvent } = await supabase
+  const { data: currentEvent } = await db
     .from('events')
     .select('id, client_id, menu_id, event_date, occasion')
     .eq('id', eventId)
@@ -179,7 +179,7 @@ export async function checkRepeatMenu(eventId: string): Promise<RepeatMenuResult
   }
 
   // 2. Find all past events for this client that have a menu
-  const { data: pastEvents } = await supabase
+  const { data: pastEvents } = await db
     .from('events')
     .select('id, event_date, occasion, menu_id')
     .eq('client_id', currentEvent.client_id)
@@ -200,11 +200,7 @@ export async function checkRepeatMenu(eventId: string): Promise<RepeatMenuResult
   ]
   const uniqueMenuIds = [...new Set(allMenuIds)]
 
-  const { menuRecipeMaps, menuNameMap } = await getRecipeMapsForMenus(
-    supabase,
-    uniqueMenuIds,
-    tenantId
-  )
+  const { menuRecipeMaps, menuNameMap } = await getRecipeMapsForMenus(db, uniqueMenuIds, tenantId)
 
   const currentRecipes = menuRecipeMaps.get(currentEvent.menu_id) ?? new Map()
 
@@ -276,10 +272,10 @@ export async function checkRepeatMenu(eventId: string): Promise<RepeatMenuResult
 export async function getClientMenuHistory(clientId: string): Promise<ClientMenuHistoryEntry[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Query 1: Get all events for this client that have a menu
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, occasion, menu_id')
     .eq('client_id', clientId)
@@ -293,7 +289,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   if (menuIds.length === 0) return []
 
   // Query 2: All menus in one shot
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id, name')
     .in('id', menuIds)
@@ -305,7 +301,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   }
 
   // Query 3: All dishes for all menus in one shot
-  const { data: allDishes } = await supabase
+  const { data: allDishes } = await db
     .from('dishes')
     .select('id, menu_id, course_name, course_number, name, sort_order')
     .in('menu_id', menuIds)
@@ -332,7 +328,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   const allRecipeIds = new Set<string>()
 
   if (allDishIds.length > 0) {
-    const { data: allComponents } = await supabase
+    const { data: allComponents } = await db
       .from('components')
       .select('id, dish_id, name, recipe_id, sort_order')
       .in('dish_id', allDishIds)
@@ -353,7 +349,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   // Query 5: All recipe names in one shot
   let recipeNameMap = new Map<string, string>()
   if (allRecipeIds.size > 0) {
-    const { data: recipes } = await supabase
+    const { data: recipes } = await db
       .from('recipes')
       .select('id, name')
       .in('id', [...allRecipeIds])

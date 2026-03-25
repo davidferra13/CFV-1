@@ -3,7 +3,7 @@
 // Cross-tenant platform analytics - uses service role key to bypass RLS
 // All functions query across ALL chef tenants (admin-only)
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { evaluateProductionSafetyEnv } from '@/lib/environment/production-safety'
 import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
@@ -136,7 +136,7 @@ function detectStripeKeyMode(
 
 export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const monthStart = startOfCurrentMonth()
 
   // Fetch counts (head:true = no rows returned, just count) and ledger sums
@@ -151,23 +151,14 @@ export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats>
     eventsMonth,
     ledgerMonth,
   ] = await Promise.all([
-    supabase.from('chefs').select('id', { count: 'exact', head: true }),
-    supabase.from('clients').select('id', { count: 'exact', head: true }),
-    supabase.from('events').select('id', { count: 'exact', head: true }),
-    supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment').limit(10000),
-    supabase
-      .from('chefs')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', monthStart),
-    supabase
-      .from('clients')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', monthStart),
-    supabase
-      .from('events')
-      .select('id', { count: 'exact', head: true })
-      .gte('created_at', monthStart),
-    supabase
+    db.from('chefs').select('id', { count: 'exact', head: true }),
+    db.from('clients').select('id', { count: 'exact', head: true }),
+    db.from('events').select('id', { count: 'exact', head: true }),
+    db.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment').limit(10000),
+    db.from('chefs').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
+    db.from('clients').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
+    db.from('events').select('id', { count: 'exact', head: true }).gte('created_at', monthStart),
+    db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('entry_type', 'payment')
@@ -199,9 +190,9 @@ export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats>
 
 export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs')
     .select('id, business_name, email, created_at')
     .order('created_at', { ascending: false })
@@ -211,9 +202,9 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
   const chefIds = chefs.map((c: any) => c.id)
 
   const [eventsRes, clientsRes, ledgerRes] = await Promise.all([
-    supabase.from('events').select('tenant_id').in('tenant_id', chefIds).limit(5000),
-    supabase.from('clients').select('tenant_id').in('tenant_id', chefIds).limit(5000),
-    supabase
+    db.from('events').select('tenant_id').in('tenant_id', chefIds).limit(5000),
+    db.from('clients').select('tenant_id').in('tenant_id', chefIds).limit(5000),
+    db
       .from('ledger_entries')
       .select('tenant_id, amount_cents')
       .eq('entry_type', 'payment')
@@ -249,9 +240,9 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
 
 export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: rawClients } = await supabase
+  const { data: rawClients } = await db
     .from('clients')
     .select('id, full_name, email, tenant_id, created_at')
     .order('created_at', { ascending: false })
@@ -261,17 +252,14 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
   if (!clients?.length) return []
 
   const tenantIds = [...new Set(clients.map((c) => c.tenant_id).filter(Boolean))] as string[]
-  const { data: chefs } = await supabase
-    .from('chefs')
-    .select('id, business_name')
-    .in('id', tenantIds)
+  const { data: chefs } = await db.from('chefs').select('id, business_name').in('id', tenantIds)
 
   const chefMap = Object.fromEntries((chefs ?? []).map((c: any) => [c.id, c.business_name]))
 
   const clientIds = clients.map((c) => c.id)
 
   // Single events query - used for both count and event-to-client mapping
-  const { data: allClientEvents } = await supabase
+  const { data: allClientEvents } = await db
     .from('events')
     .select('id, client_id')
     .in('client_id', clientIds)
@@ -291,7 +279,7 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
   // Scope ledger query to only these clients' events (not all ledger entries)
   const { data: ledger } =
     eventIds.length > 0
-      ? await supabase
+      ? await db
           .from('ledger_entries')
           .select('event_id, amount_cents')
           .eq('entry_type', 'payment')
@@ -319,9 +307,9 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
 
 export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       'id, occasion, status, event_date, guest_count, quoted_price_cents, created_at, tenant_id'
@@ -332,10 +320,7 @@ export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {
   if (!events?.length) return []
 
   const tenantIds = [...new Set(events.map((e: any) => e.tenant_id).filter(Boolean))] as string[]
-  const { data: chefs } = await supabase
-    .from('chefs')
-    .select('id, business_name')
-    .in('id', tenantIds)
+  const { data: chefs } = await db.from('chefs').select('id, business_name').in('id', tenantIds)
 
   const chefMap = Object.fromEntries((chefs ?? []).map((c: any) => [c.id, c.business_name]))
 
@@ -354,18 +339,18 @@ export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {
 
 export async function getPlatformGrowthStats(): Promise<GrowthDataPoint[]> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   const twelveMonthsAgo = new Date()
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
 
   const [chefsData, clientsData] = await Promise.all([
-    supabase
+    db
       .from('chefs')
       .select('created_at')
       .gte('created_at', twelveMonthsAgo.toISOString())
       .limit(10000),
-    supabase
+    db
       .from('clients')
       .select('created_at')
       .gte('created_at', twelveMonthsAgo.toISOString())
@@ -393,12 +378,12 @@ export async function getPlatformGrowthStats(): Promise<GrowthDataPoint[]> {
 
 export async function getPlatformRevenueByMonth(): Promise<RevenueDataPoint[]> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   const twelveMonthsAgo = new Date()
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
 
-  const { data: ledger } = await supabase
+  const { data: ledger } = await db
     .from('ledger_entries')
     .select('amount_cents, created_at')
     .eq('entry_type', 'payment')
@@ -418,23 +403,23 @@ export async function getPlatformRevenueByMonth(): Promise<RevenueDataPoint[]> {
 
 export async function getPlatformFinancialOverview() {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const monthStart = startOfCurrentMonth()
 
   const [allPayments, monthPayments, allExpenses, monthExpenses] = await Promise.all([
-    supabase.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment').limit(10000),
-    supabase
+    db.from('ledger_entries').select('amount_cents').eq('entry_type', 'payment').limit(10000),
+    db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('entry_type', 'payment')
       .gte('created_at', monthStart)
       .limit(10000),
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('entry_type', 'expense' as never)
       .limit(10000),
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('entry_type', 'expense' as never)
@@ -455,9 +440,9 @@ export async function getPlatformFinancialOverview() {
 
 export async function getPlatformLedgerEntries(limit = 100) {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('ledger_entries')
     .select('id, tenant_id, event_id, entry_type, amount_cents, description, created_at')
     .order('created_at', { ascending: false })
@@ -468,7 +453,7 @@ export async function getPlatformLedgerEntries(limit = 100) {
 
 export async function getSystemHealthStats(): Promise<SystemHealthStats> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -483,28 +468,28 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
     zombieEvents,
     orphanedClients,
   ] = await Promise.all([
-    supabase.from('chefs').select('id', { count: 'exact', head: true }),
-    supabase.from('clients').select('id', { count: 'exact', head: true }),
-    supabase.from('events').select('id', { count: 'exact', head: true }),
-    supabase.from('ledger_entries').select('id', { count: 'exact', head: true }),
-    supabase.from('chat_messages').select('id', { count: 'exact', head: true }),
-    supabase.from('inquiries').select('id', { count: 'exact', head: true }),
-    supabase
+    db.from('chefs').select('id', { count: 'exact', head: true }),
+    db.from('clients').select('id', { count: 'exact', head: true }),
+    db.from('events').select('id', { count: 'exact', head: true }),
+    db.from('ledger_entries').select('id', { count: 'exact', head: true }),
+    db.from('chat_messages').select('id', { count: 'exact', head: true }),
+    db.from('inquiries').select('id', { count: 'exact', head: true }),
+    db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .not('status', 'in', '("completed","cancelled")')
       .lt('updated_at', thirtyDaysAgo.toISOString()),
-    supabase.from('clients').select('id', { count: 'exact', head: true }).is('tenant_id', null),
+    db.from('clients').select('id', { count: 'exact', head: true }).is('tenant_id', null),
   ])
 
-  const { data: oldestMsg } = await supabase
+  const { data: oldestMsg } = await db
     .from('chat_messages')
     .select('created_at')
     .is('read_at', null)
     .order('created_at', { ascending: true })
     .limit(1)
 
-  const ownerIdentity = await resolveOwnerIdentity(supabase)
+  const ownerIdentity = await resolveOwnerIdentity(db)
 
   return {
     tableRowCounts: {
@@ -524,12 +509,12 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
 
 export async function getQolMetricsSummary(days = 30): Promise<QolMetricsSummary> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const sinceDate = new Date()
   sinceDate.setDate(sinceDate.getDate() - Math.max(1, days))
   const since = sinceDate.toISOString()
 
-  const { data } = await (supabase
+  const { data } = await (db
     .from('qol_metric_events' as any)
     .select('metric_key')
     .gte('created_at', since) as any)
@@ -558,7 +543,7 @@ export async function getQolMetricsSummary(days = 30): Promise<QolMetricsSummary
 
 export async function getPaymentHealthStats(timeframeHours = 24): Promise<PaymentHealthStats> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const windowHours = Math.max(1, timeframeHours)
   const sinceDate = new Date(Date.now() - windowHours * 60 * 60 * 1000).toISOString()
 
@@ -581,19 +566,19 @@ export async function getPaymentHealthStats(timeframeHours = 24): Promise<Paymen
 
   const [{ data: hooks }, { count: stripeLedgerCount }, { data: recentFailures }] =
     await Promise.all([
-      supabase
+      db
         .from('webhook_events')
         .select('status, received_at, event_type, provider_event_id, error_text')
         .eq('provider', 'stripe')
         .gte('received_at', sinceDate)
         .order('received_at', { ascending: false })
         .limit(2000),
-      supabase
+      db
         .from('ledger_entries')
         .select('id', { count: 'exact', head: true })
         .like('transaction_reference', 'evt_%')
         .gte('created_at', sinceDate),
-      supabase
+      db
         .from('webhook_events')
         .select('event_type, provider_event_id, received_at, error_text')
         .eq('provider', 'stripe')
@@ -617,11 +602,11 @@ export async function getPaymentHealthStats(timeframeHours = 24): Promise<Paymen
     if (!lastWebhookFailedAt && row.status === 'failed') lastWebhookFailedAt = row.received_at
   }
 
-  const ownerIdentity = await resolveOwnerIdentity(supabase)
+  const ownerIdentity = await resolveOwnerIdentity(db)
   const platformChefId = ownerIdentity.ownerChefId
   let platformChefConnect: PaymentHealthStats['platformChefConnect'] = null
   if (platformChefId) {
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('id, business_name, stripe_account_id, stripe_onboarding_complete')
       .eq('id', platformChefId)
@@ -692,9 +677,9 @@ export async function getPaymentHealthStats(timeframeHours = 24): Promise<Paymen
 
 export async function getPlatformAuditLog(limit = 100): Promise<Record<string, unknown>[]> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('admin_audit_log')
     .select('*')
     .order('ts', { ascending: false })
@@ -705,9 +690,9 @@ export async function getPlatformAuditLog(limit = 100): Promise<Record<string, u
 
 export async function getChefFeatureFlags(chefId: string): Promise<Record<string, boolean>> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_feature_flags')
     .select('flag_name, enabled')
     .eq('chef_id', chefId)
@@ -720,11 +705,11 @@ export async function getAllChefFlags(): Promise<{
   flagsByChef: Record<string, Record<string, boolean>>
 }> {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   const [chefsResult, flagsResult] = await Promise.all([
-    supabase.from('chefs').select('id, business_name').order('business_name').limit(10000),
-    supabase.from('chef_feature_flags').select('chef_id, flag_name, enabled').limit(50000),
+    db.from('chefs').select('id, business_name').order('business_name').limit(10000),
+    db.from('chef_feature_flags').select('chef_id, flag_name, enabled').limit(50000),
   ])
 
   const flagsByChef: Record<string, Record<string, boolean>> = {}

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { scaleRecipe, type ScalableIngredient, type ScaleResult } from './recipe-scaling'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -31,10 +31,10 @@ export async function getScaledRecipe(
   targetServings: number
 ): Promise<ScaledRecipeResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch recipe with ingredients
-  const { data: recipe, error: recipeError } = await supabase
+  const { data: recipe, error: recipeError } = await db
     .from('recipes')
     .select(
       `
@@ -54,7 +54,7 @@ export async function getScaledRecipe(
   }
 
   // Fetch recipe ingredients with ingredient details
-  const { data: recipeIngredients, error: ingredientsError } = await supabase
+  const { data: recipeIngredients, error: ingredientsError } = await db
     .from('recipe_ingredients')
     .select(
       `
@@ -110,10 +110,10 @@ export async function getScaledRecipe(
 
 export async function getScaledMenuForEvent(eventId: string): Promise<ScaledMenuResult | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with guest count
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, title, guest_count')
     .eq('id', eventId)
@@ -125,7 +125,7 @@ export async function getScaledMenuForEvent(eventId: string): Promise<ScaledMenu
   }
 
   // Find menu linked to this event
-  const { data: menu, error: menuError } = await supabase
+  const { data: menu, error: menuError } = await db
     .from('menus')
     .select('id, name')
     .eq('event_id', eventId)
@@ -143,7 +143,7 @@ export async function getScaledMenuForEvent(eventId: string): Promise<ScaledMenu
   }
 
   // Get dishes for this menu
-  const { data: dishes, error: dishesError } = await supabase
+  const { data: dishes, error: dishesError } = await db
     .from('dishes')
     .select('id')
     .eq('menu_id', menu.id)
@@ -162,7 +162,7 @@ export async function getScaledMenuForEvent(eventId: string): Promise<ScaledMenu
 
   // Get components with recipe_id for these dishes
   const dishIds = dishes.map((d: any) => d.id)
-  const { data: components, error: componentsError } = await supabase
+  const { data: components, error: componentsError } = await db
     .from('components')
     .select('recipe_id')
     .in('dish_id', dishIds)

@@ -1,5 +1,5 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -39,9 +39,9 @@ function addFrequencyDays(date: string, frequency: string): string {
 
 export async function listRecurringPaymentPlans(): Promise<RecurringPaymentPlan[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('recurring_invoices')
     .select(
       'id, chef_id, client_id, amount_cents, description, frequency, is_active, next_send_date, last_sent_at'
@@ -59,9 +59,9 @@ export async function listRecurringPaymentPlans(): Promise<RecurringPaymentPlan[
 export async function createRecurringPaymentPlan(input: z.infer<typeof RecurringPaymentSchema>) {
   const user = await requireChef()
   const validated = RecurringPaymentSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('recurring_invoices')
     .insert({
       chef_id: user.tenantId!,
@@ -89,9 +89,9 @@ export async function createRecurringPaymentPlan(input: z.infer<typeof Recurring
 
 export async function setRecurringPaymentPlanActive(planId: string, active: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('recurring_invoices')
     .update({
       is_active: active,
@@ -110,14 +110,14 @@ export async function setRecurringPaymentPlanActive(planId: string, active: bool
 
 export async function listDueRecurringPayments(daysAhead = 7) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const today = new Date()
   const fromDate = today.toISOString().slice(0, 10)
   const toDateValue = new Date(today)
   toDateValue.setDate(toDateValue.getDate() + Math.max(daysAhead, 0))
   const toDate = toDateValue.toISOString().slice(0, 10)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('recurring_invoices')
     .select(
       'id, chef_id, client_id, amount_cents, description, frequency, next_send_date, is_active, clients(full_name, email)'
@@ -137,9 +137,9 @@ export async function listDueRecurringPayments(daysAhead = 7) {
 
 export async function markRecurringPaymentSent(planId: string, sentDate: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: plan, error: fetchError } = await supabase
+  const { data: plan, error: fetchError } = await db
     .from('recurring_invoices')
     .select('id, frequency, next_send_date')
     .eq('id', planId)
@@ -152,7 +152,7 @@ export async function markRecurringPaymentSent(planId: string, sentDate: string)
 
   const nextDate = addFrequencyDays(plan.next_send_date || sentDate, plan.frequency)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('recurring_invoices')
     .update({
       last_sent_at: `${sentDate}T00:00:00`,

@@ -5,7 +5,7 @@
 // Uses is_auto flag to distinguish auto-generated folders from manual ones.
 // Idempotent: finds existing folders before creating new ones.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 const MONTH_NAMES = [
   'January',
@@ -28,7 +28,7 @@ const MONTH_NAMES = [
  * Idempotent: reuses existing auto-folders.
  */
 export async function ensureReceiptFolder(tenantId: string, date: string | Date): Promise<string> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const d = typeof date === 'string' ? new Date(date) : date
   const year = d.getFullYear().toString()
   const monthNum = (d.getMonth() + 1).toString().padStart(2, '0')
@@ -36,25 +36,25 @@ export async function ensureReceiptFolder(tenantId: string, date: string | Date)
   const monthLabel = `${monthNum} - ${monthName}`
 
   // 1. Find or create root "Receipts" folder
-  const rootId = await findOrCreateFolder(supabase, tenantId, 'Receipts', null)
+  const rootId = await findOrCreateFolder(db, tenantId, 'Receipts', null)
 
   // 2. Find or create year folder under Receipts
-  const yearId = await findOrCreateFolder(supabase, tenantId, year, rootId)
+  const yearId = await findOrCreateFolder(db, tenantId, year, rootId)
 
   // 3. Find or create month folder under year
-  const monthId = await findOrCreateFolder(supabase, tenantId, monthLabel, yearId)
+  const monthId = await findOrCreateFolder(db, tenantId, monthLabel, yearId)
 
   return monthId
 }
 
 async function findOrCreateFolder(
-  supabase: any,
+  db: any,
   tenantId: string,
   name: string,
   parentFolderId: string | null
 ): Promise<string> {
   // Try to find existing auto-folder with this name and parent
-  let query = supabase
+  let query = db
     .from('chef_folders' as any)
     .select('id')
     .eq('tenant_id', tenantId)
@@ -72,7 +72,7 @@ async function findOrCreateFolder(
   if (existing) return existing.id
 
   // Create new auto-folder
-  const { data: created, error } = await (supabase
+  const { data: created, error } = await (db
     .from('chef_folders' as any)
     .insert({
       tenant_id: tenantId,
@@ -108,7 +108,7 @@ export async function createReceiptDocument(
     photoUrl: string
   }
 ): Promise<string> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const title = [
     opts.storeName ?? 'Receipt',
@@ -118,7 +118,7 @@ export async function createReceiptDocument(
     .filter(Boolean)
     .join(' ')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_documents')
     .insert({
       tenant_id: tenantId,

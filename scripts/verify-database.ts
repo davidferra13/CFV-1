@@ -1,22 +1,22 @@
 /**
- * Supabase Connection Verification Script
+ * Database Connection Verification Script
  * Tests connectivity, table availability, and reports key row counts.
  */
 
 import { config } from 'dotenv'
 import { resolve } from 'path'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 config({ path: resolve(process.cwd(), '.env.local') })
 
-async function verifySupabase() {
-  console.log('Verifying Supabase connection...\n')
+async function verifyDatabase() {
+  console.log('Verifying database connection...\n')
 
   console.log('Using createAdminClient() (direct DB connection)\n')
 
-  const supabase = createAdminClient()
+  const db = createAdminClient()
 
-  const health = await supabase.from('chefs').select('id', { head: true, count: 'exact' })
+  const health = await db.from('chefs').select('id', { head: true, count: 'exact' })
   if (health.error) {
     throw new Error(`Database connectivity failed: ${health.error.message}`)
   }
@@ -37,7 +37,7 @@ async function verifySupabase() {
 
   console.log('Checking required tables...')
   for (const table of tables) {
-    const { error } = await supabase.from(table as any).select('*', { head: true, count: 'exact' })
+    const { error } = await db.from(table as any).select('*', { head: true, count: 'exact' })
     if (error) {
       throw new Error(`Table check failed for ${table}: ${error.message}`)
     }
@@ -45,7 +45,7 @@ async function verifySupabase() {
   }
 
   console.log('\nChecking required view...')
-  const viewCheck = await supabase
+  const viewCheck = await db
     .from('event_financial_summary')
     .select('*', { head: true, count: 'exact' })
 
@@ -65,9 +65,7 @@ async function verifySupabase() {
   ]
 
   for (const table of countsToShow) {
-    const { count, error } = await supabase
-      .from(table as any)
-      .select('*', { head: true, count: 'exact' })
+    const { count, error } = await db.from(table as any).select('*', { head: true, count: 'exact' })
     if (error) {
       console.log(`  ${table}: error (${error.message})`)
     } else {
@@ -75,10 +73,10 @@ async function verifySupabase() {
     }
   }
 
-  console.log('\nSupabase verification complete.')
+  console.log('\nDatabase verification complete.')
 }
 
-verifySupabase().catch((error) => {
+verifyDatabase().catch((error) => {
   console.error(`Verification failed: ${error.message}`)
   process.exit(1)
 })

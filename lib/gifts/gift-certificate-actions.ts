@@ -5,7 +5,7 @@
 // Federal law: gift cards must be valid for minimum 5 years.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import crypto from 'crypto'
 
@@ -83,7 +83,7 @@ export async function createGiftCertificate(
   data: GiftCertificateCreateInput
 ): Promise<GiftCertificateRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   if (data.amount_cents <= 0) {
@@ -97,7 +97,7 @@ export async function createGiftCertificate(
   let code = ''
   for (let attempt = 0; attempt < 3; attempt++) {
     const candidate = generateCode()
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('gift_certificates' as any)
       .select('id')
       .eq('code', candidate)
@@ -114,7 +114,7 @@ export async function createGiftCertificate(
 
   const expiresAt = data.expires_at || defaultExpiryDate()
 
-  const { data: cert, error } = await supabase
+  const { data: cert, error } = await db
     .from('gift_certificates' as any)
     .insert({
       tenant_id: tenantId,
@@ -144,9 +144,9 @@ export async function getGiftCertificates(
   options?: GiftCertificateFilterOptions
 ): Promise<GiftCertificateRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('gift_certificates' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -172,11 +172,11 @@ export async function redeemGiftCertificate(
   amountCents?: number
 ): Promise<GiftCertificateRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Look up the certificate
-  const { data: cert, error: lookupError } = await supabase
+  const { data: cert, error: lookupError } = await db
     .from('gift_certificates' as any)
     .select('*')
     .eq('tenant_id', tenantId)
@@ -209,7 +209,7 @@ export async function redeemGiftCertificate(
   const newBalance = row.balance_cents - redeemAmount
   const newStatus = newBalance === 0 ? 'redeemed' : 'active'
 
-  const { data: updated, error: updateError } = await supabase
+  const { data: updated, error: updateError } = await db
     .from('gift_certificates' as any)
     .update({
       balance_cents: newBalance,
@@ -234,10 +234,10 @@ export async function redeemGiftCertificate(
 
 export async function voidGiftCertificate(id: string): Promise<GiftCertificateRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: cert, error } = await supabase
+  const { data: cert, error } = await db
     .from('gift_certificates' as any)
     .update({ status: 'voided' })
     .eq('id', id)
@@ -267,9 +267,9 @@ export async function lookupGiftCertificate(code: string): Promise<{
   recipient_name: string | null
   message: string | null
 } | null> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('gift_certificates' as any)
     .select('code, amount_cents, balance_cents, status, expires_at, recipient_name, message')
     .eq('code', code.toUpperCase().trim())
@@ -284,9 +284,9 @@ export async function lookupGiftCertificate(code: string): Promise<{
 
 export async function getGiftCertificateStats(): Promise<GiftCertificateStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('gift_certificates' as any)
     .select('amount_cents, balance_cents, status')
     .eq('tenant_id', user.tenantId!)

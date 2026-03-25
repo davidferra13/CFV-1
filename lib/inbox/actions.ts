@@ -5,18 +5,18 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { UnifiedInboxItem, InboxFilters, InboxStats, InboxSource } from './types'
 
 // ─── Get Unified Inbox ───────────────────────────────────────────────────
 
 export async function getUnifiedInbox(filters?: InboxFilters): Promise<UnifiedInboxItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const limit = filters?.limit ?? 30
   const offset = filters?.offset ?? 0
 
-  let query = supabase
+  let query = db
     .from('unified_inbox' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -58,12 +58,12 @@ export async function getUnifiedInbox(filters?: InboxFilters): Promise<UnifiedIn
 
 export async function getInboxStats(): Promise<InboxStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get counts per source (recent 7 days to keep performant)
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('unified_inbox' as any)
     .select('source, is_read')
     .eq('tenant_id', user.tenantId!)

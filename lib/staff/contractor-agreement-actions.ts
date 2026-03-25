@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export async function addAgreement(input: {
@@ -16,8 +16,8 @@ export async function addAgreement(input: {
   expires_at?: string
 }) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
-  const { error } = await supabase.from('contractor_service_agreements').insert({
+  const db: any = createServerClient()
+  const { error } = await db.from('contractor_service_agreements').insert({
     tenant_id: chef.tenantId!,
     staff_member_id: input.staff_member_id,
     effective_date: input.effective_date,
@@ -36,8 +36,8 @@ export async function addAgreement(input: {
 
 export async function getAgreementsForStaff(staffMemberId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('contractor_service_agreements')
     .select('*')
     .eq('tenant_id', chef.tenantId!)
@@ -48,8 +48,8 @@ export async function getAgreementsForStaff(staffMemberId: string) {
 
 export async function hasActiveAgreement(staffMemberId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
-  const { count } = await supabase
+  const db: any = createServerClient()
+  const { count } = await db
     .from('contractor_service_agreements')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.tenantId!)

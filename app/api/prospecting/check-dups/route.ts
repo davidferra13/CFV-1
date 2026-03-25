@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server'
 import { validateProspectingAuth } from '@/lib/prospecting/api-auth'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { isSimilarName } from '@/lib/prospecting/fuzzy-match'
 
 interface DedupInput {
@@ -32,10 +32,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Max 200 prospects per check' }, { status: 400 })
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Fetch all existing prospect names + cities for this chef (for fuzzy matching)
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('prospects' as any)
     .select('id, name, city')
     .eq('chef_id', auth.tenantId)

@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 async function refreshGoogleToken(refreshToken: string): Promise<string | null> {
   const res = await fetch('https://oauth2.googleapis.com/token', {
@@ -25,10 +25,10 @@ async function refreshGoogleToken(refreshToken: string): Promise<string | null> 
 async function syncGoogleReviews(
   chefId: string
 ): Promise<{ ok: boolean; error?: string; reviewsImported?: number }> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get stored credentials
-  const { data: cred } = await supabase
+  const { data: cred } = await db
     .from('social_platform_credentials')
     .select('access_token, refresh_token, token_expires_at, external_account_id')
     .eq('tenant_id', chefId)
@@ -46,7 +46,7 @@ async function syncGoogleReviews(
     const newToken = await refreshGoogleToken(cred.refresh_token)
     if (!newToken) return { ok: false, error: 'Token refresh failed' }
     token = newToken
-    await supabase
+    await db
       .from('social_platform_credentials')
       .update({
         access_token: newToken,
@@ -57,7 +57,7 @@ async function syncGoogleReviews(
   }
 
   // Get or create external_review_source for google_places
-  let { data: source } = await supabase
+  let { data: source } = await db
     .from('external_review_sources')
     .select('id, last_cursor')
     .eq('tenant_id', chefId)
@@ -65,7 +65,7 @@ async function syncGoogleReviews(
     .single()
 
   if (!source) {
-    const { data: newSource } = await supabase
+    const { data: newSource } = await db
       .from('external_review_sources')
       .insert({
         tenant_id: chefId,
@@ -114,7 +114,7 @@ async function syncGoogleReviews(
     }
     const rating = ratingMap[review.starRating] ?? null
 
-    const { error } = await supabase.from('external_reviews').upsert(
+    const { error } = await db.from('external_reviews').upsert(
       {
         tenant_id: chefId,
         source_id: source.id,
@@ -134,7 +134,7 @@ async function syncGoogleReviews(
     if (!error) imported++
   }
 
-  await supabase
+  await db
     .from('external_review_sources')
     .update({ last_synced_at: new Date().toISOString() })
     .eq('id', source.id)

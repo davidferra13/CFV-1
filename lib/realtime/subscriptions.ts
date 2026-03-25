@@ -3,7 +3,7 @@
  * Item #46: Realtime Subscriptions
  *
  * Provides React hooks for live data updates via Server-Sent Events.
- * Replaces Supabase Realtime postgres_changes with SSE infrastructure.
+ * Replaces SSE realtime postgres_changes with SSE infrastructure.
  *
  * Key events supported:
  *   - Event status changes (FSM transitions)

@@ -4,7 +4,7 @@
 // Manages which feature modules a chef has enabled (progressive disclosure).
 // Independent of tier - controls what the chef SEES, not what they CAN access.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidateTag } from 'next/cache'
 import { CHEF_LAYOUT_CACHE_TAG } from '@/lib/chef/layout-cache'
@@ -16,9 +16,9 @@ import { ALL_MODULE_SLUGS, DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules
  */
 export async function getEnabledModules(): Promise<string[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_preferences')
     .select('enabled_modules')
     .eq('chef_id', user.entityId)
@@ -46,8 +46,8 @@ export async function updateEnabledModules(modules: string[]): Promise<void> {
     filtered.unshift('dashboard')
   }
 
-  const supabase: any = createServerClient()
-  const { error } = await supabase
+  const db: any = createServerClient()
+  const { error } = await db
     .from('chef_preferences')
     .update({ enabled_modules: filtered } as any)
     .eq('chef_id', user.entityId)

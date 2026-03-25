@@ -791,7 +791,7 @@ These are loaded by `getMenuContextData()`, which always runs.
 
 | File                                                          | Role                            |
 | ------------------------------------------------------------- | ------------------------------- |
-| `supabase/migrations/20260401000085_menu_engine_features.sql` | Adds JSONB column with defaults |
+| `database/migrations/20260401000085_menu_engine_features.sql` | Adds JSONB column with defaults |
 
 ### Upstream Dependencies
 
@@ -839,4 +839,4 @@ These are loaded by `getMenuContextData()`, which always runs.
 
 4. **Batch feature check.** Instead of 8 separate server actions, a single `getMenuIntelligence(menuId, enabledFeatures[])` action could batch all queries in one round-trip. This would reduce HTTP overhead but increase coupling.
 
-5. **Real-time updates.** Currently, the sidebar loads once on page mount. Supabase Realtime subscriptions could update stock alerts or vendor prices live as inventory changes.
+5. **Real-time updates.** Currently, the sidebar loads once on page mount. SSE realtime subscriptions could update stock alerts or vendor prices live as inventory changes.

@@ -5,7 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { OrderQueueStatus } from './constants'
 
@@ -30,9 +30,9 @@ export async function createOrderQueueEntry(input: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('order_queue' as any)
     .insert({
       tenant_id: user.tenantId!,
@@ -57,10 +57,10 @@ export async function createOrderQueueEntry(input: {
 export async function updateOrderStatus(orderId: string, newStatus: OrderQueueStatus) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current status
-  const { data: order, error: fetchErr } = await (supabase
+  const { data: order, error: fetchErr } = await (db
     .from('order_queue' as any)
     .select('status, received_at')
     .eq('id', orderId)
@@ -97,7 +97,7 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderQueueSt
       break
   }
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('order_queue' as any)
     .update(updates as any)
     .eq('id', orderId)
@@ -113,9 +113,9 @@ export async function updateOrderStatus(orderId: string, newStatus: OrderQueueSt
 export async function cancelOrder(orderId: string, reason: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: order, error: fetchErr } = await (supabase
+  const { data: order, error: fetchErr } = await (db
     .from('order_queue' as any)
     .select('status')
     .eq('id', orderId)
@@ -129,7 +129,7 @@ export async function cancelOrder(orderId: string, reason: string) {
     throw new Error(`Cannot cancel an order in ${currentStatus} status`)
   }
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('order_queue' as any)
     .update({
       status: 'cancelled',
@@ -149,9 +149,9 @@ export async function cancelOrder(orderId: string, reason: string) {
 export async function getActiveOrders() {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('order_queue' as any)
     .select('*, sales!inner(sale_number, total_cents, client_id)')
     .eq('tenant_id', user.tenantId!)
@@ -173,9 +173,9 @@ export async function getOrderQueueHistory(filters?: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('order_queue' as any)
     .select('*, sales!inner(sale_number, total_cents)', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
@@ -201,9 +201,9 @@ export async function getOrderQueueHistory(filters?: {
 export async function getOrder(orderId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('order_queue' as any)
     .select('*, sales!inner(*, sale_items(*))')
     .eq('id', orderId)

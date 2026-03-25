@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef, requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -35,10 +35,10 @@ export type SubmitReviewInput = z.infer<typeof SubmitReviewSchema>
 export async function submitClientReview(input: SubmitReviewInput) {
   const user = await requireClient()
   const validated = SubmitReviewSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the event belongs to this client and is completed
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, tenant_id, status, occasion')
     .eq('id', validated.event_id)
@@ -54,7 +54,7 @@ export async function submitClientReview(input: SubmitReviewInput) {
   }
 
   // Check if a review already exists
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('client_reviews')
     .select('id')
     .eq('event_id', validated.event_id)
@@ -65,7 +65,7 @@ export async function submitClientReview(input: SubmitReviewInput) {
   }
 
   // Insert the review and get back the ID
-  const { data: newReview, error: insertError } = await supabase
+  const { data: newReview, error: insertError } = await db
     .from('client_reviews')
     .insert({
       event_id: validated.event_id,
@@ -121,13 +121,9 @@ async function notifyChefOfReview(
   if (!chefUserId) return
 
   // Load client name
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase = createServerClient({ admin: true })
-  const { data: client } = await supabase
-    .from('clients')
-    .select('full_name')
-    .eq('id', clientId)
-    .single()
+  const { createServerClient } = await import('@/lib/db/server')
+  const db = createServerClient({ admin: true })
+  const { data: client } = await db.from('clients').select('full_name').eq('id', clientId).single()
   const clientName = client?.full_name ?? 'A client'
 
   // In-app notification
@@ -163,9 +159,9 @@ async function notifyChefOfReview(
  */
 export async function getClientReviewForEvent(eventId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_reviews')
     .select('*')
     .eq('event_id', eventId)
@@ -181,10 +177,10 @@ export async function getClientReviewForEvent(eventId: string) {
  */
 export async function recordGoogleReviewClick(eventId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Update the review record
-  const { error } = await supabase
+  const { error } = await db
     .from('client_reviews')
     .update({ google_review_clicked: true })
     .eq('event_id', eventId)
@@ -195,7 +191,7 @@ export async function recordGoogleReviewClick(eventId: string) {
   }
 
   // Mark review_link_sent on the event
-  await supabase.from('events').update({ review_link_sent: true }).eq('id', eventId)
+  await db.from('events').update({ review_link_sent: true }).eq('id', eventId)
 
   revalidatePath(`/my-events/${eventId}`)
   return { success: true }
@@ -210,9 +206,9 @@ export async function recordGoogleReviewClick(eventId: string) {
  */
 export async function getChefReviews() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_reviews')
     .select(
       `
@@ -237,9 +233,9 @@ export async function getChefReviews() {
  */
 export async function getChefReviewStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_reviews')
     .select('rating, display_consent, google_review_clicked')
     .eq('tenant_id', user.tenantId!)
@@ -262,9 +258,9 @@ export async function getChefReviewStats() {
  */
 export async function getGoogleReviewUrl() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select('google_review_url')
     .eq('id', user.entityId)
@@ -278,7 +274,7 @@ export async function getGoogleReviewUrl() {
  */
 export async function updateGoogleReviewUrl(url: string | null) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Basic validation - must be a Google URL or empty
   if (url && url.trim()) {
@@ -288,7 +284,7 @@ export async function updateGoogleReviewUrl(url: string | null) {
     }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({ google_review_url: url?.trim() || null })
     .eq('id', user.entityId)
@@ -308,13 +304,9 @@ export async function updateGoogleReviewUrl(url: string | null) {
  */
 export async function getGoogleReviewUrlForTenant(tenantId: string) {
   await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
-    .from('chefs')
-    .select('google_review_url')
-    .eq('id', tenantId)
-    .single()
+  const { data } = await db.from('chefs').select('google_review_url').eq('id', tenantId).single()
 
   return data?.google_review_url ?? null
 }
@@ -384,10 +376,10 @@ function formatEventContext(event: { occasion: string | null; event_date: string
 
 export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [clientReviewsResult, chefFeedbackResult, externalReviewsResult] = await Promise.all([
-    supabase
+    db
       .from('client_reviews')
       .select(
         `
@@ -405,7 +397,7 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
       )
       .eq('tenant_id', user.tenantId)
       .order('created_at', { ascending: false }),
-    supabase
+    db
       .from('chef_feedback')
       .select(
         `
@@ -423,7 +415,7 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
       )
       .eq('tenant_id', user.tenantId)
       .order('created_at', { ascending: false }),
-    supabase
+    db
       .from('external_reviews')
       .select(
         `
@@ -477,7 +469,7 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
 
   let externalSourceLabelMap: Record<string, string> = {}
   if (externalSourceIds.length > 0) {
-    const { data: sourceRows, error: sourceError } = await supabase
+    const { data: sourceRows, error: sourceError } = await db
       .from('external_review_sources')
       .select('id, label')
       .eq('tenant_id', user.tenantId)

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface InquiryUrgency {
   inquiryId: string
@@ -20,10 +20,10 @@ export interface InquiryUrgency {
  */
 export async function getInquiryUrgencies(): Promise<InquiryUrgency[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch open inquiries
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, created_at, status')
     .eq('tenant_id', user.tenantId!)
@@ -34,7 +34,7 @@ export async function getInquiryUrgencies(): Promise<InquiryUrgency[]> {
 
   // Fetch first outbound message per inquiry
   const inquiryIds = inquiries.map((i: any) => i.id)
-  const { data: messages } = await supabase
+  const { data: messages } = await db
     .from('messages')
     .select('inquiry_id, created_at')
     .in('inquiry_id', inquiryIds)

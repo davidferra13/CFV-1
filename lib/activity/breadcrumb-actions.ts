@@ -3,7 +3,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { BreadcrumbEntry, BreadcrumbSession, BreadcrumbQueryResult } from './breadcrumb-types'
 import { labelForPath } from './breadcrumb-types'
 
@@ -27,11 +27,11 @@ export async function getBreadcrumbSessions(
   } = {}
 ): Promise<BreadcrumbQueryResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const daysBack = parseDaysBack(options.daysBack)
   const rawLimit = Math.max(1, Math.min(500, options.limit ?? 200))
 
-  let query = supabase
+  let query = db
     .from('chef_breadcrumbs')
     .select('*')
     .eq('tenant_id', user.tenantId!)

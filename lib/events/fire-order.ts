@@ -99,9 +99,9 @@ const STATION_LABELS: Record<StationType, string> = {
 //
 // async function getFireOrder(eventId: string): Promise<FireOrderResult> {
 //   const chef = await requireChef()
-//   const supabase: any = createServerClient()
+//   const db: any = createServerClient()
 //
-//   const { data: event, error: eventErr } = await supabase
+//   const { data: event, error: eventErr } = await db
 //     .from('events')
 //     .select('id, event_date, menu_id')
 //     .eq('id', eventId)
@@ -111,7 +111,7 @@ const STATION_LABELS: Record<StationType, string> = {
 //   if (eventErr || !event) throw new Error('Event not found')
 //
 //   // menu_sections table does not exist yet
-//   const { data: sections } = await supabase
+//   const { data: sections } = await db
 //     .from('menu_sections')
 //     .select('id, name, position, menu_items(id, name, position)')
 //     .eq('menu_id', event.menu_id)

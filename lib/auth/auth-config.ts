@@ -1,6 +1,6 @@
 /**
  * Auth.js v5 configuration
- * Replaces Supabase GoTrue auth with direct PostgreSQL authentication.
+ * Replaces Auth.js auth with direct PostgreSQL authentication.
  *
  * Credentials provider: verifies bcrypt hashes in auth.users.encrypted_password
  * Google provider: matches by email to existing auth.users records
@@ -110,7 +110,7 @@ export const authConfig: NextAuthConfig = {
         // Check email confirmation
         if (!user.emailConfirmedAt) return null
 
-        // Verify bcrypt password (compatible with Supabase-stored hashes)
+        // Verify bcrypt password (compatible with the database-stored hashes)
         const valid = await bcrypt.compare(password, user.encryptedPassword)
         if (!valid) return null
 

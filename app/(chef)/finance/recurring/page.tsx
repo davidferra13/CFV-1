@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getRecurringInvoices } from '@/lib/finance/recurring-invoice-actions'
 import { RecurringInvoiceForm } from '@/components/finance/recurring-invoice-form'
 
@@ -9,15 +9,11 @@ export const metadata: Metadata = { title: 'Recurring Invoices - ChefFlow' }
 
 export default async function RecurringInvoicesPage() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [invoices, clientsResult] = await Promise.all([
     getRecurringInvoices().catch(() => null),
-    supabase
-      .from('clients')
-      .select('id, full_name')
-      .eq('tenant_id', user.tenantId!)
-      .order('full_name'),
+    db.from('clients').select('id, full_name').eq('tenant_id', user.tenantId!).order('full_name'),
   ])
 
   const clients = clientsResult.data ?? []

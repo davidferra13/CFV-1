@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { notifyLowStock } from '@/lib/notifications/triggers'
@@ -56,10 +56,10 @@ export type ShiftCheckOutInput = z.infer<typeof ShiftCheckOutSchema>
  */
 export async function getClipboardForDate(stationId: string, date: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Try to load existing entries
-  const { data: existing, error } = await supabase
+  const { data: existing, error } = await db
     .from('clipboard_entries')
     .select(
       `
@@ -95,7 +95,7 @@ export async function getClipboardForDate(stationId: string, date: string) {
   }
 
   // Auto-generate entries from station components
-  const { data: menuItems } = await supabase
+  const { data: menuItems } = await db
     .from('station_menu_items')
     .select(
       `
@@ -146,7 +146,7 @@ export async function getClipboardForDate(stationId: string, date: string) {
     return []
   }
 
-  const { data: created, error: insertError } = await supabase
+  const { data: created, error: insertError } = await db
     .from('clipboard_entries')
     .insert(insertRows).select(`
       *,
@@ -179,7 +179,7 @@ export async function getClipboardForDate(stationId: string, date: string) {
 export async function updateClipboardEntry(entryId: string, updates: UpdateClipboardEntryInput) {
   const user = await requireChef()
   const validated = UpdateClipboardEntrySchema.parse(updates)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updatePayload: Record<string, unknown> = {}
   if (validated.on_hand !== undefined) updatePayload.on_hand = validated.on_hand
@@ -200,7 +200,7 @@ export async function updateClipboardEntry(entryId: string, updates: UpdateClipb
   updatePayload.updated_by = validated.updated_by ?? null
   updatePayload.updated_at = new Date().toISOString()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clipboard_entries')
     .update(updatePayload)
     .eq('id', entryId)
@@ -217,7 +217,7 @@ export async function updateClipboardEntry(entryId: string, updates: UpdateClipb
   if (validated.on_hand !== undefined && data) {
     try {
       // Look up the component's par_level, name, and station name
-      const { data: comp } = await supabase
+      const { data: comp } = await db
         .from('station_components')
         .select('name, par_level, stations(name)')
         .eq('id', data.component_id)
@@ -252,7 +252,7 @@ export async function batchUpdateClipboard(
   updatedBy?: string // staff_member_id - who is saving this batch (initials/accountability)
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date().toISOString()
 
   const results: any[] = []
@@ -276,7 +276,7 @@ export async function batchUpdateClipboard(
     updatePayload.updated_by = updatedBy ?? validated.updated_by ?? null
     updatePayload.updated_at = now
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('clipboard_entries')
       .update(updatePayload)
       .eq('id', entry.id)
@@ -300,9 +300,9 @@ export async function batchUpdateClipboard(
  */
 export async function markAs86(entryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clipboard_entries')
     .update({
       is_86d: true,
@@ -327,9 +327,9 @@ export async function markAs86(entryId: string) {
  */
 export async function unmark86(entryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clipboard_entries')
     .update({
       is_86d: false,
@@ -359,9 +359,9 @@ export async function unmark86(entryId: string) {
 export async function shiftCheckIn(input: ShiftCheckInInput) {
   const user = await requireChef()
   const validated = ShiftCheckInSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('shift_logs')
     .insert({
       chef_id: user.tenantId!,
@@ -388,11 +388,11 @@ export async function shiftCheckIn(input: ShiftCheckInInput) {
 export async function shiftCheckOut(input: ShiftCheckOutInput) {
   const user = await requireChef()
   const validated = ShiftCheckOutSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build snapshot of current clipboard state
   const today = new Date().toISOString().split('T')[0]
-  const { data: clipboardState } = await supabase
+  const { data: clipboardState } = await db
     .from('clipboard_entries')
     .select('*')
     .eq('station_id', validated.station_id)
@@ -404,7 +404,7 @@ export async function shiftCheckOut(input: ShiftCheckOutInput) {
     entries: clipboardState ?? [],
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('shift_logs')
     .update({
       check_out_at: new Date().toISOString(),
@@ -430,9 +430,9 @@ export async function shiftCheckOut(input: ShiftCheckOutInput) {
  */
 export async function getShiftLog(stationId: string, startDate: string, endDate: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('shift_logs')
     .select('*')
     .eq('station_id', stationId)
@@ -454,9 +454,9 @@ export async function getShiftLog(stationId: string, startDate: string, endDate:
  */
 export async function getLastShiftHandoff(stationId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('shift_logs')
     .select('*')
     .eq('station_id', stationId)
@@ -479,11 +479,11 @@ export async function getLastShiftHandoff(stationId: string) {
  */
 export async function getAll86dItems() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clipboard_entries')
     .select(
       `

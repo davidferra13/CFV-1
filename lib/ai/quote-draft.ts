@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
@@ -58,9 +58,9 @@ Return ONLY valid JSON matching this structure.`
 
 export async function generateQuoteDraft(inquiryId: string): Promise<QuoteDraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select(
       'confirmed_occasion, confirmed_date, confirmed_guest_count, confirmed_budget_cents, confirmed_dietary_restrictions, confirmed_service_expectations, client:clients(full_name)'
@@ -72,7 +72,7 @@ export async function generateQuoteDraft(inquiryId: string): Promise<QuoteDraftR
   if (!inquiry) throw new Error('Inquiry not found')
 
   // Get chef's recent completed event pricing for reference
-  const { data: recentEvents } = await supabase
+  const { data: recentEvents } = await db
     .from('events')
     .select('quoted_price_cents, guest_count, occasion')
     .eq('tenant_id', user.entityId)

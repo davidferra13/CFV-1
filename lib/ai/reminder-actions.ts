@@ -5,7 +5,7 @@
 // Generates reminders from DB queries only - no LLM needed (pure SQL logic).
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface RemyNudge {
   id: string
@@ -33,14 +33,14 @@ export interface RemyNudge {
  */
 export async function getProactiveNudges(): Promise<RemyNudge[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
   const now = new Date()
   const nudges: RemyNudge[] = []
 
   // 1. Stale inquiries (>48h without response)
   const twoDaysAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000).toISOString()
-  const { data: staleInquiries } = await supabase
+  const { data: staleInquiries } = await db
     .from('inquiries')
     .select('id, created_at, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -68,7 +68,7 @@ export async function getProactiveNudges(): Promise<RemyNudge[]> {
   // 2. Upcoming events needing prep (within 3 days, no prep notes)
   const threeDaysOut = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   const today = now.toISOString().split('T')[0]
-  const { data: upcomingEvents } = await supabase
+  const { data: upcomingEvents } = await db
     .from('events')
     .select('id, occasion, event_date, guest_count, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -99,7 +99,7 @@ export async function getProactiveNudges(): Promise<RemyNudge[]> {
 
   // 3. Completed events needing follow-up (completed in last 7 days, no follow-up logged)
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const { data: recentCompleted } = await supabase
+  const { data: recentCompleted } = await db
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -126,7 +126,7 @@ export async function getProactiveNudges(): Promise<RemyNudge[]> {
 
   // 4. Dormant clients (no events in 90+ days)
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString()
-  const { data: allClients } = await supabase
+  const { data: allClients } = await db
     .from('clients')
     .select('id, full_name, last_event_date')
     .eq('tenant_id', tenantId)

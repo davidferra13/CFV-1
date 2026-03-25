@@ -37,7 +37,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Campaign')
 
-    const { data: campaign, error } = await (ctx.supabase as any)
+    const { data: campaign, error } = await (ctx.db as any)
       .from('marketing_campaigns')
       .select('*')
       .eq('id', id)
@@ -47,7 +47,7 @@ export const GET = withApiAuth(
     if (error || !campaign) return apiNotFound('Campaign')
 
     // Fetch recipients for this campaign
-    const { data: recipients } = await (ctx.supabase as any)
+    const { data: recipients } = await (ctx.db as any)
       .from('campaign_recipients')
       .select('*')
       .eq('campaign_id', id)
@@ -74,7 +74,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     // Verify campaign belongs to tenant
-    const { data: existing } = await (ctx.supabase as any)
+    const { data: existing } = await (ctx.db as any)
       .from('marketing_campaigns')
       .select('id, status')
       .eq('id', id)
@@ -83,7 +83,7 @@ export const PATCH = withApiAuth(
 
     if (!existing) return apiNotFound('Campaign')
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('marketing_campaigns')
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
@@ -107,7 +107,7 @@ export const DELETE = withApiAuth(
     if (!id) return apiNotFound('Campaign')
 
     // Only allow deleting draft campaigns
-    const { data: existing } = await (ctx.supabase as any)
+    const { data: existing } = await (ctx.db as any)
       .from('marketing_campaigns')
       .select('id, status')
       .eq('id', id)
@@ -124,7 +124,7 @@ export const DELETE = withApiAuth(
       )
     }
 
-    const { error } = await (ctx.supabase as any)
+    const { error } = await (ctx.db as any)
       .from('marketing_campaigns')
       .delete()
       .eq('id', id)

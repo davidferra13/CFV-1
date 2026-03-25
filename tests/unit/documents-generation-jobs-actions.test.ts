@@ -14,13 +14,13 @@ type QueryResponse<T = unknown> = {
   error: { code?: string } | null
 }
 
-type SupabaseMockState = {
+type DbMockState = {
   insertCalls: Array<{ table: string; payload: Record<string, unknown> }>
   updateCalls: Array<{ table: string; payload: Record<string, unknown> }>
   eqCalls: Array<{ table: string; column: string; value: unknown }>
 }
 
-function createSupabaseMock(config?: {
+function createDbMock(config?: {
   maybeSingleResponses?: QueryResponse[]
   singleResponses?: QueryResponse[]
   awaitedResponses?: Array<{ error: { code?: string } | null }>
@@ -29,7 +29,7 @@ function createSupabaseMock(config?: {
   const singleQueue = [...(config?.singleResponses ?? [])]
   const awaitedQueue = [...(config?.awaitedResponses ?? [])]
 
-  const state: SupabaseMockState = {
+  const state: DbMockState = {
     insertCalls: [],
     updateCalls: [],
     eqCalls: [],
@@ -83,7 +83,7 @@ function createSupabaseMock(config?: {
 
 describe('event document generation jobs', () => {
   it('reuses existing job for idempotent request key', async () => {
-    const supabase = createSupabaseMock({
+    const db = createDbMock({
       maybeSingleResponses: [
         {
           data: { id: 'job-existing', status: 'succeeded', attempts: 2, max_attempts: 5 },
@@ -93,7 +93,7 @@ describe('event document generation jobs', () => {
     })
 
     const result = await startEventDocumentGenerationJob({
-      supabase,
+      db,
       tenantId: 'tenant-12345',
       eventId: 'event-12345',
       requestedType: 'summary',
@@ -110,11 +110,11 @@ describe('event document generation jobs', () => {
       attempts: 2,
       maxAttempts: 5,
     })
-    assert.equal(supabase.state.insertCalls.length, 0)
+    assert.equal(db.state.insertCalls.length, 0)
   })
 
   it('creates a new generation job when no idempotent match exists', async () => {
-    const supabase = createSupabaseMock({
+    const db = createDbMock({
       singleResponses: [
         {
           data: { id: 'job-new', status: 'started', attempts: 0, max_attempts: 3 },
@@ -124,7 +124,7 @@ describe('event document generation jobs', () => {
     })
 
     const result = await startEventDocumentGenerationJob({
-      supabase,
+      db,
       tenantId: 'tenant-12345',
       eventId: 'event-12345',
       requestedType: 'all',
@@ -140,13 +140,13 @@ describe('event document generation jobs', () => {
       attempts: 0,
       maxAttempts: 3,
     })
-    assert.equal(supabase.state.insertCalls.length, 1)
-    assert.equal(supabase.state.insertCalls[0]?.table, 'event_document_generation_jobs')
-    assert.equal(supabase.state.insertCalls[0]?.payload.status, 'started')
+    assert.equal(db.state.insertCalls.length, 1)
+    assert.equal(db.state.insertCalls[0]?.table, 'event_document_generation_jobs')
+    assert.equal(db.state.insertCalls[0]?.payload.status, 'started')
   })
 
   it('falls back to existing job after unique-key race on insert', async () => {
-    const supabase = createSupabaseMock({
+    const db = createDbMock({
       maybeSingleResponses: [
         { data: null, error: null },
         {
@@ -158,7 +158,7 @@ describe('event document generation jobs', () => {
     })
 
     const result = await startEventDocumentGenerationJob({
-      supabase,
+      db,
       tenantId: 'tenant-12345',
       eventId: 'event-12345',
       requestedType: 'pack',
@@ -178,12 +178,12 @@ describe('event document generation jobs', () => {
   })
 
   it('returns null when the jobs table does not exist', async () => {
-    const supabase = createSupabaseMock({
+    const db = createDbMock({
       singleResponses: [{ data: null, error: { code: '42P01' } }],
     })
 
     const result = await startEventDocumentGenerationJob({
-      supabase,
+      db,
       tenantId: 'tenant-12345',
       eventId: 'event-12345',
       requestedType: 'summary',
@@ -195,19 +195,19 @@ describe('event document generation jobs', () => {
   })
 
   it('normalizes failure payload and clamps attempts on failed status updates', async () => {
-    const supabase = createSupabaseMock()
+    const db = createDbMock()
     const veryLongMessage = `  ${'x'.repeat(1400)}  `
 
     await markEventDocumentGenerationJobFailed({
-      supabase,
+      db,
       tenantId: 'tenant-12345',
       jobId: 'job-1',
       attempts: 3.9,
       errorMessage: veryLongMessage,
     })
 
-    assert.equal(supabase.state.updateCalls.length, 1)
-    const payload = supabase.state.updateCalls[0]?.payload ?? {}
+    assert.equal(db.state.updateCalls.length, 1)
+    const payload = db.state.updateCalls[0]?.payload ?? {}
     assert.equal(payload.status, 'failed')
     assert.equal(payload.attempts, 3)
     assert.equal(typeof payload.error_message, 'string')
@@ -215,10 +215,10 @@ describe('event document generation jobs', () => {
   })
 
   it('marks success with normalized attempt count', async () => {
-    const supabase = createSupabaseMock()
+    const db = createDbMock()
 
     await markEventDocumentGenerationJobSucceeded({
-      supabase,
+      db,
       tenantId: 'tenant-12345',
       jobId: 'job-2',
       attempts: 1.8,
@@ -228,8 +228,8 @@ describe('event document generation jobs', () => {
       metadata: {},
     })
 
-    assert.equal(supabase.state.updateCalls.length, 1)
-    const payload = supabase.state.updateCalls[0]?.payload ?? {}
+    assert.equal(db.state.updateCalls.length, 1)
+    const payload = db.state.updateCalls[0]?.payload ?? {}
     assert.equal(payload.status, 'succeeded')
     assert.equal(payload.attempts, 1)
     assert.equal(payload.result_document_type, 'summary')

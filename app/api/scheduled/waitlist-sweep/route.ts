@@ -9,7 +9,7 @@
 // Sets status to 'contacted' and records contacted_at when notified.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 // Re-notify threshold: don't notify the same waitlist entry more than once per 7 days
@@ -19,7 +19,7 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const now = new Date()
   const renotifyThreshold = new Date(
     now.getTime() - RENOTIFY_INTERVAL_DAYS * 24 * 60 * 60 * 1000
@@ -29,7 +29,7 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
   // Eligible = status is 'waiting', date is in the future, and either:
   //   (a) never been contacted, OR
   //   (b) last contacted more than RENOTIFY_INTERVAL_DAYS ago
-  const { data: entries, error: fetchError } = await supabase
+  const { data: entries, error: fetchError } = await db
     .from('waitlist_entries')
     .select(
       `
@@ -78,7 +78,7 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
 
       // Check for ANY availability block on the requested date - auto (confirmed event)
       // or manual (personal day, holiday, etc.). Either way, the date is not open.
-      const { data: block } = await supabase
+      const { data: block } = await db
         .from('chef_availability_blocks')
         .select('id')
         .eq('chef_id', entry.chef_id)
@@ -92,7 +92,7 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
       }
 
       // Date appears open - look up chef's auth_user_id to find the client's recipient id
-      const { data: clientRole } = await supabase
+      const { data: clientRole } = await db
         .from('user_roles')
         .select('auth_user_id')
         .eq('entity_id', entry.client_id!)
@@ -119,7 +119,7 @@ async function handleWaitlistSweep(request: NextRequest): Promise<NextResponse> 
       })
 
       // Mark entry as contacted to prevent immediate re-notification
-      await supabase
+      await db
         .from('waitlist_entries')
         .update({
           status: 'contacted',

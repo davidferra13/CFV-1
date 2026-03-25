@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 // ---- Types ----
@@ -51,9 +51,9 @@ export type BenchmarkAggregate = {
 
 export async function getCommunityProfile(): Promise<CommunityProfile | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('community_profiles')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -78,7 +78,7 @@ export async function updateCommunityProfile(profileData: {
   specialties?: string[]
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const trimmedName = profileData.display_name?.trim()
   if (!trimmedName || trimmedName.length > 100) {
@@ -98,7 +98,7 @@ export async function updateCommunityProfile(profileData: {
     updated_at: new Date().toISOString(),
   }
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('community_profiles')
     .upsert(payload, { onConflict: 'chef_id' })
 
@@ -119,9 +119,9 @@ export async function searchChefs(filters?: {
   acceptingReferrals?: boolean
 }): Promise<CommunityProfile[]> {
   await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('community_profiles')
     .select('*')
     .eq('is_visible', true)
@@ -151,9 +151,9 @@ export async function searchChefs(filters?: {
 
 export async function getChefProfile(chefId: string): Promise<CommunityProfile | null> {
   await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('community_profiles')
     .select('*')
     .eq('chef_id', chefId)
@@ -178,7 +178,7 @@ export async function submitBenchmark(
   period: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validMetrics = [
     'avg_event_price',
@@ -201,7 +201,7 @@ export async function submitBenchmark(
   }
 
   // Upsert: one entry per chef per metric per period
-  const { error } = await (supabase as any).from('community_benchmarks').upsert(
+  const { error } = await (db as any).from('community_benchmarks').upsert(
     {
       chef_id: user.entityId,
       metric_type: metricType,
@@ -225,10 +225,10 @@ export async function getAggregateBenchmarks(
   period?: string
 ): Promise<BenchmarkAggregate[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // "Give to get" - check if chef has contributed this metric
-  const { data: ownContribution } = await (supabase as any)
+  const { data: ownContribution } = await (db as any)
     .from('community_benchmarks')
     .select('id')
     .eq('chef_id', user.entityId)
@@ -240,7 +240,7 @@ export async function getAggregateBenchmarks(
   }
 
   // Get raw benchmark data to compute aggregates
-  let query = (supabase as any)
+  let query = (db as any)
     .from('community_benchmarks')
     .select('metric_type, value, period')
     .eq('metric_type', metricType)
@@ -289,7 +289,7 @@ export async function sendMessage(
   body: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const trimmedBody = body?.trim()
   if (!trimmedBody || trimmedBody.length > 5000) {
@@ -301,7 +301,7 @@ export async function sendMessage(
   }
 
   // Verify recipient exists and is visible
-  const { data: recipient } = await (supabase as any)
+  const { data: recipient } = await (db as any)
     .from('community_profiles')
     .select('id')
     .eq('chef_id', recipientId)
@@ -312,7 +312,7 @@ export async function sendMessage(
     return { success: false, error: 'Recipient not found' }
   }
 
-  const { error } = await (supabase as any).from('community_messages').insert({
+  const { error } = await (db as any).from('community_messages').insert({
     sender_id: user.entityId,
     recipient_id: recipientId,
     subject: subject?.trim() || null,
@@ -330,11 +330,11 @@ export async function sendMessage(
 
 export async function getMessages(folder: 'inbox' | 'sent'): Promise<CommunityMessage[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const column = folder === 'inbox' ? 'recipient_id' : 'sender_id'
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('community_messages')
     .select('*')
     .eq(column, user.entityId)
@@ -353,9 +353,9 @@ export async function markMessageRead(
   messageId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('community_messages')
     .update({ read_at: new Date().toISOString() })
     .eq('id', messageId)

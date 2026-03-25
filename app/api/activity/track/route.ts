@@ -2,7 +2,7 @@
 // Records portal activity events from authenticated users.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { trackActivity } from '@/lib/activity/track'
 import { activityTrackPayloadSchema } from '@/lib/activity/schemas'
 import { incrementMetric, logActivityEvent } from '@/lib/activity/observability'
@@ -35,16 +35,16 @@ export async function POST(request: NextRequest) {
 
     const { event_type, entity_type, entity_id, metadata } = parsed.data
 
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
     const {
       data: { user },
-    } = await supabase.auth.getUser()
+    } = await db.auth.getUser()
     if (!user) {
       incrementMetric('activity.track.unauthorized')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: role } = await supabase
+    const { data: role } = await db
       .from('user_roles')
       .select('entity_id, role')
       .eq('auth_user_id', user.id)
@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (role.role === 'client') {
-      const adminSupabase = createServerClient({ admin: true })
-      const { data: client } = await adminSupabase
+      const adminDb = createServerClient({ admin: true })
+      const { data: client } = await adminDb
         .from('clients')
         .select('id, tenant_id')
         .eq('id', role.entity_id)

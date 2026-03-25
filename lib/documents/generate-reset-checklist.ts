@@ -9,7 +9,7 @@
 // Laundry wasn't started. Receipts weren't captured. The reset is the gate.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, CONTENT_WIDTH, MARGIN_X, LETTER_WIDTH } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -47,9 +47,9 @@ const SPECIALTY_EQUIPMENT_TRIGGERS: Record<string, string[]> = {
 
 export async function fetchResetChecklistData(eventId: string): Promise<ResetChecklistData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `

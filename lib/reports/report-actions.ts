@@ -5,7 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { ReportType, ReportConfig, DateRangeFilter, ReportPeriod } from './report-definitions'
 import {
@@ -91,9 +91,9 @@ export async function generateReport(
 export async function getSavedReports(): Promise<SavedReportRow[]> {
   await requirePro('custom-reports')
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('saved_reports')
     .select('id, name, report_type, config, created_at, updated_at')
     .eq('chef_id', user.tenantId!)
@@ -113,9 +113,9 @@ export async function saveReport(
 ): Promise<{ success: true; id: string } | { success: false; error: string }> {
   await requirePro('custom-reports')
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('saved_reports')
     .insert({
       chef_id: user.tenantId!,
@@ -140,9 +140,9 @@ export async function deleteReport(
 ): Promise<{ success: true } | { success: false; error: string }> {
   await requirePro('custom-reports')
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('saved_reports')
     .delete()
     .eq('id', reportId)

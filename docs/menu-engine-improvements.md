@@ -139,12 +139,12 @@ what the client disliked.
 
 ## Migration
 
-`supabase/migrations/20260401000086_menu_engine_budget_dietary.sql` updates the JSONB column
+`database/migrations/20260401000086_menu_engine_budget_dietary.sql` updates the JSONB column
 default to include the two new feature keys. Existing rows don't need a data migration because
 `getMenuEngineFeaturesFromUnknown()` merges stored values with `DEFAULT_MENU_ENGINE_FEATURES`,
 so missing keys default to `true`.
 
-**Migration is NOT YET APPLIED.** Requires explicit `supabase db push` approval.
+**Migration is NOT YET APPLIED.** Requires explicit `drizzle-kit push` approval.
 
 ## Files Modified
 
@@ -156,4 +156,4 @@ so missing keys default to `true`.
 | `components/culinary/menu-context-sidebar.tsx`                      | D1 vendor hints, D4 empty state, D7+D8 sidebar sections, new imports and state                                    |
 | `components/settings/menu-engine-form.tsx`                          | D2 confirmation modal                                                                                             |
 | `app/(chef)/culinary/menus/[id]/page.tsx`                           | D5 settings link                                                                                                  |
-| `supabase/migrations/20260401000086_menu_engine_budget_dietary.sql` | New migration (not yet applied)                                                                                   |
+| `database/migrations/20260401000086_menu_engine_budget_dietary.sql` | New migration (not yet applied)                                                                                   |

@@ -4,9 +4,9 @@ import { NextRequest } from 'next/server'
 import { HEAD, GET } from '../../app/api/health/readiness/route'
 
 const REQUIRED_ENV_KEYS = [
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-  'SUPABASE_SERVICE_ROLE_KEY',
+  'NEXT_PUBLIC_DB_URL',
+  'NEXT_PUBLIC_DB_ANON_KEY',
+  'DB_SERVICE_ROLE_KEY',
 ] as const
 
 function withEnv(
@@ -42,9 +42,9 @@ function withEnv(
 test('GET /api/health/readiness?strict=1 returns degraded when required env is missing', async () => {
   await withEnv(
     {
-      NEXT_PUBLIC_SUPABASE_URL: undefined,
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: undefined,
-      SUPABASE_SERVICE_ROLE_KEY: undefined,
+      NEXT_PUBLIC_DB_URL: undefined,
+      NEXT_PUBLIC_DB_ANON_KEY: undefined,
+      DB_SERVICE_ROLE_KEY: undefined,
     },
     async () => {
       const response = await GET(new NextRequest('http://localhost/api/health/readiness?strict=1'))
@@ -62,9 +62,9 @@ test('GET /api/health/readiness?strict=1 returns degraded when required env is m
 test('HEAD /api/health/readiness mirrors strict degraded status and readiness headers', async () => {
   await withEnv(
     {
-      NEXT_PUBLIC_SUPABASE_URL: undefined,
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: undefined,
-      SUPABASE_SERVICE_ROLE_KEY: undefined,
+      NEXT_PUBLIC_DB_URL: undefined,
+      NEXT_PUBLIC_DB_ANON_KEY: undefined,
+      DB_SERVICE_ROLE_KEY: undefined,
     },
     async () => {
       const response = await HEAD(new NextRequest('http://localhost/api/health/readiness?strict=1'))

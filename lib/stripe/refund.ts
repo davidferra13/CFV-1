@@ -81,14 +81,14 @@ export async function createStripeRefund(
  */
 export async function getStripePaymentIntentIdForEvent(eventId: string): Promise<string | null> {
   // Import here to avoid circular deps
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase = createServerClient({ admin: true })
+  const { createServerClient } = await import('@/lib/db/server')
+  const db = createServerClient({ admin: true })
 
   // Find the most recent ledger entry with a Stripe transaction_reference (starts with 'evt_')
   // The transaction_reference on payment entries is the Stripe *event* ID (evt_xxx),
   // so we retrieve the matching charge via the charge notes.
   // Better: find entries with internal_notes containing a PaymentIntent ID.
-  const { data: entries } = await supabase
+  const { data: entries } = await db
     .from('ledger_entries')
     .select('internal_notes, transaction_reference')
     .eq('event_id', eventId)

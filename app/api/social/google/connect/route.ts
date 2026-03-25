@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,9 +20,9 @@ export async function GET(req: NextRequest) {
     }
 
     const state = crypto.randomUUID()
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
 
-    await supabase.from('social_oauth_states' as any).insert({
+    await db.from('social_oauth_states' as any).insert({
       tenant_id: chef.id,
       platform: 'google_business',
       state,

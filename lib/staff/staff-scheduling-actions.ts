@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -72,10 +72,10 @@ export async function getStaffSchedules(filters?: {
   eventId?: string
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('staff_schedules')
     .select(
       `
@@ -115,9 +115,9 @@ export async function getStaffSchedules(filters?: {
 export async function createShift(input: CreateShiftInput) {
   const user = await requireChef()
   const validated = CreateShiftSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('staff_schedules')
     .insert({
       chef_id: user.tenantId!,
@@ -154,7 +154,7 @@ export async function createShift(input: CreateShiftInput) {
 export async function updateShift(id: string, input: UpdateShiftInput) {
   const user = await requireChef()
   const validated = UpdateShiftSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build update payload, only include provided fields
   const updateData: Record<string, any> = {}
@@ -169,7 +169,7 @@ export async function updateShift(id: string, input: UpdateShiftInput) {
     updateData.hourly_rate_cents = validated.hourly_rate_cents ?? null
   if (validated.notes !== undefined) updateData.notes = validated.notes ?? null
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('staff_schedules')
     .update(updateData)
     .eq('id', id)
@@ -191,9 +191,9 @@ export async function updateShift(id: string, input: UpdateShiftInput) {
  */
 export async function deleteShift(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('staff_schedules')
     .delete()
     .eq('id', id)
@@ -214,7 +214,7 @@ export async function deleteShift(id: string) {
 export async function updateShiftStatus(id: string, status: string) {
   const user = await requireChef()
   const parsedStatus = ShiftStatuses.parse(status)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, any> = { status: parsedStatus }
 
@@ -228,7 +228,7 @@ export async function updateShiftStatus(id: string, status: string) {
     updateData.actual_end = timeStr
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('staff_schedules')
     .update(updateData)
     .eq('id', id)
@@ -261,9 +261,9 @@ export async function getStaffAvailability(
   }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('staff_availability')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -291,13 +291,13 @@ export async function getStaffAvailability(
 export async function setStaffAvailability(staffId: string, entries: AvailabilityEntry[]) {
   const user = await requireChef()
   const validated = entries.map((e) => AvailabilityEntrySchema.parse(e))
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Delete existing recurring entries (day_of_week based)
   const recurringEntries = validated.filter((e) => e.day_of_week != null && !e.specific_date)
   if (recurringEntries.length > 0) {
-    await (supabase as any)
+    await (db as any)
       .from('staff_availability')
       .delete()
       .eq('chef_id', tenantId)
@@ -308,7 +308,7 @@ export async function setStaffAvailability(staffId: string, entries: Availabilit
   // Delete existing date-specific entries that we're replacing
   const dateEntries = validated.filter((e) => e.specific_date)
   for (const entry of dateEntries) {
-    await (supabase as any)
+    await (db as any)
       .from('staff_availability')
       .delete()
       .eq('chef_id', tenantId)
@@ -329,7 +329,7 @@ export async function setStaffAvailability(staffId: string, entries: Availabilit
       notes: e.notes ?? null,
     }))
 
-    const { error } = await (supabase as any).from('staff_availability').insert(rows)
+    const { error } = await (db as any).from('staff_availability').insert(rows)
 
     if (error) {
       console.error('[setStaffAvailability] Error:', error)
@@ -350,9 +350,9 @@ export async function setStaffAvailability(staffId: string, entries: Availabilit
  */
 export async function getPayrollSummary(dateRange: { from: string; to: string }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: schedules, error } = await (supabase as any)
+  const { data: schedules, error } = await (db as any)
     .from('staff_schedules')
     .select(
       `
@@ -432,9 +432,9 @@ export async function getPayrollSummary(dateRange: { from: string; to: string })
  */
 export async function getEventStaffing(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('staff_schedules')
     .select(
       `

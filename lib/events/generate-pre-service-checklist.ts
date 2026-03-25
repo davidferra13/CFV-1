@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type ChecklistItem = {
   id: string // deterministic ID based on source
@@ -32,11 +32,11 @@ export type PreServiceChecklist = {
  */
 export async function generatePreServiceChecklist(eventId: string): Promise<PreServiceChecklist> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Fetch event with all related data
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       'id, title, event_date, start_time, end_time, guest_count, venue, venue_address, dietary_notes, notes, status, client_id'
@@ -53,21 +53,21 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
   const [clientResult, menuResult, staffResult, customItemsResult] = await Promise.all([
     // Client info (for dietary/allergy data)
     event.client_id
-      ? supabase
+      ? db
           .from('clients')
           .select('id, name, dietary_restrictions, allergies, notes')
           .eq('id', event.client_id)
           .single()
       : Promise.resolve({ data: null }),
     // Menu items for this event
-    supabase
+    db
       .from('event_menu_items')
       .select('id, menu_item:menu_items(id, name), servings, notes')
       .eq('event_id', eventId)
       .then((r: any) => r)
       .catch(() => ({ data: [] })),
     // Staff assigned
-    supabase
+    db
       .from('event_staff')
       .select('id, staff_member:staff_members(id, name, role), role_override')
       .eq('event_id', eventId)

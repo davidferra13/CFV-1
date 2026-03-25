@@ -5,8 +5,8 @@
 // Uses admin client for worker operations (no user session needed).
 // Uses server client for chef-facing operations (RLS enforced).
 
-import { createAdminClient } from '@/lib/supabase/admin'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/db/admin'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import type { Json } from '@/types/database'
@@ -39,14 +39,14 @@ async function recordQueueFailure(input: {
 }
 
 async function releaseClaimAfterIncrementFailure(input: {
-  supabase: any
+  db: any
   taskId: string
   tenantId: string
   taskType: string
   endpoint?: string | null
   errorMessage: string
 }): Promise<void> {
-  const { error: releaseError } = await input.supabase
+  const { error: releaseError } = await input.db
     .from('ai_task_queue')
     .update({
       status: 'pending' as AiTaskStatus,
@@ -99,10 +99,10 @@ export async function enqueueTask(
     }
   }
 
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Queue depth guard - prevent runaway enqueuing
-  const { count, error: depthError } = await supabase
+  const { count, error: depthError } = await db
     .from('ai_task_queue')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', input.tenantId)
@@ -128,7 +128,7 @@ export async function enqueueTask(
   // Deduplication - don't enqueue the same task type if one is already pending/processing
   // (only for scheduled/reactive tasks, not on-demand)
   if ((input.priority ?? definition.defaultPriority) < 800) {
-    const { data: existing, error: dedupeError } = await supabase
+    const { data: existing, error: dedupeError } = await db
       .from('ai_task_queue')
       .select('id')
       .eq('tenant_id', input.tenantId)
@@ -152,7 +152,7 @@ export async function enqueueTask(
     }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ai_task_queue')
     .insert({
       tenant_id: input.tenantId,
@@ -198,14 +198,14 @@ export async function enqueueTask(
  * Returns null if no tasks are ready.
  */
 export async function claimNextTask(): Promise<AiQueueItem | null> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const now = new Date().toISOString()
 
   // First, recover any hung tasks (processing for too long)
   await recoverHungTasks()
 
   // Find the highest-priority task that's due
-  const { data: candidates, error: findError } = await supabase
+  const { data: candidates, error: findError } = await db
     .from('ai_task_queue')
     .select('id')
     .eq('status', 'pending')
@@ -230,7 +230,7 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
   const taskId = candidates[0].id
 
   // Atomically claim it (CAS: only if still pending)
-  const { data: claimed, error: claimError } = await supabase
+  const { data: claimed, error: claimError } = await db
     .from('ai_task_queue')
     .update({
       status: 'processing' as AiTaskStatus,
@@ -258,7 +258,7 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
   }
 
   // Increment attempts
-  const { error: incrementError } = await supabase
+  const { error: incrementError } = await db
     .from('ai_task_queue')
     .update({ attempts: (claimed.attempts ?? 0) + 1 })
     .eq('id', taskId)
@@ -273,7 +273,7 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
       severity: 'high',
     })
     await releaseClaimAfterIncrementFailure({
-      supabase,
+      db,
       taskId,
       tenantId: claimed.tenant_id,
       taskType: claimed.task_type,
@@ -294,10 +294,10 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
  * If the task is a 'draft' tier, moves to 'awaiting_approval' instead.
  */
 export async function completeTask(taskId: string, result: Record<string, unknown>): Promise<void> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get the task to check its approval tier
-  const { data: task, error: loadError } = await supabase
+  const { data: task, error: loadError } = await db
     .from('ai_task_queue')
     .select('approval_tier, recurrence, tenant_id, task_type')
     .eq('id', taskId)
@@ -326,7 +326,7 @@ export async function completeTask(taskId: string, result: Record<string, unknow
   const finalStatus: AiTaskStatus =
     task.approval_tier === 'draft' ? 'awaiting_approval' : 'completed'
 
-  const { error: completionError } = await supabase
+  const { error: completionError } = await db
     .from('ai_task_queue')
     .update({
       status: finalStatus,
@@ -383,9 +383,9 @@ export async function completeTask(taskId: string, result: Record<string, unknow
  * If at max attempts, mark as dead and push to DLQ.
  */
 export async function failTask(taskId: string, errorMessage: string): Promise<void> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: task, error: loadError } = await supabase
+  const { data: task, error: loadError } = await db
     .from('ai_task_queue')
     .select('attempts, max_attempts, tenant_id, task_type, payload')
     .eq('id', taskId)
@@ -415,7 +415,7 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
 
   if (attempts >= task.max_attempts) {
     // Permanently failed - move to dead
-    const { error: deadError } = await supabase
+    const { error: deadError } = await db
       .from('ai_task_queue')
       .update({
         status: 'dead' as AiTaskStatus,
@@ -437,7 +437,7 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
     }
 
     // Push to DLQ for visibility
-    const { error: dlqError } = await supabase.from('dead_letter_queue').insert({
+    const { error: dlqError } = await db.from('dead_letter_queue').insert({
       tenant_id: task.tenant_id,
       job_type: `ai_queue:${task.task_type}`,
       job_id: taskId,
@@ -467,7 +467,7 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
     )
     const nextRetry = new Date(Date.now() + backoffMs)
 
-    const { error: retryError } = await supabase
+    const { error: retryError } = await db
       .from('ai_task_queue')
       .update({
         status: 'pending' as AiTaskStatus,
@@ -502,9 +502,9 @@ export async function failTask(taskId: string, errorMessage: string): Promise<vo
  */
 export async function approveTask(taskId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ai_task_queue')
     .update({
       status: 'approved' as AiTaskStatus,
@@ -527,9 +527,9 @@ export async function approveTask(taskId: string): Promise<void> {
  */
 export async function rejectTask(taskId: string, reason?: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ai_task_queue')
     .update({
       status: 'rejected' as AiTaskStatus,
@@ -556,9 +556,9 @@ export async function rejectTask(taskId: string, reason?: string): Promise<void>
  */
 export async function getTasksAwaitingApproval(): Promise<AiQueueItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('ai_task_queue')
     .select('*')
     .eq('tenant_id', user.entityId)
@@ -577,9 +577,9 @@ export async function getTaskHistory(
   statusFilter?: AiTaskStatus
 ): Promise<AiQueueItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('ai_task_queue')
     .select('*')
     .eq('tenant_id', user.entityId)
@@ -604,32 +604,32 @@ export async function getQueueStats(tenantId: string): Promise<{
   failed: number
   completedToday: number
 }> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
   const [pending, processing, awaiting, failed, completedToday] = await Promise.all([
-    supabase
+    db
       .from('ai_task_queue')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('status', 'pending'),
-    supabase
+    db
       .from('ai_task_queue')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('status', 'processing'),
-    supabase
+    db
       .from('ai_task_queue')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('status', 'awaiting_approval'),
-    supabase
+    db
       .from('ai_task_queue')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .in('status', ['failed', 'dead']),
-    supabase
+    db
       .from('ai_task_queue')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
@@ -666,7 +666,7 @@ export async function getQueueStats(tenantId: string): Promise<{
  *   - Jittered polling prevents thundering herd when both slots poll simultaneously
  */
 export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<AiQueueItem | null> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const now = new Date().toISOString()
 
   // First, recover any hung tasks
@@ -674,7 +674,7 @@ export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<A
 
   // Build query: find tasks this endpoint should handle
   // Priority: explicit target match > auto-routed tasks
-  let query = supabase
+  let query = db
     .from('ai_task_queue')
     .select('id, target_endpoint, priority')
     .eq('status', 'pending')
@@ -704,7 +704,7 @@ export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<A
   if (!taskId) return null
 
   // Atomically claim it (CAS: only if still pending)
-  const { data: claimed, error: claimError } = await supabase
+  const { data: claimed, error: claimError } = await db
     .from('ai_task_queue')
     .update({
       status: 'processing' as AiTaskStatus,
@@ -733,7 +733,7 @@ export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<A
   }
 
   // Increment attempts
-  const { error: incrementError } = await supabase
+  const { error: incrementError } = await db
     .from('ai_task_queue')
     .update({ attempts: (claimed.attempts ?? 0) + 1 })
     .eq('id', taskId)
@@ -749,7 +749,7 @@ export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<A
       context: { endpoint },
     })
     await releaseClaimAfterIncrementFailure({
-      supabase,
+      db,
       taskId,
       tenantId: claimed.tenant_id,
       taskType: claimed.task_type,
@@ -810,10 +810,10 @@ function pickBestCandidate(
  * This handles cases where the worker crashed mid-task.
  */
 async function recoverHungTasks(): Promise<void> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const cutoff = new Date(Date.now() - OLLAMA_GUARD.HUNG_TASK_TIMEOUT_MS).toISOString()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('ai_task_queue')
     .update({
       status: 'pending' as AiTaskStatus,

@@ -3,7 +3,7 @@
 
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { canonicalizeDishName } from './dish-index-constants'
 import { revalidatePath } from 'next/cache'
@@ -19,10 +19,10 @@ import { revalidatePath } from 'next/cache'
  */
 export async function indexDishesFromMenu(menuId: string, tenantId: string, userId: string) {
   await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the menu with its event info and all dishes
-  const { data: menu, error: menuError } = await supabase
+  const { data: menu, error: menuError } = await db
     .from('menus')
     .select('id, name, event_id')
     .eq('id', menuId)
@@ -40,7 +40,7 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
   let clientName: string | null = null
 
   if (menu.event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('date, event_type, client:clients(full_name)')
       .eq('id', menu.event_id)
@@ -56,7 +56,7 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
   }
 
   // Get all dishes from this menu
-  const { data: dishes, error: dishesError } = await supabase
+  const { data: dishes, error: dishesError } = await db
     .from('dishes')
     .select('id, name, course_name, description, dietary_tags')
     .eq('menu_id', menuId)
@@ -78,7 +78,7 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
 
   // Bulk-fetch all existing dish_index entries for this tenant matching any canonical name
   const canonicalNames = [...new Set(dishMeta.map((m: { canonical: string }) => m.canonical))]
-  const { data: existingEntries } = await supabase
+  const { data: existingEntries } = await db
     .from('dish_index')
     .select('id, canonical_name, course, times_served, first_served')
     .eq('tenant_id', tenantId)
@@ -115,7 +115,7 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
         updates.first_served = eventDate
       }
     }
-    await supabase.from('dish_index').update(updates).eq('id', entry.id).eq('tenant_id', tenantId)
+    await db.from('dish_index').update(updates).eq('id', entry.id).eq('tenant_id', tenantId)
   }
 
   // Batch-insert new dish index entries
@@ -133,7 +133,7 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
       last_served: eventDate,
     }))
 
-    const { data: inserted, error: insertError } = await supabase
+    const { data: inserted, error: insertError } = await db
       .from('dish_index')
       .insert(insertPayloads)
       .select('id, canonical_name, course')
@@ -175,7 +175,7 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
 
   if (appearanceInserts.length > 0) {
     try {
-      await supabase.from('dish_appearances').insert(appearanceInserts)
+      await db.from('dish_appearances').insert(appearanceInserts)
     } catch (err) {
       console.error('[dish-index-bridge] Appearance batch insert failed (non-blocking):', err)
     }
@@ -196,11 +196,11 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
  * Returns matching dishes for the chef to add to a menu.
  */
 export async function searchDishIndexForMenu(query: string, limit = 10) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const { requireChef } = await import('@/lib/auth/get-user')
   const user = await requireChef()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dish_index')
     .select('id, name, course, description, dietary_tags, times_served, is_signature')
     .eq('tenant_id', user.tenantId!)

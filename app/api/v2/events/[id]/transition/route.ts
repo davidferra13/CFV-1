@@ -51,7 +51,7 @@ export const POST = withApiAuth(
     const { to_status, metadata } = parsed.data
 
     // Get current event
-    const { data: event, error: fetchErr } = await ctx.supabase
+    const { data: event, error: fetchErr } = await ctx.db
       .from('events')
       .select('id, status, tenant_id')
       .eq('id', id)
@@ -74,7 +74,7 @@ export const POST = withApiAuth(
     }
 
     // Perform transition
-    const { data: updated, error: updateErr } = await ctx.supabase
+    const { data: updated, error: updateErr } = await ctx.db
       .from('events')
       .update({ status: to_status, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
@@ -89,7 +89,7 @@ export const POST = withApiAuth(
 
     // Log transition (non-blocking)
     try {
-      await ctx.supabase.from('event_state_transitions').insert({
+      await ctx.db.from('event_state_transitions').insert({
         tenant_id: ctx.tenantId,
         event_id: id,
         from_status: currentStatus,

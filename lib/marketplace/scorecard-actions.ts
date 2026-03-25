@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { MARKETPLACE_PLATFORMS, getMarketplacePlatform } from './platforms'
 
 const ALL_MARKETPLACE_CHANNELS = MARKETPLACE_PLATFORMS.map((p) => p.channel)
@@ -52,10 +52,10 @@ function median(values: number[]): number | null {
 export async function getMarketplaceScorecard(): Promise<MarketplaceScorecard> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. All marketplace inquiries (all time, all statuses)
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select(
       'id, channel, status, created_at, confirmed_budget_cents, converted_to_event_id, client_id'
@@ -92,7 +92,7 @@ export async function getMarketplaceScorecard(): Promise<MarketplaceScorecard> {
   const inquiryIds = allInquiries.map((i: any) => i.id)
 
   // Fetch the first non-'new' transition for each inquiry
-  const { data: transitions } = await supabase
+  const { data: transitions } = await db
     .from('inquiry_state_transitions')
     .select('inquiry_id, from_status, to_status, transitioned_at')
     .eq('tenant_id', tenantId)
@@ -161,7 +161,7 @@ export async function getMarketplaceScorecard(): Promise<MarketplaceScorecard> {
   const eventsByInquiryId = new Map<string, any>()
 
   if (eventIds.length > 0) {
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('id, inquiry_id, quoted_price_cents, status')
       .eq('tenant_id', tenantId)
@@ -193,7 +193,7 @@ export async function getMarketplaceScorecard(): Promise<MarketplaceScorecard> {
   let directConvertedClients = 0
 
   if (marketplaceClientIds.size > 0) {
-    const { data: allClientEvents } = await supabase
+    const { data: allClientEvents } = await db
       .from('events')
       .select('id, client_id')
       .eq('tenant_id', tenantId)

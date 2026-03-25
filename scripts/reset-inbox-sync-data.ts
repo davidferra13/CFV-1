@@ -4,7 +4,7 @@
 // Run:
 //   npx tsx scripts/reset-inbox-sync-data.ts
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { readFileSync } from 'fs'
 import dotenv from 'dotenv'
 

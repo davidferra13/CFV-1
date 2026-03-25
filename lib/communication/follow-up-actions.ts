@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -37,9 +37,9 @@ export async function getSequences(): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('follow_up_sequences')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -60,9 +60,9 @@ export async function getActiveSequencesForTrigger(
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('follow_up_sequences')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -90,13 +90,13 @@ export async function createSequence(input: {
   is_active?: boolean
 }): Promise<{ data: FollowUpSequence | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!input.steps || input.steps.length === 0) {
     return { data: null, error: 'Sequence must have at least one step' }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('follow_up_sequences')
     .insert({
       chef_id: user.entityId,
@@ -129,7 +129,7 @@ export async function updateSequence(
   }
 ): Promise<{ data: FollowUpSequence | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = {
     updated_at: new Date().toISOString(),
@@ -140,7 +140,7 @@ export async function updateSequence(
   if (input.steps !== undefined) updateData.steps = input.steps
   if (input.is_active !== undefined) updateData.is_active = input.is_active
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('follow_up_sequences')
     .update(updateData)
     .eq('id', id)
@@ -162,10 +162,10 @@ export async function toggleSequence(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get current state
-  const { data: current, error: fetchError } = await supabase
+  const { data: current, error: fetchError } = await db
     .from('follow_up_sequences')
     .select('is_active')
     .eq('id', id)
@@ -176,7 +176,7 @@ export async function toggleSequence(id: string): Promise<{
     return { data: null, error: 'Sequence not found' }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('follow_up_sequences')
     .update({
       is_active: !current.is_active,

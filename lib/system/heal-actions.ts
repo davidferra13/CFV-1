@@ -38,8 +38,8 @@ export async function executeHealAction(actionId: string): Promise<FixResult> {
         return resetBreaker('stripe', 'stripe', start)
       case 'reset_resend_breaker':
         return resetBreaker('resend', 'resend', start)
-      case 'reset_supabase_breaker':
-        return resetBreaker('supabase', 'database', start)
+      case 'reset_db_breaker':
+        return resetBreaker('db', 'database', start)
       case 'reset_google_maps_breaker':
         return resetBreaker('googleMaps', 'google_maps', start)
       case 'reset_spoonacular_breaker':

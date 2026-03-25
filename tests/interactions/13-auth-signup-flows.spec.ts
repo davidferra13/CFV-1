@@ -6,7 +6,7 @@
 // the public-facing auth pages.
 //
 // Note: We do NOT actually create new accounts to avoid polluting
-// the Supabase auth system. We test:
+// the Auth.js system. We test:
 //   - Pages render correctly
 //   - Forms have the correct fields
 //   - Validation works (empty submit, mismatched passwords)

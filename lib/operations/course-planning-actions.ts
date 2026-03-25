@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -46,12 +46,12 @@ export async function generateDefaultCourses(
   courseNames: string[]
 ): Promise<{ success: boolean; courses: ServiceCourse[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validated = GenerateCoursesSchema.parse({ eventId, courseNames })
 
   // Verify the event belongs to this tenant
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id')
     .eq('id', validated.eventId)
@@ -63,7 +63,7 @@ export async function generateDefaultCourses(
   }
 
   // Check if courses already exist for this event
-  const { data: existingCourses } = await supabase
+  const { data: existingCourses } = await db
     .from('service_courses')
     .select('id')
     .eq('event_id', validated.eventId)
@@ -71,7 +71,7 @@ export async function generateDefaultCourses(
 
   if (existingCourses && existingCourses.length > 0) {
     // Delete existing courses before generating new ones
-    await supabase
+    await db
       .from('service_courses')
       .delete()
       .eq('event_id', validated.eventId)
@@ -87,10 +87,7 @@ export async function generateDefaultCourses(
     notes: null,
   }))
 
-  const { data: courses, error } = await supabase
-    .from('service_courses')
-    .insert(insertPayload)
-    .select()
+  const { data: courses, error } = await db.from('service_courses').insert(insertPayload).select()
 
   if (error) {
     console.error('[generateDefaultCourses] Error:', error)
@@ -119,12 +116,12 @@ export async function generateDefaultCourses(
  */
 export async function reorderCourses(courseIds: string[]): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validated = ReorderCoursesSchema.parse({ courseIds })
 
   // Verify all courses belong to this chef
-  const { data: existingCourses, error: fetchError } = await supabase
+  const { data: existingCourses, error: fetchError } = await db
     .from('service_courses')
     .select('id, event_id')
     .eq('chef_id', user.tenantId!)
@@ -141,7 +138,7 @@ export async function reorderCourses(courseIds: string[]): Promise<{ success: bo
 
   // Update each course's course_number based on its index in the array
   const updatePromises = validated.courseIds.map((courseId, index) =>
-    supabase
+    db
       .from('service_courses')
       .update({ course_number: index + 1 })
       .eq('id', courseId)
@@ -172,11 +169,11 @@ export async function reorderCourses(courseIds: string[]): Promise<{ success: bo
  */
 export async function getEventCourses(eventId: string): Promise<ServiceCourse[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validatedEventId = z.string().uuid().parse(eventId)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('service_courses')
     .select('*')
     .eq('event_id', validatedEventId)
@@ -207,12 +204,12 @@ export async function updateCourseNotes(
   notes: string
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validatedCourseId = z.string().uuid().parse(courseId)
   const validatedNotes = z.string().max(1000).parse(notes)
 
-  const { data: course, error: fetchError } = await supabase
+  const { data: course, error: fetchError } = await db
     .from('service_courses')
     .select('event_id')
     .eq('id', validatedCourseId)
@@ -223,7 +220,7 @@ export async function updateCourseNotes(
     throw new Error('Course not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('service_courses')
     .update({ notes: validatedNotes || null })
     .eq('id', validatedCourseId)

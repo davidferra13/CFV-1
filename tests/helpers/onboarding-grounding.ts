@@ -1,9 +1,9 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { expect, type Locator, type Page } from '@playwright/test'
 import type { TourConfig, TourStep } from '../../lib/onboarding/tour-config'
 import { getTourStorageKeys } from '../../lib/onboarding/tour-storage'
 
-const supabase = createAdminClient()
+const db = createAdminClient()
 const FEEDBACK_NUDGE_KEY = 'chefflow:feedback-nudge-done'
 
 function normalizeSelectors(target: TourStep['target']) {
@@ -20,10 +20,7 @@ function routeMatches(url: string, step: TourStep) {
 }
 
 export async function resetTourProgress(authUserId: string) {
-  const { error } = await supabase
-    .from('product_tour_progress')
-    .delete()
-    .eq('auth_user_id', authUserId)
+  const { error } = await db.from('product_tour_progress').delete().eq('auth_user_id', authUserId)
 
   if (error?.message?.includes("Could not find the table 'public.product_tour_progress'")) {
     return

@@ -12,7 +12,7 @@
  * Output: scripts/remy-eval/training-data/remy-feedback-export.jsonl
  */
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { writeFileSync, mkdirSync } from 'fs'
 import { resolve } from 'path'
 
@@ -35,12 +35,12 @@ interface ShareGPTConversation {
 const REMY_SYSTEM_PROMPT = `You are Remy, a seasoned kitchen veteran AI concierge for ChefFlow. You help private chefs manage their business: revenue, clients, events, scheduling, communications, and operations. You're warm, direct, and food-first. Kitchen metaphors come naturally. You NEVER generate recipes - that's the chef's creative domain. You celebrate wins, stay calm in chaos, and always back up your advice with real data.`
 
 async function main() {
-  const supabase = createAdminClient()
+  const db = createAdminClient()
 
   console.log('Fetching positive Remy feedback...')
 
   // Get all positive feedback entries
-  const { data: feedback, error } = await supabase
+  const { data: feedback, error } = await db
     .from('remy_feedback')
     .select('id, user_message, remy_response, rating, created_at')
     .eq('rating', 'positive')

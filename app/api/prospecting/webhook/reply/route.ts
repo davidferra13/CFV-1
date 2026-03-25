@@ -18,7 +18,7 @@
 // Authentication: X-Prospecting-Key header (shared secret)
 
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { checkRateLimit } from '@/lib/rateLimit'
 
 export async function POST(request: Request) {
@@ -56,10 +56,10 @@ export async function POST(request: Request) {
   const instantlyCampaignId = payload.campaign_id as string | null
   const instantlyLeadId = payload.lead_id as string | null
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // 1. Find prospect by email
-  const { data: prospects } = await supabase
+  const { data: prospects } = await db
     .from('prospects' as any)
     .select('*')
     .eq('chef_id', tenantId)
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
 
   if (instantlyLeadId) updates.instantly_lead_id = instantlyLeadId
 
-  await supabase
+  await db
     .from('prospects' as any)
     .update(updates)
     .eq('id', prospect.id)
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
 
   // 5. Log outreach event
   try {
-    await supabase.from('prospect_outreach_log' as any).insert({
+    await db.from('prospect_outreach_log' as any).insert({
       prospect_id: prospect.id,
       chef_id: tenantId,
       outreach_type: 'response_received',
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
 
   // 6. Record stage history
   try {
-    await supabase.from('prospect_stage_history' as any).insert({
+    await db.from('prospect_stage_history' as any).insert({
       prospect_id: prospect.id,
       chef_id: tenantId,
       from_stage: prospect.pipeline_stage,
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
 
   // 7. Update campaign reply count if we can match it
   if (instantlyCampaignId) {
-    const { data: campaign } = await supabase
+    const { data: campaign } = await db
       .from('outreach_campaigns' as any)
       .select('id, reply_count')
       .eq('instantly_campaign_id', instantlyCampaignId)
@@ -145,7 +145,7 @@ export async function POST(request: Request) {
 
     if (campaign) {
       try {
-        await supabase
+        await db
           .from('outreach_campaigns' as any)
           .update({ reply_count: ((campaign as any).reply_count ?? 0) + 1 })
           .eq('id', (campaign as any).id)
@@ -172,7 +172,7 @@ export async function POST(request: Request) {
       .filter(Boolean)
       .join('\n')
 
-    const { data: inquiry, error: inquiryError } = await supabase
+    const { data: inquiry, error: inquiryError } = await db
       .from('inquiries')
       .insert({
         tenant_id: tenantId,
@@ -189,7 +189,7 @@ export async function POST(request: Request) {
       autoConverted = true
       inquiryId = inquiry.id
 
-      await supabase
+      await db
         .from('prospects' as any)
         .update({
           status: 'converted',
@@ -201,7 +201,7 @@ export async function POST(request: Request) {
         .eq('chef_id', tenantId)
 
       try {
-        await supabase.from('prospect_notes' as any).insert({
+        await db.from('prospect_notes' as any).insert({
           prospect_id: prospect.id,
           chef_id: tenantId,
           note_type: 'general',

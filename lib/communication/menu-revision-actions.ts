@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -35,9 +35,9 @@ export async function getRevisions(eventId: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_revisions')
     .select('*')
     .eq('event_id', eventId)
@@ -57,9 +57,9 @@ export async function getRevisionById(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_revisions')
     .select('*')
     .eq('id', id)
@@ -87,10 +87,10 @@ export async function createRevision(input: {
   chef_notes?: string
 }): Promise<{ data: MenuRevision | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the next version number
-  const { data: latest } = await supabase
+  const { data: latest } = await db
     .from('menu_revisions')
     .select('version')
     .eq('menu_id', input.menu_id)
@@ -101,7 +101,7 @@ export async function createRevision(input: {
 
   const nextVersion = latest ? latest.version + 1 : 1
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_revisions')
     .insert({
       menu_id: input.menu_id,
@@ -132,9 +132,9 @@ export async function approveRevision(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_revisions')
     .update({
       status: 'approved',
@@ -159,12 +159,12 @@ export async function rejectRevision(
   notes?: string
 ): Promise<{ data: MenuRevision | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = { status: 'rejected' }
   if (notes) updateData.client_notes = notes
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_revisions')
     .update(updateData)
     .eq('id', id)

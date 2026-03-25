@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type TakeAChefStats = {
   newLeads: number
@@ -43,12 +43,12 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Run all count queries in parallel for speed
     const [newRes, awaitingRes, confirmedRes, totalRes, syncRes, staleRes] = await Promise.all([
       // New leads: channel = take_a_chef, status = new
-      supabase
+      db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
@@ -56,7 +56,7 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
         .eq('status', 'new'),
 
       // Awaiting response: channel = take_a_chef, status = awaiting_chef
-      supabase
+      db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
@@ -64,7 +64,7 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
         .eq('status', 'awaiting_chef'),
 
       // Confirmed: channel = take_a_chef, status = confirmed
-      supabase
+      db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
@@ -72,21 +72,21 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
         .eq('status', 'confirmed'),
 
       // Total all time: all take_a_chef inquiries
-      supabase
+      db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
         .eq('channel', 'take_a_chef'),
 
       // Last sync time from google_connections
-      supabase
+      db
         .from('google_connections')
         .select('gmail_last_sync_at')
         .eq('chef_id', user.entityId)
         .single(),
 
       // Stale leads: new + take_a_chef + created more than 24 hours ago
-      supabase
+      db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
@@ -129,7 +129,7 @@ export async function getTakeAChefDailyStats(): Promise<TakeAChefDailyStats> {
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     const now = new Date()
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
@@ -161,7 +161,7 @@ export async function getTakeAChefDailyStats(): Promise<TakeAChefDailyStats> {
     // Run counts in parallel
     const [todayRes, yesterdayRes, weekRes, monthRes, dailyRes] = await Promise.all([
       // Today's count
-      supabase
+      db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
@@ -169,7 +169,7 @@ export async function getTakeAChefDailyStats(): Promise<TakeAChefDailyStats> {
         .gte('first_contact_at', todayStart),
 
       // Yesterday's count
-      supabase
+      db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
@@ -178,7 +178,7 @@ export async function getTakeAChefDailyStats(): Promise<TakeAChefDailyStats> {
         .lt('first_contact_at', todayStart),
 
       // This week's count
-      supabase
+      db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
@@ -186,7 +186,7 @@ export async function getTakeAChefDailyStats(): Promise<TakeAChefDailyStats> {
         .gte('first_contact_at', weekStart),
 
       // This month's count
-      supabase
+      db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
@@ -194,7 +194,7 @@ export async function getTakeAChefDailyStats(): Promise<TakeAChefDailyStats> {
         .gte('first_contact_at', monthStart),
 
       // Last 30 days - individual records for daily breakdown
-      supabase
+      db
         .from('inquiries')
         .select('first_contact_at')
         .eq('tenant_id', tenantId)
@@ -259,9 +259,9 @@ export async function getTakeAChefActionableLeads(): Promise<{
   try {
     const user = await requireChef()
     const tenantId = user.tenantId!
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data } = await supabase
+    const { data } = await db
       .from('inquiries')
       .select('id, status, created_at, external_link, unknown_fields, client:clients(full_name)')
       .eq('tenant_id', tenantId)

@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type {
   CommunicationActionSource,
   CommunicationClassificationRule,
@@ -74,8 +74,8 @@ async function logCommunicationAction(input: {
   previousState?: Record<string, unknown>
   newState?: Record<string, unknown>
 }) {
-  const supabase: any = createServerClient({ admin: true })
-  await supabase.from('communication_action_log' as any).insert({
+  const db: any = createServerClient({ admin: true })
+  await db.from('communication_action_log' as any).insert({
     tenant_id: input.tenantId,
     communication_event_id: input.communicationEventId || null,
     thread_id: input.threadId || null,
@@ -88,11 +88,11 @@ async function logCommunicationAction(input: {
 }
 
 async function resolveClientId(tenantId: string, senderIdentity: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const email = extractEmail(senderIdentity)
   if (email) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -106,7 +106,7 @@ async function resolveClientId(tenantId: string, senderIdentity: string) {
 
   const phone = extractPhone(senderIdentity)
   if (phone) {
-    const { data: clients } = await supabase
+    const { data: clients } = await db
       .from('clients')
       .select('id, phone')
       .eq('tenant_id', tenantId)
@@ -135,7 +135,7 @@ async function getOrCreateThread(input: {
   externalThreadKey?: string | null
   timestamp: string
 }) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const threadKey = buildThreadKey({
     source: input.source,
     externalThreadKey: input.externalThreadKey,
@@ -144,7 +144,7 @@ async function getOrCreateThread(input: {
   })
 
   // 1. Check for exact thread key match (same source + same thread)
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('conversation_threads' as any)
     .select('id, state')
     .eq('tenant_id', input.tenantId)
@@ -152,7 +152,7 @@ async function getOrCreateThread(input: {
     .maybeSingle()
 
   if (existing?.id) {
-    await supabase
+    await db
       .from('conversation_threads' as any)
       .update({
         last_activity_at: input.timestamp,
@@ -167,7 +167,7 @@ async function getOrCreateThread(input: {
   //    already have an active thread from ANY source. Reuse it so the same
   //    person contacting via email + TakeAChef + Instagram = one thread.
   if (input.resolvedClientId) {
-    const { data: clientThread } = await supabase
+    const { data: clientThread } = await db
       .from('conversation_threads' as any)
       .select('id, state')
       .eq('tenant_id', input.tenantId)
@@ -178,7 +178,7 @@ async function getOrCreateThread(input: {
       .maybeSingle()
 
     if (clientThread?.id) {
-      await supabase
+      await db
         .from('conversation_threads' as any)
         .update({ last_activity_at: input.timestamp })
         .eq('id', clientThread.id)
@@ -188,7 +188,7 @@ async function getOrCreateThread(input: {
   }
 
   // 3. No existing thread found - create a new one
-  const { data: created, error } = await supabase
+  const { data: created, error } = await db
     .from('conversation_threads' as any)
     .insert({
       tenant_id: input.tenantId,
@@ -202,7 +202,7 @@ async function getOrCreateThread(input: {
 
   if (error) {
     // Handle concurrent insert racing on unique thread key.
-    const { data: retry } = await supabase
+    const { data: retry } = await db
       .from('conversation_threads' as any)
       .select('id')
       .eq('tenant_id', input.tenantId)
@@ -227,10 +227,10 @@ async function applySilenceTimers(input: {
   actionSource: CommunicationActionSource
   actorId?: string | null
 }) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   if (input.direction === 'outbound') {
-    const { data: activeTimers } = await supabase
+    const { data: activeTimers } = await db
       .from('follow_up_timers' as any)
       .select('id, status, due_at, reason')
       .eq('tenant_id', input.tenantId)
@@ -238,7 +238,7 @@ async function applySilenceTimers(input: {
       .eq('status', 'active')
 
     if ((activeTimers || []).length > 0) {
-      await supabase
+      await db
         .from('follow_up_timers' as any)
         .update({ status: 'completed', completed_at: input.timestamp })
         .eq('tenant_id', input.tenantId)
@@ -260,7 +260,7 @@ async function applySilenceTimers(input: {
   }
 
   // Inbound refreshes silence follow-up timer.
-  await supabase
+  await db
     .from('follow_up_timers' as any)
     .update({ status: 'dismissed', dismissed_at: input.timestamp })
     .eq('tenant_id', input.tenantId)
@@ -270,7 +270,7 @@ async function applySilenceTimers(input: {
   const dueAt = new Date(
     new Date(input.timestamp).getTime() + DEFAULT_SILENCE_HOURS * 60 * 60 * 1000
   ).toISOString()
-  const { data: timer } = await supabase
+  const { data: timer } = await db
     .from('follow_up_timers' as any)
     .insert({
       tenant_id: input.tenantId,
@@ -304,9 +304,9 @@ async function classifyCommunication(input: {
   source: string
   direction: 'inbound' | 'outbound'
 }) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: rules } = await supabase
+  const { data: rules } = await db
     .from('communication_classification_rules' as any)
     .select('id, name, is_active, match_field, operator, match_value, label, priority')
     .eq('tenant_id', input.tenantId)
@@ -338,9 +338,9 @@ async function suggestLinks(input: {
     return
   }
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, status')
     .eq('tenant_id', input.tenantId)
@@ -349,7 +349,7 @@ async function suggestLinks(input: {
     .order('created_at', { ascending: false })
     .limit(3)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, status, event_date')
     .eq('tenant_id', input.tenantId)
@@ -381,7 +381,7 @@ async function suggestLinks(input: {
   }
 
   for (const suggestion of suggestions) {
-    const { data: exists } = await supabase
+    const { data: exists } = await db
       .from('suggested_links' as any)
       .select('id')
       .eq('tenant_id', input.tenantId)
@@ -391,7 +391,7 @@ async function suggestLinks(input: {
       .maybeSingle()
 
     if (!exists?.id) {
-      await supabase.from('suggested_links' as any).insert({
+      await db.from('suggested_links' as any).insert({
         tenant_id: input.tenantId,
         communication_event_id: input.communicationEventId,
         suggested_entity_type: suggestion.suggested_entity_type,
@@ -416,7 +416,7 @@ async function suggestLinks(input: {
 }
 
 export async function ingestCommunicationEvent(input: CommunicationEventInput) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const timestamp = input.timestamp || new Date().toISOString()
   const normalizedContent = normalizeContent(input.rawContent)
   const resolvedClientId = await resolveClientId(input.tenantId, input.senderIdentity)
@@ -432,7 +432,7 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
 
   const initialStatus = input.linkedEntityType && input.linkedEntityId ? 'linked' : 'unlinked'
 
-  const { data: event, error } = await supabase
+  const { data: event, error } = await db
     .from('communication_events' as any)
     .insert({
       tenant_id: input.tenantId,
@@ -453,7 +453,7 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
     .single()
 
   if (error?.message?.includes('uq_comm_events_external')) {
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('communication_events' as any)
       .select('id')
       .eq('tenant_id', input.tenantId)
@@ -544,9 +544,9 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
 }
 
 export async function seedDefaultCommunicationRules(tenantId: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('communication_classification_rules' as any)
     .select('id')
     .eq('tenant_id', tenantId)
@@ -556,7 +556,7 @@ export async function seedDefaultCommunicationRules(tenantId: string) {
     return
   }
 
-  await supabase.from('communication_classification_rules' as any).insert([
+  await db.from('communication_classification_rules' as any).insert([
     {
       tenant_id: tenantId,
       name: 'Urgent keyword',

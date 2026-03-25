@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -31,9 +31,9 @@ export async function addBackupContact(input: AddBackupContactInput) {
   const tenantId = chef.tenantId!
   const validated = BackupContactSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_backup_contacts')
     .insert({ ...validated, tenant_id: tenantId })
     .select()
@@ -53,9 +53,9 @@ export async function updateBackupContact(id: string, input: UpdateBackupContact
   const tenantId = chef.tenantId!
   const validated = UpdateBackupContactSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('chef_backup_contacts')
     .select('id')
     .eq('id', id)
@@ -64,7 +64,7 @@ export async function updateBackupContact(id: string, input: UpdateBackupContact
 
   if (!existing) throw new Error('Backup contact not found or access denied')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_backup_contacts')
     .update(validated)
     .eq('id', id)
@@ -86,9 +86,9 @@ export async function deactivateBackupContact(id: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('chef_backup_contacts')
     .select('id')
     .eq('id', id)
@@ -97,7 +97,7 @@ export async function deactivateBackupContact(id: string) {
 
   if (!existing) throw new Error('Backup contact not found or access denied')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_backup_contacts')
     .update({ is_active: false })
     .eq('id', id)
@@ -118,9 +118,9 @@ export async function getBackupContacts() {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_backup_contacts')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -140,9 +140,9 @@ export async function hasActiveBackupContact(): Promise<boolean> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_backup_contacts')
     .select('id')
     .eq('tenant_id', tenantId)

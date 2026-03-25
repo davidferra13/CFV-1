@@ -1,7 +1,7 @@
 // Activity tracking write utility.
 // Uses admin client and never throws (non-blocking).
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { TablesInsert } from '@/types/database'
 import type { ActorType, ActivityEventType } from './types'
 import { incrementMetric, logActivityEvent } from './observability'
@@ -18,7 +18,7 @@ export async function trackActivity(input: {
   metadata?: Record<string, unknown>
 }): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
+    const db = createServerClient({ admin: true })
 
     const payload: TablesInsert<'activity_events'> = {
       tenant_id: input.tenantId,
@@ -31,7 +31,7 @@ export async function trackActivity(input: {
       metadata: (input.metadata || {}) as TablesInsert<'activity_events'>['metadata'],
     }
 
-    const { error } = await supabase.from('activity_events').insert(payload)
+    const { error } = await db.from('activity_events').insert(payload)
     if (error) {
       incrementMetric('activity.track.failure')
       logActivityEvent('error', 'trackActivity insert failed', {

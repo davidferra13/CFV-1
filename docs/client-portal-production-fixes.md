@@ -27,7 +27,7 @@ Implementation log for all fixes identified in the Client Portal Production Revi
 
 **File:** `lib/events/client-actions.ts`
 
-- `getClientEventById()` had 7 sequential Supabase queries after the main event fetch
+- `getClientEventById()` had 7 sequential PostgreSQL queries after the main event fetch
 - Wrapped all 7 in `Promise.all` for parallel execution
 - Same data, same result shape, significantly faster page loads
 

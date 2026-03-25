@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -22,10 +22,10 @@ export type EmergencyContactInput = z.infer<typeof EmergencyContactSchema>
 
 export async function createEmergencyContact(input: EmergencyContactInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = EmergencyContactSchema.parse(input)
 
-  const { error } = await supabase.from('chef_emergency_contacts').insert({
+  const { error } = await db.from('chef_emergency_contacts').insert({
     ...data,
     chef_id: chef.id,
     email: data.email || null,
@@ -37,10 +37,10 @@ export async function createEmergencyContact(input: EmergencyContactInput) {
 
 export async function updateEmergencyContact(id: string, input: EmergencyContactInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = EmergencyContactSchema.parse(input)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_emergency_contacts')
     .update({ ...data, email: data.email || null })
     .eq('id', id)
@@ -52,9 +52,9 @@ export async function updateEmergencyContact(id: string, input: EmergencyContact
 
 export async function deleteEmergencyContact(id: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_emergency_contacts')
     .delete()
     .eq('id', id)
@@ -66,9 +66,9 @@ export async function deleteEmergencyContact(id: string) {
 
 export async function listEmergencyContacts() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_emergency_contacts')
     .select('*')
     .eq('chef_id', chef.id)
@@ -104,11 +104,11 @@ export type ContingencyNoteInput = z.infer<typeof ContingencyNoteSchema>
 
 export async function upsertContingencyNote(eventId: string, input: ContingencyNoteInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = ContingencyNoteSchema.parse(input)
 
   // Check if record already exists for this event+scenario
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('event_contingency_notes')
     .select('id')
     .eq('event_id', eventId)
@@ -117,7 +117,7 @@ export async function upsertContingencyNote(eventId: string, input: ContingencyN
     .maybeSingle()
 
   if (existing) {
-    const { error } = await supabase
+    const { error } = await db
       .from('event_contingency_notes')
       .update({
         mitigation_notes: data.mitigation_notes,
@@ -127,7 +127,7 @@ export async function upsertContingencyNote(eventId: string, input: ContingencyN
 
     if (error) throw new Error(error.message)
   } else {
-    const { error } = await supabase.from('event_contingency_notes').insert({
+    const { error } = await db.from('event_contingency_notes').insert({
       event_id: eventId,
       chef_id: chef.id,
       scenario_type: data.scenario_type,
@@ -143,9 +143,9 @@ export async function upsertContingencyNote(eventId: string, input: ContingencyN
 
 export async function deleteContingencyNote(id: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_contingency_notes')
     .delete()
     .eq('id', id)
@@ -156,9 +156,9 @@ export async function deleteContingencyNote(id: string) {
 
 export async function getEventContingencyNotes(eventId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_contingency_notes')
     .select('*, chef_emergency_contacts(name, phone, relationship)')
     .eq('event_id', eventId)

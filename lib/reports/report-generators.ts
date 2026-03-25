@@ -3,7 +3,7 @@
 // All amounts in cents. All dates as ISO strings.
 // NOT a server action file - called by report-actions.ts.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { DateRangeFilter, ReportPeriod } from './report-definitions'
 
 // ── Revenue Summary ────────────────────────────────────────────────────────
@@ -56,16 +56,16 @@ export async function generateRevenueReport(
   dateRange: DateRangeFilter,
   period: ReportPeriod = 'monthly'
 ): Promise<RevenueSummaryReport> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [ledgerResult, expensesResult] = await Promise.all([
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents, entry_type, is_refund, created_at')
       .eq('tenant_id', tenantId)
       .gte('created_at', `${dateRange.start}T00:00:00`)
       .lte('created_at', `${dateRange.end}T23:59:59`),
-    supabase
+    db
       .from('expenses')
       .select('amount_cents, expense_date, category')
       .eq('tenant_id', tenantId)
@@ -149,17 +149,17 @@ export async function generateClientReport(
   tenantId: string,
   dateRange: DateRangeFilter
 ): Promise<ClientActivityReport> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [eventsResult, ledgerResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('id, client_id, event_date, status, clients(full_name)')
       .eq('tenant_id', tenantId)
       .gte('event_date', dateRange.start)
       .lte('event_date', dateRange.end)
       .not('status', 'eq', 'cancelled'),
-    supabase
+    db
       .from('ledger_entries')
       .select('client_id, amount_cents, entry_type, is_refund')
       .eq('tenant_id', tenantId)
@@ -240,9 +240,9 @@ export async function generateEventReport(
   dateRange: DateRangeFilter,
   period: ReportPeriod = 'monthly'
 ): Promise<EventPerformanceReport> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_financial_summary')
     .select(
       'event_id, net_revenue_cents, total_expenses_cents, profit_margin, events!inner(event_date, status)'
@@ -327,9 +327,9 @@ export async function generateExpenseReport(
   dateRange: DateRangeFilter,
   period: ReportPeriod = 'monthly'
 ): Promise<ExpenseBreakdownReport> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('expenses')
     .select('amount_cents, expense_date, category')
     .eq('tenant_id', tenantId)
@@ -389,16 +389,16 @@ export async function generatePipelineReport(
   tenantId: string,
   dateRange: DateRangeFilter
 ): Promise<PipelineConversionReport> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [inquiriesResult, eventsResult] = await Promise.all([
-    supabase
+    db
       .from('inquiries')
       .select('id, source, created_at, event_id')
       .eq('tenant_id', tenantId)
       .gte('created_at', `${dateRange.start}T00:00:00`)
       .lte('created_at', `${dateRange.end}T23:59:59`),
-    supabase
+    db
       .from('events')
       .select('id, status, created_at, inquiry_id')
       .eq('tenant_id', tenantId)

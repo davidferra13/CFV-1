@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { hasProAccess } from '@/lib/billing/tier'
@@ -124,8 +124,8 @@ export async function POST(req: NextRequest) {
 
     const eventTypes = normalizeEventTypes(body.event_types ?? body.eventTypes ?? body)
 
-    const supabase = createServerClient({ admin: true })
-    const { data, error } = await supabase
+    const db = createServerClient({ admin: true })
+    const { data, error } = await db
       .from('zapier_webhook_subscriptions')
       .insert({
         tenant_id: tenantId,
@@ -152,8 +152,8 @@ export async function GET(req: NextRequest) {
   try {
     const { tenantId } = await authorizeRequest(req)
 
-    const supabase = createServerClient({ admin: true })
-    const { data, error } = await supabase
+    const db = createServerClient({ admin: true })
+    const { data, error } = await db
       .from('zapier_webhook_subscriptions')
       .select('id, target_url, event_types, is_active, created_at, updated_at')
       .eq('tenant_id', tenantId)
@@ -188,8 +188,8 @@ export async function DELETE(req: NextRequest) {
       throw new HttpError(400, 'Missing subscription id or hookUrl')
     }
 
-    const supabase = createServerClient({ admin: true })
-    let query = supabase
+    const db = createServerClient({ admin: true })
+    let query = db
       .from('zapier_webhook_subscriptions')
       .update({ is_active: false, updated_at: new Date().toISOString() })
       .eq('tenant_id', tenantId)

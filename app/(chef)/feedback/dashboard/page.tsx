@@ -4,16 +4,16 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = { title: 'Feedback Dashboard | ChefFlow' }
 
 export default async function FeedbackDashboardPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: surveys } = await supabase
+  const { data: surveys } = await db
     .from('surveys')
     .select('*, event:events(occasion, event_date), client:clients(full_name)')
     .eq('chef_id', chef.entityId)

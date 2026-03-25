@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -48,10 +48,10 @@ export async function computePerformanceScore(
 ): Promise<StaffPerformanceScore> {
   const user = await requireChef()
   z.string().uuid().parse(staffMemberId)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all assignments for this staff member
-  const { data: assignments, error: assignError } = await supabase
+  const { data: assignments, error: assignError } = await db
     .from('event_staff_assignments')
     .select('id, status, rating')
     .eq('staff_member_id', staffMemberId)
@@ -83,7 +83,7 @@ export async function computePerformanceScore(
       : 0
 
   // Fetch staff member name/role for the return value
-  const { data: staffMember, error: staffError } = await supabase
+  const { data: staffMember, error: staffError } = await db
     .from('staff_members')
     .select('name, role')
     .eq('id', staffMemberId)
@@ -95,7 +95,7 @@ export async function computePerformanceScore(
   const now = new Date().toISOString()
 
   // Upsert into performance_scores
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_performance_scores')
     .upsert(
       {
@@ -135,9 +135,9 @@ export async function computePerformanceScore(
  */
 export async function getStaffPerformanceBoard(): Promise<StaffPerformanceScore[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_performance_scores')
     .select(
       `
@@ -172,10 +172,10 @@ export async function getStaffReliabilityForEvent(
 ): Promise<StaffReliabilityInfo[]> {
   const user = await requireChef()
   z.string().uuid().parse(eventId)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get staff assigned to this event
-  const { data: assignments, error: assignError } = await supabase
+  const { data: assignments, error: assignError } = await db
     .from('event_staff_assignments')
     .select(
       `
@@ -194,7 +194,7 @@ export async function getStaffReliabilityForEvent(
   // Get performance scores for these staff members
   const staffIds = assignments.map((a: any) => a.staff_member_id)
 
-  const { data: scores, error: scoresError } = await supabase
+  const { data: scores, error: scoresError } = await db
     .from('staff_performance_scores')
     .select('*')
     .eq('chef_id', user.tenantId!)

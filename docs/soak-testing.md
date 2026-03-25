@@ -114,7 +114,7 @@ Checkpoint trend:
 
 - **Production build required** — soak tests use `next start` (not `next dev`) because the dev server's on-demand compilation and HMR overhead causes false timeouts after sustained navigation. A production build eliminates this variable, isolating real memory/DOM behavior
 - **Dedicated config** — `playwright.soak.config.ts` runs `next start` on port 3200, separate from the dev server on port 3100. This means soak tests and dev work can coexist
-- **CDP (Chrome DevTools Protocol)** is used instead of the `performance.measureUserAgentSpecificMemory()` JS API because the API requires `Cross-Origin-Opener-Policy` headers that would break Supabase auth
+- **CDP (Chrome DevTools Protocol)** is used instead of the `performance.measureUserAgentSpecificMemory()` JS API because the API requires `Cross-Origin-Opener-Policy` headers that would break PostgreSQL auth
 - **Chromium only** — CDP is not available in Firefox or WebKit. Soak tests only need one engine since they measure resource behavior, not cross-browser rendering
 - **Read-only navigation** — soak tests don't create, update, or delete data. They use `page.goto()` for deterministic routing instead of clicking links
 - **Single browser context** — the same `page` object is reused for all iterations, accumulating state exactly like a real user session

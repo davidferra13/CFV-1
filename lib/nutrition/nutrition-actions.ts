@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   searchFoods,
   getFoodDetails,
@@ -148,11 +148,11 @@ export async function calculateRecipeNutrition(recipeId: string): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   try {
     // Fetch recipe
-    const { data: recipe, error: recipeErr } = await supabase
+    const { data: recipe, error: recipeErr } = await db
       .from('recipes')
       .select('id, name, yield_quantity, yield_unit, dietary_tags')
       .eq('id', recipeId)
@@ -164,7 +164,7 @@ export async function calculateRecipeNutrition(recipeId: string): Promise<{
     }
 
     // Fetch recipe ingredients with joined ingredient details
-    const { data: recipeIngredients, error: riErr } = await supabase
+    const { data: recipeIngredients, error: riErr } = await db
       .from('recipe_ingredients')
       .select('id, ingredient_id, quantity, unit, ingredients(id, name, unknown_fields)')
       .eq('recipe_id', recipeId)
@@ -259,11 +259,11 @@ export async function saveNutritionOverride(
   data: NutrientInfo
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   try {
     // Verify recipe belongs to this chef
-    const { data: recipe, error: fetchErr } = await supabase
+    const { data: recipe, error: fetchErr } = await db
       .from('recipes')
       .select('id, unknown_fields')
       .eq('id', recipeId)
@@ -276,7 +276,7 @@ export async function saveNutritionOverride(
 
     const existingFields = (recipe.unknown_fields as Record<string, unknown>) || {}
 
-    const { error: updateErr } = await supabase
+    const { error: updateErr } = await db
       .from('recipes')
       .update({
         unknown_fields: {
@@ -314,11 +314,11 @@ export async function getMenuNutrition(menuId: string): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   try {
     // Fetch menu
-    const { data: menu, error: menuErr } = await supabase
+    const { data: menu, error: menuErr } = await db
       .from('menus')
       .select('id, name')
       .eq('id', menuId)
@@ -330,7 +330,7 @@ export async function getMenuNutrition(menuId: string): Promise<{
     }
 
     // Fetch dishes with their linked recipe IDs
-    const { data: dishes, error: dishErr } = await supabase
+    const { data: dishes, error: dishErr } = await db
       .from('dishes')
       .select('id, name, course_number, course_name, recipe_id')
       .eq('menu_id', menuId)

@@ -14,7 +14,7 @@ export const GET = withApiAuth(
     const cuisine = url.searchParams.get('cuisine')
     const q = url.searchParams.get('q')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('recipes')
       .select(
         'id, recipe_name, category, cuisine, meal_type, prep_time_minutes, cook_time_minutes, difficulty, dietary_tags, seasonal, created_at, updated_at',

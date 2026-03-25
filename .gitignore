@@ -44,11 +44,14 @@ next-env.d.ts
 .tmp-*
 tmp_*
 
-# Local file storage (replaces Supabase Storage)
+# Local file storage
 /storage/
 
-# Supabase local development (Docker temp files)
-supabase/.temp/
+# Legacy supabase directory (replaced by database/)
+supabase/
+
+# Database temp files (Docker, migrations)
+database/.temp/
 
 # PWA generated files (produced at build time by next-pwa)
 /public/sw.js
@@ -97,9 +100,9 @@ HOME-*.xml
 /pages/*.js
 /pages/*.js.map
 
-# Supabase temp type exports
-supabase-types-temp.ts
-*supabase-types-temp.ts
+# Temp type exports
+db-types-temp.ts
+*db-types-temp.ts
 
 # Ad-hoc debug scripts
 find_violations.*

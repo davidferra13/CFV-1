@@ -7,7 +7,7 @@
 import { getEventWeather, fetchForecast, type EventWeather, type DailyForecast } from './open-meteo'
 import { assessWeatherRisk, type WeatherRiskResult } from '@/lib/formulas/weather-risk'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface WeatherRequest {
   lat: number
@@ -91,9 +91,9 @@ export async function getWeatherForDateRange(
 ): Promise<Record<string, EventWeather>> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('event_date, location_lat, location_lng')
       .eq('tenant_id', user.tenantId!)
@@ -185,9 +185,9 @@ export async function getEventWeatherForecast(
 ): Promise<EventWeatherForecastResult | null> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data: event, error } = await supabase
+    const { data: event, error } = await db
       .from('events')
       .select('event_date, location_lat, location_lng, weather_exposure')
       .eq('id', eventId)

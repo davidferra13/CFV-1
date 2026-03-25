@@ -6,7 +6,7 @@
 // state was entered; falls back to updated_at if transitions aren't recorded.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // Days allowed in each state before flagged as stuck
 const STUCK_THRESHOLDS_DAYS: Record<string, number> = {
@@ -30,7 +30,7 @@ export interface StuckEvent {
 
 export async function getStuckEvents(limit = 5): Promise<StuckEvent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const activeStatuses = Object.keys(STUCK_THRESHOLDS_DAYS) as Array<
     | 'draft'
@@ -43,7 +43,7 @@ export async function getStuckEvents(limit = 5): Promise<StuckEvent[]> {
     | 'cancelled'
   >
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       `

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { randomBytes, createHmac } from 'crypto'
 import { validateWebhookUrl } from '@/lib/security/url-validation'
@@ -11,9 +11,9 @@ import type { WebhookSubscription, DeliveryLogEntry } from './types'
 
 export async function listWebhookSubscriptions(): Promise<WebhookSubscription[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('webhook_endpoints' as any)
     .select('*')
     .eq('tenant_id', user.entityId)
@@ -35,10 +35,10 @@ export async function createWebhookEndpoint(input: {
   // SECURITY: Validate URL to prevent SSRF - blocks private IPs, requires HTTPS
   const targetUrl = validateWebhookUrl(input.url).toString()
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const secret = randomBytes(32).toString('hex')
 
-  const { error } = await supabase.from('webhook_endpoints' as any).insert({
+  const { error } = await db.from('webhook_endpoints' as any).insert({
     tenant_id: user.entityId,
     url: targetUrl,
     description: input.description || null,
@@ -63,7 +63,7 @@ export async function updateWebhookEndpoint(
   }
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = {}
 
@@ -84,7 +84,7 @@ export async function updateWebhookEndpoint(
     updateData.description = input.description
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('webhook_endpoints' as any)
     .update(updateData)
     .eq('id', id)
@@ -98,9 +98,9 @@ export async function updateWebhookEndpoint(
 
 export async function deleteWebhookEndpoint(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('webhook_endpoints' as any)
     .delete()
     .eq('id', id)
@@ -119,9 +119,9 @@ export async function testWebhookEndpoint(id: string): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: endpoint, error: fetchError } = await supabase
+  const { data: endpoint, error: fetchError } = await db
     .from('webhook_endpoints' as any)
     .select('*')
     .eq('id', id)
@@ -177,7 +177,7 @@ export async function testWebhookEndpoint(id: string): Promise<{
 
   // Log the test delivery
   try {
-    await supabase.from('webhook_deliveries' as any).insert({
+    await db.from('webhook_deliveries' as any).insert({
       endpoint_id: id,
       tenant_id: user.entityId,
       event_type: 'test.ping',
@@ -202,10 +202,10 @@ export async function getWebhookDeliveryLog(
   limit = 20
 ): Promise<DeliveryLogEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the subscription belongs to this chef
-  const { data: endpoint } = await supabase
+  const { data: endpoint } = await db
     .from('webhook_endpoints' as any)
     .select('id')
     .eq('id', subscriptionId)
@@ -214,7 +214,7 @@ export async function getWebhookDeliveryLog(
 
   if (!endpoint) throw new Error('Endpoint not found')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('webhook_deliveries' as any)
     .select('*')
     .eq('endpoint_id', subscriptionId)

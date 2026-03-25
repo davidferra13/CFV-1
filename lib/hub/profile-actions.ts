@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import type { HubGuestProfile, HubGuestEventHistory } from './types'
 
@@ -30,12 +30,12 @@ export async function getOrCreateProfile(input: {
     email: input.email ?? null,
     auth_user_id: input.auth_user_id ?? input.authUserId ?? null,
   })
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // If email provided, try to find existing profile
   if (validated.email) {
     const normalized = validated.email.toLowerCase().trim()
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('hub_guest_profiles')
       .select('*')
       .eq('email_normalized', normalized)
@@ -43,7 +43,7 @@ export async function getOrCreateProfile(input: {
 
     if (existing) {
       if (validated.auth_user_id && !existing.auth_user_id) {
-        const { data: linked } = await supabase
+        const { data: linked } = await db
           .from('hub_guest_profiles')
           .update({
             auth_user_id: validated.auth_user_id,
@@ -61,7 +61,7 @@ export async function getOrCreateProfile(input: {
   }
 
   // Create new profile
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_guest_profiles')
     .insert({
       display_name: validated.display_name,
@@ -80,9 +80,9 @@ export async function getOrCreateProfile(input: {
  * Public - no auth required.
  */
 export async function getProfileByToken(profileToken: string): Promise<HubGuestProfile | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_guest_profiles')
     .select('*')
     .eq('profile_token', profileToken)
@@ -98,9 +98,9 @@ export async function getProfileByToken(profileToken: string): Promise<HubGuestP
  * Get a profile by ID.
  */
 export async function getProfileById(profileId: string): Promise<HubGuestProfile | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_guest_profiles')
     .select('*')
     .eq('id', profileId)
@@ -129,10 +129,10 @@ export async function updateProfile(
 ): Promise<HubGuestProfile> {
   const validated = UpdateProfileSchema.parse(input)
   const { profileToken, ...updates } = validated
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify token
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', profileToken)
@@ -140,7 +140,7 @@ export async function updateProfile(
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_guest_profiles')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', profile.id)
@@ -157,10 +157,10 @@ export async function updateProfile(
 export async function getProfileEventHistory(
   profileToken: string
 ): Promise<HubGuestEventHistory[]> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Get profile by token
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', profileToken)
@@ -168,7 +168,7 @@ export async function getProfileEventHistory(
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_guest_event_history')
     .select('*')
     .eq('profile_id', profile.id)
@@ -188,10 +188,10 @@ export async function upgradeGuestToClient(input: {
   authUserId: string
   clientId: string
 }): Promise<HubGuestProfile> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify profile
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('*')
     .eq('profile_token', input.profileToken)
@@ -209,7 +209,7 @@ export async function upgradeGuestToClient(input: {
     'referred_by_profile_id' in profile ? (profile.referred_by_profile_id as string | null) : null
 
   // Link profile to account
-  const { data: updated, error } = await supabase
+  const { data: updated, error } = await db
     .from('hub_guest_profiles')
     .update({
       auth_user_id: input.authUserId,
@@ -225,7 +225,7 @@ export async function upgradeGuestToClient(input: {
 
   // Copy dietary info to client if client has none
   if (knownDietary.length > 0 || knownAllergies.length > 0) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('dietary_restrictions, allergies')
       .eq('id', input.clientId)
@@ -243,7 +243,7 @@ export async function upgradeGuestToClient(input: {
         updates.allergies = knownAllergies
       }
       if (Object.keys(updates).length > 0) {
-        await supabase.from('clients').update(updates).eq('id', input.clientId)
+        await db.from('clients').update(updates).eq('id', input.clientId)
       }
     }
   }
@@ -256,7 +256,7 @@ export async function upgradeGuestToClient(input: {
     }
     if (referredByProfileId) {
       // Find the referring profile's client_id
-      const { data: referrer } = await supabase
+      const { data: referrer } = await db
         .from('hub_guest_profiles')
         .select('client_id')
         .eq('id', referredByProfileId)
@@ -266,7 +266,7 @@ export async function upgradeGuestToClient(input: {
       }
     }
     if (Object.keys(referralUpdates).length > 0) {
-      await supabase.from('clients').update(referralUpdates).eq('id', input.clientId)
+      await db.from('clients').update(referralUpdates).eq('id', input.clientId)
     }
   }
 
@@ -279,9 +279,9 @@ export async function upgradeGuestToClient(input: {
 export async function getProfileGroups(
   profileToken: string
 ): Promise<{ group_id: string; role: string; joined_at: string }[]> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', profileToken)
@@ -289,7 +289,7 @@ export async function getProfileGroups(
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('hub_group_members')
     .select('group_id, role, joined_at')
     .eq('profile_id', profile.id)

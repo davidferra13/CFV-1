@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { csvRowSafe } from '@/lib/security/csv-sanitize'
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -54,10 +54,10 @@ function buildAddress(s: {
 
 export async function generate1099NECReports(taxYear: number): Promise<Form1099NEC[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all active staff with W-9 fields
-  const { data: staff, error: staffError } = await supabase
+  const { data: staff, error: staffError } = await db
     .from('staff_members')
     .select(
       'id, name, business_name, tin, tin_type, address_street, address_city, address_state, address_zip, w9_collected'
@@ -69,7 +69,7 @@ export async function generate1099NECReports(taxYear: number): Promise<Form1099N
   if (!staff?.length) return []
 
   // Get all payments for the year
-  const { data: payments, error: payError } = await supabase
+  const { data: payments, error: payError } = await db
     .from('contractor_payments')
     .select('staff_member_id, amount_cents')
     .eq('chef_id', user.tenantId!)

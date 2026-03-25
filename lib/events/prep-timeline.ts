@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from '@/lib/documents/pdf-layout'
 
 // ---------------------------------------------------------------------------
@@ -100,10 +100,10 @@ function categorize(minutesBefore: number, isMakeAhead: boolean): PrepCategory {
 export async function generatePrepTimeline(eventId: string): Promise<PrepTimeline> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // 1. Fetch event
-  const { data: event, error: eventErr } = await supabase
+  const { data: event, error: eventErr } = await db
     .from('events')
     .select('id, event_date, serve_time, guest_count, occasion, menu_id')
     .eq('id', eventId)
@@ -127,7 +127,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   }
 
   // 2. Fetch dishes for this menu
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, course_name, course_number, name')
     .eq('menu_id', event.menu_id)
@@ -150,7 +150,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   const dishIds = dishes.map((d: any) => d.id)
 
   // 3. Fetch components with their recipes
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('id, name, dish_id, recipe_id, is_make_ahead, execution_notes, sort_order')
     .in('dish_id', dishIds)
@@ -185,7 +185,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   > = new Map()
 
   if (recipeIds.length > 0) {
-    const { data: recipes } = await supabase
+    const { data: recipes } = await db
       .from('recipes')
       .select('id, name, prep_time_minutes, cook_time_minutes, total_time_minutes')
       .in('id', recipeIds)

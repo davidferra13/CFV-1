@@ -6,7 +6,7 @@ Added per-chef pricing configuration so chefs can customize their own rates inst
 
 ## New Files
 
-- `supabase/migrations/20260401000087_chef_pricing_config.sql` - Database table with RLS, auto-update trigger, and all pricing fields with sensible defaults
+- `database/migrations/20260401000087_chef_pricing_config.sql` - Database table with RLS, auto-update trigger, and all pricing fields with sensible defaults
 - `lib/pricing/config-types.ts` - TypeScript types for PricingConfig and PricingConfigInput
 - `lib/pricing/config-actions.ts` - Server actions: getPricingConfig() (upsert pattern) and updatePricingConfig() (Zod-validated partial updates)
 - `app/(chef)/settings/pricing/page.tsx` - Settings page for pricing configuration

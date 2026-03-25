@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -39,9 +39,9 @@ const CreateContactSchema = z.object({
 
 export async function getEventContacts(eventId: string): Promise<EventContact[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_contacts')
     .select('*')
     .eq('event_id', eventId)
@@ -62,9 +62,9 @@ export async function addEventContact(
   const parsed = CreateContactSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid contact data.' }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_contacts')
     .insert({
       event_id: parsed.data.event_id,
@@ -94,7 +94,7 @@ export async function updateEventContact(
   updates: Partial<z.infer<typeof CreateContactSchema>>
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, any> = { updated_at: new Date().toISOString() }
   if (updates.contact_name) updateData.contact_name = updates.contact_name
@@ -106,7 +106,7 @@ export async function updateEventContact(
     updateData.receives_notifications = updates.receives_notifications
   if (updates.notes !== undefined) updateData.notes = updates.notes
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_contacts')
     .update(updateData)
     .eq('id', id)
@@ -124,9 +124,9 @@ export async function removeEventContact(
   id: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_contacts')
     .delete()
     .eq('id', id)

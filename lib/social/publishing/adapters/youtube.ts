@@ -44,7 +44,7 @@ export async function publishYouTube(
   const token = credential.accessToken
 
   try {
-    // Step 1: Fetch the video binary from Supabase storage
+    // Step 1: Fetch the video binary from the database storage
     const videoRes = await fetch(post.media_url)
     if (!videoRes.ok) {
       return {

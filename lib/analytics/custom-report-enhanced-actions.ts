@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 
 // --- Types ---
@@ -69,7 +69,7 @@ export async function getClientRetentionRate(
 ): Promise<ClientRetentionResult> {
   const user = await requireChef()
   await requirePro('custom-reports')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const parsed = DateRangeSchema.parse({ startDate, endDate })
   const defaults = getDefaultDateRange()
@@ -77,7 +77,7 @@ export async function getClientRetentionRate(
   const rangeEnd = parsed.endDate ?? defaults.endDate
 
   // Fetch all non-cancelled events in the date range
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('id, client_id')
     .eq('tenant_id', user.tenantId!)
@@ -135,7 +135,7 @@ export async function getRevenueBySource(
 ): Promise<RevenueBySourceResult> {
   const user = await requireChef()
   await requirePro('custom-reports')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const parsed = DateRangeSchema.parse({ startDate, endDate })
   const defaults = getDefaultDateRange()
@@ -143,7 +143,7 @@ export async function getRevenueBySource(
   const rangeEnd = parsed.endDate ?? defaults.endDate
 
   // Fetch events with client referral source
-  const { data: events, error: eventsError } = await supabase
+  const { data: events, error: eventsError } = await db
     .from('events')
     .select('id, quoted_price_cents, client:clients(referral_source)')
     .eq('tenant_id', user.tenantId!)
@@ -163,7 +163,7 @@ export async function getRevenueBySource(
 
   let paidMap = new Map<string, number>()
   if (eventIds.length > 0) {
-    const { data: summaries } = await supabase
+    const { data: summaries } = await db
       .from('event_financial_summary')
       .select('event_id, total_paid_cents')
       .eq('tenant_id', user.tenantId!)

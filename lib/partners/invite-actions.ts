@@ -6,7 +6,7 @@
 // to their showcase portal - no financial data, just pride and stats.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://cheflowhq.com'
@@ -21,10 +21,10 @@ export async function generatePartnerInvite(
 ): Promise<{ success: true; inviteUrl: string }> {
   const chef = await requireChef()
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify the partner belongs to this chef's tenant
-  const { data: rawPartner1 } = await supabase
+  const { data: rawPartner1 } = await db
     .from('referral_partners')
     .select('id, name, claimed_at')
     .eq('id', partnerId)
@@ -44,7 +44,7 @@ export async function generatePartnerInvite(
   const { randomUUID } = await import('crypto')
   const token = randomUUID()
 
-  await supabase
+  await db
     .from('referral_partners')
     .update({
       invite_token: token,
@@ -66,7 +66,7 @@ export async function generatePartnerInvite(
  * Claim a partner invite. Called from the partner signup page after
  * the chef sends the partner the invite link.
  *
- * Creates a Supabase auth user (auto-confirms email since the invite is trusted),
+ * Creates a Auth.js user (auto-confirms email since the invite is trusted),
  * links it to the referral_partners record, and inserts a user_roles row.
  *
  * Returns success or an error message to display on the form.
@@ -80,10 +80,10 @@ export async function claimPartnerInvite(
     return { error: 'Invalid invite link. Please ask your chef for a new one.' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Validate the token and ensure it hasn't been claimed
-  const { data: rawPartner2 } = await supabase
+  const { data: rawPartner2 } = await db
     .from('referral_partners')
     .select('id, name, tenant_id, invite_token, claimed_at')
     .eq('invite_token' as any, token)
@@ -101,9 +101,9 @@ export async function claimPartnerInvite(
     return { error: 'This invite has already been claimed. Try signing in instead.' }
   }
 
-  // Create the Supabase auth user
+  // Create the Auth.js user
   // email_confirm: true skips the verification email since the invite IS the trust signal
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  const { data: authData, error: authError } = await db.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
@@ -120,14 +120,14 @@ export async function claimPartnerInvite(
 
   try {
     // Insert the user_roles row marking this user as a partner
-    await supabase.from('user_roles').insert({
+    await db.from('user_roles').insert({
       auth_user_id: userId,
       role: 'partner' as any,
       entity_id: partner.id,
     })
 
     // Mark the invite as claimed
-    await supabase
+    await db
       .from('referral_partners')
       .update({
         auth_user_id: userId,
@@ -146,7 +146,7 @@ export async function claimPartnerInvite(
   } catch (err) {
     // Rollback: delete the auth user if the DB write fails
     try {
-      await supabase.auth.admin.deleteUser(userId)
+      await db.auth.admin.deleteUser(userId)
     } catch {
       // Best-effort cleanup
     }

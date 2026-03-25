@@ -10,7 +10,7 @@
 // 3. After the worker completes a recurring task, scheduler re-enqueues with next run time
 // 4. If the server restarts, scheduler catches up on anything missed
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { enqueueTask } from '@/lib/ai/queue/actions'
 import { SCHEDULED_JOBS } from './job-definitions'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
@@ -31,13 +31,10 @@ let _seeded = false
 export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: number }> {
   if (_seeded) return { seeded: 0, skipped: 0 }
 
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get all active tenants
-  const { data: tenants, error: tenantsError } = await supabase
-    .from('chefs')
-    .select('id')
-    .limit(100)
+  const { data: tenants, error: tenantsError } = await db.from('chefs').select('id').limit(100)
 
   if (tenantsError) {
     await recordSideEffectFailure({

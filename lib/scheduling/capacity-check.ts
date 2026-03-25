@@ -1,5 +1,5 @@
 // Capacity Check - Pure Computation
-// No server context, no Supabase calls.
+// No server context, no calls.
 // Can be imported in both server and client contexts.
 
 export type CapacityWarning = {

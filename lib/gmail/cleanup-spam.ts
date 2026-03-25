@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 /** Known marketing/notification domains - same list as classify.ts heuristic */
 const KNOWN_MARKETING_DOMAINS = [
@@ -44,10 +44,10 @@ const KNOWN_MARKETING_SENDERS = [
  */
 export async function cleanupExistingSpam(): Promise<{ cleaned: number; total: number }> {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get all unresolved communication events for this tenant
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('communication_events' as any)
     .select('id, sender_identity, thread_id, status')
     .eq('tenant_id', user.tenantId!)
@@ -89,7 +89,7 @@ export async function cleanupExistingSpam(): Promise<{ cleaned: number; total: n
   }
 
   // Batch resolve all spam events
-  await supabase
+  await db
     .from('communication_events' as any)
     .update({ status: 'resolved' })
     .eq('tenant_id', user.tenantId!)
@@ -97,7 +97,7 @@ export async function cleanupExistingSpam(): Promise<{ cleaned: number; total: n
 
   // Close their threads
   if (spamThreadIds.size > 0) {
-    await supabase
+    await db
       .from('conversation_threads' as any)
       .update({ state: 'closed', snoozed_until: null })
       .eq('tenant_id', user.tenantId!)

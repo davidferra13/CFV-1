@@ -1,6 +1,6 @@
 'use server'
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { isAdminPreviewActive } from '@/lib/auth/admin-preview'
 import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
@@ -19,14 +19,14 @@ export type AdminDebugState = {
 export async function getAdminDebugState(): Promise<AdminDebugState> {
   const admin = await requireAdmin()
   const previewActive = isAdminPreviewActive()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const ownerIdentity = await resolveOwnerIdentity(supabase)
+  const ownerIdentity = await resolveOwnerIdentity(db)
 
   let focusMode = false
   let enabledModules: string[] = []
 
-  const { data: chefRole } = await supabase
+  const { data: chefRole } = await db
     .from('user_roles')
     .select('entity_id')
     .eq('auth_user_id', admin.id)
@@ -34,7 +34,7 @@ export async function getAdminDebugState(): Promise<AdminDebugState> {
     .maybeSingle()
 
   if (chefRole?.entity_id) {
-    const { data: chefPrefs } = await supabase
+    const { data: chefPrefs } = await db
       .from('chef_preferences')
       .select('focus_mode, enabled_modules')
       .eq('chef_id', chefRole.entity_id)

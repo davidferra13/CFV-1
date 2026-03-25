@@ -20,7 +20,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { validateProspectingAuth } from '@/lib/prospecting/api-auth'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 const VALID_OUTREACH_TYPES = [
   'email',
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     return NextResponse.json({ error: 'Valid outreach_type required' }, { status: 400 })
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // 1. Create outreach log entry
   const logEntry: Record<string, unknown> = {
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     notes: body.notes ?? null,
   }
 
-  const { error: logError } = await supabase.from('prospect_outreach_log' as any).insert(logEntry)
+  const { error: logError } = await db.from('prospect_outreach_log' as any).insert(logEntry)
 
   if (logError) {
     console.error('[prospecting/log-outreach] Log insert error:', logError)
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   }
 
   if (Object.keys(prospectUpdates).length > 0) {
-    const { error: updateError } = await supabase
+    const { error: updateError } = await db
       .from('prospects' as any)
       .update(prospectUpdates)
       .eq('id', params.id)
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
   // 3. Record stage history if pipeline_stage changed
   if (body.pipeline_stage) {
     try {
-      await supabase.from('prospect_stage_history' as any).insert({
+      await db.from('prospect_stage_history' as any).insert({
         prospect_id: params.id,
         chef_id: auth.tenantId,
         from_stage: null, // We don't fetch current stage for API performance

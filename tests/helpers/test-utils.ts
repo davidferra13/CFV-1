@@ -12,7 +12,7 @@ export function generateUniqueEmail(): string {
 }
 
 /**
- * Generate a valid password meeting Supabase auth requirements.
+ * Generate a valid password meeting Auth.js requirements.
  */
 export function generateValidPassword(): string {
   return 'TestPassword123!'

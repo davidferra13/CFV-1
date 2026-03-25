@@ -6,7 +6,7 @@
 // Output is INSIGHT ONLY - never modifies ledger entries.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from './parse-ollama'
 import { withAiFallback } from './with-ai-fallback'
 import { identifyDeductionsFormula } from '@/lib/formulas/tax-categories'
@@ -40,12 +40,12 @@ export async function identifyMissedDeductions(
   taxYearEnd?: string
 ): Promise<TaxDeductionResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const start = taxYearStart ?? `${new Date().getFullYear()}-01-01`
   const end = taxYearEnd ?? `${new Date().getFullYear()}-12-31`
 
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('description, amount_cents, category, expense_date, notes')
     .eq('tenant_id', user.tenantId!)
@@ -57,7 +57,7 @@ export async function identifyMissedDeductions(
   const expenseList = expenses ?? []
 
   // Also check mileage logs
-  const { data: mileageLogs } = await supabase
+  const { data: mileageLogs } = await db
     .from('mileage_logs')
     .select('miles, purpose, log_date')
     .eq('tenant_id', user.tenantId!)

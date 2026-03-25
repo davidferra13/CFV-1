@@ -3,16 +3,16 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { BackupChefList } from '@/components/safety/backup-chef-list'
 
 export const metadata: Metadata = { title: 'Backup Chef Protocol | ChefFlow' }
 
 export default async function BackupChefPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contacts } = await supabase
+  const { data: contacts } = await db
     .from('chef_backup_contacts')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

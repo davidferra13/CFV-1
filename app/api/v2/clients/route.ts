@@ -37,7 +37,7 @@ export const GET = withApiAuth(
     const q = url.searchParams.get('q')
     const status = url.searchParams.get('status')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('clients')
       .select(
         'id, full_name, email, phone, status, dietary_restrictions, allergies, created_at, updated_at',
@@ -77,7 +77,7 @@ export const POST = withApiAuth(
 
     const input = parsed.data
 
-    const { data: client, error } = await ctx.supabase
+    const { data: client, error } = await ctx.db
       .from('clients')
       .insert({
         chef_id: ctx.tenantId,

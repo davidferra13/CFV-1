@@ -4,7 +4,7 @@
 // Used by the /wix-submissions/[id] detail page to fetch and retry processing.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { processWixSubmission } from '@/lib/wix/process'
 import { revalidatePath } from 'next/cache'
 
@@ -30,9 +30,9 @@ export type WixSubmissionDetail = {
 
 export async function getWixSubmission(submissionId: string): Promise<WixSubmissionDetail | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('wix_submissions')
     .select('*')
     .eq('id', submissionId)
@@ -55,10 +55,10 @@ export async function retryWixSubmission(submissionId: string): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership before retrying
-  const { data: submission } = await supabase
+  const { data: submission } = await db
     .from('wix_submissions')
     .select('id, status, processing_attempts')
     .eq('id', submissionId)

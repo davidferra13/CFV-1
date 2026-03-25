@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 
 // --- Types ---
@@ -50,10 +50,10 @@ const GetTopClientsSchema = z.object({
 export async function computeCLV(clientId: string): Promise<ClientLTV> {
   const validated = ComputeCLVSchema.parse({ clientId })
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get client info
-  const { data: client, error: clientError } = await supabase
+  const { data: client, error: clientError } = await db
     .from('clients')
     .select('id, full_name, email')
     .eq('id', validated.clientId)
@@ -65,7 +65,7 @@ export async function computeCLV(clientId: string): Promise<ClientLTV> {
   }
 
   // Get completed events for this client
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, quoted_price_cents, event_date')
     .eq('client_id', validated.clientId)
@@ -83,7 +83,7 @@ export async function computeCLV(clientId: string): Promise<ClientLTV> {
   let totalExpensesCents = 0
   if (completedEvents.length > 0) {
     const eventIds = completedEvents.map((e: any) => e.id)
-    const { data: expenses } = await supabase
+    const { data: expenses } = await db
       .from('expenses')
       .select('amount_cents')
       .eq('tenant_id', user.tenantId!)
@@ -118,10 +118,10 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
   const resultLimit = validated.limit ?? 10
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all clients
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, email')
     .eq('tenant_id', user.tenantId!)
@@ -129,14 +129,14 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
   if (!clients || clients.length === 0) return []
 
   // Get all completed events with revenue
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, client_id, quoted_price_cents, event_date')
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'completed')
 
   // Get all business expenses linked to events
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('event_id, amount_cents')
     .eq('tenant_id', user.tenantId!)
@@ -216,10 +216,10 @@ export async function getTopClientsByLTV(limit?: number): Promise<ClientLTV[]> {
  */
 export async function getRetentionCohort(): Promise<RetentionCohortRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all completed events with client_id and event_date
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, event_date')
     .eq('tenant_id', user.tenantId!)

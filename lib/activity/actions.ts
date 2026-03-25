@@ -3,7 +3,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type {
   ActivityEvent,
   ActivityQueryOptions,
@@ -37,10 +37,10 @@ function parseDaysBack(daysBack?: number): number {
 
 export async function getActiveClients(minutesWindow = 15): Promise<ActiveClient[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const since = new Date(Date.now() - minutesWindow * 60 * 1000).toISOString()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('activity_events')
     .select(
       `
@@ -87,12 +87,12 @@ export async function getActivityFeed(
   options: ActivityQueryOptions = {}
 ): Promise<ActivityQueryResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const limit = Math.max(1, Math.min(100, options.limit ?? 25))
   const daysBack = parseDaysBack(options.daysBack)
 
-  let query = supabase
+  let query = db
     .from('activity_events')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -186,13 +186,13 @@ export async function getEngagementStats(): Promise<{
   totalEventsThisWeek: number
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
-  const { data: todayData } = await supabase
+  const { data: todayData } = await db
     .from('activity_events')
     .select('client_id')
     .eq('tenant_id', user.tenantId!)
@@ -202,7 +202,7 @@ export async function getEngagementStats(): Promise<{
 
   const uniqueToday = new Set((todayData || []).map((r: any) => r.client_id).filter(Boolean))
 
-  const { data: weekData } = await supabase
+  const { data: weekData } = await db
     .from('activity_events')
     .select('client_id')
     .eq('tenant_id', user.tenantId!)
@@ -212,7 +212,7 @@ export async function getEngagementStats(): Promise<{
 
   const uniqueWeek = new Set((weekData || []).map((r: any) => r.client_id).filter(Boolean))
 
-  const { count } = await supabase
+  const { count } = await db
     .from('activity_events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -234,7 +234,7 @@ export async function getActiveClientsWithContext(
   minutesWindow = 60
 ): Promise<ActiveClientWithContext[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const activeClients = await getActiveClients(minutesWindow)
   if (activeClients.length === 0) return []
@@ -248,7 +248,7 @@ export async function getActiveClientsWithContext(
     .map((c) => c.last_entity_id!)
 
   const [recentEventsResult, eventTitlesResult] = await Promise.all([
-    supabase
+    db
       .from('activity_events')
       .select('client_id, event_type, created_at, metadata')
       .eq('tenant_id', user.tenantId!)
@@ -256,7 +256,7 @@ export async function getActiveClientsWithContext(
       .gte('created_at', since14d)
       .order('created_at', { ascending: false }),
     eventEntityIds.length > 0
-      ? supabase.from('events').select('id, occasion').in('id', eventEntityIds)
+      ? db.from('events').select('id, occasion').in('id', eventEntityIds)
       : Promise.resolve({ data: [] as { id: string; occasion: string | null }[], error: null }),
   ])
 

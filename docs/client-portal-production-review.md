@@ -35,7 +35,7 @@ Every confirmation modal in the portal is a plain `<div>` with no accessibility 
 
 **File:** `lib/hub/notification-actions.ts:44-79`
 
-`getHubUnreadCounts()` runs a `for` loop over every group membership, issuing a separate Supabase query for each to count unread messages, then another query to get group info. For a user in 10 groups, that is 20 sequential DB round-trips per page load.
+`getHubUnreadCounts()` runs a `for` loop over every group membership, issuing a separate PostgreSQL query for each to count unread messages, then another query to get group info. For a user in 10 groups, that is 20 sequential DB round-trips per page load.
 
 **Impact:** Slow page load for active hub users. Will degrade linearly as users join more groups.
 

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ============================================
 // TYPES
@@ -69,7 +69,7 @@ export type DailyOpsData = {
 
 export async function getDailyOpsData(): Promise<DailyOpsData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
   const chefId = user.tenantId!
 
@@ -82,7 +82,7 @@ export async function getDailyOpsData(): Promise<DailyOpsData> {
     templatesResult,
   ] = await Promise.allSettled([
     // All active stations
-    supabase
+    db
       .from('stations')
       .select('id, name, status')
       .eq('chef_id', chefId)
@@ -90,28 +90,28 @@ export async function getDailyOpsData(): Promise<DailyOpsData> {
       .order('display_order'),
 
     // Today's clipboard entries with component data
-    supabase
+    db
       .from('clipboard_entries')
       .select('*, station_components(id, name, par_level, shelf_life_days, unit)')
       .eq('chef_id', chefId)
       .eq('entry_date', today),
 
     // Active shifts (not checked out) with staff member names
-    supabase
+    db
       .from('shift_logs')
       .select('*, staff_members(name)')
       .eq('chef_id', chefId)
       .is('check_out_at', null),
 
     // Today's tasks with staff assignment
-    supabase
+    db
       .from('tasks')
       .select('id, title, status, priority, due_date, due_time, assigned_to, staff_members(name)')
       .eq('chef_id', chefId)
       .eq('due_date', today),
 
     // Pending orders with component and station info
-    supabase
+    db
       .from('order_requests')
       .select('*, station_components(name, unit), stations(name)')
       .eq('chef_id', chefId)
@@ -119,7 +119,7 @@ export async function getDailyOpsData(): Promise<DailyOpsData> {
       .order('quantity', { ascending: false }),
 
     // First opening template (for Generate Tasks button)
-    supabase
+    db
       .from('task_templates')
       .select('id, name, category')
       .eq('chef_id', chefId)

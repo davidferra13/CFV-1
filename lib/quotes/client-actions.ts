@@ -4,8 +4,8 @@
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient } from '@/lib/db/server'
+import { createAdminClient } from '@/lib/db/admin'
 import { revalidatePath } from 'next/cache'
 import { pushToDLQ } from '@/lib/resilience/retry'
 
@@ -15,9 +15,9 @@ import { pushToDLQ } from '@/lib/resilience/retry'
 
 export async function getClientQuotes() {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: quotes, error } = await supabase
+  const { data: quotes, error } = await db
     .from('quotes')
     .select(
       `
@@ -43,9 +43,9 @@ export async function getClientQuotes() {
 
 export async function getClientQuoteById(quoteId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: quote, error } = await supabase
+  const { data: quote, error } = await db
     .from('quotes')
     .select(
       `
@@ -78,9 +78,9 @@ export async function getClientQuoteById(quoteId: string) {
  */
 export async function acceptQuote(quoteId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: response, error: responseError } = await supabase.rpc('respond_to_quote_atomic', {
+  const { data: response, error: responseError } = await db.rpc('respond_to_quote_atomic', {
     p_quote_id: quoteId,
     p_client_id: user.entityId,
     p_new_status: 'accepted',
@@ -176,9 +176,9 @@ export async function acceptQuote(quoteId: string) {
 
 export async function rejectQuote(quoteId: string, reason?: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: response, error: responseError } = await supabase.rpc('respond_to_quote_atomic', {
+  const { data: response, error: responseError } = await db.rpc('respond_to_quote_atomic', {
     p_quote_id: quoteId,
     p_client_id: user.entityId,
     p_new_status: 'rejected',
@@ -272,12 +272,8 @@ async function notifyChefOfQuoteAccepted(
   if (!chefUserId) return
 
   // Load client name
-  const supabase: any = createAdminClient()
-  const { data: client } = await supabase
-    .from('clients')
-    .select('full_name')
-    .eq('id', clientId)
-    .single()
+  const db: any = createAdminClient()
+  const { data: client } = await db.from('clients').select('full_name').eq('id', clientId).single()
   const clientName = client?.full_name ?? 'A client'
 
   const quoteName = quote.quote_name || 'Quote'
@@ -337,12 +333,8 @@ async function notifyChefOfQuoteRejected(
   if (!chefUserId) return
 
   // Load client name
-  const supabase: any = createAdminClient()
-  const { data: client } = await supabase
-    .from('clients')
-    .select('full_name')
-    .eq('id', clientId)
-    .single()
+  const db: any = createAdminClient()
+  const { data: client } = await db.from('clients').select('full_name').eq('id', clientId).single()
   const clientName = client?.full_name ?? 'A client'
 
   const quoteName = quote.quote_name || 'Quote'

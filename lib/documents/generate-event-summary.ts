@@ -5,7 +5,7 @@
 // MUST fit on ONE page - no exceptions.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout, MARGIN_X, CONTENT_WIDTH, LETTER_WIDTH } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 import type { jsPDF } from 'jspdf'
@@ -125,10 +125,10 @@ export type EventSummaryData = {
 // ─── Data Fetcher ─────────────────────────────────────────────────────────────
 export async function fetchEventSummaryData(eventId: string): Promise<EventSummaryData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Core event + client
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -154,20 +154,20 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
 
   // Parallel: guests, ledger, transitions
   const [guestsResult, ledgerResult, transitionsResult] = await Promise.all([
-    supabase
+    db
       .from('event_guests')
       .select('full_name, allergies, dietary_restrictions, notes')
       .eq('event_id', eventId)
       .eq('tenant_id', user.tenantId!),
 
-    supabase
+    db
       .from('ledger_entries')
       .select('entry_type, amount_cents, description, received_at, payment_method')
       .eq('event_id', eventId)
       .eq('tenant_id', user.tenantId!)
       .order('created_at', { ascending: true }),
 
-    supabase
+    db
       .from('event_state_transitions')
       .select('from_status, to_status, transitioned_at, reason')
       .eq('event_id', eventId)
@@ -176,7 +176,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
   ])
 
   // Menu → dishes → components (optional - gracefully absent)
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -190,7 +190,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
   if (menus && menus.length > 0) {
     const menuId = menus[0].id
 
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('id, course_name, course_number, description, allergen_flags, sort_order')
       .eq('menu_id', menuId)
@@ -200,7 +200,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
 
     if (dishes && dishes.length > 0) {
       const dishIds = dishes.map((d: any) => d.id)
-      const { data: components } = await supabase
+      const { data: components } = await db
         .from('components')
         .select('dish_id, name, category, execution_notes, sort_order')
         .in('dish_id', dishIds)

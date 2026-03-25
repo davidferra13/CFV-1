@@ -40,7 +40,7 @@ export const GET = withApiAuth(
     const q = url.searchParams.get('q')
     const activeOnly = url.searchParams.get('active_only') !== 'false'
 
-    let query = (ctx.supabase as any)
+    let query = (ctx.db as any)
       .from('staff_members')
       .select('*', { count: 'exact' })
       .eq('chef_id', ctx.tenantId)
@@ -79,7 +79,7 @@ export const POST = withApiAuth(
     const parsed = CreateStaffBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('staff_members')
       .insert({
         ...parsed.data,

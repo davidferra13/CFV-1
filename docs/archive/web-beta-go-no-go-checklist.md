@@ -35,7 +35,7 @@ If any one of the three is red, the decision is `NO-GO`.
 ### Environment And Auth
 
 - Beta `.env.local` matches the beta domain and services.
-- Supabase redirects, Google OAuth callbacks, and Stripe settings are correct for beta.
+- PostgreSQL redirects, Google OAuth callbacks, and Stripe settings are correct for beta.
 
 ### Health And Observability
 

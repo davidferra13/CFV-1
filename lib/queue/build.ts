@@ -22,7 +22,7 @@ import { getContactQueueItems } from './providers/contact'
  * - Items merged, deduplicated by id, sorted by score descending
  */
 export async function buildPriorityQueue(
-  supabase: any,
+  db: any,
   tenantId: string,
   workSurface: DashboardWorkSurface
 ): Promise<PriorityQueue> {
@@ -55,14 +55,14 @@ export async function buildPriorityQueue(
     culinaryItems,
     contactItems,
   ] = await Promise.all([
-    safeProvider('inquiry', () => getInquiryQueueItems(supabase, tenantId)),
-    safeProvider('message', () => getMessageQueueItems(supabase, tenantId)),
-    safeProvider('quote', () => getQuoteQueueItems(supabase, tenantId)),
-    safeProvider('financial', () => getFinancialQueueItems(supabase, tenantId)),
-    safeProvider('post_event', () => getPostEventQueueItems(supabase, tenantId)),
-    safeProvider('client', () => getClientQueueItems(supabase, tenantId)),
-    safeProvider('culinary', () => getCulinaryQueueItems(supabase, tenantId)),
-    safeProvider('contact', () => getContactQueueItems(supabase, tenantId)),
+    safeProvider('inquiry', () => getInquiryQueueItems(db, tenantId)),
+    safeProvider('message', () => getMessageQueueItems(db, tenantId)),
+    safeProvider('quote', () => getQuoteQueueItems(db, tenantId)),
+    safeProvider('financial', () => getFinancialQueueItems(db, tenantId)),
+    safeProvider('post_event', () => getPostEventQueueItems(db, tenantId)),
+    safeProvider('client', () => getClientQueueItems(db, tenantId)),
+    safeProvider('culinary', () => getCulinaryQueueItems(db, tenantId)),
+    safeProvider('contact', () => getContactQueueItems(db, tenantId)),
   ])
 
   // Merge all items

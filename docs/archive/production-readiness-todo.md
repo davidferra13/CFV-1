@@ -239,7 +239,7 @@ For each: either finish it or remove it from the UI. No broken buttons in produc
   - No coverage thresholds enforced
   - Add coverage to CI, set minimum threshold (start at 40%, increase over time)
 - [ ] **Add unit-level mocking capability** [L]
-  - Currently no way to test Stripe API timeouts, Supabase RLS violations without real services
+  - Currently no way to test Stripe API timeouts, PostgreSQL RLS violations without real services
   - Consider adding `vitest` or a thin mock layer for isolation tests
 - [ ] **Create test strategy documentation** [M]
   - No master guide explaining what to test and how
@@ -265,8 +265,8 @@ For each: either finish it or remove it from the UI. No broken buttons in produc
 
 - [ ] **Prepare production `.env.local`** [M]
   - All required vars documented in `.env.example`
-  - Critical: Supabase URL/keys, Stripe keys, Resend API key, Google OAuth, CRON_SECRET
-- [ ] **Configure Supabase auth callback URLs for `app.cheflowhq.com`** [S]
+  - Critical: PostgreSQL URL/keys, Stripe keys, Resend API key, Google OAuth, CRON_SECRET
+- [ ] **Configure PostgreSQL auth callback URLs for `app.cheflowhq.com`** [S]
 - [ ] **Configure Google OAuth callback for production domain** [S]
 - [ ] **Configure Stripe webhook endpoint for production** [S]
 - [ ] **Rotate CRON_SECRET for production** [S]
@@ -275,7 +275,7 @@ For each: either finish it or remove it from the UI. No broken buttons in produc
 
 ### 5.2 Database Production Setup
 
-- [ ] **Create production Supabase project (separate from dev/beta)** [M]
+- [ ] **Create production the database project (separate from dev/beta)** [M]
   - Beta currently shares dev database
 - [ ] **Run all migrations on production database** [M]
 - [ ] **Configure database connection pooling** [S]

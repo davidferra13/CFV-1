@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import { getCircleForContext, getCircleForEvent } from './circle-lookup'
 import type { HubNotificationType } from './types'
@@ -26,10 +26,10 @@ export async function postGuestCountUpdate(
   input: z.infer<typeof GuestCountSchema>
 ): Promise<{ success: boolean }> {
   const validated = GuestCountSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Resolve profile
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', validated.profileToken)
@@ -38,7 +38,7 @@ export async function postGuestCountUpdate(
   if (!profile) throw new Error('Invalid profile token')
 
   // Verify membership
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('can_post')
     .eq('group_id', validated.groupId)
@@ -48,7 +48,7 @@ export async function postGuestCountUpdate(
   if (!membership?.can_post) throw new Error('Not authorized to post')
 
   // Get current guest count for the notification card
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('guest_count')
     .eq('id', validated.eventId)
@@ -60,7 +60,7 @@ export async function postGuestCountUpdate(
   let body = `Guest count updated to ${validated.newCount}.`
   if (validated.note) body += ` Note: ${validated.note}`
 
-  await supabase.from('hub_messages').insert({
+  await db.from('hub_messages').insert({
     group_id: validated.groupId,
     author_profile_id: profile.id,
     message_type: 'notification',
@@ -104,10 +104,10 @@ export async function postDietaryUpdate(
   input: z.infer<typeof DietaryUpdateSchema>
 ): Promise<{ success: boolean }> {
   const validated = DietaryUpdateSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Resolve profile
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', validated.profileToken)
@@ -116,7 +116,7 @@ export async function postDietaryUpdate(
   if (!profile) throw new Error('Invalid profile token')
 
   // Verify membership
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('can_post')
     .eq('group_id', validated.groupId)
@@ -137,7 +137,7 @@ export async function postDietaryUpdate(
 
   const body = parts.join(' ')
 
-  await supabase.from('hub_messages').insert({
+  await db.from('hub_messages').insert({
     group_id: validated.groupId,
     author_profile_id: profile.id,
     message_type: 'notification',
@@ -179,9 +179,9 @@ export async function postRunningLate(
   input: z.infer<typeof RunningLateSchema>
 ): Promise<{ success: boolean }> {
   const validated = RunningLateSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id, display_name')
     .eq('profile_token', validated.profileToken)
@@ -189,7 +189,7 @@ export async function postRunningLate(
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('can_post')
     .eq('group_id', validated.groupId)
@@ -202,7 +202,7 @@ export async function postRunningLate(
     ? validated.message
     : `Running about ${validated.etaMinutes} minutes late. Sorry for the delay!`
 
-  await supabase.from('hub_messages').insert({
+  await db.from('hub_messages').insert({
     group_id: validated.groupId,
     author_profile_id: profile.id,
     message_type: 'notification',
@@ -245,9 +245,9 @@ export async function postRepeatBookingRequest(
   input: z.infer<typeof RepeatBookingSchema>
 ): Promise<{ success: boolean }> {
   const validated = RepeatBookingSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id, display_name')
     .eq('profile_token', validated.profileToken)
@@ -255,7 +255,7 @@ export async function postRepeatBookingRequest(
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('can_post')
     .eq('group_id', validated.groupId)
@@ -272,7 +272,7 @@ export async function postRepeatBookingRequest(
 
   const body = parts.join(' ')
 
-  await supabase.from('hub_messages').insert({
+  await db.from('hub_messages').insert({
     group_id: validated.groupId,
     author_profile_id: profile.id,
     message_type: 'notification',

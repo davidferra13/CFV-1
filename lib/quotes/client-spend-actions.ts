@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface ClientSpendSummary {
   totalSpentCents: number
@@ -18,10 +18,10 @@ export async function getClientSpendSummary(clientId: string): Promise<ClientSpe
   if (!clientId) return null
 
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Get completed events for this client with financial data
-  const { data: events, error: eventsError } = await supabase
+  const { data: events, error: eventsError } = await db
     .from('events')
     .select('id, event_date, quoted_price_cents, status')
     .eq('tenant_id', user.tenantId!)
@@ -40,7 +40,7 @@ export async function getClientSpendSummary(clientId: string): Promise<ClientSpe
   const eventIds = events.map((e: any) => e.id)
 
   // Get actual paid amounts from financial summary view
-  const { data: financials, error: finError } = await supabase
+  const { data: financials, error: finError } = await db
     .from('event_financial_summary')
     .select('event_id, total_paid_cents')
     .eq('tenant_id', user.tenantId!)

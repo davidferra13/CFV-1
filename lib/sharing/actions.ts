@@ -6,7 +6,7 @@
 'use server'
 
 import { requireChef, requireClient, getCurrentUser } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import crypto from 'crypto'
@@ -301,7 +301,7 @@ async function verifyCaptchaIfProvided(token?: string, ipHint?: string) {
 }
 
 async function trackInviteEvent(params: {
-  supabase: any
+  db: any
   tenantId: string
   eventId: string
   inviteId?: string | null
@@ -315,7 +315,7 @@ async function trackInviteEvent(params: {
     | 'revoked'
   metadata?: Record<string, unknown>
 }) {
-  await ((params.supabase as any).from('event_share_invite_events').insert({
+  await ((params.db as any).from('event_share_invite_events').insert({
     tenant_id: params.tenantId,
     event_id: params.eventId,
     invite_id: params.inviteId || null,
@@ -325,13 +325,13 @@ async function trackInviteEvent(params: {
 }
 
 async function syncGuestDietaryItems(params: {
-  supabase: any
+  db: any
   tenantId: string
   eventId: string
   guestId: string
   items: StructuredDietaryItem[]
 }) {
-  await ((params.supabase as any)
+  await ((params.db as any)
     .from('event_guest_dietary_items')
     .delete()
     .eq('guest_id', params.guestId) as any)
@@ -349,11 +349,11 @@ async function syncGuestDietaryItems(params: {
     notes: item.notes || null,
   }))
 
-  await ((params.supabase as any).from('event_guest_dietary_items').insert(payload) as any)
+  await ((params.db as any).from('event_guest_dietary_items').insert(payload) as any)
 }
 
 async function logRsvpAudit(params: {
-  supabase: any
+  db: any
   tenantId: string
   eventId: string
   guestId: string
@@ -369,7 +369,7 @@ async function logRsvpAudit(params: {
     params.afterValues || null,
     params.dietaryItems
   )
-  await ((params.supabase as any).from('event_guest_rsvp_audit').insert({
+  await ((params.db as any).from('event_guest_rsvp_audit').insert({
     tenant_id: params.tenantId,
     event_id: params.eventId,
     guest_id: params.guestId,
@@ -403,7 +403,7 @@ async function logRsvpAudit(params: {
 }
 
 async function getCapacityDecision(params: {
-  supabase: any
+  db: any
   shareId: string
   shareEventId: string
   enforceCapacity: boolean
@@ -414,7 +414,7 @@ async function getCapacityDecision(params: {
   excludeGuestId?: string | null
 }) {
   const capacityLimit = params.maxCapacity || params.fallbackCapacity || null
-  let query = params.supabase
+  let query = params.db
     .from('event_guests')
     .select('*', { count: 'exact', head: true })
     .eq('event_share_id', params.shareId)
@@ -447,10 +447,10 @@ async function getCapacityDecision(params: {
  */
 export async function createEventShare(eventId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client owns this event
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, tenant_id, client_id')
     .eq('id', eventId)
@@ -462,7 +462,7 @@ export async function createEventShare(eventId: string) {
   }
 
   // Check for existing active share
-  const { data: existingShare } = await supabase
+  const { data: existingShare } = await db
     .from('event_shares')
     .select('id, token, is_active, visibility_settings')
     .eq('event_id', eventId)
@@ -492,7 +492,7 @@ export async function createEventShare(eventId: string) {
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + 90)
 
-  const { data: share, error } = await supabase
+  const { data: share, error } = await db
     .from('event_shares')
     .insert({
       tenant_id: event.tenant_id,
@@ -528,9 +528,9 @@ export async function createEventShare(eventId: string) {
  */
 export async function revokeEventShare(eventShareId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_shares')
     .update({ is_active: false })
     .eq('id', eventShareId)
@@ -553,10 +553,10 @@ export async function addGuestManually(input: z.infer<typeof AddGuestManuallySch
   const user = await requireClient()
   const validated = AddGuestManuallySchema.parse(input)
   const normalizedEmail = validated.email ? validated.email.toLowerCase().trim() : null
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client owns this event
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id')
     .eq('id', validated.eventId)
@@ -568,7 +568,7 @@ export async function addGuestManually(input: z.infer<typeof AddGuestManuallySch
   }
 
   // Get or create active share for this event
-  let { data: share } = await supabase
+  let { data: share } = await db
     .from('event_shares')
     .select('id')
     .eq('event_id', validated.eventId)
@@ -584,7 +584,7 @@ export async function addGuestManually(input: z.infer<typeof AddGuestManuallySch
 
   const guestToken = crypto.randomBytes(32).toString('hex')
 
-  const { data: guest, error } = await supabase
+  const { data: guest, error } = await db
     .from('event_guests')
     .insert({
       tenant_id: event.tenant_id,
@@ -619,9 +619,9 @@ export async function createViewerInviteForEvent(
   const normalizedInvitedEmail = validated.invited_email
     ? validated.invited_email.toLowerCase().trim()
     : null
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id, event_date')
     .eq('id', validated.eventId)
@@ -632,7 +632,7 @@ export async function createViewerInviteForEvent(
     throw new Error('Event not found or access denied')
   }
 
-  const { data: shareData } = await supabase
+  const { data: shareData } = await db
     .from('event_shares')
     .select('id, token, expires_at')
     .eq('event_id', validated.eventId)
@@ -654,7 +654,7 @@ export async function createViewerInviteForEvent(
   const viewerToken = crypto.randomBytes(32).toString('hex')
   const expiresAt = parseInviteExpiry(event.event_date, share.expires_at)
 
-  const { data: invite, error: inviteError } = await (supabase
+  const { data: invite, error: inviteError } = await (db
     .from('event_share_invites' as any)
     .insert({
       tenant_id: event.tenant_id,
@@ -700,9 +700,9 @@ export async function updateEventShareAdvancedSettings(
 ) {
   const user = await requireClient()
   const validated = UpdateEventShareAdvancedSettingsSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: share } = await supabase
+  const { data: share } = await db
     .from('event_shares')
     .select('id, event_id')
     .eq('id', validated.eventShareId)
@@ -712,7 +712,7 @@ export async function updateEventShareAdvancedSettings(
     throw new Error('Share not found')
   }
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id')
     .eq('id', share.event_id)
@@ -738,10 +738,7 @@ export async function updateEventShareAdvancedSettings(
     payload.waitlist_enabled = validated.waitlist_enabled
   if (validated.max_capacity !== undefined) payload.max_capacity = validated.max_capacity
 
-  const { error } = await supabase
-    .from('event_shares')
-    .update(payload)
-    .eq('id', validated.eventShareId)
+  const { error } = await db.from('event_shares').update(payload).eq('id', validated.eventShareId)
   if (error) {
     console.error('[updateEventShareAdvancedSettings] Error:', error)
     throw new Error('Failed to update RSVP settings')
@@ -762,10 +759,10 @@ export async function updateEventShareAdvancedSettings(
 export async function updateGuestVisibility(eventShareId: string, settings: VisibilitySettings) {
   const user = await requireChef()
   const validated = VisibilitySettingsSchema.parse(settings)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current settings and merge (partial update)
-  const { data: share } = await supabase
+  const { data: share } = await db
     .from('event_shares')
     .select('visibility_settings')
     .eq('id', eventShareId)
@@ -779,7 +776,7 @@ export async function updateGuestVisibility(eventShareId: string, settings: Visi
   const currentSettings = (share.visibility_settings || {}) as Record<string, boolean>
   const merged = { ...currentSettings, ...validated }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_shares')
     .update({ visibility_settings: merged })
     .eq('id', eventShareId)
@@ -799,10 +796,10 @@ async function getEventForUserAccess(
   user: Awaited<ReturnType<typeof getCurrentUser>>
 ) {
   if (!user) throw new Error('Authentication required')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (user.role === 'chef') {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('id, tenant_id, client_id, guest_count, occasion, event_date')
       .eq('id', eventId)
@@ -812,7 +809,7 @@ async function getEventForUserAccess(
     return event
   }
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id, client_id, guest_count, occasion, event_date')
     .eq('id', eventId)
@@ -829,10 +826,10 @@ export async function getEventGuests(eventId: string) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build query based on role
-  let query = supabase
+  let query = db
     .from('event_guests')
     .select('*')
     .eq('event_id', eventId)
@@ -842,7 +839,7 @@ export async function getEventGuests(eventId: string) {
     query = query.eq('tenant_id', user.tenantId!)
   } else {
     // Client -- verify they own the event
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('id')
       .eq('id', eventId)
@@ -870,11 +867,11 @@ export async function getEventRSVPSummary(eventId: string) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify access
   if (user.role === 'chef') {
-    const { data } = await supabase
+    const { data } = await db
       .from('events')
       .select('id')
       .eq('id', eventId)
@@ -882,7 +879,7 @@ export async function getEventRSVPSummary(eventId: string) {
       .single()
     if (!data) throw new Error('Event not found')
   } else {
-    const { data } = await supabase
+    const { data } = await db
       .from('events')
       .select('id')
       .eq('id', eventId)
@@ -891,7 +888,7 @@ export async function getEventRSVPSummary(eventId: string) {
     if (!data) throw new Error('Event not found')
   }
 
-  const { data: summary, error } = await supabase
+  const { data: summary, error } = await db
     .from('event_rsvp_summary')
     .select('*')
     .eq('event_id', eventId)
@@ -926,9 +923,9 @@ export async function getEventShares(eventId: string) {
   const user = await getCurrentUser()
   if (!user) throw new Error('Authentication required')
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase.from('event_shares').select('*').eq('event_id', eventId)
+  let query = db.from('event_shares').select('*').eq('event_id', eventId)
 
   if (user.role === 'chef') {
     query = query.eq('tenant_id', user.tenantId!)
@@ -950,8 +947,8 @@ export async function getEventJoinRequests(eventId: string) {
   const user = await getCurrentUser()
   await getEventForUserAccess(eventId, user)
 
-  const supabase = createServerClient({ admin: true })
-  const { data, error } = await ((supabase as any)
+  const db = createServerClient({ admin: true })
+  const { data, error } = await ((db as any)
     .from('event_join_requests')
     .select('*')
     .eq('event_id', eventId)
@@ -968,9 +965,9 @@ export async function getEventJoinRequests(eventId: string) {
 export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinRequestSchema>) {
   const user = await requireClient()
   const validated = ResolveJoinRequestSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: request } = await ((supabase as any)
+  const { data: request } = await ((db as any)
     .from('event_join_requests')
     .select('*')
     .eq('id', validated.requestId)
@@ -979,7 +976,7 @@ export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinR
   if (!request) throw new Error('Join request not found')
   if (request.status !== 'pending') throw new Error('This join request has already been resolved')
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id, client_id')
     .eq('id', request.event_id)
@@ -989,7 +986,7 @@ export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinR
   if (!event) throw new Error('Access denied')
 
   if (validated.decision === 'deny') {
-    await ((supabase as any)
+    await ((db as any)
       .from('event_join_requests')
       .update({
         status: 'denied',
@@ -1000,7 +997,7 @@ export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinR
       .eq('id', request.id) as any)
 
     await trackInviteEvent({
-      supabase,
+      db,
       tenantId: request.tenant_id,
       eventId: request.event_id,
       inviteId: request.invite_id || null,
@@ -1012,7 +1009,7 @@ export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinR
   }
 
   const normalizedEmail = String(request.viewer_email).toLowerCase().trim()
-  const { data: existingGuest } = await supabase
+  const { data: existingGuest } = await db
     .from('event_guests')
     .select('id, guest_token')
     .eq('event_share_id', request.event_share_id)
@@ -1024,7 +1021,7 @@ export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinR
 
   if (!existingGuest) {
     guestToken = crypto.randomBytes(32).toString('hex')
-    const { data: createdGuest, error: guestError } = await supabase
+    const { data: createdGuest, error: guestError } = await db
       .from('event_guests')
       .insert({
         tenant_id: request.tenant_id,
@@ -1048,7 +1045,7 @@ export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinR
     guestId = createdGuest.id
   }
 
-  await ((supabase as any)
+  await ((db as any)
     .from('event_join_requests')
     .update({
       status: 'approved',
@@ -1060,7 +1057,7 @@ export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinR
     .eq('id', request.id) as any)
 
   if (request.invite_id) {
-    await ((supabase as any)
+    await ((db as any)
       .from('event_share_invites')
       .update({
         status: 'consumed',
@@ -1071,7 +1068,7 @@ export async function resolveEventJoinRequest(input: z.infer<typeof ResolveJoinR
   }
 
   await trackInviteEvent({
-    supabase,
+    db,
     tenantId: request.tenant_id,
     eventId: request.event_id,
     inviteId: request.invite_id || null,
@@ -1093,8 +1090,8 @@ export async function getEventShareInvites(eventId: string) {
   const user = await getCurrentUser()
   await getEventForUserAccess(eventId, user)
 
-  const supabase = createServerClient({ admin: true })
-  const { data, error } = await ((supabase as any)
+  const db = createServerClient({ admin: true })
+  const { data, error } = await ((db as any)
     .from('event_share_invites')
     .select('*')
     .eq('event_id', eventId)
@@ -1112,16 +1109,16 @@ export async function updateEventShareInvitePermissions(
 ) {
   const user = await requireClient()
   const validated = UpdateInvitePermissionsSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: invite } = await ((supabase as any)
+  const { data: invite } = await ((db as any)
     .from('event_share_invites')
     .select('id, event_id')
     .eq('id', validated.inviteId)
     .single() as any)
   if (!invite) throw new Error('Invite not found')
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id')
     .eq('id', invite.event_id)
@@ -1136,7 +1133,7 @@ export async function updateEventShareInvitePermissions(
   if (validated.allow_book_own !== undefined) payload.allow_book_own = validated.allow_book_own
   if (validated.expires_at !== undefined) payload.expires_at = validated.expires_at
 
-  await ((supabase as any)
+  await ((db as any)
     .from('event_share_invites')
     .update(payload)
     .eq('id', validated.inviteId) as any)
@@ -1148,16 +1145,16 @@ export async function updateEventShareInvitePermissions(
 export async function revokeEventShareInvite(input: z.infer<typeof RevokeInviteSchema>) {
   const user = await requireClient()
   const validated = RevokeInviteSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: invite } = await ((supabase as any)
+  const { data: invite } = await ((db as any)
     .from('event_share_invites')
     .select('id, event_id, tenant_id')
     .eq('id', validated.inviteId)
     .single() as any)
   if (!invite) throw new Error('Invite not found')
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id')
     .eq('id', invite.event_id)
@@ -1165,7 +1162,7 @@ export async function revokeEventShareInvite(input: z.infer<typeof RevokeInviteS
     .single()
   if (!event) throw new Error('Access denied')
 
-  await ((supabase as any)
+  await ((db as any)
     .from('event_share_invites')
     .update({
       status: 'revoked',
@@ -1174,7 +1171,7 @@ export async function revokeEventShareInvite(input: z.infer<typeof RevokeInviteS
     .eq('id', validated.inviteId) as any)
 
   await trackInviteEvent({
-    supabase,
+    db,
     tenantId: invite.tenant_id,
     eventId: invite.event_id,
     inviteId: invite.id,
@@ -1189,16 +1186,13 @@ export async function revokeEventShareInvite(input: z.infer<typeof RevokeInviteS
 export async function getEventInviteAnalytics(eventId: string) {
   const user = await getCurrentUser()
   await getEventForUserAccess(eventId, user)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const [invitesRes, joinReqRes, eventsRes, leadsRes] = await Promise.all([
-    (supabase as any).from('event_share_invites').select('id, view_count').eq('event_id', eventId),
-    (supabase as any).from('event_join_requests').select('id, status').eq('event_id', eventId),
-    (supabase as any)
-      .from('event_share_invite_events')
-      .select('event_type')
-      .eq('event_id', eventId),
-    (supabase as any)
+    (db as any).from('event_share_invites').select('id, view_count').eq('event_id', eventId),
+    (db as any).from('event_join_requests').select('id, status').eq('event_id', eventId),
+    (db as any).from('event_share_invite_events').select('event_type').eq('event_id', eventId),
+    (db as any)
       .from('guest_leads')
       .select('id')
       .eq('event_id', eventId)
@@ -1227,18 +1221,15 @@ export async function getEventInviteAnalytics(eventId: string) {
 export async function getEventRSVPObservabilitySignals(eventId: string) {
   const user = await getCurrentUser()
   await getEventForUserAccess(eventId, user)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const [remindersRes, guestsRes, invitesRes] = await Promise.all([
-    (supabase as any)
-      .from('rsvp_reminder_log')
-      .select('status, created_at')
-      .eq('event_id', eventId),
-    (supabase as any)
+    (db as any).from('rsvp_reminder_log').select('status, created_at').eq('event_id', eventId),
+    (db as any)
       .from('event_guests')
       .select('id, rsvp_status, attendance_queue_status, created_at, promoted_at')
       .eq('event_id', eventId),
-    (supabase as any)
+    (db as any)
       .from('event_share_invites')
       .select('id, status, view_count, last_viewed_at')
       .eq('event_id', eventId),
@@ -1304,9 +1295,9 @@ export async function sendEventRSVPReminders(input: z.infer<typeof SendEventRemi
   const validated = SendEventReminderSchema.parse(input)
   const user = await getCurrentUser()
   const event = await getEventForUserAccess(validated.eventId, user)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: shareData } = await (supabase as any)
+  const { data: shareData } = await (db as any)
     .from('event_shares')
     .select('id, tenant_id, reminders_enabled')
     .eq('event_id', event.id)
@@ -1317,7 +1308,7 @@ export async function sendEventRSVPReminders(input: z.infer<typeof SendEventRemi
   if (!share) throw new Error('Active share not found for this event')
   if (!share.reminders_enabled) throw new Error('Reminders are disabled for this event')
 
-  const { data: pendingGuestsData } = await (supabase as any)
+  const { data: pendingGuestsData } = await (db as any)
     .from('event_guests')
     .select('id, full_name, email, attendance_queue_status, rsvp_status')
     .eq('event_share_id', share.id)
@@ -1328,7 +1319,7 @@ export async function sendEventRSVPReminders(input: z.infer<typeof SendEventRemi
   let inserted = 0
   for (const guest of recipients) {
     const reminderKey = `${validated.cadence}:${event.id}`
-    const { error } = await ((supabase as any).from('rsvp_reminder_log').insert({
+    const { error } = await ((db as any).from('rsvp_reminder_log').insert({
       tenant_id: share.tenant_id,
       event_id: event.id,
       guest_id: guest.id,
@@ -1356,9 +1347,9 @@ export async function sendEventRSVPReminders(input: z.infer<typeof SendEventRemi
 export async function runRSVPReminderSweep(eventId?: string) {
   const user = await getCurrentUser()
   if (!user || user.role !== 'chef') throw new Error('Chef access required')
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  let shareQuery = (supabase as any)
+  let shareQuery = (db as any)
     .from('event_shares')
     .select(
       'id, event_id, tenant_id, reminders_enabled, reminder_schedule, rsvp_deadline_at, is_active'
@@ -1396,7 +1387,7 @@ export async function runRSVPReminderSweep(eventId?: string) {
 
     if (dueKeys.length === 0) continue
 
-    const { data: pendingGuestsData } = await (supabase as any)
+    const { data: pendingGuestsData } = await (db as any)
       .from('event_guests')
       .select('id, email, rsvp_status, attendance_queue_status')
       .eq('event_share_id', share.id)
@@ -1406,7 +1397,7 @@ export async function runRSVPReminderSweep(eventId?: string) {
     for (const guest of (pendingGuestsData as any[]) || []) {
       for (const cadence of dueKeys) {
         const reminderKey = `${cadence}:${share.event_id}`
-        const { error } = await ((supabase as any).from('rsvp_reminder_log').insert({
+        const { error } = await ((db as any).from('rsvp_reminder_log').insert({
           tenant_id: share.tenant_id,
           event_id: share.event_id,
           guest_id: guest.id,
@@ -1429,9 +1420,9 @@ export async function draftGuestSegmentMessage(
   const validated = DraftGuestSegmentMessageSchema.parse(input)
   const user = await getCurrentUser()
   const event = await getEventForUserAccess(validated.eventId, user)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: guests } = await supabase
+  const { data: guests } = await db
     .from('event_guests')
     .select('id, full_name, email, rsvp_status, allergies, attendance_queue_status')
     .eq('event_id', validated.eventId)
@@ -1483,9 +1474,9 @@ export async function logGuestSegmentMessage(input: z.infer<typeof LogGuestSegme
   if (!user) throw new Error('Authentication required')
   const validated = LogGuestSegmentMessageSchema.parse(input)
   const event = await getEventForUserAccess(validated.eventId, user)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  await ((supabase as any).from('guest_communication_logs').insert({
+  await ((db as any).from('guest_communication_logs').insert({
     tenant_id: event.tenant_id,
     event_id: validated.eventId,
     segment: validated.segment,
@@ -1501,9 +1492,9 @@ export async function logGuestSegmentMessage(input: z.infer<typeof LogGuestSegme
 export async function getGuestCommunicationLogs(eventId: string) {
   const user = await getCurrentUser()
   await getEventForUserAccess(eventId, user)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await ((supabase as any)
+  const { data, error } = await ((db as any)
     .from('guest_communication_logs')
     .select('*')
     .eq('event_id', eventId)
@@ -1517,7 +1508,7 @@ export async function getGuestCommunicationLogs(eventId: string) {
 }
 
 async function resolveViewerInviteContext(viewerToken: string) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   await enforcePublicActionRateLimit(
     `viewer-resolve:${viewerToken.slice(0, 12)}`,
@@ -1525,7 +1516,7 @@ async function resolveViewerInviteContext(viewerToken: string) {
     15 * 60 * 1000
   )
 
-  const { data: invite } = await (supabase
+  const { data: invite } = await (db
     .from('event_share_invites' as any)
     .select('*')
     .eq('token', viewerToken)
@@ -1536,7 +1527,7 @@ async function resolveViewerInviteContext(viewerToken: string) {
   if (invite.status !== 'active') return null
   if (invite.expires_at && new Date(invite.expires_at) < new Date()) return null
 
-  const { data: shareData } = await ((supabase as any)
+  const { data: shareData } = await ((db as any)
     .from('event_shares')
     .select(
       `id, token, event_id, tenant_id, is_active, expires_at, visibility_settings,
@@ -1550,7 +1541,7 @@ async function resolveViewerInviteContext(viewerToken: string) {
   if (!share || !share.is_active) return null
   if (share.expires_at && new Date(share.expires_at) < new Date()) return null
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `id, tenant_id, status, event_date, serve_time, arrival_time, guest_count, occasion, service_style,
@@ -1562,7 +1553,7 @@ async function resolveViewerInviteContext(viewerToken: string) {
 
   if (!event || event.status === 'cancelled') return null
 
-  return { invite, share, event, supabase }
+  return { invite, share, event, db }
 }
 
 /**
@@ -1575,14 +1566,14 @@ export async function createViewerInviteFromGuest(
   const normalizedInvitedEmail = validated.invited_email
     ? validated.invited_email.toLowerCase().trim()
     : null
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   await enforcePublicActionRateLimit(
     `guest-viewer-invite:${validated.guestToken.slice(0, 16)}`,
     20,
     60 * 60 * 1000
   )
 
-  const { data: share } = await supabase
+  const { data: share } = await db
     .from('event_shares')
     .select('id, event_id, tenant_id, is_active, expires_at')
     .eq('token', validated.shareToken)
@@ -1596,7 +1587,7 @@ export async function createViewerInviteFromGuest(
     throw new Error('This share link has expired')
   }
 
-  const { data: invitingGuest } = await supabase
+  const { data: invitingGuest } = await db
     .from('event_guests')
     .select('id, full_name, event_share_id')
     .eq('guest_token', validated.guestToken)
@@ -1607,7 +1598,7 @@ export async function createViewerInviteFromGuest(
     throw new Error('Only an invited guest can share this event')
   }
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('event_date')
     .eq('id', share.event_id)
@@ -1620,7 +1611,7 @@ export async function createViewerInviteFromGuest(
   const viewerToken = crypto.randomBytes(32).toString('hex')
   const expiresAt = parseInviteExpiry(event.event_date, share.expires_at)
 
-  const { data: invite, error: inviteError } = await (supabase
+  const { data: invite, error: inviteError } = await (db
     .from('event_share_invites' as any)
     .insert({
       tenant_id: share.tenant_id,
@@ -1644,7 +1635,7 @@ export async function createViewerInviteFromGuest(
   }
 
   await trackInviteEvent({
-    supabase,
+    db,
     tenantId: share.tenant_id,
     eventId: share.event_id,
     inviteId: invite.id as string,
@@ -1672,14 +1663,14 @@ export async function createGuestInviteFromGuest(
 ) {
   const validated = CreateGuestInviteFromGuestSchema.parse(input)
   const normalizedEmail = validated.email ? validated.email.toLowerCase().trim() : null
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   await enforcePublicActionRateLimit(
     `guest-guest-invite:${validated.guestToken.slice(0, 16)}`,
     20,
     60 * 60 * 1000
   )
 
-  const { data: share } = await supabase
+  const { data: share } = await db
     .from('event_shares')
     .select('id, event_id, tenant_id, token, is_active, expires_at')
     .eq('token', validated.shareToken)
@@ -1693,7 +1684,7 @@ export async function createGuestInviteFromGuest(
     throw new Error('This share link has expired')
   }
 
-  const { data: invitingGuest } = await supabase
+  const { data: invitingGuest } = await db
     .from('event_guests')
     .select('id, full_name, event_share_id')
     .eq('guest_token', validated.guestToken)
@@ -1705,7 +1696,7 @@ export async function createGuestInviteFromGuest(
   }
 
   if (normalizedEmail) {
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('event_guests')
       .select('id, guest_token')
       .eq('event_share_id', share.id)
@@ -1723,7 +1714,7 @@ export async function createGuestInviteFromGuest(
   }
 
   const guestToken = crypto.randomBytes(32).toString('hex')
-  const { data: guest, error: guestError } = await supabase
+  const { data: guest, error: guestError } = await db
     .from('event_guests')
     .insert({
       tenant_id: share.tenant_id,
@@ -1746,7 +1737,7 @@ export async function createGuestInviteFromGuest(
   }
 
   const inviteToken = crypto.randomBytes(32).toString('hex')
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('event_date')
     .eq('id', share.event_id)
@@ -1754,7 +1745,7 @@ export async function createGuestInviteFromGuest(
 
   const expiresAt = event ? parseInviteExpiry(event.event_date, share.expires_at) : null
 
-  await (supabase.from('event_share_invites' as any).insert({
+  await (db.from('event_share_invites' as any).insert({
     tenant_id: share.tenant_id,
     event_id: share.event_id,
     event_share_id: share.id,
@@ -1771,7 +1762,7 @@ export async function createGuestInviteFromGuest(
   }) as any)
 
   await trackInviteEvent({
-    supabase,
+    db,
     tenantId: share.tenant_id,
     eventId: share.event_id,
     eventType: 'guest_invited',
@@ -1813,10 +1804,10 @@ export async function getViewerEventByToken(viewerToken: string) {
   const context = await resolveViewerInviteContext(viewerToken)
   if (!context) return null
 
-  const { invite, share, event, supabase } = context
+  const { invite, share, event, db } = context
   const visibility = (share.visibility_settings || {}) as Record<string, boolean>
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name, booking_slug')
     .eq('id', share.tenant_id)
@@ -1829,7 +1820,7 @@ export async function getViewerEventByToken(viewerToken: string) {
     service_style: string | null
   }[] = []
   if (visibility.show_menu) {
-    const { data: menuRows } = await supabase
+    const { data: menuRows } = await db
       .from('menus')
       .select('id, name, description, service_style')
       .eq('event_id', event.id)
@@ -1838,7 +1829,7 @@ export async function getViewerEventByToken(viewerToken: string) {
   }
 
   try {
-    await ((supabase as any)
+    await ((db as any)
       .from('event_share_invites')
       .update({
         view_count: Number(invite.view_count || 0) + 1,
@@ -1847,7 +1838,7 @@ export async function getViewerEventByToken(viewerToken: string) {
       .eq('id', invite.id) as any)
 
     await trackInviteEvent({
-      supabase,
+      db,
       tenantId: share.tenant_id,
       eventId: event.id,
       inviteId: invite.id as string,
@@ -1918,7 +1909,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
     throw new Error('This viewer link is invalid or expired.')
   }
 
-  const { invite, share, event, supabase } = context
+  const { invite, share, event, db } = context
 
   if (invite.single_use && invite.status !== 'active') {
     throw new Error('This invite link has already been used.')
@@ -1929,7 +1920,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
       throw new Error('This invite does not allow event join requests.')
     }
 
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('event_guests')
       .select('id, guest_token')
       .eq('event_share_id', share.id)
@@ -1947,7 +1938,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
 
     const normalizedEmail = validated.email.toLowerCase().trim()
     if (share.require_join_approval) {
-      const { data: existingRequest } = await ((supabase as any)
+      const { data: existingRequest } = await ((db as any)
         .from('event_join_requests')
         .select('id')
         .eq('event_id', event.id)
@@ -1956,18 +1947,16 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
         .maybeSingle() as any)
 
       if (!existingRequest) {
-        const { error: requestError } = await ((supabase as any)
-          .from('event_join_requests')
-          .insert({
-            tenant_id: share.tenant_id,
-            event_id: event.id,
-            event_share_id: share.id,
-            invite_id: invite.id,
-            viewer_name: validated.full_name.trim(),
-            viewer_email: normalizedEmail,
-            note: validated.note?.trim() || null,
-            status: 'pending',
-          }) as any)
+        const { error: requestError } = await ((db as any).from('event_join_requests').insert({
+          tenant_id: share.tenant_id,
+          event_id: event.id,
+          event_share_id: share.id,
+          invite_id: invite.id,
+          viewer_name: validated.full_name.trim(),
+          viewer_email: normalizedEmail,
+          note: validated.note?.trim() || null,
+          status: 'pending',
+        }) as any)
 
         if (requestError) {
           console.error('[submitViewerIntent] Join request insert error:', requestError)
@@ -1976,7 +1965,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
       }
 
       await trackInviteEvent({
-        supabase,
+        db,
         tenantId: share.tenant_id,
         eventId: event.id,
         inviteId: invite.id as string,
@@ -1985,7 +1974,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
       })
 
       if (invite.single_use) {
-        await ((supabase as any)
+        await ((db as any)
           .from('event_share_invites')
           .update({
             status: 'consumed',
@@ -2019,7 +2008,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
     }
 
     const capacity = await getCapacityDecision({
-      supabase,
+      db,
       shareId: share.id,
       shareEventId: event.id,
       enforceCapacity: !!share.enforce_capacity,
@@ -2031,7 +2020,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
     if (capacity.rejectReason) throw new Error(capacity.rejectReason)
 
     const guestToken = crypto.randomBytes(32).toString('hex')
-    const { data: guest, error: guestError } = await supabase
+    const { data: guest, error: guestError } = await db
       .from('event_guests')
       .insert({
         tenant_id: share.tenant_id,
@@ -2051,7 +2040,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
       throw new Error('Failed to submit join request')
     }
 
-    await ((supabase as any)
+    await ((db as any)
       .from('event_share_invites')
       .update({
         status: 'consumed',
@@ -2061,7 +2050,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
       .eq('id', invite.id) as any)
 
     await trackInviteEvent({
-      supabase,
+      db,
       tenantId: share.tenant_id,
       eventId: event.id,
       inviteId: invite.id as string,
@@ -2099,7 +2088,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
   }
 
   const normalizedEmail = validated.email.toLowerCase().trim()
-  const { data: existingLead } = await (supabase
+  const { data: existingLead } = await (db
     .from('guest_leads' as any)
     .select('id')
     .eq('event_id', event.id)
@@ -2107,7 +2096,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
     .maybeSingle() as any)
 
   if (existingLead) {
-    await (supabase
+    await (db
       .from('guest_leads' as any)
       .update({
         name: validated.full_name.trim(),
@@ -2118,7 +2107,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
       })
       .eq('id', existingLead.id) as any)
   } else {
-    const { error: leadError } = await (supabase.from('guest_leads' as any).insert({
+    const { error: leadError } = await (db.from('guest_leads' as any).insert({
       tenant_id: share.tenant_id,
       event_id: event.id,
       name: validated.full_name.trim(),
@@ -2138,7 +2127,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
   }
 
   if (invite.single_use) {
-    await ((supabase as any)
+    await ((db as any)
       .from('event_share_invites')
       .update({
         status: 'consumed',
@@ -2148,7 +2137,7 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
   }
 
   await trackInviteEvent({
-    supabase,
+    db,
     tenantId: share.tenant_id,
     eventId: event.id,
     inviteId: invite.id as string,
@@ -2176,9 +2165,9 @@ export async function submitViewerIntent(input: ViewerIntentInput) {
 }
 
 async function loadGuestPortalContext(eventId: string, secureToken: string) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: guestData } = await ((supabase as any)
+  const { data: guestData } = await ((db as any)
     .from('event_guests')
     .select(
       `id, event_id, tenant_id, event_share_id, guest_token, full_name, email, rsvp_status,
@@ -2194,7 +2183,7 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
     return null
   }
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `id, tenant_id, client_id, event_date, serve_time, arrival_time, occasion, service_style,
@@ -2208,7 +2197,7 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
     return null
   }
 
-  const { data: shareData } = await ((supabase as any)
+  const { data: shareData } = await ((db as any)
     .from('event_shares')
     .select(
       `id, is_active, expires_at, visibility_settings, rsvp_deadline_at, enforce_capacity,
@@ -2222,19 +2211,19 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
     return null
   }
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', event.tenant_id)
     .maybeSingle()
 
-  const { data: hostClient } = await supabase
+  const { data: hostClient } = await db
     .from('clients')
     .select('full_name')
     .eq('id', event.client_id)
     .maybeSingle()
 
-  const { data: profile } = await (supabase
+  const { data: profile } = await (db
     .from('guest_event_profile' as any)
     .select('*')
     .eq('event_id', eventId)
@@ -2259,7 +2248,7 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
   }[] = []
 
   if (visibility.show_menu) {
-    const { data: menuRows } = await supabase
+    const { data: menuRows } = await db
       .from('menus')
       .select('id, name, description, service_style')
       .eq('event_id', eventId)
@@ -2271,7 +2260,7 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
     const menuIds = menuList.map((m: any) => m.id)
     let dishMap: Record<string, (typeof menus)[number]['dishes']> = {}
     if (menuIds.length > 0) {
-      const { data: dishRows } = await supabase
+      const { data: dishRows } = await db
         .from('dishes')
         .select(
           'id, menu_id, course_number, course_name, description, dietary_tags, allergen_flags'
@@ -2301,7 +2290,7 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
 
   let guestList: { full_name: string; rsvp_status: string }[] = []
   if (visibility.show_guest_list) {
-    const { data: guestRows } = await supabase
+    const { data: guestRows } = await db
       .from('event_guests')
       .select('full_name, rsvp_status')
       .eq('event_share_id', share.id)
@@ -2337,10 +2326,10 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
  */
 export async function getEventShareByToken(token: string) {
   await enforcePublicActionRateLimit(`share-token:${token.slice(0, 16)}`, 120, 15 * 60 * 1000)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Fetch share by token
-  const { data: shareData, error: shareError } = await supabase
+  const { data: shareData, error: shareError } = await db
     .from('event_shares')
     .select('*')
     .eq('token', token)
@@ -2358,7 +2347,7 @@ export async function getEventShareByToken(token: string) {
   }
 
   // Fetch event details
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       `
@@ -2382,7 +2371,7 @@ export async function getEventShareByToken(token: string) {
   }
 
   // Fetch chef name + profile slug for "book your own" CTA
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, display_name, booking_slug')
     .eq('id', share.tenant_id)
@@ -2398,7 +2387,7 @@ export async function getEventShareByToken(token: string) {
   }[] = []
 
   if (visibility.show_menu) {
-    const { data: menuData } = await supabase
+    const { data: menuData } = await db
       .from('menus')
       .select('id, name, description, service_style')
       .eq('event_id', share.event_id)
@@ -2410,7 +2399,7 @@ export async function getEventShareByToken(token: string) {
   let guestList: { full_name: string; rsvp_status: string }[] = []
 
   if (visibility.show_guest_list) {
-    const { data: guests } = await supabase
+    const { data: guests } = await db
       .from('event_guests')
       .select('full_name, rsvp_status')
       .eq('event_share_id', share.id)
@@ -2469,7 +2458,7 @@ export async function getEventShareByToken(token: string) {
  */
 export async function submitRSVP(input: SubmitRSVPInput) {
   const validated = SubmitRSVPSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const normalizedEmail = validated.email ? validated.email.toLowerCase().trim() : null
 
   await verifyCaptchaIfProvided(validated.captcha_token || undefined)
@@ -2480,7 +2469,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
   )
 
   // Validate share token
-  const { data: shareData, error: shareError } = await (supabase as any)
+  const { data: shareData, error: shareError } = await (db as any)
     .from('event_shares')
     .select(
       'id, event_id, tenant_id, is_active, expires_at, rsvp_deadline_at, enforce_capacity, waitlist_enabled, max_capacity'
@@ -2502,7 +2491,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     throw new Error('RSVP submissions are closed for this event.')
   }
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, status, guest_count')
     .eq('id', share.event_id)
@@ -2517,7 +2506,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
 
   // Check for duplicate email if provided
   if (normalizedEmail) {
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('event_guests')
       .select('id, guest_token')
       .eq('event_share_id', share.id)
@@ -2536,7 +2525,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
   }
 
   const capacity = await getCapacityDecision({
-    supabase,
+    db,
     shareId: share.id,
     shareEventId: share.event_id,
     enforceCapacity: !!share.enforce_capacity,
@@ -2562,7 +2551,7 @@ export async function submitRSVP(input: SubmitRSVPInput) {
   const guestToken = crypto.randomBytes(32).toString('hex')
   const nowIso = new Date().toISOString()
 
-  const { data: guest, error } = await supabase
+  const { data: guest, error } = await db
     .from('event_guests')
     .insert({
       tenant_id: share.tenant_id,
@@ -2604,14 +2593,14 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     explicitItems: validated.dietary_items || [],
   })
   await syncGuestDietaryItems({
-    supabase,
+    db,
     tenantId: share.tenant_id,
     eventId: share.event_id,
     guestId: guestRow.id,
     items: dietaryItems,
   })
   await logRsvpAudit({
-    supabase,
+    db,
     tenantId: share.tenant_id,
     eventId: share.event_id,
     guestId: guestRow.id,
@@ -2705,13 +2694,13 @@ export async function submitRSVP(input: SubmitRSVPInput) {
  */
 export async function updateRSVP(input: UpdateRSVPInput) {
   const validated = UpdateRSVPSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const { guestToken, ...updateData } = validated
   await verifyCaptchaIfProvided(updateData.captcha_token || undefined)
   await enforcePublicActionRateLimit(`rsvp-update:${guestToken.slice(0, 16)}`, 25, 60 * 60 * 1000)
 
-  const { data: existingGuestData } = await (supabase as any)
+  const { data: existingGuestData } = await (db as any)
     .from('event_guests')
     .select('*')
     .eq('guest_token', guestToken)
@@ -2721,7 +2710,7 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     throw new Error('Guest RSVP not found')
   }
 
-  const { data: shareData } = await (supabase as any)
+  const { data: shareData } = await (db as any)
     .from('event_shares')
     .select(
       'id, event_id, tenant_id, is_active, expires_at, rsvp_deadline_at, enforce_capacity, waitlist_enabled, max_capacity'
@@ -2741,7 +2730,7 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     throw new Error('RSVP updates are closed for this event.')
   }
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, status, guest_count')
     .eq('id', existingGuest.event_id)
@@ -2758,7 +2747,7 @@ export async function updateRSVP(input: UpdateRSVPInput) {
   if (updateData.full_name !== undefined) payload.full_name = updateData.full_name
   if (updateData.rsvp_status !== undefined) {
     const capacity = await getCapacityDecision({
-      supabase,
+      db,
       shareId: share.id,
       shareEventId: share.event_id,
       enforceCapacity: !!share.enforce_capacity,
@@ -2806,7 +2795,7 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     payload.marketing_opt_in = updateData.marketing_opt_in
   }
 
-  const { data: guest, error } = await supabase
+  const { data: guest, error } = await db
     .from('event_guests')
     .update(payload)
     .eq('guest_token', guestToken)
@@ -2839,14 +2828,14 @@ export async function updateRSVP(input: UpdateRSVPInput) {
     explicitItems: updateData.dietary_items || [],
   })
   await syncGuestDietaryItems({
-    supabase,
+    db,
     tenantId: guestRow.tenant_id,
     eventId: guestRow.event_id,
     guestId: guestRow.id,
     items: dietaryItems,
   })
   await logRsvpAudit({
-    supabase,
+    db,
     tenantId: guestRow.tenant_id,
     eventId: guestRow.event_id,
     guestId: guestRow.id,
@@ -2882,9 +2871,9 @@ export async function updateRSVP(input: UpdateRSVPInput) {
  */
 export async function getGuestByToken(guestToken: string) {
   await enforcePublicActionRateLimit(`guest-token:${guestToken.slice(0, 16)}`, 120, 15 * 60 * 1000)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: guest, error } = await supabase
+  const { data: guest, error } = await db
     .from('event_guests')
     .select('*')
     .eq('guest_token', guestToken)
@@ -3069,11 +3058,11 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
     }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const requestedAttending = validated.attending_status === 'yes'
   const capacity = await getCapacityDecision({
-    supabase,
+    db,
     shareId: share.id,
     shareEventId: validated.eventId,
     enforceCapacity: !!share.enforce_capacity,
@@ -3108,7 +3097,7 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
         : null,
   }
 
-  const { data: updatedGuest, error: guestUpdateError } = await supabase
+  const { data: updatedGuest, error: guestUpdateError } = await db
     .from('event_guests')
     .update(guestUpdatePayload)
     .eq('id', guest.id)
@@ -3155,7 +3144,7 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
     final_confirmation: !!validated.final_confirmation,
   }
 
-  const { error: profileError } = await (supabase
+  const { error: profileError } = await (db
     .from('guest_event_profile' as any)
     .upsert(profilePayload, { onConflict: 'event_id,guest_token' }) as any)
 
@@ -3171,7 +3160,7 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
   })
 
   await syncGuestDietaryItems({
-    supabase,
+    db,
     tenantId: event.tenant_id,
     eventId: validated.eventId,
     guestId: updatedGuest.id,
@@ -3179,7 +3168,7 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
   })
 
   await logRsvpAudit({
-    supabase,
+    db,
     tenantId: event.tenant_id,
     eventId: validated.eventId,
     guestId: updatedGuest.id,
@@ -3239,9 +3228,9 @@ const SendDayOfRemindersSchema = z.object({
 export async function sendDayOfGuestReminders(input: z.infer<typeof SendDayOfRemindersSchema>) {
   const validated = SendDayOfRemindersSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id, event_date, serve_time, arrival_time, occasion')
     .eq('id', validated.eventId)
@@ -3250,7 +3239,7 @@ export async function sendDayOfGuestReminders(input: z.infer<typeof SendDayOfRem
 
   if (!event) throw new Error('Event not found')
 
-  const { data: share } = await (supabase as any)
+  const { data: share } = await (db as any)
     .from('event_shares')
     .select('id, day_of_reminders_enabled')
     .eq('event_id', event.id)
@@ -3262,7 +3251,7 @@ export async function sendDayOfGuestReminders(input: z.infer<typeof SendDayOfRem
   }
 
   // Get confirmed/attending guests with email
-  const { data: guestsData } = await (supabase as any)
+  const { data: guestsData } = await (db as any)
     .from('event_guests')
     .select('id, full_name, email, rsvp_status')
     .eq('event_id', event.id)
@@ -3273,7 +3262,7 @@ export async function sendDayOfGuestReminders(input: z.infer<typeof SendDayOfRem
   let queued = 0
 
   for (const guest of guests) {
-    const { error } = await (supabase as any).from('guest_day_of_reminders').insert({
+    const { error } = await (db as any).from('guest_day_of_reminders').insert({
       tenant_id: user.tenantId!,
       event_id: event.id,
       guest_id: guest.id,
@@ -3296,9 +3285,9 @@ export async function sendDayOfGuestReminders(input: z.infer<typeof SendDayOfRem
 
 export async function getDayOfReminderStatus(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('guest_day_of_reminders')
     .select('id, guest_id, reminder_type, status, sent_at')
     .eq('event_id', eventId)
@@ -3328,9 +3317,9 @@ const SubmitGuestFeedbackSchema = z.object({
 
 export async function getGuestFeedbackByToken(token: string) {
   await enforcePublicActionRateLimit(`guest-feedback:${token.slice(0, 8)}`, 60, 15 * 60 * 1000)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('guest_feedback')
     .select(
       `
@@ -3360,9 +3349,9 @@ export async function submitGuestFeedback(input: z.infer<typeof SubmitGuestFeedb
     10,
     60 * 60 * 1000
   )
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await (db as any)
     .from('guest_feedback')
     .select('id, submitted_at')
     .eq('token', validated.token)
@@ -3371,7 +3360,7 @@ export async function submitGuestFeedback(input: z.infer<typeof SubmitGuestFeedb
   if (!existing) throw new Error('Feedback link not found or expired.')
   if ((existing as any).submitted_at) throw new Error('Feedback already submitted. Thank you!')
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('guest_feedback')
     .update({
       overall_rating: validated.overall_rating,
@@ -3391,9 +3380,9 @@ export async function submitGuestFeedback(input: z.infer<typeof SubmitGuestFeedb
 
 export async function createGuestFeedbackForEvent(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: guests } = await (supabase as any)
+  const { data: guests } = await (db as any)
     .from('event_guests')
     .select('id, email, rsvp_status')
     .eq('event_id', eventId)
@@ -3404,7 +3393,7 @@ export async function createGuestFeedbackForEvent(eventId: string) {
   let created = 0
 
   for (const guest of attendees) {
-    const { error } = await (supabase as any).from('guest_feedback').insert({
+    const { error } = await (db as any).from('guest_feedback').insert({
       tenant_id: user.tenantId!,
       event_id: eventId,
       guest_id: guest.id,
@@ -3419,9 +3408,9 @@ export async function createGuestFeedbackForEvent(eventId: string) {
 
 export async function getGuestFeedbackForEvent(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('guest_feedback')
     .select(
       `
@@ -3457,9 +3446,9 @@ export async function sendGuestMessage(input: z.infer<typeof SendGuestMessageSch
     60 * 60 * 1000
   )
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: guest } = await (supabase as any)
+  const { data: guest } = await (db as any)
     .from('event_guests')
     .select('id, tenant_id, event_id')
     .eq('event_id', validated.eventId)
@@ -3468,7 +3457,7 @@ export async function sendGuestMessage(input: z.infer<typeof SendGuestMessageSch
 
   if (!guest) throw new Error('Guest not found.')
 
-  const { error } = await (supabase as any).from('guest_messages').insert({
+  const { error } = await (db as any).from('guest_messages').insert({
     tenant_id: (guest as any).tenant_id,
     event_id: validated.eventId,
     guest_id: (guest as any).id,
@@ -3501,9 +3490,9 @@ export async function sendGuestMessage(input: z.infer<typeof SendGuestMessageSch
 
 export async function getGuestMessagesForEvent(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('guest_messages')
     .select(
       `
@@ -3527,9 +3516,9 @@ export async function getGuestMessagesForEvent(eventId: string) {
 
 export async function markGuestMessageRead(messageId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  await (supabase as any)
+  await (db as any)
     .from('guest_messages')
     .update({ read_at: new Date().toISOString() })
     .eq('id', messageId)
@@ -3542,10 +3531,10 @@ export async function markGuestMessageRead(messageId: string) {
 
 export async function sendDietaryConfirmations(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Get attending guests with dietary info
-  const { data: guests } = await (supabase as any)
+  const { data: guests } = await (db as any)
     .from('event_guests')
     .select('id, full_name, email, dietary_restrictions, allergies')
     .eq('event_id', eventId)
@@ -3566,7 +3555,7 @@ export async function sendDietaryConfirmations(eventId: string) {
       ...((guest as any).allergies || []).map((a: string) => `Allergy: ${a}`),
     ].join(', ')
 
-    const { error } = await (supabase as any).from('guest_dietary_confirmations').insert({
+    const { error } = await (db as any).from('guest_dietary_confirmations').insert({
       tenant_id: user.tenantId!,
       event_id: eventId,
       guest_id: guest.id,
@@ -3582,9 +3571,9 @@ export async function sendDietaryConfirmations(eventId: string) {
 
 export async function getDietaryConfirmationStatus(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('guest_dietary_confirmations')
     .select(
       `
@@ -3613,9 +3602,9 @@ export async function confirmGuestDietary(input: {
     20,
     60 * 60 * 1000
   )
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: guest } = await (supabase as any)
+  const { data: guest } = await (db as any)
     .from('event_guests')
     .select('id')
     .eq('event_id', input.eventId)
@@ -3624,7 +3613,7 @@ export async function confirmGuestDietary(input: {
 
   if (!guest) throw new Error('Guest not found.')
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('guest_dietary_confirmations')
     .update({
       status: input.confirmed ? 'confirmed' : 'updated',
@@ -3662,9 +3651,9 @@ const CreateGuestDocumentSchema = z.object({
 export async function createGuestDocument(input: z.infer<typeof CreateGuestDocumentSchema>) {
   const validated = CreateGuestDocumentSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('event_guest_documents')
     .insert({
       tenant_id: user.tenantId!,
@@ -3688,9 +3677,9 @@ export async function createGuestDocument(input: z.infer<typeof CreateGuestDocum
 
 export async function getGuestDocumentsForEvent(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('event_guest_documents')
     .select('*')
     .eq('event_id', eventId)
@@ -3702,10 +3691,10 @@ export async function getGuestDocumentsForEvent(eventId: string) {
 
 export async function getPublishedGuestDocuments(eventId: string, guestToken: string) {
   await enforcePublicActionRateLimit(`guest-docs:${guestToken.slice(0, 16)}`, 60, 15 * 60 * 1000)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify guest token is valid for this event
-  const { data: guest } = await (supabase as any)
+  const { data: guest } = await (db as any)
     .from('event_guests')
     .select('id')
     .eq('event_id', eventId)
@@ -3714,7 +3703,7 @@ export async function getPublishedGuestDocuments(eventId: string, guestToken: st
 
   if (!guest) return []
 
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('event_guest_documents')
     .select(
       'id, title, description, document_type, file_url, content_text, is_pre_event, published_at'
@@ -3728,9 +3717,9 @@ export async function getPublishedGuestDocuments(eventId: string, guestToken: st
 
 export async function publishGuestDocument(documentId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('event_guest_documents')
     .update({ published_at: new Date().toISOString() })
     .eq('id', documentId)
@@ -3742,9 +3731,9 @@ export async function publishGuestDocument(documentId: string) {
 
 export async function deleteGuestDocument(documentId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('event_guest_documents')
     .delete()
     .eq('id', documentId)
@@ -3769,11 +3758,11 @@ const ReconcileAttendanceSchema = z.object({
 export async function reconcileAttendance(input: z.infer<typeof ReconcileAttendanceSchema>) {
   const validated = ReconcileAttendanceSchema.parse(input)
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   let updated = 0
   for (const rec of validated.reconciliations) {
-    const { error } = await (supabase as any)
+    const { error } = await (db as any)
       .from('event_guests')
       .update({
         actual_attended: rec.status,
@@ -3793,9 +3782,9 @@ export async function reconcileAttendance(input: z.infer<typeof ReconcileAttenda
 
 export async function getAttendanceReconciliation(eventId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('event_guests')
     .select('id, full_name, email, rsvp_status, actual_attended, reconciled_at')
     .eq('event_id', eventId)
@@ -3818,13 +3807,13 @@ export async function updateGuestAboutMe(input: {
     20,
     60 * 60 * 1000
   )
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   if (input.aboutMe.length > 500) {
     throw new Error('About me must be 500 characters or less.')
   }
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('event_guests')
     .update({ about_me: input.aboutMe || null })
     .eq('event_id', input.eventId)
@@ -3848,9 +3837,9 @@ export async function updatePreEventContent(input: {
   }
 }) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('event_shares')
     .update({ pre_event_content: input.content })
     .eq('event_id', input.eventId)
@@ -3865,10 +3854,10 @@ export async function updatePreEventContent(input: {
 
 export async function getPreEventContent(eventId: string, guestToken: string) {
   await enforcePublicActionRateLimit(`pre-event:${guestToken.slice(0, 16)}`, 60, 15 * 60 * 1000)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify guest
-  const { data: guest } = await (supabase as any)
+  const { data: guest } = await (db as any)
     .from('event_guests')
     .select('id, event_share_id')
     .eq('event_id', eventId)
@@ -3877,7 +3866,7 @@ export async function getPreEventContent(eventId: string, guestToken: string) {
 
   if (!guest) return null
 
-  const { data: share } = await (supabase as any)
+  const { data: share } = await (db as any)
     .from('event_shares')
     .select('pre_event_content')
     .eq('id', (guest as any).event_share_id)

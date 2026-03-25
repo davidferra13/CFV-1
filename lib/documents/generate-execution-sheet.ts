@@ -5,7 +5,7 @@
 // MUST fit on ONE page - no exceptions.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 
@@ -56,10 +56,10 @@ export type ExecutionSheetData = {
 /** Fetch all data needed for the execution sheet */
 export async function fetchExecutionSheetData(eventId: string): Promise<ExecutionSheetData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with extended client data
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -76,7 +76,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
   if (!event) return null
 
   // Find menu
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -89,7 +89,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
   const menuId = menus[0].id
 
   // Fetch dishes (include allergen_flags for component-level dietary flagging)
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, course_name, course_number, description, allergen_flags, sort_order')
     .eq('menu_id', menuId)
@@ -101,7 +101,7 @@ export async function fetchExecutionSheetData(eventId: string): Promise<Executio
 
   // Fetch components - include make_ahead_window_hours for arrival task ordering
   const dishIds = dishes.map((d: any) => d.id)
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select(
       'dish_id, name, category, execution_notes, is_make_ahead, make_ahead_window_hours, sort_order'

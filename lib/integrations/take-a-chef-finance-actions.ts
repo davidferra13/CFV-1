@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { extractTakeAChefIntegrationSettings } from './take-a-chef-defaults'
@@ -29,13 +29,13 @@ const SaveTakeAChefEventFinanceSchema = z.object({
 })
 
 async function findLinkedInquiry(params: {
-  supabase: any
+  db: any
   tenantId: string
   eventId: string
   inquiryId: string | null
 }) {
   if (params.inquiryId) {
-    const { data } = await params.supabase
+    const { data } = await params.db
       .from('inquiries')
       .select('id, channel, external_platform, external_link, unknown_fields, first_contact_at')
       .eq('tenant_id', params.tenantId)
@@ -45,7 +45,7 @@ async function findLinkedInquiry(params: {
     if (data) return data
   }
 
-  const { data } = await params.supabase
+  const { data } = await params.db
     .from('inquiries')
     .select('id, channel, external_platform, external_link, unknown_fields, first_contact_at')
     .eq('tenant_id', params.tenantId)
@@ -59,11 +59,11 @@ async function findLinkedInquiry(params: {
 
 export async function getTakeAChefEventFinance(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const [{ data: event }, { data: tenantSettings }] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'id, inquiry_id, client_id, booking_source, quoted_price_cents, event_date, client:clients(referral_source, full_name)'
@@ -71,7 +71,7 @@ export async function getTakeAChefEventFinance(eventId: string) {
       .eq('tenant_id', tenantId)
       .eq('id', eventId)
       .maybeSingle(),
-    supabase
+    db
       .from('tenant_settings')
       .select('integration_connection_settings')
       .eq('tenant_id', tenantId)
@@ -82,12 +82,12 @@ export async function getTakeAChefEventFinance(eventId: string) {
 
   const [inquiry, { data: expenses }] = await Promise.all([
     findLinkedInquiry({
-      supabase,
+      db,
       tenantId,
       eventId,
       inquiryId: event.inquiry_id ?? null,
     }),
-    supabase
+    db
       .from('expenses')
       .select('id, amount_cents, description')
       .eq('tenant_id', tenantId)
@@ -155,10 +155,10 @@ export async function saveTakeAChefEventFinance(input: {
 }) {
   const user = await requireChef()
   const validated = SaveTakeAChefEventFinanceSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       'id, inquiry_id, quoted_price_cents, event_date, booking_source, client:clients(referral_source)'
@@ -172,7 +172,7 @@ export async function saveTakeAChefEventFinance(input: {
   }
 
   const inquiry = await findLinkedInquiry({
-    supabase,
+    db,
     tenantId,
     eventId: validated.eventId,
     inquiryId: event.inquiry_id ?? null,
@@ -203,7 +203,7 @@ export async function saveTakeAChefEventFinance(input: {
     },
   })
 
-  const { error: inquiryError } = await supabase
+  const { error: inquiryError } = await db
     .from('inquiries')
     .update({
       unknown_fields: mergedUnknownFields,
@@ -229,7 +229,7 @@ export async function saveTakeAChefEventFinance(input: {
       const notes =
         'Synced from the Take a Chef payout panel. Represents platform commission withheld from payout.'
 
-      const { data: existingExpenses } = await supabase
+      const { data: existingExpenses } = await db
         .from('expenses')
         .select('id')
         .eq('tenant_id', tenantId)
@@ -241,7 +241,7 @@ export async function saveTakeAChefEventFinance(input: {
       const primaryExpense = existingExpenses?.[0]
 
       if (primaryExpense?.id) {
-        const { error: expenseError } = await supabase
+        const { error: expenseError } = await db
           .from('expenses')
           .update({
             amount_cents: expectedCommissionCents,
@@ -257,7 +257,7 @@ export async function saveTakeAChefEventFinance(input: {
           throw new Error(`Failed to sync Take a Chef commission expense: ${expenseError.message}`)
         }
       } else {
-        const { error: expenseError } = await supabase.from('expenses').insert({
+        const { error: expenseError } = await db.from('expenses').insert({
           tenant_id: tenantId,
           event_id: validated.eventId,
           description,

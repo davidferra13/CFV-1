@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { toSafeJsonb } from '@/lib/ai/remy-action-audit-core'
 
 export type RemyActionAuditStatus = 'started' | 'success' | 'error' | 'blocked'
@@ -71,7 +71,7 @@ function isRemyActionAuditMissingTableError(err: unknown): boolean {
 }
 
 export async function startRemyActionAudit(input: StartRemyActionAuditInput): Promise<string> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date().toISOString()
 
   const payload = {
@@ -85,7 +85,7 @@ export async function startRemyActionAudit(input: StartRemyActionAuditInput): Pr
     started_at: now,
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('remy_action_audit_log')
     .insert(payload)
     .select('id')
@@ -99,9 +99,9 @@ export async function startRemyActionAudit(input: StartRemyActionAuditInput): Pr
 }
 
 export async function finishRemyActionAudit(input: FinishRemyActionAuditInput): Promise<void> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('remy_action_audit_log')
     .update({
       status: input.status,
@@ -129,8 +129,8 @@ export async function listRemyActionAuditLog(input?: {
   const status = input?.status
   const taskType = input?.taskType?.trim().toLowerCase()
 
-  const supabase: any = createServerClient()
-  let query = supabase
+  const db: any = createServerClient()
+  let query = db
     .from('remy_action_audit_log')
     .select(
       'id, task_type, source, status, request_payload, result_payload, error_message, started_at, finished_at, duration_ms, created_at'
@@ -173,8 +173,8 @@ export async function getRemyActionAuditSummary(windowDays = 14): Promise<RemyAc
   const safeWindowDays = Math.min(Math.max(Math.floor(windowDays), 1), 90)
   const since = new Date(Date.now() - safeWindowDays * 24 * 60 * 60 * 1000).toISOString()
 
-  const supabase: any = createServerClient()
-  const { data, error } = await supabase
+  const db: any = createServerClient()
+  const { data, error } = await db
     .from('remy_action_audit_log')
     .select('status, duration_ms')
     .eq('tenant_id', tenantId)

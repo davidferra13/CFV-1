@@ -6,7 +6,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import type {
@@ -109,8 +109,8 @@ const UpdatePreferencesSchema = z.object({
 export type UpdatePreferencesInput = z.infer<typeof UpdatePreferencesSchema>
 
 // Type assertion helper - chef_preferences not in generated types until migration applied
-function fromChefPreferences(supabase: any): any {
-  return supabase.from('chef_preferences')
+function fromChefPreferences(db: any): any {
+  return db.from('chef_preferences')
 }
 
 function normalizeStore(store: DefaultStore): DefaultStore {
@@ -284,9 +284,9 @@ function getMenuEngineFeaturesFromUnknown(value: unknown): MenuEngineFeatures {
  */
 export async function getChefPreferences(): Promise<ChefPreferences> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await fromChefPreferences(supabase)
+  const { data, error } = await fromChefPreferences(db)
     .select('*')
     .eq('chef_id', user.entityId)
     .single()
@@ -338,9 +338,9 @@ export async function getChefPreferences(): Promise<ChefPreferences> {
 
 export async function getChefPrimaryNavHrefs(): Promise<string[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await fromChefPreferences(supabase)
+  const { data, error } = await fromChefPreferences(db)
     .select('primary_nav_hrefs')
     .eq('chef_id', user.entityId)
     .single()
@@ -356,9 +356,9 @@ export async function getChefPrimaryNavHrefs(): Promise<string[]> {
  */
 export async function getMenuEngineFeatures(): Promise<MenuEngineFeatures> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await fromChefPreferences(supabase)
+  const { data, error } = await fromChefPreferences(db)
     .select('menu_engine_features')
     .eq('chef_id', user.entityId)
     .single()
@@ -406,10 +406,10 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
 
   delete payload.default_stores
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check if preferences exist
-  const { data: existing } = await fromChefPreferences(supabase)
+  const { data: existing } = await fromChefPreferences(db)
     .select('id, menu_engine_features')
     .eq('chef_id', user.entityId)
     .single()
@@ -423,16 +423,14 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
   }
 
   if (existing) {
-    const { error } = await fromChefPreferences(supabase)
-      .update(payload)
-      .eq('chef_id', user.entityId)
+    const { error } = await fromChefPreferences(db).update(payload).eq('chef_id', user.entityId)
 
     if (error) {
       console.error('[updateChefPreferences] Update error:', error)
       throw new Error('Failed to update preferences')
     }
   } else {
-    const { error } = await fromChefPreferences(supabase).insert({
+    const { error } = await fromChefPreferences(db).insert({
       chef_id: user.entityId,
       tenant_id: user.tenantId!,
       ...payload,
@@ -466,9 +464,9 @@ export async function getBusinessMode(): Promise<{
   business_address: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await fromChefPreferences(supabase)
+  const { data } = await fromChefPreferences(db)
     .select('is_business, business_legal_name, business_address')
     .eq('chef_id', user.entityId)
     .single()
@@ -489,7 +487,7 @@ export async function setBusinessMode(input: {
   business_address?: string | null
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const payload: Record<string, unknown> = {
     is_business: input.is_business,
@@ -498,18 +496,16 @@ export async function setBusinessMode(input: {
     payload.business_legal_name = input.business_legal_name?.trim() || null
   if ('business_address' in input) payload.business_address = input.business_address?.trim() || null
 
-  const { data: existing } = await fromChefPreferences(supabase)
+  const { data: existing } = await fromChefPreferences(db)
     .select('id')
     .eq('chef_id', user.entityId)
     .single()
 
   if (existing) {
-    const { error } = await fromChefPreferences(supabase)
-      .update(payload)
-      .eq('chef_id', user.entityId)
+    const { error } = await fromChefPreferences(db).update(payload).eq('chef_id', user.entityId)
     if (error) throw new Error('Failed to update business mode')
   } else {
-    const { error } = await fromChefPreferences(supabase).insert({
+    const { error } = await fromChefPreferences(db).insert({
       chef_id: user.entityId,
       tenant_id: user.tenantId!,
       ...payload,

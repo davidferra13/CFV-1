@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { subMonths, addMonths, format, startOfMonth, endOfMonth } from 'date-fns'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -34,18 +34,18 @@ export interface CashFlowProjection {
 export async function getCashFlowProjection(): Promise<CashFlowProjection | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const twelveMonthsAgo = subMonths(new Date(), 12)
 
   // Fetch income (ledger entries) and expenses in parallel
   const [incomeResult, expenseResult] = await Promise.all([
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents, created_at, is_refund')
       .eq('tenant_id', tenantId)
       .gte('created_at', twelveMonthsAgo.toISOString()),
-    supabase
+    db
       .from('expenses')
       .select('amount_cents, created_at')
       .eq('tenant_id', tenantId)

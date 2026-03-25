@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -66,9 +66,9 @@ export type Scorecard = {
 
 export async function addSourcingEntry(input: SourcingEntryInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase as any).from('sourcing_entries').insert({
+  const { error } = await (db as any).from('sourcing_entries').insert({
     chef_id: chef.tenantId!,
     event_id: input.event_id || null,
     entry_date: input.entry_date || new Date().toISOString().split('T')[0],
@@ -94,9 +94,9 @@ export async function getSourcingEntries(opts?: {
   limit?: number
 }) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('sourcing_entries')
     .select('*')
     .eq('chef_id', chef.tenantId!)
@@ -114,9 +114,9 @@ export async function getSourcingEntries(opts?: {
 
 export async function deleteSourcingEntry(id: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('sourcing_entries')
     .delete()
     .eq('id', id)
@@ -208,14 +208,14 @@ export async function getMonthlyTrend(): Promise<
   { month: string; localPercent: number; organicPercent: number; entryCount: number }[]
 > {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get last 12 months of entries
   const twelveMonthsAgo = new Date()
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
   const dateFrom = twelveMonthsAgo.toISOString().split('T')[0]
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('sourcing_entries')
     .select('entry_date, is_local, is_organic')
     .eq('chef_id', chef.tenantId!)
@@ -303,9 +303,9 @@ export async function getSourcingScorecard(opts?: {
 
 export async function getEventSourcingReport(eventId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('sourcing_entries')
     .select('*')
     .eq('chef_id', chef.tenantId!)

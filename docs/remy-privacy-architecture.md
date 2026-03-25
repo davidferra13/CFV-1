@@ -35,19 +35,19 @@ Displayed in Remy drawer
         ↓
 Conversation stored in browser IndexedDB ONLY
         ↓
-Nothing written to Supabase. Nothing logged.
+Nothing written to PostgreSQL. Nothing logged.
 ChefFlow servers do not retain prompts or responses.
 ```
 
 ### What ChefFlow Stores vs. What It Doesn't
 
-| Data                                                        | Stored?                | Where?                       | Who can see it?          |
-| ----------------------------------------------------------- | ---------------------- | ---------------------------- | ------------------------ |
-| Chef's business data (clients, events, recipes, financials) | Yes                    | Supabase (encrypted at rest) | The chef (tenant-scoped) |
-| Remy conversation content (prompts + responses)             | **No**                 | Browser only (IndexedDB)     | The chef only            |
-| Anonymous usage metrics (counts only)                       | Yes                    | Supabase                     | ChefFlow (aggregate)     |
-| Error logs (stack traces, model errors)                     | Yes                    | Server logs                  | ChefFlow engineering     |
-| Conversation shared via "Send to Support"                   | Only if chef initiates | Supabase                     | ChefFlow support team    |
+| Data                                                        | Stored?                | Where?                         | Who can see it?          |
+| ----------------------------------------------------------- | ---------------------- | ------------------------------ | ------------------------ |
+| Chef's business data (clients, events, recipes, financials) | Yes                    | PostgreSQL (encrypted at rest) | The chef (tenant-scoped) |
+| Remy conversation content (prompts + responses)             | **No**                 | Browser only (IndexedDB)       | The chef only            |
+| Anonymous usage metrics (counts only)                       | Yes                    | PostgreSQL                     | ChefFlow (aggregate)     |
+| Error logs (stack traces, model errors)                     | Yes                    | Server logs                    | ChefFlow engineering     |
+| Conversation shared via "Send to Support"                   | Only if chef initiates | PostgreSQL                     | ChefFlow support team    |
 
 ### External Services Disclosure
 
@@ -65,7 +65,7 @@ These services receive item-level data only (e.g., "broccoli price"), never PII 
 
 | File                                                               | Purpose                                                       |
 | ------------------------------------------------------------------ | ------------------------------------------------------------- |
-| `supabase/migrations/20260322000049_remy_privacy_architecture.sql` | `remy_usage_metrics` + `remy_support_shares` tables           |
+| `database/migrations/20260322000049_remy_privacy_architecture.sql` | `remy_usage_metrics` + `remy_support_shares` tables           |
 | `lib/ai/remy-local-storage.ts`                                     | IndexedDB wrapper for browser-local conversation storage      |
 | `lib/ai/remy-metrics.ts`                                           | Anonymous usage metric recording (counts only, never content) |
 | `lib/ai/support-share-action.ts`                                   | Server action for voluntary "Send to Support" sharing         |
@@ -123,7 +123,7 @@ The `RemyPrivacySchematic` composition (1650 frames @ 30fps = 55 seconds):
 The existing `remy_conversations` and `remy_messages` tables are NOT dropped. They will be deprecated in code:
 
 - New conversations go to IndexedDB (browser-local)
-- Old conversations remain accessible (read-only from Supabase)
+- Old conversations remain accessible (read-only from the database)
 - A future migration can archive/remove the old tables once the transition is verified
 
 ---
@@ -142,7 +142,7 @@ The existing `remy_conversations` and `remy_messages` tables are NOT dropped. Th
 
 ## Verification Checklist
 
-- [ ] Run migration on linked Supabase
+- [ ] Run migration on linked PostgreSQL
 - [ ] Verify `remy_usage_metrics` table exists with correct schema
 - [ ] Verify `remy_support_shares` table exists with correct schema
 - [ ] Test transparency page renders 3 sections + external API disclosure

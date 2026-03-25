@@ -6,7 +6,7 @@
 // and payment_overdue notifications.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
 import { differenceInDays } from 'date-fns'
 
@@ -26,9 +26,9 @@ export type OutstandingBalanceEvent = {
  */
 export async function getEventsWithOutstandingBalances(): Promise<OutstandingBalanceEvent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_financial_summary')
     .select('event_id, outstanding_balance_cents, event_status, event_date, occasion, client_name')
     .eq('tenant_id', user.tenantId!)
@@ -70,11 +70,11 @@ export async function checkAndFirePaymentReminders(tenantId?: string): Promise<{
     recipientId = user.id
   }
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Look up chef's user ID if not already known (needed for notification recipient)
   if (!recipientId) {
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('user_id')
       .eq('id', resolvedTenantId)
@@ -91,7 +91,7 @@ export async function checkAndFirePaymentReminders(tenantId?: string): Promise<{
   }
 
   // Fetch outstanding balances for this tenant
-  const { data: rows } = await supabase
+  const { data: rows } = await db
     .from('event_financial_summary')
     .select('event_id, outstanding_balance_cents, event_status, event_date, occasion, client_name')
     .eq('tenant_id', resolvedTenantId)

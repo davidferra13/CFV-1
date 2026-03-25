@@ -1,7 +1,7 @@
 // =============================================================================
 // Social Event Hub - Realtime Subscriptions (SSE-based)
 // Client-side only - used in 'use client' components
-// Uses SSE infrastructure instead of Supabase Realtime
+// Uses SSE infrastructure instead of SSE realtime
 // =============================================================================
 
 'use client'

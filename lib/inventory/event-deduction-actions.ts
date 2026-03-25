@@ -8,7 +8,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -55,11 +55,11 @@ const AdjustmentSchema = z.object({
   overrideQty: z.number().positive('Override quantity must be positive'),
 })
 
-// ─── Supabase helper ────────────────────────────────────────────
-function db(supabase: any) {
+// ─── DB helper ────────────────────────────────────────────
+function db(db: any) {
   return {
-    transactions: () => supabase.from('inventory_transactions' as any) as any,
-    currentStock: () => supabase.from('inventory_current_stock' as any) as any,
+    transactions: () => db.from('inventory_transactions' as any) as any,
+    currentStock: () => db.from('inventory_current_stock' as any) as any,
   }
 }
 
@@ -72,10 +72,10 @@ function db(supabase: any) {
  */
 export async function previewEventDeduction(eventId: string): Promise<DeductionPreview> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event ownership
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, tenant_id')
     .eq('id', eventId)
@@ -85,7 +85,7 @@ export async function previewEventDeduction(eventId: string): Promise<DeductionP
   if (eventError || !event) throw new Error('Event not found')
 
   // Walk the recipe chain to get aggregated ingredient needs
-  const ingredientNeeds = await walkEventRecipeChain(supabase, eventId, user.tenantId!)
+  const ingredientNeeds = await walkEventRecipeChain(db, eventId, user.tenantId!)
 
   // Get current stock for all needed ingredients
   const ingredientIds = [
@@ -100,7 +100,7 @@ export async function previewEventDeduction(eventId: string): Promise<DeductionP
 
   if (ingredientIds.length > 0) {
     // Query the inventory_current_stock view
-    const { data: stockData } = await db(supabase)
+    const { data: stockData } = await db(db)
       .currentStock()
       .select('ingredient_id, current_qty')
       .eq('chef_id', user.tenantId!)
@@ -116,7 +116,7 @@ export async function previewEventDeduction(eventId: string): Promise<DeductionP
   // Get latest prices for cost estimation
   const priceMap = new Map<string, number>()
   if (ingredientIds.length > 0) {
-    const { data: ingredients } = await supabase
+    const { data: ingredients } = await db
       .from('ingredients')
       .select('id, last_price_cents')
       .in('id', ingredientIds)
@@ -166,7 +166,7 @@ export async function executeEventDeduction(
   adjustments?: DeductionAdjustment[]
 ): Promise<{ transactionIds: string[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Validate adjustments if provided
   const parsedAdjustments = adjustments?.map((a) => AdjustmentSchema.parse(a))
@@ -214,7 +214,7 @@ export async function executeEventDeduction(
     throw new Error('No deductions to execute after applying adjustments')
   }
 
-  const { data, error } = await db(supabase).transactions().insert(transactionRows).select('id')
+  const { data, error } = await db(db).transactions().insert(transactionRows).select('id')
 
   if (error) throw new Error(`Failed to execute event deductions: ${(error as any).message}`)
 
@@ -235,10 +235,10 @@ export async function reverseEventDeduction(
   eventId: string
 ): Promise<{ transactionIds: string[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find all event_deduction transactions for this event
-  const { data: deductions, error: fetchError } = await db(supabase)
+  const { data: deductions, error: fetchError } = await db(db)
     .transactions()
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -266,7 +266,7 @@ export async function reverseEventDeduction(
     created_by: user.id,
   }))
 
-  const { data, error } = await db(supabase).transactions().insert(returnRows).select('id')
+  const { data, error } = await db(db).transactions().insert(returnRows).select('id')
 
   if (error) throw new Error(`Failed to reverse event deductions: ${(error as any).message}`)
 
@@ -287,7 +287,7 @@ export async function returnFromEvent(
   items: ReturnItem[]
 ): Promise<{ transactionIds: string[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (items.length === 0) {
     throw new Error('No items to return')
@@ -296,7 +296,7 @@ export async function returnFromEvent(
   const parsedItems = items.map((item) => ReturnItemSchema.parse(item))
 
   // Verify event ownership
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id')
     .eq('id', eventId)
@@ -318,7 +318,7 @@ export async function returnFromEvent(
     created_by: user.id,
   }))
 
-  const { data, error } = await db(supabase).transactions().insert(returnRows).select('id')
+  const { data, error } = await db(db).transactions().insert(returnRows).select('id')
 
   if (error) throw new Error(`Failed to record returns: ${(error as any).message}`)
 
@@ -340,14 +340,14 @@ export async function returnFromEvent(
  * Returns aggregated ingredient quantities.
  */
 async function walkEventRecipeChain(
-  supabase: any,
+  db: any,
   eventId: string,
   tenantId: string
 ): Promise<
   Map<string, { ingredientId: string; ingredientName: string; unit: string; quantity: number }>
 > {
   // Step 1: Get menus for this event
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -358,14 +358,14 @@ async function walkEventRecipeChain(
   const menuIds = (menus as any[]).map((m: any) => m.id)
 
   // Step 2: Get dishes for those menus
-  const { data: dishes } = await supabase.from('dishes').select('id').in('menu_id', menuIds)
+  const { data: dishes } = await db.from('dishes').select('id').in('menu_id', menuIds)
 
   if (!dishes || dishes.length === 0) return new Map()
 
   const dishIds = (dishes as any[]).map((d: any) => d.id)
 
   // Step 3: Get components with recipe_id and scale_factor
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('recipe_id, scale_factor')
     .in('dish_id', dishIds)
@@ -394,7 +394,7 @@ async function walkEventRecipeChain(
     if (batch.length === 0) break
     batch.forEach((id) => visited.add(id))
 
-    const { data: subRecipes } = await supabase
+    const { data: subRecipes } = await db
       .from('recipe_sub_recipes')
       .select('parent_recipe_id, child_recipe_id, quantity')
       .in('parent_recipe_id', batch)
@@ -422,7 +422,7 @@ async function walkEventRecipeChain(
   const allRecipeIds = Array.from(allRecipeMultipliers.keys())
   if (allRecipeIds.length === 0) return new Map()
 
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select('recipe_id, ingredient_id, quantity, unit')
     .in('recipe_id', allRecipeIds)
@@ -433,7 +433,7 @@ async function walkEventRecipeChain(
   const ingredientIds = [
     ...new Set((recipeIngredients as any[]).map((ri: any) => ri.ingredient_id)),
   ]
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await db
     .from('ingredients')
     .select('id, name')
     .in('id', ingredientIds)

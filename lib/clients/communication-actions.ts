@@ -5,7 +5,7 @@
 // Wraps existing data sources into the Communication Hub API shape.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ export async function getClientTimeline(
   options?: TimelineOptions
 ): Promise<TimelineResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
   const limit = options?.limit ?? 100
 
@@ -86,25 +86,25 @@ export async function getClientTimeline(
   const fetches: Promise<TimelineItem[]>[] = []
 
   if (wantedTypes.includes('event')) {
-    fetches.push(fetchEvents(supabase, tenantId, clientId))
+    fetches.push(fetchEvents(db, tenantId, clientId))
   }
   if (wantedTypes.includes('inquiry')) {
-    fetches.push(fetchInquiries(supabase, tenantId, clientId))
+    fetches.push(fetchInquiries(db, tenantId, clientId))
   }
   if (wantedTypes.includes('email')) {
-    fetches.push(fetchEmails(supabase, tenantId, clientId))
+    fetches.push(fetchEmails(db, tenantId, clientId))
   }
   if (wantedTypes.includes('note')) {
-    fetches.push(fetchNotes(supabase, tenantId, clientId))
+    fetches.push(fetchNotes(db, tenantId, clientId))
   }
   if (wantedTypes.includes('quote')) {
-    fetches.push(fetchQuotes(supabase, tenantId, clientId))
+    fetches.push(fetchQuotes(db, tenantId, clientId))
   }
   if (wantedTypes.includes('payment')) {
-    fetches.push(fetchPayments(supabase, tenantId, clientId))
+    fetches.push(fetchPayments(db, tenantId, clientId))
   }
   if (wantedTypes.includes('referral')) {
-    fetches.push(fetchReferrals(supabase, tenantId, clientId))
+    fetches.push(fetchReferrals(db, tenantId, clientId))
   }
 
   const results = await Promise.all(fetches)
@@ -187,9 +187,9 @@ export async function getClientCommunicationStats(clientId: string): Promise<Com
 
 export async function addCommunicationNote(clientId: string, content: string, pinned = false) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_notes')
     .insert({
       tenant_id: user.tenantId!,
@@ -242,9 +242,9 @@ export async function addCommunicationNote(clientId: string, content: string, pi
 
 export async function getCommunicationNotes(clientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_notes')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -271,12 +271,8 @@ export async function getCommunicationNotes(clientId: string) {
 
 // ── Data Source Fetchers ─────────────────────────────────────────────────────
 
-async function fetchEvents(
-  supabase: any,
-  tenantId: string,
-  clientId: string
-): Promise<TimelineItem[]> {
-  const { data } = await supabase
+async function fetchEvents(db: any, tenantId: string, clientId: string): Promise<TimelineItem[]> {
+  const { data } = await db
     .from('events')
     .select('id, created_at, event_date, status, occasion, guest_count, quoted_price_cents')
     .eq('client_id', clientId)
@@ -317,11 +313,11 @@ async function fetchEvents(
 }
 
 async function fetchInquiries(
-  supabase: any,
+  db: any,
   tenantId: string,
   clientId: string
 ): Promise<TimelineItem[]> {
-  const { data } = await supabase
+  const { data } = await db
     .from('inquiries')
     .select('id, created_at, first_contact_at, status, channel')
     .eq('client_id', clientId)
@@ -352,12 +348,8 @@ async function fetchInquiries(
   })
 }
 
-async function fetchEmails(
-  supabase: any,
-  tenantId: string,
-  clientId: string
-): Promise<TimelineItem[]> {
-  const { data } = await supabase
+async function fetchEmails(db: any, tenantId: string, clientId: string): Promise<TimelineItem[]> {
+  const { data } = await db
     .from('messages')
     .select('id, created_at, sent_at, channel, direction, body, subject')
     .eq('client_id', clientId)
@@ -385,12 +377,8 @@ async function fetchEmails(
   })
 }
 
-async function fetchNotes(
-  supabase: any,
-  tenantId: string,
-  clientId: string
-): Promise<TimelineItem[]> {
-  const { data } = await supabase
+async function fetchNotes(db: any, tenantId: string, clientId: string): Promise<TimelineItem[]> {
+  const { data } = await db
     .from('client_notes')
     .select('id, created_at, note_text, category, pinned, source')
     .eq('client_id', clientId)
@@ -415,13 +403,9 @@ async function fetchNotes(
   }))
 }
 
-async function fetchQuotes(
-  supabase: any,
-  tenantId: string,
-  clientId: string
-): Promise<TimelineItem[]> {
+async function fetchQuotes(db: any, tenantId: string, clientId: string): Promise<TimelineItem[]> {
   // Quotes are linked through events
-  const { data } = await supabase
+  const { data } = await db
     .from('quotes')
     .select('id, created_at, status, total_cents, version, event_id, events!inner(client_id)')
     .eq('tenant_id', tenantId)
@@ -456,12 +440,8 @@ async function fetchQuotes(
   })
 }
 
-async function fetchPayments(
-  supabase: any,
-  tenantId: string,
-  clientId: string
-): Promise<TimelineItem[]> {
-  const { data } = await supabase
+async function fetchPayments(db: any, tenantId: string, clientId: string): Promise<TimelineItem[]> {
+  const { data } = await db
     .from('ledger_entries')
     .select('id, created_at, received_at, entry_type, amount_cents, payment_method, description')
     .eq('client_id', clientId)
@@ -506,12 +486,12 @@ async function fetchPayments(
 }
 
 async function fetchReferrals(
-  supabase: any,
+  db: any,
   tenantId: string,
   clientId: string
 ): Promise<TimelineItem[]> {
   // Referrals where this client is either the referrer or the referred
-  const { data: asReferrer } = await supabase
+  const { data: asReferrer } = await db
     .from('client_referrals' as any)
     .select(
       'id, created_at, status, referral_code, revenue_generated_cents, referred:clients!referred_client_id(full_name)'
@@ -521,7 +501,7 @@ async function fetchReferrals(
     .order('created_at', { ascending: false })
     .limit(20)
 
-  const { data: asReferred } = await supabase
+  const { data: asReferred } = await db
     .from('client_referrals' as any)
     .select(
       'id, created_at, status, referral_code, revenue_generated_cents, referrer:clients!referrer_client_id(full_name)'

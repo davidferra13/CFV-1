@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -40,11 +40,11 @@ export async function getEventIntelligenceContext(params: {
 }): Promise<EventIntelligenceContext | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [eventsRes, expensesRes, thisExpensesRes] = await Promise.all([
     // Historical completed events for comparison
-    supabase
+    db
       .from('events')
       .select('id, guest_count, occasion, quoted_price_cents, event_date, service_style, status')
       .eq('tenant_id', tenantId)
@@ -55,13 +55,13 @@ export async function getEventIntelligenceContext(params: {
       .order('event_date', { ascending: false })
       .limit(100),
     // Historical expense totals for margin calc
-    supabase
+    db
       .from('event_financial_summary')
       .select('event_id, total_expense_cents, total_income_cents, profit_margin_percent')
       .eq('tenant_id', tenantId)
       .limit(100),
     // This event's expenses
-    supabase
+    db
       .from('event_financial_summary')
       .select('total_expense_cents, total_income_cents, profit_margin_percent')
       .eq('event_id', params.eventId)
@@ -168,7 +168,7 @@ export async function getEventIntelligenceContext(params: {
     }
 
     // Check if AAR exists
-    const { count: aarCount } = await supabase
+    const { count: aarCount } = await db
       .from('after_action_reviews')
       .select('id', { count: 'exact', head: true })
       .eq('event_id', params.eventId)
@@ -178,7 +178,7 @@ export async function getEventIntelligenceContext(params: {
     }
 
     // Check if review was requested
-    const { count: reviewCount } = await supabase
+    const { count: reviewCount } = await db
       .from('reviews')
       .select('id', { count: 'exact', head: true })
       .eq('event_id', params.eventId)

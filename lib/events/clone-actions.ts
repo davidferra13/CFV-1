@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -37,12 +37,12 @@ export async function cloneEvent(
   newClientId?: string
 ): Promise<CloneEventResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validated = CloneEventSchema.parse({ sourceEventId, newDate, newClientId })
 
   // Fetch source event
-  const { data: source, error: sourceError } = await supabase
+  const { data: source, error: sourceError } = await db
     .from('events')
     .select('*')
     .eq('id', validated.sourceEventId)
@@ -56,7 +56,7 @@ export async function cloneEvent(
   // If a new client is specified, verify they belong to this tenant
   const clientId = validated.newClientId ?? source.client_id
   if (validated.newClientId) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('id')
       .eq('id', validated.newClientId)
@@ -111,7 +111,7 @@ export async function cloneEvent(
   }
 
   // Insert the new event (status defaults to 'draft' in DB)
-  const { data: newEvent, error: insertError } = await supabase
+  const { data: newEvent, error: insertError } = await db
     .from('events')
     .insert(newEventPayload as any)
     .select('id')
@@ -123,7 +123,7 @@ export async function cloneEvent(
   }
 
   // Log initial transition to 'draft'
-  await supabase.from('event_state_transitions').insert({
+  await db.from('event_state_transitions').insert({
     tenant_id: user.tenantId!,
     event_id: newEvent.id,
     from_status: null,
@@ -133,7 +133,7 @@ export async function cloneEvent(
   })
 
   // Clone menus and dishes
-  const { data: sourceMenus } = await supabase
+  const { data: sourceMenus } = await db
     .from('menus')
     .select('*')
     .eq('event_id', validated.sourceEventId)
@@ -141,7 +141,7 @@ export async function cloneEvent(
   if (sourceMenus && sourceMenus.length > 0) {
     for (const sourceMenu of sourceMenus) {
       // Create new menu for the cloned event
-      const { data: newMenu, error: menuError } = await supabase
+      const { data: newMenu, error: menuError } = await db
         .from('menus')
         .insert({
           event_id: newEvent.id,
@@ -158,7 +158,7 @@ export async function cloneEvent(
       }
 
       // Clone dishes from the source menu
-      const { data: sourceDishes } = await supabase
+      const { data: sourceDishes } = await db
         .from('dishes')
         .select(
           'name, description, course_name, course_number, allergen_flags, dietary_tags, sort_order'
@@ -178,7 +178,7 @@ export async function cloneEvent(
           sort_order: dish.sort_order,
         }))
 
-        const { error: dishError } = await supabase.from('dishes').insert(dishInserts as any)
+        const { error: dishError } = await db.from('dishes').insert(dishInserts as any)
 
         if (dishError) {
           console.error('[cloneEvent] Dish clone error:', dishError)

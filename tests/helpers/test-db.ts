@@ -1,7 +1,7 @@
 /**
  * Test Database Helpers — P0 Test Infrastructure
  *
- * Utilities for integration tests that need a real Supabase connection.
+ * Utilities for integration tests that need a real database connection.
  * Handles setup, teardown, and isolation between test runs.
  *
  * Usage:
@@ -11,7 +11,7 @@
  *   after(async () => { await testDb.cleanup() })
  */
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // CONNECTION
@@ -21,12 +21,12 @@ let _client: any = null
 const _createdIds: { table: string; id: string }[] = []
 
 /**
- * Check if Supabase credentials are available.
+ * Check if database credentials are available.
  * If not, integration tests should skip gracefully.
  */
-export function hasSupabaseCredentials(): boolean {
+export function hasDbCredentials(): boolean {
   // The admin client reads credentials internally; check env vars for skip logic
-  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+  return !!(process.env.NEXT_PUBLIC_DB_URL && process.env.DB_SERVICE_ROLE_KEY)
 }
 
 /**
@@ -169,12 +169,12 @@ export async function cleanup() {
 }
 
 /**
- * Skip the test file gracefully if Supabase is not configured.
+ * Skip the test file gracefully if database is not configured.
  * Call at the top of integration test files.
  */
-export function skipIfNoSupabase() {
-  if (!hasSupabaseCredentials()) {
-    console.warn('[SKIP] Integration test: Supabase credentials not set')
+export function skipIfNoDatabase() {
+  if (!hasDbCredentials()) {
+    console.warn('[SKIP] Integration test: database credentials not set')
     process.exit(0)
   }
 }
@@ -184,7 +184,7 @@ export function skipIfNoSupabase() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const testDb = {
-  hasCredentials: hasSupabaseCredentials,
+  hasCredentials: hasDbCredentials,
   getClient,
   insertTracked,
   createTestChef,
@@ -192,5 +192,5 @@ export const testDb = {
   createTestEvent,
   createTestLedgerEntry,
   cleanup,
-  skipIfNoSupabase,
+  skipIfNoDatabase,
 }

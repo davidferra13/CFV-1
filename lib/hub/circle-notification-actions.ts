@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { sendCircleMessageEmail, sendFriendRequestEmail } from '@/lib/email/notifications'
 import { getActiveSubscriptions } from '@/lib/push/subscriptions'
 import { sendPushNotification } from '@/lib/push/send'
@@ -63,22 +63,18 @@ export async function notifyCircleMembers(input: {
   messageBody: string
 }): Promise<void> {
   try {
-    const supabase: any = createServerClient({ admin: true })
+    const db: any = createServerClient({ admin: true })
 
     // Load group info + members + author in parallel
     const [groupResult, membersResult, authorResult] = await Promise.all([
-      supabase.from('hub_groups').select('name, group_token').eq('id', input.groupId).single(),
-      supabase
+      db.from('hub_groups').select('name, group_token').eq('id', input.groupId).single(),
+      db
         .from('hub_group_members')
         .select(
           'profile_id, notifications_muted, last_notified_at, notify_email, notify_push, quiet_hours_start, quiet_hours_end, digest_mode, hub_guest_profiles(id, email, display_name, notifications_enabled, auth_user_id)'
         )
         .eq('group_id', input.groupId),
-      supabase
-        .from('hub_guest_profiles')
-        .select('display_name')
-        .eq('id', input.authorProfileId)
-        .single(),
+      db.from('hub_guest_profiles').select('display_name').eq('id', input.authorProfileId).single(),
     ])
 
     const group = groupResult.data
@@ -221,15 +217,15 @@ export async function notifyFriendRequest(input: {
   addresseeProfileId: string
 }): Promise<void> {
   try {
-    const supabase: any = createServerClient({ admin: true })
+    const db: any = createServerClient({ admin: true })
 
     const [requesterResult, addresseeResult] = await Promise.all([
-      supabase
+      db
         .from('hub_guest_profiles')
         .select('display_name')
         .eq('id', input.requesterProfileId)
         .single(),
-      supabase
+      db
         .from('hub_guest_profiles')
         .select('email, display_name, profile_token, notifications_enabled')
         .eq('id', input.addresseeProfileId)

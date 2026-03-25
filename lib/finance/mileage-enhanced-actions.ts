@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -64,7 +64,7 @@ export async function logRoundTrip(
   input: LogRoundTripInput
 ): Promise<{ success: boolean; entries: MileageEntry[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validated = LogRoundTripSchema.parse(input)
 
@@ -91,7 +91,7 @@ export async function logRoundTrip(
     leg: 'return',
   }
 
-  const { data: entries, error } = await supabase
+  const { data: entries, error } = await db
     .from('mileage_logs')
     .insert([outboundPayload, returnPayload])
     .select()
@@ -127,14 +127,14 @@ export async function logRoundTrip(
  */
 export async function getMileageByPurpose(taxYear: number): Promise<MileageSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validatedYear = TaxYearSchema.parse(taxYear)
 
   const yearStart = `${validatedYear}-01-01`
   const yearEnd = `${validatedYear}-12-31`
 
-  const { data: logs, error } = await supabase
+  const { data: logs, error } = await db
     .from('mileage_logs')
     .select('purpose, distance_miles')
     .eq('chef_id', user.tenantId!)

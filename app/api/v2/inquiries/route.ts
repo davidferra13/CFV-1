@@ -36,7 +36,7 @@ export const GET = withApiAuth(
     const pagination = parsePagination(url)
     const status = url.searchParams.get('status')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('inquiries')
       .select('*', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)
@@ -70,7 +70,7 @@ export const POST = withApiAuth(
 
     const input = parsed.data
 
-    const { data: inquiry, error } = await ctx.supabase
+    const { data: inquiry, error } = await ctx.db
       .from('inquiries')
       .insert({
         tenant_id: ctx.tenantId,

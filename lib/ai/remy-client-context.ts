@@ -2,7 +2,7 @@
 // Loads ONLY this client's data - scoped by tenant + client ID.
 // PRIVACY: Client data = PII → must use Ollama. No cloud models.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface RemyClientContext {
   clientName: string | null
@@ -46,10 +46,10 @@ export async function loadRemyClientContext(
   clientId: string,
   tenantId: string
 ): Promise<RemyClientContext> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load client profile
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('full_name, dietary_restrictions, allergies, loyalty_tier, loyalty_points')
     .eq('id', clientId)
@@ -57,14 +57,14 @@ export async function loadRemyClientContext(
     .single()
 
   // Load chef info
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', tenantId)
     .single()
 
   // Load upcoming events (not completed/cancelled)
-  const { data: upcoming } = await supabase
+  const { data: upcoming } = await db
     .from('events')
     .select('id, occasion, event_date, status, guest_count, location_address')
     .eq('client_id', clientId)
@@ -74,7 +74,7 @@ export async function loadRemyClientContext(
     .limit(10)
 
   // Load past events
-  const { data: past } = await supabase
+  const { data: past } = await db
     .from('events')
     .select('id, occasion, event_date, status')
     .eq('client_id', clientId)
@@ -84,7 +84,7 @@ export async function loadRemyClientContext(
     .limit(5)
 
   // Load pending quotes for this client's events
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select('id, total_quoted_cents, status, event_id')
     .eq('tenant_id', tenantId)
@@ -101,7 +101,7 @@ export async function loadRemyClientContext(
   })
 
   // Count open inquiries
-  const { count: inquiryCount } = await supabase
+  const { count: inquiryCount } = await db
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('client_id', clientId)
@@ -109,13 +109,13 @@ export async function loadRemyClientContext(
     .in('status', ['new', 'awaiting_client', 'awaiting_chef'])
 
   const [{ data: earnedRows }, { data: config }] = await Promise.all([
-    supabase
+    db
       .from('loyalty_transactions')
       .select('points')
       .eq('tenant_id', tenantId)
       .eq('client_id', clientId)
       .in('type', ['earned', 'bonus']),
-    supabase
+    db
       .from('loyalty_config')
       .select('tier_silver_min, tier_gold_min, tier_platinum_min')
       .eq('tenant_id', tenantId)

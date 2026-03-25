@@ -1,5 +1,5 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -61,9 +61,9 @@ function mapTeamRow(row: DbTeamMember): TeamMember {
 
 export async function listTeamMembers(): Promise<TeamMember[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_team_members')
     .select(
       'id, tenant_id, member_chef_id, member_email, member_name, role, status, created_at, accepted_at'
@@ -80,7 +80,7 @@ export async function listTeamMembers(): Promise<TeamMember[]> {
   }
 
   // Backward-compatible fallback: treat staff roster as team members.
-  const { data: staff, error: staffError } = await supabase
+  const { data: staff, error: staffError } = await db
     .from('staff_members')
     .select('id, chef_id, email, name, role, status, created_at')
     .eq('chef_id', user.tenantId!)
@@ -107,7 +107,7 @@ export async function listTeamMembers(): Promise<TeamMember[]> {
 export async function inviteTeamMember(input: z.infer<typeof InviteTeamMemberSchema>) {
   const user = await requireChef()
   const validated = InviteTeamMemberSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const payload = {
     tenant_id: user.tenantId!,
@@ -121,7 +121,7 @@ export async function inviteTeamMember(input: z.infer<typeof InviteTeamMemberSch
     invited_at: new Date().toISOString(),
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_team_members')
     .insert(payload)
     .select(
@@ -139,7 +139,7 @@ export async function inviteTeamMember(input: z.infer<typeof InviteTeamMemberSch
   }
 
   // Fallback for older environments: add as staff member.
-  const { data: staffData, error: staffError } = await supabase
+  const { data: staffData, error: staffError } = await db
     .from('staff_members')
     .insert({
       chef_id: user.tenantId!,
@@ -178,9 +178,9 @@ export async function updateTeamMember(
 ) {
   const user = await requireChef()
   const validated = UpdateTeamMemberSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_team_members')
     .update({
       ...validated,
@@ -207,7 +207,7 @@ export async function updateTeamMember(
     fallbackUpdate.status = validated.status === 'active' ? 'active' : 'inactive'
   }
 
-  const { data: staffData, error: staffError } = await supabase
+  const { data: staffData, error: staffError } = await db
     .from('staff_members')
     .update(fallbackUpdate)
     .eq('id', memberId)
@@ -238,9 +238,9 @@ export async function updateTeamMember(
 
 export async function removeTeamMember(memberId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_team_members')
     .update({
       status: 'removed',
@@ -259,7 +259,7 @@ export async function removeTeamMember(memberId: string) {
     throw new Error(`Failed to remove team member: ${error.message}`)
   }
 
-  const { error: staffError } = await supabase
+  const { error: staffError } = await db
     .from('staff_members')
     .update({ status: 'inactive' })
     .eq('id', memberId)

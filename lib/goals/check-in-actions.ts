@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import type { GoalCheckIn, ChefGoal } from './types'
@@ -25,10 +25,10 @@ export async function logGoalCheckIn(input: {
     throw new Error(parsed.error.issues.map((i) => i.message).join(', '))
   }
 
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
   // Verify the goal belongs to this tenant
-  const { data: goal } = await supabase
+  const { data: goal } = await db
     .from('chef_goals')
     .select('id, tracking_method')
     .eq('id', parsed.data.goalId)
@@ -40,7 +40,7 @@ export async function logGoalCheckIn(input: {
     throw new Error('This goal is auto-tracked and does not accept manual check-ins')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('goal_check_ins')
     .insert({
       tenant_id: user.tenantId,
@@ -62,10 +62,10 @@ export async function logGoalCheckIn(input: {
 
 export async function getGoalCheckIns(goalId: string, limit = 5): Promise<GoalCheckIn[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient() as any
+  const db: any = createServerClient() as any
 
   // Verify ownership
-  const { data: goal } = await supabase
+  const { data: goal } = await db
     .from('chef_goals')
     .select('id')
     .eq('id', goalId)
@@ -74,7 +74,7 @@ export async function getGoalCheckIns(goalId: string, limit = 5): Promise<GoalCh
 
   if (!goal) throw new Error('Goal not found')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('goal_check_ins')
     .select('*')
     .eq('goal_id', goalId)
@@ -99,11 +99,11 @@ export async function getGoalCheckIns(goalId: string, limit = 5): Promise<GoalCh
 // Called internally from actions.ts during dashboard computation.
 
 export async function getManualGoalCurrentValue(
-  supabase: { from: (table: string) => unknown },
+  db: { from: (table: string) => unknown },
   tenantId: string,
   goal: ChefGoal
 ): Promise<number> {
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('goal_check_ins')
     .select('logged_value')
     .eq('goal_id', goal.id)
@@ -118,12 +118,12 @@ export async function getManualGoalCurrentValue(
 // ── Get recent check-ins for admin use (no auth check - caller must scope) ────
 
 export async function getManualGoalRecentCheckIns(
-  supabase: { from: (table: string) => unknown },
+  db: { from: (table: string) => unknown },
   tenantId: string,
   goalId: string,
   limit = 3
 ): Promise<GoalCheckIn[]> {
-  const { data } = await (supabase as any)
+  const { data } = await (db as any)
     .from('goal_check_ins')
     .select('*')
     .eq('goal_id', goalId)

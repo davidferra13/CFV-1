@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef, requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ──────────────────────────────────────────────
@@ -14,9 +14,9 @@ import { revalidatePath } from 'next/cache'
 
 export async function getAvailabilitySignalSetting(): Promise<boolean> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select('show_availability_signals')
     .eq('id', user.tenantId!)
@@ -27,9 +27,9 @@ export async function getAvailabilitySignalSetting(): Promise<boolean> {
 
 export async function setAvailabilitySignalSetting(enabled: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({ show_availability_signals: enabled })
     .eq('id', user.tenantId!)
@@ -49,9 +49,9 @@ export async function setAvailabilitySignalSetting(enabled: boolean) {
 
 export async function getClientSignalNotificationPref(): Promise<boolean> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('clients')
     .select('availability_signal_notifications')
     .eq('id', user.entityId)
@@ -62,9 +62,9 @@ export async function getClientSignalNotificationPref(): Promise<boolean> {
 
 export async function setClientSignalNotificationPref(enabled: boolean) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update({ availability_signal_notifications: enabled })
     .eq('id', user.entityId)

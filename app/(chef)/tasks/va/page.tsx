@@ -4,16 +4,16 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = { title: 'VA Tasks | ChefFlow' }
 
 export default async function VATasksPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: tasks } = await supabase
+  const { data: tasks } = await db
     .from('tasks')
     .select('id, title, description, status, due_date, created_at')
     .eq('tenant_id', chef.tenantId!)

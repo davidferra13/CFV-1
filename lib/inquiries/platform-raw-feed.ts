@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 export interface RawFeedItem {
@@ -59,12 +59,12 @@ function detectPlatform(fromAddress: string): string | null {
 export async function getPlatformRawFeed(limit = 50): Promise<RawFeedItem[]> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Fetch more rows than needed since we filter in JS
     const fetchLimit = limit * 3
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('gmail_sync_log')
       .select('id, from_address, subject, classification, confidence, inquiry_id, synced_at')
       .eq('tenant_id', user.tenantId!)

@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { executeFinalPurge } from '@/lib/compliance/account-deletion-actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
-const supabaseAdmin = createAdminClient()
+const dbAdmin = createAdminClient()
 
 /**
  * Daily cron endpoint to purge accounts past their 30-day grace period.
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   if (authError) return authError
 
   try {
-    const { data: pendingDeletions, error } = await supabaseAdmin
+    const { data: pendingDeletions, error } = await dbAdmin
       .from('chefs')
       .select('id, auth_user_id, email, business_name')
       .lte('deletion_scheduled_for', new Date().toISOString())

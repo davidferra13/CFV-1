@@ -75,7 +75,7 @@ bash scripts/deploy-beta.sh
 **Pre-migration backup (always do this before applying migrations):**
 
 ```bash
-supabase db dump --linked > backup-$(date +%Y%m%d).sql
+database db dump --linked > backup-$(date +%Y%m%d).sql
 ```
 
 **Restore from SQL dump:**
@@ -86,11 +86,11 @@ supabase db dump --linked > backup-$(date +%Y%m%d).sql
 psql <connection-string> < backup-YYYYMMDD.sql
 ```
 
-**Supabase PITR (Point-in-Time Recovery):**
+**PostgreSQL PITR (Point-in-Time Recovery):**
 
-Available on Supabase Pro plan. Restores to any point in the last 7 days.
+Available on the database Pro plan. Restores to any point in the last 7 days.
 
-1. Go to Supabase Dashboard > Project > Database > Backups
+1. Go to PostgreSQL Dashboard > Project > Database > Backups
 2. Select "Point in Time" tab
 3. Choose the timestamp (before the incident)
 4. Confirm restore
@@ -105,7 +105,7 @@ PITR creates a new project with the restored data. You then update environment v
 | Bad beta deploy                         | `bash scripts/rollback-beta.sh` | ~30 seconds        |
 | Bad migration (additive, no data loss)  | Deploy new migration to undo    | ~5 minutes         |
 | Bad migration (data corrupted)          | Restore from SQL dump or PITR   | ~15-30 minutes     |
-| Supabase outage                         | Wait for Supabase status page   | Out of our control |
+| PostgreSQL outage                       | Wait for PostgreSQL status page | Out of our control |
 | Ollama down (AI features)               | Restart Ollama: `ollama serve`  | ~10 seconds        |
 
 ---

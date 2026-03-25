@@ -1,14 +1,26 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 // --- Types ---
 
-export type ClaimType = 'property_damage' | 'bodily_injury' | 'food_illness' | 'equipment_loss' | 'vehicle' | 'other'
-export type ClaimStatus = 'documenting' | 'filed' | 'under_review' | 'approved' | 'denied' | 'settled'
+export type ClaimType =
+  | 'property_damage'
+  | 'bodily_injury'
+  | 'food_illness'
+  | 'equipment_loss'
+  | 'vehicle'
+  | 'other'
+export type ClaimStatus =
+  | 'documenting'
+  | 'filed'
+  | 'under_review'
+  | 'approved'
+  | 'denied'
+  | 'settled'
 
 export interface InsuranceClaim {
   id: string
@@ -33,8 +45,22 @@ export interface InsuranceClaim {
 
 // --- Validation Schemas ---
 
-const ClaimTypeEnum = z.enum(['property_damage', 'bodily_injury', 'food_illness', 'equipment_loss', 'vehicle', 'other'])
-const ClaimStatusEnum = z.enum(['documenting', 'filed', 'under_review', 'approved', 'denied', 'settled'])
+const ClaimTypeEnum = z.enum([
+  'property_damage',
+  'bodily_injury',
+  'food_illness',
+  'equipment_loss',
+  'vehicle',
+  'other',
+])
+const ClaimStatusEnum = z.enum([
+  'documenting',
+  'filed',
+  'under_review',
+  'approved',
+  'denied',
+  'settled',
+])
 
 const CreateClaimSchema = z.object({
   event_id: z.string().uuid().nullable().optional(),
@@ -75,9 +101,9 @@ export type UpdateClaimInput = z.infer<typeof UpdateClaimSchema>
  */
 export async function getClaims(filters?: { status?: ClaimStatus; type?: ClaimType }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('insurance_claims')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -102,9 +128,9 @@ export async function getClaims(filters?: { status?: ClaimStatus; type?: ClaimTy
 export async function createClaim(input: CreateClaimInput) {
   const user = await requireChef()
   const validated = CreateClaimSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('insurance_claims')
     .insert({
       chef_id: user.tenantId!,
@@ -135,9 +161,9 @@ export async function createClaim(input: CreateClaimInput) {
 export async function updateClaim(id: string, input: UpdateClaimInput) {
   const user = await requireChef()
   const validated = UpdateClaimSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('insurance_claims')
     .update({
       ...validated,
@@ -159,10 +185,10 @@ export async function updateClaim(id: string, input: UpdateClaimInput) {
  */
 export async function deleteClaim(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify claim is in documenting status before deleting
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('insurance_claims')
     .select('id, status')
     .eq('id', id)
@@ -174,7 +200,7 @@ export async function deleteClaim(id: string) {
     throw new Error('Only claims in "documenting" status can be deleted')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('insurance_claims')
     .delete()
     .eq('id', id)
@@ -192,7 +218,7 @@ export async function deleteClaim(id: string) {
 export async function updateClaimStatus(id: string, newStatus: ClaimStatus) {
   const user = await requireChef()
   ClaimStatusEnum.parse(newStatus)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = {
     status: newStatus,
@@ -204,7 +230,7 @@ export async function updateClaimStatus(id: string, newStatus: ClaimStatus) {
     updateData.resolved_at = new Date().toISOString()
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('insurance_claims')
     .update(updateData)
     .eq('id', id)
@@ -223,10 +249,10 @@ export async function updateClaimStatus(id: string, newStatus: ClaimStatus) {
  */
 export async function getClaimDocumentPackage(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the claim
-  const { data: claim, error: claimError } = await supabase
+  const { data: claim, error: claimError } = await db
     .from('insurance_claims')
     .select('*')
     .eq('id', id)
@@ -242,7 +268,7 @@ export async function getClaimDocumentPackage(id: string) {
 
   // If the claim is linked to an event, gather related data
   if (claim.event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('*')
       .eq('id', claim.event_id)
@@ -252,7 +278,7 @@ export async function getClaimDocumentPackage(id: string) {
     eventData = event
 
     if (event?.client_id) {
-      const { data: client } = await supabase
+      const { data: client } = await db
         .from('clients')
         .select('id, first_name, last_name, email, phone, company')
         .eq('id', event.client_id)
@@ -263,7 +289,7 @@ export async function getClaimDocumentPackage(id: string) {
     }
 
     // Get menu items if available
-    const { data: menuItems } = await supabase
+    const { data: menuItems } = await db
       .from('event_menu_items')
       .select('*')
       .eq('event_id', claim.event_id)
@@ -271,7 +297,7 @@ export async function getClaimDocumentPackage(id: string) {
     menuData = menuItems
 
     // Get event transitions for timeline
-    const { data: transitions } = await supabase
+    const { data: transitions } = await db
       .from('event_transitions')
       .select('*')
       .eq('event_id', claim.event_id)
@@ -294,9 +320,9 @@ export async function getClaimDocumentPackage(id: string) {
  */
 export async function getClaimStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: claims, error } = await supabase
+  const { data: claims, error } = await db
     .from('insurance_claims')
     .select('status, amount_cents')
     .eq('chef_id', user.tenantId!)
@@ -306,10 +332,10 @@ export async function getClaimStats() {
   const allClaims = (claims ?? []) as { status: ClaimStatus; amount_cents: number | null }[]
   const openStatuses: ClaimStatus[] = ['documenting', 'filed', 'under_review']
 
-  const openClaims = allClaims.filter(c => openStatuses.includes(c.status)).length
+  const openClaims = allClaims.filter((c) => openStatuses.includes(c.status)).length
   const totalClaimedCents = allClaims.reduce((sum, c) => sum + (c.amount_cents ?? 0), 0)
   const totalSettledCents = allClaims
-    .filter(c => c.status === 'settled' || c.status === 'approved')
+    .filter((c) => c.status === 'settled' || c.status === 'approved')
     .reduce((sum, c) => sum + (c.amount_cents ?? 0), 0)
 
   return {

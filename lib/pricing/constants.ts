@@ -1,61 +1,48 @@
-// Pricing Constants - Single Source of Truth
-// Imported by both the deterministic pricing engine (compute.ts) and the AI agent brain.
+// Pricing Constants - SYSTEM DEFAULTS ONLY
+// These are fallback values used ONLY when a chef has not configured their own rates.
+// Per-chef rates are stored in chef_pricing_config (DB) and loaded via getPricingConfig().
 // All amounts in cents (minor units).
+//
+// IMPORTANT: These defaults are intentionally zeroed out so that new chefs
+// start with a blank slate and are guided through the pricing setup wizard.
+// The pricing engine, Remy brain, and rate card all read from chef_pricing_config first.
 
 export const COUPLES_RATES: Record<number, number> = {
-  3: 20000, // $200/person
-  4: 25000, // $250/person
-  5: 30000, // $300/person
+  3: 0, // Set during pricing setup
+  4: 0,
+  5: 0,
 }
 
 export const GROUP_RATES: Record<number, number> = {
-  3: 15500, // $155/person
-  4: 18500, // $185/person
-  5: 21500, // $215/person
+  3: 0, // Set during pricing setup
+  4: 0,
+  5: 0,
 }
 
 // Multi-night packages (total price, not per-person)
-export const MULTI_NIGHT_PACKAGES: Record<string, number> = {
-  // Two-night packages
-  two_night_3_course: 70000, // $700
-  two_night_4_course: 90000, // $900
-  two_night_5_course: 110000, // $1,100
-  two_night_mixed: 90000, // $900
-
-  // Three-night packages - ⚠️ CONFIRM VALUE with chef before shipping
-  three_night_3_course: 0, // ⚠️ CONFIRM VALUE
-  three_night_4_course: 0, // ⚠️ CONFIRM VALUE
-  three_night_5_course: 0, // ⚠️ CONFIRM VALUE
-  three_night_mixed: 0, // ⚠️ CONFIRM VALUE
-
-  // Four-night packages - ⚠️ CONFIRM VALUE with chef before shipping
-  four_night_3_course: 0, // ⚠️ CONFIRM VALUE
-  four_night_4_course: 0, // ⚠️ CONFIRM VALUE
-  four_night_5_course: 0, // ⚠️ CONFIRM VALUE
-  four_night_mixed: 0, // ⚠️ CONFIRM VALUE
-}
+export const MULTI_NIGHT_PACKAGES: Record<string, number> = {}
 
 export const WEEKLY_RATES = {
-  standard_day: { min: 40000, max: 50000 }, // $400-$500/day
-  commitment_day: { min: 30000, max: 35000 }, // $300-$350/day (5 consecutive days, same home)
-  cook_and_leave: 15000, // $150/session (2 meals)
+  standard_day: { min: 0, max: 0 }, // Set during pricing setup
+  commitment_day: { min: 0, max: 0 },
+  cook_and_leave: 0,
 }
 
-export const PIZZA_RATE = 15000 // $150/person
+export const PIZZA_RATE = 0
 
-// Deposit requirements
-export const DEPOSIT_PERCENTAGE = 0.5 // 50% non-refundable
+// Deposit requirements - these are reasonable system defaults
+export const DEPOSIT_PERCENTAGE = 0.5 // 50% non-refundable (industry standard)
 
 // Balance due window
 export const BALANCE_DUE_HOURS_BEFORE = 24 // hours before service
 
-// IRS mileage rate (2026 standard) - update annually
+// IRS mileage rate (2026 standard) - update annually. This is a federal rate, not per-chef.
 export const IRS_MILEAGE_RATE_CENTS = 70 // $0.70/mile
 
 // ─── Thresholds ───────────────────────────────────────────────────────────────
 
 // Guest count classification
-export const LARGE_GROUP_MIN_GUESTS = 8 // 8–14 = large group (uses GROUP_RATES + isLargeGroup flag)
+export const LARGE_GROUP_MIN_GUESTS = 8 // 8-14 = large group
 export const LARGE_GROUP_MAX_GUESTS = 14 // 15+ = custom/buyout required
 
 // Weekly service: minimum consecutive days for commitment rate
@@ -73,10 +60,11 @@ export interface HolidayPremium {
   default: number // midpoint used for computation
 }
 
+// Zeroed out - chef sets their own premiums during pricing setup
 export const HOLIDAY_PREMIUMS: Record<HolidayTier, HolidayPremium> = {
-  1: { tier: 1, min: 0.4, max: 0.5, default: 0.45 },
-  2: { tier: 2, min: 0.25, max: 0.35, default: 0.3 },
-  3: { tier: 3, min: 0.15, max: 0.25, default: 0.2 },
+  1: { tier: 1, min: 0, max: 0, default: 0 },
+  2: { tier: 2, min: 0, max: 0, default: 0 },
+  3: { tier: 3, min: 0, max: 0, default: 0 },
 }
 
 // Days before a Tier 1 or 2 holiday that qualify for half-premium (proximity premium)
@@ -85,12 +73,11 @@ export const HOLIDAY_PROXIMITY_DAYS = 2
 // ─── Weekend Premium ──────────────────────────────────────────────────────────
 
 // Optional Fri/Sat uplift - applied only when weekendPremiumEnabled = true in PricingInput
-export const WEEKEND_PREMIUM_PERCENT = 0.1 // 10%
+export const WEEKEND_PREMIUM_PERCENT = 0 // Chef sets their own during pricing setup
 
 // ─── Minimum Booking ──────────────────────────────────────────────────────────
 
-// ⚠️ CONFIRM VALUE with chef - service fee floor (does NOT include travel or add-ons)
-export const MINIMUM_BOOKING_CENTS = 30000 // $300
+export const MINIMUM_BOOKING_CENTS = 0 // Chef sets their own during pricing setup
 
 // ─── Add-On Catalog ───────────────────────────────────────────────────────────
 
@@ -108,27 +95,27 @@ export interface AddOnDefinition {
   flatCents?: number
 }
 
-// ⚠️ ALL PRICES NEED CHEF CONFIRMATION before shipping
+// Empty by default - chef configures their own add-ons during pricing setup
 export const ADD_ON_CATALOG: Record<Exclude<AddOnKey, 'custom'>, AddOnDefinition> = {
   wine_pairing: {
     label: 'Wine Pairing',
     type: 'per_person',
-    perPersonCents: 3500, // $35/person - ⚠️ CONFIRM VALUE
+    perPersonCents: 0,
   },
   charcuterie_board: {
     label: 'Charcuterie Board Setup',
     type: 'flat',
-    flatCents: 15000, // $150 flat - ⚠️ CONFIRM VALUE
+    flatCents: 0,
   },
   extra_appetizer_course: {
     label: 'Additional Appetizer Course',
     type: 'per_person',
-    perPersonCents: 2500, // $25/person - ⚠️ CONFIRM VALUE
+    perPersonCents: 0,
   },
   birthday_dessert: {
     label: 'Custom Birthday Dessert',
     type: 'flat',
-    flatCents: 7500, // $75 flat - ⚠️ CONFIRM VALUE
+    flatCents: 0,
   },
 }
 
@@ -162,8 +149,9 @@ export function centsToDisplay(cents: number): string {
 }
 
 /**
- * Generate the rate card string from constants.
- * Used by the AI agent brain for email generation context.
+ * @deprecated Use generateRateCardFromConfig() in compute.ts instead.
+ * This version uses zeroed-out system defaults and will return empty rates.
+ * Kept only for backward compatibility.
  */
 export function generateRateCardString(): string {
   const couplesLines = Object.entries(COUPLES_RATES)

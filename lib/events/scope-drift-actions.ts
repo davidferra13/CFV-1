@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 const CONVERTING_QUOTE_SELECT =
@@ -10,9 +10,9 @@ const CONVERTING_QUOTE_SELECT =
 export async function acknowledgeScopeDrift(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       scope_drift_acknowledged: true,
@@ -31,10 +31,10 @@ export async function acknowledgeScopeDrift(eventId: string) {
 export async function getConvertingQuote(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // First, find the converting_quote_id on the event
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('converting_quote_id')
     .eq('id', eventId)
@@ -47,7 +47,7 @@ export async function getConvertingQuote(eventId: string) {
 
   if (!event.converting_quote_id) {
     // Fallback: prefer an accepted quote linked to the event.
-    const { data: acceptedQuote } = await supabase
+    const { data: acceptedQuote } = await db
       .from('quotes')
       .select(CONVERTING_QUOTE_SELECT)
       .eq('event_id', eventId)
@@ -62,7 +62,7 @@ export async function getConvertingQuote(eventId: string) {
     }
 
     // Otherwise return the latest linked quote.
-    const { data: latestQuote } = await supabase
+    const { data: latestQuote } = await db
       .from('quotes')
       .select(CONVERTING_QUOTE_SELECT)
       .eq('event_id', eventId)
@@ -74,7 +74,7 @@ export async function getConvertingQuote(eventId: string) {
     return latestQuote ?? null
   }
 
-  const { data: quote } = await supabase
+  const { data: quote } = await db
     .from('quotes')
     .select(CONVERTING_QUOTE_SELECT)
     .eq('id', event.converting_quote_id)

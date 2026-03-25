@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { findPlatformInquiryByContext } from '@/lib/gmail/platform-dedup'
 import { transitionInquiry } from '@/lib/inquiries/actions'
@@ -112,7 +112,7 @@ function isPlaceholderClientEmail(value: unknown): boolean {
 }
 
 async function maybeCreateClient(params: {
-  supabase: any
+  db: any
   tenantId: string
   fullName: string | null
   email: string | null
@@ -135,7 +135,7 @@ async function maybeCreateClient(params: {
     }
   }
 
-  const { data: client, error } = await params.supabase
+  const { data: client, error } = await params.db
     .from('clients')
     .insert({
       tenant_id: params.tenantId,
@@ -159,7 +159,7 @@ async function maybeCreateClient(params: {
 }
 
 async function syncClientContactDetails(params: {
-  supabase: any
+  db: any
   tenantId: string
   clientId: string | null
   fullName: string | null
@@ -168,7 +168,7 @@ async function syncClientContactDetails(params: {
 }) {
   if (!params.clientId) return
 
-  const { data: client } = await params.supabase
+  const { data: client } = await params.db
     .from('clients')
     .select('id, full_name, email, phone, referral_source')
     .eq('tenant_id', params.tenantId)
@@ -199,7 +199,7 @@ async function syncClientContactDetails(params: {
 
   if (Object.keys(updates).length === 0) return
 
-  await params.supabase
+  await params.db
     .from('clients')
     .update(updates)
     .eq('tenant_id', params.tenantId)
@@ -207,7 +207,7 @@ async function syncClientContactDetails(params: {
 }
 
 async function syncBookingEventFromCapture(params: {
-  supabase: any
+  db: any
   tenantId: string
   userId: string
   inquiryId: string
@@ -229,7 +229,7 @@ async function syncBookingEventFromCapture(params: {
     .join('\n\n')
 
   if (params.currentEventId) {
-    const { data: existingEvent } = await params.supabase
+    const { data: existingEvent } = await params.db
       .from('events')
       .select(
         'id, event_date, guest_count, location_address, occasion, quoted_price_cents, special_requests'
@@ -265,7 +265,7 @@ async function syncBookingEventFromCapture(params: {
     }
 
     if (Object.keys(updates).length > 1) {
-      await params.supabase
+      await params.db
         .from('events')
         .update(updates)
         .eq('tenant_id', params.tenantId)
@@ -277,7 +277,7 @@ async function syncBookingEventFromCapture(params: {
 
   if (!params.clientId || !eventDate) return null
 
-  const { data: event, error } = await params.supabase
+  const { data: event, error } = await params.db
     .from('events')
     .insert({
       tenant_id: params.tenantId,
@@ -303,7 +303,7 @@ async function syncBookingEventFromCapture(params: {
     return null
   }
 
-  await params.supabase.from('event_state_transitions').insert({
+  await params.db.from('event_state_transitions').insert({
     tenant_id: params.tenantId,
     event_id: event.id,
     from_status: null,
@@ -316,7 +316,7 @@ async function syncBookingEventFromCapture(params: {
     },
   })
 
-  await params.supabase
+  await params.db
     .from('inquiries')
     .update({ converted_to_event_id: event.id })
     .eq('tenant_id', params.tenantId)
@@ -331,7 +331,7 @@ export async function saveTakeAChefPageCapture(
   const user = await requireChef()
   const validated = TakeAChefPageCaptureSchema.parse(input)
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const parsed = parseTakeAChefPageCapture({
     pageUrl: validated.pageUrl,
     pageTitle: validated.pageTitle || null,
@@ -342,7 +342,7 @@ export async function saveTakeAChefPageCapture(
   const capturedAt = new Date().toISOString()
 
   try {
-    const existingInquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+    const existingInquiryId = await findPlatformInquiryByContext(db, tenantId, {
       channel: 'take_a_chef',
       clientName: parsed.clientName,
       eventDate: parsed.bookingDate,
@@ -351,7 +351,7 @@ export async function saveTakeAChefPageCapture(
     })
 
     if (existingInquiryId) {
-      const { data: inquiry, error } = await supabase
+      const { data: inquiry, error } = await db
         .from('inquiries')
         .select(
           'id, client_id, status, external_link, external_inquiry_id, confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, source_message, unknown_fields, converted_to_event_id'
@@ -367,7 +367,7 @@ export async function saveTakeAChefPageCapture(
       const linkedClientId =
         inquiry.client_id ??
         (await maybeCreateClient({
-          supabase,
+          db,
           tenantId,
           fullName: parsed.clientName,
           email: parsed.email,
@@ -380,7 +380,7 @@ export async function saveTakeAChefPageCapture(
         hasLinkedEvent: Boolean(inquiry.converted_to_event_id),
       })
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await db
         .from('inquiries')
         .update({
           client_id: linkedClientId ?? inquiry.client_id,
@@ -423,7 +423,7 @@ export async function saveTakeAChefPageCapture(
       }
 
       await syncClientContactDetails({
-        supabase,
+        db,
         tenantId,
         clientId: linkedClientId ?? inquiry.client_id,
         fullName: parsed.clientName,
@@ -444,7 +444,7 @@ export async function saveTakeAChefPageCapture(
       const eventId =
         captureType === 'booking'
           ? await syncBookingEventFromCapture({
-              supabase,
+              db,
               tenantId,
               userId: user.id,
               inquiryId: existingInquiryId,
@@ -484,7 +484,7 @@ export async function saveTakeAChefPageCapture(
     }
 
     const clientId = await maybeCreateClient({
-      supabase,
+      db,
       tenantId,
       fullName: parsed.clientName,
       email: parsed.email,
@@ -503,7 +503,7 @@ export async function saveTakeAChefPageCapture(
       hasLinkedEvent: false,
     })
 
-    const { data: inquiry, error: insertError } = await supabase
+    const { data: inquiry, error: insertError } = await db
       .from('inquiries')
       .insert({
         tenant_id: tenantId,
@@ -548,7 +548,7 @@ export async function saveTakeAChefPageCapture(
     }
 
     await syncClientContactDetails({
-      supabase,
+      db,
       tenantId,
       clientId,
       fullName: parsed.clientName,
@@ -559,7 +559,7 @@ export async function saveTakeAChefPageCapture(
     const eventId =
       captureType === 'booking'
         ? await syncBookingEventFromCapture({
-            supabase,
+            db,
             tenantId,
             userId: user.id,
             inquiryId: inquiry.id,

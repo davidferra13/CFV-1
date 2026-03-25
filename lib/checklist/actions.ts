@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getForgottenItemsFrequency } from '@/lib/aar/actions'
 import { revalidatePath } from 'next/cache'
 
@@ -46,12 +46,12 @@ export type ChecklistItem = {
  */
 export async function getChefChecklist(eventId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const items: ChecklistItem[] = []
 
   // 1. Permanent items - default + any chef custom items
-  const { data: chef } = await supabase.from('chefs').select('id').eq('id', user.tenantId!).single()
+  const { data: chef } = await db.from('chefs').select('id').eq('id', user.tenantId!).single()
 
   if (!chef) throw new Error('Chef not found')
 
@@ -62,7 +62,7 @@ export async function getChefChecklist(eventId?: string) {
 
   // 2. Event-specific items (if eventId provided)
   if (eventId) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('service_style, special_requests')
       .eq('id', eventId)

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getMarketplacePlatform } from './platforms'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -80,9 +80,9 @@ export async function getPlatformRecordByInquiry(
 ): Promise<PlatformRecordSummary | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('platform_records')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -125,9 +125,9 @@ export async function getPlatformRecordByInquiry(
 export async function getPlatformSnapshots(inquiryId: string): Promise<PlatformSnapshotEntry[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('platform_snapshots')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -160,9 +160,9 @@ export async function getPlatformSnapshots(inquiryId: string): Promise<PlatformS
 export async function getPlatformPayout(inquiryId: string): Promise<PlatformPayoutSummary | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('platform_payouts')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -190,9 +190,9 @@ export async function getPlatformPayout(inquiryId: string): Promise<PlatformPayo
 export async function getPlatformActionLog(inquiryId: string): Promise<PlatformActionEntry[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('platform_action_log')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -226,9 +226,9 @@ export async function getMarketplaceQueueCounts(): Promise<{
 }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('platform_records')
     .select('status_on_platform')
     .eq('tenant_id', tenantId)

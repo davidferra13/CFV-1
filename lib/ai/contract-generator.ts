@@ -7,7 +7,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { withAiFallback } from '@/lib/ai/with-ai-fallback'
 import { generateContractTemplate } from '@/lib/templates/contract'
@@ -29,10 +29,10 @@ const ContractSchema = z.object({
 
 export async function generateContract(eventId: string): Promise<GeneratedContract> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [eventResult, chefResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, quoted_price_cents, client_id'
@@ -40,7 +40,7 @@ export async function generateContract(eventId: string): Promise<GeneratedContra
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase
+    db
       .from('chefs')
       .select('full_name, business_name, email, phone')
       .eq('id', user.tenantId!)
@@ -54,11 +54,7 @@ export async function generateContract(eventId: string): Promise<GeneratedContra
 
   // Fetch client
   const { data: client } = event.client_id
-    ? await supabase
-        .from('clients')
-        .select('full_name, email, phone')
-        .eq('id', event.client_id)
-        .single()
+    ? await db.from('clients').select('full_name, email, phone').eq('id', event.client_id).single()
     : { data: null }
 
   const quotedPrice = event.quoted_price_cents

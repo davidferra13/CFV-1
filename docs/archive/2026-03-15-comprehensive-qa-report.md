@@ -58,14 +58,14 @@
 **Measurements:**
 | Page | Load Time | Notes |
 |------|-----------|-------|
-| Partner Sign Up | 29.3s | Multiple async chains (server action + Supabase init + auth) |
-| Contact | 15.1s | Server action with 2-3 Supabase operations |
+| Partner Sign Up | 29.3s | Multiple async chains (server action + PostgreSQL init + auth) |
+| Contact | 15.1s | Server action with 2-3 PostgreSQL operations |
 | Pricing | 11.3s | 80+ feature definitions rendered at page time |
 | Terms | 9.7s | 1,094 lines of JSX, no code splitting |
 | Chef Sign Up | 7.3s | |
 | Client Sign Up | 8.2s | |
 | Landing | 948ms | (baseline, acceptable) |
-**Root causes:** Google Fonts blocking, PostHog init, large component trees, multiple Supabase round-trips.
+**Root causes:** Google Fonts blocking, PostHog init, large component trees, multiple PostgreSQL round-trips.
 **Note:** PC at max capacity amplifies these issues. Under normal load these may be acceptable, but they indicate optimization opportunities.
 
 ### 7. Embed inquiry form renders for invalid chef IDs

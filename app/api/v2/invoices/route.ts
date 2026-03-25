@@ -13,7 +13,7 @@ export const GET = withApiAuth(
     const pagination = parsePagination(url)
     const status = url.searchParams.get('status')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('events')
       .select(
         'id, status, occasion, event_date, guest_count, quoted_price_cents, invoice_number, invoice_issued_at, client:clients(id, full_name, email)',

@@ -6,12 +6,12 @@ import { computeScore, urgencyFromScore } from '../score'
 import { getCurrentSeason, getEndingMicroWindows } from '@/lib/seasonal/helpers'
 import type { SeasonalPalette } from '@/lib/seasonal/types'
 
-export async function getCulinaryQueueItems(supabase: any, tenantId: string): Promise<QueueItem[]> {
+export async function getCulinaryQueueItems(db: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 
   // 1. Draft menus attached to upcoming events
-  const { data: draftMenus } = await supabase
+  const { data: draftMenus } = await db
     .from('menus')
     .select(
       `
@@ -62,7 +62,7 @@ export async function getCulinaryQueueItems(supabase: any, tenantId: string): Pr
 
   // 2. Seasonal micro-windows ending within 7 days
   try {
-    const { data: palettes } = await supabase
+    const { data: palettes } = await db
       .from('seasonal_palettes')
       .select('*')
       .eq('tenant_id', tenantId)

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { recordPlatformSpendSchema } from './platform-cpl-constants'
 
 export interface PlatformCPLData {
@@ -52,8 +52,8 @@ export async function recordPlatformSpend(input: {
   const data = parsed.data
 
   try {
-    const supabase: any = createServerClient()
-    const { error } = await supabase.from('marketing_spend_log').insert({
+    const db: any = createServerClient()
+    const { error } = await db.from('marketing_spend_log').insert({
       chef_id: user.tenantId!,
       spend_date: data.spendDate,
       channel: data.channel,
@@ -79,10 +79,10 @@ export async function getPlatformCPL(): Promise<PlatformCPLData[]> {
   const tenantId = user.tenantId!
 
   try {
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Query 1: Spend by channel
-    const { data: spendRows, error: spendErr } = await supabase
+    const { data: spendRows, error: spendErr } = await db
       .from('marketing_spend_log')
       .select('channel, amount_cents')
       .eq('chef_id', tenantId)
@@ -98,7 +98,7 @@ export async function getPlatformCPL(): Promise<PlatformCPLData[]> {
     }
 
     // Query 2: Inquiry counts by channel
-    const { data: inquiryRows, error: inqErr } = await supabase
+    const { data: inquiryRows, error: inqErr } = await db
       .from('inquiries')
       .select('channel, status')
       .eq('tenant_id', tenantId)

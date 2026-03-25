@@ -22,7 +22,7 @@
 // and the main operation continues. If recording the failure also fails,
 // it falls back to console.error (last resort).
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type Severity = 'critical' | 'high' | 'medium' | 'low'
 
@@ -58,8 +58,8 @@ export async function nonBlocking(
 
     // Record to side_effect_failures table (fire-and-forget, never throws)
     try {
-      const supabase: any = createServerClient({ admin: true })
-      await supabase.from('side_effect_failures').insert({
+      const db: any = createServerClient({ admin: true })
+      await db.from('side_effect_failures').insert({
         source: opts.source,
         operation: opts.operation,
         severity: opts.severity ?? 'medium',
@@ -91,8 +91,8 @@ export async function recordSideEffectFailure(
   )
 
   try {
-    const supabase: any = createServerClient({ admin: true })
-    await supabase.from('side_effect_failures').insert({
+    const db: any = createServerClient({ admin: true })
+    await db.from('side_effect_failures').insert({
       source: opts.source,
       operation: opts.operation,
       severity: opts.severity ?? 'medium',

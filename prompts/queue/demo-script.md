@@ -65,7 +65,7 @@ Write `docs/demo-script.md` - a step-by-step walkthrough the developer can follo
 
 These are for the CS-educated skeptic specifically:
 
-- Multi-tenant with row-level security (Supabase RLS). Every query is tenant-scoped. A chef can never see another chef's data.
+- Multi-tenant with row-level security (PostgreSQL RLS). Every query is tenant-scoped. A chef can never see another chef's data.
 - 8-state finite state machine for events with enforced transitions
 - Immutable append-only financial ledger (same pattern as double-entry accounting)
 - Privacy-first AI: all client data stays local via Ollama. PII never leaves the machine. Not even to OpenAI or Google.

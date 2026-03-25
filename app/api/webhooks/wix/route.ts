@@ -10,7 +10,7 @@
 // Query param ?secret= was removed in security round 6 - secrets in URLs leak to logs.
 
 import { NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { processWixSubmission } from '@/lib/wix/process'
 import { logWebhookEvent } from '@/lib/webhooks/audit-log'
 import crypto from 'crypto'
@@ -44,10 +44,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Look up the connection by webhook secret
-  const { data: connection, error: connError } = await supabase
+  const { data: connection, error: connError } = await db
     .from('wix_connections')
     .select('chef_id, tenant_id, auto_create_inquiry, webhook_secret')
     .eq('webhook_secret', secret)
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
   )
 
   // Idempotency check: has this submission already been received?
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('wix_submissions')
     .select('id, status')
     .eq('tenant_id', connection.tenant_id)
@@ -91,7 +91,7 @@ export async function POST(req: Request) {
   }
 
   // Insert the raw submission into staging table (fast - meets 1250ms deadline)
-  const { data: submission, error: insertError } = await supabase
+  const { data: submission, error: insertError } = await db
     .from('wix_submissions')
     .insert({
       tenant_id: connection.tenant_id,

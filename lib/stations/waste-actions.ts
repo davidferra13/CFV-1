@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -43,9 +43,9 @@ const REASON_LABELS: Record<string, string> = {
 export async function logWaste(input: LogWasteInput) {
   const user = await requireChef()
   const validated = LogWasteSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('waste_log')
     .insert({
       chef_id: user.tenantId!,
@@ -76,9 +76,9 @@ export async function logWaste(input: LogWasteInput) {
  */
 export async function getWasteLog(startDate: string, endDate: string, stationId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('waste_log')
     .select(
       `
@@ -114,9 +114,9 @@ export async function getWasteLog(startDate: string, endDate: string, stationId?
  */
 export async function getWasteSummary(startDate: string, endDate: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('waste_log')
     .select(
       `

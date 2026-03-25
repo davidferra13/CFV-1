@@ -4,7 +4,7 @@
 // Public queries + admin mutations for the /discover directory.
 // Uses admin client for all operations since this table uses service_role RLS.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { slugify } from './constants'
 import {
@@ -73,9 +73,9 @@ export type DiscoverFilters = {
 export async function getDirectoryListings(
   filters: DiscoverFilters = {}
 ): Promise<DirectoryListingSummary[]> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  let query = supabase
+  let query = db
     .from('directory_listings')
     .select(
       'id, name, slug, city, state, cuisine_types, business_type, website_url, status, price_range, featured, description, photo_urls'
@@ -130,9 +130,9 @@ export async function getDirectoryListings(
 }
 
 export async function getDirectoryListingBySlug(slug: string): Promise<DirectoryListing | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('directory_listings')
     .select('*')
     .eq('slug', slug)
@@ -151,9 +151,9 @@ export async function getDirectoryFacets(): Promise<{
   cuisines: { value: string; count: number }[]
   states: { value: string; count: number }[]
 }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('directory_listings')
     .select('business_type, cuisine_types, state')
     .in('status', ['discovered', 'claimed', 'verified'])
@@ -211,12 +211,12 @@ export async function submitDirectoryListing(input: {
     return { success: false, error: 'Name and email are required.' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const baseSlug = slugify(`${input.name}-${input.city || 'us'}`)
 
   // Ensure unique slug
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('directory_listings')
     .select('slug')
     .like('slug', `${baseSlug}%`)
@@ -226,7 +226,7 @@ export async function submitDirectoryListing(input: {
     slug = `${baseSlug}-${existing.length + 1}`
   }
 
-  const { error } = await supabase.from('directory_listings').insert({
+  const { error } = await db.from('directory_listings').insert({
     name: input.name.trim(),
     slug,
     business_type: input.businessType,
@@ -251,7 +251,7 @@ export async function submitDirectoryListing(input: {
   // Non-blocking: send welcome email to the submitter
   try {
     // Fetch the inserted listing to get the ID
-    const { data: inserted } = await supabase
+    const { data: inserted } = await db
       .from('directory_listings')
       .select('id')
       .eq('slug', slug)
@@ -288,9 +288,9 @@ export async function submitNomination(input: {
     return { success: false, error: 'Business name is required.' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase.from('directory_nominations').insert({
+  const { error } = await db.from('directory_nominations').insert({
     business_name: input.businessName.trim(),
     business_type: input.businessType || 'restaurant',
     city: input.city?.trim() || null,
@@ -322,10 +322,10 @@ export async function requestListingClaim(input: {
     return { success: false, error: 'Name and email are required.' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Check listing exists and isn't already claimed
-  const { data: listing } = await supabase
+  const { data: listing } = await db
     .from('directory_listings')
     .select('id, status, claimed_by_email')
     .eq('id', input.listingId)
@@ -341,7 +341,7 @@ export async function requestListingClaim(input: {
 
   const claimToken = crypto.randomUUID()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('directory_listings')
     .update({
       status: 'claimed',
@@ -360,7 +360,7 @@ export async function requestListingClaim(input: {
   // Non-blocking: send claimed email
   try {
     // Need slug for the email link
-    const { data: updated } = await supabase
+    const { data: updated } = await db
       .from('directory_listings')
       .select('slug, name')
       .eq('id', input.listingId)
@@ -392,9 +392,9 @@ export async function requestListingRemoval(input: {
     return { success: false, error: 'Reason and email are required.' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase
+  const { error } = await db
     .from('directory_listings')
     .update({
       removal_requested_at: new Date().toISOString(),
@@ -413,9 +413,9 @@ export async function requestListingRemoval(input: {
 // ─── Admin Actions ────────────────────────────────────────────────────────────
 
 export async function adminGetAllListings(): Promise<DirectoryListing[]> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('directory_listings')
     .select('*')
     .order('created_at', { ascending: false })
@@ -432,7 +432,7 @@ export async function adminUpdateListingStatus(
   listingId: string,
   status: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const updates: Record<string, any> = { status }
   if (status === 'removed') {
@@ -440,13 +440,13 @@ export async function adminUpdateListingStatus(
   }
 
   // Fetch listing details before update (for email)
-  const { data: listingBefore } = await supabase
+  const { data: listingBefore } = await db
     .from('directory_listings')
     .select('name, slug, claimed_by_email, email')
     .eq('id', listingId)
     .single()
 
-  const { error } = await supabase.from('directory_listings').update(updates).eq('id', listingId)
+  const { error } = await db.from('directory_listings').update(updates).eq('id', listingId)
 
   if (error) {
     console.error('[adminUpdateListingStatus]', error)
@@ -484,11 +484,11 @@ export async function adminCreateListing(input: {
     return { success: false, error: 'Name is required.' }
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const baseSlug = slugify(`${input.name}-${input.city || 'us'}`)
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('directory_listings')
     .select('slug')
     .like('slug', `${baseSlug}%`)
@@ -498,7 +498,7 @@ export async function adminCreateListing(input: {
     slug = `${baseSlug}-${existing.length + 1}`
   }
 
-  const { error } = await supabase.from('directory_listings').insert({
+  const { error } = await db.from('directory_listings').insert({
     name: input.name.trim(),
     slug,
     business_type: input.businessType || 'restaurant',
@@ -530,10 +530,10 @@ export async function enhanceDirectoryListing(input: {
   menuUrl?: string
   hours?: Record<string, string>
 }): Promise<{ success: boolean; error?: string }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify listing exists and is claimed/verified
-  const { data: listing } = await supabase
+  const { data: listing } = await db
     .from('directory_listings')
     .select('id, status')
     .eq('id', input.listingId)
@@ -558,10 +558,7 @@ export async function enhanceDirectoryListing(input: {
     return { success: true }
   }
 
-  const { error } = await supabase
-    .from('directory_listings')
-    .update(updates)
-    .eq('id', input.listingId)
+  const { error } = await db.from('directory_listings').update(updates).eq('id', input.listingId)
 
   if (error) {
     console.error('[enhanceDirectoryListing]', error)
@@ -573,9 +570,9 @@ export async function enhanceDirectoryListing(input: {
 }
 
 export async function adminGetNominations(): Promise<any[]> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('directory_nominations')
     .select('*')
     .order('created_at', { ascending: false })
@@ -592,9 +589,9 @@ export async function adminReviewNomination(
   nominationId: string,
   status: 'approved' | 'rejected' | 'duplicate'
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase
+  const { error } = await db
     .from('directory_nominations')
     .update({
       status,

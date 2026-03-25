@@ -4,7 +4,7 @@
 // PRIVACY: Artifacts are tenant-scoped. RLS on the table enforces ownership.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -39,9 +39,9 @@ export interface SaveArtifactInput {
 export async function saveRemyArtifact(input: SaveArtifactInput): Promise<{ id: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('remy_artifacts')
     .insert({
       tenant_id: tenantId,
@@ -103,12 +103,12 @@ export async function listRemyArtifacts(options?: {
 }): Promise<{ artifacts: RemyArtifact[]; total: number }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const limit = options?.limit ?? 50
   const offset = options?.offset ?? 0
 
-  let query = supabase
+  let query = db
     .from('remy_artifacts')
     .select('*', { count: 'exact' })
     .eq('tenant_id', tenantId)
@@ -150,9 +150,9 @@ export async function listRemyArtifacts(options?: {
 export async function toggleArtifactPin(artifactId: string, pinned: boolean): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('remy_artifacts')
     .update({ pinned })
     .eq('id', artifactId)
@@ -166,9 +166,9 @@ export async function toggleArtifactPin(artifactId: string, pinned: boolean): Pr
 export async function updateArtifactTitle(artifactId: string, title: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('remy_artifacts')
     .update({ title })
     .eq('id', artifactId)
@@ -182,9 +182,9 @@ export async function updateArtifactTitle(artifactId: string, title: string): Pr
 export async function deleteRemyArtifact(artifactId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('remy_artifacts')
     .delete()
     .eq('id', artifactId)

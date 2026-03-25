@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { generateTimeline } from './timeline'
@@ -66,9 +66,9 @@ function mapEventToScheduling(event: any, componentCount = 0, hasAlcohol = false
  */
 async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -90,7 +90,7 @@ async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | 
   if (!event) return null
 
   // Get menu component count
-  const { data: menus } = await supabase.from('menus').select('id').eq('event_id', eventId)
+  const { data: menus } = await db.from('menus').select('id').eq('event_id', eventId)
 
   let componentCount = 0
   let hasAlcohol = false
@@ -98,7 +98,7 @@ async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | 
   if (menus && menus.length > 0) {
     const menuIds = menus.map((m: any) => m.id)
 
-    const { count } = await supabase
+    const { count } = await db
       .from('dishes')
       .select('id', { count: 'exact', head: true })
       .in('menu_id', menuIds)
@@ -106,7 +106,7 @@ async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | 
     componentCount = count ?? 0
 
     // Check for alcohol category in dishes
-    const { data: alcoholDishes } = await supabase
+    const { data: alcoholDishes } = await db
       .from('dishes')
       .select('id')
       .in('menu_id', menuIds)
@@ -124,9 +124,9 @@ async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | 
  */
 async function fetchUpcomingSchedulingEvents(): Promise<SchedulingEvent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       `
@@ -235,12 +235,12 @@ export async function getTodaysScheduleEnriched(
   if (!base) return null
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Parallel fetch: client context + DOP completions
   const [clientContext, prepGate] = await Promise.all([
-    getClientEventContext(supabase, user.tenantId!, base.event),
-    computePrepGate(supabase, user.tenantId!, base.event.id, base.dop),
+    getClientEventContext(db, user.tenantId!, base.event),
+    computePrepGate(db, user.tenantId!, base.event.id, base.dop),
   ])
 
   // Compute current phase from timeline
@@ -279,36 +279,32 @@ export async function getTodaysScheduleEnriched(
 // ── Enrichment helpers ──────────────────────────────────────────────
 
 async function getClientEventContext(
-  supabase: any,
+  db: any,
   tenantId: string,
   event: SchedulingEvent
 ): Promise<ClientEventContext | null> {
   if (!event.client) return null
 
   // Get client ID from event
-  const { data: eventRow } = await supabase
-    .from('events')
-    .select('client_id')
-    .eq('id', event.id)
-    .single()
+  const { data: eventRow } = await db.from('events').select('client_id').eq('id', event.id).single()
 
   if (!eventRow?.client_id) return null
 
   const [clientData, eventCount, lastEvent] = await Promise.all([
-    supabase
+    db
       .from('clients')
       .select('full_name, dietary_restrictions, allergies')
       .eq('id', eventRow.client_id)
       .single()
       .then((r: any) => r.data),
-    supabase
+    db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('client_id', eventRow.client_id)
       .eq('tenant_id', tenantId)
       .eq('status', 'completed')
       .then((r: any) => r.count ?? 0),
-    supabase
+    db
       .from('events')
       .select('event_date, occasion')
       .eq('client_id', eventRow.client_id)
@@ -333,13 +329,13 @@ async function getClientEventContext(
 }
 
 async function computePrepGate(
-  supabase: any,
+  db: any,
   tenantId: string,
   eventId: string,
   dop: DOPSchedule
 ): Promise<PrepGate> {
   // Get manual completions for this event
-  const { data: completions } = await supabase
+  const { data: completions } = await db
     .from('dop_task_completions')
     .select('task_key')
     .eq('event_id', eventId)
@@ -615,9 +611,9 @@ export async function rescheduleEvent(
   newServeTime?: string
 ): Promise<{ success: boolean; error?: string; clearedPrepBlocks?: number }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('status')
     .eq('id', eventId)
@@ -639,7 +635,7 @@ export async function rescheduleEvent(
     updateData.serve_time = newServeTime
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update(updateData)
     .eq('id', eventId)
@@ -653,7 +649,7 @@ export async function rescheduleEvent(
   // Clear orphaned system-generated prep blocks from the old date
   let clearedPrepBlocks = 0
   try {
-    const { data: oldBlocks } = await supabase
+    const { data: oldBlocks } = await db
       .from('event_prep_blocks' as any)
       .select('id')
       .eq('event_id', eventId)
@@ -661,7 +657,7 @@ export async function rescheduleEvent(
       .eq('is_system_generated', true)
 
     if (oldBlocks && oldBlocks.length > 0) {
-      await supabase
+      await db
         .from('event_prep_blocks' as any)
         .delete()
         .in(
@@ -714,10 +710,10 @@ export async function getCalendarEvents(
   rangeEnd: string
 ): Promise<CalendarEvent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const prefs = await getChefPreferences()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       `
@@ -814,7 +810,7 @@ export async function getCalendarEvents(
   // ── Inquiry tentative holds ──────────────────────────────────────────────
   // Show inquiries with confirmed dates as tentative holds on the calendar
 
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select(
       `
@@ -866,10 +862,10 @@ export async function getCalendarEvents(
  */
 export async function updateEventTravelTime(eventId: string, travelTimeMinutes: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // travel_time_minutes added in Layer 5 migration - type assertion until types regenerated
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({ travel_time_minutes: travelTimeMinutes, updated_by: user.id })
     .eq('id', eventId)

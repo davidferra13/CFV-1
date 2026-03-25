@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { transitionEvent } from '@/lib/events/transitions'
 import { revalidatePath } from 'next/cache'
 import type { PaymentMethod, LedgerEntryType } from '@/lib/ledger/append'
@@ -37,10 +37,10 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
   }
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // ── 1. Fetch event and verify ownership ─────────────────────────────────
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       'id, tenant_id, client_id, status, quoted_price_cents, deposit_amount_cents, occasion, event_date'
@@ -59,7 +59,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
   }
 
   // ── 2. Determine entry type ──────────────────────────────────────────────
-  const { data: currentSummary } = await supabase
+  const { data: currentSummary } = await db
     .from('event_financial_summary')
     .select('total_paid_cents, outstanding_balance_cents')
     .eq('event_id', eventId)
@@ -77,14 +77,14 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
   // ── 3. Append to ledger ──────────────────────────────────────────────────
   // Use admin client since we're bypassing the webhook path (which uses admin internally).
   // Auth is validated above via requireChef + tenant check.
-  const supabaseAdmin = createServerClient({ admin: true })
+  const dbAdmin = createServerClient({ admin: true })
 
   // Generate a deterministic idempotency key to prevent duplicate ledger entries
   // on double-submit (same event + amount + method + date = same payment)
   const offlineTxRef = `offline_${eventId}_${amountCents}_${paymentMethod}_${paidAt}`
 
   // Check for existing entry with same reference (dedup guard)
-  const { data: existingEntry } = await supabaseAdmin
+  const { data: existingEntry } = await dbAdmin
     .from('ledger_entries')
     .select('id')
     .eq('transaction_reference', offlineTxRef)
@@ -96,7 +96,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
     return { success: true, entryId: existingEntry[0].id, deduplicated: true }
   }
 
-  const { data: ledgerEntry, error: ledgerError } = await supabaseAdmin
+  const { data: ledgerEntry, error: ledgerError } = await dbAdmin
     .from('ledger_entries')
     .insert({
       tenant_id: event.tenant_id,
@@ -124,7 +124,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
 
   // ── 4. Re-fetch financial summary to get updated balance ─────────────────
   // Always fetch after insert: used for (a) transition check and (b) receipt email.
-  const { data: updatedSummary } = await supabaseAdmin
+  const { data: updatedSummary } = await dbAdmin
     .from('event_financial_summary')
     .select('total_paid_cents, outstanding_balance_cents, payment_status')
     .eq('event_id', eventId)
@@ -162,13 +162,13 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
 
   // ── 5. Email client a receipt ────────────────────────────────────────────
   try {
-    const { data: client } = await supabaseAdmin
+    const { data: client } = await dbAdmin
       .from('clients')
       .select('email, full_name, loyalty_tier, loyalty_points')
       .eq('id', event.client_id)
       .single()
 
-    const { data: chef } = await supabaseAdmin
+    const { data: chef } = await dbAdmin
       .from('chefs')
       .select('business_name')
       .eq('id', event.tenant_id)
@@ -223,7 +223,7 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
     const { notifyPaymentReceived } = await import('@/lib/notifications/onesignal')
     const amountFormatted = `$${(amountCents / 100).toFixed(2)}`
     // Fetch client name for the push message
-    const { data: pushClient } = await supabaseAdmin
+    const { data: pushClient } = await dbAdmin
       .from('clients')
       .select('full_name')
       .eq('id', event.client_id)

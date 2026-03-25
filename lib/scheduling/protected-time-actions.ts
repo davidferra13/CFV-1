@@ -5,7 +5,7 @@
 'use server'
 
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -70,9 +70,9 @@ export async function createProtectedTime(
 ): Promise<ProtectedTimeBlock> {
   const user = await requirePro('advanced-calendar')
   const validated = CreateProtectedTimeSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('chef_availability_blocks')
     .insert({
       chef_id: user.tenantId!,
@@ -105,7 +105,7 @@ export async function updateProtectedTime(
 ): Promise<ProtectedTimeBlock> {
   const user = await requirePro('advanced-calendar')
   const validated = UpdateProtectedTimeSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = {}
   if (validated.block_date !== undefined) updateData.block_date = validated.block_date
@@ -114,7 +114,7 @@ export async function updateProtectedTime(
   if (validated.end_time !== undefined) updateData.end_time = validated.end_time
   if (validated.reason !== undefined) updateData.reason = validated.reason
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('chef_availability_blocks')
     .update(updateData)
     .eq('id', blockId)
@@ -142,9 +142,9 @@ export async function updateProtectedTime(
  */
 export async function deleteProtectedTime(blockId: string): Promise<void> {
   const user = await requirePro('advanced-calendar')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('chef_availability_blocks')
     .delete()
     .eq('id', blockId)
@@ -167,9 +167,9 @@ export async function getProtectedTime(
   endDate: string
 ): Promise<ProtectedTimeBlock[]> {
   const user = await requirePro('advanced-calendar')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('chef_availability_blocks')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -195,9 +195,9 @@ export async function listProtectedBlocks(
   endDate?: string
 ): Promise<ProtectedBlockSummary[]> {
   const user = await requirePro('advanced-calendar')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('chef_availability_blocks')
     .select('id, block_date, block_type, start_time, end_time, reason, created_at')
     .eq('chef_id', user.tenantId!)

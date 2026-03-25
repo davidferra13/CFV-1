@@ -28,7 +28,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Remy policy')
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('remy_approval_policies')
       .select('*')
       .eq('id', id)
@@ -56,7 +56,7 @@ export const PATCH = withApiAuth(
     const parsed = UpdatePolicyBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data: existing } = await (ctx.supabase as any)
+    const { data: existing } = await (ctx.db as any)
       .from('remy_approval_policies')
       .select('id')
       .eq('id', id)
@@ -65,7 +65,7 @@ export const PATCH = withApiAuth(
 
     if (!existing) return apiNotFound('Remy policy')
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('remy_approval_policies')
       .update({
         ...parsed.data,
@@ -92,7 +92,7 @@ export const DELETE = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Remy policy')
 
-    const { error } = await (ctx.supabase as any)
+    const { error } = await (ctx.db as any)
       .from('remy_approval_policies')
       .delete()
       .eq('id', id)

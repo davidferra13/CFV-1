@@ -6,7 +6,7 @@
 // Formula > AI: pure data comparison, zero LLM dependency.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -44,10 +44,10 @@ export async function getServedDishVariance(
 ): Promise<ServedDishVarianceResult | null> {
   const user = await requireChef()
   const safeTenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Fetch the event to get its menu_id
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, menu_id, client_id')
     .eq('id', eventId)
@@ -59,7 +59,7 @@ export async function getServedDishVariance(
   // 2. Fetch planned dishes from the menu
   const planned: DishItem[] = []
   if (event.menu_id) {
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('name, recipe_id')
       .eq('menu_id', event.menu_id)
@@ -79,7 +79,7 @@ export async function getServedDishVariance(
   }
 
   // 3. Fetch served dishes from history
-  const { data: servedRows } = await supabase
+  const { data: servedRows } = await db
     .from('served_dish_history')
     .select('dish_name, recipe_id, notes, client_reaction')
     .eq('event_id', eventId)
@@ -116,9 +116,7 @@ export async function getServedDishVariance(
     const additionsWithRecipe = additions.filter((a) => a.recipeId)
 
     for (const removal of removalsWithRecipe) {
-      const matchIdx = additionsWithRecipe.findIndex(
-        (a) => a.recipeId === removal.recipeId
-      )
+      const matchIdx = additionsWithRecipe.findIndex((a) => a.recipeId === removal.recipeId)
       if (matchIdx !== -1) {
         substitutions.push({
           planned: removal,

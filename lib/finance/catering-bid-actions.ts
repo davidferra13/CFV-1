@@ -6,7 +6,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -66,14 +66,14 @@ const MILEAGE_RATE_CENTS = 7250 // per 100 miles (72.5 cents/mile * 100)
 export async function generateCateringBid(params: GenerateBidParams): Promise<BidResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const warnings: string[] = []
 
   // Fetch recipe cost data from the recipe_cost_summary view
   const recipeIds = params.courses.map((c) => c.recipeId)
 
-  const { data: recipeCosts, error: costError } = await supabase
+  const { data: recipeCosts, error: costError } = await db
     .from('recipe_cost_summary')
     .select(
       'recipe_id, recipe_name, total_ingredient_cost_cents, cost_per_portion_cents, has_all_prices, ingredient_count'
@@ -87,7 +87,7 @@ export async function generateCateringBid(params: GenerateBidParams): Promise<Bi
   }
 
   // Also fetch yield_quantity from recipes table for scaling
-  const { data: recipes, error: recipeError } = await supabase
+  const { data: recipes, error: recipeError } = await db
     .from('recipes')
     .select('id, name, yield_quantity')
     .eq('tenant_id', tenantId)
@@ -209,9 +209,9 @@ export async function getRecipeCostEstimate(
 }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: costData, error: costError } = await supabase
+  const { data: costData, error: costError } = await db
     .from('recipe_cost_summary')
     .select(
       'recipe_id, recipe_name, total_ingredient_cost_cents, cost_per_portion_cents, has_all_prices, ingredient_count'
@@ -224,7 +224,7 @@ export async function getRecipeCostEstimate(
     throw new Error('Recipe cost data not found')
   }
 
-  const { data: recipe, error: recipeError } = await supabase
+  const { data: recipe, error: recipeError } = await db
     .from('recipes')
     .select('yield_quantity')
     .eq('id', recipeId)
@@ -268,10 +268,10 @@ export async function saveBidAsQuote(
 ) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to tenant
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('tenant_id')
     .eq('id', params.clientId)
@@ -308,7 +308,7 @@ export async function saveBidAsQuote(
     `Per person: $${(bidResult.perPersonCents / 100).toFixed(2)}`,
   ].join('\n')
 
-  const { data: quote, error } = await supabase
+  const { data: quote, error } = await db
     .from('quotes')
     .insert({
       tenant_id: tenantId,
@@ -377,11 +377,11 @@ export async function getBidHistory(): Promise<
 > {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get quotes that were created from catering bids
   // We identify them by pricing_notes containing "Bid Breakdown:"
-  const { data: quotes, error } = await supabase
+  const { data: quotes, error } = await db
     .from('quotes')
     .select(
       'id, quote_name, total_quoted_cents, price_per_person_cents, guest_count_estimated, status, created_at, client:clients(name)'
@@ -424,9 +424,9 @@ export async function searchRecipesForBid(query: string): Promise<
 > {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let queryBuilder = supabase
+  let queryBuilder = db
     .from('recipes')
     .select('id, name, category, yield_quantity')
     .eq('tenant_id', tenantId)
@@ -450,7 +450,7 @@ export async function searchRecipesForBid(query: string): Promise<
 
   if (recipeIds.length === 0) return []
 
-  const { data: costs } = await supabase
+  const { data: costs } = await db
     .from('recipe_cost_summary')
     .select('recipe_id, cost_per_portion_cents, has_all_prices')
     .eq('tenant_id', tenantId)

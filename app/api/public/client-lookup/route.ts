@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { findChefByPublicSlug } from '@/lib/profile/public-chef'
 import { checkRateLimit } from '@/lib/rateLimit'
 
@@ -31,15 +31,15 @@ export async function POST(req: NextRequest) {
       60 * 60_000
     )
 
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
 
-    const lookup = await findChefByPublicSlug<{ id: string }>(supabase, normalizedChefSlug, 'id')
+    const lookup = await findChefByPublicSlug<{ id: string }>(db, normalizedChefSlug, 'id')
     const chef = lookup.data
 
     if (!chef) return NextResponse.json({ found: false })
 
     // Existence check only. Never return stored profile fields from an unauthenticated route.
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', chef.id)

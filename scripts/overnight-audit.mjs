@@ -396,14 +396,14 @@ async function phaseSiteCrawl(routes) {
       const password = role === 'chef' ? seed.chefPassword : seed.clientPassword;
       if (!email || !password) return false;
 
-      // Sign in via Supabase auth directly in the browser context
-      const result = await page.evaluate(async ({ email, password, supabaseUrl, supabaseKey }) => {
+      // Sign in via auth directly in the browser context
+      const result = await page.evaluate(async ({ email, password, dbUrl, dbKey }) => {
         try {
-          const res = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+          const res = await fetch(`${dbUrl}/auth/v1/token?grant_type=password`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'apikey': supabaseKey,
+              'apikey': dbKey,
             },
             body: JSON.stringify({ email, password }),
           });
@@ -419,8 +419,8 @@ async function phaseSiteCrawl(routes) {
       }, {
         email,
         password,
-        supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://luefkpakzvxcsqroxyhz.supabase.co',
-        supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+        dbUrl: process.env.NEXT_PUBLIC_DB_URL || 'http://127.0.0.1:54322',
+        dbKey: process.env.NEXT_PUBLIC_DB_ANON_KEY || '',
       });
 
       return result?.ok || false;
@@ -1054,7 +1054,7 @@ async function main() {
       cwd: ROOT,
       shell: true,
       stdio: 'pipe',
-      env: { ...process.env, SUPABASE_E2E_ALLOW_REMOTE: 'true' },
+      env: { ...process.env, DATABASE_E2E_ALLOW_REMOTE: 'true' },
     });
     try {
       await waitForServer(3100, 180_000);
@@ -1090,8 +1090,8 @@ async function main() {
       log('  ⚠ .auth/seed-ids.json not found - crawl will run without auth');
     } else {
       const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://luefkpakzvxcsqroxyhz.supabase.co';
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+      const dbUrl = process.env.NEXT_PUBLIC_DB_URL || 'http://127.0.0.1:54322';
+      const dbKey = process.env.NEXT_PUBLIC_DB_ANON_KEY || '';
       for (const role of ['chef', 'client']) {
         const email = role === 'chef' ? seed.chefEmail : seed.clientEmail;
         const password = role === 'chef' ? seed.chefPassword : seed.clientPassword;
@@ -1099,9 +1099,9 @@ async function main() {
           log(`  ⚠ Missing ${role} credentials in seed-ids.json`);
           continue;
         }
-        const res = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
+        const res = await fetch(`${dbUrl}/auth/v1/token?grant_type=password`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': supabaseKey },
+          headers: { 'Content-Type': 'application/json', 'apikey': dbKey },
           body: JSON.stringify({ email, password }),
         });
         if (res.ok) {

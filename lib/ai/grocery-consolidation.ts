@@ -12,7 +12,7 @@
 // Chefs know their own exotic swaps better than any LLM would.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   consolidateGroceryFormula,
   type GroceryConsolidationResult,
@@ -24,17 +24,17 @@ export type { ConsolidatedIngredient, GroceryConsolidationResult }
 
 export async function consolidateGroceryList(eventId: string): Promise<GroceryConsolidationResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // event_menu_components is not in generated types - table exists in DB but not yet in types/database.ts
   const [eventResult, menuResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('occasion, guest_count, dietary_restrictions, allergies')
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase.from as Function)('event_menu_components')
+    (db.from as Function)('event_menu_components')
       .select(
         `
         name,

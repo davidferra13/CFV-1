@@ -3,7 +3,7 @@
 // Admin Chef Management Actions - deactivation, reactivation, ledger corrections
 // All mutations require admin auth and are audit-logged.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from './audit'
 import { revalidatePath, revalidateTag } from 'next/cache'
@@ -15,9 +15,9 @@ import { revalidatePath, revalidateTag } from 'next/cache'
  */
 export async function suspendChef(chefId: string): Promise<{ success: boolean; error?: string }> {
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({ account_status: 'suspended', updated_at: new Date().toISOString() })
     .eq('id', chefId)
@@ -49,9 +49,9 @@ export async function reactivateChef(
   chefId: string
 ): Promise<{ success: boolean; error?: string }> {
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({ account_status: 'active', updated_at: new Date().toISOString() })
     .eq('id', chefId)
@@ -99,9 +99,9 @@ export async function issueAdminCredit(params: {
   }
 
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { error } = await supabase.from('ledger_entries').insert({
+  const { error } = await db.from('ledger_entries').insert({
     tenant_id: chefId,
     event_id: eventId ?? null,
     entry_type: 'adjustment',

@@ -6,7 +6,7 @@
 //   npm run demo:load / demo:clear / demo:reset
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { readFileSync } from 'fs'
 
 import {

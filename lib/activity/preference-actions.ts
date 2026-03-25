@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -10,9 +10,9 @@ import { revalidatePath } from 'next/cache'
  */
 export async function getActivityLogEnabled(): Promise<boolean> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_preferences')
     .select('activity_log_enabled')
     .eq('tenant_id', user.tenantId!)
@@ -27,9 +27,9 @@ export async function getActivityLogEnabled(): Promise<boolean> {
  */
 export async function setActivityLogEnabled(enabled: boolean): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_preferences')
     .update({ activity_log_enabled: enabled } as Record<string, unknown>)
     .eq('tenant_id', user.tenantId!)

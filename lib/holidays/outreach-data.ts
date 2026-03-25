@@ -1,5 +1,5 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getUpcomingHolidays, getHolidayDate } from './upcoming'
 import { type Holiday } from './constants'
 import { type HolidayClientMatch, type HolidayOutreachSuggestion } from './outreach-types'
@@ -11,7 +11,7 @@ import { type HolidayClientMatch, type HolidayOutreachSuggestion } from './outre
  */
 export async function getHolidayOutreachSuggestions(): Promise<HolidayOutreachSuggestion[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const upcoming = getUpcomingHolidays({ lookaheadDays: 60, minRelevance: 'medium' })
     .filter((h) => h.inOutreachWindow)
@@ -22,7 +22,7 @@ export async function getHolidayOutreachSuggestions(): Promise<HolidayOutreachSu
   const threeYearsAgo = new Date()
   threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3)
 
-  const { data: pastEvents, error } = await supabase
+  const { data: pastEvents, error } = await db
     .from('events')
     .select(
       `

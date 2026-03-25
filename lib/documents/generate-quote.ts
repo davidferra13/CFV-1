@@ -5,7 +5,7 @@
 // MUST fit on ONE page.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 
@@ -62,10 +62,10 @@ export type QuoteDocumentData = {
 
 export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocumentData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch quote with client
-  const { data: quote } = await supabase
+  const { data: quote } = await db
     .from('quotes')
     .select(
       `
@@ -83,7 +83,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
   if (!quote) return null
 
   // Fetch chef info + cancellation settings
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, email, phone, cancellation_cutoff_days, deposit_refundable')
     .eq('id', user.tenantId!)
@@ -112,7 +112,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
   let menuCourses: QuoteDocumentData['menu'] = []
 
   if (quote.event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select(
         `
@@ -141,7 +141,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
       }
 
       // Fetch menu for this event (FOH descriptions only)
-      const { data: menus } = await supabase
+      const { data: menus } = await db
         .from('menus')
         .select('id')
         .eq('event_id', quote.event_id)
@@ -150,7 +150,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
         .limit(1)
 
       if (menus && menus.length > 0) {
-        const { data: dishes } = await supabase
+        const { data: dishes } = await db
           .from('dishes')
           .select('course_number, course_name, description, id')
           .eq('menu_id', menus[0].id)
@@ -185,7 +185,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
 
           // Fetch component names as fallback for courses without descriptions
           const allDishIds = dishes.map((d: any) => d.id)
-          const { data: components } = await supabase
+          const { data: components } = await db
             .from('components')
             .select('dish_id, name')
             .in('dish_id', allDishIds)
@@ -215,7 +215,7 @@ export async function fetchQuoteDocumentData(quoteId: string): Promise<QuoteDocu
     }
   } else if (quote.inquiry_id) {
     // Fallback: pull event details from inquiry
-    const { data: inquiry } = await supabase
+    const { data: inquiry } = await db
       .from('inquiries')
       .select(
         'confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_dietary_restrictions'

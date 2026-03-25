@@ -15,7 +15,7 @@
 //    - Note: activity-cleanup route currently skips this; this cron owns it
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 const PUSH_INACTIVE_PURGE_DAYS = 90 // hard-delete inactive subscriptions after 90 days
@@ -25,13 +25,13 @@ async function handlePushCleanup(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const now = new Date()
 
   // ── 1a. Deactivate subscriptions with too many failures ──────────────────
   // failed_count >= 5 means the send path couldn't reach this endpoint repeatedly.
   // Deactivate them so they stop being attempted in future sends.
-  const { data: deactivatedRows, error: deactivateError } = await supabase
+  const { data: deactivatedRows, error: deactivateError } = await db
     .from('push_subscriptions')
     .update({ is_active: false })
     .gte('failed_count', 5)
@@ -51,7 +51,7 @@ async function handlePushCleanup(request: NextRequest): Promise<NextResponse> {
     now.getTime() - PUSH_INACTIVE_PURGE_DAYS * 24 * 60 * 60 * 1000
   ).toISOString()
 
-  const { count: deleted, error: deleteError } = await supabase
+  const { count: deleted, error: deleteError } = await db
     .from('push_subscriptions')
     .delete({ count: 'exact' })
     .eq('is_active', false)
@@ -66,7 +66,7 @@ async function handlePushCleanup(request: NextRequest): Promise<NextResponse> {
   // Rate-limit windows expire after 48h. Old rows are just noise after that.
   const smsCutoff = new Date(now.getTime() - SMS_LOG_RETENTION_HOURS * 60 * 60 * 1000).toISOString()
 
-  const { count: smsDeleted, error: smsError } = await supabase
+  const { count: smsDeleted, error: smsError } = await db
     .from('sms_send_log')
     .delete({ count: 'exact' })
     .lt('sent_at', smsCutoff)

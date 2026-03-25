@@ -10,7 +10,7 @@
 
 ### 1. Composite Database Indexes
 
-- **File:** `supabase/migrations/20260401000081_composite_indexes.sql`
+- **File:** `database/migrations/20260401000081_composite_indexes.sql`
 - **Added 6 indexes:** `idx_events_tenant_status_date`, `idx_ledger_entries_tenant_client`, `idx_ledger_entries_tenant_event_date`, `idx_activity_log_tenant_entity_date`, `idx_quotes_tenant_status_valid`, `idx_conversations_tenant_context_updated`
 - **Impact:** Eliminates full table scans on the most common filtered queries
 

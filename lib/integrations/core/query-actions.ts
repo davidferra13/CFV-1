@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { INTEGRATION_PROVIDER_META } from './providers'
 import type {
   IntegrationConnectionSummary,
@@ -19,9 +19,9 @@ function isMissingRelationError(error: any): boolean {
 
 export async function getIntegrationConnections(): Promise<IntegrationConnectionSummary[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('integration_connections')
     .select(
       'id, provider, status, auth_type, external_account_name, external_account_id, last_sync_at, error_count, last_error, connected_at'
@@ -51,9 +51,9 @@ export async function getIntegrationConnections(): Promise<IntegrationConnection
 
 export async function getRecentIntegrationEvents(limit = 25): Promise<IntegrationEventSummary[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('integration_events')
     .select(
       'id, provider, source_event_type, canonical_event_type, status, received_at, processed_at, error'

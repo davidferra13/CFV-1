@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import type { Json } from '@/types/database'
 
 interface IGPost {
@@ -29,10 +29,10 @@ interface IGInsightMetric {
 }
 
 async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?: string }> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get stored token
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('social_connected_accounts')
     .select('access_token, platform_account_id')
     .eq('tenant_id', chefId)
@@ -53,13 +53,13 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
   if (!profileRes.ok) {
     const err = await profileRes.text()
     // Increment error count - fetch current count first since RPC won't work inline
-    const { data: currentConn } = await supabase
+    const { data: currentConn } = await db
       .from('social_connected_accounts')
       .select('error_count')
       .eq('tenant_id', chefId)
       .eq('platform', 'instagram')
       .single()
-    await supabase
+    await db
       .from('social_connected_accounts')
       .update({
         last_error: err,
@@ -116,7 +116,7 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
 
   const today = new Date().toISOString().slice(0, 10)
 
-  await supabase.from('social_stats_snapshots').upsert(
+  await db.from('social_stats_snapshots').upsert(
     {
       chef_id: chefId,
       platform: 'instagram',
@@ -138,7 +138,7 @@ async function syncInstagramStats(chefId: string): Promise<{ ok: boolean; error?
   )
 
   // Update last_refreshed_at on connection
-  await supabase
+  await db
     .from('social_connected_accounts')
     .update({ last_refreshed_at: new Date().toISOString(), error_count: 0, last_error: null })
     .eq('tenant_id', chefId)

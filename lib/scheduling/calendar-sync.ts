@@ -5,7 +5,7 @@
 
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { getGoogleAccessToken } from '@/lib/google/auth'
 
@@ -23,9 +23,9 @@ export interface CalendarConnection {
 
 export async function getCalendarConnection(): Promise<CalendarConnection> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('google_connections')
     .select('connected_email, calendar_connected')
     .eq('chef_id', chef.entityId)
@@ -72,12 +72,12 @@ export async function checkCalendarAvailability(date: string): Promise<{
   conflicts: Array<{ occasion: string; time: string }>
 }> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const dayStart = `${date}T00:00:00`
   const dayEnd = `${date}T23:59:59`
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('occasion, serve_time, status')
     .eq('tenant_id', chef.entityId!)
@@ -108,10 +108,10 @@ export async function syncEventToGoogleCalendar(
 ): Promise<{ success: boolean; googleEventId?: string; error?: string }> {
   try {
     const chef = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Check calendar connection
-    const { data: conn } = await supabase
+    const { data: conn } = await db
       .from('google_connections')
       .select('calendar_connected')
       .eq('chef_id', chef.entityId)
@@ -123,7 +123,7 @@ export async function syncEventToGoogleCalendar(
 
     // Fetch event details - cast to any because google_calendar_event_id may not be in
     // the generated types yet (migration pending push)
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select(
         'id, occasion, event_date, serve_time, guest_count, location_address, location_city, location_state, special_requests, google_calendar_event_id'
@@ -202,7 +202,7 @@ export async function syncEventToGoogleCalendar(
 
     // Store Google event ID back on the ChefFlow event
     // cast as any - columns not in generated types until migration is pushed
-    await supabase
+    await db
       .from('events')
       .update({
         google_calendar_event_id: googleEventId,
@@ -211,7 +211,7 @@ export async function syncEventToGoogleCalendar(
       .eq('id', eventId)
 
     // Update last_sync on the connection
-    await supabase
+    await db
       .from('google_connections')
       .update({ calendar_last_sync_at: new Date().toISOString() } as any)
       .eq('chef_id', chef.entityId)
@@ -236,9 +236,9 @@ export async function deleteEventFromGoogleCalendar(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const chef = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('google_calendar_event_id')
       .eq('id', eventId)
@@ -264,7 +264,7 @@ export async function deleteEventFromGoogleCalendar(
     }
 
     // Clear the stored Google event ID
-    await supabase
+    await db
       .from('events')
       .update({
         google_calendar_event_id: null,

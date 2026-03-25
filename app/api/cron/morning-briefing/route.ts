@@ -3,7 +3,7 @@
 // Called by scheduled cron daily at 7 AM EST. Deterministic - no LLM.
 
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { generateMorningBriefing } from '@/lib/ai/remy-morning-briefing'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
@@ -15,9 +15,9 @@ export async function GET(request: Request) {
   if (authError) return authError
 
   try {
-    const supabaseAdmin = createAdminClient()
+    const dbAdmin = createAdminClient()
 
-    const { data: tenants } = await supabaseAdmin.from('tenants').select('id').limit(100)
+    const { data: tenants } = await dbAdmin.from('tenants').select('id').limit(100)
 
     if (!tenants || tenants.length === 0) {
       return NextResponse.json({ message: 'No tenants found', briefingsCreated: 0 })
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
         const briefingText = await generateMorningBriefing(tenant.id)
 
         // Store as a remy_alert with type morning_briefing
-        const { error } = await supabaseAdmin.from('remy_alerts').insert({
+        const { error } = await dbAdmin.from('remy_alerts').insert({
           tenant_id: tenant.id,
           alert_type: 'morning_briefing',
           entity_type: null,

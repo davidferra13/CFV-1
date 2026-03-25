@@ -2,7 +2,7 @@
 
 // Public Campaign Booking Actions
 // Unauthenticated server actions used from the /book/[token] public page.
-// These use the Supabase admin client to bypass RLS.
+// These use the admin DB client to bypass RLS.
 // Flow: getCampaignByToken (show dinner info) → submitCampaignBooking (create inquiry)
 
 import { z } from 'zod'
@@ -44,7 +44,7 @@ export type CampaignBookingInput = {
 // ============================================================
 
 export async function getCampaignByToken(token: string): Promise<PublicDinnerInfo | null> {
-  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const { createAdminClient } = await import('@/lib/db/admin')
   const db = createAdminClient()
 
   const { data: campaign } = await db
@@ -129,7 +129,7 @@ export async function submitCampaignBooking(
   }
   const input = parse.data
 
-  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const { createAdminClient } = await import('@/lib/db/admin')
   const db = createAdminClient()
 
   // 1. Look up campaign

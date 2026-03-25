@@ -7,7 +7,7 @@
 // Output is DRAFT ONLY - chef picks which ones to save to the ContingencyPanel.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import { parseWithOllama } from './parse-ollama'
 import { OllamaOfflineError } from './ollama-errors'
@@ -43,11 +43,11 @@ const ContingencyAIResultSchema = z.object({
 
 export async function generateContingencyPlans(eventId: string): Promise<ContingencyAIResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // event_menu_components is not in generated types - table exists in DB but not yet in types/database.ts
   const [eventResult, menuResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'occasion, guest_count, event_date, serve_time, location_address, service_style, dietary_restrictions, allergies, special_requests'
@@ -55,7 +55,7 @@ export async function generateContingencyPlans(eventId: string): Promise<Conting
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase.from as Function)('event_menu_components')
+    (db.from as Function)('event_menu_components')
       .select('name, course_type, description')
       .eq('event_id', eventId) as Promise<{
       data: Array<{ name: string; course_type: string | null; description: string | null }> | null

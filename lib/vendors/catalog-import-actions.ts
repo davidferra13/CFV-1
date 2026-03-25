@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { recordVendorPricePoint } from '@/lib/vendors/price-point-actions'
 import { z } from 'zod'
@@ -132,8 +132,8 @@ function assessConfidence(row: NormalizedCatalogRow): {
   return { confidence: 'high', flags }
 }
 
-async function assertVendorAccess(supabase: any, tenantId: string, vendorId: string) {
-  const { data: vendor, error } = await supabase
+async function assertVendorAccess(db: any, tenantId: string, vendorId: string) {
+  const { data: vendor, error } = await db
     .from('vendors')
     .select('id, name')
     .eq('id', vendorId)
@@ -148,7 +148,7 @@ async function assertVendorAccess(supabase: any, tenantId: string, vendorId: str
 }
 
 async function applyNormalizedRowToVendorItems(
-  supabase: any,
+  db: any,
   tenantId: string,
   vendorId: string,
   row: NormalizedCatalogRow
@@ -164,7 +164,7 @@ async function applyNormalizedRowToVendorItems(
   } | null = null
 
   if (row.vendor_sku) {
-    const { data: existingBySku, error: skuError } = await supabase
+    const { data: existingBySku, error: skuError } = await db
       .from('vendor_items')
       .select(
         'id, ingredient_id, vendor_item_name, unit_price_cents, unit_size, unit_measure, notes'
@@ -180,7 +180,7 @@ async function applyNormalizedRowToVendorItems(
   }
 
   if (!existingItem) {
-    const { data: existingByName, error: nameError } = await supabase
+    const { data: existingByName, error: nameError } = await db
       .from('vendor_items')
       .select(
         'id, ingredient_id, vendor_item_name, unit_price_cents, unit_size, unit_measure, notes'
@@ -207,7 +207,7 @@ async function applyNormalizedRowToVendorItems(
   }
 
   if (existingItem) {
-    const { error: updateError } = await supabase
+    const { error: updateError } = await db
       .from('vendor_items')
       .update({ ...payload, last_updated: new Date().toISOString() })
       .eq('id', existingItem.id)
@@ -216,7 +216,7 @@ async function applyNormalizedRowToVendorItems(
     if (updateError) throw new Error(updateError.message)
 
     await recordVendorPricePoint({
-      supabase,
+      db,
       tenantId,
       vendorId,
       ingredientId: existingItem.ingredient_id,
@@ -230,7 +230,7 @@ async function applyNormalizedRowToVendorItems(
     return { action: 'updated', vendorItemId: existingItem.id }
   }
 
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await db
     .from('vendor_items')
     .insert(payload)
     .select('id')
@@ -239,7 +239,7 @@ async function applyNormalizedRowToVendorItems(
   if (insertError) throw new Error(insertError.message)
 
   await recordVendorPricePoint({
-    supabase,
+    db,
     tenantId,
     vendorId,
     itemName: row.vendor_item_name,
@@ -263,10 +263,10 @@ export async function importVendorCatalogRows(
   input: ImportVendorCatalogInput
 ): Promise<ImportVendorCatalogResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = ImportVendorCatalogSchema.parse(input)
 
-  await assertVendorAccess(supabase, user.tenantId!, data.vendor_id)
+  await assertVendorAccess(db, user.tenantId!, data.vendor_id)
 
   const result: ImportVendorCatalogResult = {
     inserted: 0,
@@ -287,7 +287,7 @@ export async function importVendorCatalogRows(
       }
 
       const applied = await applyNormalizedRowToVendorItems(
-        supabase,
+        db,
         user.tenantId!,
         data.vendor_id,
         normalized
@@ -309,10 +309,10 @@ export async function queueVendorCatalogRows(
   input: QueueVendorCatalogInput
 ): Promise<QueueVendorCatalogResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = QueueVendorCatalogSchema.parse(input)
 
-  await assertVendorAccess(supabase, user.tenantId!, data.vendor_id)
+  await assertVendorAccess(db, user.tenantId!, data.vendor_id)
 
   const result: QueueVendorCatalogResult = {
     queued: 0,
@@ -330,7 +330,7 @@ export async function queueVendorCatalogRows(
 
       const confidenceResult = assessConfidence(normalized)
 
-      const { data: queuedRow, error: queueError } = await supabase
+      const { data: queuedRow, error: queueError } = await db
         .from('vendor_catalog_import_rows')
         .insert({
           chef_id: user.tenantId!,
@@ -360,13 +360,13 @@ export async function queueVendorCatalogRows(
       if (data.auto_apply_high_confidence && confidenceResult.confidence === 'high') {
         try {
           const applied = await applyNormalizedRowToVendorItems(
-            supabase,
+            db,
             user.tenantId!,
             data.vendor_id,
             normalized
           )
 
-          const { error: markAppliedError } = await supabase
+          const { error: markAppliedError } = await db
             .from('vendor_catalog_import_rows')
             .update({
               status: 'applied',
@@ -387,7 +387,7 @@ export async function queueVendorCatalogRows(
           const applyMessage =
             applyErr instanceof Error ? applyErr.message : 'Failed to auto-apply row'
 
-          await supabase
+          await db
             .from('vendor_catalog_import_rows')
             .update({
               status: 'error',
@@ -420,12 +420,12 @@ export async function listVendorCatalogQueue(
   limit = 200
 ): Promise<VendorCatalogQueueRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const normalizedStatus = QueueStatusSchema.parse(status)
   const safeLimit = Math.min(Math.max(limit, 1), 2000)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('vendor_catalog_import_rows')
     .select(
       'id, source_row_number, vendor_sku, vendor_item_name, unit_price_cents, unit_size, unit_measure, notes, confidence, parse_flags, status, decision_reason, created_at'
@@ -446,10 +446,10 @@ export async function listVendorCatalogQueue(
 
 export async function reviewVendorCatalogRow(input: z.infer<typeof ReviewVendorCatalogRowSchema>) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = ReviewVendorCatalogRowSchema.parse(input)
 
-  const { data: row, error: rowError } = await supabase
+  const { data: row, error: rowError } = await db
     .from('vendor_catalog_import_rows')
     .select('*')
     .eq('id', data.row_id)
@@ -467,7 +467,7 @@ export async function reviewVendorCatalogRow(input: z.infer<typeof ReviewVendorC
   const reason = cleanString(data.reason)
 
   if (data.action === 'reject') {
-    const { error: rejectError } = await supabase
+    const { error: rejectError } = await db
       .from('vendor_catalog_import_rows')
       .update({
         status: 'rejected',
@@ -496,13 +496,13 @@ export async function reviewVendorCatalogRow(input: z.infer<typeof ReviewVendorC
   }
 
   const applied = await applyNormalizedRowToVendorItems(
-    supabase,
+    db,
     user.tenantId!,
     row.vendor_id,
     normalized
   )
 
-  const { error: approveError } = await supabase
+  const { error: approveError } = await db
     .from('vendor_catalog_import_rows')
     .update({
       status: 'applied',
@@ -524,11 +524,11 @@ export async function reviewVendorCatalogRow(input: z.infer<typeof ReviewVendorC
 
 export async function approveAllPendingVendorCatalogRows(vendorId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await assertVendorAccess(supabase, user.tenantId!, vendorId)
+  await assertVendorAccess(db, user.tenantId!, vendorId)
 
-  const { data: pendingRows, error: listError } = await supabase
+  const { data: pendingRows, error: listError } = await db
     .from('vendor_catalog_import_rows')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -557,13 +557,13 @@ export async function approveAllPendingVendorCatalogRows(vendorId: string) {
       }
 
       const applied = await applyNormalizedRowToVendorItems(
-        supabase,
+        db,
         user.tenantId!,
         vendorId,
         normalized
       )
 
-      const { error: markError } = await supabase
+      const { error: markError } = await db
         .from('vendor_catalog_import_rows')
         .update({
           status: 'applied',
@@ -581,7 +581,7 @@ export async function approveAllPendingVendorCatalogRows(vendorId: string) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to apply row'
 
-      await supabase
+      await db
         .from('vendor_catalog_import_rows')
         .update({
           status: 'error',

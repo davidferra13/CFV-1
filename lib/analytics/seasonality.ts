@@ -5,7 +5,7 @@
 // Used on the dashboard Business Snapshot section and as a context hint in the inquiry pipeline.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -56,11 +56,11 @@ const MONTH_SHORT = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D']
 
 export async function getBookingSeasonality(): Promise<BookingSeasonality> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all completed + in-progress events (i.e., real bookings, not drafts)
-  // supabase because amount_paid_cents is not yet in the generated types
-  const { data: events } = await supabase
+  // db because amount_paid_cents is not yet in the generated types
+  const { data: events } = await db
     .from('events')
     .select('event_date, amount_paid_cents')
     .eq('tenant_id', user.tenantId!)
@@ -192,7 +192,7 @@ export type HolidayYoYRow = {
  */
 export async function getHolidayYearOverYear(): Promise<HolidayYoYRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Import lazily to avoid circular deps at module load time
   const { HOLIDAYS } = await import('@/lib/holidays/constants')
@@ -207,7 +207,7 @@ export async function getHolidayYearOverYear(): Promise<HolidayYoYRow[]> {
   const threeYearsAgo = new Date()
   threeYearsAgo.setFullYear(currentYear - 3)
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('event_date, amount_paid_cents')
     .eq('tenant_id', user.tenantId!)

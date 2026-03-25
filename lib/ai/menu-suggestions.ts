@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
@@ -60,9 +60,9 @@ Return ONLY a valid JSON array of exactly 3 menu options.`
 
 export async function getAIMenuSuggestions(eventId: string): Promise<MenuSuggestion[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('occasion, guest_count, dietary_restrictions, allergies, special_requests')
     .eq('id', eventId)
@@ -72,7 +72,7 @@ export async function getAIMenuSuggestions(eventId: string): Promise<MenuSuggest
   if (!event) throw new Error('Event not found')
 
   // Fetch chef's recipes for context
-  const { data: recipes } = await supabase
+  const { data: recipes } = await db
     .from('recipes')
     .select('name, category, dietary_tags')
     .eq('tenant_id', user.entityId)

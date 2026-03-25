@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -34,11 +34,11 @@ export type LogProductionInput = z.infer<typeof LogProductionSchema>
 
 export async function logProduction(input: LogProductionInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = LogProductionSchema.parse(input)
 
   // Verify the recipe belongs to this chef
-  const { data: recipe, error: recipeErr } = await supabase
+  const { data: recipe, error: recipeErr } = await db
     .from('recipes')
     .select('id, times_cooked, last_cooked_at')
     .eq('id', validated.recipe_id)
@@ -51,7 +51,7 @@ export async function logProduction(input: LogProductionInput) {
 
   // Insert the production log entry
   const { data: entry, error } = await (
-    supabase.from('recipe_production_log' as any).insert({
+    db.from('recipe_production_log' as any).insert({
       tenant_id: user.tenantId!,
       recipe_id: validated.recipe_id,
       produced_at: validated.produced_at || new Date().toISOString(),
@@ -80,7 +80,7 @@ export async function logProduction(input: LogProductionInput) {
   const shouldUpdateLastCooked =
     !existingLastCooked || new Date(producedAt) > new Date(existingLastCooked)
 
-  await supabase
+  await db
     .from('recipes')
     .update({
       times_cooked: (recipe.times_cooked || 0) + 1,
@@ -117,9 +117,9 @@ export type ProductionLogEntry = {
 
 export async function getProductionLog(recipeId: string): Promise<ProductionLogEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('recipe_production_log' as any)
     .select('*')
     .eq('recipe_id', recipeId)
@@ -140,10 +140,10 @@ export async function getProductionLog(recipeId: string): Promise<ProductionLogE
 
 export async function deleteProductionEntry(entryId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the entry first to know which recipe to update
-  const { data: entry, error: fetchErr } = await (supabase
+  const { data: entry, error: fetchErr } = await (db
     .from('recipe_production_log' as any)
     .select('id, recipe_id')
     .eq('id', entryId)
@@ -154,7 +154,7 @@ export async function deleteProductionEntry(entryId: string) {
     throw new Error('Production log entry not found')
   }
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('recipe_production_log' as any)
     .delete()
     .eq('id', entryId)
@@ -166,14 +166,14 @@ export async function deleteProductionEntry(entryId: string) {
   }
 
   // Decrement times_cooked (don't go below 0)
-  const { data: recipe } = await supabase
+  const { data: recipe } = await db
     .from('recipes')
     .select('times_cooked')
     .eq('id', (entry as any).recipe_id)
     .single()
 
   if (recipe) {
-    await supabase
+    await db
       .from('recipes')
       .update({
         times_cooked: Math.max(0, (recipe.times_cooked || 1) - 1),
@@ -199,10 +199,10 @@ export type GlobalProductionLogEntry = ProductionLogEntry & {
 
 export async function getAllProductionLogs(): Promise<GlobalProductionLogEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all production entries with recipe name
-  const { data: entries, error } = await (supabase
+  const { data: entries, error } = await (db
     .from('recipe_production_log' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -218,7 +218,7 @@ export async function getAllProductionLogs(): Promise<GlobalProductionLogEntry[]
 
   // Get recipe names for all entries
   const recipeIds = [...new Set((entries as any[]).map((e) => e.recipe_id))]
-  const { data: recipes } = await supabase
+  const { data: recipes } = await db
     .from('recipes')
     .select('id, name, category')
     .in('id', recipeIds)

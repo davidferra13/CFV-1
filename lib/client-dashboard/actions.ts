@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getClientEvents } from '@/lib/events/client-actions'
 import { getMyLoyaltyStatus } from '@/lib/loyalty/actions'
 import { getClientQuotes } from '@/lib/quotes/client-actions'
@@ -43,17 +43,17 @@ export type ClientDashboardEvent = EventRow & {
   client: { id: string; full_name: string; email: string }
 }
 
-function fromClientPreferences(supabase: any): any {
-  return supabase.from('client_preferences')
+function fromClientPreferences(db: any): any {
+  return db.from('client_preferences')
 }
 
 export async function getClientDashboardPreferences(): Promise<{
   dashboard_widgets: ClientDashboardWidgetPreference[]
 }> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await fromClientPreferences(supabase)
+  const { data, error } = await fromClientPreferences(db)
     .select('dashboard_widgets')
     .eq('client_id', user.entityId)
     .single()
@@ -81,24 +81,22 @@ export async function updateClientDashboardPreferences(
     payload.dashboard_widgets = sanitizeClientDashboardWidgets(validated.dashboard_widgets)
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing } = await fromClientPreferences(supabase)
+  const { data: existing } = await fromClientPreferences(db)
     .select('id')
     .eq('client_id', user.entityId)
     .single()
 
   if (existing) {
-    const { error } = await fromClientPreferences(supabase)
-      .update(payload)
-      .eq('client_id', user.entityId)
+    const { error } = await fromClientPreferences(db).update(payload).eq('client_id', user.entityId)
 
     if (error) {
       console.error('[updateClientDashboardPreferences] Update error:', error)
       throw new Error('Failed to update client dashboard preferences')
     }
   } else {
-    const { error } = await fromClientPreferences(supabase).insert({
+    const { error } = await fromClientPreferences(db).insert({
       client_id: user.entityId,
       tenant_id: user.tenantId!,
       ...payload,
@@ -161,7 +159,7 @@ export async function getClientDashboardData(): Promise<{
   }
 }> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [
     eventsResult,
@@ -201,12 +199,12 @@ export async function getClientDashboardData(): Promise<{
     const pastIds = past.map((event: any) => event.id)
 
     const [reviewRows, balanceRows] = await Promise.all([
-      supabase
+      db
         .from('client_reviews')
         .select('event_id')
         .in('event_id', pastIds)
         .then((result: any) => result.data ?? []),
-      supabase
+      db
         .from('event_financial_summary')
         .select('event_id, outstanding_balance_cents')
         .in('event_id', pastIds)
@@ -232,7 +230,7 @@ export async function getClientDashboardData(): Promise<{
 
   let chefDisplayName = 'your chef'
   if (unreviewedEvent && user.tenantId) {
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('business_name')
       .eq('id', user.tenantId)

@@ -5,7 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -83,10 +83,10 @@ export type PaymentMixReport = {
 export async function getShiftReport(sessionId: string): Promise<ShiftReport> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch session
-  const { data: session, error: sessErr } = await (supabase
+  const { data: session, error: sessErr } = await (db
     .from('register_sessions' as any)
     .select('*')
     .eq('id', sessionId)
@@ -97,7 +97,7 @@ export async function getShiftReport(sessionId: string): Promise<ShiftReport> {
   const s = session as any
 
   // Fetch sales for this session
-  const { data: sales } = await (supabase
+  const { data: sales } = await (db
     .from('sales')
     .select('id')
     .eq('register_session_id', sessionId)
@@ -109,7 +109,7 @@ export async function getShiftReport(sessionId: string): Promise<ShiftReport> {
   // Payment breakdown
   let paymentBreakdown: ShiftReport['paymentBreakdown'] = []
   if (saleIds.length > 0) {
-    const { data: payments } = await (supabase
+    const { data: payments } = await (db
       .from('commerce_payments')
       .select('payment_method, amount_cents')
       .eq('tenant_id', user.tenantId!)
@@ -132,7 +132,7 @@ export async function getShiftReport(sessionId: string): Promise<ShiftReport> {
   // Top products
   let topProducts: ShiftReport['topProducts'] = []
   if (saleIds.length > 0) {
-    const { data: items } = await (supabase
+    const { data: items } = await (db
       .from('sale_items')
       .select('name, quantity, line_total_cents')
       .eq('tenant_id', user.tenantId!)
@@ -176,9 +176,9 @@ export async function getShiftReport(sessionId: string): Promise<ShiftReport> {
 export async function getDailySalesReport(from: string, to: string): Promise<DailySalesReport[]> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: sales } = await (supabase
+  const { data: sales } = await (db
     .from('sales')
     .select('created_at, subtotal_cents, tax_cents, total_cents, tip_cents, status')
     .eq('tenant_id', user.tenantId!)
@@ -187,7 +187,7 @@ export async function getDailySalesReport(from: string, to: string): Promise<Dai
     .neq('status', 'voided')
     .neq('status', 'draft') as any)
 
-  const { data: refunds } = await (supabase
+  const { data: refunds } = await (db
     .from('commerce_refunds')
     .select('created_at, amount_cents')
     .eq('tenant_id', user.tenantId!)
@@ -258,9 +258,9 @@ export async function getDailySalesReport(from: string, to: string): Promise<Dai
 export async function getProductReport(from: string, to: string): Promise<ProductReport[]> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: items } = await (supabase
+  const { data: items } = await (db
     .from('sale_items')
     .select(
       'name, product_projection_id, category, quantity, line_total_cents, unit_cost_cents, sale_id'
@@ -274,7 +274,7 @@ export async function getProductReport(from: string, to: string): Promise<Produc
   let validSaleIds = new Set<string>()
 
   if (saleIds.length > 0) {
-    const { data: sales } = await (supabase
+    const { data: sales } = await (db
       .from('sales')
       .select('id, status')
       .eq('tenant_id', user.tenantId!)
@@ -340,9 +340,9 @@ export async function getProductReport(from: string, to: string): Promise<Produc
 export async function getChannelReport(from: string, to: string): Promise<ChannelReport[]> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: sales } = await (supabase
+  const { data: sales } = await (db
     .from('sales')
     .select('channel, total_cents')
     .eq('tenant_id', user.tenantId!)
@@ -379,9 +379,9 @@ export async function getChannelReport(from: string, to: string): Promise<Channe
 export async function getPaymentMixReport(from: string, to: string): Promise<PaymentMixReport> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: payments } = await (supabase
+  const { data: payments } = await (db
     .from('commerce_payments')
     .select('payment_method, amount_cents, tip_cents')
     .eq('tenant_id', user.tenantId!)

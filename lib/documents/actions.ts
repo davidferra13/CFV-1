@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Business doc info ────────────────────────────────────────────────────────
 
@@ -21,9 +21,9 @@ export type BusinessDocInfo = {
  */
 export async function getBusinessDocInfo(eventId: string): Promise<BusinessDocInfo> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('invoice_number, inquiry_id')
     .eq('id', eventId)
@@ -31,7 +31,7 @@ export async function getBusinessDocInfo(eventId: string): Promise<BusinessDocIn
     .single()
 
   // Most recent quote by event_id
-  const { data: eventQuotes } = await supabase
+  const { data: eventQuotes } = await db
     .from('quotes')
     .select('id, status, created_at')
     .eq('event_id', eventId)
@@ -43,7 +43,7 @@ export async function getBusinessDocInfo(eventId: string): Promise<BusinessDocIn
 
   // Fallback: quote linked via inquiry
   if (!quoteRow && event?.inquiry_id) {
-    const { data: inquiryQuotes } = await supabase
+    const { data: inquiryQuotes } = await db
       .from('quotes')
       .select('id, status, created_at')
       .eq('inquiry_id', event.inquiry_id)
@@ -55,7 +55,7 @@ export async function getBusinessDocInfo(eventId: string): Promise<BusinessDocIn
 
   // Most recent contract - scope by tenant_id (not chef_id) to match the
   // established tenant-isolation pattern used everywhere else in the codebase.
-  const { data: contracts } = await supabase
+  const { data: contracts } = await db
     .from('event_contracts')
     .select('id, status, signed_at')
     .eq('event_id', eventId)
@@ -104,10 +104,10 @@ export type DocumentReadiness = {
  */
 export async function getDocumentReadiness(eventId: string): Promise<DocumentReadiness> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event basics
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -134,7 +134,7 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
   }
 
   // Check for menu with dishes and components
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -146,7 +146,7 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
   let hasComponents = false
 
   if (hasMenu) {
-    const { count: dishCount } = await supabase
+    const { count: dishCount } = await db
       .from('dishes')
       .select('id', { count: 'exact', head: true })
       .eq('menu_id', menus[0].id)
@@ -155,7 +155,7 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
     hasDishes = (dishCount ?? 0) > 0
 
     if (hasDishes) {
-      const { data: dishes } = await supabase
+      const { data: dishes } = await db
         .from('dishes')
         .select('id')
         .eq('menu_id', menus[0].id)
@@ -163,7 +163,7 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
 
       const dishIds = (dishes || []).map((d: any) => d.id)
       if (dishIds.length > 0) {
-        const { count: compCount } = await supabase
+        const { count: compCount } = await db
           .from('components')
           .select('id', { count: 'exact', head: true })
           .in('dish_id', dishIds)
@@ -195,7 +195,7 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
   // Travel route: ready when at least one service_travel leg exists
   let hasTravelRoute = false
   try {
-    const { count: legCount } = await supabase
+    const { count: legCount } = await db
       .from('event_travel_legs')
       .select('id', { count: 'exact', head: true })
       .eq('primary_event_id', eventId)

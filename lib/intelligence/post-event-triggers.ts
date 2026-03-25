@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -73,12 +73,12 @@ const TASK_TIMING: Record<
 export async function getPostEventTriggers(): Promise<PostEventTriggersResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch recently completed events (last 30 days)
   const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -98,13 +98,13 @@ export async function getPostEventTriggers(): Promise<PostEventTriggersResult | 
 
   const [aarsResult, surveysResult, reviewsResult] = await Promise.all([
     eventIds.length > 0
-      ? supabase.from('after_action_reviews').select('event_id').in('event_id', eventIds)
+      ? db.from('after_action_reviews').select('event_id').in('event_id', eventIds)
       : { data: [] },
     eventIds.length > 0
-      ? supabase.from('client_satisfaction_surveys').select('event_id').in('event_id', eventIds)
+      ? db.from('client_satisfaction_surveys').select('event_id').in('event_id', eventIds)
       : { data: [] },
     eventIds.length > 0
-      ? supabase.from('client_reviews').select('event_id').in('event_id', eventIds)
+      ? db.from('client_reviews').select('event_id').in('event_id', eventIds)
       : { data: [] },
   ])
 
@@ -115,10 +115,7 @@ export async function getPostEventTriggers(): Promise<PostEventTriggersResult | 
   // Check receipt completion
   const { data: expenses } =
     eventIds.length > 0
-      ? await supabase
-          .from('expenses')
-          .select('event_id, receipt_uploaded')
-          .in('event_id', eventIds)
+      ? await db.from('expenses').select('event_id, receipt_uploaded').in('event_id', eventIds)
       : { data: [] }
 
   const eventsWithReceipts = new Set<string>()

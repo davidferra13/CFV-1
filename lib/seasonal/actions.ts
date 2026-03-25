@@ -6,15 +6,15 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { SeasonalPalette } from './types'
 import { DEFAULT_SEASONS } from './types'
 
 // Type assertion helper - seasonal_palettes not in generated types until migration applied
-function fromSeasonalPalettes(supabase: any): any {
-  return supabase.from('seasonal_palettes')
+function fromSeasonalPalettes(db: any): any {
+  return db.from('seasonal_palettes')
 }
 
 // ============================================
@@ -70,9 +70,9 @@ export type CreatePaletteInput = z.infer<typeof CreatePaletteSchema>
  */
 export async function getSeasonalPalettes(): Promise<SeasonalPalette[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await fromSeasonalPalettes(supabase)
+  const { data, error } = await fromSeasonalPalettes(db)
     .select('*')
     .eq('tenant_id', user.tenantId)
     .order('sort_order', { ascending: true })
@@ -94,9 +94,9 @@ export async function getSeasonalPalettes(): Promise<SeasonalPalette[]> {
  */
 export async function getSeasonalPaletteById(paletteId: string): Promise<SeasonalPalette | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await fromSeasonalPalettes(supabase)
+  const { data, error } = await fromSeasonalPalettes(db)
     .select('*')
     .eq('id', paletteId)
     .eq('tenant_id', user.tenantId)
@@ -113,9 +113,9 @@ export async function getSeasonalPaletteById(paletteId: string): Promise<Seasona
  */
 export async function getActivePalette(): Promise<SeasonalPalette | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await fromSeasonalPalettes(supabase)
+  const { data } = await fromSeasonalPalettes(db)
     .select('*')
     .eq('tenant_id', user.tenantId)
     .eq('is_active', true)
@@ -136,17 +136,17 @@ export async function getActivePalette(): Promise<SeasonalPalette | null> {
 export async function updateSeasonalPalette(paletteId: string, input: UpdatePaletteInput) {
   const user = await requireChef()
   const validated = UpdatePaletteSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If setting this palette as active, deactivate others first
   if (validated.is_active) {
-    await fromSeasonalPalettes(supabase)
+    await fromSeasonalPalettes(db)
       .update({ is_active: false, updated_by: user.id })
       .eq('tenant_id', user.tenantId)
       .neq('id', paletteId)
   }
 
-  const { error } = await fromSeasonalPalettes(supabase)
+  const { error } = await fromSeasonalPalettes(db)
     .update({
       ...validated,
       updated_by: user.id,
@@ -171,9 +171,9 @@ export async function updateSeasonalPalette(paletteId: string, input: UpdatePale
 export async function createSeasonalPalette(input: CreatePaletteInput) {
   const user = await requireChef()
   const validated = CreatePaletteSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await fromSeasonalPalettes(supabase)
+  const { data, error } = await fromSeasonalPalettes(db)
     .insert({
       tenant_id: user.tenantId!,
       ...validated,
@@ -197,9 +197,9 @@ export async function createSeasonalPalette(input: CreatePaletteInput) {
  */
 export async function deleteSeasonalPalette(paletteId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await fromSeasonalPalettes(supabase)
+  const { error } = await fromSeasonalPalettes(db)
     .delete()
     .eq('id', paletteId)
     .eq('tenant_id', user.tenantId)
@@ -218,15 +218,15 @@ export async function deleteSeasonalPalette(paletteId: string) {
  */
 export async function setActiveSeason(paletteId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Deactivate all
-  await fromSeasonalPalettes(supabase)
+  await fromSeasonalPalettes(db)
     .update({ is_active: false, updated_by: user.id })
     .eq('tenant_id', user.tenantId)
 
   // Activate selected
-  const { error } = await fromSeasonalPalettes(supabase)
+  const { error } = await fromSeasonalPalettes(db)
     .update({ is_active: true, updated_by: user.id })
     .eq('id', paletteId)
     .eq('tenant_id', user.tenantId)
@@ -247,9 +247,9 @@ export async function setActiveSeason(paletteId: string) {
  */
 export async function deactivateAllSeasons() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await fromSeasonalPalettes(supabase)
+  const { error } = await fromSeasonalPalettes(db)
     .update({ is_active: false, updated_by: user.id })
     .eq('tenant_id', user.tenantId)
 
@@ -269,7 +269,7 @@ export async function deactivateAllSeasons() {
 // ============================================
 
 async function seedDefaultPalettes(tenantId: string, userId: string): Promise<SeasonalPalette[]> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const rows = DEFAULT_SEASONS.map((s) => ({
     tenant_id: tenantId,
@@ -278,7 +278,7 @@ async function seedDefaultPalettes(tenantId: string, userId: string): Promise<Se
     updated_by: userId,
   }))
 
-  const { data, error } = await fromSeasonalPalettes(supabase).insert(rows).select()
+  const { data, error } = await fromSeasonalPalettes(db).insert(rows).select()
 
   if (error) {
     console.error('[seedDefaultPalettes] Error:', error)

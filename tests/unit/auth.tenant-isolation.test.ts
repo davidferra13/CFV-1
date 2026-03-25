@@ -218,8 +218,8 @@ describe('D5: Service role client restricted to specific use cases', () => {
     const allowedFiles = new Set([
       // Layout cache (runs outside request context)
       'lib/chef/layout-cache.ts',
-      // Supabase admin client definition
-      'lib/supabase/admin.ts',
+      // admin DB client definition
+      'lib/db/admin.ts',
       // Webhook handlers (no user session available)
       'app/api/webhooks/',
       // Auth/signup (creating accounts)
@@ -312,7 +312,7 @@ describe('D6: No @ts-nocheck files export server actions', () => {
 describe('D7: RLS helper functions exist in database', () => {
   // Verify that the migration files define the required RLS functions
   it('get_current_user_role function exists in migrations', () => {
-    const migrationsDir = join(ROOT, 'supabase', 'migrations')
+    const migrationsDir = join(ROOT, 'db', 'migrations')
     const files = readdirSync(migrationsDir).filter((f) => f.endsWith('.sql'))
     const allSql = files
       .map((f) => {

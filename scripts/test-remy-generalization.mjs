@@ -2,7 +2,7 @@
 // Tests whether guardrail regex patterns catch variations, not just hardcoded test cases
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
-import { createAnonClient } from './lib/supabase.mjs'
+import { createAnonClient } from './lib/db.mjs'
 
 async function main() {
   const sb = createAnonClient()

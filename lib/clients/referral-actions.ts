@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -74,13 +74,13 @@ export async function addReferral(data: {
   referralSource?: string
 }): Promise<Referral> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Generate a simple referral code
   const code = `REF-${Date.now().toString(36).toUpperCase()}`
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('client_referrals' as any)
     .insert({
       tenant_id: tenantId,
@@ -109,7 +109,7 @@ export async function updateReferralStatus(
   revenueGeneratedCents?: number
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = {
     status,
@@ -119,7 +119,7 @@ export async function updateReferralStatus(
     updateData.revenue_generated_cents = revenueGeneratedCents
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_referrals' as any)
     .update(updateData)
     .eq('id', id)
@@ -134,9 +134,9 @@ export async function updateReferralStatus(
 
 export async function deleteReferral(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_referrals' as any)
     .delete()
     .eq('id', id)
@@ -151,9 +151,9 @@ export async function deleteReferral(id: string): Promise<void> {
 
 export async function getClientReferrals(clientId: string): Promise<Referral[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_referrals' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -169,11 +169,11 @@ export async function getClientReferrals(clientId: string): Promise<Referral[]> 
 
 export async function getReferralDashboard(): Promise<ReferralDashboard> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Fetch all referrals with joined client names
-  const { data: rows } = await supabase
+  const { data: rows } = await db
     .from('client_referrals' as any)
     .select(
       `
@@ -275,9 +275,9 @@ export async function getReferralDashboard(): Promise<ReferralDashboard> {
 
 export async function getReferralSources(): Promise<{ source: string; count: number }[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('client_referrals' as any)
     .select('referral_source')
     .eq('tenant_id', user.tenantId!)

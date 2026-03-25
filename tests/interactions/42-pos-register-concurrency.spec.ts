@@ -1,7 +1,7 @@
 import { existsSync } from 'fs'
 import { test, expect } from '../helpers/fixtures'
 import type { Page } from '@playwright/test'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 const HAS_CHEF_STATE = existsSync('.auth/chef.json')
 

@@ -30,7 +30,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
 - **End every session:** commit everything → push the feature branch → update this file if new rules were found
 - **Private AI:** client data stays local via Ollama only — never Gemini, never cloud LLMs
-- **Never:** run `supabase db push` without explicit user approval
+- **Never:** run `drizzle-kit push` without explicit user approval
 
 ---
 
@@ -138,16 +138,16 @@ These rules exist because this is a **live production app with real client data*
 - Before creating any migration file, **explain in plain English** what it will do to the database.
 - **Show the user the full SQL** before writing the migration file.
 - Remind the user to **back up their database** before applying migrations with real data.
-- **NEVER** run `supabase db push` or apply migrations without explicit user approval.
-- **Before every `supabase db push`**, remind the user to run a backup first:
+- **NEVER** run `drizzle-kit push` or apply migrations without explicit user approval.
+- **Before every `drizzle-kit push`**, remind the user to run a backup first:
 
   ```bash
-  supabase db dump --linked > backup-$(date +%Y%m%d).sql
+  database db dump --linked > backup-$(date +%Y%m%d).sql
   ```
 
 ### Migration Timestamp Collisions (CRITICAL — Multi-Agent Safety)
 
-- **Before creating ANY migration file**, you MUST run `glob supabase/migrations/*.sql` to see all existing migration files.
+- **Before creating ANY migration file**, you MUST run `glob database/migrations/*.sql` to see all existing migration files.
 - Pick a timestamp that is **strictly higher** than the highest existing one. For example, if the highest is `20260221000002`, your new file must be `20260221000003` or later.
 - **NEVER** reuse or guess a timestamp. Always check first.
 - This rule exists because multiple Claude Code agents may run concurrently. Without checking, two agents can generate the same timestamp, causing migration collisions that corrupt the schema.
@@ -366,7 +366,7 @@ The developer should never have to ask for these steps separately. "Ship it" = t
 
 When the developer says **"run soak"** (or any variation: "soak test", "soak it", "run the soak tests", "check for leaks"), do ALL of the following:
 
-1. **useEffect cleanup audit** — scan all components for missing cleanup returns, leaked event listeners, unclosed Supabase subscriptions, intervals/timeouts without `clearTimeout`/`clearInterval`
+1. **useEffect cleanup audit** — scan all components for missing cleanup returns, leaked event listeners, unclosed PostgreSQL subscriptions, intervals/timeouts without `clearTimeout`/`clearInterval`
 2. **Fix every issue** the audit finds
 3. **Run `npm run test:soak:quick`** (dev server must be on port 3100 — ask user to start it if needed)
 4. **If any test fails** — read the report, diagnose the root cause, fix it, and re-run until all 3 soak tests pass
@@ -389,7 +389,7 @@ These steps run automatically at the end of every session, whether or not the de
 5. **Update this file** — if any new patterns, rules, or decisions were made this session, add them now
 6. **Report** — tell the developer what was committed, pushed, and deployed
 
-**What this prevents:** Work existing only on the local machine. If the machine is wiped, stolen, or corrupted, everything on GitHub is safe. The database is already off-machine (Supabase). Code must be too. Beta must always reflect the latest work.
+**What this prevents:** Work existing only on the local machine. If the machine is wiped, stolen, or corrupted, everything on GitHub is safe. The database is already off-machine (PostgreSQL). Code must be too. Beta must always reflect the latest work.
 
 ---
 
@@ -737,7 +737,7 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 ### General Architecture
 
 - **Server actions** with `'use server'` for all business logic
-- **Database:** PostgreSQL via postgres.js (direct TCP, no PostgREST). Compatibility shim in `lib/db/compat.ts` provides Supabase-like `.from().select().eq()` API backed by raw SQL
+- **Database:** PostgreSQL via postgres.js (direct TCP, no PostgREST). Compatibility shim in `lib/db/compat.ts` provides PostgreSQL-like `.from().select().eq()` API backed by raw SQL
 - **Auth:** Auth.js v5 (credentials + Google OAuth). Session via JWT. Config in `lib/auth/auth-config.ts`
 - **Storage:** Local filesystem (`./storage/{bucket}/{path}`). Signed URLs via HMAC-SHA256. API routes serve files at `/api/storage/`
 - **Realtime:** Server-Sent Events (SSE) with in-memory EventEmitter bus. `useSSE()` hook for client components. Server actions call `broadcast()` after mutations
@@ -750,72 +750,72 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 - **8-state event FSM:** draft -> proposed -> accepted -> paid -> confirmed -> in_progress -> completed | cancelled
 - **`types/database.ts`** is auto-generated - never manually edit it
 - **Embeddable widget** - `/embed/*` routes are public (no auth), use inline styles (no Tailwind), and have relaxed CSP (`frame-ancestors *`). The widget script (`public/embed/chefflow-widget.js`) is self-contained vanilla JS. See `docs/embeddable-widget.md`.
-- **Supabase SDK** is in devDependencies only (used by scripts and tests, not production code)
+- **database SDK** is in devDependencies only (used by scripts and tests, not production code)
 
 ---
 
 ## KEY FILE LOCATIONS
 
-| What                  | Where                                                                              |
-| --------------------- | ---------------------------------------------------------------------------------- |
-| Event FSM             | `lib/events/transitions.ts`                                                        |
-| Ledger append         | `lib/ledger/append.ts`                                                             |
-| Ledger compute        | `lib/ledger/compute.ts`                                                            |
-| Chef dashboard        | `app/(chef)/dashboard/page.tsx`                                                    |
-| Event form            | `components/events/event-form.tsx`                                                 |
-| Event transitions UI  | `components/events/event-transitions.tsx`                                          |
-| DB connection         | `lib/db/index.ts` (Drizzle + postgres.js)                                          |
-| DB compat shim        | `lib/db/compat.ts` (Supabase-like API over raw SQL)                                |
-| DB schema (gen)       | `lib/db/schema/` (auto-introspected, do not edit)                                  |
-| Drizzle config        | `drizzle.config.ts`                                                                |
-| Auth config           | `lib/auth/auth-config.ts` (Auth.js v5 providers + callbacks)                       |
-| Auth route handler    | `app/api/auth/[...nextauth]/route.ts`                                              |
-| Storage module        | `lib/storage/index.ts` (upload, download, signed URLs)                             |
-| Storage API (signed)  | `app/api/storage/[...path]/route.ts`                                               |
-| Storage API (public)  | `app/api/storage/public/[...path]/route.ts`                                        |
-| SSE server bus        | `lib/realtime/sse-server.ts` (EventEmitter, broadcast, presence)                   |
-| SSE client hook       | `lib/realtime/sse-client.ts` (useSSE, useSSEPresence)                              |
-| SSE broadcast helpers | `lib/realtime/broadcast.ts` (broadcastInsert/Update/Delete/Typing)                 |
-| SSE endpoint          | `app/api/realtime/[channel]/route.ts`                                              |
-| Schema Layer 1        | `supabase/migrations/20260215000001_layer_1_foundation.sql`                        |
-| Schema Layer 2        | `supabase/migrations/20260215000002_layer_2_inquiry_messaging.sql`                 |
-| Schema Layer 3        | `supabase/migrations/20260215000003_layer_3_events_quotes_financials.sql`          |
-| Schema Layer 4        | `supabase/migrations/20260215000004_layer_4_menus_recipes_costing.sql`             |
-| Generated types       | `types/database.ts` (never edit manually)                                          |
-| Scripts Supabase lib  | `scripts/lib/supabase.mjs` (shared factory for .mjs scripts)                       |
-| Tier resolution       | `lib/billing/tier.ts`                                                              |
-| Pro feature registry  | `lib/billing/pro-features.ts`                                                      |
-| Module definitions    | `lib/billing/modules.ts`                                                           |
-| Pro enforcement       | `lib/billing/require-pro.ts`                                                       |
-| Upgrade gate UI       | `components/billing/upgrade-gate.tsx`                                              |
-| Module toggle page    | `app/(chef)/settings/modules/page.tsx`                                             |
-| Embed widget script   | `public/embed/chefflow-widget.js`                                                  |
-| Embed API route       | `app/api/embed/inquiry/route.ts`                                                   |
-| Embed form page       | `app/embed/inquiry/[chefId]/page.tsx`                                              |
-| Embed form component  | `components/embed/embed-inquiry-form.tsx`                                          |
-| Embed settings page   | `app/(chef)/settings/embed/page.tsx`                                               |
-| AI providers config   | `lib/ai/providers.ts`                                                              |
-| AI dispatch layer     | `lib/ai/dispatch/` (classifier, privacy gate, routing table, router, cost tracker) |
-| AI model governance   | `docs/ai-model-governance.md` **(canonical routing policy)**                       |
-| AI routing audit      | `scripts/audit-model-routing.ts` (detects direct provider imports)                 |
-| App audit (living)    | `docs/app-complete-audit.md` **(update when UI changes)**                          |
-| Remy reference        | `docs/remy-complete-reference.md` **(read this instead of re-scanning Remy)**      |
-| Beta server docs      | `docs/beta-server-setup.md`                                                        |
-| Beta env config       | `.env.local.beta`                                                                  |
-| Beta start script     | `scripts/start-beta.ps1`                                                           |
-| Deploy to beta        | `scripts/deploy-beta.sh`                                                           |
-| Rollback beta         | `scripts/rollback-beta.sh`                                                         |
-| Prod env config       | `.env.local.prod`                                                                  |
-| Prod start script     | `scripts/start-prod.ps1`                                                           |
-| Deploy to prod        | `scripts/deploy-prod.sh`                                                           |
-| Rollback prod         | `scripts/rollback-prod.sh`                                                         |
-| MC Manual panel       | `scripts/launcher/index.html` (panel-manual, live codebase scanner)                |
-| MC Codebase scanner   | `scripts/launcher/server.mjs` (`scanCodebase()`, `GET /api/manual/scan`)           |
-| MC File watcher       | `scripts/launcher/server.mjs` (`initFileWatcher()`, `GET /api/activity/summary`)   |
-| Experiential tests    | `tests/experiential/` (blank screen detection, cross-boundary UX verification)     |
-| Experiential config   | `playwright.experiential.config.ts`                                                |
-| Experiential docs     | `docs/experiential-verification.md`                                                |
-| System behavior map   | `docs/system-behavior-map.md` (full runtime behavior audit, March 2026)            |
+| What                   | Where                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------- |
+| Event FSM              | `lib/events/transitions.ts`                                                        |
+| Ledger append          | `lib/ledger/append.ts`                                                             |
+| Ledger compute         | `lib/ledger/compute.ts`                                                            |
+| Chef dashboard         | `app/(chef)/dashboard/page.tsx`                                                    |
+| Event form             | `components/events/event-form.tsx`                                                 |
+| Event transitions UI   | `components/events/event-transitions.tsx`                                          |
+| DB connection          | `lib/db/index.ts` (Drizzle + postgres.js)                                          |
+| DB compat shim         | `lib/db/compat.ts` (PostgreSQL-like API over raw SQL)                              |
+| DB schema (gen)        | `lib/db/schema/` (auto-introspected, do not edit)                                  |
+| Drizzle config         | `drizzle.config.ts`                                                                |
+| Auth config            | `lib/auth/auth-config.ts` (Auth.js v5 providers + callbacks)                       |
+| Auth route handler     | `app/api/auth/[...nextauth]/route.ts`                                              |
+| Storage module         | `lib/storage/index.ts` (upload, download, signed URLs)                             |
+| Storage API (signed)   | `app/api/storage/[...path]/route.ts`                                               |
+| Storage API (public)   | `app/api/storage/public/[...path]/route.ts`                                        |
+| SSE server bus         | `lib/realtime/sse-server.ts` (EventEmitter, broadcast, presence)                   |
+| SSE client hook        | `lib/realtime/sse-client.ts` (useSSE, useSSEPresence)                              |
+| SSE broadcast helpers  | `lib/realtime/broadcast.ts` (broadcastInsert/Update/Delete/Typing)                 |
+| SSE endpoint           | `app/api/realtime/[channel]/route.ts`                                              |
+| Schema Layer 1         | `database/migrations/20260215000001_layer_1_foundation.sql`                        |
+| Schema Layer 2         | `database/migrations/20260215000002_layer_2_inquiry_messaging.sql`                 |
+| Schema Layer 3         | `database/migrations/20260215000003_layer_3_events_quotes_financials.sql`          |
+| Schema Layer 4         | `database/migrations/20260215000004_layer_4_menus_recipes_costing.sql`             |
+| Generated types        | `types/database.ts` (never edit manually)                                          |
+| Scripts PostgreSQL lib | `scripts/lib/database.mjs` (shared factory for .mjs scripts)                       |
+| Tier resolution        | `lib/billing/tier.ts`                                                              |
+| Pro feature registry   | `lib/billing/pro-features.ts`                                                      |
+| Module definitions     | `lib/billing/modules.ts`                                                           |
+| Pro enforcement        | `lib/billing/require-pro.ts`                                                       |
+| Upgrade gate UI        | `components/billing/upgrade-gate.tsx`                                              |
+| Module toggle page     | `app/(chef)/settings/modules/page.tsx`                                             |
+| Embed widget script    | `public/embed/chefflow-widget.js`                                                  |
+| Embed API route        | `app/api/embed/inquiry/route.ts`                                                   |
+| Embed form page        | `app/embed/inquiry/[chefId]/page.tsx`                                              |
+| Embed form component   | `components/embed/embed-inquiry-form.tsx`                                          |
+| Embed settings page    | `app/(chef)/settings/embed/page.tsx`                                               |
+| AI providers config    | `lib/ai/providers.ts`                                                              |
+| AI dispatch layer      | `lib/ai/dispatch/` (classifier, privacy gate, routing table, router, cost tracker) |
+| AI model governance    | `docs/ai-model-governance.md` **(canonical routing policy)**                       |
+| AI routing audit       | `scripts/audit-model-routing.ts` (detects direct provider imports)                 |
+| App audit (living)     | `docs/app-complete-audit.md` **(update when UI changes)**                          |
+| Remy reference         | `docs/remy-complete-reference.md` **(read this instead of re-scanning Remy)**      |
+| Beta server docs       | `docs/beta-server-setup.md`                                                        |
+| Beta env config        | `.env.local.beta`                                                                  |
+| Beta start script      | `scripts/start-beta.ps1`                                                           |
+| Deploy to beta         | `scripts/deploy-beta.sh`                                                           |
+| Rollback beta          | `scripts/rollback-beta.sh`                                                         |
+| Prod env config        | `.env.local.prod`                                                                  |
+| Prod start script      | `scripts/start-prod.ps1`                                                           |
+| Deploy to prod         | `scripts/deploy-prod.sh`                                                           |
+| Rollback prod          | `scripts/rollback-prod.sh`                                                         |
+| MC Manual panel        | `scripts/launcher/index.html` (panel-manual, live codebase scanner)                |
+| MC Codebase scanner    | `scripts/launcher/server.mjs` (`scanCodebase()`, `GET /api/manual/scan`)           |
+| MC File watcher        | `scripts/launcher/server.mjs` (`initFileWatcher()`, `GET /api/activity/summary`)   |
+| Experiential tests     | `tests/experiential/` (blank screen detection, cross-boundary UX verification)     |
+| Experiential config    | `playwright.experiential.config.ts`                                                |
+| Experiential docs      | `docs/experiential-verification.md`                                                |
+| System behavior map    | `docs/system-behavior-map.md` (full runtime behavior audit, March 2026)            |
 
 ---
 
@@ -868,7 +868,7 @@ bash scripts/rollback-prod.sh  # Redeploy previous commit
 ### Rules
 
 - **Never deploy during active development** — test locally first
-- **All three environments share the same Supabase database** — be careful with destructive data operations
+- **All three environments share the same PostgreSQL database** — be careful with destructive data operations
 - **Dev (3100), beta (3200), and production (3300) use different ports** — no conflicts
 - **All share Ollama** on port 11434 — concurrent requests handled fine
 
@@ -876,6 +876,6 @@ bash scripts/rollback-prod.sh  # Redeploy previous commit
 
 ## DATABASE
 
-- No local Supabase (no Docker) — use remote with `--linked` flag
+- No local database (no Docker) — use remote with `--linked` flag
 - Project ID: `luefkpakzvxcsqroxyhz`
 - Cross-layer columns added via `ALTER TABLE` (e.g., Layer 3 adds columns to `clients`)

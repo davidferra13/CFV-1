@@ -226,7 +226,7 @@ export const breakers = {
   kroger: getCircuitBreaker('kroger', { failureThreshold: 5, resetTimeoutMs: 120_000 }),
   spoonacular: getCircuitBreaker('spoonacular', { failureThreshold: 5, resetTimeoutMs: 120_000 }),
   googleMaps: getCircuitBreaker('google-maps', { failureThreshold: 5, resetTimeoutMs: 60_000 }),
-  supabase: getCircuitBreaker('supabase', { failureThreshold: 10, resetTimeoutMs: 10_000 }),
+  db: getCircuitBreaker('db', { failureThreshold: 10, resetTimeoutMs: 10_000 }),
 }
 
 // ─── Health snapshot for /api/health endpoint ─────────────────────────────────

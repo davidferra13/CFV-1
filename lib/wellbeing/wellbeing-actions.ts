@@ -5,7 +5,7 @@
 // No private AI - all computation is local, pure arithmetic.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   computeBurnoutLevel,
   BURNOUT_SUGGESTIONS,
@@ -26,7 +26,7 @@ export type WellbeingResult = {
 export async function getWellbeingSignals(): Promise<WellbeingResult> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const todayStr = now.toISOString().slice(0, 10)
@@ -41,7 +41,7 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
   // ── events this week ──────────────────────────────────────────────────────
-  const { count: weekCount } = await supabase
+  const { count: weekCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -49,7 +49,7 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
     .not('status', 'in', '("cancelled","draft")')
 
   // ── events this month ─────────────────────────────────────────────────────
-  const { count: monthCount } = await supabase
+  const { count: monthCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -60,7 +60,7 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
   // Approximate: find the most recent event date, then compute how long ago it was.
   // If the last event was today, daysSinceLastDayOff = 0 (not a day off yet).
   // If no events ever, treat as plenty of rest (0).
-  const { data: recentEvent } = await supabase
+  const { data: recentEvent } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', tenantId)
@@ -77,7 +77,7 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
   }
 
   // ── avg satisfaction last 90d ─────────────────────────────────────────────
-  const { data: checkins } = await supabase
+  const { data: checkins } = await db
     .from('chef_growth_checkins')
     .select('satisfaction_score')
     .eq('tenant_id', tenantId)
@@ -98,7 +98,7 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
   // chef_journey_entries is the journal table (from chef_journey expansion migration)
   let daysSinceJournalEntry = 60 // default: assume 60 days if no table or no entries
   try {
-    const { data: journalEntry } = await supabase
+    const { data: journalEntry } = await db
       .from('chef_journey_entries')
       .select('entry_date')
       .eq('tenant_id', tenantId)

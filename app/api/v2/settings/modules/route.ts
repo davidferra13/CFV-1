@@ -15,7 +15,7 @@ const UpdateModulesBody = z
 
 export const GET = withApiAuth(
   async (_req, ctx) => {
-    const { data } = await ctx.supabase
+    const { data } = await ctx.db
       .from('chef_preferences')
       .select('enabled_modules')
       .eq('chef_id', ctx.tenantId)
@@ -60,7 +60,7 @@ export const PATCH = withApiAuth(
       filtered.unshift('dashboard')
     }
 
-    const { error } = await ctx.supabase.from('chef_preferences').upsert(
+    const { error } = await ctx.db.from('chef_preferences').upsert(
       {
         chef_id: ctx.tenantId,
         enabled_modules: filtered,

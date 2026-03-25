@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { getCircuitBreakerHealth } from '@/lib/resilience/circuit-breaker'
 
 export type PublicHealthStatus = 'ok' | 'degraded'
@@ -64,7 +64,7 @@ export type PublicHealthSnapshot = {
 }
 
 async function getBackgroundJobSummary(): Promise<BackgroundJobSummary> {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!process.env.NEXT_PUBLIC_DB_URL || !process.env.DB_SERVICE_ROLE_KEY) {
     return {
       status: 'degraded',
       summary: {
@@ -72,13 +72,13 @@ async function getBackgroundJobSummary(): Promise<BackgroundJobSummary> {
         missing: Object.keys(CRON_EXPECTED_INTERVALS).length,
         stale: 0,
       },
-      reason: 'missing_supabase_admin_env',
+      reason: 'missing_db_admin_env',
     }
   }
 
   try {
-    const supabase: any = createAdminClient()
-    const { data: recentRunsRaw, error } = await supabase
+    const db: any = createAdminClient()
+    const { data: recentRunsRaw, error } = await db
       .from('cron_executions')
       .select('cron_name, executed_at')
       .order('executed_at', { ascending: false })

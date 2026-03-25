@@ -6,7 +6,7 @@
 // Uses chef_availability_share_tokens table (migration 20260322000023).
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export type ShareToken = {
@@ -28,13 +28,13 @@ export async function generateShareToken(
   label?: string
 ): Promise<{ success: boolean; token?: string }> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Generate a 32-char hex token server-side using Node crypto
   const { randomBytes } = await import('crypto')
   const token = randomBytes(16).toString('hex')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_availability_share_tokens' as any)
     .insert({
       tenant_id: chef.tenantId!,
@@ -58,9 +58,9 @@ export async function generateShareToken(
 
 export async function revokeShareToken(id: string): Promise<{ success: boolean }> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_availability_share_tokens' as any)
     .update({ is_active: false })
     .eq('id', id)
@@ -79,9 +79,9 @@ export async function revokeShareToken(id: string): Promise<{ success: boolean }
 
 export async function getShareTokens(): Promise<ShareToken[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_availability_share_tokens' as any)
     .select('id, token, is_active, created_at, expires_at')
     .eq('tenant_id', chef.tenantId!)
@@ -117,10 +117,10 @@ export async function getSharedAvailability(token: string): Promise<{
   chefDisplayName?: string
 }> {
   // Use admin client to bypass RLS for token validation (public read)
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Validate token
-  const { data: tokenRow, error: tokenError } = await supabase
+  const { data: tokenRow, error: tokenError } = await db
     .from('chef_availability_share_tokens' as any)
     .select('id, tenant_id, is_active, expires_at')
     .eq('token', token)
@@ -155,7 +155,7 @@ export async function getSharedAvailability(token: string): Promise<{
   const windowEnd = dates[dates.length - 1]
 
   // Fetch event dates in the window (non-cancelled)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', tenantId)
@@ -164,7 +164,7 @@ export async function getSharedAvailability(token: string): Promise<{
     .not('status', 'in', '("cancelled","draft")')
 
   // Fetch protected blocks in the window
-  const { data: protectedBlocks } = await supabase
+  const { data: protectedBlocks } = await db
     .from('event_prep_blocks' as any)
     .select('block_date')
     .eq('chef_id', tenantId)
@@ -186,11 +186,7 @@ export async function getSharedAvailability(token: string): Promise<{
   }
 
   // Get chef display name (first_name only - no last name for privacy)
-  const { data: chefRow } = await supabase
-    .from('chefs')
-    .select('first_name')
-    .eq('id', tenantId)
-    .single()
+  const { data: chefRow } = await db.from('chefs').select('first_name').eq('id', tenantId).single()
 
   const days: AvailabilityDay[] = dates.map((date) => ({
     date,

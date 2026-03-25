@@ -8,7 +8,7 @@ import {
   type OperationalDocumentType,
 } from '@/lib/documents/document-definitions'
 import { verifyCsrfOrigin } from '@/lib/security/csrf'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 const MAX_TYPES_PER_RUN = 12
 const MAX_ERROR_MESSAGE_LENGTH = 280
@@ -100,8 +100,8 @@ export async function POST(request: NextRequest, { params }: { params: { eventId
     return NextResponse.json({ error: 'Invalid event ID format' }, { status: 400 })
   }
 
-  const supabase: any = createServerClient()
-  const { count } = await supabase
+  const db: any = createServerClient()
+  const { count } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('id', eventId)
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest, { params }: { params: { eventId
 
   for (const row of results) {
     if (row.status !== 'succeeded') continue
-    const { data: snapshot, error: snapshotError } = await supabase
+    const { data: snapshot, error: snapshotError } = await db
       .from('event_document_snapshots')
       .select('id')
       .eq('tenant_id', user.tenantId!)

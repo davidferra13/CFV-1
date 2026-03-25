@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import crypto from 'crypto'
 import type { WixConnectionStatus, WixSubmission } from './types'
@@ -14,9 +14,9 @@ import type { WixConnectionStatus, WixSubmission } from './types'
 
 export async function getWixConnection(): Promise<WixConnectionStatus> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('wix_connections')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -49,14 +49,14 @@ export async function getWixConnection(): Promise<WixConnectionStatus> {
 
 export async function setupWixConnection(): Promise<{ webhookUrl: string; webhookSecret: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Generate a secure webhook secret
   const webhookSecret = crypto.randomBytes(32).toString('hex')
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
 
   // Upsert: create or update the connection
-  const { error } = await supabase.from('wix_connections').upsert(
+  const { error } = await db.from('wix_connections').upsert(
     {
       chef_id: user.entityId,
       tenant_id: user.tenantId!,
@@ -81,9 +81,9 @@ export async function setupWixConnection(): Promise<{ webhookUrl: string; webhoo
 
 export async function disconnectWix(): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('wix_connections').delete().eq('chef_id', user.entityId)
+  const { error } = await db.from('wix_connections').delete().eq('chef_id', user.entityId)
 
   if (error) {
     console.error('[disconnectWix] Error:', error)
@@ -100,12 +100,12 @@ export async function regenerateWixSecret(): Promise<{
   webhookSecret: string
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const newSecret = crypto.randomBytes(32).toString('hex')
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
 
-  const { error } = await supabase
+  const { error } = await db
     .from('wix_connections')
     .update({ webhook_secret: newSecret, updated_at: new Date().toISOString() })
     .eq('chef_id', user.entityId)
@@ -129,9 +129,9 @@ export async function getWixSubmissions(options?: {
   limit?: number
 }): Promise<WixSubmission[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('wix_submissions')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -156,10 +156,10 @@ export async function getWixSubmissions(options?: {
 
 export async function retryWixSubmission(submissionId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the submission belongs to this tenant
-  const { data: submission, error: fetchError } = await supabase
+  const { data: submission, error: fetchError } = await db
     .from('wix_submissions')
     .select('id, status')
     .eq('id', submissionId)
@@ -175,7 +175,7 @@ export async function retryWixSubmission(submissionId: string): Promise<void> {
   }
 
   // Reset to pending for the cron to pick up
-  const { error } = await supabase
+  const { error } = await db
     .from('wix_submissions')
     .update({ status: 'pending', error: null })
     .eq('id', submissionId)

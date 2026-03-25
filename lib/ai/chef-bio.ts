@@ -6,7 +6,7 @@
 // Output is DRAFT ONLY - chef reviews and edits before publishing.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from './parse-ollama'
 import { OllamaOfflineError } from './ollama-errors'
 import { z } from 'zod'
@@ -30,22 +30,22 @@ const ChefBioDraftSchema = z.object({
 
 export async function generateChefBioDraft(): Promise<ChefBioDraft> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [chefResult, eventsResult, recipesResult] = await Promise.all([
-    supabase
+    db
       .from('chefs')
       .select('display_name, business_name, tagline, bio')
       .eq('id', user.tenantId!)
       .single(),
-    supabase
+    db
       .from('events')
       .select('occasion, guest_count, event_date, status')
       .eq('tenant_id', user.tenantId!)
       .in('status', ['completed', 'in_progress'])
       .order('event_date', { ascending: false })
       .limit(20),
-    supabase
+    db
       .from('recipes')
       .select('name, category, dietary_tags')
       .eq('tenant_id', user.tenantId!)

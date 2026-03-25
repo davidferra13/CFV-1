@@ -5,7 +5,7 @@
 // Respects per-chef chef_automation_settings (enabled flags and thresholds).
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { evaluateAutomations } from '@/lib/automations/engine'
 import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
 import type { TriggerEvent } from '@/lib/automations/types'
@@ -15,7 +15,7 @@ async function handleAutomations(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   let evaluated = 0
   let timeTrackingReminders = 0
   const errors: string[] = []
@@ -25,7 +25,7 @@ async function handleAutomations(request: NextRequest): Promise<NextResponse> {
   // Each tenant can configure their own threshold (default 3 days).
 
   try {
-    const { data: staleInquiries } = await supabase
+    const { data: staleInquiries } = await db
       .from('inquiries')
       .select(
         'id, tenant_id, status, channel, confirmed_occasion, last_response_at, client:clients(full_name)'
@@ -75,7 +75,7 @@ async function handleAutomations(request: NextRequest): Promise<NextResponse> {
     // Query up to 168h away (max configurable window); per-tenant filtering below
     const in168h = new Date(now.getTime() + 168 * 60 * 60 * 1000).toISOString()
 
-    const { data: approachingEvents } = await supabase
+    const { data: approachingEvents } = await db
       .from('events')
       .select('id, tenant_id, status, occasion, event_date, client:clients(full_name)')
       .in('status', ['confirmed', 'paid'])
@@ -121,7 +121,7 @@ async function handleAutomations(request: NextRequest): Promise<NextResponse> {
   // follow_up_overdue rule. Engine deduplication prevents double-firing.
 
   try {
-    const { data: overdueInquiries } = await supabase
+    const { data: overdueInquiries } = await db
       .from('inquiries')
       .select('id, tenant_id, status, channel, confirmed_occasion, client:clients(full_name)')
       .eq('status', 'awaiting_client')

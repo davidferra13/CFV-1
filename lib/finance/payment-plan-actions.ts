@@ -4,7 +4,7 @@
 // Allows chefs to define installment schedules for large events.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export interface PaymentPlanInstallment {
@@ -21,9 +21,9 @@ export interface PaymentPlanInstallment {
 
 export async function getPaymentPlan(eventId: string): Promise<PaymentPlanInstallment[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('payment_plan_installments' as any)
     .select(
       'id, event_id, installment_num, label, amount_cents, due_date, paid_at, payment_method, notes'
@@ -51,7 +51,7 @@ export async function addInstallment(
   formData: FormData
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const eventId = formData.get('eventId') as string
   const label = formData.get('label') as string
@@ -67,7 +67,7 @@ export async function addInstallment(
   }
 
   // Get next installment number
-  const { count } = await supabase
+  const { count } = await db
     .from('payment_plan_installments' as any)
     .select('id', { count: 'exact', head: true })
     .eq('event_id', eventId)
@@ -76,7 +76,7 @@ export async function addInstallment(
   const installmentNum = (count ?? 0) + 1
   const amountCents = Math.round(amountDollars * 100)
 
-  const { error } = await supabase.from('payment_plan_installments' as any).insert({
+  const { error } = await db.from('payment_plan_installments' as any).insert({
     event_id: eventId,
     tenant_id: user.tenantId!,
     installment_num: installmentNum,
@@ -100,9 +100,9 @@ export async function markInstallmentPaid(
   paymentMethod?: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('payment_plan_installments' as any)
     .update({
       paid_at: new Date().toISOString(),
@@ -124,9 +124,9 @@ export async function deleteInstallment(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('payment_plan_installments' as any)
     .delete()
     .eq('id', installmentId)

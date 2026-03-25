@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PublicInquiryForm } from '@/components/public/public-inquiry-form'
 
 export const metadata: Metadata = {
@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 
 export default async function BookNowPage() {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Look up the chef's name and slug from the client's tenant
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name, public_slug')
     .eq('id', user.tenantId!)

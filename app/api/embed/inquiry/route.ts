@@ -4,7 +4,7 @@
 // Creates: client + inquiry + draft event in one shot
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { z } from 'zod'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 import { verifyTurnstileToken } from '@/lib/security/turnstile'
@@ -118,10 +118,10 @@ export async function POST(request: NextRequest) {
       console.error('[embed-inquiry] Email validation failed (non-blocking):', err)
     }
 
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
 
     // 1. Verify chef exists
-    const { data: chef, error: chefError } = await supabase
+    const { data: chef, error: chefError } = await db
       .from('chefs')
       .select('id, business_name')
       .eq('id', data.chef_id)
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
     const clientName = data.full_name.trim()
 
     // Check for existing client under this chef
-    const { data: existingClient } = await supabase
+    const { data: existingClient } = await db
       .from('clients')
       .select('id')
       .eq('chef_id', tenantId)
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
     if (existingClient) {
       clientId = existingClient.id
     } else {
-      const { data: newClient, error: clientCreateError } = await supabase
+      const { data: newClient, error: clientCreateError } = await db
         .from('clients')
         .insert({
           chef_id: tenantId,
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
       : null
 
     // 4. Create inquiry
-    const { data: inquiry, error: inquiryError } = await supabase
+    const { data: inquiry, error: inquiryError } = await db
       .from('inquiries')
       .insert({
         tenant_id: tenantId,
@@ -262,7 +262,7 @@ export async function POST(request: NextRequest) {
 
     // 5. Create draft event (non-blocking - if it fails, inquiry is still saved)
     try {
-      const { data: event } = await supabase
+      const { data: event } = await db
         .from('events')
         .insert({
           tenant_id: tenantId,
@@ -283,7 +283,7 @@ export async function POST(request: NextRequest) {
 
       if (event) {
         // Log state transition (null → draft)
-        await supabase.from('event_state_transitions').insert({
+        await db.from('event_state_transitions').insert({
           tenant_id: tenantId,
           event_id: event.id,
           from_status: null,
@@ -292,10 +292,7 @@ export async function POST(request: NextRequest) {
         })
 
         // Link inquiry to event
-        await supabase
-          .from('inquiries')
-          .update({ converted_to_event_id: event.id })
-          .eq('id', inquiry.id)
+        await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
       }
     } catch (eventErr) {
       console.error('[embed-inquiry] Event creation failed (non-blocking):', eventErr)

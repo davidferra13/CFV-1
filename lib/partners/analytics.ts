@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 
 // ============================================
@@ -88,10 +88,10 @@ const CHANNEL_LABELS: Record<string, string> = {
 
 export async function getSourceDistribution(range?: DateRange): Promise<SourceDataPoint[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const { from, to } = range || getDefaultRange()
 
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select('channel')
     .eq('tenant_id', user.tenantId!)
@@ -120,10 +120,10 @@ export async function getSourceDistribution(range?: DateRange): Promise<SourceDa
 
 export async function getConversionRatesBySource(range?: DateRange): Promise<ConversionData[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const { from, to } = range || getDefaultRange()
 
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select('channel, status')
     .eq('tenant_id', user.tenantId!)
@@ -136,7 +136,7 @@ export async function getConversionRatesBySource(range?: DateRange): Promise<Con
   }
 
   // Also get events that were converted from inquiries in this range
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('referral_partner_id, status, inquiry_id')
     .eq('tenant_id', user.tenantId!)
@@ -170,11 +170,11 @@ export async function getConversionRatesBySource(range?: DateRange): Promise<Con
 
 export async function getRevenueBySource(range?: DateRange): Promise<RevenueData[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const { from, to } = range || getDefaultRange()
 
   // Get completed events with their inquiry channel
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('quoted_price_cents, inquiry_id, referral_partner_id')
     .eq('tenant_id', user.tenantId!)
@@ -193,7 +193,7 @@ export async function getRevenueBySource(range?: DateRange): Promise<RevenueData
     .filter((id: any): id is string => id != null)
   const { data: inquiries } =
     inquiryIds.length > 0
-      ? await supabase.from('inquiries').select('id, channel').in('id', inquiryIds)
+      ? await db.from('inquiries').select('id, channel').in('id', inquiryIds)
       : { data: [] }
 
   const channelMap: Record<string, string> = {}
@@ -219,12 +219,12 @@ export async function getRevenueBySource(range?: DateRange): Promise<RevenueData
 
 export async function getSourceTrends(months = 12): Promise<TrendDataPoint[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const from = startOfMonth(subMonths(now, months - 1)).toISOString()
 
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select('channel, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -264,11 +264,11 @@ export async function getSourceTrends(months = 12): Promise<TrendDataPoint[]> {
 
 export async function getPartnerLeaderboard(range?: DateRange): Promise<PartnerLeaderboardEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const { from, to } = range || getDefaultRange()
 
   // Get all active partners
-  const { data: partners, error } = await supabase
+  const { data: partners, error } = await db
     .from('referral_partners')
     .select('id, name, partner_type')
     .eq('tenant_id', user.tenantId!)
@@ -279,7 +279,7 @@ export async function getPartnerLeaderboard(range?: DateRange): Promise<PartnerL
   const partnerIds = partners.map((p: any) => p.id)
 
   // Get inquiries in range linked to partners
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('referral_partner_id, status')
     .eq('tenant_id', user.tenantId!)
@@ -288,7 +288,7 @@ export async function getPartnerLeaderboard(range?: DateRange): Promise<PartnerL
     .lte('created_at', to)
 
   // Get events linked to partners
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('referral_partner_id, status, quoted_price_cents, guest_count')
     .eq('tenant_id', user.tenantId!)

@@ -186,7 +186,7 @@ async function ensureServer(baseUrl, startServer, runDir) {
     cwd: ROOT,
     env: {
       ...process.env,
-      SUPABASE_E2E_ALLOW_REMOTE: process.env.SUPABASE_E2E_ALLOW_REMOTE || 'true',
+      DATABASE_E2E_ALLOW_REMOTE: process.env.DATABASE_E2E_ALLOW_REMOTE || 'true',
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   })

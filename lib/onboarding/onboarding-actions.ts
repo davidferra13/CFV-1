@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { WIZARD_STEPS, type OnboardingStepKey } from './onboarding-constants'
@@ -12,9 +12,9 @@ import { WIZARD_STEPS, type OnboardingStepKey } from './onboarding-constants'
 export async function getOnboardingProgress() {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('onboarding_progress')
     .select('step_key, completed_at, skipped, data')
     .eq('chef_id', tenantId)
@@ -30,9 +30,39 @@ export async function getOnboardingProgress() {
 export async function completeStep(stepKey: string, data?: Record<string, unknown>) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('onboarding_progress').upsert(
+  // If this is the pricing step, persist the pricing config to chef_pricing_config
+  if (stepKey === 'pricing' && data?.pricingConfig) {
+    try {
+      const pricingUpdates = data.pricingConfig as Record<string, unknown>
+
+      // Ensure a config row exists (upsert)
+      await db
+        .from('chef_pricing_config')
+        .upsert({ chef_id: tenantId }, { onConflict: 'chef_id' })
+        .select('id')
+        .single()
+
+      // Update only the provided fields
+      const { error: pricingError } = await db
+        .from('chef_pricing_config')
+        .update(pricingUpdates)
+        .eq('chef_id', tenantId)
+
+      if (pricingError) {
+        console.error('[onboarding] Failed to save pricing config', pricingError)
+        return { success: false, error: 'Failed to save pricing configuration' }
+      }
+
+      revalidatePath('/settings/pricing')
+    } catch (err) {
+      console.error('[onboarding] Pricing config error', err)
+      return { success: false, error: 'Failed to save pricing configuration' }
+    }
+  }
+
+  const { error } = await db.from('onboarding_progress').upsert(
     {
       chef_id: tenantId,
       step_key: stepKey,
@@ -55,9 +85,9 @@ export async function completeStep(stepKey: string, data?: Record<string, unknow
 export async function skipStep(stepKey: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('onboarding_progress').upsert(
+  const { error } = await db.from('onboarding_progress').upsert(
     {
       chef_id: tenantId,
       step_key: stepKey,
@@ -79,9 +109,9 @@ export async function skipStep(stepKey: string) {
 export async function resetOnboarding() {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('onboarding_progress').delete().eq('chef_id', tenantId)
+  const { error } = await db.from('onboarding_progress').delete().eq('chef_id', tenantId)
 
   if (error) {
     console.error('[onboarding] Failed to reset onboarding', error)

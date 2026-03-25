@@ -54,7 +54,7 @@ export const GET = withApiAuth(
     const dateFrom = url.searchParams.get('date_from')
     const dateTo = url.searchParams.get('date_to')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('events')
       .select(
         'id, status, occasion, event_date, serve_time, guest_count, quoted_price_cents, location_city, location_state, service_style, created_at, updated_at, client:clients(id, full_name, email)',
@@ -97,7 +97,7 @@ export const POST = withApiAuth(
     const input = parsed.data
 
     // Verify client belongs to this tenant
-    const { data: client } = await ctx.supabase
+    const { data: client } = await ctx.db
       .from('clients')
       .select('id')
       .eq('id', input.client_id)
@@ -142,7 +142,7 @@ export const POST = withApiAuth(
       event_timezone: input.event_timezone ?? null,
     }
 
-    const { data: event, error } = await ctx.supabase
+    const { data: event, error } = await ctx.db
       .from('events')
       .insert(insertPayload as any)
       .select()
@@ -155,7 +155,7 @@ export const POST = withApiAuth(
 
     // Log initial draft transition
     try {
-      await ctx.supabase.from('event_state_transitions').insert({
+      await ctx.db.from('event_state_transitions').insert({
         tenant_id: ctx.tenantId,
         event_id: (event as any).id,
         from_status: null,

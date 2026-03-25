@@ -6,7 +6,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { format, startOfYear, endOfYear, startOfQuarter, endOfQuarter } from 'date-fns'
@@ -41,9 +41,9 @@ export type TaxSettingsInput = z.infer<typeof TaxSettingsSchema>
 export async function logMileage(input: MileageInput) {
   const user = await requireChef()
   const validated = MileageSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('mileage_logs')
     .insert({
       chef_id: user.tenantId!,
@@ -64,16 +64,16 @@ export async function logMileage(input: MileageInput) {
 
 export async function deleteMileageLog(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
-  await supabase.from('mileage_logs').delete().eq('id', id).eq('chef_id', user.tenantId!)
+  const db: any = createServerClient()
+  await db.from('mileage_logs').delete().eq('id', id).eq('chef_id', user.tenantId!)
   revalidatePath('/finance/tax')
 }
 
 export async function getMileageForPeriod(startDate: string, endDate: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('mileage_logs')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -106,9 +106,9 @@ export async function getYearlyMileageSummary(year: number) {
 export async function saveTaxSettings(input: TaxSettingsInput) {
   const user = await requireChef()
   const validated = TaxSettingsSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tax_settings')
     .upsert({ chef_id: user.tenantId!, ...validated }, { onConflict: 'chef_id,tax_year' })
     .select()
@@ -121,9 +121,9 @@ export async function saveTaxSettings(input: TaxSettingsInput) {
 
 export async function getTaxSettings(year: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('tax_settings')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -144,14 +144,14 @@ export async function getTaxSettings(year: number) {
  */
 export async function computeQuarterlyEstimate(year: number, quarter: 1 | 2 | 3 | 4) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const quarterDate = new Date(year, (quarter - 1) * 3, 1)
   const start = format(startOfQuarter(quarterDate), 'yyyy-MM-dd')
   const end = format(endOfQuarter(quarterDate), 'yyyy-MM-dd')
 
   // Gross income from ledger (payments received)
-  const { data: ledgerData } = await supabase
+  const { data: ledgerData } = await db
     .from('ledger_entries')
     .select('amount_cents, entry_type')
     .eq('tenant_id', user.tenantId!)
@@ -162,7 +162,7 @@ export async function computeQuarterlyEstimate(year: number, quarter: 1 | 2 | 3 
   const grossIncomeCents = (ledgerData ?? []).reduce((sum: any, e: any) => sum + e.amount_cents, 0)
 
   // Deductible expenses
-  const { data: expenseData } = await supabase
+  const { data: expenseData } = await db
     .from('expenses')
     .select('amount_cents')
     .eq('tenant_id', user.tenantId!)
@@ -218,13 +218,13 @@ export async function computeQuarterlyEstimate(year: number, quarter: 1 | 2 | 3 
  */
 export async function generateAccountantExport(year: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const start = `${year}-01-01`
   const end = `${year}-12-31`
 
   // Monthly income
-  const { data: ledgerData } = await supabase
+  const { data: ledgerData } = await db
     .from('ledger_entries')
     .select('amount_cents, entry_type, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -248,7 +248,7 @@ export async function generateAccountantExport(year: number) {
   }
 
   // Expenses by category
-  const { data: expenseData } = await supabase
+  const { data: expenseData } = await db
     .from('expenses')
     .select('amount_cents, category, expense_date')
     .eq('tenant_id', user.tenantId!)

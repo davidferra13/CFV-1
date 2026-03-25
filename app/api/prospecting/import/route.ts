@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server'
 import { validateProspectingAuth } from '@/lib/prospecting/api-auth'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { computeProspectScore } from '@/lib/prospecting/lead-scoring'
 import { isSimilarName } from '@/lib/prospecting/fuzzy-match'
 
@@ -58,10 +58,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Max 500 prospects per import' }, { status: 400 })
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Fetch existing for dedup
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('prospects' as any)
     .select('id, name, city')
     .eq('chef_id', auth.tenantId)
@@ -157,8 +157,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ imported: 0, skipped, ids: [] })
   }
 
-  // Batch insert (Supabase supports up to 1000 rows)
-  const { data: inserted, error } = await supabase
+  // Batch insert (PostgreSQL supports up to 1000 rows)
+  const { data: inserted, error } = await db
     .from('prospects' as any)
     .insert(toInsert)
     .select('id')
@@ -173,7 +173,7 @@ export async function POST(request: Request) {
   // Update campaign leads_count if campaign_id provided
   if (body.campaign_id && ids.length > 0) {
     try {
-      await supabase.rpc('increment_field' as any, {
+      await db.rpc('increment_field' as any, {
         table_name: 'outreach_campaigns',
         field_name: 'leads_count',
         row_id: body.campaign_id,
@@ -182,13 +182,13 @@ export async function POST(request: Request) {
     } catch {
       // Non-blocking: RPC may not exist yet, update manually
       try {
-        const { data }: any = await supabase
+        const { data }: any = await db
           .from('outreach_campaigns' as any)
           .select('leads_count')
           .eq('id', body.campaign_id)
           .single()
         if (data) {
-          await supabase
+          await db
             .from('outreach_campaigns' as any)
             .update({ leads_count: (data.leads_count ?? 0) + ids.length })
             .eq('id', body.campaign_id)

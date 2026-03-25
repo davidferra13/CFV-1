@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -54,9 +54,9 @@ export async function getSurveys(options?: { eventId?: string; completedOnly?: b
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('post_event_surveys')
     .select('*')
     .eq('tenant_id', user.entityId)
@@ -85,9 +85,9 @@ export async function getSurveyResults(): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: surveys, error } = await supabase
+  const { data: surveys, error } = await db
     .from('post_event_surveys')
     .select(
       'overall, food_quality, punctuality, communication_rating, would_book_again, completed_at'
@@ -154,9 +154,9 @@ export async function createSurvey(input: {
   client_id: string
 }): Promise<{ data: PostEventSurvey | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('post_event_surveys')
     .insert({
       event_id: input.event_id,
@@ -198,7 +198,7 @@ export async function submitSurveyResponse(
 ): Promise<{ error: string | null }> {
   // NOTE: This action does NOT require auth since surveys are submitted
   // via token by clients who may not have accounts
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updateData: Record<string, unknown> = {
     completed_at: new Date().toISOString(),
@@ -225,7 +225,7 @@ export async function submitSurveyResponse(
     updateData.review_request_eligible = true
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('post_event_surveys')
     .update(updateData)
     .eq('survey_token', surveyToken)
@@ -243,10 +243,10 @@ export async function requestReview(surveyId: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the survey belongs to this chef and is eligible
-  const { data: survey, error: fetchError } = await supabase
+  const { data: survey, error: fetchError } = await db
     .from('post_event_surveys')
     .select('review_request_eligible, review_request_sent_at, completed_at')
     .eq('id', surveyId)
@@ -269,7 +269,7 @@ export async function requestReview(surveyId: string): Promise<{
     return { error: 'Review request already sent' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('post_event_surveys')
     .update({
       review_request_sent_at: new Date().toISOString(),

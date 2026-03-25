@@ -1,6 +1,6 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { holidayLeadScoreBoost } from '@/lib/holidays/upcoming'
 
 export interface LeadScore {
@@ -89,9 +89,9 @@ export async function scoreInquiry(inquiry: {
 
 export async function getLeadScoresForChef(): Promise<LeadScore[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select(
       'id, confirmed_budget_cents, confirmed_guest_count, confirmed_date, channel, client_id, created_at'

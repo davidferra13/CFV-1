@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { withAiFallback } from '@/lib/ai/with-ai-fallback'
 import {
@@ -45,8 +45,8 @@ const EmailDraftSchema = z.object({
 // SHARED HELPERS
 // ============================================
 
-async function loadClient(supabase: any, clientId: string, tenantId: string) {
-  const { data } = await supabase
+async function loadClient(db: any, clientId: string, tenantId: string) {
+  const { data } = await db
     .from('clients')
     .select('id, full_name, email, vibe_notes, dietary_restrictions, allergies')
     .eq('id', clientId)
@@ -55,14 +55,14 @@ async function loadClient(supabase: any, clientId: string, tenantId: string) {
   return data
 }
 
-async function findClientByName(supabase: any, name: string, tenantId: string) {
+async function findClientByName(db: any, name: string, tenantId: string) {
   // Strip common suffixes that users add but aren't in the DB name
   const cleanName = name
     .replace(/['\u2019]s\s*$/i, '')
     .replace(/\s+(?:family|account|household|group)$/i, '')
     .trim()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('clients')
     .select('id, full_name, email, vibe_notes, dietary_restrictions, allergies')
     .eq('tenant_id', tenantId)
@@ -71,8 +71,8 @@ async function findClientByName(supabase: any, name: string, tenantId: string) {
   return data?.[0] ?? null
 }
 
-async function loadLastEvent(supabase: any, clientId: string, tenantId: string) {
-  const { data } = await supabase
+async function loadLastEvent(db: any, clientId: string, tenantId: string) {
+  const { data } = await db
     .from('events')
     .select('id, occasion, event_date, guest_count, status, location')
     .eq('client_id', clientId)
@@ -83,8 +83,8 @@ async function loadLastEvent(supabase: any, clientId: string, tenantId: string) 
   return data
 }
 
-async function loadEvent(supabase: any, eventId: string, tenantId: string) {
-  const { data } = await supabase
+async function loadEvent(db: any, eventId: string, tenantId: string) {
+  const { data } = await db
     .from('events')
     .select(
       'id, occasion, event_date, guest_count, status, location, client_id, client:clients(full_name, email)'
@@ -95,8 +95,8 @@ async function loadEvent(supabase: any, eventId: string, tenantId: string) {
   return data
 }
 
-async function loadChefName(supabase: any, tenantId: string): Promise<string> {
-  const { data } = await supabase
+async function loadChefName(db: any, tenantId: string): Promise<string> {
+  const { data } = await db
     .from('chefs')
     .select('business_name, full_name')
     .eq('id', tenantId)
@@ -121,16 +121,16 @@ export async function generateThankYouDraft(
   eventHint?: string
 ): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const client = await findClientByName(supabase, clientName, tenantId)
+  const client = await findClientByName(db, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
   // If an event hint is provided (e.g. "anniversary"), try to find a matching event by occasion
   let event: Record<string, unknown> | null = null
   if (eventHint) {
-    const { data } = await supabase
+    const { data } = await db
       .from('events')
       .select('id, occasion, event_date, guest_count, status, location')
       .eq('client_id', client.id)
@@ -143,10 +143,10 @@ export async function generateThankYouDraft(
   }
   // Fall back to most recent event if no hint or no match
   if (!event) {
-    event = await loadLastEvent(supabase, client.id, tenantId)
+    event = await loadLastEvent(db, client.id, tenantId)
   }
 
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
@@ -187,14 +187,14 @@ export async function generateThankYouDraft(
 
 export async function generateReferralRequestDraft(clientName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const client = await findClientByName(supabase, clientName, tenantId)
+  const client = await findClientByName(db, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
-  const lastEvent = await loadLastEvent(supabase, client.id, tenantId)
-  const chefName = await loadChefName(supabase, tenantId)
+  const lastEvent = await loadLastEvent(db, client.id, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
@@ -229,14 +229,14 @@ export async function generateReferralRequestDraft(clientName: string): Promise<
 
 export async function generateTestimonialRequestDraft(clientName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const client = await findClientByName(supabase, clientName, tenantId)
+  const client = await findClientByName(db, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
-  const lastEvent = await loadLastEvent(supabase, client.id, tenantId)
-  const chefName = await loadChefName(supabase, tenantId)
+  const lastEvent = await loadLastEvent(db, client.id, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
@@ -275,13 +275,13 @@ Guests: ${lastEvent?.guest_count ?? 'N/A'}`,
 
 export async function generateQuoteCoverLetterDraft(eventIdOrName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Try by ID first, then by name search
-  let event = await loadEvent(supabase, eventIdOrName, tenantId)
+  let event = await loadEvent(db, eventIdOrName, tenantId)
   if (!event) {
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select(
         'id, occasion, event_date, guest_count, status, location, client_id, client:clients(full_name, email)'
@@ -294,7 +294,7 @@ export async function generateQuoteCoverLetterDraft(eventIdOrName: string): Prom
   if (!event) throw new Error(`No event found matching "${eventIdOrName}".`)
 
   const clientName = (event as any).client?.full_name ?? 'Client'
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   const templateVars: TemplateVars = {
     clientName,
@@ -339,12 +339,12 @@ export async function generateDeclineResponseDraft(
   reason?: string
 ): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const client = await findClientByName(supabase, clientName, tenantId)
+  const client = await findClientByName(db, clientName, tenantId)
   const resolvedName = client?.full_name ?? clientName
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   const templateVars: TemplateVars = {
     clientName: resolvedName,
@@ -383,12 +383,12 @@ export async function generateCancellationResponseDraft(
   eventIdOrName: string
 ): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  let event = await loadEvent(supabase, eventIdOrName, tenantId)
+  let event = await loadEvent(db, eventIdOrName, tenantId)
   if (!event) {
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select(
         'id, occasion, event_date, guest_count, status, location, client_id, client:clients(full_name, email)'
@@ -401,7 +401,7 @@ export async function generateCancellationResponseDraft(
   if (!event) throw new Error(`No event found matching "${eventIdOrName}".`)
 
   const clientName = (event as any).client?.full_name ?? 'Client'
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   const templateVars: TemplateVars = {
     clientName,
@@ -441,14 +441,14 @@ Event status: ${(event as any).status ?? 'cancelled'}`,
 
 export async function generatePaymentReminderDraft(clientName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const client = await findClientByName(supabase, clientName, tenantId)
+  const client = await findClientByName(db, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
   // Find events with outstanding balance
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, status')
     .eq('client_id', client.id)
@@ -458,7 +458,7 @@ export async function generatePaymentReminderDraft(clientName: string): Promise<
     .limit(1)
 
   const lastEvent = events?.[0]
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
@@ -498,14 +498,14 @@ Status: ${lastEvent?.status ?? 'N/A'}`,
 
 export async function generateReEngagementDraft(clientName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const client = await findClientByName(supabase, clientName, tenantId)
+  const client = await findClientByName(db, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
-  const lastEvent = await loadLastEvent(supabase, client.id, tenantId)
-  const chefName = await loadChefName(supabase, tenantId)
+  const lastEvent = await loadLastEvent(db, client.id, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   const templateVars: TemplateVars = {
     clientName: client.full_name,
@@ -548,21 +548,21 @@ export async function generateMilestoneRecognitionDraft(
   milestone?: string
 ): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const client = await findClientByName(supabase, clientName, tenantId)
+  const client = await findClientByName(db, clientName, tenantId)
   if (!client) throw new Error(`No client found matching "${clientName}".`)
 
   // Count events for this client
-  const { count } = await supabase
+  const { count } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('client_id', client.id)
     .eq('tenant_id', tenantId)
     .not('status', 'eq', 'cancelled')
 
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
   const detectedMilestone =
     milestone ??
     (count && count >= 10
@@ -608,9 +608,9 @@ Client notes: ${client.vibe_notes ?? 'none'}`,
 
 export async function generateFoodSafetyIncidentDraft(description: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   const templateVars: TemplateVars = {
     clientName: 'Internal',
@@ -645,23 +645,23 @@ Date: ${new Date().toISOString().split('T')[0]}`,
 
 export async function generateConfirmationDraft(eventIdOrClientName: string): Promise<DraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   // Try to find by event ID first, then by client name
   let event: any = null
   let client: any = null
 
   if (eventIdOrClientName.match(/^[0-9a-f-]{36}$/i)) {
-    event = await loadEvent(supabase, eventIdOrClientName, tenantId)
+    event = await loadEvent(db, eventIdOrClientName, tenantId)
     if (event?.client) client = event.client
   }
 
   if (!event) {
-    client = await findClientByName(supabase, eventIdOrClientName, tenantId)
+    client = await findClientByName(db, eventIdOrClientName, tenantId)
     if (client) {
-      event = await loadLastEvent(supabase, client.id, tenantId)
+      event = await loadLastEvent(db, client.id, tenantId)
     }
   }
 

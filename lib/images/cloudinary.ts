@@ -132,7 +132,7 @@ interface FetchOptimizeOptions {
  * - The input URL is empty/falsy
  * - The URL is a blob: or data: URL (local browser URLs)
  *
- * @param originalUrl - Any publicly accessible image URL (e.g. Supabase Storage signed URL)
+ * @param originalUrl - Any publicly accessible image URL (e.g. local storage signed URL)
  * @param options - Transformation options (width, height, format, quality, etc.)
  * @returns Cloudinary-optimized URL, or the original URL as fallback
  */

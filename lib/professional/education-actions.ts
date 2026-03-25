@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -14,9 +14,9 @@ export async function createEducationEntry(input: {
 }) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('chef_education_log').insert({
+  const { error } = await db.from('chef_education_log').insert({
     tenant_id: tenantId,
     entry_type: input.entry_type,
     title: input.title,
@@ -44,9 +44,9 @@ export async function listEducationEntries(): Promise<
 > {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_education_log')
     .select(
       'id, entry_type, title, description, learned, how_changed_cooking, entry_date, created_at'
@@ -61,12 +61,12 @@ export async function listEducationEntries(): Promise<
 export async function getAnnualCount(): Promise<number> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const since = new Date()
   since.setFullYear(since.getFullYear() - 1)
 
-  const { count, error } = await supabase
+  const { count, error } = await db
     .from('chef_education_log')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)

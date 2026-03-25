@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { resolveGoogleOAuthCallbackUrl } from '../../lib/supabase/client'
+import { resolveGoogleOAuthCallbackUrl } from '../../lib/db/client'
 
 describe('resolveGoogleOAuthCallbackUrl', () => {
   it('prefers configured NEXT_PUBLIC_SITE_URL origin over browser origin', () => {

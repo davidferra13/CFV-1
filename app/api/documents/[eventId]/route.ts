@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'node:crypto'
 import { format } from 'date-fns'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getDocumentContext } from '@/lib/print/actions'
 import { fetchGroceryListData, renderGroceryList } from '@/lib/documents/generate-grocery-list'
 import { fetchTravelRouteData, renderTravelRoute } from '@/lib/documents/generate-travel-route'
@@ -180,7 +180,7 @@ function applyPageMeta(
 }
 
 async function archiveGeneratedDocument(params: {
-  supabase: any
+  db: any
   tenantId: string
   userId: string
   eventId: string
@@ -189,12 +189,11 @@ async function archiveGeneratedDocument(params: {
   pdfBuffer: Buffer
   metadata: SnapshotMetadata
 }): Promise<SnapshotArchiveOutcome> {
-  const { supabase, tenantId, userId, eventId, documentType, filename, pdfBuffer, metadata } =
-    params
+  const { db, tenantId, userId, eventId, documentType, filename, pdfBuffer, metadata } = params
 
   try {
     const contentHash = createHash('sha256').update(pdfBuffer).digest('hex')
-    const { data: latest } = await supabase
+    const { data: latest } = await db
       .from('event_document_snapshots')
       .select('version_number, generated_at, content_hash')
       .eq('tenant_id', tenantId)
@@ -224,7 +223,7 @@ async function archiveGeneratedDocument(params: {
       .slice(0, 14)
     const storagePath = `${tenantId}/${eventId}/${safeType}/v${String(nextVersion).padStart(4, '0')}-${stamp}.pdf`
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await db.storage
       .from(SNAPSHOT_BUCKET)
       .upload(storagePath, new Uint8Array(pdfBuffer), {
         contentType: 'application/pdf',
@@ -249,12 +248,12 @@ async function archiveGeneratedDocument(params: {
       metadata,
     })
     if (!recordValidation.success) {
-      await supabase.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
+      await db.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
       console.error('[documents/route] snapshot insert validation failed:', recordValidation.error)
       return { archived: false, reason: 'validation_failed' }
     }
 
-    const { data: insertedSnapshot, error: insertError } = await supabase
+    const { data: insertedSnapshot, error: insertError } = await db
       .from('event_document_snapshots')
       .insert({
         tenant_id: tenantId,
@@ -272,7 +271,7 @@ async function archiveGeneratedDocument(params: {
       .single()
 
     if (insertError) {
-      await supabase.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
+      await db.storage.from(SNAPSHOT_BUCKET).remove([storagePath])
       console.error('[documents/route] snapshot insert failed:', insertError)
       return { archived: false, reason: 'insert_failed' }
     }
@@ -297,8 +296,8 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
       return NextResponse.json({ error: 'Invalid event ID format' }, { status: 400 })
     }
 
-    const supabase: any = createServerClient()
-    const { count } = await supabase
+    const db: any = createServerClient()
+    const { count } = await db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('id', eventId)
@@ -370,7 +369,7 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
     const dateSuffix = format(new Date(), 'yyyy-MM-dd')
     const docConfigs = getDocRenderConfigs(eventId)
     const generationJob = await startEventDocumentGenerationJob({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       eventId,
       requestedType,
@@ -458,7 +457,7 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
           let archiveOutcome: SnapshotArchiveOutcome | null = null
           if (archiveRequested) {
             archiveOutcome = await archiveGeneratedDocument({
-              supabase,
+              db,
               tenantId: user.tenantId!,
               userId: user.id,
               eventId,
@@ -489,7 +488,7 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
 
       if (generationJob?.jobId && shouldUpdateJobOutcome) {
         await markEventDocumentGenerationJobFailed({
-          supabase,
+          db,
           tenantId: user.tenantId!,
           jobId: generationJob.jobId,
           attempts: Math.max(attemptsUsed, 1),
@@ -512,7 +511,7 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
       }
 
       if (attemptsUsed >= maxAttempts || !retryable) {
-        await pushToDLQ(supabase, {
+        await pushToDLQ(db, {
           tenantId: user.tenantId!,
           jobType: 'event_document_generation',
           jobId: generationJob?.jobId ?? `${eventId}:${requestedType}:${Date.now()}`,
@@ -536,7 +535,7 @@ export async function GET(request: NextRequest, { params }: { params: { eventId:
 
     if (generationJob?.jobId && shouldUpdateJobOutcome) {
       await markEventDocumentGenerationJobSucceeded({
-        supabase,
+        db,
         tenantId: user.tenantId!,
         jobId: generationJob.jobId,
         attempts: attemptsUsed,

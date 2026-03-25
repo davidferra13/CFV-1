@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { randomUUID } from 'crypto'
 
@@ -554,10 +554,10 @@ function detectAisle(itemName: string): AisleSection {
 
 export async function createSmartList(name: string, eventId?: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const id = randomUUID()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('smart_grocery_lists')
     .insert({
       id,
@@ -577,9 +577,9 @@ export async function createSmartList(name: string, eventId?: string) {
 
 export async function getSmartLists(status?: ListStatus) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  let query = supabase
+  let query = db
     .from('smart_grocery_lists')
     .select('*, smart_grocery_items(id, is_checked)')
     .eq('chef_id', user.tenantId!)
@@ -600,9 +600,9 @@ export async function getSmartLists(status?: ListStatus) {
 
 export async function getSmartList(listId: string) {
   const user = await requireChef()
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('smart_grocery_lists')
     .select('*, smart_grocery_items(*)')
     .eq('id', listId)
@@ -637,10 +637,10 @@ export async function addItem(
   }
 ) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Verify list ownership
-  const { data: list, error: listError } = await supabase
+  const { data: list, error: listError } = await db
     .from('smart_grocery_lists')
     .select('id')
     .eq('id', listId)
@@ -650,7 +650,7 @@ export async function addItem(
   if (listError || !list) throw new Error('Grocery list not found')
 
   // Get max sort_order
-  const { data: maxItem } = await supabase
+  const { data: maxItem } = await db
     .from('smart_grocery_items')
     .select('sort_order')
     .eq('list_id', listId)
@@ -664,7 +664,7 @@ export async function addItem(
   const aisleSection = data.aisle_section || detectAisle(data.name)
 
   // Check chef's aisle preferences for override
-  const { data: pref } = await supabase
+  const { data: pref } = await db
     .from('aisle_preferences')
     .select('aisle_section')
     .eq('chef_id', user.tenantId!)
@@ -675,7 +675,7 @@ export async function addItem(
   const finalAisle = pref?.aisle_section || aisleSection
 
   const id = randomUUID()
-  const { data: item, error } = await supabase
+  const { data: item, error } = await db
     .from('smart_grocery_items')
     .insert({
       id,
@@ -709,10 +709,10 @@ export async function updateItem(
   }>
 ) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Verify ownership through list
-  const { data: item, error: findError } = await supabase
+  const { data: item, error: findError } = await db
     .from('smart_grocery_items')
     .select('list_id, smart_grocery_lists!inner(chef_id)')
     .eq('id', itemId)
@@ -722,7 +722,7 @@ export async function updateItem(
   const listData = item.smart_grocery_lists as unknown as { chef_id: string }
   if (listData.chef_id !== user.tenantId!) throw new Error('Not authorized')
 
-  const { error } = await supabase.from('smart_grocery_items').update(data).eq('id', itemId)
+  const { error } = await db.from('smart_grocery_items').update(data).eq('id', itemId)
 
   if (error) throw new Error(`Failed to update item: ${error.message}`)
 
@@ -731,10 +731,10 @@ export async function updateItem(
 
 export async function removeItem(itemId: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Verify ownership
-  const { data: item, error: findError } = await supabase
+  const { data: item, error: findError } = await db
     .from('smart_grocery_items')
     .select('list_id, smart_grocery_lists!inner(chef_id)')
     .eq('id', itemId)
@@ -744,7 +744,7 @@ export async function removeItem(itemId: string) {
   const listData = item.smart_grocery_lists as unknown as { chef_id: string }
   if (listData.chef_id !== user.tenantId!) throw new Error('Not authorized')
 
-  const { error } = await supabase.from('smart_grocery_items').delete().eq('id', itemId)
+  const { error } = await db.from('smart_grocery_items').delete().eq('id', itemId)
 
   if (error) throw new Error(`Failed to remove item: ${error.message}`)
 
@@ -753,10 +753,10 @@ export async function removeItem(itemId: string) {
 
 export async function toggleItemChecked(itemId: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Get current state + verify ownership
-  const { data: item, error: findError } = await supabase
+  const { data: item, error: findError } = await db
     .from('smart_grocery_items')
     .select('is_checked, list_id, smart_grocery_lists!inner(chef_id)')
     .eq('id', itemId)
@@ -766,7 +766,7 @@ export async function toggleItemChecked(itemId: string) {
   const listData = item.smart_grocery_lists as unknown as { chef_id: string }
   if (listData.chef_id !== user.tenantId!) throw new Error('Not authorized')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('smart_grocery_items')
     .update({ is_checked: !item.is_checked })
     .eq('id', itemId)
@@ -778,10 +778,10 @@ export async function toggleItemChecked(itemId: string) {
 
 export async function reorderItems(listId: string, itemIds: string[]) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Verify list ownership
-  const { data: list, error: listError } = await supabase
+  const { data: list, error: listError } = await db
     .from('smart_grocery_lists')
     .select('id')
     .eq('id', listId)
@@ -792,11 +792,7 @@ export async function reorderItems(listId: string, itemIds: string[]) {
 
   // Update sort_order for each item
   const updates = itemIds.map((id, index) =>
-    supabase
-      .from('smart_grocery_items')
-      .update({ sort_order: index })
-      .eq('id', id)
-      .eq('list_id', listId)
+    db.from('smart_grocery_items').update({ sort_order: index }).eq('id', id).eq('list_id', listId)
   )
 
   const results = await Promise.all(updates)
@@ -812,9 +808,9 @@ export async function reorderItems(listId: string, itemIds: string[]) {
 
 export async function completeList(listId: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('smart_grocery_lists')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('id', listId)
@@ -827,9 +823,9 @@ export async function completeList(listId: string) {
 
 export async function archiveList(listId: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('smart_grocery_lists')
     .update({ status: 'archived' })
     .eq('id', listId)
@@ -842,10 +838,10 @@ export async function archiveList(listId: string) {
 
 export async function duplicateList(listId: string, newName: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Get original list + items
-  const { data: original, error: fetchError } = await supabase
+  const { data: original, error: fetchError } = await db
     .from('smart_grocery_lists')
     .select('*, smart_grocery_items(*)')
     .eq('id', listId)
@@ -856,7 +852,7 @@ export async function duplicateList(listId: string, newName: string) {
 
   // Create new list
   const newId = randomUUID()
-  const { error: createError } = await supabase.from('smart_grocery_lists').insert({
+  const { error: createError } = await db.from('smart_grocery_lists').insert({
     id: newId,
     chef_id: user.tenantId!,
     name: newName,
@@ -882,7 +878,7 @@ export async function duplicateList(listId: string, newName: string) {
       price_estimate_cents: item.price_estimate_cents,
     }))
 
-    const { error: itemsError } = await supabase.from('smart_grocery_items').insert(newItems)
+    const { error: itemsError } = await db.from('smart_grocery_items').insert(newItems)
 
     if (itemsError) throw new Error(`Failed to copy items: ${itemsError.message}`)
   }
@@ -897,10 +893,10 @@ export async function duplicateList(listId: string, newName: string) {
 
 export async function autoAssignAisles(listId: string) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Get list items
-  const { data: list, error: listError } = await supabase
+  const { data: list, error: listError } = await db
     .from('smart_grocery_lists')
     .select('id')
     .eq('id', listId)
@@ -909,7 +905,7 @@ export async function autoAssignAisles(listId: string) {
 
   if (listError || !list) throw new Error('List not found')
 
-  const { data: items, error: itemsError } = await supabase
+  const { data: items, error: itemsError } = await db
     .from('smart_grocery_items')
     .select('id, name, aisle_section')
     .eq('list_id', listId)
@@ -917,7 +913,7 @@ export async function autoAssignAisles(listId: string) {
   if (itemsError) throw new Error(`Failed to load items: ${itemsError.message}`)
 
   // Load chef's preferences
-  const { data: prefs } = await supabase
+  const { data: prefs } = await db
     .from('aisle_preferences')
     .select('item_keyword, aisle_section')
     .eq('chef_id', user.tenantId!)
@@ -945,7 +941,7 @@ export async function autoAssignAisles(listId: string) {
 
     if (newAisle !== item.aisle_section) {
       updates.push(
-        supabase
+        db
           .from('smart_grocery_items')
           .update({ aisle_section: newAisle })
           .eq('id', item.id) as unknown as Promise<any>
@@ -963,9 +959,9 @@ export async function autoAssignAisles(listId: string) {
 
 export async function saveAislePreference(storeName: string, keyword: string, aisle: AisleSection) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { error } = await supabase.from('aisle_preferences').upsert(
+  const { error } = await db.from('aisle_preferences').upsert(
     {
       id: randomUUID(),
       chef_id: user.tenantId!,

@@ -3,8 +3,8 @@
 // Non-blocking: failures return 200 with { tracked: false } to avoid disrupting the app.
 
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { createServerClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/db/admin'
+import { createServerClient } from '@/lib/db/server'
 import { checkRateLimit } from '@/lib/rateLimit'
 
 const adminClient = createAdminClient()
@@ -20,17 +20,17 @@ export async function POST(request: Request) {
     }
 
     // Authenticate the user
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
     const {
       data: { user },
-    } = await supabase.auth.getUser()
+    } = await db.auth.getUser()
 
     if (!user) {
       return NextResponse.json({ tracked: false, error: 'unauthorized' }, { status: 401 })
     }
 
     // Get tenant ID from user_roles
-    const { data: role } = await supabase
+    const { data: role } = await db
       .from('user_roles')
       .select('entity_id')
       .eq('auth_user_id', user.id)

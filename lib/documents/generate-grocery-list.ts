@@ -5,7 +5,7 @@
 // MUST fit on ONE page - no exceptions
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 
@@ -95,10 +95,10 @@ const STOP_2_CATEGORIES = new Set(['alcohol'])
 
 export async function fetchGroceryListData(eventId: string): Promise<GroceryListData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Event + client
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -114,7 +114,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   if (!event) return null
 
   // Chef preferences for store names + margin target
-  const { data: prefs } = await supabase
+  const { data: prefs } = await db
     .from('chef_preferences')
     .select('default_grocery_store, default_liquor_store, target_margin_percent')
     .eq('tenant_id', user.tenantId!)
@@ -129,8 +129,8 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   let presourcedItems: PresourcedItem[] = []
 
   try {
-    const supabaseForLegs = createServerClient()
-    const { data: sourcedRows } = await (supabaseForLegs as any)
+    const dbForLegs = createServerClient()
+    const { data: sourcedRows } = await (dbForLegs as any)
       .from('travel_leg_ingredients')
       .select(
         `
@@ -160,7 +160,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   }
 
   // Menu
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -172,7 +172,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   const menuId = menus[0].id
 
   // Dishes
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, course_number, course_name')
     .eq('menu_id', menuId)
@@ -183,7 +183,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
 
   // Components (with recipe_id and scale_factor)
   const dishIds = dishes.map((d: any) => d.id)
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('id, dish_id, name, recipe_id, scale_factor')
     .in('dish_id', dishIds)
@@ -265,7 +265,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
 
   // Fetch recipe_ingredients with ingredient details
   // Note: recipe_ingredients RLS is scoped via recipe_id FK to recipes (tenant-scoped)
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select(
       `

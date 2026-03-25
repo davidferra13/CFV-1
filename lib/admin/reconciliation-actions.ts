@@ -3,7 +3,7 @@
 
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireAdmin } from '@/lib/auth/admin'
 
 export type ChefReconciliationRow = {
@@ -34,35 +34,35 @@ export type PlatformReconciliation = {
  */
 export async function getPlatformReconciliation(): Promise<PlatformReconciliation> {
   await requireAdmin()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // 1. GMV from ledger (all payments/deposits across tenants)
-  const { data: gmvEntries } = await supabase
+  const { data: gmvEntries } = await db
     .from('ledger_entries')
     .select('tenant_id, amount_cents')
     .in('entry_type', ['payment', 'deposit'])
     .eq('is_refund', false)
 
   // 2. Refunds from ledger
-  const { data: refundEntries } = await supabase
+  const { data: refundEntries } = await db
     .from('ledger_entries')
     .select('tenant_id, amount_cents')
     .eq('is_refund', true)
 
   // 3. Transfers
-  const { data: transfers } = await supabase
+  const { data: transfers } = await db
     .from('stripe_transfers')
     .select(
       'tenant_id, gross_amount_cents, platform_fee_cents, net_transfer_cents, status, is_deferred'
     )
 
   // 4. Platform fees
-  const { data: fees } = await supabase
+  const { data: fees } = await db
     .from('platform_fee_ledger')
     .select('tenant_id, amount_cents, entry_type')
 
   // 5. All chefs
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs')
     .select('id, business_name, display_name, stripe_account_id, stripe_onboarding_complete')
 

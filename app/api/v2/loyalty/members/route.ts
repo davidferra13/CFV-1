@@ -31,7 +31,7 @@ export const GET = withApiAuth(
     const search = url.searchParams.get('search')
 
     // Query clients who have loyalty data (points > 0 or tier set)
-    let query = ctx.supabase
+    let query = ctx.db
       .from('clients')
       .select(
         'id, full_name, email, phone, loyalty_points, loyalty_tier, total_events_completed, total_guests_served, created_at',
@@ -73,7 +73,7 @@ export const POST = withApiAuth(
     const input = parsed.data
 
     // Verify client belongs to tenant
-    const { data: client } = await ctx.supabase
+    const { data: client } = await ctx.db
       .from('clients')
       .select('id, full_name, loyalty_points, loyalty_tier')
       .eq('id', input.client_id)
@@ -92,7 +92,7 @@ export const POST = withApiAuth(
 
     if (welcomePoints > 0) {
       // Insert a welcome bonus transaction
-      const { error: txError } = await (ctx.supabase as any).from('loyalty_transactions').insert({
+      const { error: txError } = await (ctx.db as any).from('loyalty_transactions').insert({
         tenant_id: ctx.tenantId,
         client_id: input.client_id,
         type: 'bonus',
@@ -108,7 +108,7 @@ export const POST = withApiAuth(
 
       // Update client loyalty_points
       const newPoints = ((client as any).loyalty_points ?? 0) + welcomePoints
-      await ctx.supabase
+      await ctx.db
         .from('clients')
         .update({ loyalty_points: newPoints } as any)
         .eq('id', input.client_id)
@@ -116,7 +116,7 @@ export const POST = withApiAuth(
     }
 
     // Re-fetch updated client
-    const { data: updated } = await ctx.supabase
+    const { data: updated } = await ctx.db
       .from('clients')
       .select('id, full_name, email, loyalty_points, loyalty_tier')
       .eq('id', input.client_id)

@@ -1,15 +1,15 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { randomUUID } from 'crypto'
 
 // ── Get feedback for a specific event ──────────────────────────────
 export async function getEventFeedback(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_feedback')
     .select('*')
     .eq('event_id', eventId)
@@ -29,9 +29,9 @@ export async function getAllFeedback(filters?: {
   dateRange?: { from: string; to: string }
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('event_feedback')
     .select('*, events(occasion, event_date), clients(full_name)')
     .eq('chef_id', user.tenantId!)
@@ -62,10 +62,10 @@ export async function getAllFeedback(filters?: {
 // ── Create a feedback request (generates a token/link) ─────────────
 export async function createFeedbackRequest(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the event belongs to this chef
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, client_id, occasion')
     .eq('id', eventId)
@@ -81,7 +81,7 @@ export async function createFeedbackRequest(eventId: string) {
 
   // Store the token in event_feedback as a placeholder row
   // The client_id and ratings will be filled when submitted
-  const { error: insertError } = await supabase.from('event_feedback').upsert(
+  const { error: insertError } = await db.from('event_feedback').upsert(
     {
       chef_id: user.tenantId!,
       event_id: eventId,
@@ -118,10 +118,10 @@ export async function submitFeedback(
     additionalComments?: string
   }
 ) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Find the feedback row by token
-  const { data: existing, error: findError } = await supabase
+  const { data: existing, error: findError } = await db
     .from('event_feedback')
     .select('id')
     .like('additional_comments', `__token__:${token}`)
@@ -132,7 +132,7 @@ export async function submitFeedback(
   }
 
   // Update with actual feedback data
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('event_feedback')
     .update({
       overall_rating: data.overallRating,
@@ -158,10 +158,10 @@ export async function submitFeedback(
 // ── Get feedback stats (averages, NPS, response rate) ──────────────
 export async function getFeedbackStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all submitted feedback (has a rating)
-  const { data: feedback, error } = await supabase
+  const { data: feedback, error } = await db
     .from('event_feedback')
     .select('overall_rating, food_rating, service_rating, communication_rating, would_recommend')
     .eq('chef_id', user.tenantId!)
@@ -202,7 +202,7 @@ export async function getFeedbackStats() {
     npsResponders > 0 ? Math.round(((recommenders - detractors) / npsResponders) * 100) : 0
 
   // Response rate: total feedback with ratings vs total feedback rows (including pending)
-  const { count: totalRows } = await supabase
+  const { count: totalRows } = await db
     .from('event_feedback')
     .select('id', { count: 'exact', head: true })
     .eq('chef_id', user.tenantId!)
@@ -226,10 +226,10 @@ export async function getFeedbackStats() {
 // ── Toggle public visibility of feedback ───────────────────────────
 export async function toggleFeedbackPublic(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get current state
-  const { data: current, error: getError } = await supabase
+  const { data: current, error: getError } = await db
     .from('event_feedback')
     .select('is_public')
     .eq('id', id)
@@ -240,7 +240,7 @@ export async function toggleFeedbackPublic(id: string) {
     return { success: false, error: 'Feedback not found' }
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('event_feedback')
     .update({ is_public: !current.is_public })
     .eq('id', id)

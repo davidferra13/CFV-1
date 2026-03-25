@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -56,9 +56,9 @@ export async function getCustomFieldDefinitions(
   entityType: CustomFieldEntityType
 ): Promise<CustomFieldDefinition[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('custom_field_definitions' as any)
     .select('*')
     .eq('tenant_id', chef.entityId)
@@ -77,9 +77,9 @@ export async function getAllCustomFieldDefinitions(): Promise<
   Record<CustomFieldEntityType, CustomFieldDefinition[]>
 > {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('custom_field_definitions' as any)
     .select('*')
     .eq('tenant_id', chef.entityId)
@@ -112,9 +112,9 @@ export async function createCustomFieldDefinition(raw: unknown): Promise<CustomF
     throw new Error('Select fields require at least one option')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('custom_field_definitions' as any)
     .insert({
       tenant_id: chef.entityId,
@@ -139,10 +139,10 @@ export async function createCustomFieldDefinition(raw: unknown): Promise<CustomF
  */
 export async function deleteCustomFieldDefinition(id: string): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Tenant-scoped delete: only deletes if the row belongs to this chef
-  const { error } = await supabase
+  const { error } = await db
     .from('custom_field_definitions' as any)
     .delete()
     .eq('id', id)
@@ -163,10 +163,10 @@ export async function saveCustomFieldValues(
   values: Record<string, unknown>
 ): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch definitions so we know each field's type
-  const { data: defs, error: defError } = await supabase
+  const { data: defs, error: defError } = await db
     .from('custom_field_definitions' as any)
     .select('id, field_type')
     .eq('tenant_id', chef.entityId)
@@ -220,7 +220,7 @@ export async function saveCustomFieldValues(
 
   if (!upserts.length) return
 
-  const { error } = await supabase
+  const { error } = await db
     .from('custom_field_values' as any)
     .upsert(upserts, { onConflict: 'entity_id,field_definition_id' })
 
@@ -235,9 +235,9 @@ export async function getCustomFieldValues(
   entityId: string
 ): Promise<Record<string, CustomFieldValue>> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('custom_field_values' as any)
     .select('*')
     .eq('tenant_id', chef.entityId)

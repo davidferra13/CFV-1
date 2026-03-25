@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { createNotification } from '@/lib/notifications/actions'
@@ -59,10 +59,10 @@ function revalidateRecurringPaths(clientId?: string | null) {
 
 export async function createRecurringService(input: RecurringServiceInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = RecurringServiceSchema.parse(input)
 
-  const { data: inserted, error } = await supabase
+  const { data: inserted, error } = await db
     .from('recurring_services')
     .insert({
       ...data,
@@ -79,7 +79,7 @@ export async function createRecurringService(input: RecurringServiceInput) {
 
 export async function updateRecurringService(id: string, input: Partial<RecurringServiceInput>) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = RecurringServiceUpdateSchema.parse(input)
 
   const updatePayload: Record<string, unknown> = { ...data }
@@ -90,7 +90,7 @@ export async function updateRecurringService(id: string, input: Partial<Recurrin
     updatePayload.end_date = data.end_date ?? null
   }
 
-  const { data: updated, error } = await supabase
+  const { data: updated, error } = await db
     .from('recurring_services')
     .update(updatePayload)
     .eq('id', id)
@@ -108,9 +108,9 @@ export async function pauseRecurringService(id: string) {
 
 export async function endRecurringService(id: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: ended, error } = await supabase
+  const { data: ended, error } = await db
     .from('recurring_services')
     .update({ status: 'ended', end_date: new Date().toISOString().slice(0, 10) })
     .eq('id', id)
@@ -124,9 +124,9 @@ export async function endRecurringService(id: string) {
 
 export async function listRecurringServices(clientId?: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let q = supabase
+  let q = db
     .from('recurring_services')
     .select('*, clients(full_name, email)')
     .eq('chef_id', chef.id)
@@ -285,11 +285,11 @@ type ClientNotificationRecipient = {
 }
 
 async function getClientNotificationRecipient(
-  supabase: any,
+  db: any,
   clientId: string,
   tenantId: string
 ): Promise<ClientNotificationRecipient | null> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .select('auth_user_id, full_name')
     .eq('id', clientId)
@@ -302,10 +302,10 @@ async function getClientNotificationRecipient(
 
 export async function logServedDish(input: ServedDishInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = ServedDishSchema.parse(input)
 
-  const { error } = await supabase.from('served_dish_history').insert({
+  const { error } = await db.from('served_dish_history').insert({
     ...data,
     chef_id: chef.id,
     recipe_id: data.recipe_id ?? null,
@@ -319,10 +319,10 @@ export async function logServedDish(input: ServedDishInput) {
 
 export async function listClientMealRequests(clientId: string, limit = 120) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_meal_requests')
     .select(
       'id, client_id, request_type, dish_name, notes, requested_for_week_start, priority, status, reviewed_at, created_at'
@@ -338,10 +338,10 @@ export async function listClientMealRequests(clientId: string, limit = 120) {
 
 export async function listRecurringRecommendationsForClient(clientId: string, limit = 40) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('recurring_menu_recommendations')
     .select(
       'id, client_id, week_start, recommendation_text, status, client_response_notes, sent_at, responded_at, created_at'
@@ -357,13 +357,13 @@ export async function listRecurringRecommendationsForClient(clientId: string, li
 
 export async function getRecurringCollaborationCommandCenter(limit = 18) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
   const safeLimit = Math.max(1, Math.min(limit, 50))
 
   const [{ data: openRequests, error: requestError }, { data: pendingResponses, error: recError }] =
     await Promise.all([
-      supabase
+      db
         .from('client_meal_requests')
         .select(
           'id, client_id, dish_name, status, priority, requested_for_week_start, created_at, clients(full_name)'
@@ -372,7 +372,7 @@ export async function getRecurringCollaborationCommandCenter(limit = 18) {
         .in('status', ['requested', 'reviewed', 'scheduled'])
         .order('created_at', { ascending: false })
         .limit(safeLimit),
-      supabase
+      db
         .from('recurring_menu_recommendations')
         .select('id, client_id, week_start, status, created_at, clients(full_name)')
         .eq('tenant_id', tenantId)
@@ -428,7 +428,7 @@ export async function getRecurringCollaborationCommandCenter(limit = 18) {
 
 export async function bulkUpdateClientWeekMealRequests(input: BulkUpdateWeekMealRequestsInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
   const validated = BulkUpdateWeekMealRequestsSchema.parse(input)
 
@@ -438,7 +438,7 @@ export async function bulkUpdateClientWeekMealRequests(input: BulkUpdateWeekMeal
   const weekEnd = toIsoDate(addDays(parseISO(`${normalizedWeekStart}T00:00:00`), 6))
   const fromStatuses = validated.status === 'reviewed' ? ['requested'] : ['requested', 'reviewed']
 
-  const { data: targetRequests, error: selectError } = await supabase
+  const { data: targetRequests, error: selectError } = await db
     .from('client_meal_requests')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -465,7 +465,7 @@ export async function bulkUpdateClientWeekMealRequests(input: BulkUpdateWeekMeal
     }
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('client_meal_requests')
     .update({
       status: validated.status,
@@ -481,11 +481,7 @@ export async function bulkUpdateClientWeekMealRequests(input: BulkUpdateWeekMeal
 
   if (validated.status === 'scheduled') {
     try {
-      const recipient = await getClientNotificationRecipient(
-        supabase,
-        validated.client_id,
-        tenantId
-      )
+      const recipient = await getClientNotificationRecipient(db, validated.client_id, tenantId)
       if (recipient?.auth_user_id) {
         await createNotification({
           tenantId,
@@ -522,7 +518,7 @@ export async function bulkUpdateClientWeekMealRequests(input: BulkUpdateWeekMeal
 
 export async function sendWeekRecommendationFromBoard(input: SendWeekRecommendationFromBoardInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
   const validated = SendWeekRecommendationFromBoardSchema.parse(input)
 
@@ -531,7 +527,7 @@ export async function sendWeekRecommendationFromBoard(input: SendWeekRecommendat
   )
   const weekEnd = toIsoDate(addDays(parseISO(`${weekStart}T00:00:00`), 6))
 
-  const { data: existing, error: existingError } = await supabase
+  const { data: existing, error: existingError } = await db
     .from('recurring_menu_recommendations')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -551,13 +547,13 @@ export async function sendWeekRecommendationFromBoard(input: SendWeekRecommendat
 
   const [{ data: client, error: clientError }, { data: services, error: serviceError }] =
     await Promise.all([
-      supabase
+      db
         .from('clients')
         .select('id, full_name, favorite_dishes')
         .eq('id', validated.client_id)
         .eq('tenant_id', tenantId)
         .single(),
-      supabase
+      db
         .from('recurring_services')
         .select('service_type, frequency, day_of_week, start_date, end_date, notes, status')
         .eq('chef_id', chef.id)
@@ -587,14 +583,14 @@ export async function sendWeekRecommendationFromBoard(input: SendWeekRecommendat
 
   const [{ data: history, error: historyError }, { data: requestSignals, error: requestError }] =
     await Promise.all([
-      supabase
+      db
         .from('served_dish_history')
         .select('dish_name, client_reaction, served_date')
         .eq('chef_id', chef.id)
         .eq('client_id', validated.client_id)
         .order('served_date', { ascending: false })
         .limit(200),
-      supabase
+      db
         .from('client_meal_requests')
         .select('dish_name, request_type, status')
         .eq('tenant_id', tenantId)
@@ -723,7 +719,7 @@ export async function getRecurringPlanningBoardSnapshot(
   horizonWeeks = 6
 ): Promise<RecurringPlanningBoardSnapshot> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
   const safeHorizonWeeks = Math.max(2, Math.min(horizonWeeks, 12))
   const horizonStart = startOfWeek(new Date(), { weekStartsOn: 1 })
@@ -734,7 +730,7 @@ export async function getRecurringPlanningBoardSnapshot(
     { data: openRequests, error: requestsError },
     { data: recommendations, error: recommendationsError },
   ] = await Promise.all([
-    supabase
+    db
       .from('recurring_services')
       .select(
         'id, client_id, service_type, frequency, day_of_week, rate_cents, start_date, end_date, status, clients(full_name)'
@@ -742,7 +738,7 @@ export async function getRecurringPlanningBoardSnapshot(
       .eq('chef_id', chef.id)
       .eq('status', 'active')
       .order('start_date', { ascending: true }),
-    supabase
+    db
       .from('client_meal_requests')
       .select(
         'id, client_id, dish_name, request_type, priority, status, requested_for_week_start, created_at, clients(full_name)'
@@ -751,7 +747,7 @@ export async function getRecurringPlanningBoardSnapshot(
       .in('status', ['requested', 'reviewed', 'scheduled'])
       .order('created_at', { ascending: false })
       .limit(500),
-    supabase
+    db
       .from('recurring_menu_recommendations')
       .select('id, client_id, week_start, status, created_at, clients(full_name)')
       .eq('tenant_id', tenantId)
@@ -1033,11 +1029,11 @@ export async function updateClientMealRequestStatus(
   status: ClientMealRequestStatus
 ) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
   const nextStatus = ChefMealRequestStatusSchema.parse(status)
 
-  const { data: updated, error } = await supabase
+  const { data: updated, error } = await db
     .from('client_meal_requests')
     .update({
       status: nextStatus,
@@ -1054,7 +1050,7 @@ export async function updateClientMealRequestStatus(
 
   if (nextStatus === 'scheduled' || nextStatus === 'declined') {
     try {
-      const recipient = await getClientNotificationRecipient(supabase, updated.client_id, tenantId)
+      const recipient = await getClientNotificationRecipient(db, updated.client_id, tenantId)
       if (recipient?.auth_user_id) {
         await createNotification({
           tenantId,
@@ -1095,11 +1091,11 @@ export async function updateClientMealRequestStatus(
 
 export async function fulfillClientMealRequest(input: FulfillMealRequestInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
   const validated = FulfillMealRequestSchema.parse(input)
 
-  const { data: requestRow, error: requestError } = await supabase
+  const { data: requestRow, error: requestError } = await db
     .from('client_meal_requests')
     .select('id, tenant_id, client_id, dish_name, notes, status, reviewed_at, reviewed_by')
     .eq('id', validated.request_id)
@@ -1118,7 +1114,7 @@ export async function fulfillClientMealRequest(input: FulfillMealRequestInput) {
       .filter((value): value is string => Boolean(value && value.trim()))
       .join(' | ') || null
 
-  const { data: fulfillUpdated, error: updateRequestError } = await supabase
+  const { data: fulfillUpdated, error: updateRequestError } = await db
     .from('client_meal_requests')
     .update({
       status: 'fulfilled',
@@ -1135,7 +1131,7 @@ export async function fulfillClientMealRequest(input: FulfillMealRequestInput) {
     throw new Error(updateRequestError?.message ?? 'Unable to fulfill this request')
   }
 
-  const { error: insertHistoryError } = await supabase.from('served_dish_history').insert({
+  const { error: insertHistoryError } = await db.from('served_dish_history').insert({
     chef_id: chef.id,
     client_id: requestRow.client_id,
     dish_name: requestRow.dish_name,
@@ -1146,7 +1142,7 @@ export async function fulfillClientMealRequest(input: FulfillMealRequestInput) {
 
   if (insertHistoryError) {
     // Best-effort rollback if the history insert fails after status update.
-    await supabase
+    await db
       .from('client_meal_requests')
       .update({
         status: requestRow.status,
@@ -1159,7 +1155,7 @@ export async function fulfillClientMealRequest(input: FulfillMealRequestInput) {
   }
 
   try {
-    const recipient = await getClientNotificationRecipient(supabase, requestRow.client_id, tenantId)
+    const recipient = await getClientNotificationRecipient(db, requestRow.client_id, tenantId)
     if (recipient?.auth_user_id) {
       await createNotification({
         tenantId,
@@ -1188,9 +1184,9 @@ export async function fulfillClientMealRequest(input: FulfillMealRequestInput) {
 
 export async function deleteServedDishEntry(id: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('served_dish_history')
     .delete()
     .eq('id', id)
@@ -1201,11 +1197,11 @@ export async function deleteServedDishEntry(id: string) {
 
 export async function sendRecurringRecommendationToClient(input: SendRecurringRecommendationInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
   const validated = SendRecurringRecommendationSchema.parse(input)
 
-  const recipient = await getClientNotificationRecipient(supabase, validated.client_id, tenantId)
+  const recipient = await getClientNotificationRecipient(db, validated.client_id, tenantId)
   if (!recipient?.auth_user_id) {
     throw new Error('Client portal account not found for this contact')
   }
@@ -1215,7 +1211,7 @@ export async function sendRecurringRecommendationToClient(input: SendRecurringRe
     ? ` for week of ${validated.target_week_start}`
     : ''
 
-  const { data: recommendationRow, error: recommendationError } = await supabase
+  const { data: recommendationRow, error: recommendationError } = await db
     .from('recurring_menu_recommendations')
     .insert({
       tenant_id: tenantId,
@@ -1259,11 +1255,11 @@ export async function sendRecurringRecommendationToClient(input: SendRecurringRe
 
 export async function getServedHistoryForClient(clientId: string, weeks = 12) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const since = addWeeks(new Date(), -weeks).toISOString().slice(0, 10)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('served_dish_history')
     .select('*')
     .eq('chef_id', chef.id)
@@ -1277,23 +1273,23 @@ export async function getServedHistoryForClient(clientId: string, weeks = 12) {
 
 export async function getSuggestedMenuItems(clientId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
 
   const [{ data: history }, { data: client }, { data: requestSignals }] = await Promise.all([
-    supabase
+    db
       .from('served_dish_history')
       .select('dish_name, recipe_id, client_reaction, served_date')
       .eq('chef_id', chef.id)
       .eq('client_id', clientId)
       .order('served_date', { ascending: false }),
-    supabase
+    db
       .from('clients')
       .select('favorite_dishes')
       .eq('id', clientId)
       .eq('tenant_id', tenantId)
       .single(),
-    supabase
+    db
       .from('client_meal_requests')
       .select('dish_name, request_type, status')
       .eq('tenant_id', tenantId)
@@ -1371,12 +1367,12 @@ function getWeekDatesForService(upcomingDates: string[]): string[] {
 
 export async function getRecurringPlanningSnapshot(clientId: string, horizonWeeks = 6) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = (chef as any).tenantId ?? chef.id
 
   const [{ data: services }, { data: history }, { data: client }, { data: requestSignals }] =
     await Promise.all([
-      supabase
+      db
         .from('recurring_services')
         .select(
           'id, service_type, frequency, day_of_week, rate_cents, start_date, end_date, notes, status'
@@ -1385,19 +1381,19 @@ export async function getRecurringPlanningSnapshot(clientId: string, horizonWeek
         .eq('client_id', clientId)
         .in('status', ['active', 'paused'])
         .order('start_date', { ascending: true }),
-      supabase
+      db
         .from('served_dish_history')
         .select('dish_name, client_reaction, served_date')
         .eq('chef_id', chef.id)
         .eq('client_id', clientId)
         .order('served_date', { ascending: false }),
-      supabase
+      db
         .from('clients')
         .select('full_name, favorite_dishes')
         .eq('id', clientId)
         .eq('tenant_id', tenantId)
         .single(),
-      supabase
+      db
         .from('client_meal_requests')
         .select('dish_name, request_type, status')
         .eq('tenant_id', tenantId)

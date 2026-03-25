@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { ChefAutomationSettings } from './types'
@@ -51,9 +51,9 @@ export type UpdateAutomationSettingsInput = z.infer<typeof UpdateSettingsSchema>
 
 export async function getAutomationSettings(): Promise<ChefAutomationSettings> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_automation_settings' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -83,9 +83,9 @@ export async function getAutomationSettings(): Promise<ChefAutomationSettings> {
 export async function updateAutomationSettings(input: UpdateAutomationSettingsInput) {
   const user = await requireChef()
   const validated = UpdateSettingsSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('chef_automation_settings' as any).upsert(
+  const { error } = await db.from('chef_automation_settings' as any).upsert(
     {
       tenant_id: user.tenantId!,
       ...validated,
@@ -113,9 +113,9 @@ export async function getDepositDefaults(): Promise<{
   amountCents: number
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_automation_settings' as any)
     .select(
       'default_deposit_enabled, default_deposit_type, default_deposit_percentage, default_deposit_amount_cents'
@@ -141,9 +141,9 @@ export async function getDepositDefaults(): Promise<{
 export async function getAutomationSettingsForTenant(
   tenantId: string
 ): Promise<Omit<ChefAutomationSettings, 'id' | 'tenant_id' | 'created_at' | 'updated_at'>> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_automation_settings' as any)
     .select('*')
     .eq('tenant_id', tenantId)

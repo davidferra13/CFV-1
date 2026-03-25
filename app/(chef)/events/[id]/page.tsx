@@ -53,7 +53,7 @@ import { getEventMapUrl, geocode, getDirections } from '@/lib/maps/mapbox'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getEventContingencyNotes, listEmergencyContacts } from '@/lib/contingency/actions'
 import { getEventTempLog } from '@/lib/compliance/actions'
 import { listStaffMembers, getEventStaffRoster } from '@/lib/staff/actions'
@@ -141,10 +141,10 @@ function isEventSoon(eventDate: string): boolean {
 }
 
 async function getEventFinancialSummary(eventId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Use the event_financial_summary view
-  const { data: summary } = await supabase
+  const { data: summary } = await db
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', eventId)
@@ -159,9 +159,9 @@ async function getEventFinancialSummary(eventId: string) {
 }
 
 async function getEventTransitions(eventId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: transitions } = await supabase
+  const { data: transitions } = await db
     .from('event_state_transitions')
     .select('*')
     .eq('event_id', eventId)
@@ -171,9 +171,9 @@ async function getEventTransitions(eventId: string) {
 }
 
 async function getEventMenusForCheck(eventId: string): Promise<string | false> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: menus } = await supabase.from('menus').select('id').eq('event_id', eventId).limit(1)
+  const { data: menus } = await db.from('menus').select('id').eq('event_id', eventId).limit(1)
 
   return menus && menus.length > 0 ? menus[0].id : false
 }

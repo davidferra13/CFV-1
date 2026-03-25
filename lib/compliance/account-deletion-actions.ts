@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { log } from '@/lib/logger'
 import { revalidatePath, revalidateTag } from 'next/cache'
@@ -55,19 +55,19 @@ export async function requestAccountDeletion(
   reason?: string
 ): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Get current user from auth
   const {
     data: { user: authUser },
-  } = await supabase.auth.getUser()
+  } = await db.auth.getUser()
   if (!authUser?.email) throw new Error('Not authenticated')
 
   // Rate limit: 3 deletion attempts per hour per user (prevents brute-forcing password)
   await checkRateLimit(`account-deletion:${user.id}`, 3, 60 * 60 * 1000)
 
   // 2. Verify password
-  const { error: verifyError } = await supabase.auth.signInWithPassword({
+  const { error: verifyError } = await db.auth.signInWithPassword({
     email: authUser.email,
     password,
   })
@@ -274,9 +274,9 @@ export type DeletionStatus = {
  */
 export async function getAccountDeletionStatus(): Promise<DeletionStatus> {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('deletion_requested_at, deletion_scheduled_for, deletion_reason')
     .eq('id', user.entityId)

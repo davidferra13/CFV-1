@@ -5,7 +5,7 @@
 // Every section saves independently — no one big submit.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { logChefActivity } from '@/lib/activity/log-chef'
 import { FUN_QA_QUESTIONS, type FunQAAnswers } from '@/lib/clients/fun-qa-constants'
@@ -55,10 +55,10 @@ export type DebriefBlanks = {
  */
 export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBlanks | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the event
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       'id, status, client_id, occasion, event_date, debrief_completed_at, chef_outcome_notes, chef_outcome_rating'
@@ -73,7 +73,7 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
   // Run client fetch, recipe chain, and photo count in parallel
   const [clientResult, menuResult, photoCountResult] = await Promise.all([
     event.client_id
-      ? supabase
+      ? db
           .from('clients')
           .select(
             `
@@ -87,9 +87,9 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
           .single()
       : Promise.resolve({ data: null, error: null }),
 
-    supabase.from('menus').select('id').eq('event_id', eventId).eq('tenant_id', user.tenantId!),
+    db.from('menus').select('id').eq('event_id', eventId).eq('tenant_id', user.tenantId!),
 
-    supabase
+    db
       .from('event_photos')
       .select('id', { count: 'exact', head: true })
       .eq('event_id', eventId)
@@ -142,7 +142,7 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
   if (menus.length > 0) {
     const menuIds = menus.map((m: { id: string }) => m.id)
 
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('id')
       .in('menu_id', menuIds)
@@ -151,7 +151,7 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
     if (dishes && dishes.length > 0) {
       const dishIds = dishes.map((d: { id: string }) => d.id)
 
-      const { data: components } = await supabase
+      const { data: components } = await db
         .from('components')
         .select('recipe_id')
         .in('dish_id', dishIds)
@@ -167,7 +167,7 @@ export async function getEventDebriefBlanks(eventId: string): Promise<DebriefBla
           ),
         ]
 
-        const { data: recipes } = await supabase
+        const { data: recipes } = await db
           .from('recipes')
           .select(
             'id, name, category, method_detailed, notes, prep_time_minutes, cook_time_minutes'
@@ -230,10 +230,10 @@ export async function saveClientInsights(
   }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the event belongs to this tenant (prevents cross-tenant client writes)
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, client_id')
     .eq('id', eventId)
@@ -264,7 +264,7 @@ export async function saveClientInsights(
 
   // Merge fun_qa_answers — never obliterate previously set answers
   if (data.fun_qa_answers && Object.keys(data.fun_qa_answers).length > 0) {
-    const { data: current } = await supabase
+    const { data: current } = await db
       .from('clients')
       .select('fun_qa_answers')
       .eq('id', clientId)
@@ -285,7 +285,7 @@ export async function saveClientInsights(
     return { success: true }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update(updatePayload)
     .eq('id', clientId)
@@ -333,10 +333,10 @@ export async function saveRecipeDebrief(
   }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event belongs to tenant
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id')
     .eq('id', eventId)
@@ -346,7 +346,7 @@ export async function saveRecipeDebrief(
   if (!event) return { success: false, error: 'Event not found' }
 
   // Verify the recipe is actually linked to this event (security check)
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -358,7 +358,7 @@ export async function saveRecipeDebrief(
 
   const menuIds = menus.map((m: { id: string }) => m.id)
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id')
     .in('menu_id', menuIds)
@@ -370,7 +370,7 @@ export async function saveRecipeDebrief(
 
   const dishIds = dishes.map((d: { id: string }) => d.id)
 
-  const { data: linkCheck } = await supabase
+  const { data: linkCheck } = await db
     .from('components')
     .select('id')
     .in('dish_id', dishIds)
@@ -396,7 +396,7 @@ export async function saveRecipeDebrief(
 
   if (Object.keys(updatePayload).length === 0) return { success: true }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('recipes')
     .update(updatePayload)
     .eq('id', recipeId)
@@ -437,7 +437,7 @@ export async function saveDebriefReflection(
   }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (data.chef_outcome_rating !== undefined) {
     const rating = data.chef_outcome_rating
@@ -456,7 +456,7 @@ export async function saveDebriefReflection(
 
   if (Object.keys(updatePayload).length === 0) return { success: true }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update(updatePayload)
     .eq('id', eventId)
@@ -481,9 +481,9 @@ export async function completeDebrief(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event, error: fetchError } = await supabase
+  const { data: event, error: fetchError } = await db
     .from('events')
     .select('id, client_id, occasion, debrief_completed_at')
     .eq('id', eventId)
@@ -499,7 +499,7 @@ export async function completeDebrief(
     return { success: true }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({ debrief_completed_at: new Date().toISOString() })
     .eq('id', eventId)
@@ -540,10 +540,10 @@ export async function generateDebriefDraft(
   eventId: string
 ): Promise<{ draft: string } | { error: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch context to ground the draft
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `

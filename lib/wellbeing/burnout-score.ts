@@ -1,5 +1,5 @@
 // Burnout Risk Computation - Pure Functions
-// No server context, no Supabase calls.
+// No server context, no calls.
 // Import this file anywhere (server or client) without restrictions.
 
 export type BurnoutLevel = 'low' | 'moderate' | 'high'

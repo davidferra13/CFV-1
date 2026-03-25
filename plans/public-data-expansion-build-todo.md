@@ -82,7 +82,7 @@ Goal: Finish using publicly available data and assets to make the site materiall
 - `app/api/cron/public-data-market-prices/route.ts` (new)
 - `lib/ingredients/pricing.ts`
 - `lib/costing/cascade-engine.ts`
-- `supabase/migrations/new_public_market_price_snapshots.sql` (new)
+- `database/migrations/new_public_market_price_snapshots.sql` (new)
 
 ### Geography data
 
@@ -133,7 +133,7 @@ Goal: Finish using publicly available data and assets to make the site materiall
 
 ### Files
 
-- [app/(chef)/culinary/ingredients/seasonal-availability/page.tsx](C:/Users/david/Documents/CFv1/app/(chef)/culinary/ingredients/seasonal-availability/page.tsx)
+- [app/(chef)/culinary/ingredients/seasonal-availability/page.tsx](<C:/Users/david/Documents/CFv1/app/(chef)/culinary/ingredients/seasonal-availability/page.tsx>)
 - [lib/public-data/seasonality.ts](C:/Users/david/Documents/CFv1/lib/public-data/seasonality.ts)
 - `lib/public-data/seasonality-regional.ts` (new)
 
@@ -165,7 +165,7 @@ Goal: Finish using publicly available data and assets to make the site materiall
 
 ### Files
 
-- [app/(public)/chefs/page.tsx](C:/Users/david/Documents/CFv1/app/(public)/chefs/page.tsx)
+- [app/(public)/chefs/page.tsx](<C:/Users/david/Documents/CFv1/app/(public)/chefs/page.tsx>)
 - `app/(public)/chefs/[state]/page.tsx` (new)
 - `app/(public)/chefs/[state]/[city]/page.tsx` (new)
 - `lib/directory/actions.ts`
@@ -188,7 +188,7 @@ Goal: Finish using publicly available data and assets to make the site materiall
 - `lib/public-assets/pexels.ts` (new)
 - `lib/public-assets/unsplash.ts` (new)
 - `lib/public-assets/store.ts` (new)
-- `supabase/migrations/new_public_media_assets.sql` (new)
+- `database/migrations/new_public_media_assets.sql` (new)
 - `app/api/cron/public-media-refresh/route.ts` (new)
 
 ### Product usage of public assets
@@ -220,7 +220,7 @@ Goal: Finish using publicly available data and assets to make the site materiall
 
 ### Files
 
-- [app/(admin)/admin/system/public-data/page.tsx](C:/Users/david/Documents/CFv1/app/(admin)/admin/system/public-data/page.tsx)
+- [app/(admin)/admin/system/public-data/page.tsx](<C:/Users/david/Documents/CFv1/app/(admin)/admin/system/public-data/page.tsx>)
 - [lib/admin/public-data.ts](C:/Users/david/Documents/CFv1/lib/admin/public-data.ts)
 - `app/(admin)/admin/system/public-data/actions.ts` (new)
 - `components/admin/public-data/*` (new)

@@ -3,13 +3,13 @@
 // Weighted by real-world frequency: dashboard is heaviest.
 //
 // Usage: npx k6 run tests/load/scenarios/03-chef-portal.js
-// Requires: Dev server on port 3100 with SUPABASE_E2E_ALLOW_REMOTE=true
+// Requires: Dev server on port 3100 with E2E_ALLOW_REMOTE=true
 
 import http from 'k6/http'
 import { sleep } from 'k6'
 import { Trend } from 'k6/metrics'
 import { BASE_URL, DEFAULT_THRESHOLDS, LOAD_STAGES } from '../config.js'
-import { authenticateViaSupabase } from '../helpers/auth.js'
+import { authenticateViaDb } from '../helpers/auth.js'
 import { checkPageLoad, checkNotRedirectedToSignIn } from '../helpers/checks.js'
 
 const PROFILE = __ENV.PROFILE || 'load'
@@ -74,7 +74,7 @@ function pickRoute() {
 }
 
 export function setup() {
-  const auth = authenticateViaSupabase()
+  const auth = authenticateViaDb()
   if (!auth) {
     throw new Error('Failed to authenticate. Cannot run chef portal tests.')
   }

@@ -4,18 +4,18 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export const metadata: Metadata = { title: 'Send Feedback Requests | ChefFlow' }
 
 export default async function FeedbackRequestsPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  const { data: completedEvents } = await supabase
+  const { data: completedEvents } = await db
     .from('events')
     .select('id, occasion, event_date, client:clients(id, full_name, email)')
     .eq('tenant_id', chef.tenantId!)

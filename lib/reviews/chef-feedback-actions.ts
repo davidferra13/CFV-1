@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -58,9 +58,9 @@ export type LogFeedbackInput = z.infer<typeof LogFeedbackSchema>
 export async function logChefFeedback(input: LogFeedbackInput) {
   const user = await requireChef()
   const validated = LogFeedbackSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: feedback, error } = await supabase
+  const { data: feedback, error } = await db
     .from('chef_feedback')
     .insert({
       tenant_id: user.tenantId!,
@@ -93,9 +93,9 @@ export async function logChefFeedback(input: LogFeedbackInput) {
  */
 export async function getChefFeedback() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_feedback')
     .select(
       `

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getCarriedOverTasks, type CarriedTask } from '@/lib/tasks/carry-forward'
 import { getShiftNotes, type ShiftNote } from '@/lib/shifts/actions'
 
@@ -111,7 +111,7 @@ export type MorningBriefing = {
 
 export async function getMorningBriefing(): Promise<MorningBriefing> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const today = new Date().toISOString().split('T')[0]
@@ -144,7 +144,7 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
     getShiftNotes(today),
     getCarriedOverTasks(today),
     // Today's events
-    supabase
+    db
       .from('events')
       .select(
         'id, title, event_date, start_time, end_time, guest_count, venue, status, dietary_notes, client_id'
@@ -154,7 +154,7 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
       .in('status', ['confirmed', 'paid', 'in_progress', 'accepted'])
       .order('start_time', { ascending: true, nullsFirst: false }),
     // Today's tasks
-    supabase
+    db
       .from('tasks')
       .select(
         'id, title, priority, status, due_time, assigned_to, staff_member:staff_members!tasks_assigned_to_fkey(id, name)'
@@ -164,49 +164,49 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
       .order('due_time', { ascending: true, nullsFirst: false })
       .order('priority', { ascending: false }),
     // Staff members
-    supabase
+    db
       .from('staff_members')
       .select('id, name, role')
       .eq('chef_id', tenantId)
       .eq('status', 'active')
       .order('name'),
     // Yesterday's completed events
-    supabase
+    db
       .from('events')
       .select('id, title')
       .eq('chef_id', tenantId)
       .eq('event_date', yesterdayStr)
       .eq('status', 'completed'),
     // Yesterday's completed tasks
-    supabase
+    db
       .from('tasks')
       .select('id', { count: 'exact', head: true })
       .eq('chef_id', tenantId)
       .eq('due_date', yesterdayStr)
       .eq('status', 'done'),
     // Yesterday's missed tasks (not done)
-    supabase
+    db
       .from('tasks')
       .select('id', { count: 'exact', head: true })
       .eq('chef_id', tenantId)
       .eq('due_date', yesterdayStr)
       .in('status', ['pending', 'in_progress']),
     // Yesterday's inquiries
-    supabase
+    db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('chef_id', tenantId)
       .gte('created_at', yesterdayStr + 'T00:00:00')
       .lt('created_at', today + 'T00:00:00'),
     // Yesterday's expenses
-    supabase
+    db
       .from('expenses')
       .select('id', { count: 'exact', head: true })
       .eq('chef_id', tenantId)
       .gte('created_at', yesterdayStr + 'T00:00:00')
       .lt('created_at', today + 'T00:00:00'),
     // Unanswered inquiries (open, no response in 24h+)
-    supabase
+    db
       .from('inquiries')
       .select('id, client_name, occasion, created_at')
       .eq('chef_id', tenantId)
@@ -214,7 +214,7 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
       .lt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
       .limit(10),
     // Stale follow-ups (3+ days quiet)
-    supabase
+    db
       .from('inquiries')
       .select('id, client_name, occasion, updated_at')
       .eq('chef_id', tenantId)
@@ -222,7 +222,7 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
       .lt('updated_at', new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString())
       .limit(10),
     // Prep timers completing today
-    supabase
+    db
       .from('prep_timeline')
       .select('id, title, end_at, status, station:stations(name), event:events(title)')
       .eq('chef_id', tenantId)
@@ -245,12 +245,12 @@ export async function getMorningBriefing(): Promise<MorningBriefing> {
 
   if (eventIds.length > 0) {
     const [clientsResult, staffCountResult, prepCountResult] = await Promise.all([
-      supabase
+      db
         .from('clients')
         .select('id, name')
         .in('id', (todayEventsResult.data ?? []).map((e: any) => e.client_id).filter(Boolean)),
-      supabase.from('event_staff').select('event_id').in('event_id', eventIds),
-      supabase
+      db.from('event_staff').select('event_id').in('event_id', eventIds),
+      db
         .from('tasks')
         .select('id, status')
         .eq('chef_id', tenantId)

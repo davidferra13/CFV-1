@@ -1,9 +1,9 @@
 // Wix Submission Processor
 // Async pipeline: extract fields → dedup vs Gmail → create client → create inquiry → notify
-// Runs with admin Supabase client (no user session) so it works from the cron endpoint.
+// Runs with admin DB client (no user session) so it works from the cron endpoint.
 // Follows the same pattern as lib/gmail/sync.ts handleInquiry().
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
@@ -14,10 +14,10 @@ import type { ProcessResult } from './types'
 // ─── Process a Single Wix Submission ─────────────────────────────────────
 
 export async function processWixSubmission(submissionId: string): Promise<ProcessResult> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // 1. Fetch the pending submission
-  const { data: submission, error: fetchError }: any = await supabase
+  const { data: submission, error: fetchError }: any = await db
     .from('wix_submissions')
     .select('*')
     .eq('id', submissionId)
@@ -28,7 +28,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
   }
 
   // Mark as processing
-  await supabase
+  await db
     .from('wix_submissions')
     .update({ status: 'processing', processing_attempts: submission.processing_attempts + 1 })
     .eq('id', submissionId)
@@ -40,7 +40,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
     const extracted = extractContactInfo(payload)
 
     // Update submission with extracted fields
-    await supabase
+    await db
       .from('wix_submissions')
       .update({
         submitter_name: extracted.name || null,
@@ -60,7 +60,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
         new Date(submission.created_at).getTime() + 10 * 60 * 1000
       ).toISOString()
 
-      const { data: gmailMatch }: any = await supabase
+      const { data: gmailMatch }: any = await db
         .from('gmail_sync_log')
         .select('id, inquiry_id')
         .eq('tenant_id', submission.tenant_id)
@@ -71,7 +71,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
         .single()
 
       if (gmailMatch) {
-        await supabase
+        await db
           .from('wix_submissions')
           .update({
             status: 'duplicate',
@@ -149,7 +149,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
     if (submission.wix_form_id) unknownFields.wix_form_id = submission.wix_form_id
 
     // 8. Create the inquiry
-    const { data: inquiry, error: inquiryError }: any = await supabase
+    const { data: inquiry, error: inquiryError }: any = await db
       .from('inquiries')
       .insert({
         tenant_id: submission.tenant_id,
@@ -178,7 +178,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
     if (inquiryError) throw new Error(`Inquiry creation failed: ${inquiryError.message}`)
 
     // 9. Log the raw message in the messages table (CRM record)
-    await supabase.from('messages').insert({
+    await db.from('messages').insert({
       tenant_id: submission.tenant_id,
       inquiry_id: inquiry.id,
       client_id: clientId,
@@ -191,7 +191,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
     })
 
     // 10. Update submission as completed
-    await supabase
+    await db
       .from('wix_submissions')
       .update({
         status: 'completed',
@@ -202,13 +202,13 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
       .eq('id', submissionId)
 
     // 11. Update connection stats
-    const { data: conn }: any = await supabase
+    const { data: conn }: any = await db
       .from('wix_connections')
       .select('total_submissions')
       .eq('tenant_id', submission.tenant_id)
       .single()
 
-    await supabase
+    await db
       .from('wix_connections')
       .update({
         last_submission_at: new Date().toISOString(),
@@ -285,7 +285,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
     console.error('[processWixSubmission] Processing failed:', error.message)
 
     // Mark as failed
-    await supabase
+    await db
       .from('wix_submissions')
       .update({
         status: 'failed',

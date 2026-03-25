@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 // ---------------------------------------------------------------------------
@@ -32,17 +32,17 @@ export interface ChefCircleSummary {
 export async function getChefCircles(): Promise<ChefCircleSummary[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get chef's hub profile
-  const { data: chefProfile } = await supabase
+  const { data: chefProfile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('auth_user_id', user.userId)
     .maybeSingle()
 
   // Get all groups for this tenant
-  const { data: groups } = await supabase
+  const { data: groups } = await db
     .from('hub_groups')
     .select(
       'id, name, emoji, group_token, group_type, event_id, inquiry_id, last_message_at, last_message_preview, message_count, is_active, created_at'
@@ -56,7 +56,7 @@ export async function getChefCircles(): Promise<ChefCircleSummary[]> {
   // Get member counts + chef's last_read_at for each group
   const groupIds = groups.map((g: any) => g.id)
 
-  const { data: memberCounts } = await supabase
+  const { data: memberCounts } = await db
     .from('hub_group_members')
     .select('group_id')
     .in('group_id', groupIds)
@@ -69,7 +69,7 @@ export async function getChefCircles(): Promise<ChefCircleSummary[]> {
   // Get chef's last_read_at per group
   let readMap: Record<string, string | null> = {}
   if (chefProfile) {
-    const { data: memberships } = await supabase
+    const { data: memberships } = await db
       .from('hub_group_members')
       .select('group_id, last_read_at')
       .eq('profile_id', chefProfile.id)
@@ -88,7 +88,7 @@ export async function getChefCircles(): Promise<ChefCircleSummary[]> {
     if (lastRead && group.last_message_at) {
       if (new Date(group.last_message_at) > new Date(lastRead)) {
         // Count messages after last_read_at
-        const { count } = await supabase
+        const { count } = await db
           .from('hub_messages')
           .select('*', { count: 'exact', head: true })
           .eq('group_id', group.id)
@@ -118,10 +118,10 @@ export async function getChefCircles(): Promise<ChefCircleSummary[]> {
 export async function getCirclesUnreadCount(): Promise<number> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get chef's hub profile
-  const { data: chefProfile } = await supabase
+  const { data: chefProfile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('auth_user_id', user.userId)
@@ -130,7 +130,7 @@ export async function getCirclesUnreadCount(): Promise<number> {
   if (!chefProfile) return 0
 
   // Get groups with activity
-  const { data: groups } = await supabase
+  const { data: groups } = await db
     .from('hub_groups')
     .select('id, last_message_at, message_count')
     .eq('tenant_id', tenantId)
@@ -142,7 +142,7 @@ export async function getCirclesUnreadCount(): Promise<number> {
   const groupIds = groups.map((g: any) => g.id)
 
   // Get chef's last_read_at per group
-  const { data: memberships } = await supabase
+  const { data: memberships } = await db
     .from('hub_group_members')
     .select('group_id, last_read_at')
     .eq('profile_id', chefProfile.id)
@@ -159,7 +159,7 @@ export async function getCirclesUnreadCount(): Promise<number> {
     if (!lastRead) {
       total += group.message_count
     } else if (group.last_message_at && new Date(group.last_message_at) > new Date(lastRead)) {
-      const { count } = await supabase
+      const { count } = await db
         .from('hub_messages')
         .select('*', { count: 'exact', head: true })
         .eq('group_id', group.id)
@@ -178,10 +178,10 @@ export async function getCirclesUnreadCount(): Promise<number> {
 export async function createCircleForEvent(eventId: string): Promise<{ groupToken: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Check if circle already exists
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('hub_groups')
     .select('group_token')
     .eq('event_id', eventId)
@@ -191,14 +191,14 @@ export async function createCircleForEvent(eventId: string): Promise<{ groupToke
   if (existing) return { groupToken: existing.group_token }
 
   // Also check via inquiry
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select('id')
     .eq('converted_to_event_id', eventId)
     .maybeSingle()
 
   if (inquiry) {
-    const { data: inquiryCircle } = await supabase
+    const { data: inquiryCircle } = await db
       .from('hub_groups')
       .select('group_token')
       .eq('inquiry_id', inquiry.id)
@@ -208,7 +208,7 @@ export async function createCircleForEvent(eventId: string): Promise<{ groupToke
   }
 
   // Load event for naming
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('event_date, occasion, client_id')
     .eq('id', eventId)
@@ -220,7 +220,7 @@ export async function createCircleForEvent(eventId: string): Promise<{ groupToke
   // Load client name
   let clientName = 'Guest'
   if (event.client_id) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('full_name')
       .eq('id', event.client_id)
@@ -230,7 +230,7 @@ export async function createCircleForEvent(eventId: string): Promise<{ groupToke
 
   // Get or create chef hub profile
   const { getOrCreateProfile } = await import('./profile-actions')
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', tenantId)
@@ -260,7 +260,7 @@ export async function createCircleForEvent(eventId: string): Promise<{ groupToke
   })
 
   // Add chef as chef role (creator is already owner, update role)
-  await supabase
+  await db
     .from('hub_group_members')
     .update({ role: 'chef' })
     .eq('group_id', group.id)
@@ -268,14 +268,14 @@ export async function createCircleForEvent(eventId: string): Promise<{ groupToke
 
   // Add client if they have a hub profile
   if (event.client_id) {
-    const { data: clientProfile } = await supabase
+    const { data: clientProfile } = await db
       .from('hub_guest_profiles')
       .select('id')
       .eq('client_id', event.client_id)
       .maybeSingle()
 
     if (clientProfile) {
-      await supabase.from('hub_group_members').insert({
+      await db.from('hub_group_members').insert({
         group_id: group.id,
         profile_id: clientProfile.id,
         role: 'member',
@@ -295,9 +295,9 @@ export async function createCircleForEvent(eventId: string): Promise<{ groupToke
 export async function archiveCircle(groupId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  await supabase
+  await db
     .from('hub_groups')
     .update({ is_active: false, updated_at: new Date().toISOString() })
     .eq('id', groupId)
@@ -310,9 +310,9 @@ export async function archiveCircle(groupId: string): Promise<void> {
 export async function restoreCircle(groupId: string): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  await supabase
+  await db
     .from('hub_groups')
     .update({ is_active: true, updated_at: new Date().toISOString() })
     .eq('id', groupId)
@@ -333,11 +333,11 @@ export async function createDinnerClub(input: {
 }): Promise<{ groupToken: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get or create chef hub profile
   const { getOrCreateProfile } = await import('./profile-actions')
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', tenantId)
@@ -362,7 +362,7 @@ export async function createDinnerClub(input: {
   })
 
   // Set chef role
-  await supabase
+  await db
     .from('hub_group_members')
     .update({ role: 'chef' })
     .eq('group_id', group.id)
@@ -380,10 +380,10 @@ export async function linkEventToCircle(input: {
 }): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Verify group belongs to tenant
-  const { data: group } = await supabase
+  const { data: group } = await db
     .from('hub_groups')
     .select('id')
     .eq('id', input.groupId)
@@ -393,7 +393,7 @@ export async function linkEventToCircle(input: {
   if (!group) throw new Error('Circle not found')
 
   // Verify event belongs to tenant
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id')
     .eq('id', input.eventId)
@@ -403,7 +403,7 @@ export async function linkEventToCircle(input: {
   if (!event) throw new Error('Event not found')
 
   // Insert (ignore duplicate)
-  const { error } = await supabase.from('hub_group_events').insert({
+  const { error } = await db.from('hub_group_events').insert({
     group_id: input.groupId,
     event_id: input.eventId,
   })
@@ -422,10 +422,10 @@ export async function unlinkEventFromCircle(input: {
 }): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Verify group belongs to tenant
-  const { data: group } = await supabase
+  const { data: group } = await db
     .from('hub_groups')
     .select('id')
     .eq('id', input.groupId)
@@ -434,7 +434,7 @@ export async function unlinkEventFromCircle(input: {
 
   if (!group) throw new Error('Circle not found')
 
-  await supabase
+  await db
     .from('hub_group_events')
     .delete()
     .eq('group_id', input.groupId)
@@ -455,9 +455,9 @@ export async function getCircleEvents(groupId: string): Promise<
 > {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('hub_group_events')
     .select('id, event_id, events(event_date, occasion, status)')
     .eq('group_id', groupId)

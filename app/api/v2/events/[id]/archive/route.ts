@@ -10,7 +10,7 @@ export const POST = withApiAuth(
     if (!id) return apiNotFound('Event')
 
     // Verify event exists and belongs to tenant
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('events')
       .select('id, status')
       .eq('id', id)
@@ -22,7 +22,7 @@ export const POST = withApiAuth(
 
     const now = new Date().toISOString()
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('events')
       .update({ deleted_at: now, updated_at: now } as any)
       .eq('id', id)
@@ -37,7 +37,7 @@ export const POST = withApiAuth(
 
     // Log transition (non-blocking)
     try {
-      await ctx.supabase.from('event_state_transitions').insert({
+      await ctx.db.from('event_state_transitions').insert({
         tenant_id: ctx.tenantId,
         event_id: id,
         from_status: (existing as any).status,

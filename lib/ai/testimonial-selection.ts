@@ -6,7 +6,7 @@
 // Output is SUGGESTION ONLY - chef decides which to publish.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { GoogleGenAI } from '@google/genai'
 
 export interface TestimonialHighlight {
@@ -49,11 +49,11 @@ const getClient = () => {
 
 export async function selectTestimonialHighlights(): Promise<TestimonialSelectionResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Gather AAR client feedback and positive messages
   const [aarResult, messagesResult, surveysResult] = await Promise.all([
-    (supabase as any)
+    (db as any)
       .from('aars')
       .select(
         `
@@ -64,7 +64,7 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .eq('tenant_id', user.tenantId!)
       .not('client_feedback', 'is', null)
       .limit(30),
-    supabase
+    db
       .from('messages')
       .select(
         `
@@ -76,7 +76,7 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .eq('tenant_id', user.tenantId!)
       .eq('direction', 'inbound')
       .limit(50),
-    (supabase as any)
+    (db as any)
       .from('client_surveys')
       .select(
         `

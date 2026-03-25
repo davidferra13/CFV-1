@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -26,9 +26,9 @@ export interface ChefEventTypeLabel {
  */
 export async function getEventLabels(): Promise<ChefEventTypeLabel[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_event_type_labels' as any)
     .select('*')
     .eq('tenant_id', chef.entityId)
@@ -52,11 +52,11 @@ export async function upsertEventLabel(
   if (!customLabel.trim()) throw new Error('customLabel is required')
 
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If the custom label is the same as the default, remove the override
   if (customLabel.trim() === defaultLabel.trim()) {
-    await supabase
+    await db
       .from('chef_event_type_labels' as any)
       .delete()
       .eq('tenant_id', chef.entityId)
@@ -67,7 +67,7 @@ export async function upsertEventLabel(
     return
   }
 
-  const { error } = await supabase.from('chef_event_type_labels' as any).upsert(
+  const { error } = await db.from('chef_event_type_labels' as any).upsert(
     {
       tenant_id: chef.entityId,
       default_label: defaultLabel,
@@ -87,9 +87,9 @@ export async function upsertEventLabel(
  */
 export async function resetEventLabel(id: string): Promise<void> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_event_type_labels' as any)
     .delete()
     .eq('id', id)

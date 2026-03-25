@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   generateInsights,
   type BusinessMetrics,
@@ -14,7 +14,7 @@ import {
  */
 export async function getBusinessHealthInsights(): Promise<BusinessInsights> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
   const now = new Date()
   const currentYear = now.getFullYear()
@@ -33,7 +33,7 @@ export async function getBusinessHealthInsights(): Promise<BusinessInsights> {
     monthlyEventsRes,
   ] = await Promise.all([
     // Completed events this year
-    supabase
+    db
       .from('events')
       .select('id, quoted_price_cents', { count: 'exact' })
       .eq('tenant_id', tenantId)
@@ -41,7 +41,7 @@ export async function getBusinessHealthInsights(): Promise<BusinessInsights> {
       .gte('event_date', yearStart),
 
     // YTD revenue from ledger (payments received)
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('tenant_id', tenantId)
@@ -49,7 +49,7 @@ export async function getBusinessHealthInsights(): Promise<BusinessInsights> {
       .gte('created_at', yearStart),
 
     // YTD expenses from ledger
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents')
       .eq('tenant_id', tenantId)
@@ -57,42 +57,38 @@ export async function getBusinessHealthInsights(): Promise<BusinessInsights> {
       .gte('created_at', yearStart),
 
     // Active inquiries (new, contacted, follow_up)
-    supabase
+    db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .in('status', ['new', 'contacted', 'follow_up']),
 
     // Closed inquiries - booked
-    supabase
+    db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('status', 'booked'),
 
     // Closed inquiries - declined + expired
-    supabase
+    db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .in('status', ['declined', 'expired']),
 
     // Total clients
-    supabase.from('clients').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
+    db.from('clients').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
 
     // New clients this year
-    supabase
+    db
       .from('clients')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .gte('created_at', yearStart),
 
     // Events by month (for seasonality) - all completed events
-    supabase
-      .from('events')
-      .select('event_date')
-      .eq('tenant_id', tenantId)
-      .eq('status', 'completed'),
+    db.from('events').select('event_date').eq('tenant_id', tenantId).eq('status', 'completed'),
   ])
 
   // Parse completed events

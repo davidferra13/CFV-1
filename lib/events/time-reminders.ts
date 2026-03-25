@@ -1,7 +1,7 @@
 // Gentle time-tracking reminder sweep.
 // Designed to improve completeness without spamming chefs.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createNotification } from '@/lib/notifications/actions'
 import type { Json } from '@/types/database'
 import {
@@ -51,7 +51,7 @@ function makeCompletionKey(recipientId: string, eventId: string): string {
 }
 
 export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const now = new Date()
   const nowIso = now.toISOString()
   const lookbackDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
@@ -65,7 +65,7 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
     errors: [],
   }
 
-  const { data: events, error: eventsError } = await supabase
+  const { data: events, error: eventsError } = await db
     .from('events')
     .select(
       `
@@ -93,7 +93,7 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
   }
 
   const tenantIds = Array.from(new Set(events.map((event: any) => event.tenant_id)))
-  const { data: chefRoles, error: rolesError } = await supabase
+  const { data: chefRoles, error: rolesError } = await db
     .from('user_roles')
     .select('entity_id, auth_user_id')
     .eq('role', 'chef')
@@ -118,7 +118,7 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
   // Missing row = enabled (opt-out model; matches all other built-in automations).
   const disabledTenants = new Set<string>()
   if (tenantIds.length > 0) {
-    const { data: disabledSettings } = (await supabase
+    const { data: disabledSettings } = (await db
       .from('chef_automation_settings')
       .select('tenant_id')
       .in('tenant_id', tenantIds)
@@ -135,7 +135,7 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
   const completionSent = new Set<string>()
 
   if (recipientIds.length > 0) {
-    const { data: notifications, error: notificationsError } = await supabase
+    const { data: notifications, error: notificationsError } = await db
       .from('notifications')
       .select('recipient_id, event_id, created_at, metadata')
       .eq('category', 'event')

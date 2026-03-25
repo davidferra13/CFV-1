@@ -14,7 +14,7 @@ export const GET = withApiAuth(
     const dateFrom = url.searchParams.get('date_from')
     const dateTo = url.searchParams.get('date_to')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('ledger_entries')
       .select('*', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)

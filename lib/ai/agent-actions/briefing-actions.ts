@@ -4,7 +4,7 @@
 
 import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createCalendarEntry } from '@/lib/calendar/entry-actions'
 
 // ─── Action Definitions ──────────────────────────────────────────────────────
@@ -22,7 +22,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
     tierNote: 'Tier 2 - presents structured briefing for chef review.',
 
     async executor(_inputs, ctx) {
-      const supabase: any = createServerClient()
+      const db: any = createServerClient()
       const today = new Date().toISOString().slice(0, 10)
       const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
 
@@ -34,7 +34,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
         { data: pendingPayments },
       ] = await Promise.all([
         // Today's events
-        supabase
+        db
           .from('events')
           .select(
             'id, occasion, event_date, serve_time, status, guest_count, client:clients(full_name)'
@@ -44,7 +44,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
           .not('status', 'in', '("cancelled","completed")')
           .order('serve_time', { ascending: true }),
         // Tomorrow's events (for prep planning)
-        supabase
+        db
           .from('events')
           .select(
             'id, occasion, event_date, serve_time, status, guest_count, client:clients(full_name)'
@@ -54,7 +54,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
           .not('status', 'in', '("cancelled","completed")')
           .order('serve_time', { ascending: true }),
         // Overdue todos
-        supabase
+        db
           .from('chef_todos')
           .select('id, title, due_date, priority')
           .eq('tenant_id', ctx.tenantId)
@@ -63,7 +63,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
           .order('priority', { ascending: false })
           .limit(5),
         // New inquiries (last 48 hours)
-        supabase
+        db
           .from('inquiries')
           .select('id, lead_name, occasion, status, created_at')
           .eq('tenant_id', ctx.tenantId)
@@ -72,7 +72,7 @@ export const briefingAgentActions: AgentActionDefinition[] = [
           .order('created_at', { ascending: false })
           .limit(5),
         // Pending payments
-        supabase
+        db
           .from('events')
           .select('id, occasion, client:clients(full_name), event_date')
           .eq('tenant_id', ctx.tenantId)

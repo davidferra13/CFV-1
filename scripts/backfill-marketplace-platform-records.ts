@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { MARKETPLACE_PLATFORMS } from '../lib/marketplace/platforms'
 import { extractTakeAChefFinanceMeta } from '../lib/integrations/take-a-chef-finance'
 import { syncMarketplaceInquiryProjection } from '../lib/marketplace/platform-records'
@@ -18,9 +18,9 @@ async function main() {
   const dryRun = process.argv.includes('--dry-run')
   const tenantIdFilter = getArg('--tenant-id')
 
-  const supabase = createAdminClient()
+  const db = createAdminClient()
 
-  let query = supabase
+  let query = db
     .from('inquiries')
     .select(
       'id, tenant_id, channel, external_platform, external_inquiry_id, external_link, client_id, converted_to_event_id, next_action_required, next_action_by, source_message, unknown_fields'
@@ -57,7 +57,7 @@ async function main() {
 
       if (!dryRun) {
         await syncMarketplaceInquiryProjection({
-          supabase,
+          db,
           tenantId: inquiry.tenant_id,
           inquiryId: inquiry.id,
           platform,

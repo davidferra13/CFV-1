@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import crypto from 'crypto'
 
 // DocuSign Connect webhook - receives envelope status updates.
@@ -39,11 +39,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing envelopeId' }, { status: 400 })
     }
 
-    const supabase = createServerClient({ admin: true })
+    const db = createServerClient({ admin: true })
 
     // Update contract record based on envelope status
     if (envelopeStatus === 'completed' || envelopeStatus === 'Completed') {
-      await (supabase as any)
+      await (db as any)
         .from('event_contracts')
         .update({
           docusign_status: 'completed',
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
       // Dispatch Zapier webhook (non-blocking)
       try {
-        const { data: contract } = await (supabase as any)
+        const { data: contract } = await (db as any)
           .from('event_contracts')
           .select('tenant_id, id, event_id, client_id')
           .eq('docusign_envelope_id', envelopeId)
@@ -74,14 +74,14 @@ export async function POST(req: NextRequest) {
         console.error('[docusign-webhook] Zapier dispatch failed (non-blocking):', err)
       }
     } else if (envelopeStatus === 'declined' || envelopeStatus === 'Declined') {
-      await (supabase as any)
+      await (db as any)
         .from('event_contracts')
         .update({
           docusign_status: 'declined',
         })
         .eq('docusign_envelope_id', envelopeId)
     } else if (envelopeStatus === 'voided' || envelopeStatus === 'Voided') {
-      await (supabase as any)
+      await (db as any)
         .from('event_contracts')
         .update({
           docusign_status: 'voided',

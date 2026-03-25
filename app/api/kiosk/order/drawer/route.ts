@@ -18,12 +18,12 @@ const DrawerMutationSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const { supabase, device } = await authenticateOrderKioskRequest(request)
+    const { db, device } = await authenticateOrderKioskRequest(request)
 
     const url = new URL(request.url)
     const sessionId = url.searchParams.get('session_id') || undefined
     await assertStaffSession({
-      supabase,
+      db,
       deviceId: device.deviceId,
       tenantId: device.tenantId,
       requireStaffPin: device.requireStaffPin,
@@ -31,17 +31,17 @@ export async function GET(request: Request) {
     })
 
     const registerSession = await getOpenRegisterSession({
-      supabase,
+      db,
       tenantId: device.tenantId,
     })
 
     const [summary, movementResult] = await Promise.all([
       getDrawerSummary({
-        supabase,
+        db,
         tenantId: device.tenantId,
         registerSessionId: registerSession.id,
       }),
-      supabase
+      db
         .from('cash_drawer_movements' as any)
         .select('*')
         .eq('tenant_id', device.tenantId)
@@ -67,13 +67,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { supabase, device } = await authenticateOrderKioskRequest(request)
+    const { db, device } = await authenticateOrderKioskRequest(request)
 
     const body = await request.json()
     const parsed = DrawerMutationSchema.parse(body)
 
     const session = await assertStaffSession({
-      supabase,
+      db,
       deviceId: device.deviceId,
       tenantId: device.tenantId,
       requireStaffPin: device.requireStaffPin,
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     })
 
     const registerSession = await getOpenRegisterSession({
-      supabase,
+      db,
       tenantId: device.tenantId,
     })
 
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
             : normalizedAmount
     }
 
-    const { error } = await (supabase as any).from('cash_drawer_movements').insert({
+    const { error } = await (db as any).from('cash_drawer_movements').insert({
       tenant_id: device.tenantId,
       register_session_id: registerSession.id,
       movement_type: parsed.action === 'no_sale' ? 'adjustment' : parsed.action,
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
     }
 
     try {
-      await (supabase as any).from('device_events').insert({
+      await (db as any).from('device_events').insert({
         device_id: device.deviceId,
         tenant_id: device.tenantId,
         staff_member_id: (session as any)?.staff_member_id ?? null,
@@ -163,7 +163,7 @@ export async function POST(request: Request) {
     }
 
     const summary = await getDrawerSummary({
-      supabase,
+      db,
       tenantId: device.tenantId,
       registerSessionId: registerSession.id,
     })

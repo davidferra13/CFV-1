@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 export type FeedbackSentiment = 'love' | 'frustrated' | 'suggestion' | 'bug' | 'other'
@@ -11,9 +11,9 @@ export async function submitUserFeedback(input: {
   pageContext: string
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('user_feedback').insert({
+  const { error } = await db.from('user_feedback').insert({
     user_id: user.id,
     user_role: 'chef',
     sentiment: input.sentiment,

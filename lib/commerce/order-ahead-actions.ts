@@ -11,7 +11,7 @@
 'use server'
 
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -72,10 +72,10 @@ export interface OrderLineItem {
 
 const MIGRATION_ERROR = 'Feature requires database migration. Contact support.'
 
-async function checkTableExists(supabase: any, tableName: string): Promise<boolean> {
+async function checkTableExists(db: any, tableName: string): Promise<boolean> {
   try {
-    const { error } = await supabase.from(tableName).select('id').limit(0)
-    // If the table doesn't exist, Supabase returns a specific error
+    const { error } = await db.from(tableName).select('id').limit(0)
+    // If the table doesn't exist, PostgreSQL returns a specific error
     return !error || !error.message?.includes('does not exist')
   } catch {
     return false
@@ -100,12 +100,12 @@ export async function createOrderAheadItem(input: {
   leadTimeDays?: number
 }): Promise<OrderAheadItem | { error: string }> {
   const user = await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'order_ahead_items')
+  const tableExists = await checkTableExists(db, 'order_ahead_items')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('order_ahead_items')
     .insert({
       chef_id: user.tenantId!,
@@ -138,12 +138,12 @@ export async function getOrderAheadMenu(
   statusFilter?: OrderAheadItemStatus
 ): Promise<OrderAheadItem[] | { error: string }> {
   const user = await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'order_ahead_items')
+  const tableExists = await checkTableExists(db, 'order_ahead_items')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('order_ahead_items')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -179,9 +179,9 @@ export async function updateOrderAheadItem(
   }>
 ): Promise<OrderAheadItem | { error: string }> {
   const user = await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'order_ahead_items')
+  const tableExists = await checkTableExists(db, 'order_ahead_items')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
   const updateData: Record<string, unknown> = {}
@@ -196,7 +196,7 @@ export async function updateOrderAheadItem(
   if (input.leadTimeDays !== undefined) updateData.lead_time_days = input.leadTimeDays
   if (input.status !== undefined) updateData.status = input.status
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('order_ahead_items')
     .update(updateData)
     .eq('id', itemId)
@@ -230,16 +230,16 @@ export async function placeOrder(input: {
   items: { itemId: string; quantity: number }[]
 }): Promise<OrderAheadOrder | { error: string }> {
   const user = await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'order_ahead_orders')
+  const tableExists = await checkTableExists(db, 'order_ahead_orders')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
   if (!input.items.length) return { error: 'Order must have at least one item' }
 
   // Look up item prices
   const itemIds = input.items.map((i) => i.itemId)
-  const { data: itemRows } = await (supabase as any)
+  const { data: itemRows } = await (db as any)
     .from('order_ahead_items')
     .select('id, name, price_cents')
     .eq('chef_id', user.tenantId!)
@@ -270,7 +270,7 @@ export async function placeOrder(input: {
   }
 
   // Insert order
-  const { data: order, error } = await (supabase as any)
+  const { data: order, error } = await (db as any)
     .from('order_ahead_orders')
     .insert({
       chef_id: user.tenantId!,
@@ -316,12 +316,12 @@ export async function getOrders(
   statusFilter?: OrderStatus
 ): Promise<OrderAheadOrder[] | { error: string }> {
   const user = await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'order_ahead_orders')
+  const tableExists = await checkTableExists(db, 'order_ahead_orders')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
-  let query = (supabase as any)
+  let query = (db as any)
     .from('order_ahead_orders')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -360,12 +360,12 @@ export async function updateOrderStatus(
   newStatus: OrderStatus
 ): Promise<{ success: boolean } | { error: string }> {
   const user = await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const tableExists = await checkTableExists(supabase, 'order_ahead_orders')
+  const tableExists = await checkTableExists(db, 'order_ahead_orders')
   if (!tableExists) return { error: MIGRATION_ERROR }
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('order_ahead_orders')
     .update({ status: newStatus })
     .eq('id', orderId)

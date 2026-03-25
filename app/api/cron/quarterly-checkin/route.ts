@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 
-const supabaseAdmin = createAdminClient()
+const dbAdmin = createAdminClient()
 
 const SYSTEM_KEY = 'quarterly_checkin_due'
 
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
     const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
     const quarterKey = getQuarterKey(new Date())
-    const { data: chefs } = await supabaseAdmin.from('chefs').select('id').limit(10000)
+    const { data: chefs } = await dbAdmin.from('chefs').select('id').limit(10000)
 
     if (!chefs || chefs.length === 0) {
       const emptyResult = { processed: 0, due: 0, notified: 0, skipped: 0 }
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
 
     for (const chef of chefs) {
       // Find most recent check-in
-      const { data: lastCheckin } = await supabaseAdmin
+      const { data: lastCheckin } = await dbAdmin
         .from('chef_growth_checkins')
         .select('checkin_date')
         .eq('tenant_id', chef.id)
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
           continue
         }
 
-        const { data: existing } = await supabaseAdmin
+        const { data: existing } = await dbAdmin
           .from('notifications')
           .select('id')
           .eq('tenant_id', chef.id)

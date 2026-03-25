@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -66,10 +66,10 @@ export interface WaitlistStats {
 
 export async function getWaitlistEntries(status?: WaitlistStatus): Promise<WaitlistEntry[]> {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const chefId = user.tenantId!
 
-  let query = supabase
+  let query = db
     .from('waitlist_entries')
     .select('*, client:clients(id, name, email)')
     .eq('chef_id', chefId)
@@ -91,10 +91,10 @@ export async function getWaitlistEntries(status?: WaitlistStatus): Promise<Waitl
 
 export async function addToWaitlist(input: AddToWaitlistInput): Promise<WaitlistEntry> {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const chefId = user.tenantId!
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('waitlist_entries')
     .insert({
       chef_id: chefId,
@@ -124,7 +124,7 @@ export async function updateWaitlistEntry(
   input: UpdateWaitlistInput
 ): Promise<WaitlistEntry> {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const chefId = user.tenantId!
 
   const updateData: Record<string, unknown> = {}
@@ -136,7 +136,7 @@ export async function updateWaitlistEntry(
     updateData.guest_count_estimate = input.guest_count_estimate
   if (input.occasion !== undefined) updateData.occasion = input.occasion
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('waitlist_entries')
     .update(updateData)
     .eq('id', entryId)
@@ -155,10 +155,10 @@ export async function updateWaitlistEntry(
 
 export async function removeFromWaitlist(entryId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const chefId = user.tenantId!
 
-  const { error } = await supabase
+  const { error } = await db
     .from('waitlist_entries')
     .delete()
     .eq('id', entryId)
@@ -174,12 +174,12 @@ export async function removeFromWaitlist(entryId: string): Promise<void> {
 
 export async function notifyWaitlistOpening(date: string): Promise<WaitlistEntry[]> {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const chefId = user.tenantId!
 
   // Find waitlist entries where the opened date falls within their requested range
   // An entry matches if: requested_date <= date AND (requested_date_end >= date OR requested_date_end is null)
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('waitlist_entries')
     .select('*, client:clients(id, name, email)')
     .eq('chef_id', chefId)
@@ -198,13 +198,10 @@ export async function notifyWaitlistOpening(date: string): Promise<WaitlistEntry
 
 export async function getWaitlistStats(): Promise<WaitlistStats> {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const chefId = user.tenantId!
 
-  const { data, error } = await supabase
-    .from('waitlist_entries')
-    .select('status')
-    .eq('chef_id', chefId)
+  const { data, error } = await db.from('waitlist_entries').select('status').eq('chef_id', chefId)
 
   if (error) {
     console.error('[waitlist] Failed to fetch stats:', error)
@@ -227,11 +224,11 @@ export async function getWaitlistStats(): Promise<WaitlistStats> {
 
 export async function convertWaitlistToEvent(entryId: string): Promise<string> {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
   const chefId = user.tenantId!
 
   // Fetch the waitlist entry
-  const { data: entry, error: fetchError } = await supabase
+  const { data: entry, error: fetchError } = await db
     .from('waitlist_entries')
     .select('*, client:clients(id, name, email)')
     .eq('id', entryId)
@@ -248,7 +245,7 @@ export async function convertWaitlistToEvent(entryId: string): Promise<string> {
   }
 
   // Create a draft event from the waitlist entry
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .insert({
       tenant_id: chefId,
@@ -269,7 +266,7 @@ export async function convertWaitlistToEvent(entryId: string): Promise<string> {
   }
 
   // Mark the waitlist entry as booked and link it to the new event
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('waitlist_entries')
     .update({
       status: 'booked',

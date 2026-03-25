@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
-const supabaseAdmin = createAdminClient()
+const dbAdmin = createAdminClient()
 
 export async function GET(request: Request) {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       .split('T')[0]
     const oneYearAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-    const { data: chefs } = await supabaseAdmin.from('chefs').select('id').limit(10000)
+    const { data: chefs } = await dbAdmin.from('chefs').select('id').limit(10000)
     if (!chefs || chefs.length === 0) {
       return NextResponse.json({ message: 'No chefs' })
     }
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
     for (const chef of chefs) {
       // Check if snapshot already exists for today
-      const { data: existing } = await supabaseAdmin
+      const { data: existing } = await dbAdmin
         .from('chef_momentum_snapshots')
         .select('id')
         .eq('tenant_id', chef.id)
@@ -34,21 +34,21 @@ export async function GET(request: Request) {
       if (existing && existing.length > 0) continue
 
       // Count new clients in 90 days
-      const { count: newClients } = await supabaseAdmin
+      const { count: newClients } = await dbAdmin
         .from('clients')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', chef.id)
         .gte('created_at', ninetyDaysAgo)
 
       // Count creative projects in 90 days
-      const { count: creativeProjects } = await supabaseAdmin
+      const { count: creativeProjects } = await dbAdmin
         .from('chef_creative_projects')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', chef.id)
         .gte('created_at', ninetyDaysAgo)
 
       // Count education entries in 12 months
-      const { count: educationEntries } = await supabaseAdmin
+      const { count: educationEntries } = await dbAdmin
         .from('chef_education_log')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', chef.id)
@@ -58,7 +58,7 @@ export async function GET(request: Request) {
       const signals = (newClients ?? 0) + (creativeProjects ?? 0) + (educationEntries ?? 0)
       const direction = signals >= 5 ? 'growing' : signals >= 2 ? 'maintaining' : 'stagnating'
 
-      await supabaseAdmin.from('chef_momentum_snapshots').insert({
+      await dbAdmin.from('chef_momentum_snapshots').insert({
         tenant_id: chef.id,
         snapshot_date: today,
         new_clients_90d: newClients ?? 0,

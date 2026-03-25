@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -34,11 +34,11 @@ export type CreateInvoiceInput = z.infer<typeof CreateInvoiceSchema>
 
 export async function createInvoice(input: CreateInvoiceInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = CreateInvoiceSchema.parse(input)
 
   // Insert the invoice
-  const { data: invoice, error: invoiceError } = await supabase
+  const { data: invoice, error: invoiceError } = await db
     .from('vendor_invoices')
     .insert({
       vendor_id: data.vendor_id,
@@ -67,9 +67,7 @@ export async function createInvoice(input: CreateInvoiceInput) {
       chef_id: user.tenantId!,
     }))
 
-    const { error: lineError } = await supabase
-      .from('vendor_invoice_line_items')
-      .insert(lineItemRows)
+    const { error: lineError } = await db.from('vendor_invoice_line_items').insert(lineItemRows)
 
     if (lineError) {
       console.error('[invoices] createInvoice lineItems error:', lineError)
@@ -84,9 +82,9 @@ export async function createInvoice(input: CreateInvoiceInput) {
 
 export async function listInvoices(vendorId?: string, startDate?: string, endDate?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let q = supabase
+  let q = db
     .from('vendor_invoices')
     .select('*, vendors(name)')
     .eq('chef_id', user.tenantId!)
@@ -114,9 +112,9 @@ export async function listInvoices(vendorId?: string, startDate?: string, endDat
 
 export async function getInvoice(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: invoice, error } = await supabase
+  const { data: invoice, error } = await db
     .from('vendor_invoices')
     .select('*, vendors(name)')
     .eq('id', id)
@@ -129,7 +127,7 @@ export async function getInvoice(id: string) {
   }
 
   // Fetch line items
-  const { data: lineItems } = await supabase
+  const { data: lineItems } = await db
     .from('vendor_invoice_line_items')
     .select('*')
     .eq('invoice_id', id)
@@ -141,16 +139,16 @@ export async function getInvoice(id: string) {
 
 export async function deleteInvoice(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Delete line items first (cascade may handle this, but be explicit)
-  await supabase
+  await db
     .from('vendor_invoice_line_items')
     .delete()
     .eq('invoice_id', id)
     .eq('chef_id', user.tenantId!)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('vendor_invoices')
     .delete()
     .eq('id', id)

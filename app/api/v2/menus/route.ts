@@ -31,7 +31,7 @@ export const GET = withApiAuth(
     const pagination = parsePagination(url)
     const eventId = url.searchParams.get('event_id')
 
-    let query = ctx.supabase
+    let query = ctx.db
       .from('menus')
       .select('*', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)
@@ -67,7 +67,7 @@ export const POST = withApiAuth(
 
     // If event_id provided, verify it belongs to tenant
     if (input.event_id) {
-      const { data: event } = await ctx.supabase
+      const { data: event } = await ctx.db
         .from('events')
         .select('id')
         .eq('id', input.event_id)
@@ -83,7 +83,7 @@ export const POST = withApiAuth(
       }
     }
 
-    const { data: menu, error } = await ctx.supabase
+    const { data: menu, error } = await ctx.db
       .from('menus')
       .insert({
         tenant_id: ctx.tenantId,

@@ -1,6 +1,6 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface ReferralNode {
   clientId: string
@@ -13,9 +13,9 @@ export interface ReferralNode {
 
 export async function getClientReferralTree(clientId: string): Promise<ReferralNode> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clientRaw } = await supabase
+  const { data: clientRaw } = await db
     .from('clients')
     .select('id, full_name, referral_source')
     .eq('id', clientId)
@@ -27,7 +27,7 @@ export async function getClientReferralTree(clientId: string): Promise<ReferralN
 
   // Get clients this person referred - using referral_source matching by name as fallback
   // (referred_by_client_id is not in schema; use referral_source text match)
-  const { data: referredClientsRaw } = await supabase
+  const { data: referredClientsRaw } = await db
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', user.entityId)
@@ -36,7 +36,7 @@ export async function getClientReferralTree(clientId: string): Promise<ReferralN
   const referredClients = (referredClientsRaw as any[]) || []
 
   // Get this client's own revenue
-  const { data: ownEvents } = await supabase
+  const { data: ownEvents } = await db
     .from('events')
     .select('quoted_price_cents')
     .eq('client_id', clientId)
@@ -53,7 +53,7 @@ export async function getClientReferralTree(clientId: string): Promise<ReferralN
   let referredEventsMap = new Map<string, number>()
 
   if (referredClientIds.length > 0) {
-    const { data: allReferredEvents } = await supabase
+    const { data: allReferredEvents } = await db
       .from('events')
       .select('client_id, quoted_price_cents')
       .in('client_id', referredClientIds)

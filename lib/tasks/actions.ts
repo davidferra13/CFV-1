@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { notifyTaskAssigned } from '@/lib/notifications/triggers'
@@ -90,9 +90,9 @@ export type Task = {
 
 export async function getActiveStaff() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_members')
     .select('id, name, role')
     .eq('chef_id', user.tenantId!)
@@ -112,9 +112,9 @@ export async function getActiveStaff() {
 
 export async function getActiveStations() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('stations')
     .select('id, name')
     .eq('chef_id', user.tenantId!)
@@ -136,9 +136,9 @@ export async function getActiveStations() {
 export async function createTask(input: CreateTaskInput) {
   const user = await requireChef()
   const validated = CreateTaskSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tasks')
     .insert({
       chef_id: user.tenantId!,
@@ -165,7 +165,7 @@ export async function createTask(input: CreateTaskInput) {
   if (data.assigned_to) {
     try {
       // Look up the staff member name for the notification
-      const { data: staffRow } = await supabase
+      const { data: staffRow } = await db
         .from('staff_members')
         .select('name')
         .eq('id', data.assigned_to)
@@ -190,7 +190,7 @@ export async function createTask(input: CreateTaskInput) {
 export async function updateTask(id: string, input: UpdateTaskInput) {
   const user = await requireChef()
   const validated = UpdateTaskSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build update payload - only include fields that were explicitly provided
   const updatePayload: Record<string, unknown> = {}
@@ -206,7 +206,7 @@ export async function updateTask(id: string, input: UpdateTaskInput) {
   if (validated.recurring_rule !== undefined)
     updatePayload.recurring_rule = validated.recurring_rule
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tasks')
     .update(updatePayload)
     .eq('id', id)
@@ -229,9 +229,9 @@ export async function updateTask(id: string, input: UpdateTaskInput) {
 
 export async function deleteTask(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('tasks').delete().eq('id', id).eq('chef_id', user.tenantId!)
+  const { error } = await db.from('tasks').delete().eq('id', id).eq('chef_id', user.tenantId!)
 
   if (error) {
     console.error('[deleteTask] Error:', error)
@@ -248,9 +248,9 @@ export async function deleteTask(id: string) {
 export async function listTasks(filters?: ListTasksFilter) {
   const user = await requireChef()
   const parsed = ListTasksFilterSchema.parse(filters)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('tasks')
     .select('*, staff_member:staff_members!tasks_assigned_to_fkey(id, name, role)')
     .eq('chef_id', user.tenantId!)
@@ -287,9 +287,9 @@ export async function listTasks(filters?: ListTasksFilter) {
 
 export async function getTasksByDate(date: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tasks')
     .select('*, staff_member:staff_members!tasks_assigned_to_fkey(id, name, role)')
     .eq('chef_id', user.tenantId!)
@@ -340,11 +340,11 @@ export async function completeTask(
   notes?: string
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date().toISOString()
 
   // Update task status
-  const { data: task, error: updateError } = await supabase
+  const { data: task, error: updateError } = await db
     .from('tasks')
     .update({
       status: 'done',
@@ -363,7 +363,7 @@ export async function completeTask(
 
   // Log completion in task_completion_log
   try {
-    await supabase.from('task_completion_log').insert({
+    await db.from('task_completion_log').insert({
       chef_id: user.tenantId!,
       task_id: id,
       completed_by: staffMemberId ?? user.entityId,
@@ -386,9 +386,9 @@ export async function completeTask(
 
 export async function reopenTask(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tasks')
     .update({
       status: 'pending',

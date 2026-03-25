@@ -5,7 +5,7 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { CallScript } from './types'
@@ -24,9 +24,9 @@ const ScriptSchema = z.object({
 export async function getCallScripts(): Promise<CallScript[]> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospect_call_scripts')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -43,9 +43,9 @@ export async function getCallScripts(): Promise<CallScript[]> {
 export async function getCallScript(id: string): Promise<CallScript | null> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospect_call_scripts')
     .select('*')
     .eq('id', id)
@@ -59,10 +59,10 @@ export async function getCallScript(id: string): Promise<CallScript | null> {
 export async function getScriptForCategory(category: string): Promise<CallScript | null> {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Try exact category match first
-  const { data: exact } = await supabase
+  const { data: exact } = await db
     .from('prospect_call_scripts')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -73,7 +73,7 @@ export async function getScriptForCategory(category: string): Promise<CallScript
   if (exact) return exact as CallScript
 
   // Fall back to default script
-  const { data: defaultScript } = await supabase
+  const { data: defaultScript } = await db
     .from('prospect_call_scripts')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -88,18 +88,18 @@ export async function createCallScript(input: z.infer<typeof ScriptSchema>) {
   await requireAdmin()
   const user = await requireChef()
   const validated = ScriptSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If setting as default, unset any existing default
   if (validated.is_default) {
-    await supabase
+    await db
       .from('prospect_call_scripts')
       .update({ is_default: false })
       .eq('chef_id', user.tenantId!)
       .eq('is_default', true)
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospect_call_scripts')
     .insert({
       ...validated,
@@ -121,11 +121,11 @@ export async function updateCallScript(id: string, input: Partial<z.infer<typeof
   await requireAdmin()
   const user = await requireChef()
   const validated = ScriptSchema.partial().parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If setting as default, unset any existing default
   if (validated.is_default) {
-    await supabase
+    await db
       .from('prospect_call_scripts')
       .update({ is_default: false })
       .eq('chef_id', user.tenantId!)
@@ -133,7 +133,7 @@ export async function updateCallScript(id: string, input: Partial<z.infer<typeof
       .neq('id', id)
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospect_call_scripts')
     .update(validated)
     .eq('id', id)
@@ -153,9 +153,9 @@ export async function updateCallScript(id: string, input: Partial<z.infer<typeof
 export async function deleteCallScript(id: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('prospect_call_scripts')
     .delete()
     .eq('id', id)

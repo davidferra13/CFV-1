@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 
-const supabaseAdmin = createAdminClient()
+const dbAdmin = createAdminClient()
 
 const SYSTEM_KEY = 'brand_monitor_negative_mention'
 const WEB_SEARCH_ENABLED = process.env.BRAND_MONITOR_WEB_SEARCH_ENABLED === 'true'
@@ -15,9 +15,7 @@ export async function GET(request: Request) {
   try {
     const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
     // Get all chefs with display names for brand monitoring
-    const { data: chefs } = await supabaseAdmin
-      .from('chefs')
-      .select('id, display_name, business_name')
+    const { data: chefs } = await dbAdmin.from('chefs').select('id, display_name, business_name')
 
     if (!chefs || chefs.length === 0) {
       const emptyResult = {
@@ -67,7 +65,7 @@ export async function GET(request: Request) {
 
           // Batch check: get all existing URLs for this chef in one query
           const itemUrls = items.map((i: { link: string }) => i.link)
-          const { data: existing } = await supabaseAdmin
+          const { data: existing } = await dbAdmin
             .from('chef_brand_mentions')
             .select('source_url')
             .eq('tenant_id', chef.id)
@@ -118,7 +116,7 @@ export async function GET(request: Request) {
             })
 
           if (newMentions.length > 0) {
-            const { data: insertedMentions } = await supabaseAdmin
+            const { data: insertedMentions } = await dbAdmin
               .from('chef_brand_mentions')
               .insert(newMentions)
               .select('id, source_url, sentiment, title, excerpt')
@@ -156,7 +154,7 @@ export async function GET(request: Request) {
                   continue
                 }
 
-                const { data: existingNotif } = await supabaseAdmin
+                const { data: existingNotif } = await dbAdmin
                   .from('notifications')
                   .select('id')
                   .eq('tenant_id', chef.id)

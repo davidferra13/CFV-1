@@ -2,7 +2,7 @@
 // Uses the existing push subscription infrastructure from lib/push/subscriptions.ts.
 // VAPID keys must be set in env: NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { deactivateSubscription, incrementSubscriptionFailureCount } from '@/lib/push/subscriptions'
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
@@ -40,8 +40,8 @@ export async function sendInboxPushNotification(
     webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
 
     // Query active subscriptions for this tenant using the existing schema
-    const supabase = createServerClient({ admin: true })
-    const { data: subscriptions } = await (supabase as any)
+    const db = createServerClient({ admin: true })
+    const { data: subscriptions } = await (db as any)
       .from('push_subscriptions')
       .select('endpoint, p256dh, auth_key')
       .eq('tenant_id', tenantId)

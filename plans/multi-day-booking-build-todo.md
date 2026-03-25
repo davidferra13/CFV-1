@@ -28,7 +28,7 @@ Ship a production booking system that supports:
 
 ### Files
 
-- [supabase/migrations/20260330000053_event_series_and_sessions.sql](C:/Users/david/Documents/CFv1/supabase/migrations/20260330000053_event_series_and_sessions.sql)
+- [database/migrations/20260330000053_event_series_and_sessions.sql](C:/Users/david/Documents/CFv1/database/migrations/20260330000053_event_series_and_sessions.sql)
 - [types/database.ts](C:/Users/david/Documents/CFv1/types/database.ts)
 
 ## P0: Booking Action Layer
@@ -147,7 +147,7 @@ Ship a production booking system that supports:
 
 - [app/(public)/hub/g/[groupToken]/hub-group-view.tsx](<C:/Users/david/Documents/CFv1/app/(public)/hub/g/[groupToken]/hub-group-view.tsx>)
 - [lib/hub/group-actions.ts](C:/Users/david/Documents/CFv1/lib/hub/group-actions.ts)
-- [supabase/migrations/new_hub_group_series_link.sql](C:/Users/david/Documents/CFv1/supabase/migrations/new_hub_group_series_link.sql)
+- [database/migrations/new_hub_group_series_link.sql](C:/Users/david/Documents/CFv1/database/migrations/new_hub_group_series_link.sql)
 
 ## Hardening and QA
 

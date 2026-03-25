@@ -4,7 +4,7 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { getOAuthConfig, getRedirectUri, SOCIAL_PLATFORMS } from '@/lib/social/oauth/config'
 import { upsertCredential } from '@/lib/social/oauth/token-store'
 
@@ -118,10 +118,10 @@ export async function GET(request: NextRequest, { params }: { params: { platform
     return failRedirect('Session expired - please try again')
   }
 
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Validate CSRF state
-  const { data: stateRow } = await supabase
+  const { data: stateRow } = await db
     .from('social_oauth_states')
     .select('*')
     .eq('state', state)
@@ -135,7 +135,7 @@ export async function GET(request: NextRequest, { params }: { params: { platform
   if ((stateRow as any).tenant_id !== user.tenantId) return failRedirect('OAuth state mismatch')
 
   // Delete used state (one-time use)
-  await supabase.from('social_oauth_states').delete().eq('state', state)
+  await db.from('social_oauth_states').delete().eq('state', state)
 
   const codeVerifier: string | null = (stateRow as any).code_verifier ?? null
 

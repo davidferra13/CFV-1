@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface SocialPlatformSnapshot {
@@ -53,9 +53,9 @@ export interface ExternalReviewSummary {
 
 export async function getSocialConnectionStatuses(): Promise<SocialConnectionStatus[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('social_connected_accounts')
     .select(
       'platform, is_active, platform_account_handle, platform_account_name, last_refreshed_at'
@@ -92,9 +92,9 @@ export async function getLatestSocialSnapshot(
   platform: string
 ): Promise<SocialPlatformSnapshot | null> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('social_stats_snapshots')
     .select('*')
     .eq('chef_id', chef.entityId)
@@ -126,12 +126,12 @@ export async function getSocialGrowthTrend(
   months: number = 6
 ): Promise<SocialGrowthTrend[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setMonth(cutoff.getMonth() - months)
 
-  const { data } = await supabase
+  const { data } = await db
     .from('social_stats_snapshots')
     .select('snapshot_date, followers, avg_engagement_rate, reach_7d')
     .eq('chef_id', chef.entityId)
@@ -156,12 +156,12 @@ export async function getFollowerGrowthRate(
   growthRate: number | null
 }> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - periodDays)
 
-  const { data } = await supabase
+  const { data } = await db
     .from('social_stats_snapshots')
     .select('snapshot_date, followers')
     .eq('chef_id', chef.entityId)
@@ -184,10 +184,10 @@ export async function getFollowerGrowthRate(
 
 export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get latest and historical snapshots from external_reviews
-  const { data: reviews } = await supabase
+  const { data: reviews } = await db
     .from('external_reviews')
     .select('rating, review_date, first_seen_at')
     .eq('tenant_id', chef.tenantId!)
@@ -240,9 +240,9 @@ export async function getGoogleReviewStats(): Promise<GoogleReviewStats | null> 
 
 export async function getExternalReviewSummary(): Promise<ExternalReviewSummary[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: sources } = await supabase
+  const { data: sources } = await db
     .from('external_review_sources')
     .select('id, provider, label')
     .eq('tenant_id', chef.tenantId!)
@@ -251,7 +251,7 @@ export async function getExternalReviewSummary(): Promise<ExternalReviewSummary[
   const results: ExternalReviewSummary[] = []
 
   for (const source of sources ?? []) {
-    const { data: reviews } = await supabase
+    const { data: reviews } = await db
       .from('external_reviews')
       .select('rating, review_date')
       .eq('source_id', source.id)

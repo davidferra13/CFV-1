@@ -3,7 +3,7 @@
 // Admin Email Actions - direct and broadcast email via Resend
 // Uses the service role to query all chefs, then sends via Resend.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { getResendClient, FROM_EMAIL, FROM_NAME } from '@/lib/email/resend-client'
 import { logAdminAction } from './audit'
@@ -76,10 +76,10 @@ export async function sendAdminBroadcastEmail(
   }
 
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Fetch target chefs
-  let query = supabase.from('chefs').select('id, email, business_name')
+  let query = db.from('chefs').select('id, email, business_name')
 
   if (target === 'inactive_chefs') {
     const cutoff = new Date()

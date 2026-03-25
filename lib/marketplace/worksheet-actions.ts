@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import crypto from 'crypto'
 
@@ -54,14 +54,14 @@ export async function createClientWorksheet(
 ): Promise<CreateWorksheetResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const token = generateToken()
   const expiresAt = input.expiresInDays
     ? new Date(Date.now() + input.expiresInDays * 86400000).toISOString()
     : new Date(Date.now() + 30 * 86400000).toISOString() // default 30 days
 
   try {
-    const { data: worksheet, error } = await supabase
+    const { data: worksheet, error } = await db
       .from('client_worksheets')
       .insert({
         tenant_id: tenantId,
@@ -102,13 +102,9 @@ export async function createClientWorksheet(
  * Fetch a worksheet by its public token (no auth required).
  */
 export async function getWorksheetByToken(token: string): Promise<WorksheetData | null> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
-    .from('client_worksheets')
-    .select('*')
-    .eq('token', token)
-    .single()
+  const { data, error } = await db.from('client_worksheets').select('*').eq('token', token).single()
 
   if (error || !data) return null
 
@@ -157,10 +153,10 @@ export type SubmitWorksheetInput = {
 export async function submitClientWorksheet(
   input: SubmitWorksheetInput
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the worksheet exists and is pending
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('client_worksheets')
     .select('id, status, expires_at, tenant_id, event_id, client_id')
     .eq('token', input.token)
@@ -172,7 +168,7 @@ export async function submitClientWorksheet(
     return { success: false, error: 'This worksheet has expired' }
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('client_worksheets')
     .update({
       client_name: input.clientName.trim(),
@@ -206,7 +202,7 @@ export async function submitClientWorksheet(
       if (input.clientPhone) updates.phone = input.clientPhone.trim()
 
       if (Object.keys(updates).length > 0) {
-        await supabase
+        await db
           .from('clients')
           .update(updates)
           .eq('id', existing.client_id)
@@ -226,7 +222,7 @@ export async function submitClientWorksheet(
       if (input.specialRequests) eventUpdates.special_requests = input.specialRequests.trim()
 
       if (Object.keys(eventUpdates).length > 0) {
-        await supabase
+        await db
           .from('events')
           .update(eventUpdates)
           .eq('id', existing.event_id)
@@ -246,9 +242,9 @@ export async function submitClientWorksheet(
 export async function getChefWorksheets(): Promise<WorksheetData[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('client_worksheets')
     .select('*')
     .eq('tenant_id', tenantId)

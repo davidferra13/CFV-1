@@ -38,7 +38,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Goal')
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('chef_goals')
       .select('*')
       .eq('id', id)
@@ -67,7 +67,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     // Verify goal belongs to tenant
-    const { data: existing } = await (ctx.supabase as any)
+    const { data: existing } = await (ctx.db as any)
       .from('chef_goals')
       .select('id')
       .eq('id', id)
@@ -81,7 +81,7 @@ export const PATCH = withApiAuth(
       updated_at: new Date().toISOString(),
     }
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('chef_goals')
       .update(updatePayload)
       .eq('id', id)
@@ -105,7 +105,7 @@ export const DELETE = withApiAuth(
     if (!id) return apiNotFound('Goal')
 
     // Archive the goal (soft delete via status change)
-    const { error } = await (ctx.supabase as any)
+    const { error } = await (ctx.db as any)
       .from('chef_goals')
       .update({
         status: 'archived',

@@ -1,6 +1,6 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface ChurnRisk {
   clientId: string
@@ -13,9 +13,9 @@ export interface ChurnRisk {
 
 export async function getAtRiskClients(): Promise<ChurnRisk[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select(
       `

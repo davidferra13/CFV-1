@@ -5,7 +5,7 @@
 'use server'
 
 import { requireStaff } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -79,9 +79,9 @@ export type StaffProfile = {
 
 export async function getMyProfile(): Promise<StaffProfile | null> {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_members')
     .select('id, name, role, phone, email')
     .eq('id', user.staffMemberId)
@@ -102,9 +102,9 @@ export async function getMyProfile(): Promise<StaffProfile | null> {
 
 export async function getMyTasks(date?: string): Promise<StaffTask[]> {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  let query = supabase
+  let query = db
     .from('tasks')
     .select(
       'id, chef_id, title, description, assigned_to, station_id, due_date, due_time, priority, status, notes, completed_at, created_at'
@@ -135,13 +135,13 @@ export async function getMyTasks(date?: string): Promise<StaffTask[]> {
 
 export async function getMyTasksGroupedByDate(): Promise<Record<string, StaffTask[]>> {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get upcoming tasks (today and future, plus recently overdue)
   const today = new Date().toISOString().split('T')[0]
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('tasks')
     .select(
       'id, chef_id, title, description, assigned_to, station_id, due_date, due_time, priority, status, notes, completed_at, created_at'
@@ -178,11 +178,11 @@ export async function getMyTasksGroupedByDate(): Promise<Record<string, StaffTas
 
 export async function completeMyTask(taskId: string): Promise<{ success: boolean }> {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const now = new Date().toISOString()
 
   // Verify the task is assigned to this staff member and belongs to the tenant
-  const { data: task, error: fetchError } = await supabase
+  const { data: task, error: fetchError } = await db
     .from('tasks')
     .select('id, assigned_to')
     .eq('id', taskId)
@@ -195,7 +195,7 @@ export async function completeMyTask(taskId: string): Promise<{ success: boolean
   }
 
   // Mark as done
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('tasks')
     .update({
       status: 'done',
@@ -212,7 +212,7 @@ export async function completeMyTask(taskId: string): Promise<{ success: boolean
 
   // Log completion - non-blocking
   try {
-    await supabase.from('task_completion_log').insert({
+    await db.from('task_completion_log').insert({
       chef_id: user.tenantId,
       task_id: taskId,
       completed_by: user.staffMemberId,
@@ -233,10 +233,10 @@ export async function completeMyTask(taskId: string): Promise<{ success: boolean
 
 export async function uncompleteMyTask(taskId: string): Promise<{ success: boolean }> {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Verify the task is assigned to this staff member
-  const { data: task, error: fetchError } = await supabase
+  const { data: task, error: fetchError } = await db
     .from('tasks')
     .select('id, assigned_to')
     .eq('id', taskId)
@@ -248,7 +248,7 @@ export async function uncompleteMyTask(taskId: string): Promise<{ success: boole
     throw new Error('Task not found or not assigned to you')
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('tasks')
     .update({
       status: 'pending',
@@ -274,9 +274,9 @@ export async function uncompleteMyTask(taskId: string): Promise<{ success: boole
 
 export async function getMyAssignments(): Promise<StaffAssignment[]> {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_staff_assignments')
     .select(
       `
@@ -304,11 +304,11 @@ export async function getMyAssignments(): Promise<StaffAssignment[]> {
 
 export async function getMyUpcomingAssignments(): Promise<StaffAssignment[]> {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const today = new Date().toISOString().split('T')[0]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_staff_assignments')
     .select(
       `
@@ -342,11 +342,11 @@ export async function getMyUpcomingAssignments(): Promise<StaffAssignment[]> {
 
 export async function getMyStations(): Promise<StaffStation[]> {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Find stations through shift_logs - staff who checked in most recently
   // Also check tasks assigned to the staff member that reference a station
-  const { data: taskStations, error: taskError } = await supabase
+  const { data: taskStations, error: taskError } = await db
     .from('tasks')
     .select('station_id')
     .eq('chef_id', user.tenantId)
@@ -359,7 +359,7 @@ export async function getMyStations(): Promise<StaffStation[]> {
   }
 
   // Also find from shift_logs
-  const { data: shiftStations, error: shiftError } = await supabase
+  const { data: shiftStations, error: shiftError } = await db
     .from('shift_logs')
     .select('station_id')
     .eq('chef_id', user.tenantId)
@@ -383,7 +383,7 @@ export async function getMyStations(): Promise<StaffStation[]> {
   if (stationIds.size === 0) {
     // If no specific assignment found, return all active stations for the tenant
     // so staff can still navigate to their station
-    const { data: allStations, error: allError } = await supabase
+    const { data: allStations, error: allError } = await db
       .from('stations')
       .select('id, name, description, status')
       .eq('chef_id', user.tenantId)
@@ -398,7 +398,7 @@ export async function getMyStations(): Promise<StaffStation[]> {
     return (allStations ?? []) as StaffStation[]
   }
 
-  const { data: stations, error: stationsError } = await supabase
+  const { data: stations, error: stationsError } = await db
     .from('stations')
     .select('id, name, description, status')
     .eq('chef_id', user.tenantId)
@@ -420,10 +420,10 @@ export async function getMyStations(): Promise<StaffStation[]> {
 
 export async function getStationClipboard(stationId: string, date: string) {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Verify station belongs to tenant
-  const { data: station, error: stationError } = await supabase
+  const { data: station, error: stationError } = await db
     .from('stations')
     .select('id, name, description')
     .eq('id', stationId)
@@ -435,7 +435,7 @@ export async function getStationClipboard(stationId: string, date: string) {
   }
 
   // Get clipboard entries
-  const { data: entries, error: entriesError } = await supabase
+  const { data: entries, error: entriesError } = await db
     .from('clipboard_entries')
     .select(
       `
@@ -476,10 +476,10 @@ export async function updateClipboardEntry(
   }
 ) {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Verify entry belongs to tenant
-  const { data: entry, error: fetchError } = await supabase
+  const { data: entry, error: fetchError } = await db
     .from('clipboard_entries')
     .select('id, chef_id')
     .eq('id', entryId)
@@ -499,7 +499,7 @@ export async function updateClipboardEntry(
     updatePayload.waste_reason_code = updates.waste_reason_code
   if (updates.notes !== undefined) updatePayload.notes = updates.notes
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('clipboard_entries')
     .update(updatePayload)
     .eq('id', entryId)
@@ -520,10 +520,10 @@ export async function updateClipboardEntry(
 
 export async function getStationRecipes(stationId: string): Promise<StaffRecipe[]> {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Verify station belongs to tenant
-  const { data: station, error: stationError } = await supabase
+  const { data: station, error: stationError } = await db
     .from('stations')
     .select('id')
     .eq('id', stationId)
@@ -535,7 +535,7 @@ export async function getStationRecipes(stationId: string): Promise<StaffRecipe[
   }
 
   // Get menu items for this station that have a menu_item_id (linked to menu_items table)
-  const { data: stationMenuItems, error: smiError } = await supabase
+  const { data: stationMenuItems, error: smiError } = await db
     .from('station_menu_items')
     .select('menu_item_id, name')
     .eq('station_id', stationId)
@@ -544,7 +544,7 @@ export async function getStationRecipes(stationId: string): Promise<StaffRecipe[
 
   if (smiError || !stationMenuItems?.length) {
     // No linked menu items - try to get all recipes for the tenant instead
-    const { data: allRecipes, error: recipesError } = await supabase
+    const { data: allRecipes, error: recipesError } = await db
       .from('recipes')
       .select(
         'id, title, description, servings, prep_time_minutes, cook_time_minutes, instructions'
@@ -567,7 +567,7 @@ export async function getStationRecipes(stationId: string): Promise<StaffRecipe[
 
   // Recipes are linked to menu items through menu_items.recipe_id or similar.
   // Fallback: return all recipes for the tenant, filtered to limit
-  const { data: recipes, error: recipesError } = await supabase
+  const { data: recipes, error: recipesError } = await db
     .from('recipes')
     .select('id, title, description, servings, prep_time_minutes, cook_time_minutes, instructions')
     .eq('chef_id', user.tenantId)
@@ -588,9 +588,9 @@ export async function getStationRecipes(stationId: string): Promise<StaffRecipe[
 
 export async function getMyRecipes(): Promise<StaffRecipe[]> {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('recipes')
     .select('id, title, description, servings, prep_time_minutes, cook_time_minutes, instructions')
     .eq('chef_id', user.tenantId)
@@ -610,10 +610,10 @@ export async function getMyRecipes(): Promise<StaffRecipe[]> {
 
 export async function staffShiftCheckIn(stationId: string, shiftType: 'open' | 'mid' | 'close') {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Verify station belongs to tenant
-  const { data: station, error: stationError } = await supabase
+  const { data: station, error: stationError } = await db
     .from('stations')
     .select('id')
     .eq('id', stationId)
@@ -624,7 +624,7 @@ export async function staffShiftCheckIn(stationId: string, shiftType: 'open' | '
     throw new Error('Station not found')
   }
 
-  const { error: insertError } = await supabase.from('shift_logs').insert({
+  const { error: insertError } = await db.from('shift_logs').insert({
     station_id: stationId,
     chef_id: user.tenantId,
     staff_member_id: user.staffMemberId,
@@ -646,10 +646,10 @@ export async function staffShiftCheckIn(stationId: string, shiftType: 'open' | '
 
 export async function staffShiftCheckOut(shiftLogId: string, notes?: string) {
   const user = await requireStaff()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Verify shift belongs to this staff member
-  const { data: shift, error: fetchError } = await supabase
+  const { data: shift, error: fetchError } = await db
     .from('shift_logs')
     .select('id, staff_member_id')
     .eq('id', shiftLogId)
@@ -661,7 +661,7 @@ export async function staffShiftCheckOut(shiftLogId: string, notes?: string) {
     throw new Error('Shift not found or not yours')
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('shift_logs')
     .update({
       check_out_at: new Date().toISOString(),

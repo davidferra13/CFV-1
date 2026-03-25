@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -73,10 +73,10 @@ export async function generateProposalFromEvent(
 ): Promise<{ success: true; data: ProposalData } | { success: false; error: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with client and menu
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       `
@@ -108,7 +108,7 @@ export async function generateProposalFromEvent(
   }
 
   // Fetch client
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('full_name, email, phone')
     .eq('id', event.client_id)
@@ -119,7 +119,7 @@ export async function generateProposalFromEvent(
   }
 
   // Fetch chef info
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, email, phone')
     .eq('id', tenantId)
@@ -138,7 +138,7 @@ export async function generateProposalFromEvent(
   } | null = null
 
   if (event.menu_id) {
-    const { data: menu } = await supabase
+    const { data: menu } = await db
       .from('menus')
       .select('name, description, simple_mode_content, cuisine_type')
       .eq('id', event.menu_id)
@@ -149,7 +149,7 @@ export async function generateProposalFromEvent(
   }
 
   // Check for existing quote on this event
-  const { data: existingQuote } = await supabase
+  const { data: existingQuote } = await db
     .from('quotes')
     .select('id')
     .eq('event_id', eventId)
@@ -219,10 +219,10 @@ export async function createQuoteFromProposal(
 ): Promise<{ success: true; quoteId: string } | { success: false; error: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the event to get base data
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       `
@@ -244,7 +244,7 @@ export async function createQuoteFromProposal(
   }
 
   // Check if a quote already exists for this event
-  const { data: existingQuote } = await supabase
+  const { data: existingQuote } = await db
     .from('quotes')
     .select('id')
     .eq('event_id', eventId)
@@ -269,7 +269,7 @@ export async function createQuoteFromProposal(
     pricePerPersonCents = Math.round(totalQuotedCents / event.guest_count)
   }
 
-  const { data: quote, error: quoteError } = await supabase
+  const { data: quote, error: quoteError } = await db
     .from('quotes')
     .insert({
       tenant_id: tenantId,

@@ -13,7 +13,7 @@ import { getClientNotes } from '@/lib/notes/actions'
 import { getPendingInsights } from '@/lib/insights/actions'
 import { ChatView } from '@/components/chat/chat-view'
 import { ChatSidebar } from '@/components/chat/chat-sidebar'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export async function generateMetadata({
   params,
@@ -61,8 +61,8 @@ export default async function ChefChatViewPage({ params }: { params: Promise<{ i
 
   if (clientParticipant) {
     // Resolve client entity ID from auth_user_id
-    const supabase: any = createServerClient()
-    const { data: clientRow } = await supabase
+    const db: any = createServerClient()
+    const { data: clientRow } = await db
       .from('clients')
       .select('id')
       .eq('auth_user_id', clientParticipant.auth_user_id)

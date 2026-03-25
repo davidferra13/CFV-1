@@ -5,7 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { RegisterSessionStatus } from './constants'
 import { computeRegisterSessionTotals } from './register-metrics'
@@ -64,11 +64,11 @@ async function emitRegisterAlert(input: {
 }
 
 async function reconcileActiveRegisterSessionsAfterOpen(ctx: {
-  supabase: any
+  db: any
   tenantId: string
   openedSessionId: string
 }) {
-  const { data: activeRows, error } = await (ctx.supabase
+  const { data: activeRows, error } = await (ctx.db
     .from('register_sessions' as any)
     .select('id, opened_at, created_at')
     .eq('tenant_id', ctx.tenantId)
@@ -89,7 +89,7 @@ async function reconcileActiveRegisterSessionsAfterOpen(ctx: {
   const closedAtIso = new Date().toISOString()
 
   if (winnerId !== ctx.openedSessionId) {
-    await (ctx.supabase
+    await (ctx.db
       .from('register_sessions' as any)
       .update({
         status: 'closed',
@@ -108,7 +108,7 @@ async function reconcileActiveRegisterSessionsAfterOpen(ctx: {
     return
   }
 
-  await (ctx.supabase
+  await (ctx.db
     .from('register_sessions' as any)
     .update({
       status: 'closed',
@@ -128,10 +128,10 @@ async function reconcileActiveRegisterSessionsAfterOpen(ctx: {
 export async function openRegister(input: OpenRegisterInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'open the register',
     requiredLevel: 'lead',
@@ -142,7 +142,7 @@ export async function openRegister(input: OpenRegisterInput) {
   }
 
   // Check for existing open session
-  const { data: existing } = await (supabase
+  const { data: existing } = await (db
     .from('register_sessions' as any)
     .select('id, status')
     .eq('tenant_id', user.tenantId!)
@@ -153,7 +153,7 @@ export async function openRegister(input: OpenRegisterInput) {
     throw new Error('A register session is already active. Close it before opening a new one.')
   }
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('register_sessions' as any)
     .insert({
       tenant_id: user.tenantId!,
@@ -173,7 +173,7 @@ export async function openRegister(input: OpenRegisterInput) {
   }
 
   await reconcileActiveRegisterSessionsAfterOpen({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     openedSessionId: data.id,
   })
@@ -201,16 +201,16 @@ export async function openRegister(input: OpenRegisterInput) {
 export async function suspendRegister(sessionId: string, notes?: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'suspend the register',
     requiredLevel: 'lead',
   })
 
-  const { data: updated, error } = await (supabase
+  const { data: updated, error } = await (db
     .from('register_sessions' as any)
     .update({
       status: 'suspended',
@@ -247,16 +247,16 @@ export async function suspendRegister(sessionId: string, notes?: string) {
 export async function resumeRegister(sessionId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'resume the register',
     requiredLevel: 'lead',
   })
 
-  const { data: openSession } = await (supabase
+  const { data: openSession } = await (db
     .from('register_sessions' as any)
     .select('id')
     .eq('tenant_id', user.tenantId!)
@@ -269,7 +269,7 @@ export async function resumeRegister(sessionId: string) {
     throw new Error('Another register session is already open. Close or suspend it first.')
   }
 
-  const { data: updated, error } = await (supabase
+  const { data: updated, error } = await (db
     .from('register_sessions' as any)
     .update({
       status: 'open',
@@ -313,10 +313,10 @@ export async function closeRegister(
 ) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   await assertPosManagerAccess({
-    supabase,
+    db,
     user,
     action: 'close the register',
   })
@@ -326,7 +326,7 @@ export async function closeRegister(
   }
 
   // Fetch session to compute expected cash
-  const { data: session, error: fetchErr } = await (supabase
+  const { data: session, error: fetchErr } = await (db
     .from('register_sessions' as any)
     .select('opening_cash_cents, total_revenue_cents, total_tips_cents, status')
     .eq('id', sessionId)
@@ -342,7 +342,7 @@ export async function closeRegister(
   }
 
   // Get sales linked to this session
-  const { data: sessionSales } = await (supabase
+  const { data: sessionSales } = await (db
     .from('sales')
     .select('id, status')
     .eq('register_session_id', sessionId)
@@ -374,7 +374,7 @@ export async function closeRegister(
   // Pull payments only for this session's sales
   let sessionPayments: any[] = []
   if (saleIds.length > 0) {
-    const { data } = await (supabase
+    const { data } = await (db
       .from('commerce_payments')
       .select('sale_id, amount_cents, tip_cents, status')
       .eq('tenant_id', user.tenantId!)
@@ -383,7 +383,7 @@ export async function closeRegister(
   }
 
   // Expected cash is now derived from itemized drawer movements.
-  const { data: movements } = await (supabase
+  const { data: movements } = await (db
     .from('cash_drawer_movements' as any)
     .select('amount_cents')
     .eq('tenant_id', user.tenantId!)
@@ -406,7 +406,7 @@ export async function closeRegister(
   })
   const closedAtIso = new Date().toISOString()
 
-  const { data: updated, error } = await (supabase
+  const { data: updated, error } = await (db
     .from('register_sessions' as any)
     .update({
       status: 'closed',
@@ -513,9 +513,9 @@ export async function closeRegister(
 export async function getCurrentRegisterSession() {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('register_sessions' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -537,9 +537,9 @@ export async function getRegisterSessionHistory(filters?: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('register_sessions' as any)
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
@@ -563,9 +563,9 @@ export async function getRegisterSessionHistory(filters?: {
 export async function getRegisterSession(sessionId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('register_sessions' as any)
     .select('*')
     .eq('id', sessionId)

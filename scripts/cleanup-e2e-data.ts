@@ -1,5 +1,5 @@
 // @ts-nocheck
-// Cleanup E2E test data from remote Supabase
+// Cleanup E2E test data from remote database
 // Usage: npm run cleanup:e2e
 //
 // Deletes all auth users whose email ends with @chefflow.test.
@@ -7,15 +7,15 @@
 // all seeded events, clients, quotes, menus, etc. in one operation.
 // Safe to run at any time - only targets @chefflow.test addresses.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
 
 async function main() {
-  if (process.env.SUPABASE_E2E_ALLOW_REMOTE !== 'true') {
+  if (process.env.DATABASE_E2E_ALLOW_REMOTE !== 'true') {
     throw new Error(
-      'Set SUPABASE_E2E_ALLOW_REMOTE=true in .env.local to run cleanup.\n' +
+      'Set DATABASE_E2E_ALLOW_REMOTE=true in .env.local to run cleanup.\n' +
         'This guard prevents accidental deletion on non-test environments.'
     )
   }

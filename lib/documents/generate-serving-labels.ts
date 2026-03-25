@@ -7,7 +7,7 @@
 
 import { jsPDF } from 'jspdf'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { allergenShortName } from '@/lib/constants/allergens'
 import { format, parseISO } from 'date-fns'
 
@@ -137,9 +137,9 @@ async function fetchLabelData(
 ): Promise<{ labels: LabelData[]; eventName: string } | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, occasion, event_date, menu_id')
     .eq('id', eventId)
@@ -150,7 +150,7 @@ async function fetchLabelData(
 
   const eventDate = event.event_date ? format(parseISO(event.event_date), 'MMM d, yyyy') : 'N/A'
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, name, course_name, course_number, allergen_flags')
     .eq('menu_id', event.menu_id)
@@ -162,7 +162,7 @@ async function fetchLabelData(
 
   const dishIds = dishes.map((d: any) => d.id)
 
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('id, name, dish_id, recipe_id, sort_order')
     .in('dish_id', dishIds)
@@ -173,7 +173,7 @@ async function fetchLabelData(
 
   const recipeMethods: Record<string, string> = {}
   if (recipeIds.length > 0) {
-    const { data: recipes } = await supabase
+    const { data: recipes } = await db
       .from('recipes')
       .select('id, method')
       .in('id', recipeIds)
@@ -188,7 +188,7 @@ async function fetchLabelData(
   // Supplements the dish-level allergen_flags with ingredient-level data.
   const componentAllergens: Record<string, string[]> = {}
   if (recipeIds.length > 0) {
-    const { data: riRows } = await supabase
+    const { data: riRows } = await db
       .from('recipe_ingredients')
       .select('recipe_id, ingredients(allergen_flags)')
       .in('recipe_id', recipeIds)

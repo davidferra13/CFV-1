@@ -5,7 +5,7 @@
 // Generates a day-of prep timeline with estimated times for each step.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { withAiFallback } from '@/lib/ai/with-ai-fallback'
 import { buildPrepTimelineFormula } from '@/lib/templates/prep-timeline'
@@ -39,10 +39,10 @@ const PrepTimelineSchema = z.object({
  */
 export async function generatePrepTimeline(eventId: string): Promise<PrepTimeline> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load event details
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, occasion, event_date, guest_count, start_time, notes, client:clients(full_name)')
     .eq('id', eventId)
@@ -62,7 +62,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   }
 
   // Load menu items if any menus are linked
-  const { data: eventMenus } = await (supabase
+  const { data: eventMenus } = await (db
     .from('event_menus' as any)
     .select('menu_id')
     .eq('event_id', eventId) as any)
@@ -71,7 +71,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   let menuItemNames: string[] = []
 
   if (menuIds.length > 0) {
-    const { data: items } = await (supabase
+    const { data: items } = await (db
       .from('menu_items' as any)
       .select('name')
       .in('menu_id', menuIds) as any)
@@ -145,9 +145,9 @@ Categories: shopping, prep, cooking, plating, service, cleanup, transport`
  */
 export async function generatePrepTimelineByName(eventName: string): Promise<PrepTimeline> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion')
     .eq('tenant_id', user.tenantId!)

@@ -6,9 +6,9 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   try {
-    const { supabase, device } = await authenticateOrderKioskRequest(request)
+    const { db, device } = await authenticateOrderKioskRequest(request)
 
-    const { data: products, error } = await supabase
+    const { data: products, error } = await db
       .from('product_projections')
       .select(
         'id, name, price_cents, category, image_url, is_active, modifiers, tax_class, cost_cents'
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Failed to load catalog' }, { status: 500 })
     }
 
-    const { data: chef } = await (supabase
+    const { data: chef } = await (db
       .from('chefs' as any)
       .select('zip')
       .eq('id', device.tenantId)

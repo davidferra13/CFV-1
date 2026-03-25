@@ -1,4 +1,4 @@
-// Adapted from legacy BillyBob8 patterns for Next.js + Supabase
+// Adapted from legacy patterns for Next.js + PostgreSQL
 //
 // Default base URL is http://localhost:3100.
 // Override via PLAYWRIGHT_BASE_URL / PLAYWRIGHT_WEB_SERVER_COMMAND when isolation is needed.

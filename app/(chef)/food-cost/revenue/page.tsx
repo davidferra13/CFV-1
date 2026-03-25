@@ -5,7 +5,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,9 +15,9 @@ export const metadata: Metadata = { title: 'Daily Revenue | ChefFlow' }
 
 export default async function DailyRevenuePage() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: entries } = await supabase
+  const { data: entries } = await db
     .from('daily_revenue')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -49,11 +49,11 @@ export default async function DailyRevenuePage() {
             action={async (formData: FormData) => {
               'use server'
               const { requireChef } = await import('@/lib/auth/get-user')
-              const { createServerClient } = await import('@/lib/supabase/server')
+              const { createServerClient } = await import('@/lib/db/server')
               const { revalidatePath } = await import('next/cache')
 
               const user = await requireChef()
-              const supabase: any = createServerClient()
+              const db: any = createServerClient()
               const date = formData.get('date') as string
               const amount = formData.get('amount') as string
               const notes = formData.get('notes') as string
@@ -63,7 +63,7 @@ export default async function DailyRevenuePage() {
               const totalRevenueCents = Math.round(parseFloat(amount) * 100)
               if (isNaN(totalRevenueCents) || totalRevenueCents <= 0) return
 
-              await supabase.from('daily_revenue').upsert(
+              await db.from('daily_revenue').upsert(
                 {
                   chef_id: user.tenantId!,
                   date,

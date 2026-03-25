@@ -16,7 +16,7 @@ import {
   transitionMenu,
 } from '@/lib/menus/actions'
 import { sendMenuForApproval } from '@/lib/events/menu-approval-actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
@@ -502,8 +502,8 @@ export const menuEditAgentActions: AgentActionDefinition[] = [
 
     async executor(inputs, ctx) {
       const identifier = String(inputs.eventIdentifier ?? inputs.description ?? '').toLowerCase()
-      const supabase: any = createServerClient()
-      const { data: events } = await supabase
+      const db: any = createServerClient()
+      const { data: events } = await db
         .from('events')
         .select('id, occasion, client:clients(full_name)')
         .eq('tenant_id', ctx.tenantId)

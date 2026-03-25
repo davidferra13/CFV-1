@@ -51,7 +51,7 @@ export async function upload(
   if (!options?.upsert) {
     try {
       await fs.access(fullPath)
-      // File exists and upsert is false - still overwrite (Supabase default behavior)
+      // File exists and upsert is false - still overwrite (default behavior)
     } catch {
       // File doesn't exist, good to go
     }

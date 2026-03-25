@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef, requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -17,9 +17,9 @@ import { revalidatePath } from 'next/cache'
  */
 export async function toggleShowcase(menuId: string, isShowcase: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('menus')
     .update({ is_showcase: isShowcase, updated_by: user.id })
     .eq('id', menuId)
@@ -41,10 +41,10 @@ export async function toggleShowcase(menuId: string, isShowcase: boolean) {
  */
 export async function getMenuLibraryForEvent(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all non-archived menus (templates, showcase, and recent)
-  const { data: menus, error } = await supabase
+  const { data: menus, error } = await db
     .from('menus')
     .select(
       `
@@ -64,7 +64,7 @@ export async function getMenuLibraryForEvent(eventId: string) {
   }
 
   // Fetch client preferences for this event (if any)
-  const { data: preferences } = await supabase
+  const { data: preferences } = await db
     .from('menu_preferences')
     .select('*')
     .eq('event_id', eventId)
@@ -118,10 +118,10 @@ export async function getMenuLibraryForEvent(eventId: string) {
  */
 export async function getShowcaseMenus(tenantId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client has an event with this chef
-  const { data: hasEvent } = await supabase
+  const { data: hasEvent } = await db
     .from('events')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -131,7 +131,7 @@ export async function getShowcaseMenus(tenantId: string) {
 
   if (!hasEvent) throw new Error('No events found with this chef')
 
-  const { data: menus, error } = await supabase
+  const { data: menus, error } = await db
     .from('menus')
     .select(
       `
@@ -175,9 +175,9 @@ export async function getShowcaseMenus(tenantId: string) {
  */
 export async function getShowcaseMenuDetail(menuId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: menu, error } = await supabase
+  const { data: menu, error } = await db
     .from('menus')
     .select(
       `
@@ -196,7 +196,7 @@ export async function getShowcaseMenuDetail(menuId: string) {
   if (error || !menu) throw new Error('Menu not found')
 
   // Verify client has event with this chef (via RLS, but double-check)
-  const { data: hasEvent } = await supabase
+  const { data: hasEvent } = await db
     .from('events')
     .select('id')
     .eq('tenant_id', (menu as any).tenant_id)

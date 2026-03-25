@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef, requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { sendEmail } from '@/lib/email/send'
@@ -39,10 +39,10 @@ export type RequestRevisionInput = z.infer<typeof RequestRevisionSchema>
  */
 export async function sendMenuForApproval(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load event + client + linked menus
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select(
       `
@@ -92,15 +92,12 @@ export async function sendMenuForApproval(eventId: string) {
     }
   })
 
-  const { data: rpcResponse, error: rpcError } = await supabase.rpc(
-    'send_menu_for_approval_atomic',
-    {
-      p_event_id: eventId,
-      p_chef_id: user.tenantId!,
-      p_menu_snapshot: menuSnapshot,
-      p_actor_id: user.id,
-    }
-  )
+  const { data: rpcResponse, error: rpcError } = await db.rpc('send_menu_for_approval_atomic', {
+    p_event_id: eventId,
+    p_chef_id: user.tenantId!,
+    p_menu_snapshot: menuSnapshot,
+    p_actor_id: user.id,
+  })
 
   if (rpcError || !rpcResponse) {
     console.error('[sendMenuForApproval] RPC error:', rpcError)
@@ -160,16 +157,16 @@ export async function sendMenuForApproval(eventId: string) {
  */
 export async function getMenuApprovalStatus(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('menu_approval_status, menu_sent_at, menu_approved_at, menu_revision_notes')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  const { data: latestRequest } = await supabase
+  const { data: latestRequest } = await db
     .from('menu_approval_requests')
     .select('*')
     .eq('event_id', eventId)
@@ -190,18 +187,15 @@ export async function getMenuApprovalStatus(eventId: string) {
  */
 export async function approveMenu(requestId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: rpcResponse, error: rpcError } = await supabase.rpc(
-    'respond_menu_approval_atomic',
-    {
-      p_request_id: requestId,
-      p_client_id: user.entityId,
-      p_new_status: 'approved',
-      p_revision_notes: null,
-      p_actor_id: user.id,
-    }
-  )
+  const { data: rpcResponse, error: rpcError } = await db.rpc('respond_menu_approval_atomic', {
+    p_request_id: requestId,
+    p_client_id: user.entityId,
+    p_new_status: 'approved',
+    p_revision_notes: null,
+    p_actor_id: user.id,
+  })
 
   if (rpcError || !rpcResponse) {
     throw new Error(rpcError?.message || 'This request has already been responded to')
@@ -228,8 +222,8 @@ export async function approveMenu(requestId: string) {
     }
 
     // Get event details for email
-    const supabaseAdmin = createServerClient()
-    const { data: eventData } = await supabaseAdmin
+    const dbAdmin = createServerClient()
+    const { data: eventData } = await dbAdmin
       .from('events')
       .select('occasion, event_date, clients(full_name)')
       .eq('id', request.event_id)
@@ -267,18 +261,15 @@ export async function approveMenu(requestId: string) {
 export async function requestMenuRevision(input: RequestRevisionInput) {
   const user = await requireClient()
   const validated = RequestRevisionSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: rpcResponse, error: rpcError } = await supabase.rpc(
-    'respond_menu_approval_atomic',
-    {
-      p_request_id: validated.request_id,
-      p_client_id: user.entityId,
-      p_new_status: 'revision_requested',
-      p_revision_notes: validated.notes,
-      p_actor_id: user.id,
-    }
-  )
+  const { data: rpcResponse, error: rpcError } = await db.rpc('respond_menu_approval_atomic', {
+    p_request_id: validated.request_id,
+    p_client_id: user.entityId,
+    p_new_status: 'revision_requested',
+    p_revision_notes: validated.notes,
+    p_actor_id: user.id,
+  })
 
   if (rpcError || !rpcResponse) {
     throw new Error(rpcError?.message || 'This request has already been responded to')
@@ -304,8 +295,8 @@ export async function requestMenuRevision(input: RequestRevisionInput) {
       })
     }
 
-    const supabaseAdmin = createServerClient()
-    const { data: eventData } = await supabaseAdmin
+    const dbAdmin = createServerClient()
+    const { data: eventData } = await dbAdmin
       .from('events')
       .select('occasion, event_date, clients(full_name)')
       .eq('id', request.event_id)
@@ -347,9 +338,9 @@ export async function requestMenuRevision(input: RequestRevisionInput) {
  */
 export async function getClientMenuApprovalRequest(requestId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = (await supabase
+  const { data } = (await db
     .from('menu_approval_requests')
     .select('*')
     .eq('id', requestId)

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -27,7 +27,7 @@ export interface EventsFinancialSummary {
 export async function getEventsFinancialSummary(): Promise<EventsFinancialSummary | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -39,7 +39,7 @@ export async function getEventsFinancialSummary(): Promise<EventsFinancialSummar
   const [upcomingRes, monthRes, ytdRes, priorYtdRes, financialsRes, allEventsRes] =
     await Promise.all([
       // Upcoming confirmed/paid events
-      supabase
+      db
         .from('events')
         .select('id, quoted_price_cents, event_date')
         .eq('tenant_id', tenantId)
@@ -47,21 +47,21 @@ export async function getEventsFinancialSummary(): Promise<EventsFinancialSummar
         .gte('event_date', now.toISOString())
         .lte('event_date', thirtyDaysFromNow.toISOString()),
       // Completed events this month
-      supabase
+      db
         .from('events')
         .select('id, quoted_price_cents')
         .eq('tenant_id', tenantId)
         .eq('status', 'completed')
         .gte('event_date', startOfMonth.toISOString()),
       // YTD completed
-      supabase
+      db
         .from('events')
         .select('id, quoted_price_cents')
         .eq('tenant_id', tenantId)
         .in('status', ['completed', 'paid'])
         .gte('event_date', startOfYear.toISOString()),
       // Prior YTD completed (same period last year)
-      supabase
+      db
         .from('events')
         .select('id, quoted_price_cents')
         .eq('tenant_id', tenantId)
@@ -69,12 +69,12 @@ export async function getEventsFinancialSummary(): Promise<EventsFinancialSummar
         .gte('event_date', startOfPriorYear.toISOString())
         .lte('event_date', sameDayPriorYear.toISOString()),
       // Financial summaries for this month's events
-      supabase
+      db
         .from('event_financial_summary')
         .select('event_id, profit_margin')
         .eq('tenant_id', tenantId),
       // All events in last 12 months for avg per month
-      supabase
+      db
         .from('events')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)

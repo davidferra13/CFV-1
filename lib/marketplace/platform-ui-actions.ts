@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Status update actions ──────────────────────────────────────────────────
 
@@ -11,9 +11,9 @@ import { createServerClient } from '@/lib/supabase/server'
 export async function markPlatformResponded(inquiryId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('platform_records')
     .update({
       status_on_platform: 'responded',
@@ -27,7 +27,7 @@ export async function markPlatformResponded(inquiryId: string) {
   if (error) throw new Error(`Failed to mark responded: ${error.message}`)
 
   // Also update inquiry status
-  await supabase
+  await db
     .from('inquiries')
     .update({
       status: 'awaiting_client',
@@ -37,7 +37,7 @@ export async function markPlatformResponded(inquiryId: string) {
     .eq('id', inquiryId)
     .eq('tenant_id', tenantId)
 
-  await logPlatformAction(supabase, tenantId, inquiryId, 'responded', 'Marked as responded')
+  await logPlatformAction(db, tenantId, inquiryId, 'responded', 'Marked as responded')
 }
 
 /**
@@ -46,9 +46,9 @@ export async function markPlatformResponded(inquiryId: string) {
 export async function markPlatformDeclined(inquiryId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('platform_records')
     .update({
       status_on_platform: 'declined',
@@ -61,7 +61,7 @@ export async function markPlatformDeclined(inquiryId: string) {
 
   if (error) throw new Error(`Failed to mark declined: ${error.message}`)
 
-  await supabase
+  await db
     .from('inquiries')
     .update({
       status: 'lost',
@@ -71,7 +71,7 @@ export async function markPlatformDeclined(inquiryId: string) {
     .eq('id', inquiryId)
     .eq('tenant_id', tenantId)
 
-  await logPlatformAction(supabase, tenantId, inquiryId, 'declined', 'Declined inquiry')
+  await logPlatformAction(db, tenantId, inquiryId, 'declined', 'Declined inquiry')
 }
 
 /**
@@ -80,9 +80,9 @@ export async function markPlatformDeclined(inquiryId: string) {
 export async function markPlatformBooked(inquiryId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('platform_records')
     .update({
       status_on_platform: 'booked',
@@ -95,7 +95,7 @@ export async function markPlatformBooked(inquiryId: string) {
 
   if (error) throw new Error(`Failed to mark booked: ${error.message}`)
 
-  await supabase
+  await db
     .from('inquiries')
     .update({
       status: 'confirmed',
@@ -105,7 +105,7 @@ export async function markPlatformBooked(inquiryId: string) {
     .eq('id', inquiryId)
     .eq('tenant_id', tenantId)
 
-  await logPlatformAction(supabase, tenantId, inquiryId, 'booked', 'Marked as booked')
+  await logPlatformAction(db, tenantId, inquiryId, 'booked', 'Marked as booked')
 }
 
 /**
@@ -114,9 +114,9 @@ export async function markPlatformBooked(inquiryId: string) {
 export async function markPlatformProposalSent(inquiryId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('platform_records')
     .update({
       status_on_platform: 'proposal_sent',
@@ -129,7 +129,7 @@ export async function markPlatformProposalSent(inquiryId: string) {
 
   if (error) throw new Error(`Failed to mark proposal sent: ${error.message}`)
 
-  await supabase
+  await db
     .from('inquiries')
     .update({
       status: 'quoted',
@@ -139,13 +139,7 @@ export async function markPlatformProposalSent(inquiryId: string) {
     .eq('id', inquiryId)
     .eq('tenant_id', tenantId)
 
-  await logPlatformAction(
-    supabase,
-    tenantId,
-    inquiryId,
-    'proposal_sent',
-    'Proposal sent on platform'
-  )
+  await logPlatformAction(db, tenantId, inquiryId, 'proposal_sent', 'Proposal sent on platform')
 }
 
 /**
@@ -159,12 +153,12 @@ export async function logCustomPlatformAction(
 ) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await logPlatformAction(supabase, tenantId, inquiryId, actionType, actionLabel, actionUrl)
+  await logPlatformAction(db, tenantId, inquiryId, actionType, actionLabel, actionUrl)
 
   // Update last_action_at on the record
-  await supabase
+  await db
     .from('platform_records')
     .update({ last_action_at: new Date().toISOString() })
     .eq('inquiry_id', inquiryId)
@@ -174,7 +168,7 @@ export async function logCustomPlatformAction(
 // ─── Internal ───────────────────────────────────────────────────────────────
 
 async function logPlatformAction(
-  supabase: any,
+  db: any,
   tenantId: string,
   inquiryId: string,
   actionType: string,
@@ -182,7 +176,7 @@ async function logPlatformAction(
   actionUrl?: string | null
 ) {
   // Get the platform_record_id
-  const { data: record } = await supabase
+  const { data: record } = await db
     .from('platform_records')
     .select('id')
     .eq('inquiry_id', inquiryId)
@@ -191,7 +185,7 @@ async function logPlatformAction(
 
   if (!record) return
 
-  await supabase.from('platform_action_log').insert({
+  await db.from('platform_action_log').insert({
     tenant_id: tenantId,
     platform_record_id: record.id,
     inquiry_id: inquiryId,

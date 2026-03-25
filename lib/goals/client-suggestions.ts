@@ -29,7 +29,7 @@ type ExistingSuggestionRow = {
 // Existing rows (already contacted, booked, etc.) keep their status.
 
 export async function buildClientSuggestions(
-  supabase: any,
+  db: any,
   tenantId: string,
   gapCents: number,
   goalId: string,
@@ -38,7 +38,7 @@ export async function buildClientSuggestions(
   if (gapCents <= 0) return []
 
   // Fetch dormant clients from financial summary view
-  const { data: summaryRows } = await supabase
+  const { data: summaryRows } = await db
     .from('client_financial_summary')
     .select(
       'client_id, lifetime_value_cents, average_spend_per_event, days_since_last_event, is_dormant'
@@ -54,7 +54,7 @@ export async function buildClientSuggestions(
   const clientIds = rows.map((r) => r.client_id as string)
 
   // Fetch client names and statuses
-  const { data: clientRows } = await supabase
+  const { data: clientRows } = await db
     .from('clients')
     .select('id, full_name, status')
     .eq('tenant_id', tenantId)
@@ -65,7 +65,7 @@ export async function buildClientSuggestions(
   )
 
   // Fetch existing suggestion rows to merge current status + ID
-  const { data: existingRows } = await supabase
+  const { data: existingRows } = await db
     .from('goal_client_suggestions')
     .select('client_id, id, status')
     .eq('tenant_id', tenantId)
@@ -126,12 +126,12 @@ export async function buildClientSuggestions(
   }))
 
   // ignoreDuplicates: true ensures existing rows (with non-pending status) are not overwritten
-  await supabase
+  await db
     .from('goal_client_suggestions')
     .upsert(insertRows, { onConflict: 'goal_id,client_id', ignoreDuplicates: true })
 
   // Re-fetch newly inserted rows to capture their auto-generated IDs
-  const { data: freshRows } = await supabase
+  const { data: freshRows } = await db
     .from('goal_client_suggestions')
     .select('client_id, id, status')
     .eq('tenant_id', tenantId)

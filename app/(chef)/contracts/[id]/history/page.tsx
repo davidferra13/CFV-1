@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   getContractSigningSummary,
   getContractSigners,
@@ -20,9 +20,9 @@ interface ContractHistoryPageProps {
 
 export default async function ContractHistoryPage({ params }: ContractHistoryPageProps) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract } = await supabase
+  const { data: contract } = await db
     .from('event_contracts')
     .select('id, event_id, status, created_at')
     .eq('id', params.id)

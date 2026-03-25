@@ -24,7 +24,7 @@ type Tracker = {
   queries: QueryContext[]
 }
 
-class SupabaseQueryBuilder implements PromiseLike<QueryResult> {
+class DbQueryBuilder implements PromiseLike<QueryResult> {
   private readonly table: string
   private readonly resolve: (ctx: QueryContext) => QueryResult
   private readonly tracker: Tracker
@@ -108,10 +108,10 @@ class SupabaseQueryBuilder implements PromiseLike<QueryResult> {
   }
 }
 
-function createMockSupabase(resolve: (ctx: QueryContext) => QueryResult, tracker: Tracker) {
+function createMockDb(resolve: (ctx: QueryContext) => QueryResult, tracker: Tracker) {
   return {
     from(table: string) {
-      return new SupabaseQueryBuilder(table, resolve, tracker)
+      return new DbQueryBuilder(table, resolve, tracker)
     },
   }
 }
@@ -125,21 +125,21 @@ function loadPaymentActionsWithMocks(
 
   const authPath = require.resolve('../../lib/auth/get-user.ts')
   const proPath = require.resolve('../../lib/billing/require-pro.ts')
-  const supabasePath = require.resolve('../../lib/supabase/server.ts')
+  const dbPath = require.resolve('../../lib/db/server.ts')
   const cachePath = require.resolve('next/cache')
   const actionsPath = require.resolve('../../lib/commerce/payment-actions.ts')
 
   require(authPath)
   require(proPath)
-  require(supabasePath)
+  require(dbPath)
   require(cachePath)
 
   const originalAuth = require.cache[authPath]!.exports
   const originalPro = require.cache[proPath]!.exports
-  const originalSupabase = require.cache[supabasePath]!.exports
+  const originalDb = require.cache[dbPath]!.exports
   const originalCache = require.cache[cachePath]!.exports
 
-  const supabase = createMockSupabase(resolve, tracker)
+  const db = createMockDb(resolve, tracker)
 
   require.cache[authPath]!.exports = {
     requireChef: async () => ({
@@ -149,7 +149,7 @@ function loadPaymentActionsWithMocks(
     }),
   }
   require.cache[proPath]!.exports = { requirePro: async () => undefined }
-  require.cache[supabasePath]!.exports = { createServerClient: () => supabase }
+  require.cache[dbPath]!.exports = { createServerClient: () => db }
   require.cache[cachePath]!.exports = { revalidatePath: () => undefined }
 
   delete require.cache[actionsPath]
@@ -158,7 +158,7 @@ function loadPaymentActionsWithMocks(
   const restore = () => {
     require.cache[authPath]!.exports = originalAuth
     require.cache[proPath]!.exports = originalPro
-    require.cache[supabasePath]!.exports = originalSupabase
+    require.cache[dbPath]!.exports = originalDb
     require.cache[cachePath]!.exports = originalCache
     delete require.cache[actionsPath]
   }

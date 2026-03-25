@@ -10,7 +10,7 @@ export const POST = withApiAuth(
     if (!id) return apiNotFound('Menu')
 
     // Fetch the menu and verify ownership
-    const { data: menu } = await ctx.supabase
+    const { data: menu } = await ctx.db
       .from('menus')
       .select('id, event_id')
       .eq('id', id)
@@ -25,7 +25,7 @@ export const POST = withApiAuth(
     }
 
     // Verify the event belongs to this tenant
-    const { data: event } = await ctx.supabase
+    const { data: event } = await ctx.db
       .from('events')
       .select('id, menu_approval_status')
       .eq('id', eventId)
@@ -37,7 +37,7 @@ export const POST = withApiAuth(
     const now = new Date().toISOString()
 
     // Set approval status on the event
-    const { data: updated, error } = await ctx.supabase
+    const { data: updated, error } = await ctx.db
       .from('events')
       .update({
         menu_approval_status: 'approved',
@@ -57,7 +57,7 @@ export const POST = withApiAuth(
 
     // Create notification (non-blocking)
     try {
-      await ctx.supabase.from('notifications').insert({
+      await ctx.db.from('notifications').insert({
         tenant_id: ctx.tenantId,
         recipient_id: ctx.tenantId,
         recipient_role: 'chef',

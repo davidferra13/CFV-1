@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface PendingFollowUp {
   inquiryId: string
@@ -23,10 +23,10 @@ export interface PendingFollowUp {
  */
 export async function getStaleInquiries(staleDays: number = 3): Promise<PendingFollowUp[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Inquiries in "awaiting_client" or "quoted" where the ball is in client's court
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select(
       `
@@ -42,7 +42,7 @@ export async function getStaleInquiries(staleDays: number = 3): Promise<PendingF
 
   // Get last outbound message per inquiry
   const inquiryIds = inquiries.map((i: any) => i.id)
-  const { data: messages } = await supabase
+  const { data: messages } = await db
     .from('messages')
     .select('inquiry_id, created_at')
     .in('inquiry_id', inquiryIds)

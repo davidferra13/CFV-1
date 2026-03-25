@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { SimulatorDish } from './menu-simulator'
 
 // ============================================
@@ -141,10 +141,10 @@ export async function analyzeMenuEngineering(dateRange?: {
 }): Promise<MenuEngineeringResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // 1. Get all recipe costs from the recipe_cost_summary view
-  const { data: recipeCosts, error: costError } = await supabase
+  const { data: recipeCosts, error: costError } = await db
     .from('recipe_cost_summary')
     .select(
       'recipe_id, recipe_name, category, total_ingredient_cost_cents, cost_per_portion_cents, has_all_prices, ingredient_count'
@@ -171,7 +171,7 @@ export async function analyzeMenuEngineering(dateRange?: {
   }
 
   // 2. Get events with menus, optionally filtered by date range
-  let eventQuery = supabase
+  let eventQuery = db
     .from('events')
     .select('id, event_date, menu_id, guest_count')
     .eq('tenant_id', tenantId)
@@ -195,7 +195,7 @@ export async function analyzeMenuEngineering(dateRange?: {
   let avgRevenuePerGuestCents = 0
 
   if (eventIds.length > 0) {
-    const { data: financials } = await supabase
+    const { data: financials } = await db
       .from('event_financial_summary')
       .select('event_id, quoted_price_cents')
       .in('event_id', eventIds)
@@ -226,7 +226,7 @@ export async function analyzeMenuEngineering(dateRange?: {
 
   if (menuIds.length > 0) {
     // Get dishes for these menus
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('id, menu_id')
       .in('menu_id', menuIds)
@@ -243,7 +243,7 @@ export async function analyzeMenuEngineering(dateRange?: {
       }
 
       // Get components with recipe_id
-      const { data: components } = await supabase
+      const { data: components } = await db
         .from('components')
         .select('dish_id, recipe_id')
         .in('dish_id', dishIds)
@@ -370,10 +370,10 @@ export async function analyzeMenuEngineering(dateRange?: {
 export async function getRecipeProfitability(recipeId: string): Promise<RecipeProfitability> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Get recipe cost data
-  const { data: costData, error: costError } = await supabase
+  const { data: costData, error: costError } = await db
     .from('recipe_cost_summary')
     .select(
       'recipe_id, recipe_name, category, total_ingredient_cost_cents, cost_per_portion_cents, has_all_prices, ingredient_count'
@@ -385,7 +385,7 @@ export async function getRecipeProfitability(recipeId: string): Promise<RecipePr
   if (costError) throw new Error(`Recipe not found: ${costError.message}`)
 
   // Find events where this recipe was used (via components -> dishes -> menus -> events)
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('dish_id')
     .eq('recipe_id', recipeId)
@@ -396,7 +396,7 @@ export async function getRecipeProfitability(recipeId: string): Promise<RecipePr
   if (components && components.length > 0) {
     const dishIds = [...new Set(components.map((c: any) => c.dish_id))]
 
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('menu_id')
       .in('id', dishIds)
@@ -405,7 +405,7 @@ export async function getRecipeProfitability(recipeId: string): Promise<RecipePr
     if (dishes && dishes.length > 0) {
       const menuIds = [...new Set(dishes.map((d: any) => d.menu_id))]
 
-      const { data: menus } = await supabase
+      const { data: menus } = await db
         .from('menus')
         .select('id, name, event_id')
         .in('id', menuIds)
@@ -415,7 +415,7 @@ export async function getRecipeProfitability(recipeId: string): Promise<RecipePr
       if (menus && menus.length > 0) {
         const eventIds = menus.filter((m: any) => m.event_id).map((m: any) => m.event_id!)
 
-        const { data: events } = await supabase
+        const { data: events } = await db
           .from('events')
           .select('id, event_date')
           .in('id', eventIds)
@@ -459,10 +459,10 @@ export async function getRecipeProfitability(recipeId: string): Promise<RecipePr
 export async function getMenuMixAnalysis(menuId: string): Promise<MenuMixResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Get menu info
-  const { data: menu, error: menuError } = await supabase
+  const { data: menu, error: menuError } = await db
     .from('menus')
     .select('id, name, event_id')
     .eq('id', menuId)
@@ -472,7 +472,7 @@ export async function getMenuMixAnalysis(menuId: string): Promise<MenuMixResult>
   if (menuError) throw new Error(`Menu not found: ${menuError.message}`)
 
   // Get all recipes in this menu via dishes -> components
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id')
     .eq('menu_id', menuId)
@@ -496,7 +496,7 @@ export async function getMenuMixAnalysis(menuId: string): Promise<MenuMixResult>
   }
 
   const dishIds = dishes.map((d: any) => d.id)
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('recipe_id')
     .in('dish_id', dishIds)
@@ -533,7 +533,7 @@ export async function getMenuMixAnalysis(menuId: string): Promise<MenuMixResult>
   const missingIds = recipeIds.filter((id: any) => !coveredIds.has(id))
 
   if (missingIds.length > 0) {
-    const { data: missingCosts } = await supabase
+    const { data: missingCosts } = await db
       .from('recipe_cost_summary')
       .select(
         'recipe_id, recipe_name, category, total_ingredient_cost_cents, cost_per_portion_cents, has_all_prices, ingredient_count'
@@ -641,10 +641,10 @@ export interface MenuSimulatorData {
 export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulatorData> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // 1. Get menu with event link
-  const { data: menu, error: menuError } = await supabase
+  const { data: menu, error: menuError } = await db
     .from('menus')
     .select('id, target_guest_count, event_id')
     .eq('id', menuId)
@@ -660,7 +660,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
   let guestAllergens: { allergen: string; severity: string; confirmed_by_chef: boolean }[] = []
 
   if (menu.event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('quoted_price_cents, client_id')
       .eq('id', menu.event_id)
@@ -671,7 +671,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
       menuRevenueCents = event.quoted_price_cents ?? 0
 
       if (event.client_id) {
-        const { data: allergies } = await supabase
+        const { data: allergies } = await db
           .from('client_allergy_records')
           .select('allergen, severity, confirmed_by_chef')
           .eq('client_id', event.client_id)
@@ -687,7 +687,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
   }
 
   // 3. Get current dishes with components, recipes, and ingredients
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, name, course_name, course_number')
     .eq('menu_id', menuId)
@@ -699,7 +699,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
     const dishIds = dishes.map((d: any) => d.id)
 
     // Get components with recipe links
-    const { data: components } = await supabase
+    const { data: components } = await db
       .from('components')
       .select('dish_id, recipe_id')
       .in('dish_id', dishIds)
@@ -714,7 +714,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
     let recipeIngredientMap = new Map<string, { name: string }[]>()
 
     if (recipeIds.length > 0) {
-      const { data: costData } = await supabase
+      const { data: costData } = await db
         .from('recipe_cost_summary')
         .select('recipe_id, cost_per_portion_cents, total_ingredient_cost_cents')
         .in('recipe_id', recipeIds)
@@ -730,7 +730,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
       }
 
       // Get ingredients per recipe
-      const { data: recipeIngredients } = await supabase
+      const { data: recipeIngredients } = await db
         .from('recipe_ingredients')
         .select('recipe_id, ingredient_id')
         .in('recipe_id', recipeIds)
@@ -746,7 +746,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
 
       let ingredientNameMap = new Map<string, string>()
       if (ingredientIds.length > 0) {
-        const { data: ingredients } = await supabase
+        const { data: ingredients } = await db
           .from('ingredients')
           .select('id, name')
           .in('id', ingredientIds)
@@ -806,7 +806,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
 
   // 4. Get available recipes (tenant recipes not currently on this menu) as swap candidates
   // Get all tenant recipes with costs (limit to those with cost data for useful swaps)
-  const { data: allRecipes } = await supabase
+  const { data: allRecipes } = await db
     .from('recipe_cost_summary')
     .select('recipe_id, recipe_name, cost_per_portion_cents, total_ingredient_cost_cents')
     .eq('tenant_id', tenantId)
@@ -818,7 +818,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
 
   if (availRecipeIds.length > 0) {
     // Bulk query: all recipe_ingredients for all available recipes
-    const { data: availRecipeIngs } = await supabase
+    const { data: availRecipeIngs } = await db
       .from('recipe_ingredients')
       .select('recipe_id, ingredient_id')
       .in('recipe_id', availRecipeIds)
@@ -836,7 +836,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
     // Bulk query: all ingredient names
     let availIngNameMap = new Map<string, string>()
     if (availIngIds.length > 0) {
-      const { data: availIngs } = await supabase
+      const { data: availIngs } = await db
         .from('ingredients')
         .select('id, name')
         .in('id', availIngIds)

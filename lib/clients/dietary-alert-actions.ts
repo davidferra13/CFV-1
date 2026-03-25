@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ─────────────────────────────────────
 
@@ -60,9 +60,9 @@ function classifySeverity(changeType: ChangeType): Severity {
 
 export async function getDietaryAlerts(unacknowledgedOnly = false): Promise<DietaryAlert[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('dietary_change_log')
     .select('*, client:clients(full_name)')
     .eq('chef_id', user.tenantId!)
@@ -100,9 +100,9 @@ export async function getDietaryAlerts(unacknowledgedOnly = false): Promise<Diet
 
 export async function acknowledgeAlert(alertId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dietary_change_log')
     .update({ acknowledged: true })
     .eq('id', alertId)
@@ -116,9 +116,9 @@ export async function acknowledgeAlert(alertId: string): Promise<void> {
 
 export async function acknowledgeAllAlerts(): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dietary_change_log')
     .update({ acknowledged: true })
     .eq('chef_id', user.tenantId!)
@@ -138,11 +138,11 @@ export async function logDietaryChange(
   newValue: string | null
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const severity = classifySeverity(changeType)
 
-  const { error } = await supabase.from('dietary_change_log').insert({
+  const { error } = await db.from('dietary_change_log').insert({
     chef_id: user.tenantId!,
     client_id: clientId,
     change_type: changeType,
@@ -164,10 +164,10 @@ export async function getDietaryTrends(): Promise<{
   risingTrends: DietaryTrend[]
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all dietary changes for this chef
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dietary_change_log')
     .select('change_type, field_name, new_value, created_at')
     .eq('chef_id', user.tenantId!)
@@ -237,9 +237,9 @@ export async function getDietaryTrends(): Promise<{
 
 export async function getClientDietaryTimeline(clientId: string): Promise<DietaryAlert[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dietary_change_log')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -268,9 +268,9 @@ export async function getClientDietaryTimeline(clientId: string): Promise<Dietar
 
 export async function getAlertStats(): Promise<AlertStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dietary_change_log')
     .select('severity, acknowledged')
     .eq('chef_id', user.tenantId!)

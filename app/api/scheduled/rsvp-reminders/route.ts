@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getReminderOffsetKeys } from '@/lib/sharing/policy'
 import { EventShareSettingsRowSchema } from '@/lib/sharing/row-schemas'
 import { sendEmail } from '@/lib/email/send'
@@ -25,10 +25,10 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const now = new Date()
 
-  const { data: shareRows, error: shareError } = await (supabase as any)
+  const { data: shareRows, error: shareError } = await (db as any)
     .from('event_shares')
     .select(
       'id, event_id, tenant_id, token, is_active, expires_at, reminders_enabled, reminder_schedule, rsvp_deadline_at'
@@ -62,14 +62,14 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
     })
     if (dueCadences.length === 0) continue
 
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('id, occasion, event_date')
       .eq('id', share.event_id)
       .single()
     if (!event) continue
 
-    const { data: guests } = await (supabase as any)
+    const { data: guests } = await (db as any)
       .from('event_guests')
       .select('id, full_name, email')
       .eq('event_share_id', share.id)
@@ -82,7 +82,7 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
 
       for (const cadence of dueCadences) {
         const reminderKey = `${cadence}:${share.event_id}`
-        const { data: logRow, error: logError } = await ((supabase as any)
+        const { data: logRow, error: logError } = await ((db as any)
           .from('rsvp_reminder_log')
           .insert({
             tenant_id: share.tenant_id,
@@ -117,7 +117,7 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
 
         if (ok) {
           sent += 1
-          const { error: logErr } = await ((supabase as any)
+          const { error: logErr } = await ((db as any)
             .from('rsvp_reminder_log')
             .update({ status: 'sent' })
             .eq('id', logRow.id) as any)
@@ -129,7 +129,7 @@ async function handleRSVPReminders(request: NextRequest): Promise<NextResponse> 
           }
         } else {
           failed += 1
-          const { error: logErr } = await ((supabase as any)
+          const { error: logErr } = await ((db as any)
             .from('rsvp_reminder_log')
             .update({ status: 'failed' })
             .eq('id', logRow.id) as any)

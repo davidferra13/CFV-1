@@ -13,7 +13,7 @@
 // When a channel is not yet implemented, it logs 'skipped' in delivery_log
 // so the audit trail is complete from day one.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { resolveChannels } from './resolve-preferences'
 import type { NotificationAction } from './types'
 import { sendPushNotification } from '@/lib/push/send'
@@ -222,8 +222,8 @@ async function logDelivery(
   errorMessage?: string
 ): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
-    await supabase.from('notification_delivery_log').insert({
+    const db = createServerClient({ admin: true })
+    await db.from('notification_delivery_log').insert({
       notification_id: notificationId,
       tenant_id: tenantId,
       channel,

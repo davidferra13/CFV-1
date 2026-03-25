@@ -32,7 +32,7 @@ function getMenuEngineFeaturesFromUnknown(raw: unknown): Record<string, boolean>
 
 export const GET = withApiAuth(
   async (_req, ctx) => {
-    const { data } = await ctx.supabase
+    const { data } = await ctx.db
       .from('chef_preferences')
       .select('menu_engine_features')
       .eq('chef_id', ctx.tenantId)
@@ -57,7 +57,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     // Fetch existing features to merge (partial update support)
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('chef_preferences')
       .select('menu_engine_features')
       .eq('chef_id', ctx.tenantId)
@@ -66,7 +66,7 @@ export const PATCH = withApiAuth(
     const current = getMenuEngineFeaturesFromUnknown((existing as any)?.menu_engine_features)
     const merged = { ...current, ...parsed.data }
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('chef_preferences')
       .upsert(
         {

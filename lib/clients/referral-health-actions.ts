@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { computeReferralHealth } from '@/lib/clients/referral-health'
 import type { ReferralHealthScore } from '@/lib/clients/referral-health'
 
@@ -10,10 +10,10 @@ export type { ReferralHealthScore }
 export async function getReferralHealthData(): Promise<ReferralHealthScore> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all clients with referral info
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('id, referral_source, created_at')
     .eq('tenant_id', tenantId)
@@ -21,7 +21,7 @@ export async function getReferralHealthData(): Promise<ReferralHealthScore> {
   if (error) throw new Error(`Failed to fetch clients: ${error.message}`)
 
   // Fetch last event date per client via events table
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, event_date')
     .eq('tenant_id', tenantId)

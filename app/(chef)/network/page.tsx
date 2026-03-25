@@ -29,7 +29,7 @@ import {
   getCollabUnreadCount,
   getTrustedCircle,
 } from '@/lib/network/collab-actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { SocialFeedClient } from '@/components/social/social-feed-client'
 import { SocialChannelGrid } from '@/components/social/social-channel-card'
 import { SocialDiscoverPanel } from '@/components/social/social-discover-panel'
@@ -79,8 +79,8 @@ export default async function NetworkPage({
   }
 
   // Get chef's own profile info for composer
-  const supabase = createServerClient({ admin: true })
-  const { data: myChef } = await supabase
+  const db = createServerClient({ admin: true })
+  const { data: myChef } = await db
     .from('chefs')
     .select('display_name, business_name, profile_image_url')
     .eq('id', user.entityId)

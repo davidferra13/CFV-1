@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { isDemoClient } from '@/lib/onboarding/demo-data-utils'
 
 export const ONBOARDING_SAMPLE_CLIENTS = [

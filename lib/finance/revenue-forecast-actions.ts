@@ -4,7 +4,7 @@
 // Formula > AI: all calculations are deterministic weighted pipeline math.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   STAGE_WEIGHTS,
   STAGE_LABELS,
@@ -126,14 +126,14 @@ function getQuarterFromMonth(m: number): number {
 export async function getRevenueForecast(months = 6): Promise<RevenueForecast> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
   const { start: monthStart, end: monthEnd } = getCurrentMonthRange()
 
   // Fetch all events with financial data (not cancelled)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, status, quoted_price_cents')
     .eq('tenant_id', tenantId)
@@ -143,7 +143,7 @@ export async function getRevenueForecast(months = 6): Promise<RevenueForecast> {
   const allEvents = events || []
 
   // Fetch financial summaries for completed/revenue events
-  const { data: financials } = await supabase
+  const { data: financials } = await db
     .from('event_financial_summary')
     .select('event_id, net_revenue_cents, quoted_price_cents, total_paid_cents')
     .eq('tenant_id', tenantId)
@@ -338,10 +338,10 @@ export async function getRevenueForecast(months = 6): Promise<RevenueForecast> {
 export async function getRevenueComparison(year1: number, year2: number): Promise<YoYComparison> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch completed events for both years
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, status, quoted_price_cents')
     .eq('tenant_id', tenantId)
@@ -354,7 +354,7 @@ export async function getRevenueComparison(year1: number, year2: number): Promis
   let finMap = new Map<string, any>()
 
   if (eventIds.length > 0) {
-    const { data: financials } = await supabase
+    const { data: financials } = await db
       .from('event_financial_summary')
       .select('event_id, net_revenue_cents, total_paid_cents')
       .in('event_id', eventIds)

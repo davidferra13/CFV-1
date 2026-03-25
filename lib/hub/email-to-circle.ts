@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getCircleForContext } from './circle-lookup'
 
 // ---------------------------------------------------------------------------
@@ -18,11 +18,11 @@ export async function findOrCreateClientHubProfile(input: {
   name: string
   circleGroupId: string
 }): Promise<{ profileToken: string; profileId: string }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const normalizedEmail = input.email.toLowerCase().trim()
 
   // Try to find existing profile by email
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('hub_guest_profiles')
     .select('id, profile_token')
     .eq('email_normalized', normalizedEmail)
@@ -37,7 +37,7 @@ export async function findOrCreateClientHubProfile(input: {
     profileToken = existing.profile_token
   } else {
     // Create new guest profile
-    const { data: created, error } = await supabase
+    const { data: created, error } = await db
       .from('hub_guest_profiles')
       .insert({
         email: input.email,
@@ -57,7 +57,7 @@ export async function findOrCreateClientHubProfile(input: {
   }
 
   // Ensure they're a member of the circle
-  const { data: membership } = await supabase
+  const { data: membership } = await db
     .from('hub_group_members')
     .select('id')
     .eq('group_id', input.circleGroupId)
@@ -65,7 +65,7 @@ export async function findOrCreateClientHubProfile(input: {
     .maybeSingle()
 
   if (!membership) {
-    await supabase.from('hub_group_members').insert({
+    await db.from('hub_group_members').insert({
       group_id: input.circleGroupId,
       profile_id: profileId,
       role: 'member',
@@ -110,8 +110,8 @@ export async function routeEmailReplyToCircle(input: {
     const cleanedBody = cleanEmailBody(input.emailBody)
     if (!cleanedBody || cleanedBody.length < 2) return false
 
-    const supabase = createServerClient({ admin: true })
-    const { error } = await supabase.from('hub_messages').insert({
+    const db = createServerClient({ admin: true })
+    const { error } = await db.from('hub_messages').insert({
       group_id: circle.groupId,
       author_profile_id: profileId,
       message_type: 'text',

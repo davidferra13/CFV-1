@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -75,10 +75,10 @@ function getCurrentSeason(): 'winter' | 'spring' | 'summer' | 'fall' {
 export async function getSeasonalMenuCorrelation(): Promise<SeasonalMenuResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch events with menus
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('id, event_date, menu_id, occasion, guest_count, quoted_price_cents')
     .eq('tenant_id', tenantId)
@@ -90,7 +90,7 @@ export async function getSeasonalMenuCorrelation(): Promise<SeasonalMenuResult |
 
   // Fetch menu dishes
   const menuIds = [...new Set(events.map((e: any) => e.menu_id))]
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, menu_id, name, linked_recipe_id')
     .in('menu_id', menuIds)

@@ -6,7 +6,7 @@
 'use server'
 
 import { requireAdmin } from '@/lib/auth/admin'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type Stripe from 'stripe'
 
 function getStripe(): Stripe {
@@ -32,11 +32,11 @@ export type DeferredTransferSummary = {
  */
 export async function listDeferredTransferChefs(): Promise<DeferredTransferSummary[]> {
   await requireAdmin()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Find ledger entries that are payments/deposits with Stripe references
   // but have NO matching stripe_transfers record
-  const { data: entries } = await supabase
+  const { data: entries } = await db
     .from('ledger_entries')
     .select('tenant_id, amount_cents, transaction_reference')
     .in('entry_type', ['payment', 'deposit'])
@@ -46,7 +46,7 @@ export async function listDeferredTransferChefs(): Promise<DeferredTransferSumma
   if (!entries || entries.length === 0) return []
 
   // Get all existing stripe_transfer event references
-  const { data: transfers } = await supabase
+  const { data: transfers } = await db
     .from('stripe_transfers')
     .select('stripe_payment_intent_id, tenant_id')
 
@@ -75,7 +75,7 @@ export async function listDeferredTransferChefs(): Promise<DeferredTransferSumma
 
   // Fetch chef info
   const tenantIds = Array.from(deferredByTenant.keys())
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs')
     .select('id, business_name, display_name, stripe_account_id, stripe_onboarding_complete')
     .in('id', tenantIds)
@@ -107,10 +107,10 @@ export async function resolveDeferredTransfers(
   tenantId: string
 ): Promise<{ resolved: number; failed: number; errors: string[] }> {
   await requireAdmin()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify chef has completed Connect onboarding
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select(
       'stripe_account_id, stripe_onboarding_complete, platform_fee_percent, platform_fee_fixed_cents'
@@ -126,7 +126,7 @@ export async function resolveDeferredTransfers(
   }
 
   // Find ledger entries that need transfers
-  const { data: entries } = await supabase
+  const { data: entries } = await db
     .from('ledger_entries')
     .select('id, amount_cents, event_id, internal_notes, transaction_reference')
     .eq('tenant_id', tenantId)
@@ -140,7 +140,7 @@ export async function resolveDeferredTransfers(
   }
 
   // Check which entries already have transfers
-  const { data: existingTransfers } = await supabase
+  const { data: existingTransfers } = await db
     .from('stripe_transfers')
     .select('event_id')
     .eq('tenant_id', tenantId)

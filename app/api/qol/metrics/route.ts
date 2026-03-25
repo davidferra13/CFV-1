@@ -1,6 +1,6 @@
 ﻿import { NextResponse, type NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { isQolMetricKey } from '@/lib/qol/metrics'
 
 export async function POST(request: NextRequest) {
@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid metric key' }, { status: 400 })
     }
 
-    const supabase: any = createServerClient()
-    await (supabase.from('qol_metric_events' as any) as any).insert({
+    const db: any = createServerClient()
+    await (db.from('qol_metric_events' as any) as any).insert({
       tenant_id: user.tenantId,
       actor_id: user.id,
       metric_key: body.metricKey,

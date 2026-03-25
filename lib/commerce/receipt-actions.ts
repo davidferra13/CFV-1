@@ -6,7 +6,7 @@
 import { createElement } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   generateCommerceReceiptPdf,
   type CommerceReceiptData,
@@ -78,11 +78,11 @@ function buildPaymentSummary(payments: ReceiptPaymentLine[]): string {
 }
 
 async function getSaleContactSnapshot(
-  supabase: any,
+  db: any,
   tenantId: string,
   saleId: string
 ): Promise<SaleContactSnapshot> {
-  const { data: sale, error: saleErr } = await (supabase
+  const { data: sale, error: saleErr } = await (db
     .from('sales')
     .select('id, sale_number, total_cents, created_at, client_id')
     .eq('id', saleId)
@@ -97,7 +97,7 @@ async function getSaleContactSnapshot(
 
   const clientId = (sale as any).client_id ? String((sale as any).client_id) : null
   if (clientId) {
-    const { data: client } = await (supabase
+    const { data: client } = await (db
       .from('clients')
       .select('full_name, email, phone')
       .eq('id', clientId)
@@ -125,10 +125,10 @@ async function getSaleContactSnapshot(
 export async function buildReceiptData(saleId: string): Promise<CommerceReceiptData> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: sale, error: saleErr } = await supabase
+  const { data: sale, error: saleErr } = await db
     .from('sales')
     .select('*')
     .eq('id', saleId)
@@ -138,21 +138,21 @@ export async function buildReceiptData(saleId: string): Promise<CommerceReceiptD
   if (saleErr || !sale) throw new Error('Sale not found')
   const s = sale as any
 
-  const { data: items } = await supabase
+  const { data: items } = await db
     .from('sale_items')
     .select('name, quantity, unit_price_cents, line_total_cents')
     .eq('sale_id', saleId)
     .eq('tenant_id', tenantId)
     .order('sort_order', { ascending: true })
 
-  const { data: payments } = await supabase
+  const { data: payments } = await db
     .from('commerce_payments')
     .select('payment_method, amount_cents, status')
     .eq('sale_id', saleId)
     .eq('tenant_id', tenantId)
     .in('status', ['captured', 'settled'])
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name, display_name, email, phone, address_line1, city, state, zip')
     .eq('id', tenantId)
@@ -170,7 +170,7 @@ export async function buildReceiptData(saleId: string): Promise<CommerceReceiptD
 
   let customerName: string | undefined
   if (s.client_id) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('full_name')
       .eq('id', s.client_id)
@@ -228,9 +228,9 @@ export type ReceiptDeliveryTargets = {
 export async function getReceiptDeliveryTargets(saleId: string): Promise<ReceiptDeliveryTargets> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const snapshot = await getSaleContactSnapshot(supabase, user.tenantId!, saleId)
+  const snapshot = await getSaleContactSnapshot(db, user.tenantId!, saleId)
 
   return {
     saleId: snapshot.saleId,
@@ -248,9 +248,9 @@ export async function sendReceiptByEmail(input: {
 }): Promise<{ sent: true; toEmail: string }> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const snapshot = await getSaleContactSnapshot(supabase, user.tenantId!, input.saleId)
+  const snapshot = await getSaleContactSnapshot(db, user.tenantId!, input.saleId)
   const toEmail = normalizeEmail(input.toEmail) ?? normalizeEmail(snapshot.clientEmail)
   if (!toEmail) {
     throw new Error('No email address is available for this receipt')
@@ -293,9 +293,9 @@ export async function sendReceiptBySms(input: {
 }): Promise<{ status: 'sent' | 'failed' | 'not_configured'; toPhone: string }> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const snapshot = await getSaleContactSnapshot(supabase, user.tenantId!, input.saleId)
+  const snapshot = await getSaleContactSnapshot(db, user.tenantId!, input.saleId)
   const toPhone = normalizePhone(input.toPhone) ?? normalizePhone(snapshot.clientPhone)
   if (!toPhone) {
     throw new Error('No phone number is available for this receipt')

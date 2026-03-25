@@ -5,7 +5,7 @@
 // what needs to be picked up at each stop along the travel route.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { TravelLegType, TravelLegStatus, TravelIngredientStatus } from '@/lib/travel/types'
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -53,10 +53,10 @@ export type TravelIngredientsResult = {
 export async function getTravelLegIngredients(eventId: string): Promise<TravelIngredientsResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch travel legs for this event
-  const { data: legs, error: legsError } = await supabase
+  const { data: legs, error: legsError } = await db
     .from('event_travel_legs')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -81,7 +81,7 @@ export async function getTravelLegIngredients(eventId: string): Promise<TravelIn
   const legIds = legs.map((l: any) => l.id)
 
   // Fetch ingredients for all legs, joining ingredient names
-  const { data: rawIngredients, error: ingError } = await supabase
+  const { data: rawIngredients, error: ingError } = await db
     .from('travel_leg_ingredients')
     .select(
       `

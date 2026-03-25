@@ -1,5 +1,4 @@
-# Standalone PostgreSQL for ChefFlow
-# Replaces Supabase Docker (PostgREST, GoTrue, Storage, Realtime no longer needed)
+# Local PostgreSQL for ChefFlow development
 # Usage: docker compose up -d
 # Connection: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 

@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -102,9 +102,9 @@ function computeEngagementScore(row: any): number {
 export async function recordContentPerformance(input: RecordContentPerformanceInput) {
   const user = await requireChef()
   const validated = RecordContentPerformanceSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('content_performance')
     .insert({
       chef_id: user.tenantId!,
@@ -137,9 +137,9 @@ export async function getContentROI(
   endDate?: string
 ): Promise<ContentROISummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase.from('content_performance').select('*').eq('chef_id', user.tenantId!)
+  let query = db.from('content_performance').select('*').eq('chef_id', user.tenantId!)
 
   if (startDate) {
     query = query.gte('recorded_at', startDate)
@@ -207,9 +207,9 @@ export async function getContentROI(
  */
 export async function getBestPerformingContent(limit = 10): Promise<RankedContent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('content_performance')
     .select('*')
     .eq('chef_id', user.tenantId!)

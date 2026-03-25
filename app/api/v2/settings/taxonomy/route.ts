@@ -40,7 +40,7 @@ export const GET = withApiAuth(
     }))
 
     // Get chef's custom entries
-    const { data: customRows, error } = await ctx.supabase
+    const { data: customRows, error } = await ctx.db
       .from('chef_taxonomy_extensions' as any)
       .select('*')
       .eq('chef_id', ctx.tenantId)
@@ -97,7 +97,7 @@ export const POST = withApiAuth(
         400
       )
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('chef_taxonomy_extensions' as any)
       .insert({
         chef_id: ctx.tenantId,

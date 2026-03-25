@@ -5,7 +5,7 @@
 // Pure SQL aggregation over existing events, inquiries, and event_state_transitions tables.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -135,10 +135,10 @@ function safePercent(numerator: number, denominator: number): number | null {
 export async function getConversionFunnel(dateRange?: DateRange): Promise<ConversionFunnelData> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all events in range
-  let eventsQuery = supabase
+  let eventsQuery = db
     .from('events')
     .select('id, status, is_demo')
     .eq('tenant_id', tenantId)
@@ -173,7 +173,7 @@ export async function getConversionFunnel(dateRange?: DateRange): Promise<Conver
   }
 
   // Get all transitions for these events
-  const { data: transitions } = await supabase
+  const { data: transitions } = await db
     .from('event_state_transitions')
     .select('event_id, from_status, to_status')
     .eq('tenant_id', tenantId)
@@ -262,9 +262,9 @@ export async function getConversionFunnel(dateRange?: DateRange): Promise<Conver
 export async function getConversionBySource(dateRange?: DateRange): Promise<SourceConversionRow[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('events')
     .select('id, status, booking_source, inquiry_id, is_demo')
     .eq('tenant_id', tenantId)
@@ -281,7 +281,7 @@ export async function getConversionBySource(dateRange?: DateRange): Promise<Sour
 
   let inquiryChannelMap = new Map<string, string>()
   if (inquiryIds.length > 0) {
-    const { data: inquiries } = await supabase
+    const { data: inquiries } = await db
       .from('inquiries')
       .select('id, channel')
       .in('id', inquiryIds)
@@ -295,7 +295,7 @@ export async function getConversionBySource(dateRange?: DateRange): Promise<Sour
 
   // Get transitions to know which stages each event reached
   const eventIds = events.map((e: any) => e.id)
-  const { data: transitions } = await supabase
+  const { data: transitions } = await db
     .from('event_state_transitions')
     .select('event_id, to_status')
     .eq('tenant_id', tenantId)
@@ -365,10 +365,10 @@ export async function getConversionBySource(dateRange?: DateRange): Promise<Sour
 export async function getAverageTimeInStage(dateRange?: DateRange): Promise<StageTimingRow[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all transitions, optionally filtered by date
-  let query = supabase
+  let query = db
     .from('event_state_transitions')
     .select('event_id, from_status, to_status, transitioned_at')
     .eq('tenant_id', tenantId)
@@ -477,13 +477,13 @@ export async function getAverageTimeInStage(dateRange?: DateRange): Promise<Stag
 export async function getConversionTrend(months: number = 6): Promise<MonthlyConversionRow[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const startDate = new Date()
   startDate.setMonth(startDate.getMonth() - months)
   const startIso = startDate.toISOString()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, status, created_at, is_demo')
     .eq('tenant_id', tenantId)
@@ -523,10 +523,10 @@ export async function getConversionTrend(months: number = 6): Promise<MonthlyCon
 export async function getLeadQualityBySource(): Promise<SourceQualityRow[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get completed events with financials
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, booking_source, inquiry_id, status, quoted_price_cents, is_demo')
     .eq('tenant_id', tenantId)
@@ -539,7 +539,7 @@ export async function getLeadQualityBySource(): Promise<SourceQualityRow[]> {
 
   let inquiryChannelMap = new Map<string, string>()
   if (inquiryIds.length > 0) {
-    const { data: inquiries } = await supabase
+    const { data: inquiries } = await db
       .from('inquiries')
       .select('id, channel')
       .in('id', inquiryIds)
@@ -555,7 +555,7 @@ export async function getLeadQualityBySource(): Promise<SourceQualityRow[]> {
   const completedIds = events.filter((e: any) => e.status === 'completed').map((e: any) => e.id)
   let financialMap = new Map<string, number>()
   if (completedIds.length > 0) {
-    const { data: financials } = await supabase
+    const { data: financials } = await db
       .from('event_financial_summary')
       .select('event_id, net_revenue_cents')
       .eq('tenant_id', tenantId)
@@ -608,10 +608,10 @@ export async function getLeadQualityBySource(): Promise<SourceQualityRow[]> {
 export async function getLostDealsAnalysis(dateRange?: DateRange): Promise<LostDealsAnalysis> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get cancelled events
-  let query = supabase
+  let query = db
     .from('events')
     .select(
       'id, occasion, booking_source, cancelled_at, cancellation_reason, quoted_price_cents, is_demo'
@@ -636,7 +636,7 @@ export async function getLostDealsAnalysis(dateRange?: DateRange): Promise<LostD
 
   // Get the cancellation transitions to know from which stage
   const eventIds = cancelledEvents.map((e: any) => e.id)
-  const { data: transitions } = await supabase
+  const { data: transitions } = await db
     .from('event_state_transitions')
     .select('event_id, from_status, to_status')
     .eq('tenant_id', tenantId)

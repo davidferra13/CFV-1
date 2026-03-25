@@ -3,7 +3,7 @@
 // Clients submit via My Profile → Share Feedback.
 
 import { requireAdmin } from '@/lib/auth/admin'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Feedback - Admin' }
@@ -30,8 +30,8 @@ function formatDate(iso: string) {
 export default async function AdminFeedbackPage() {
   await requireAdmin()
 
-  const supabase: any = createAdminClient()
-  const { data: rows, error } = await supabase
+  const db: any = createAdminClient()
+  const { data: rows, error } = await db
     .from('user_feedback')
     .select('id, created_at, sentiment, message, anonymous, user_role, page_context, metadata')
     .order('created_at', { ascending: false })

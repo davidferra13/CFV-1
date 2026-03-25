@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 const PriceHistoryChart = dynamic(
   () => import('@/components/inventory/price-history-chart').then((m) => m.PriceHistoryChart),
@@ -25,10 +25,10 @@ export default async function IngredientPriceDetailPage({
 }) {
   const user = await requireChef()
   const { id } = await params
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch ingredient info
-  const { data: ingredient } = await supabase
+  const { data: ingredient } = await db
     .from('ingredients')
     .select('id, name, category, unit, last_price_cents')
     .eq('id', id)

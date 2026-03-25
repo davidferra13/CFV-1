@@ -1,7 +1,7 @@
 // Admin Chef Detail - full view of a single chef's account
 
 import { requireAdmin } from '@/lib/auth/admin'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { ChefDangerZone } from '@/components/admin/chef-danger-zone'
 import { AdminCreditForm } from '@/components/admin/admin-credit-form'
 import { ChefHealthBadge } from '@/components/admin/chef-health-badge'
@@ -35,9 +35,9 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
     redirect('/unauthorized')
   }
 
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('id, business_name, email, created_at, phone, account_status')
     .eq('id', params.chefId)
@@ -50,19 +50,19 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
     chef.account_status === 'suspended' ? 'suspended' : 'active'
 
   const [eventsSettled, clientsSettled, ledgerSettled] = await Promise.allSettled([
-    supabase
+    db
       .from('events')
       .select('id, occasion, status, event_date, quoted_price_cents, guest_count')
       .eq('tenant_id', params.chefId)
       .order('event_date', { ascending: false })
       .limit(50),
-    supabase
+    db
       .from('clients')
       .select('id, full_name, email, created_at')
       .eq('tenant_id', params.chefId)
       .order('created_at', { ascending: false })
       .limit(50),
-    supabase
+    db
       .from('ledger_entries')
       .select('id, entry_type, amount_cents, description, created_at')
       .eq('tenant_id', params.chefId)

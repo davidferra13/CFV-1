@@ -1,14 +1,14 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export async function acknowledgeCOC(assignmentId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_staff_assignments')
     .update({
       coc_acknowledged: true,
@@ -22,9 +22,9 @@ export async function acknowledgeCOC(assignmentId: string) {
 
 export async function getCOCStatus(eventId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_staff_assignments')
     .select('id, staff_member_id, coc_acknowledged, coc_acknowledged_at, staff_members(full_name)')
     .eq('event_id', eventId)

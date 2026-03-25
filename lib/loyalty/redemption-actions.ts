@@ -5,7 +5,7 @@
 // (writes ledger credit + updates balance + inserts audit row via RPC).
 
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 type ValidationResult =
@@ -42,13 +42,13 @@ export async function validateIncentiveCode(
   eventId: string
 ): Promise<ValidationResult> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   // Admin client used specifically for the incentive code lookup.
   // The regular client RLS policy only lets clients see codes they created or were
   // targeted at them - but a gift card purchased by a guest (no auth account) or
   // issued by a chef to "anyone" won't pass that filter. The code string itself is
   // the authorization token; authentication via requireClient() is the access guard.
-  const adminSupabase = createServerClient({ admin: true })
+  const adminDb = createServerClient({ admin: true })
 
   const normalizedCode = code.trim().toUpperCase()
   if (!normalizedCode) {
@@ -56,7 +56,7 @@ export async function validateIncentiveCode(
   }
 
   // 1. Fetch the event to get tenant_id and outstanding balance
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, tenant_id, client_id, status, quoted_price_cents')
     .eq('id', eventId)
@@ -72,7 +72,7 @@ export async function validateIncentiveCode(
   }
 
   // 2. Fetch outstanding balance from the financial summary view
-  const { data: financial } = await supabase
+  const { data: financial } = await db
     .from('event_financial_summary')
     .select('outstanding_balance_cents')
     .eq('event_id', eventId)
@@ -85,7 +85,7 @@ export async function validateIncentiveCode(
   }
 
   // 3. Look up the incentive code scoped to the event's tenant (admin client bypasses RLS)
-  const { data: incentive, error: incentiveError } = await (adminSupabase as any)
+  const { data: incentive, error: incentiveError } = await (adminDb as any)
     .from('client_incentives')
     .select('*')
     .eq('tenant_id', event.tenant_id)
@@ -175,8 +175,8 @@ export async function redeemIncentiveCode(
   eventId: string
 ): Promise<RedemptionResult> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
-  const adminSupabase = createServerClient({ admin: true })
+  const db: any = createServerClient()
+  const adminDb = createServerClient({ admin: true })
 
   const normalizedCode = code.trim().toUpperCase()
 
@@ -190,7 +190,7 @@ export async function redeemIncentiveCode(
   const { incentiveId, type, appliedAmountCents, remainingAfterCents } = validation
 
   // Fetch the raw incentive again for balance_before snapshot (admin to bypass RLS)
-  const { data: incentive } = await (adminSupabase as any)
+  const { data: incentive } = await (adminDb as any)
     .from('client_incentives')
     .select('remaining_balance_cents, amount_cents')
     .eq('id', incentiveId)
@@ -202,20 +202,17 @@ export async function redeemIncentiveCode(
       : null
 
   // Call the atomic RPC (inserts ledger + updates incentive + inserts audit row)
-  const { data: ledgerEntryId, error: rpcError } = await (adminSupabase as any).rpc(
-    'redeem_incentive',
-    {
-      p_incentive_id: incentiveId,
-      p_event_id: eventId,
-      p_client_id: user.entityId,
-      p_tenant_id: await getEventTenantId(supabase, eventId, user.entityId),
-      p_applied_cents: appliedAmountCents,
-      p_incentive_type: type,
-      p_code: normalizedCode,
-      p_balance_before_cents: balanceBefore,
-      p_redeemed_by: user.id,
-    }
-  )
+  const { data: ledgerEntryId, error: rpcError } = await (adminDb as any).rpc('redeem_incentive', {
+    p_incentive_id: incentiveId,
+    p_event_id: eventId,
+    p_client_id: user.entityId,
+    p_tenant_id: await getEventTenantId(db, eventId, user.entityId),
+    p_applied_cents: appliedAmountCents,
+    p_incentive_type: type,
+    p_code: normalizedCode,
+    p_balance_before_cents: balanceBefore,
+    p_redeemed_by: user.id,
+  })
 
   if (rpcError || !ledgerEntryId) {
     console.error('[redeemIncentiveCode] RPC error:', rpcError)
@@ -223,7 +220,7 @@ export async function redeemIncentiveCode(
   }
 
   // Check if the event is now fully covered (outstanding balance → 0)
-  const { data: updated } = await supabase
+  const { data: updated } = await db
     .from('event_financial_summary')
     .select('outstanding_balance_cents')
     .eq('event_id', eventId)
@@ -245,8 +242,8 @@ export async function redeemIncentiveCode(
   try {
     const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
     // Get the event's tenant_id
-    const supabaseAdmin = createServerClient({ admin: true })
-    const { data: eventData } = await supabaseAdmin
+    const dbAdmin = createServerClient({ admin: true })
+    const { data: eventData } = await dbAdmin
       .from('events')
       .select('tenant_id')
       .eq('id', eventId)
@@ -287,8 +284,8 @@ export async function redeemIncentiveCode(
   }
 }
 
-async function getEventTenantId(supabase: any, eventId: string, clientId: string): Promise<string> {
-  const { data, error } = await supabase
+async function getEventTenantId(db: any, eventId: string, clientId: string): Promise<string> {
+  const { data, error } = await db
     .from('events')
     .select('tenant_id')
     .eq('id', eventId)

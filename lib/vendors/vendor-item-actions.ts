@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { recordVendorPricePoint } from '@/lib/vendors/price-point-actions'
@@ -32,10 +32,10 @@ export type UpdateVendorItemInput = z.infer<typeof UpdateVendorItemSchema>
 
 export async function addVendorItem(input: AddVendorItemInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = AddVendorItemSchema.parse(input)
 
-  const { data: item, error } = await supabase
+  const { data: item, error } = await db
     .from('vendor_items')
     .insert({
       vendor_id: data.vendor_id,
@@ -57,7 +57,7 @@ export async function addVendorItem(input: AddVendorItemInput) {
   }
 
   await recordVendorPricePoint({
-    supabase,
+    db,
     tenantId: user.tenantId!,
     vendorId: data.vendor_id,
     ingredientId: data.ingredient_id ?? null,
@@ -74,10 +74,10 @@ export async function addVendorItem(input: AddVendorItemInput) {
 
 export async function updateVendorItem(id: string, input: UpdateVendorItemInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = UpdateVendorItemSchema.parse(input)
 
-  const { data: existingItem, error: existingError } = await supabase
+  const { data: existingItem, error: existingError } = await db
     .from('vendor_items')
     .select(
       'id, vendor_id, ingredient_id, vendor_item_name, unit_price_cents, unit_size, unit_measure, notes'
@@ -101,7 +101,7 @@ export async function updateVendorItem(id: string, input: UpdateVendorItemInput)
   if (data.notes !== undefined) updateData.notes = data.notes || null
   updateData.updated_at = new Date().toISOString()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('vendor_items')
     .update(updateData)
     .eq('id', id)
@@ -134,7 +134,7 @@ export async function updateVendorItem(id: string, input: UpdateVendorItemInput)
 
   if (shouldRecordPricePoint) {
     await recordVendorPricePoint({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       vendorId: existingItem.vendor_id,
       ingredientId: merged.ingredient_id,
@@ -151,9 +151,9 @@ export async function updateVendorItem(id: string, input: UpdateVendorItemInput)
 
 export async function deleteVendorItem(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('vendor_items')
     .delete()
     .eq('id', id)
@@ -169,9 +169,9 @@ export async function deleteVendorItem(id: string) {
 
 export async function listVendorItems(vendorId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('vendor_items')
     .select('*')
     .eq('vendor_id', vendorId)
@@ -188,9 +188,9 @@ export async function listVendorItems(vendorId: string) {
 
 export async function getPriceComparison(ingredientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('vendor_items')
     .select('*, vendors(name, status)')
     .eq('chef_id', user.tenantId!)
@@ -207,10 +207,10 @@ export async function getPriceComparison(ingredientId: string) {
 
 export async function getPriceComparisonAll() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all vendor items that have an ingredient_id
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('vendor_items')
     .select('*, vendors(name, status)')
     .eq('chef_id', user.tenantId!)

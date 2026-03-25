@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import {
   calculateDynamicPrice,
@@ -69,10 +69,10 @@ export type CalculatePriceInput = {
 
 export async function createPackage(data: CreatePackageInput): Promise<ExperiencePackageRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('experience_packages' as any)
     .insert({
       tenant_id: tenantId,
@@ -106,7 +106,7 @@ export async function updatePackage(
   data: UpdatePackageInput
 ): Promise<ExperiencePackageRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const updatePayload: Record<string, unknown> = { updated_at: new Date().toISOString() }
@@ -125,7 +125,7 @@ export async function updatePackage(
   if (data.is_active !== undefined) updatePayload.is_active = data.is_active
   if (data.sort_order !== undefined) updatePayload.sort_order = data.sort_order
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('experience_packages' as any)
     .update(updatePayload)
     .eq('id', id)
@@ -147,10 +147,10 @@ export async function updatePackage(
  */
 export async function deletePackage(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { error } = await supabase
+  const { error } = await db
     .from('experience_packages' as any)
     .update({ is_active: false, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -166,10 +166,10 @@ export async function deletePackage(id: string): Promise<void> {
 
 export async function getPackages(options?: PackageListOptions): Promise<ExperiencePackageRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  let query = supabase
+  let query = db
     .from('experience_packages' as any)
     .select('*')
     .eq('tenant_id', tenantId)
@@ -195,10 +195,10 @@ export async function getPackages(options?: PackageListOptions): Promise<Experie
 
 export async function getPackageDetail(id: string): Promise<ExperiencePackageRow> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('experience_packages' as any)
     .select('*')
     .eq('id', id)
@@ -222,10 +222,10 @@ export async function calculatePackagePrice(
   options: CalculatePriceInput
 ): Promise<PriceBreakdown> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: pkg, error } = await supabase
+  const { data: pkg, error } = await db
     .from('experience_packages' as any)
     .select('*')
     .eq('id', id)
@@ -258,9 +258,9 @@ export async function calculatePackagePrice(
  * Used for client-facing package browsing.
  */
 export async function getPublicPackages(chefId: string): Promise<ExperiencePackageRow[]> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('experience_packages' as any)
     .select('*')
     .eq('tenant_id', chefId)

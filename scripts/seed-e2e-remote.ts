@@ -2,8 +2,8 @@
 // CLI entry point for E2E remote seed
 // Usage: npm run seed:e2e
 //
-// This script seeds comprehensive test data against the remote Supabase project.
-// Requires SUPABASE_E2E_ALLOW_REMOTE=true in .env.local as an explicit opt-in.
+// This script seeds comprehensive test data against the remote database.
+// Requires DATABASE_E2E_ALLOW_REMOTE=true in .env.local as an explicit opt-in.
 // All test data is namespaced under *@chefflow.test emails.
 
 import { mkdirSync, writeFileSync } from 'fs'

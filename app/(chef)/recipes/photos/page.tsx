@@ -4,16 +4,16 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = { title: 'Step Photos | ChefFlow' }
 
 export default async function RecipePhotosPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: photos } = await supabase
+  const { data: photos } = await db
     .from('recipe_step_photos')
     .select('id, photo_url, caption, step_number, recipe:recipes(id, name)')
     .eq('tenant_id', chef.tenantId!)

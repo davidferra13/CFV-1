@@ -1,6 +1,6 @@
 # ChefFlow — Local AI Agent Guide (Kilo)
 
-> **You are a local AI assistant working on ChefFlow, a Next.js + Supabase + Stripe multi-tenant private chef platform.**
+> **You are a local AI assistant working on ChefFlow, a Next.js + PostgreSQL + Stripe multi-tenant private chef platform.**
 >
 > **Your role: Junior engineer.** You write code. A senior engineer (Claude Code) reviews everything you produce before it ships. Follow these rules exactly.
 
@@ -22,11 +22,11 @@
 - **Modify ANY file you weren't told to modify** — not "to help," not "to fix an import," not for any reason
 - **Run `npm install`, `npm run build`, `npx tsc`, `npx next build`** or any build/install command
 - **Run `git push`** — only commit locally, never push
-- **Run `supabase db push`** or any database command
+- **Run `drizzle-kit push`** or any database command
 - **Modify config files** — `package.json`, `tsconfig.json`, `next.config.js`, `.env.local`, `CLAUDE.md`, `tailwind.config.ts`
 - **Create files you weren't asked to create** — no test files, no docs, no "helpers" unless instructed
 - **Import external packages** not already in `package.json`
-- **Touch anything in `supabase/migrations/`** — migrations are extremely dangerous
+- **Touch anything in `database/migrations/`** — migrations are extremely dangerous
 - **Access the network, dev server, or localhost**
 
 ### If you're unsure about something

@@ -4,7 +4,7 @@
 // MUST fit on ONE page - no exceptions
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 
@@ -130,10 +130,10 @@ function getBriefMethodNote(recipe: RecipeInfo | null): string | null {
 
 export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with client (including dietary preferences for guest notes section)
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -149,7 +149,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
   if (!event) return null
 
   // Find menu attached to this event
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -162,7 +162,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
   const menuId = menus[0].id
 
   // Fetch dishes with allergen/dietary flags for per-task labeling
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, course_name, course_number, allergen_flags, dietary_tags, sort_order')
     .eq('menu_id', menuId)
@@ -175,7 +175,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
   const dishIds = dishes.map((d: any) => d.id)
 
   // Fetch components with linked recipe + ingredient staple data for dependency split
-  const { data: rawComponents } = await supabase
+  const { data: rawComponents } = await db
     .from('components')
     .select(
       `
@@ -201,7 +201,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
     regular_guests: RegularGuest[] | null
   } | null
 
-  // Normalize Supabase's single-row join (recipe is object|null, not array)
+  // Normalize single-row join (recipe is object|null, not array)
   const components: PrepComponent[] = (rawComponents || []).map((c: any) => ({
     id: c.id,
     name: c.name,

@@ -7,7 +7,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { SYSTEM_SUBSTITUTIONS } from './substitution-seed'
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -53,10 +53,10 @@ export async function searchSubstitutions(
   }
 
   const query = ingredientName.trim().toLowerCase()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch chef's personal substitutions matching the query
-  const { data: chefSubs, error } = await supabase
+  const { data: chefSubs, error } = await db
     .from('ingredient_substitutions')
     .select('id, original, substitute, ratio, notes, dietary_safe_for, source, chef_id, created_at')
     .eq('chef_id', user.entityId)
@@ -120,9 +120,9 @@ export async function getAllSubstitutions(): Promise<{
   personal: Substitution[]
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: personal, error } = await supabase
+  const { data: personal, error } = await db
     .from('ingredient_substitutions')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -157,9 +157,9 @@ export async function addSubstitution(input: {
     return { success: false, error: 'Original ingredient, substitute, and ratio are required' }
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('ingredient_substitutions').insert({
+  const { error } = await db.from('ingredient_substitutions').insert({
     chef_id: user.entityId,
     original: input.original.trim(),
     substitute: input.substitute.trim(),
@@ -187,9 +187,9 @@ export async function deleteSubstitution(
   substitutionId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('ingredient_substitutions')
     .delete()
     .eq('id', substitutionId)

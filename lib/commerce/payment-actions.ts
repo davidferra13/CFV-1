@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { PaymentMethod } from '@/lib/ledger/append'
 import type { CommercePaymentStatus } from './constants'
@@ -39,10 +39,10 @@ export type RecordPaymentInput = {
 export async function recordPayment(input: RecordPaymentInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'record a payment',
     requiredLevel: 'cashier',
@@ -53,7 +53,7 @@ export async function recordPayment(input: RecordPaymentInput) {
   }
 
   // Fetch sale to get context
-  const { data: sale, error: saleErr } = await supabase
+  const { data: sale, error: saleErr } = await db
     .from('sales')
     .select('id, tenant_id, client_id, event_id, total_cents, tip_cents, status')
     .eq('id', input.saleId)
@@ -70,7 +70,7 @@ export async function recordPayment(input: RecordPaymentInput) {
     ? `commerce_${input.stripePaymentIntentId}`
     : `commerce_${input.idempotencyKey}`
 
-  const { data: payment, error } = await supabase
+  const { data: payment, error } = await db
     .from('commerce_payments')
     .insert({
       tenant_id: user.tenantId!,
@@ -97,7 +97,7 @@ export async function recordPayment(input: RecordPaymentInput) {
   if (error) {
     // Idempotency: if duplicate key, return existing
     if (error.code === '23505' && error.message.includes('idempotency')) {
-      const { data: existing } = await supabase
+      const { data: existing } = await db
         .from('commerce_payments')
         .select('id, ledger_entry_id')
         .eq('idempotency_key', input.idempotencyKey)
@@ -112,7 +112,7 @@ export async function recordPayment(input: RecordPaymentInput) {
 
   // Update sale tip
   if (input.tipCents && input.tipCents > 0) {
-    await supabase
+    await db
       .from('sales')
       .update({ tip_cents: (sale as any).tip_cents + input.tipCents } as any)
       .eq('id', input.saleId)
@@ -128,9 +128,9 @@ export async function recordPayment(input: RecordPaymentInput) {
 export async function getPaymentsForSale(saleId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('commerce_payments')
     .select('*')
     .eq('sale_id', saleId)
@@ -146,10 +146,10 @@ export async function getPaymentsForSale(saleId: string) {
 export async function updatePaymentStatus(paymentId: string, status: CommercePaymentStatus) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'update payment status',
     requiredLevel: 'lead',
@@ -159,7 +159,7 @@ export async function updatePaymentStatus(paymentId: string, status: CommercePay
   if (status === 'captured') updates.captured_at = new Date().toISOString()
   if (status === 'settled') updates.settled_at = new Date().toISOString()
 
-  const { data: payment, error } = await supabase
+  const { data: payment, error } = await db
     .from('commerce_payments')
     .update(updates)
     .eq('id', paymentId)
@@ -180,10 +180,10 @@ export async function updatePaymentStatus(paymentId: string, status: CommercePay
 // ─── Internal: Update Sale Status After Payment ───────────────────
 
 async function updateSaleStatusAfterPayment(saleId: string, tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get sale totals
-  const { data: sale } = await supabase
+  const { data: sale } = await db
     .from('sales')
     .select('total_cents, status')
     .eq('id', saleId)
@@ -193,7 +193,7 @@ async function updateSaleStatusAfterPayment(saleId: string, tenantId: string) {
   if (!sale) return
 
   // Get total paid
-  const { data: payments } = await supabase
+  const { data: payments } = await db
     .from('commerce_payments')
     .select('amount_cents, status')
     .eq('sale_id', saleId)
@@ -204,7 +204,7 @@ async function updateSaleStatusAfterPayment(saleId: string, tenantId: string) {
     .reduce((sum: number, p: any) => sum + p.amount_cents, 0)
 
   // Get total refunded
-  const { data: refunds } = await supabase
+  const { data: refunds } = await db
     .from('commerce_refunds')
     .select('amount_cents, status')
     .eq('sale_id', saleId)
@@ -230,12 +230,12 @@ async function updateSaleStatusAfterPayment(saleId: string, tenantId: string) {
     desiredStatus === 'captured' &&
     canTransition('draft', 'pending_payment')
   ) {
-    await supabase
+    await db
       .from('sales')
       .update({ status: 'pending_payment' } as any)
       .eq('id', saleId)
       .eq('tenant_id', tenantId)
-    await supabase
+    await db
       .from('sales')
       .update({ status: 'captured' } as any)
       .eq('id', saleId)
@@ -245,7 +245,7 @@ async function updateSaleStatusAfterPayment(saleId: string, tenantId: string) {
 
   if (!canTransition(currentStatus, desiredStatus as any)) return
 
-  await supabase
+  await db
     .from('sales')
     .update({ status: desiredStatus } as any)
     .eq('id', saleId)

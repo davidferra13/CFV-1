@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -40,10 +40,10 @@ export interface PriceElasticityResult {
 export async function getPriceElasticity(): Promise<PriceElasticityResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch quotes with outcomes
-  const { data: quotes, error } = await supabase
+  const { data: quotes, error } = await db
     .from('quotes')
     .select('id, total_quoted_cents, guest_count_estimated, status, inquiry_id')
     .eq('tenant_id', tenantId)
@@ -73,7 +73,7 @@ export async function getPriceElasticity(): Promise<PriceElasticityResult | null
   const inquiryIds = [...new Set(enriched.map((q: any) => q.inquiry_id).filter(Boolean))]
   const { data: inquiriesData } =
     inquiryIds.length > 0
-      ? await supabase.from('inquiries').select('id, occasion').in('id', inquiryIds)
+      ? await db.from('inquiries').select('id, occasion').in('id', inquiryIds)
       : { data: [] }
 
   const occasionByInquiry = new Map<string, string>()
@@ -82,7 +82,7 @@ export async function getPriceElasticity(): Promise<PriceElasticityResult | null
   }
 
   // Also check events for occasion
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, inquiry_id')
     .eq('tenant_id', tenantId)
@@ -101,7 +101,7 @@ export async function getPriceElasticity(): Promise<PriceElasticityResult | null
     .filter(Boolean)
   const { data: acceptedEvents } =
     acceptedInquiryIds.length > 0
-      ? await supabase
+      ? await db
           .from('events')
           .select('id, inquiry_id, quoted_price_cents')
           .in('inquiry_id', acceptedInquiryIds)
@@ -115,7 +115,7 @@ export async function getPriceElasticity(): Promise<PriceElasticityResult | null
   const eventIds = Array.from(eventIdsByInquiry.values())
   const { data: expenses } =
     eventIds.length > 0
-      ? await supabase.from('expenses').select('event_id, amount_cents').in('event_id', eventIds)
+      ? await db.from('expenses').select('event_id, amount_cents').in('event_id', eventIds)
       : { data: [] }
 
   const expenseByEvent = new Map<string, number>()

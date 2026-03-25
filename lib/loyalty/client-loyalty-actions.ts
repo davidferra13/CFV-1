@@ -1,14 +1,14 @@
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export async function clientRedeemReward(rewardId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, tenant_id, loyalty_points, loyalty_tier')
     .eq('id', user.entityId)
@@ -18,7 +18,7 @@ export async function clientRedeemReward(rewardId: string) {
     throw new Error('Client record not found')
   }
 
-  const { data: reward } = await supabase
+  const { data: reward } = await db
     .from('loyalty_rewards')
     .select('*')
     .eq('id', rewardId)
@@ -38,7 +38,7 @@ export async function clientRedeemReward(rewardId: string) {
   // SECURITY: Atomic conditional update to prevent race condition (double-spend).
   // The WHERE clause ensures the update only succeeds if the client still has enough points.
   // Two concurrent requests: one will succeed, the other will get 0 rows updated.
-  const { data: updateData, error: updateError } = await supabase
+  const { data: updateData, error: updateError } = await db
     .from('clients')
     .update({
       loyalty_points: currentPoints - reward.points_required,
@@ -62,7 +62,7 @@ export async function clientRedeemReward(rewardId: string) {
   const newBalance = updateData.loyalty_points
 
   // Insert the redemption transaction AFTER the atomic balance update succeeds
-  const { data: txData, error: txError } = await supabase
+  const { data: txData, error: txError } = await db
     .from('loyalty_transactions')
     .insert({
       tenant_id: client.tenant_id,

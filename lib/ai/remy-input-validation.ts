@@ -472,7 +472,7 @@ const INTERNAL_PATTERNS = [
   /at\s+\w+\s+\(/i, // Stack trace lines
   /c:\\users\\/i, // Windows paths
   /\/home\//i, // Linux paths
-  /supabase/i,
+  /db/i,
   /postgresql/i,
   /column\s+["']\w+['"]/i, // Column names
   /table\s+["']\w+['"]/i, // Table names

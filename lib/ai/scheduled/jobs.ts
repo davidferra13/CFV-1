@@ -6,7 +6,7 @@
 // Each job is called by the queue worker on a schedule.
 // Jobs that are pure SQL run on PC. Jobs needing LLM prefer the Pi.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { enqueueTask } from '@/lib/ai/queue/actions'
@@ -17,8 +17,8 @@ import { z } from 'zod'
 // SHARED HELPERS
 // ============================================
 
-async function loadChefName(supabase: any, tenantId: string): Promise<string> {
-  const { data } = await supabase
+async function loadChefName(db: any, tenantId: string): Promise<string> {
+  const { data } = await db
     .from('chefs')
     .select('business_name, full_name')
     .eq('id', tenantId)
@@ -34,13 +34,13 @@ export async function handleDailyBriefing(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const today = new Date().toISOString().split('T')[0]
   const threeDaysOut = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
   // Gather data for briefing
   const [events, inquiries, chefName] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('id, occasion, event_date, guest_count, status, client:clients(full_name)')
       .eq('tenant_id', tenantId)
@@ -50,14 +50,14 @@ export async function handleDailyBriefing(
       .order('event_date', { ascending: true })
       .limit(10)
       .then((r: any) => r.data ?? []),
-    supabase
+    db
       .from('inquiries')
       .select('id, created_at, status')
       .eq('tenant_id', tenantId)
       .in('status', ['new', 'awaiting_chef'])
       .limit(10)
       .then((r: any) => r.data ?? []),
-    loadChefName(supabase, tenantId),
+    loadChefName(db, tenantId),
   ])
 
   const BriefingSchema = z.object({
@@ -101,10 +101,10 @@ export async function handleLeadScoring(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Find inquiries without scores
-  const { data: unscoredInquiries } = await (supabase
+  const { data: unscoredInquiries } = await (db
     .from('inquiries')
     .select(
       'id, channel, confirmed_budget_cents, confirmed_guest_count, created_at, client:clients(full_name, email)'
@@ -129,7 +129,7 @@ export async function handleLeadScoring(
     if ((inq as any).client?.email) score += 5
     score = Math.min(score, 100)
 
-    await (supabase
+    await (db
       .from('inquiries')
       .update({ lead_score: score } as any)
       .eq('id', inq.id) as any)
@@ -147,27 +147,27 @@ export async function handleWeeklyInsights(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const now = new Date()
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const chefName = await loadChefName(supabase, tenantId)
+  const chefName = await loadChefName(db, tenantId)
 
   // Gather weekly metrics
   const [completedEvents, newInquiries, newClients] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('status', 'completed')
       .gte('event_date', weekAgo)
       .then((r: any) => r.count ?? 0),
-    supabase
+    db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .gte('created_at', weekAgo)
       .then((r: any) => r.count ?? 0),
-    supabase
+    db
       .from('clients')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
@@ -217,14 +217,14 @@ export async function handleRevenueGoal(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get completed events this month for revenue approximation
   const monthStart = new Date()
   monthStart.setDate(1)
   monthStart.setHours(0, 0, 0, 0)
 
-  const { data: monthEvents } = await supabase
+  const { data: monthEvents } = await db
     .from('events')
     .select('id, quoted_price_cents')
     .eq('tenant_id', tenantId)
@@ -253,11 +253,11 @@ export async function handleChurnPrediction(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
 
   // Find clients whose last event was >60 days ago (at-risk)
-  const { data: atRiskClients } = await supabase
+  const { data: atRiskClients } = await db
     .from('clients')
     .select('id, full_name, last_event_date')
     .eq('tenant_id', tenantId)
@@ -286,10 +286,10 @@ export async function handleFoodCostAlert(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get recent events with food cost data
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, quoted_price_cents, food_cost_cents')
     .eq('tenant_id', tenantId)
@@ -332,14 +332,14 @@ export async function handlePipelineBottleneck(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Count events by status
   const statuses = ['draft', 'proposed', 'accepted', 'paid', 'confirmed', 'in_progress']
   const counts: Record<string, number> = {}
 
   for (const status of statuses) {
-    const { count } = await supabase
+    const { count } = await db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
@@ -372,10 +372,10 @@ export async function handleCertExpiry(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const thirtyDaysOut = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const { data: expiringCerts } = await (supabase
+  const { data: expiringCerts } = await (db
     .from('chef_certifications')
     .select('id, cert_type, cert_name, expiry_date')
     .eq('chef_id', tenantId)
@@ -467,10 +467,10 @@ export async function handleQuoteAnalysis(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get recent quotes
-  const { data: quotes } = await (supabase
+  const { data: quotes } = await (db
     .from('quotes')
     .select('id, status, total_cents, created_at')
     .eq('tenant_id', tenantId)
@@ -511,14 +511,14 @@ export async function handleAnomalyDetection(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
   // Check for anomalies in the last 24h
   const anomalies: string[] = []
 
   // 1. Failed state transitions
-  const { count: failedTransitions } = await supabase
+  const { count: failedTransitions } = await db
     .from('event_state_transitions')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -530,7 +530,7 @@ export async function handleAnomalyDetection(
   }
 
   // 2. Unusually high inquiry volume (>10 in a day)
-  const { count: inquiryCount } = await supabase
+  const { count: inquiryCount } = await db
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -559,10 +559,10 @@ export async function handleMenuEngineering(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Get most-used menu items across events
-  const { data: menuItems } = await (supabase
+  const { data: menuItems } = await (db
     .from('menu_items' as any)
     .select('id, name, price_cents, recipe_id')
     .eq('tenant_id', tenantId)
@@ -605,11 +605,11 @@ export async function handleStaleInquiryScanner(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
 
   // Find inquiries that are still open and older than 48h
-  const { data: staleInquiries } = await supabase
+  const { data: staleInquiries } = await db
     .from('inquiries')
     .select('id, created_at, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -661,11 +661,11 @@ export async function handlePaymentOverdueScanner(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   // Find events in 'accepted' status (awaiting payment) older than 7 days
-  const { data: overdueEvents } = await supabase
+  const { data: overdueEvents } = await db
     .from('events')
     .select('id, occasion, event_date, client_id, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -720,12 +720,12 @@ export async function handleSocialPostDraft(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
-  const chefName = await loadChefName(supabase, tenantId)
+  const db: any = createAdminClient()
+  const chefName = await loadChefName(db, tenantId)
 
   // Get recent completed events for inspiration
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const { data: recentEvents } = await supabase
+  const { data: recentEvents } = await db
     .from('events')
     .select('occasion, guest_count, event_date')
     .eq('tenant_id', tenantId)
@@ -736,7 +736,7 @@ export async function handleSocialPostDraft(
 
   // Get upcoming events for promotional angle
   const today = new Date().toISOString().split('T')[0]
-  const { data: upcomingEvents } = await supabase
+  const { data: upcomingEvents } = await db
     .from('events')
     .select('occasion, event_date')
     .eq('tenant_id', tenantId)
@@ -789,12 +789,12 @@ export async function handleClientSentiment(
   payload: Record<string, unknown>,
   tenantId: string
 ): Promise<Record<string, unknown>> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
 
   // Gather signals: recent messages, event completion rate, inquiry conversion
   const [recentMessages, completedEvents, cancelledEvents] = await Promise.all([
-    supabase
+    db
       .from('messages')
       .select('id, body, sender_role, created_at, client:clients(full_name)')
       .eq('tenant_id', tenantId)
@@ -803,14 +803,14 @@ export async function handleClientSentiment(
       .order('created_at', { ascending: false })
       .limit(20)
       .then((r: any) => r.data ?? []),
-    supabase
+    db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .eq('status', 'completed')
       .gte('event_date', thirtyDaysAgo)
       .then((r: any) => r.count ?? 0),
-    supabase
+    db
       .from('events')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)

@@ -39,7 +39,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     // Verify ownership
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('webhook_endpoints' as any)
       .select('id')
       .eq('id', id)
@@ -74,7 +74,7 @@ export const PATCH = withApiAuth(
       }
     }
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('webhook_endpoints' as any)
       .update(updateData as any)
       .eq('id', id)
@@ -98,7 +98,7 @@ export const DELETE = withApiAuth(
     if (!id) return apiNotFound('Webhook subscription')
 
     // Verify ownership before deleting
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('webhook_endpoints' as any)
       .select('id')
       .eq('id', id)
@@ -107,7 +107,7 @@ export const DELETE = withApiAuth(
 
     if (!existing) return apiNotFound('Webhook subscription')
 
-    const { error } = await ctx.supabase
+    const { error } = await ctx.db
       .from('webhook_endpoints' as any)
       .delete()
       .eq('id', id)

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -67,12 +67,12 @@ const DateSchema = z
  */
 export async function generateDailyBriefing(date?: string): Promise<DailyBriefing> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const briefingDate = DateSchema.parse(date) ?? new Date().toISOString().split('T')[0]
 
   // 1. Events today
-  const { data: todayEvents } = await supabase
+  const { data: todayEvents } = await db
     .from('events')
     .select(
       `
@@ -95,7 +95,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   }))
 
   // 2. Tasks due - events needing closure items or upcoming prep
-  const { data: closureEvents } = await supabase
+  const { data: closureEvents } = await db
     .from('events')
     .select(
       'id, occasion, event_date, aar_filed, reset_complete, follow_up_sent, financially_closed'
@@ -154,7 +154,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   const weekStartStr = weekStart.toISOString().split('T')[0]
   const weekEndStr = weekEnd.toISOString().split('T')[0]
 
-  const { data: weekEvents } = await supabase
+  const { data: weekEvents } = await db
     .from('events')
     .select('id')
     .eq('tenant_id', user.tenantId!)
@@ -167,7 +167,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   if (weekEvents && weekEvents.length > 0) {
     const weekEventIds = weekEvents.map((e: any) => e.id)
 
-    const { data: summaries } = await supabase
+    const { data: summaries } = await db
       .from('event_financial_summary')
       .select('total_paid_cents')
       .eq('tenant_id', user.tenantId!)
@@ -183,7 +183,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   sevenDaysOut.setDate(sevenDaysOut.getDate() + 7)
   const sevenDaysOutStr = sevenDaysOut.toISOString().split('T')[0]
 
-  const { data: upcomingEvents } = await supabase
+  const { data: upcomingEvents } = await db
     .from('events')
     .select('id, occasion, event_date, grocery_list_ready, prep_list_ready, packing_list_ready')
     .eq('tenant_id', user.tenantId!)
@@ -238,7 +238,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   }
 
   // Upsert the briefing
-  const { data: briefing, error } = await supabase
+  const { data: briefing, error } = await db
     .from('chef_daily_briefings')
     .upsert(
       {
@@ -273,11 +273,11 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
  */
 export async function getDailyBriefing(date?: string): Promise<DailyBriefing | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const briefingDate = DateSchema.parse(date) ?? new Date().toISOString().split('T')[0]
 
-  const { data: briefing, error } = await supabase
+  const { data: briefing, error } = await db
     .from('chef_daily_briefings')
     .select('*')
     .eq('chef_id', user.tenantId!)

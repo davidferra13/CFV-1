@@ -6,7 +6,7 @@
 // No signed URLs needed since these are portfolio/showcase images.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -75,9 +75,9 @@ export async function uploadRecipePhoto(
   formData: FormData
 ): Promise<{ success: true; photoUrl: string } | { success: false; error: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipe } = await supabase
+  const { data: recipe } = await db
     .from('recipes')
     .select('id, photo_url')
     .eq('id', recipeId)
@@ -96,11 +96,11 @@ export async function uploadRecipePhoto(
   // Remove old file if it has a different path (e.g. extension changed)
   const oldPath = extractStoragePath(recipe.photo_url)
   if (oldPath && oldPath !== storagePath) {
-    await supabase.storage.from(BUCKET).remove([oldPath])
+    await db.storage.from(BUCKET).remove([oldPath])
   }
 
   // Upload (upsert handles same-extension replacement)
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await db.storage
     .from(BUCKET)
     .upload(storagePath, file!, { contentType: file!.type, upsert: true })
 
@@ -111,9 +111,9 @@ export async function uploadRecipePhoto(
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from(BUCKET).getPublicUrl(storagePath)
+  } = db.storage.from(BUCKET).getPublicUrl(storagePath)
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('recipes')
     .update({ photo_url: publicUrl })
     .eq('id', recipeId)
@@ -135,9 +135,9 @@ export async function removeRecipePhoto(
   recipeId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipe } = await supabase
+  const { data: recipe } = await db
     .from('recipes')
     .select('id, photo_url')
     .eq('id', recipeId)
@@ -148,10 +148,10 @@ export async function removeRecipePhoto(
 
   const oldPath = extractStoragePath(recipe.photo_url)
   if (oldPath) {
-    await supabase.storage.from(BUCKET).remove([oldPath])
+    await db.storage.from(BUCKET).remove([oldPath])
   }
 
-  await supabase
+  await db
     .from('recipes')
     .update({ photo_url: null })
     .eq('id', recipeId)
@@ -176,9 +176,9 @@ export async function uploadDishPhoto(
   formData: FormData
 ): Promise<{ success: true; photoUrl: string } | { success: false; error: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: dish } = await supabase
+  const { data: dish } = await db
     .from('dishes')
     .select('id, photo_url')
     .eq('id', dishId)
@@ -196,10 +196,10 @@ export async function uploadDishPhoto(
 
   const oldPath = extractStoragePath(dish.photo_url)
   if (oldPath && oldPath !== storagePath) {
-    await supabase.storage.from(BUCKET).remove([oldPath])
+    await db.storage.from(BUCKET).remove([oldPath])
   }
 
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await db.storage
     .from(BUCKET)
     .upload(storagePath, file!, { contentType: file!.type, upsert: true })
 
@@ -210,9 +210,9 @@ export async function uploadDishPhoto(
 
   const {
     data: { publicUrl },
-  } = supabase.storage.from(BUCKET).getPublicUrl(storagePath)
+  } = db.storage.from(BUCKET).getPublicUrl(storagePath)
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('dishes')
     .update({ photo_url: publicUrl })
     .eq('id', dishId)
@@ -233,9 +233,9 @@ export async function removeDishPhoto(
   dishId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: dish } = await supabase
+  const { data: dish } = await db
     .from('dishes')
     .select('id, photo_url')
     .eq('id', dishId)
@@ -246,10 +246,10 @@ export async function removeDishPhoto(
 
   const oldPath = extractStoragePath((dish as any).photo_url)
   if (oldPath) {
-    await supabase.storage.from(BUCKET).remove([oldPath])
+    await db.storage.from(BUCKET).remove([oldPath])
   }
 
-  await supabase
+  await db
     .from('dishes')
     .update({ photo_url: null })
     .eq('id', dishId)

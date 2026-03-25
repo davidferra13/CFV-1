@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
 
@@ -54,9 +54,9 @@ export type OpsLogFilterInput = z.infer<typeof OpsLogFilterSchema>
 export async function appendOpsLog(input: AppendOpsLogInput) {
   const user = await requireChef()
   const validated = AppendOpsLogSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ops_log')
     .insert({
       chef_id: user.tenantId!,
@@ -82,11 +82,11 @@ export async function appendOpsLog(input: AppendOpsLogInput) {
 export async function getOpsLog(filters?: OpsLogFilterInput) {
   const user = await requireChef()
   const validated = OpsLogFilterSchema.parse(filters ?? {})
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const offset = (validated.page - 1) * validated.per_page
 
-  let query = supabase
+  let query = db
     .from('ops_log')
     .select(
       `
@@ -136,9 +136,9 @@ export async function getOpsLog(filters?: OpsLogFilterInput) {
  */
 export async function getOpsLogActionTypes() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ops_log')
     .select('action_type')
     .eq('chef_id', user.tenantId!)

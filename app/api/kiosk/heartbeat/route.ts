@@ -2,7 +2,7 @@
 // Requires device token in Authorization header
 
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
 
 const EVENT_INSERT_INTERVAL_MS = 5 * 60 * 1000 // 5 minutes
@@ -22,13 +22,13 @@ export async function POST(request: Request) {
       )
     }
 
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
     const body = await request.json().catch(() => ({}))
     const now = new Date().toISOString()
 
     // Always update last_seen_at and last_ip on the device
-    await supabase
+    await db
       .from('devices')
       .update({
         last_seen_at: now,
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     // DB-based rate-limited event insert (at most 1 per 5 min)
     const windowStart = new Date(Date.now() - EVENT_INSERT_INTERVAL_MS).toISOString()
-    const { count: recentHeartbeats } = await supabase
+    const { count: recentHeartbeats } = await db
       .from('device_events')
       .select('*', { count: 'exact', head: true })
       .eq('device_id', device.deviceId)
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
     if ((recentHeartbeats ?? 0) === 0) {
       try {
-        await supabase.from('device_events').insert({
+        await db.from('device_events').insert({
           device_id: device.deviceId,
           tenant_id: device.tenantId,
           type: 'heartbeat',

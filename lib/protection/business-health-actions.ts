@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { HEALTH_ITEM_KEYS } from './business-health-constants'
 
@@ -30,11 +30,11 @@ export async function updateHealthItem(
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const completedAt = status === 'complete' ? new Date().toISOString() : null
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_business_health_items')
     .upsert(
       {
@@ -64,9 +64,9 @@ export async function getHealthChecklist(): Promise<HealthChecklistItem[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_business_health_items')
     .select('item_key, status, notes, document_url, completed_at')
     .eq('tenant_id', tenantId)

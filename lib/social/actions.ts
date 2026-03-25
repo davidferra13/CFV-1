@@ -3,8 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient } from '@/lib/db/server'
+import { createAdminClient } from '@/lib/db/admin'
 import type {
   SocialAssetKind,
   SocialMediaAsset,
@@ -724,12 +724,8 @@ function computePreflight(post: SocialPost, linkedAssetCount: number) {
   }
 }
 
-async function getLinkedAssetCount(
-  supabase: any,
-  tenantId: string,
-  postId: string
-): Promise<number> {
-  const { count, error } = await supabase
+async function getLinkedAssetCount(db: any, tenantId: string, postId: string): Promise<number> {
+  const { count, error } = await db
     .from('social_post_assets' as any)
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -744,12 +740,12 @@ async function getLinkedAssetCount(
 }
 
 async function refreshPostPreflight(
-  supabase: any,
+  db: any,
   tenantId: string,
   postId: string,
   updatedBy: string
 ): Promise<void> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_posts' as any)
     .select('*')
     .eq('tenant_id', tenantId)
@@ -759,10 +755,10 @@ async function refreshPostPreflight(
   if (error || !data) return
 
   const current = mapPostRow(data)
-  const linkedAssetCount = await getLinkedAssetCount(supabase, tenantId, postId)
+  const linkedAssetCount = await getLinkedAssetCount(db, tenantId, postId)
   const preflight = computePreflight(current, linkedAssetCount)
 
-  await supabase
+  await db
     .from('social_posts' as any)
     .update({
       preflight_ready: preflight.preflight_ready,
@@ -775,9 +771,9 @@ async function refreshPostPreflight(
 
 export async function getSocialQueueSettings(): Promise<SocialQueueSettings> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_queue_settings' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -795,7 +791,7 @@ export async function upsertSocialQueueSettings(
 ): Promise<SocialQueueSettings> {
   const user = await requireChef()
   const validated = QueueSettingsSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const payload = {
     tenant_id: user.tenantId!,
@@ -808,7 +804,7 @@ export async function upsertSocialQueueSettings(
     holdout_slots_per_month: validated.holdout_slots_per_month,
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_queue_settings' as any)
     .upsert(payload, { onConflict: 'tenant_id' })
     .select('*')
@@ -829,9 +825,9 @@ export async function getSocialPosts(options?: {
   limit?: number
 }): Promise<SocialPost[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('social_posts' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -861,9 +857,9 @@ export async function getSocialPosts(options?: {
 
 export async function getSocialMediaAssets(): Promise<SocialMediaAsset[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_media_assets' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -880,9 +876,9 @@ export async function getSocialMediaAssets(): Promise<SocialMediaAsset[]> {
 
 export async function getSocialPostAssetLinks(): Promise<SocialPostAssetLink[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_post_assets' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -931,7 +927,7 @@ export async function generateAnnualSocialPlan(input: AnnualGenerationInput): Pr
 }> {
   const user = await requireChef()
   const validated = GenerateAnnualPlanSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   await upsertSocialQueueSettings({
     target_year: validated.target_year,
@@ -942,7 +938,7 @@ export async function generateAnnualSocialPlan(input: AnnualGenerationInput): Pr
     holdout_slots_per_month: validated.holdout_slots_per_month,
   })
 
-  const { count: existingCount, error: existingError } = await supabase
+  const { count: existingCount, error: existingError } = await db
     .from('social_posts' as any)
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -958,7 +954,7 @@ export async function generateAnnualSocialPlan(input: AnnualGenerationInput): Pr
   }
 
   if ((existingCount ?? 0) > 0 && validated.force_regenerate) {
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await db
       .from('social_posts' as any)
       .delete()
       .eq('tenant_id', user.tenantId!)
@@ -1030,7 +1026,7 @@ export async function generateAnnualSocialPlan(input: AnnualGenerationInput): Pr
 
   for (let index = 0; index < rows.length; index += 100) {
     const batch = rows.slice(index, index + 100)
-    const { error: insertError } = await supabase.from('social_posts' as any).insert(batch)
+    const { error: insertError } = await db.from('social_posts' as any).insert(batch)
 
     if (insertError) {
       console.error('[generateAnnualSocialPlan] Insert failed:', insertError)
@@ -1053,9 +1049,9 @@ export async function updateSocialPost(
 ): Promise<SocialPost> {
   const user = await requireChef()
   const validated = UpdatePostSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existingData, error: existingError } = await supabase
+  const { data: existingData, error: existingError } = await db
     .from('social_posts' as any)
     .select('*')
     .eq('id', postId)
@@ -1067,7 +1063,7 @@ export async function updateSocialPost(
   }
 
   const merged = mapPostRow({ ...(existingData as any), ...validated })
-  const linkedAssetCount = await getLinkedAssetCount(supabase, user.tenantId!, postId)
+  const linkedAssetCount = await getLinkedAssetCount(db, user.tenantId!, postId)
   const preflight = computePreflight(merged, linkedAssetCount)
 
   if (
@@ -1084,7 +1080,7 @@ export async function updateSocialPost(
     updated_by: user.id,
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_posts' as any)
     .update(payload)
     .eq('id', postId)
@@ -1103,7 +1099,7 @@ export async function updateSocialPost(
 
 export async function bulkUpdateSocialPostStatus(postIds: string[], status: SocialPostStatus) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (postIds.length === 0) return
 
@@ -1112,7 +1108,7 @@ export async function bulkUpdateSocialPostStatus(postIds: string[], status: Soci
     .parse(status)
 
   if (validatedStatus === 'queued' || validatedStatus === 'published') {
-    const { data: preflightRows, error: preflightError } = await supabase
+    const { data: preflightRows, error: preflightError } = await db
       .from('social_posts' as any)
       .select('id, preflight_ready')
       .eq('tenant_id', user.tenantId!)
@@ -1128,7 +1124,7 @@ export async function bulkUpdateSocialPostStatus(postIds: string[], status: Soci
     }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('social_posts' as any)
     .update({ status: validatedStatus, updated_by: user.id })
     .eq('tenant_id', user.tenantId!)
@@ -1149,9 +1145,9 @@ export async function setSocialPostHotSwap(postId: string, hotSwapReady: boolean
 export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapSchema>) {
   const user = await requireChef()
   const validated = HotSwapSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: sourceRowData, error: sourceError } = await supabase
+  const { data: sourceRowData, error: sourceError } = await db
     .from('social_posts' as any)
     .select('*')
     .eq('id', validated.hot_swap_post_id)
@@ -1165,7 +1161,7 @@ export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapS
     throw new Error('Hot-swap source post not found.')
   }
 
-  const { error: updateTargetError } = await supabase
+  const { error: updateTargetError } = await db
     .from('social_posts' as any)
     .update({
       updated_by: user.id,
@@ -1197,7 +1193,7 @@ export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapS
     throw new Error('Failed to apply hot-swap content.')
   }
 
-  const { error: archiveSourceError } = await supabase
+  const { error: archiveSourceError } = await db
     .from('social_posts' as any)
     .update({
       status: 'archived',
@@ -1214,13 +1210,13 @@ export async function applyHotSwapToScheduledPost(input: z.infer<typeof HotSwapS
     throw new Error('Hot-swap source could not be archived after apply.')
   }
 
-  await refreshPostPreflight(supabase, user.tenantId!, validated.scheduled_post_id, user.id)
+  await refreshPostPreflight(db, user.tenantId!, validated.scheduled_post_id, user.id)
   revalidatePath('/social')
 }
 
 export async function uploadSocialAsset(formData: FormData): Promise<SocialMediaAsset> {
   const user = await requireChef()
-  const supabase: any = createAdminClient() as any
+  const db: any = createAdminClient() as any
 
   const file = formData.get('asset') as File | null
   if (!file) throw new Error('No asset file provided.')
@@ -1230,7 +1226,7 @@ export async function uploadSocialAsset(formData: FormData): Promise<SocialMedia
   const ext = inferExtension(file)
   const storagePath = `${user.tenantId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
 
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await db.storage
     .from(SOCIAL_MEDIA_BUCKET)
     .upload(storagePath, file, { contentType: file.type, upsert: false })
 
@@ -1239,7 +1235,7 @@ export async function uploadSocialAsset(formData: FormData): Promise<SocialMedia
     throw new Error('Failed to upload asset to media vault.')
   }
 
-  const { data: publicData } = supabase.storage.from(SOCIAL_MEDIA_BUCKET).getPublicUrl(storagePath)
+  const { data: publicData } = db.storage.from(SOCIAL_MEDIA_BUCKET).getPublicUrl(storagePath)
 
   const assetName = ((formData.get('assetName') as string | null) ?? '').trim()
   const usageContext = ((formData.get('usageContext') as string | null) ?? '').trim()
@@ -1247,7 +1243,7 @@ export async function uploadSocialAsset(formData: FormData): Promise<SocialMedia
   const isClientApproved =
     ((formData.get('isClientApproved') as string | null) ?? 'false') === 'true'
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_media_assets')
     .insert({
       tenant_id: user.tenantId!,
@@ -1269,7 +1265,7 @@ export async function uploadSocialAsset(formData: FormData): Promise<SocialMedia
     .single()
 
   if (error || !data) {
-    await supabase.storage.from(SOCIAL_MEDIA_BUCKET).remove([storagePath])
+    await db.storage.from(SOCIAL_MEDIA_BUCKET).remove([storagePath])
     throw new Error('Asset uploaded but metadata insert failed.')
   }
 
@@ -1283,9 +1279,9 @@ export async function updateSocialAsset(
 ): Promise<SocialMediaAsset> {
   const user = await requireChef()
   const validated = UpdateAssetSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_media_assets' as any)
     .update({ ...validated, updated_by: user.id })
     .eq('id', assetId)
@@ -1300,9 +1296,9 @@ export async function updateSocialAsset(
 
 export async function deleteSocialAsset(assetId: string) {
   const user = await requireChef()
-  const supabase: any = createAdminClient() as any
+  const db: any = createAdminClient() as any
 
-  const { data: assetData, error: assetError } = await supabase
+  const { data: assetData, error: assetError } = await db
     .from('social_media_assets')
     .select('*')
     .eq('id', assetId)
@@ -1311,31 +1307,27 @@ export async function deleteSocialAsset(assetId: string) {
 
   if (assetError || !assetData) throw new Error('Media asset not found.')
 
-  const { data: links } = await supabase
+  const { data: links } = await db
     .from('social_post_assets')
     .select('post_id')
     .eq('tenant_id', user.tenantId!)
     .eq('asset_id', assetId)
 
-  await supabase
+  await db
     .from('social_post_assets')
     .delete()
     .eq('tenant_id', user.tenantId!)
     .eq('asset_id', assetId)
 
-  await supabase
-    .from('social_media_assets')
-    .delete()
-    .eq('tenant_id', user.tenantId!)
-    .eq('id', assetId)
+  await db.from('social_media_assets').delete().eq('tenant_id', user.tenantId!).eq('id', assetId)
 
-  await supabase.storage.from(SOCIAL_MEDIA_BUCKET).remove([assetData.storage_path])
+  await db.storage.from(SOCIAL_MEDIA_BUCKET).remove([assetData.storage_path])
 
   const affectedPosts = Array.from(
     new Set((links ?? []).map((row: any) => row.post_id).filter(Boolean))
   ) as string[]
   for (const postId of affectedPosts) {
-    await refreshPostPreflight(supabase, user.tenantId!, postId, user.id)
+    await refreshPostPreflight(db, user.tenantId!, postId, user.id)
   }
 
   revalidatePath('/social')
@@ -1346,8 +1338,8 @@ export async function attachSocialAssetToPost(
 ): Promise<SocialPostAssetLink> {
   const user = await requireChef()
   const validated = AttachAssetSchema.parse(input)
-  const supabase: any = createServerClient()
-  const db = supabase as any
+  const db: any = createServerClient()
+  const db = db as any
 
   const { data: assetData, error: assetError } = await db
     .from('social_media_assets')
@@ -1403,7 +1395,7 @@ export async function attachSocialAssetToPost(
       .eq('id', validated.post_id)
   }
 
-  await refreshPostPreflight(supabase, user.tenantId!, validated.post_id, user.id)
+  await refreshPostPreflight(db, user.tenantId!, validated.post_id, user.id)
   revalidatePath('/social')
   return mapPostAssetLinkRow(data)
 }
@@ -1411,8 +1403,8 @@ export async function attachSocialAssetToPost(
 export async function detachSocialAssetFromPost(input: z.infer<typeof DetachAssetSchema>) {
   const user = await requireChef()
   const validated = DetachAssetSchema.parse(input)
-  const supabase: any = createServerClient()
-  const db = supabase as any
+  const db: any = createServerClient()
+  const db = db as any
 
   const { data: linkData, error: linkError } = await db
     .from('social_post_assets')
@@ -1467,7 +1459,7 @@ export async function detachSocialAssetFromPost(input: z.infer<typeof DetachAsse
     }
   }
 
-  await refreshPostPreflight(supabase, user.tenantId!, linkData.post_id, user.id)
+  await refreshPostPreflight(db, user.tenantId!, linkData.post_id, user.id)
   revalidatePath('/social')
 }
 
@@ -1481,7 +1473,7 @@ export async function exportSocialPlatformWindowCsv(
 }> {
   const user = await requireChef()
   const validated = PlatformExportSchema.parse(rawInput)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const windowConfig = SOCIAL_PLATFORM_WINDOWS.find(
     (entry) => entry.platform === validated.platform
@@ -1493,7 +1485,7 @@ export async function exportSocialPlatformWindowCsv(
   const now = new Date()
   const end = new Date(now.getTime() + windowConfig.windowDays * 24 * 60 * 60 * 1000)
 
-  let query = supabase
+  let query = db
     .from('social_posts' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)

@@ -1,9 +1,9 @@
 import { test, expect } from '../helpers/fixtures'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 const TRANSIENT_500_TEXT = /internal server error/i
 
-function getAdminSupabase() {
+function getAdminDb() {
   return createAdminClient()
 }
 
@@ -64,7 +64,7 @@ test.describe('Private Chef Service Golden Path', () => {
     page,
     seedIds,
   }) => {
-    const admin = getAdminSupabase()
+    const admin = getAdminDb()
     const suffix = Date.now().toString()
     const occasion = `TEST Private Chef Service ${suffix}`
 

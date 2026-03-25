@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IncidentResolutionTracker } from '@/components/safety/incident-resolution-tracker'
@@ -13,9 +13,9 @@ export const metadata: Metadata = { title: 'Incident Detail | ChefFlow' }
 
 export default async function IncidentDetailPage({ params }: { params: { id: string } }) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: incident } = await supabase
+  const { data: incident } = await db
     .from('chef_incidents')
     .select('*')
     .eq('id', params.id)

@@ -7,7 +7,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import {
@@ -249,24 +249,24 @@ export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>
 // ============================================
 
 // chef_connections not in generated types until migration applied and types regenerated
-function fromChefConnections(supabase: any): any {
-  return supabase.from('chef_connections')
+function fromChefConnections(db: any): any {
+  return db.from('chef_connections')
 }
 
-function fromChefPreferences(supabase: any): any {
-  return supabase.from('chef_preferences')
+function fromChefPreferences(db: any): any {
+  return db.from('chef_preferences')
 }
 
-function fromChefNetworkPosts(supabase: any): any {
-  return supabase.from('chef_network_posts')
+function fromChefNetworkPosts(db: any): any {
+  return db.from('chef_network_posts')
 }
 
-function fromChefNetworkFeaturePreferences(supabase: any): any {
-  return supabase.from('chef_network_feature_preferences')
+function fromChefNetworkFeaturePreferences(db: any): any {
+  return db.from('chef_network_feature_preferences')
 }
 
-function fromChefNetworkContactShares(supabase: any): any {
-  return supabase.from('chef_network_contact_shares')
+function fromChefNetworkContactShares(db: any): any {
+  return db.from('chef_network_contact_shares')
 }
 
 function extractChefProfileImagePath(url: string | null | undefined): string | null {
@@ -282,8 +282,8 @@ function extractChefProfileImagePath(url: string | null | undefined): string | n
   return decodeURIComponent(encodedPath)
 }
 
-async function ensureChefProfileImagesBucket(supabase: any) {
-  const { error: createError } = await supabase.storage.createBucket(CHEF_PROFILE_IMAGES_BUCKET, {
+async function ensureChefProfileImagesBucket(db: any) {
+  const { error: createError } = await db.storage.createBucket(CHEF_PROFILE_IMAGES_BUCKET, {
     public: true,
     allowedMimeTypes: ALLOWED_PROFILE_IMAGE_TYPES,
     fileSizeLimit: `${MAX_PROFILE_IMAGE_SIZE}`,
@@ -302,7 +302,7 @@ async function ensureChefProfileImagesBucket(supabase: any) {
   if (isConflict) return
 
   // Double-check in case create returned a non-standard error even though bucket now exists.
-  const { data: buckets, error: listError } = await supabase.storage.listBuckets()
+  const { data: buckets, error: listError } = await db.storage.listBuckets()
   if (!listError) {
     const exists = (buckets || []).some((bucket: any) => bucket.id === CHEF_PROFILE_IMAGES_BUCKET)
     if (exists) return
@@ -310,7 +310,7 @@ async function ensureChefProfileImagesBucket(supabase: any) {
 
   console.error('[ensureChefProfileImagesBucket] createBucket error:', createError)
   throw new Error(
-    'Storage bucket setup failed. Please create bucket "chef-profile-images" (public) in Supabase Storage.'
+    'Storage bucket setup failed. Please create bucket "chef-profile-images" (public) in local storage.'
   )
 }
 
@@ -323,12 +323,12 @@ function getDefaultFeaturePreferenceMap(): Record<NetworkFeatureKey, boolean> {
 }
 
 async function getFeaturePreferenceMapForChef(
-  supabase: any,
+  db: any,
   chefId: string
 ): Promise<Record<NetworkFeatureKey, boolean>> {
   const map = getDefaultFeaturePreferenceMap()
 
-  const { data, error } = await fromChefNetworkFeaturePreferences(supabase)
+  const { data, error } = await fromChefNetworkFeaturePreferences(db)
     .select('feature_key, enabled')
     .eq('chef_id', chefId)
 
@@ -360,11 +360,11 @@ export async function searchChefs(
 ): Promise<SearchableChef[]> {
   const user = await requireChef()
   const validated = SearchChefsSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const query = validated.query.trim()
 
   // Find discoverable chefs (optionally filtered by query)
-  let chefsQuery = supabase
+  let chefsQuery = db
     .from('chefs')
     .select(
       `
@@ -391,7 +391,7 @@ export async function searchChefs(
   if (error || !chefs) return []
 
   // Get current user's connections to annotate results
-  const { data: connections } = await fromChefConnections(supabase)
+  const { data: connections } = await fromChefConnections(db)
     .select('id, requester_id, addressee_id, status')
     .or(`requester_id.eq.${user.entityId},addressee_id.eq.${user.entityId}`)
 
@@ -443,9 +443,9 @@ export async function searchChefs(
  */
 export async function getMyConnections(): Promise<ChefFriend[]> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: connections, error } = await fromChefConnections(supabase)
+  const { data: connections, error } = await fromChefConnections(db)
     .select('id, requester_id, addressee_id, accepted_at')
     .eq('status', 'accepted')
     .or(`requester_id.eq.${user.entityId},addressee_id.eq.${user.entityId}`)
@@ -457,7 +457,7 @@ export async function getMyConnections(): Promise<ChefFriend[]> {
     c.requester_id === user.entityId ? c.addressee_id : c.requester_id
   )
 
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs')
     .select(
       `
@@ -497,9 +497,9 @@ export async function getMyConnections(): Promise<ChefFriend[]> {
  */
 export async function getPendingRequests(): Promise<PendingRequest[]> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: pending, error } = await fromChefConnections(supabase)
+  const { data: pending, error } = await fromChefConnections(db)
     .select('id, requester_id, addressee_id, request_message, created_at')
     .eq('status', 'pending')
     .or(`requester_id.eq.${user.entityId},addressee_id.eq.${user.entityId}`)
@@ -511,7 +511,7 @@ export async function getPendingRequests(): Promise<PendingRequest[]> {
     p.requester_id === user.entityId ? p.addressee_id : p.requester_id
   )
 
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs')
     .select(
       'id, display_name, business_name, chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state)'
@@ -551,9 +551,9 @@ export async function getNetworkFeed(
 ): Promise<NetworkFeedPost[]> {
   const user = await requireChef()
   const validated = GetFeedSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: connections } = await fromChefConnections(supabase)
+  const { data: connections } = await fromChefConnections(db)
     .select('requester_id, addressee_id')
     .eq('status', 'accepted')
     .or(`requester_id.eq.${user.entityId},addressee_id.eq.${user.entityId}`)
@@ -564,11 +564,11 @@ export async function getNetworkFeed(
     visibleAuthorIds.add(otherId)
   }
 
-  const featurePreferenceMap = await getFeaturePreferenceMapForChef(supabase, user.entityId)
+  const featurePreferenceMap = await getFeaturePreferenceMapForChef(db, user.entityId)
   const enabledFeatureKeys = NETWORK_FEATURE_KEYS.filter((key) => featurePreferenceMap[key])
   if (enabledFeatureKeys.length === 0) return []
 
-  const { data: posts, error: postsError } = await fromChefNetworkPosts(supabase)
+  const { data: posts, error: postsError } = await fromChefNetworkPosts(db)
     .select('id, author_chef_id, content, feature_key, created_at')
     .in('author_chef_id', Array.from(visibleAuthorIds))
     .in('feature_key', enabledFeatureKeys)
@@ -578,7 +578,7 @@ export async function getNetworkFeed(
   if (postsError || !posts?.length) return []
 
   const authorIds = Array.from(new Set((posts as any[]).map((p) => p.author_chef_id)))
-  const { data: authors } = await supabase
+  const { data: authors } = await db
     .from('chefs')
     .select(
       `
@@ -622,8 +622,8 @@ export async function getNetworkFeed(
  */
 export async function getNetworkFeaturePreferences(): Promise<NetworkFeaturePreference[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
-  const preferenceMap = await getFeaturePreferenceMapForChef(supabase, user.entityId)
+  const db: any = createServerClient()
+  const preferenceMap = await getFeaturePreferenceMapForChef(db, user.entityId)
 
   return NETWORK_FEATURE_KEYS.map((key) => ({
     feature_key: key,
@@ -641,9 +641,9 @@ export async function getNetworkContactShares(
 ): Promise<NetworkContactShare[]> {
   const user = await requireChef()
   const validated = GetContactSharesSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: shares, error } = await fromChefNetworkContactShares(supabase)
+  const { data: shares, error } = await fromChefNetworkContactShares(db)
     .select(
       `
       id,
@@ -675,7 +675,7 @@ export async function getNetworkContactShares(
     )
   )
 
-  const { data: chefs } = await supabase
+  const { data: chefs } = await db
     .from('chefs')
     .select('id, display_name, business_name, profile_image_url')
     .in('id', otherChefIds)
@@ -717,17 +717,17 @@ export async function getNetworkContactShares(
  */
 export async function getNetworkInsights(): Promise<NetworkInsights> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const tenantId = user.tenantId || user.entityId
 
   const [inquiriesRes, eventsRes, clientsRes, sharesRes] = await Promise.all([
-    supabase
+    db
       .from('inquiries')
       .select('id, client_id, converted_to_event_id, confirmed_date')
       .eq('tenant_id', tenantId),
-    supabase.from('events').select('id, event_date, status').eq('tenant_id', tenantId),
-    supabase.from('clients').select('id, full_name, email, phone').eq('tenant_id', tenantId),
-    fromChefNetworkContactShares(supabase)
+    db.from('events').select('id, event_date, status').eq('tenant_id', tenantId),
+    db.from('clients').select('id, full_name, email, phone').eq('tenant_id', tenantId),
+    fromChefNetworkContactShares(db)
       .select(
         'id, sender_chef_id, recipient_chef_id, status, contact_email, contact_phone, event_date, details'
       )
@@ -847,9 +847,9 @@ function normalizePhone(value: string): string {
  */
 export async function getNetworkDiscoverable(): Promise<boolean> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await fromChefPreferences(supabase)
+  const { data, error } = await fromChefPreferences(db)
     .select('network_discoverable')
     .eq('chef_id', user.entityId)
     .maybeSingle()
@@ -872,9 +872,9 @@ export async function getChefProfile(): Promise<{
   profile_image_url: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chefs')
     .select('display_name, business_name, bio, profile_image_url')
     .eq('id', user.entityId)
@@ -897,14 +897,14 @@ export async function getChefProfile(): Promise<{
 export async function sendConnectionRequest(input: z.infer<typeof SendRequestSchema>) {
   const user = await requireChef()
   const validated = SendRequestSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   if (validated.addressee_id === user.entityId) {
     throw new Error('Cannot send a connection request to yourself')
   }
 
   // Check addressee is discoverable
-  const { data: prefs } = await fromChefPreferences(supabase)
+  const { data: prefs } = await fromChefPreferences(db)
     .select('network_discoverable')
     .eq('chef_id', validated.addressee_id)
     .maybeSingle()
@@ -914,7 +914,7 @@ export async function sendConnectionRequest(input: z.infer<typeof SendRequestSch
   }
 
   // Check for existing connection in either direction
-  const { data: existing } = await fromChefConnections(supabase)
+  const { data: existing } = await fromChefConnections(db)
     .select('id, status')
     .or(
       `and(requester_id.eq.${user.entityId},addressee_id.eq.${validated.addressee_id}),` +
@@ -929,7 +929,7 @@ export async function sendConnectionRequest(input: z.infer<typeof SendRequestSch
     if (ex.status === 'pending') throw new Error('Connection request already pending')
     // If declined, allow re-requesting by resetting to pending
     if (ex.status === 'declined') {
-      const { error } = await fromChefConnections(supabase)
+      const { error } = await fromChefConnections(db)
         .update({
           status: 'pending',
           request_message: validated.message ?? null,
@@ -944,7 +944,7 @@ export async function sendConnectionRequest(input: z.infer<typeof SendRequestSch
   }
 
   // Insert new connection request
-  const { error } = await fromChefConnections(supabase).insert({
+  const { error } = await fromChefConnections(db).insert({
     requester_id: user.entityId,
     addressee_id: validated.addressee_id,
     request_message: validated.message ?? null,
@@ -965,10 +965,10 @@ export async function sendConnectionRequest(input: z.infer<typeof SendRequestSch
 export async function respondToConnectionRequest(input: z.infer<typeof RespondSchema>) {
   const user = await requireChef()
   const validated = RespondSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify this request is addressed to the current chef and is pending
-  const { data: connection, error: fetchError } = await fromChefConnections(supabase)
+  const { data: connection, error: fetchError } = await fromChefConnections(db)
     .select('*')
     .eq('id', validated.connection_id)
     .eq('addressee_id', user.entityId)
@@ -984,7 +984,7 @@ export async function respondToConnectionRequest(input: z.infer<typeof RespondSc
       ? { status: 'accepted' as const, accepted_at: new Date().toISOString() }
       : { status: 'declined' as const, declined_at: new Date().toISOString() }
 
-  const { error } = await fromChefConnections(supabase)
+  const { error } = await fromChefConnections(db)
     .update(updateData)
     .eq('id', validated.connection_id)
 
@@ -1002,10 +1002,10 @@ export async function respondToConnectionRequest(input: z.infer<typeof RespondSc
 export async function removeConnection(connectionId: string) {
   const user = await requireChef()
   z.string().uuid().parse(connectionId)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify the user is part of this connection
-  const { data: conn } = await fromChefConnections(supabase)
+  const { data: conn } = await fromChefConnections(db)
     .select('requester_id, addressee_id')
     .eq('id', connectionId)
     .single()
@@ -1015,7 +1015,7 @@ export async function removeConnection(connectionId: string) {
     throw new Error('Connection not found')
   }
 
-  const { error } = await fromChefConnections(supabase)
+  const { error } = await fromChefConnections(db)
     .update({ status: 'declined', declined_at: new Date().toISOString() })
     .eq('id', connectionId)
 
@@ -1030,22 +1030,22 @@ export async function removeConnection(connectionId: string) {
  */
 export async function toggleNetworkDiscoverable(discoverable: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Upsert pattern (same as updateChefPreferences)
-  const { data: existing } = await fromChefPreferences(supabase)
+  const { data: existing } = await fromChefPreferences(db)
     .select('id')
     .eq('chef_id', user.entityId)
     .single()
 
   if (existing) {
-    const { error } = await fromChefPreferences(supabase)
+    const { error } = await fromChefPreferences(db)
       .update({ network_discoverable: discoverable })
       .eq('chef_id', user.entityId)
 
     if (error) throw new Error('Failed to update discoverability')
   } else {
-    const { error } = await fromChefPreferences(supabase).insert({
+    const { error } = await fromChefPreferences(db).insert({
       chef_id: user.entityId,
       tenant_id: user.tenantId!,
       network_discoverable: discoverable,
@@ -1065,9 +1065,9 @@ export async function toggleNetworkDiscoverable(discoverable: boolean) {
 export async function updateChefProfile(input: UpdateProfileInput) {
   const user = await requireChef()
   const validated = UpdateProfileSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('chefs').update(validated).eq('id', user.entityId)
+  const { error } = await db.from('chefs').update(validated).eq('id', user.entityId)
 
   if (error) {
     console.error('[updateChefProfile] Error:', error)
@@ -1086,7 +1086,7 @@ export async function uploadChefProfileImage(
   formData: FormData
 ): Promise<{ success: true; url: string }> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   const file = formData.get('image') as File | null
   if (!file) {
@@ -1103,7 +1103,7 @@ export async function uploadChefProfileImage(
     )
   }
 
-  const { data: currentChef } = await supabase
+  const { data: currentChef } = await db
     .from('chefs')
     .select('profile_image_url')
     .eq('id', user.entityId)
@@ -1136,7 +1136,7 @@ export async function uploadChefProfileImage(
   }
 
   const uploadFile = async () =>
-    supabase.storage.from(CHEF_PROFILE_IMAGES_BUCKET).upload(storagePath, uploadBody, {
+    db.storage.from(CHEF_PROFILE_IMAGES_BUCKET).upload(storagePath, uploadBody, {
       contentType: file.type,
       upsert: false,
     })
@@ -1149,7 +1149,7 @@ export async function uploadChefProfileImage(
       .toLowerCase()
       .includes('bucket')
   ) {
-    await ensureChefProfileImagesBucket(supabase)
+    await ensureChefProfileImagesBucket(db)
     const retry = await uploadFile()
     uploadError = retry.error
   }
@@ -1159,24 +1159,24 @@ export async function uploadChefProfileImage(
     throw new Error('Failed to upload profile image')
   }
 
-  const { data: publicUrlData } = supabase.storage
+  const { data: publicUrlData } = db.storage
     .from(CHEF_PROFILE_IMAGES_BUCKET)
     .getPublicUrl(storagePath)
 
   const publicUrl = publicUrlData.publicUrl
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('chefs')
     .update({ profile_image_url: publicUrl })
     .eq('id', user.entityId)
 
   if (updateError) {
     console.error('[uploadChefProfileImage] update profile error:', updateError)
-    await supabase.storage.from(CHEF_PROFILE_IMAGES_BUCKET).remove([storagePath])
+    await db.storage.from(CHEF_PROFILE_IMAGES_BUCKET).remove([storagePath])
     throw new Error('Image uploaded but failed to save profile')
   }
 
   if (previousPath && previousPath !== storagePath) {
-    await supabase.storage.from(CHEF_PROFILE_IMAGES_BUCKET).remove([previousPath])
+    await db.storage.from(CHEF_PROFILE_IMAGES_BUCKET).remove([previousPath])
   }
 
   revalidatePath('/network')
@@ -1193,14 +1193,14 @@ export async function uploadChefProfileImage(
 export async function createNetworkPost(input: z.infer<typeof CreatePostSchema>) {
   const user = await requireChef()
   const validated = CreatePostSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
-  const featurePreferenceMap = await getFeaturePreferenceMapForChef(supabase, user.entityId)
+  const db = createServerClient({ admin: true })
+  const featurePreferenceMap = await getFeaturePreferenceMapForChef(db, user.entityId)
 
   if (!featurePreferenceMap[validated.feature_key]) {
     throw new Error('That post type is currently disabled in your feed preferences')
   }
 
-  const { data, error } = await fromChefNetworkPosts(supabase)
+  const { data, error } = await fromChefNetworkPosts(db)
     .insert({
       author_chef_id: user.entityId,
       content: validated.content,
@@ -1226,9 +1226,9 @@ export async function updateNetworkFeaturePreference(
 ) {
   const user = await requireChef()
   const validated = UpdateFeaturePreferenceSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await fromChefNetworkFeaturePreferences(supabase).upsert(
+  const { error } = await fromChefNetworkFeaturePreferences(db).upsert(
     {
       chef_id: user.entityId,
       feature_key: validated.feature_key,
@@ -1296,13 +1296,13 @@ export async function requestNetworkHelp(input: z.infer<typeof RequestNetworkHel
 export async function createNetworkContactShare(input: z.infer<typeof CreateContactShareSchema>) {
   const user = await requireChef()
   const validated = CreateContactShareSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   if (validated.recipient_chef_id === user.entityId) {
     throw new Error('Cannot send a share to yourself')
   }
 
-  const { data: connection } = await fromChefConnections(supabase)
+  const { data: connection } = await fromChefConnections(db)
     .select('id')
     .eq('status', 'accepted')
     .or(
@@ -1316,7 +1316,7 @@ export async function createNetworkContactShare(input: z.infer<typeof CreateCont
     throw new Error('You can only share contacts with accepted connections')
   }
 
-  const { error } = await fromChefNetworkContactShares(supabase).insert({
+  const { error } = await fromChefNetworkContactShares(db).insert({
     sender_chef_id: user.entityId,
     recipient_chef_id: validated.recipient_chef_id,
     contact_name: validated.contact_name,
@@ -1344,9 +1344,9 @@ export async function respondToNetworkContactShare(
 ) {
   const user = await requireChef()
   const validated = RespondContactShareSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: share, error: shareError } = await fromChefNetworkContactShares(supabase)
+  const { data: share, error: shareError } = await fromChefNetworkContactShares(db)
     .select('id, recipient_chef_id, status')
     .eq('id', validated.share_id)
     .single()
@@ -1361,7 +1361,7 @@ export async function respondToNetworkContactShare(
     throw new Error('This share has already been responded to')
   }
 
-  const { error } = await fromChefNetworkContactShares(supabase)
+  const { error } = await fromChefNetworkContactShares(db)
     .update({
       status: validated.action,
       response_note: validated.response_note || null,

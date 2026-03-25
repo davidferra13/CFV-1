@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -37,9 +37,9 @@ export async function getGuestChanges(eventId: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_count_changes')
     .select('*')
     .eq('event_id', eventId)
@@ -66,7 +66,7 @@ export async function requestGuestChange(input: {
   cost_impact_cents?: number
 }): Promise<{ data: GuestCountChange | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (input.new_count < 0) {
     return { data: null, error: 'Guest count cannot be negative' }
@@ -76,7 +76,7 @@ export async function requestGuestChange(input: {
     return { data: null, error: 'New count must differ from previous count' }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_count_changes')
     .insert({
       event_id: input.event_id,
@@ -105,9 +105,9 @@ export async function approveGuestChange(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_count_changes')
     .update({
       approved: true,
@@ -125,7 +125,7 @@ export async function approveGuestChange(id: string): Promise<{
 
   // Update the event's guest_count to the new value
   try {
-    await supabase
+    await db
       .from('events')
       .update({ guest_count: data.new_count })
       .eq('id', data.event_id)

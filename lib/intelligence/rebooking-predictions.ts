@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -30,10 +30,10 @@ export interface RebookingInsights {
 export async function getRebookingPredictions(): Promise<RebookingInsights | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch clients with their completed events
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select(
       'id, full_name, total_events_count, last_event_date, first_event_date, status, loyalty_tier'
@@ -44,7 +44,7 @@ export async function getRebookingPredictions(): Promise<RebookingInsights | nul
   if (error || !clients || clients.length === 0) return null
 
   // Fetch completed event dates per client for interval calculation
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, event_date')
     .eq('tenant_id', tenantId)

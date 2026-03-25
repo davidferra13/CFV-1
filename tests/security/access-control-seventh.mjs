@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url'
 import crypto from 'crypto'
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
-import { createAnonClient } from '../../scripts/lib/supabase.mjs'
+import { createAnonClient } from '../../scripts/lib/db.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -41,8 +41,8 @@ function decodeBase64url(str) {
 }
 
 async function authenticate() {
-  const supabase = createAnonClient()
-  const { data, error } = await supabase.auth.signInWithPassword({ email: ATTACKER.email, password: ATTACKER.password })
+  const db = createAnonClient()
+  const { data, error } = await db.auth.signInWithPassword({ email: ATTACKER.email, password: ATTACKER.password })
   if (error) throw new Error(`Auth failed: ${error.message}`)
 
   const session = data.session
@@ -249,7 +249,7 @@ async function testJWT011(session) {
     const header = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }))
     const payload = base64url(JSON.stringify({ sub: ATTACKER.chefId, aud: ATTACKER.chefId }))
     // Sign with symmetric key pretending it's asymmetric
-    const sig = crypto.createHmac('sha256', SUPABASE_ANON_KEY).update(header + '.' + payload).digest('base64url')
+    const sig = crypto.createHmac('sha256', DATABASE_ANON_KEY).update(header + '.' + payload).digest('base64url')
     const confusedToken = header + '.' + payload + '.' + sig
 
     const { response } = await makeRequest(`${API_BASE}/api/events`, {

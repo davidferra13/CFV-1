@@ -36,18 +36,18 @@ The platform serves private chefs, catering operators, meal prep services, and f
 
 ## Technology Stack
 
-| Layer     | Technology                                   | Purpose                                        |
-| --------- | -------------------------------------------- | ---------------------------------------------- |
-| Framework | Next.js 14+ (App Router)                     | Full-stack React with server actions           |
-| Database  | Supabase (PostgreSQL + Auth + RLS + Storage) | Multi-tenant data, row-level security          |
-| Payments  | Stripe + Stripe Connect                      | Client payments, chef payouts                  |
-| Local AI  | Ollama (qwen3 models)                        | Private data processing (never leaves machine) |
-| Cloud AI  | Gemini                                       | Generic tasks only (no PII)                    |
-| Email     | Resend                                       | Transactional email with React templates       |
-| SMS       | Twilio                                       | Text notifications (rate-limited)              |
-| Push      | Web Push (RFC 8030, VAPID)                   | Browser push notifications                     |
-| Hosting   | Self-hosted (Windows 11 PC)                  | Three environments on localhost                |
-| Tunnels   | Cloudflare Tunnel                            | Expose beta/prod to internet                   |
+| Layer     | Technology                                     | Purpose                                        |
+| --------- | ---------------------------------------------- | ---------------------------------------------- |
+| Framework | Next.js 14+ (App Router)                       | Full-stack React with server actions           |
+| Database  | PostgreSQL (PostgreSQL + Auth + RLS + Storage) | Multi-tenant data, row-level security          |
+| Payments  | Stripe + Stripe Connect                        | Client payments, chef payouts                  |
+| Local AI  | Ollama (qwen3 models)                          | Private data processing (never leaves machine) |
+| Cloud AI  | Gemini                                         | Generic tasks only (no PII)                    |
+| Email     | Resend                                         | Transactional email with React templates       |
+| SMS       | Twilio                                         | Text notifications (rate-limited)              |
+| Push      | Web Push (RFC 8030, VAPID)                     | Browser push notifications                     |
+| Hosting   | Self-hosted (Windows 11 PC)                    | Three environments on localhost                |
+| Tunnels   | Cloudflare Tunnel                              | Expose beta/prod to internet                   |
 
 ---
 
@@ -322,7 +322,7 @@ Multi-channel communication hub.
 **Capabilities:**
 
 - Unified inbox (Gmail, SMS, inquiries, platform messages)
-- Real-time chat with clients (WebSocket via Supabase Realtime)
+- Real-time chat with clients (WebSocket via SSE realtime)
 - Message threads and conversation history
 - Email composer with templates
 - Auto-response settings and business hours
@@ -834,7 +834,7 @@ Service worker (`public/sw.js`) with:
 
 Root `middleware.ts` runs on every request:
 
-- **Auth check:** Verifies Supabase session, resolves role from `user_roles`
+- **Auth check:** Verifies PostgreSQL session, resolves role from `user_roles`
 - **Role-based routing:** Chefs to `/dashboard`, clients to `/my-events`, staff to `/staff-dashboard`, partners to `/partner/dashboard`
 - **Tenant resolution:** Derives `tenant_id` from session (never from request body)
 - **CSP headers:** Three security profiles:

@@ -51,7 +51,7 @@ test.describe('Chef Auth Session', () => {
 
   test('chef sign-out button is accessible in nav', async ({ page }) => {
     // Verify the sign-out control exists WITHOUT clicking it.
-    // Clicking sign-out calls supabase.auth.signOut() server-side, which invalidates
+    // Clicking sign-out calls db.auth.signOut() server-side, which invalidates
     // the shared JWT in .auth/chef.json and causes ALL subsequent tests to fail auth.
     // The suite is idempotent by design — destructive teardown tests are omitted.
     await page.goto(ROUTES.chefDashboard)

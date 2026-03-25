@@ -2,7 +2,7 @@
 # ============================================
 # ChefFlow Database Backup
 # ============================================
-# Creates a timestamped Supabase database backup.
+# Creates a timestamped PostgreSQL database backup.
 # Keeps the last 7 backups (configurable via RETENTION).
 #
 # Can be run manually or via cron/Task Scheduler.
@@ -54,13 +54,13 @@ log ""
 # Run the dump
 log "  Dumping database..."
 cd "$PROJECT_ROOT"
-npx supabase db dump --linked > "$BACKUP_DIR/$FILENAME" 2>/dev/null
+npx database db dump --linked > "$BACKUP_DIR/$FILENAME" 2>/dev/null
 
 # Verify the dump is not empty
 FILESIZE=$(wc -c < "$BACKUP_DIR/$FILENAME" 2>/dev/null | tr -d ' ')
 if [ "$FILESIZE" -lt 100 ] 2>/dev/null; then
   echo "  ERROR: Backup file is suspiciously small (${FILESIZE} bytes)"
-  echo "  The dump may have failed. Check Supabase connectivity."
+  echo "  The dump may have failed. Check PostgreSQL connectivity."
   rm -f "$BACKUP_DIR/$FILENAME"
   exit 1
 fi

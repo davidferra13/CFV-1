@@ -5,7 +5,7 @@
 // Helps chef avoid repeating the same menu and spots culinary patterns per client.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -47,7 +47,7 @@ export type ClientMenuHistory = {
 
 export async function getClientMenuHistory(clientId: string): Promise<ClientMenuHistory> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const empty: ClientMenuHistory = {
     entries: [],
@@ -57,7 +57,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   }
 
   // 1. Get all completed events for this client (with menu_id)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, occasion, guest_count, menu_id')
     .eq('client_id', clientId)
@@ -82,7 +82,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   >()
 
   if (menuIds.length > 0) {
-    const { data: menus } = await supabase
+    const { data: menus } = await db
       .from('menus')
       .select('id, name, cuisine_type, simple_mode, simple_mode_content')
       .in('id', menuIds)
@@ -110,7 +110,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   >() // keyed by menu_id → array of dishes
 
   if (nonSimpleMenuIds.length > 0) {
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('id, menu_id, course_number, course_name, name, dietary_tags, allergen_flags')
       .in('menu_id', nonSimpleMenuIds)
@@ -140,7 +140,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   const componentMap = new Map<string, string[]>() // dish_id → component names
 
   if (dishIds.length > 0) {
-    const { data: components } = await supabase
+    const { data: components } = await db
       .from('components')
       .select('dish_id, name')
       .in('dish_id', dishIds)

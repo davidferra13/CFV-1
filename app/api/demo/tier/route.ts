@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { readFileSync } from 'fs'
 import { revalidateTag } from 'next/cache'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export async function POST(req: NextRequest) {
   if (process.env.NODE_ENV === 'production') {
@@ -33,10 +33,10 @@ export async function POST(req: NextRequest) {
     return new NextResponse('Demo credentials not found. Run: npm run demo:setup', { status: 500 })
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const status = tier === 'pro' ? 'active' : 'canceled'
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({ subscription_status: status })
     .eq('id', demoChef.chefId)

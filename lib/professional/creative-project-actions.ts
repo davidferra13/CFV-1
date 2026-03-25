@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -12,9 +12,9 @@ export async function createCreativeProject(input: {
 }) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('chef_creative_projects').insert({
+  const { error } = await db.from('chef_creative_projects').insert({
     tenant_id: tenantId,
     dish_name: input.dish_name,
     cuisine: input.cuisine ?? null,
@@ -33,9 +33,9 @@ export async function updateCreativeProject(
 ) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_creative_projects')
     .update({ ...input, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -48,9 +48,9 @@ export async function updateCreativeProject(
 export async function deleteCreativeProject(id: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_creative_projects')
     .delete()
     .eq('id', id)
@@ -74,9 +74,9 @@ export async function listCreativeProjects(filters?: { status?: string }): Promi
 > {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('chef_creative_projects')
     .select('id, dish_name, cuisine, notes, status, photos, entry_date, created_at')
     .eq('tenant_id', tenantId)

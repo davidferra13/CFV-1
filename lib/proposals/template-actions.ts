@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -38,9 +38,9 @@ export async function createProposalTemplate(
 ): Promise<ProposalTemplate> {
   const user = await requireChef()
   const parsed = CreateTemplateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('proposal_templates')
     .insert({
       chef_id: user.tenantId!,
@@ -63,9 +63,9 @@ export async function createProposalTemplate(
 
 export async function listProposalTemplates(): Promise<ProposalTemplate[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('proposal_templates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -78,9 +78,9 @@ export async function listProposalTemplates(): Promise<ProposalTemplate[]> {
 
 export async function getProposalTemplate(id: string): Promise<ProposalTemplate> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('proposal_templates')
     .select('*')
     .eq('id', id)
@@ -94,9 +94,9 @@ export async function getProposalTemplate(id: string): Promise<ProposalTemplate>
 
 export async function deleteProposalTemplate(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('proposal_templates')
     .delete()
     .eq('id', id)

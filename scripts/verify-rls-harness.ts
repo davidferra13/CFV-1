@@ -3,19 +3,19 @@
 /**
  * ChefFlow V1 - RLS Verification Harness
  *
- * Tests multi-tenant isolation using REAL Supabase clients (not SQL simulation)
+ * Tests multi-tenant isolation using REAL database clients (not SQL simulation)
  *
  * Requirements:
- * - NEXT_PUBLIC_SUPABASE_URL
- * - NEXT_PUBLIC_SUPABASE_ANON_KEY
- * - SUPABASE_SERVICE_ROLE_KEY
+ * - NEXT_PUBLIC_DB_URL
+ * - NEXT_PUBLIC_DB_ANON_KEY
+ * - DB_SERVICE_ROLE_KEY
  *
  * Exit codes:
  * - 0: All tests PASS
  * - 1: Any test FAIL
  */
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { config } from 'dotenv'
 import { resolve } from 'path'
 
@@ -24,7 +24,7 @@ config({ path: resolve(__dirname, '../.env.local') })
 
 // NOTE: The compat layer bypasses RLS (direct DB). Both clients are admin-level.
 // RLS-specific tests that rely on anon vs service_role distinction will need
-// the original Supabase SDK if RLS enforcement testing is required.
+// the original SDK if RLS enforcement testing is required.
 const anonClient = createAdminClient()
 const serviceClient = createAdminClient()
 

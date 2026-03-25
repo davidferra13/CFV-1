@@ -1,6 +1,6 @@
-// @ts-nocheck - standalone script, Supabase client type mismatch with generated types
+// @ts-nocheck - standalone script, database client type mismatch with generated types
 // Demo Account Bootstrap
-// Creates/updates persistent demo chef + demo client accounts in Supabase.
+// Creates/updates persistent demo chef + demo client accounts in the database.
 // Idempotent - safe to run multiple times.
 //
 // Usage: npx tsx scripts/setup-demo-accounts.ts
@@ -9,7 +9,7 @@
 //   ensureAuthUser → upsertChef → ensureChefRole → ensureChefPreferences
 //   ensureAuthUser → upsertClient → ensureClientRole
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { mkdirSync, writeFileSync } from 'fs'
 import dotenv from 'dotenv'
 

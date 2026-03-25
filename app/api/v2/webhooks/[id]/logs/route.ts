@@ -9,7 +9,7 @@ export const GET = withApiAuth(
     if (!id) return apiNotFound('Webhook subscription')
 
     // Verify subscription ownership
-    const { data: endpoint } = await ctx.supabase
+    const { data: endpoint } = await ctx.db
       .from('webhook_endpoints' as any)
       .select('id')
       .eq('id', id)
@@ -29,7 +29,7 @@ export const GET = withApiAuth(
       }
     }
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('webhook_deliveries' as any)
       .select('*')
       .eq('endpoint_id', id)

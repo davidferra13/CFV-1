@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getEventFinancialSummaryFull } from '@/lib/events/financial-summary-actions'
 import { FoodCostVariance } from '@/components/inventory/food-cost-variance'
 import { VarianceAlertSettings } from '@/components/inventory/variance-alert-settings'
@@ -13,10 +13,10 @@ export const metadata: Metadata = { title: 'Food Cost Analysis - ChefFlow' }
 
 export default async function FoodCostAnalysisPage() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch recent completed events (last 20) to compute variance
-  const { data: recentEvents } = await supabase
+  const { data: recentEvents } = await db
     .from('events')
     .select('id, occasion, event_date')
     .eq('tenant_id', user.tenantId!)

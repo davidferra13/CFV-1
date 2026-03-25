@@ -94,11 +94,7 @@ export const ADMIN_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
   '/admin/system': {
     title: 'System Health',
     description: 'Database row counts and data integrity signals.',
-    features: [
-      'Row count grid',
-      'Integrity signals',
-      'External dashboard links (Supabase, self-hosted, Stripe)',
-    ],
+    features: ['Row count grid', 'Integrity signals', 'External dashboard links (Stripe)'],
   },
 
   '/admin/users': {

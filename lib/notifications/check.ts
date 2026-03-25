@@ -7,7 +7,7 @@
 'use server'
 
 import { requireAuth } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { Notification, NotificationCategory } from './types'
 
 // ─── Filtered queries ────────────────────────────────────────────────────
@@ -22,9 +22,9 @@ export async function getNotificationsByCategory(
   offset = 0
 ): Promise<Notification[]> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('notifications')
     .select('*')
     .eq('recipient_id', user.id)
@@ -47,9 +47,9 @@ export async function getNotificationsByCategory(
  */
 export async function getUnreadNotifications(limit = 20, offset = 0): Promise<Notification[]> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('notifications')
     .select('*')
     .eq('recipient_id', user.id)
@@ -72,9 +72,9 @@ export async function getUnreadNotifications(limit = 20, offset = 0): Promise<No
  */
 export async function getNotificationCount(category?: NotificationCategory): Promise<number> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('notifications')
     .select('id', { count: 'exact', head: true })
     .eq('recipient_id', user.id)

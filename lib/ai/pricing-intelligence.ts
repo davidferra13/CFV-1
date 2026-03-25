@@ -7,7 +7,7 @@
 // Output is INSIGHT ONLY - never writes to ledger or quote records.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from './parse-ollama'
 import { withAiFallback } from './with-ai-fallback'
 import { calculatePricingFormula } from '@/lib/formulas/pricing-intelligence'
@@ -33,10 +33,10 @@ export type PricingIntelligenceResult = z.infer<typeof PricingIntelligenceSchema
 
 export async function getPricingIntelligence(eventId: string): Promise<PricingIntelligenceResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [eventResult, historicalResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'occasion, guest_count, event_date, service_style, dietary_restrictions, quoted_price_cents'
@@ -46,7 +46,7 @@ export async function getPricingIntelligence(eventId: string): Promise<PricingIn
       .single(),
     // Historical accepted/paid events for pricing reference
     // Note: amount_paid_cents doesn't exist on events table; using quoted_price_cents only
-    supabase
+    db
       .from('events')
       .select('occasion, guest_count, quoted_price_cents, service_style, event_date')
       .eq('tenant_id', user.tenantId!)

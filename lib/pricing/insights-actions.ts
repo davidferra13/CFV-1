@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   calculatePricingFormula,
   type CurrentEvent,
@@ -27,10 +27,10 @@ export async function getPricingInsights(
 ): Promise<PricingInsightsResponse> {
   try {
     const user = await requireChef()
-    const supabase = createServerClient()
+    const db = createServerClient()
 
     // Fetch all completed events for this tenant with pricing data
-    const { data: events, error: fetchError } = await supabase
+    const { data: events, error: fetchError } = await db
       .from('events')
       .select('occasion, guest_count, quoted_price_cents, service_style, event_date, status')
       .eq('tenant_id', user.tenantId!)

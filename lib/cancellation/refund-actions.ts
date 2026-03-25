@@ -6,7 +6,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   computeCancellationRefund,
   DEFAULT_POLICY,
@@ -34,10 +34,10 @@ export type RefundResult = {
  */
 export async function getCancellationRefundRecommendation(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       'id, tenant_id, client_id, status, event_date, deposit_amount_cents, cancelled_at, created_at'
@@ -50,8 +50,8 @@ export async function getCancellationRefundRecommendation(eventId: string) {
 
   // Fetch chef's cancellation policy config
   // Cast to any: cancellation_cutoff_days and deposit_refundable are new columns from
-  // migration 20260228000006, not yet reflected in types/database.ts until supabase gen types.
-  const { data: chef } = (await supabase
+  // migration 20260228000006, not yet reflected in types/database.ts until db gen types.
+  const { data: chef } = (await db
     .from('chefs')
     .select('cancellation_cutoff_days, deposit_refundable')
     .eq('id', user.tenantId!)
@@ -63,14 +63,14 @@ export async function getCancellationRefundRecommendation(eventId: string) {
   }
 
   // Fetch financial summary
-  const { data: summary } = await supabase
+  const { data: summary } = await db
     .from('event_financial_summary')
     .select('total_paid_cents, total_refunded_cents')
     .eq('event_id', eventId)
     .single()
 
   // Fetch deposit entries specifically
-  const { data: depositEntries } = await supabase
+  const { data: depositEntries } = await db
     .from('ledger_entries')
     .select('amount_cents')
     .eq('event_id', eventId)
@@ -89,7 +89,7 @@ export async function getCancellationRefundRecommendation(eventId: string) {
   }
 
   // Find first payment date for 24-hr window check
-  const { data: firstPayment } = await supabase
+  const { data: firstPayment } = await db
     .from('ledger_entries')
     .select('created_at')
     .eq('event_id', eventId)
@@ -142,10 +142,10 @@ export async function initiateRefund(input: InitiateRefundInput): Promise<Refund
   }
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Validate event ownership and cancelled status
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id, client_id, status, occasion, event_date, deposit_amount_cents')
     .eq('id', eventId)
@@ -187,8 +187,8 @@ export async function initiateRefund(input: InitiateRefundInput): Promise<Refund
   } else {
     // ── Offline refund path ──────────────────────────────────────────────────
     // Write ledger entry manually (negative amount, is_refund=true)
-    const supabaseAdmin = createServerClient({ admin: true })
-    const { data: ledgerEntry, error: ledgerError } = await supabaseAdmin
+    const dbAdmin = createServerClient({ admin: true })
+    const { data: ledgerEntry, error: ledgerError } = await dbAdmin
       .from('ledger_entries')
       .insert({
         tenant_id: event.tenant_id,
@@ -217,14 +217,14 @@ export async function initiateRefund(input: InitiateRefundInput): Promise<Refund
 
   // ── Send client refund notification email ────────────────────────────────
   try {
-    const supabaseAdmin = createServerClient({ admin: true })
-    const { data: client } = await supabaseAdmin
+    const dbAdmin = createServerClient({ admin: true })
+    const { data: client } = await dbAdmin
       .from('clients')
       .select('email, full_name')
       .eq('id', event.client_id)
       .single()
 
-    const { data: chef } = await supabaseAdmin
+    const { data: chef } = await dbAdmin
       .from('chefs')
       .select('business_name')
       .eq('id', event.tenant_id)

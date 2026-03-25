@@ -6,7 +6,7 @@
 
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { resolveOwnerChefId } from '@/lib/platform/owner-account'
 
 interface ContactFormData {
@@ -50,9 +50,9 @@ export async function submitContactForm(data: ContactFormData) {
   }
 
   // Use admin client since this is a public form (no auth required)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: submission, error } = await supabase
+  const { data: submission, error } = await db
     .from('contact_submissions')
     .insert({ name, email, subject, message })
     .select('id')
@@ -64,10 +64,10 @@ export async function submitContactForm(data: ContactFormData) {
   }
 
   // Auto-assign to resolved owner account.
-  const ownerChefId = await resolveOwnerChefId(supabase)
+  const ownerChefId = await resolveOwnerChefId(db)
   if (ownerChefId && submission?.id) {
     try {
-      await autoAssignToOwner(supabase, submission.id, ownerChefId, {
+      await autoAssignToOwner(db, submission.id, ownerChefId, {
         name,
         email,
         subject,
@@ -88,7 +88,7 @@ export async function submitContactForm(data: ContactFormData) {
  * Uses admin client - this is a system-level operation, not user-initiated.
  */
 async function autoAssignToOwner(
-  supabase: any,
+  db: any,
   submissionId: string,
   ownerChefId: string,
   contact: { name: string; email: string; subject: string | null; message: string }
@@ -96,7 +96,7 @@ async function autoAssignToOwner(
   // Check if a client with this email already exists for the owner
   let clientId: string | null = null
   if (contact.email) {
-    const { data: existingClient } = await supabase
+    const { data: existingClient } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', ownerChefId)
@@ -120,7 +120,7 @@ async function autoAssignToOwner(
     .join('\n\n')
 
   // Create inquiry for the platform owner
-  const { data: inquiry, error: inquiryError } = await supabase
+  const { data: inquiry, error: inquiryError } = await db
     .from('inquiries')
     .insert({
       tenant_id: ownerChefId,
@@ -138,7 +138,7 @@ async function autoAssignToOwner(
   }
 
   // Mark submission as claimed with back-reference
-  await supabase
+  await db
     .from('contact_submissions')
     .update({
       claimed_by_chef_id: ownerChefId,

@@ -5,7 +5,7 @@
 // DRAFT-FIRST: Tier 2 results are drafts. Nothing is sent or saved until chef approves.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { parseCommandIntent } from '@/lib/ai/command-intent-parser'
 import { getAgentAction, isAgentAction } from '@/lib/ai/agent-registry'
@@ -209,22 +209,18 @@ async function executeClientSearch(inputs: Record<string, unknown>) {
   // Enrich with dietary/allergy data (safety-critical)
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const clientIds = clients.map((c) => c.id)
 
   const [{ data: enriched }, { data: eventCounts }] = await Promise.all([
-    supabase
+    db
       .from('clients')
       .select('id, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points')
       .eq('tenant_id', tenantId)
       .in('id', clientIds),
     // Frequency-based resolution: rank by event count when multiple clients match
     clients.length > 1
-      ? supabase
-          .from('events')
-          .select('client_id')
-          .eq('tenant_id', tenantId)
-          .in('client_id', clientIds)
+      ? db.from('events').select('client_id').eq('tenant_id', tenantId).in('client_id', clientIds)
       : Promise.resolve({ data: [] }),
   ])
 
@@ -285,8 +281,8 @@ async function executeCalendarAvailability(inputs: Record<string, unknown>) {
 }
 
 async function executeEventListUpcoming(tenantId: string) {
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('events')
     .select('id, occasion, event_date, status, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -306,15 +302,15 @@ async function executeEventListUpcoming(tenantId: string) {
 }
 
 async function executeFinanceSummary(tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, status')
     .eq('tenant_id', tenantId)
     .not('status', 'in', '("cancelled")')
 
-  const { data: ledger } = await supabase
+  const { data: ledger } = await db
     .from('ledger_entries')
     .select('amount_cents, entry_type')
     .eq('tenant_id', tenantId)
@@ -398,8 +394,8 @@ async function executeClientDetails(inputs: Record<string, unknown>) {
 
   // Load full client with all fields including dietary, loyalty, and notes
   const user = await requireChef()
-  const supabase: any = createServerClient()
-  const { data: client } = await supabase
+  const db: any = createServerClient()
+  const { data: client } = await db
     .from('clients')
     .select(
       'id, full_name, email, phone, status, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points, total_events_count, lifetime_value_cents, preferred_contact_method, address'
@@ -433,10 +429,10 @@ async function executeClientDetails(inputs: Record<string, unknown>) {
 
 async function executeEventDetails(inputs: Record<string, unknown>, tenantId: string) {
   const eventName = String(inputs.eventName ?? '')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Search events by occasion
-  const { data } = await supabase
+  const { data } = await db
     .from('events')
     .select('id, occasion, event_date, status, guest_count, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -470,9 +466,9 @@ async function executeEventListByStatus(inputs: Record<string, unknown>, tenantI
     | 'in_progress'
     | 'completed'
     | 'cancelled'
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('events')
     .select('id, occasion, event_date, status, guest_count, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -1009,10 +1005,10 @@ async function executeLoyaltyStatus(inputs: Record<string, unknown>, tenantId: s
   if (!clients.length) throw new Error(`Could not find a client matching "${clientName}".`)
 
   const client = clients[0]
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get loyalty data (loyalty_accounts doesn't exist - derive from loyalty_transactions)
-  const { data: loyaltyTxns } = await supabase
+  const { data: loyaltyTxns } = await db
     .from('loyalty_transactions')
     .select('points, type')
     .eq('tenant_id', tenantId)
@@ -1041,7 +1037,7 @@ async function executeLoyaltyStatus(inputs: Record<string, unknown>, tenantId: s
   }
 
   // Get event count for this client
-  const { count: eventCount } = await supabase
+  const { count: eventCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -1077,10 +1073,10 @@ async function executeLoyaltyStatus(inputs: Record<string, unknown>, tenantId: s
 
 async function executeEventAllergens(inputs: Record<string, unknown>, tenantId: string) {
   const eventName = String(inputs.eventName ?? '')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find the event
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       'id, occasion, event_date, client_id, client:clients(full_name, dietary_restrictions, allergies)'
@@ -1094,7 +1090,7 @@ async function executeEventAllergens(inputs: Record<string, unknown>, tenantId: 
   const client = event.client as Record<string, unknown> | null
 
   // Get menu items linked to this event (via menus table, not event_menus join table)
-  const { data: menuData } = await supabase
+  const { data: menuData } = await db
     .from('menus')
     .select('id, name, dishes(name, description, dietary_tags)')
     .eq('event_id', event.id as string)
@@ -1123,8 +1119,8 @@ async function executeEventAllergens(inputs: Record<string, unknown>, tenantId: 
 }
 
 async function executeWaitlistList(tenantId: string) {
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('waitlist_entries')
     .select('id, client:clients(full_name), requested_date, occasion, status, created_at')
     .eq('tenant_id', tenantId)
@@ -1147,10 +1143,10 @@ async function executeWaitlistList(tenantId: string) {
 
 async function executeQuoteCompare(inputs: Record<string, unknown>, tenantId: string) {
   const eventName = String(inputs.eventName ?? '')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find the event
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion')
     .eq('tenant_id', tenantId)
@@ -1161,7 +1157,7 @@ async function executeQuoteCompare(inputs: Record<string, unknown>, tenantId: st
   const event = events[0] as Record<string, unknown>
 
   // Get all quotes for this event
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select(
       'id, name, status, total_cents, deposit_cents, pricing_notes, created_at, version_number'
@@ -2254,10 +2250,10 @@ export async function approveTask(
       case 'event.create_draft': {
         const d = data as { draft?: Record<string, unknown>; error?: string } | null
         if (d?.draft && !d.error) {
-          const supabase: any = createServerClient()
+          const db: any = createServerClient()
           const draft = d.draft
           try {
-            const { data: event, error } = await supabase
+            const { data: event, error } = await db
               .from('events')
               .insert({
                 tenant_id: tenantId,

@@ -3,7 +3,7 @@
 // Status: 'available' | 'blocked' | 'unavailable'
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -30,10 +30,10 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
   }
 
   try {
-    const supabase = createServerClient({ admin: true })
+    const db = createServerClient({ admin: true })
 
     // Resolve slug -> chef
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('id, booking_enabled, booking_min_notice_days')
       .eq('booking_slug', params.chefSlug)
@@ -71,14 +71,14 @@ export async function GET(request: NextRequest, { params }: { params: { chefSlug
 
     // Fetch confirmed/in_progress events (block those dates)
     const [eventsResult, blocksResult] = await Promise.all([
-      supabase
+      db
         .from('events')
         .select('event_date')
         .eq('tenant_id', tenantId)
         .in('status', ['confirmed', 'in_progress', 'paid', 'accepted'])
         .gte('event_date', startDate)
         .lte('event_date', `${endDate}T23:59:59Z`),
-      supabase
+      db
         .from('chef_availability_blocks')
         .select('block_date, block_type')
         .eq('chef_id', tenantId)

@@ -6,7 +6,7 @@
 // An invitation can be sent later from the normal clients page.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -27,7 +27,7 @@ export type ImportClientInput = z.infer<typeof ImportClientSchema>
 
 export async function importClientDirect(input: ImportClientInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validated = ImportClientSchema.parse(input)
 
   const email = validated.email?.trim() || null
@@ -36,7 +36,7 @@ export async function importClientDirect(input: ImportClientInput) {
 
   // If email provided, check for duplicate within tenant
   if (email) {
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', user.tenantId!)
@@ -48,7 +48,7 @@ export async function importClientDirect(input: ImportClientInput) {
     }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .insert({
       tenant_id: user.tenantId!,
@@ -84,9 +84,9 @@ export async function importClientDirect(input: ImportClientInput) {
 // Lightweight client list for the loyalty seeding page
 export async function getImportedClients() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('clients')
     .select('id, full_name, loyalty_points, loyalty_tier, total_events_count')
     .eq('tenant_id', user.tenantId!)

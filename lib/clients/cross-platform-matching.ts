@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { namesMatch, normalizePhone } from '@/lib/utils/name-matching'
 import { revalidatePath } from 'next/cache'
 
@@ -18,10 +18,10 @@ export interface ClientMatch {
 export async function findPotentialClientMatches(clientId: string): Promise<ClientMatch[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch target client
-  const { data: target } = await supabase
+  const { data: target } = await db
     .from('clients')
     .select('id, full_name, email, phone')
     .eq('id', clientId)
@@ -31,7 +31,7 @@ export async function findPotentialClientMatches(clientId: string): Promise<Clie
   if (!target) return []
 
   // Fetch all other active clients for this tenant
-  const { data: candidates } = await supabase
+  const { data: candidates } = await db
     .from('clients')
     .select('id, full_name, email, phone')
     .eq('tenant_id', tenantId)
@@ -73,12 +73,12 @@ export async function findPotentialClientMatches(clientId: string): Promise<Clie
 
     // Fetch inquiry and event counts for this candidate
     const [inquiryResult, eventResult] = await Promise.all([
-      supabase
+      db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('client_id', candidate.id)
         .eq('tenant_id', tenantId),
-      supabase
+      db
         .from('events')
         .select('id', { count: 'exact', head: true })
         .eq('client_id', candidate.id)
@@ -112,7 +112,7 @@ export async function mergeClients(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (keepClientId === mergeClientId) {
     return { success: false, error: 'Cannot merge a client into itself' }
@@ -120,13 +120,13 @@ export async function mergeClients(
 
   // Verify both clients belong to this tenant
   const [{ data: keepClient }, { data: mergeClient }] = await Promise.all([
-    supabase
+    db
       .from('clients')
       .select('id, full_name, email, phone')
       .eq('id', keepClientId)
       .eq('tenant_id', tenantId)
       .single(),
-    supabase
+    db
       .from('clients')
       .select('id, full_name, email, phone')
       .eq('id', mergeClientId)
@@ -139,28 +139,28 @@ export async function mergeClients(
   }
 
   // Move inquiries to kept client
-  await supabase
+  await db
     .from('inquiries')
     .update({ client_id: keepClientId })
     .eq('client_id', mergeClientId)
     .eq('tenant_id', tenantId)
 
   // Move events to kept client
-  await supabase
+  await db
     .from('events')
     .update({ client_id: keepClientId })
     .eq('client_id', mergeClientId)
     .eq('tenant_id', tenantId)
 
   // Move messages to kept client
-  await supabase
+  await db
     .from('messages')
     .update({ client_id: keepClientId })
     .eq('client_id', mergeClientId)
     .eq('tenant_id', tenantId)
 
   // Soft-delete the merged client
-  await supabase
+  await db
     .from('clients')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', mergeClientId)
@@ -168,7 +168,7 @@ export async function mergeClients(
 
   // Insert audit log (non-blocking)
   try {
-    await supabase.from('client_merge_log').insert({
+    await db.from('client_merge_log').insert({
       chef_id: tenantId,
       kept_client_id: keepClientId,
       merged_client_id: mergeClientId,

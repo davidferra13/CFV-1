@@ -33,27 +33,23 @@ describe('Runtime log regression guards', () => {
   })
 
   it('ships follow-up migrations for collab recursion and prep-block drift', () => {
-    const collabFix = read(
-      'supabase/migrations/20260330000033_fix_collab_handoff_rls_recursion.sql'
-    )
-    const prepBlocksCatchup = read(
-      'supabase/migrations/20260322000058_event_prep_blocks_catchup.sql'
-    )
-    const platingGuides = read('supabase/migrations/20260330000082_plating_guides.sql')
-    const cascadingFoodCosts = read('supabase/migrations/20260330000095_cascading_food_costs.sql')
-    const ingredientSeedData = read('supabase/migrations/20260331000001_ingredient_seed_data.sql')
-    const floorPlans = read('supabase/migrations/20260331000007_floor_plans_and_multi_day.sql')
-    const mealPrepDeliveries = read('supabase/migrations/20260331000008_meal_prep_deliveries.sql')
+    const collabFix = read('db/migrations/20260330000033_fix_collab_handoff_rls_recursion.sql')
+    const prepBlocksCatchup = read('db/migrations/20260322000058_event_prep_blocks_catchup.sql')
+    const platingGuides = read('db/migrations/20260330000082_plating_guides.sql')
+    const cascadingFoodCosts = read('db/migrations/20260330000095_cascading_food_costs.sql')
+    const ingredientSeedData = read('db/migrations/20260331000001_ingredient_seed_data.sql')
+    const floorPlans = read('db/migrations/20260331000007_floor_plans_and_multi_day.sql')
+    const mealPrepDeliveries = read('db/migrations/20260331000008_meal_prep_deliveries.sql')
     const march31AuthFixes = [
-      'supabase/migrations/20260331000008_meal_prep_deliveries.sql',
-      'supabase/migrations/20260331000009_meal_prep_containers_preferences_nutrition.sql',
-      'supabase/migrations/20260331000010_meal_prep_batch_log.sql',
-      'supabase/migrations/20260331000011_kds_tickets.sql',
-      'supabase/migrations/20260331000012_product_modifier_system.sql',
-      'supabase/migrations/20260331000013_daily_specials.sql',
-      'supabase/migrations/20260331000018_bakery_batches_and_fermentation.sql',
-      'supabase/migrations/20260331000028_communication_log.sql',
-      'supabase/migrations/20260331000029_freelance_staff_and_site_assessments.sql',
+      'db/migrations/20260331000008_meal_prep_deliveries.sql',
+      'db/migrations/20260331000009_meal_prep_containers_preferences_nutrition.sql',
+      'db/migrations/20260331000010_meal_prep_batch_log.sql',
+      'db/migrations/20260331000011_kds_tickets.sql',
+      'db/migrations/20260331000012_product_modifier_system.sql',
+      'db/migrations/20260331000013_daily_specials.sql',
+      'db/migrations/20260331000018_bakery_batches_and_fermentation.sql',
+      'db/migrations/20260331000028_communication_log.sql',
+      'db/migrations/20260331000029_freelance_staff_and_site_assessments.sql',
     ].map(read)
 
     assert.ok(
@@ -100,7 +96,7 @@ describe('Runtime log regression guards', () => {
     )
     assert.ok(
       /ALTER TABLE product_projections[\s\S]+ADD COLUMN IF NOT EXISTS station_id/.test(
-        read('supabase/migrations/20260331000011_kds_tickets.sql')
+        read('db/migrations/20260331000011_kds_tickets.sql')
       ),
       'KDS migration must add station routing to product_projections, not the nonexistent products table'
     )

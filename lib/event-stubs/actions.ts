@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { z } from 'zod'
 import type { Json } from '@/types/database'
@@ -26,10 +26,10 @@ const CreateStubSchema = z.object({
  */
 export async function createEventStub(input: z.infer<typeof CreateStubSchema>): Promise<EventStub> {
   const validated = CreateStubSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Resolve profile
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id, display_name')
     .eq('profile_token', validated.profileToken)
@@ -38,7 +38,7 @@ export async function createEventStub(input: z.infer<typeof CreateStubSchema>): 
   if (!profile) throw new Error('Invalid profile token')
 
   // Create stub
-  const { data: stub, error } = await supabase
+  const { data: stub, error } = await db
     .from('event_stubs')
     .insert({
       created_by_profile_id: profile.id,
@@ -56,7 +56,7 @@ export async function createEventStub(input: z.infer<typeof CreateStubSchema>): 
 
   // Optionally create a hub group for collaborative planning
   if (validated.createGroup !== false) {
-    const { data: group } = await supabase
+    const { data: group } = await db
       .from('hub_groups')
       .insert({
         name: validated.title,
@@ -69,7 +69,7 @@ export async function createEventStub(input: z.infer<typeof CreateStubSchema>): 
 
     if (group) {
       // Link stub to group
-      const { error: linkErr } = await supabase
+      const { error: linkErr } = await db
         .from('event_stubs')
         .update({ hub_group_id: group.id })
         .eq('id', stub.id)
@@ -78,7 +78,7 @@ export async function createEventStub(input: z.infer<typeof CreateStubSchema>): 
       }
 
       // Add creator as owner of the group
-      await supabase.from('hub_group_members').insert({
+      await db.from('hub_group_members').insert({
         group_id: group.id,
         profile_id: profile.id,
         role: 'owner',
@@ -88,7 +88,7 @@ export async function createEventStub(input: z.infer<typeof CreateStubSchema>): 
       })
 
       // Post system message
-      await supabase.from('hub_messages').insert({
+      await db.from('hub_messages').insert({
         group_id: group.id,
         author_profile_id: profile.id,
         message_type: 'system',
@@ -110,9 +110,9 @@ export async function createEventStub(input: z.infer<typeof CreateStubSchema>): 
  * Get an event stub by ID.
  */
 export async function getEventStub(stubId: string): Promise<EventStub | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase.from('event_stubs').select('*').eq('id', stubId).single()
+  const { data, error } = await db.from('event_stubs').select('*').eq('id', stubId).single()
 
   if (error && error.code !== 'PGRST116') {
     throw new Error(`Failed to load event stub: ${error.message}`)
@@ -124,9 +124,9 @@ export async function getEventStub(stubId: string): Promise<EventStub | null> {
  * Get all event stubs created by a profile.
  */
 export async function getProfileEventStubs(profileToken: string): Promise<EventStub[]> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', profileToken)
@@ -134,7 +134,7 @@ export async function getProfileEventStubs(profileToken: string): Promise<EventS
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_stubs')
     .select('*')
     .eq('created_by_profile_id', profile.id)
@@ -161,9 +161,9 @@ const UpdateStubSchema = z.object({
  */
 export async function updateEventStub(input: z.infer<typeof UpdateStubSchema>): Promise<EventStub> {
   const validated = UpdateStubSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', validated.profileToken)
@@ -172,7 +172,7 @@ export async function updateEventStub(input: z.infer<typeof UpdateStubSchema>): 
   if (!profile) throw new Error('Invalid profile token')
 
   // Verify ownership
-  const { data: stub } = await supabase
+  const { data: stub } = await db
     .from('event_stubs')
     .select('created_by_profile_id, status')
     .eq('id', validated.stubId)
@@ -187,7 +187,7 @@ export async function updateEventStub(input: z.infer<typeof UpdateStubSchema>): 
   }
 
   const { stubId, profileToken, ...updates } = validated
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_stubs')
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', stubId)
@@ -202,9 +202,9 @@ export async function updateEventStub(input: z.infer<typeof UpdateStubSchema>): 
  * Mark a stub as seeking a chef.
  */
 export async function seekChef(input: { stubId: string; profileToken: string }): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('profile_token', input.profileToken)
@@ -212,7 +212,7 @@ export async function seekChef(input: { stubId: string; profileToken: string }):
 
   if (!profile) throw new Error('Invalid profile token')
 
-  const { data: stub } = await supabase
+  const { data: stub } = await db
     .from('event_stubs')
     .select('created_by_profile_id, status, hub_group_id')
     .eq('id', input.stubId)
@@ -223,7 +223,7 @@ export async function seekChef(input: { stubId: string; profileToken: string }):
     throw new Error('Only the creator can seek a chef')
   }
 
-  await supabase
+  await db
     .from('event_stubs')
     .update({ status: 'seeking_chef', updated_at: new Date().toISOString() })
     .eq('id', input.stubId)
@@ -231,7 +231,7 @@ export async function seekChef(input: { stubId: string; profileToken: string }):
   // Post system message if group exists
   if (stub.hub_group_id) {
     try {
-      await supabase.from('hub_messages').insert({
+      await db.from('hub_messages').insert({
         group_id: stub.hub_group_id,
         author_profile_id: profile.id,
         message_type: 'system',
@@ -258,20 +258,16 @@ export async function adoptEventStub(input: {
     throw new Error('Unauthorized')
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Get stub
-  const { data: stub } = await supabase
-    .from('event_stubs')
-    .select('*')
-    .eq('id', input.stubId)
-    .single()
+  const { data: stub } = await db.from('event_stubs').select('*').eq('id', input.stubId).single()
 
   if (!stub) throw new Error('Event stub not found')
   if (stub.status === 'adopted') throw new Error('Stub already adopted')
 
   // Get chef name for system message
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('business_name')
     .eq('id', input.tenantId)
@@ -279,7 +275,7 @@ export async function adoptEventStub(input: {
 
   // Look up or create a client for the stub creator
   // Stubs are created by hub guest profiles - we need a client_id for the event
-  const { data: creatorProfile } = await supabase
+  const { data: creatorProfile } = await db
     .from('hub_guest_profiles')
     .select('email, display_name, client_id')
     .eq('id', stub.created_by_profile_id)
@@ -288,7 +284,7 @@ export async function adoptEventStub(input: {
   let clientId = creatorProfile?.client_id
   if (!clientId) {
     // Create a minimal client record for this guest
-    const { data: newClient } = await supabase
+    const { data: newClient } = await db
       .from('clients')
       .insert({
         tenant_id: input.tenantId,
@@ -302,7 +298,7 @@ export async function adoptEventStub(input: {
   if (!clientId) throw new Error('Could not resolve client for stub')
 
   // Create a real event from stub data
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .insert({
       tenant_id: input.tenantId,
@@ -323,7 +319,7 @@ export async function adoptEventStub(input: {
   if (eventError) throw new Error(`Failed to create event: ${eventError.message}`)
 
   // Update stub with adoption info
-  await supabase
+  await db
     .from('event_stubs')
     .update({
       adopted_event_id: event.id,
@@ -336,7 +332,7 @@ export async function adoptEventStub(input: {
 
   // If there's a hub group, link it to the real event and add chef
   if (stub.hub_group_id) {
-    await supabase
+    await db
       .from('hub_groups')
       .update({
         event_id: event.id,
@@ -346,14 +342,14 @@ export async function adoptEventStub(input: {
       .eq('id', stub.hub_group_id)
 
     // Link event to group events
-    await supabase.from('hub_group_events').insert({
+    await db.from('hub_group_events').insert({
       group_id: stub.hub_group_id,
       event_id: event.id,
     })
 
     // Post system message
     try {
-      await supabase.from('hub_messages').insert({
+      await db.from('hub_messages').insert({
         group_id: stub.hub_group_id,
         author_profile_id: stub.created_by_profile_id,
         message_type: 'system',

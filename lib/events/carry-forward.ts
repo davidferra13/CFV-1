@@ -6,7 +6,7 @@
 // the event detail page to bridge physical inventory between events.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type CarryForwardItem = {
   id: string
@@ -29,10 +29,10 @@ export async function getAvailableCarryForwardItems(
   currentEventId: string
 ): Promise<CarryForwardItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch reusable leftovers from other events (no transfer yet)
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('unused_ingredients')
     .select(
       `

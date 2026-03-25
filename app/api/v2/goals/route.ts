@@ -60,7 +60,7 @@ export const GET = withApiAuth(
     const status = url.searchParams.get('status')
     const goalType = url.searchParams.get('goal_type')
 
-    let query = (ctx.supabase as any)
+    let query = (ctx.db as any)
       .from('chef_goals')
       .select('*', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)
@@ -115,7 +115,7 @@ export const POST = withApiAuth(
     ]
     const trackingMethod = autoTrackedTypes.includes(input.goal_type) ? 'auto' : 'manual_count'
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('chef_goals')
       .insert({
         tenant_id: ctx.tenantId,

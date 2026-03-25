@@ -8,7 +8,7 @@ import {
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const REQUIRED_ENV_VARS = ['NEXT_PUBLIC_SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_ANON_KEY'] as const
+const REQUIRED_ENV_VARS = ['NEXT_PUBLIC_DB_URL', 'NEXT_PUBLIC_DB_ANON_KEY'] as const
 
 function isStrict(request: NextRequest): boolean {
   return request.nextUrl.searchParams.get('strict') === '1'

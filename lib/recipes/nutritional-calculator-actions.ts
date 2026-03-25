@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getNutritionSummary, searchFoods } from '@/lib/nutrition/usda'
 
 const DraftIngredientSchema = z.object({
@@ -252,9 +252,9 @@ export async function saveRecipeNutritionalSnapshot(
   snapshot: NutritionalSnapshot
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  await supabase
+  await db
     .from('recipes')
     .update({
       calories_per_serving: snapshot.perServing.calories,
@@ -279,7 +279,7 @@ export async function saveRecipeNutritionalSnapshot(
   for (const row of snapshot.ingredients) {
     if (!row.matched || !row.per100g) continue
 
-    await supabase
+    await db
       .from('ingredients')
       .update({
         nutrition_calories_per_100g: row.per100g.calories,
@@ -301,9 +301,9 @@ export async function saveRecipeNutritionalSnapshot(
 
 export async function recalculateAndSaveRecipeNutrition(recipeId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipe, error: recipeError } = await supabase
+  const { data: recipe, error: recipeError } = await db
     .from('recipes')
     .select('id, servings, yield_quantity')
     .eq('id', recipeId)
@@ -314,7 +314,7 @@ export async function recalculateAndSaveRecipeNutrition(recipeId: string) {
     throw new Error('Recipe not found')
   }
 
-  const { data: ingredients, error: ingredientError } = await supabase
+  const { data: ingredients, error: ingredientError } = await db
     .from('recipe_ingredients')
     .select(
       `

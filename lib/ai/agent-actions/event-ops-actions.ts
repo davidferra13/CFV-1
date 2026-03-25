@@ -20,15 +20,15 @@ import { recordTip, updateMileage } from '@/lib/events/financial-summary-actions
 import { acknowledgeScopeDrift } from '@/lib/events/scope-drift-actions'
 import { generatePrepTimeline } from '@/lib/ai/prep-timeline-actions'
 import { suggestPhotoTags, confirmPhotoTag } from '@/lib/events/photo-tagging-actions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
 // ─── Event Finder Helper ─────────────────────────────────────────────────────
 
 async function findEvent(identifier: string, tenantId: string) {
-  const supabase: any = createServerClient()
-  const { data: events } = await supabase
+  const db: any = createServerClient()
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, status, client:clients(full_name)')
     .eq('tenant_id', tenantId)

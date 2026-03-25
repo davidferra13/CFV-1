@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { generateHACCPPlan } from './templates'
 import type { HACCPPlanData } from './types'
@@ -9,8 +9,8 @@ import type { ArchetypeId } from '@/lib/archetypes/presets'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 
 // haccp_plans may not be in generated types yet - cast as needed
-function fromHACCP(supabase: any): any {
-  return (supabase as any).from('haccp_plans')
+function fromHACCP(db: any): any {
+  return (db as any).from('haccp_plans')
 }
 
 /**
@@ -21,12 +21,12 @@ function fromHACCP(supabase: any): any {
  */
 export async function ensureHACCPPlan(archetypeId?: ArchetypeId) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Determine archetype
   let archetype = archetypeId
   if (!archetype) {
-    const { data: prefs } = await (supabase as any)
+    const { data: prefs } = await (db as any)
       .from('chef_preferences')
       .select('archetype')
       .eq('chef_id', chef.entityId)
@@ -39,7 +39,7 @@ export async function ensureHACCPPlan(archetypeId?: ArchetypeId) {
   }
 
   // Check for existing plan
-  const { data: existing } = await fromHACCP(supabase)
+  const { data: existing } = await fromHACCP(db)
     .select('*')
     .eq('chef_id', chef.entityId)
     .maybeSingle()
@@ -58,7 +58,7 @@ export async function ensureHACCPPlan(archetypeId?: ArchetypeId) {
       planData.overrides = oldData.overrides
     }
 
-    const { data, error } = await fromHACCP(supabase)
+    const { data, error } = await fromHACCP(db)
       .update({
         archetype,
         plan_data: planData,
@@ -74,7 +74,7 @@ export async function ensureHACCPPlan(archetypeId?: ArchetypeId) {
   }
 
   // Insert new row
-  const { data, error } = await fromHACCP(supabase)
+  const { data, error } = await fromHACCP(db)
     .insert({
       chef_id: chef.entityId,
       archetype,
@@ -93,12 +93,9 @@ export async function ensureHACCPPlan(archetypeId?: ArchetypeId) {
  */
 export async function getHACCPPlan() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await fromHACCP(supabase)
-    .select('*')
-    .eq('chef_id', chef.entityId)
-    .maybeSingle()
+  const { data, error } = await fromHACCP(db).select('*').eq('chef_id', chef.entityId).maybeSingle()
 
   if (error) throw new Error('Failed to fetch HACCP plan')
   return data
@@ -109,9 +106,9 @@ export async function getHACCPPlan() {
  */
 export async function toggleHACCPSection(sectionId: string, enabled: boolean) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: plan } = await fromHACCP(supabase)
+  const { data: plan } = await fromHACCP(db)
     .select('plan_data')
     .eq('chef_id', chef.entityId)
     .single()
@@ -124,9 +121,7 @@ export async function toggleHACCPSection(sectionId: string, enabled: boolean) {
     enabled,
   }
 
-  const { error } = await fromHACCP(supabase)
-    .update({ plan_data: planData })
-    .eq('chef_id', chef.entityId)
+  const { error } = await fromHACCP(db).update({ plan_data: planData }).eq('chef_id', chef.entityId)
 
   if (error) throw new Error('Failed to update HACCP section')
   revalidatePath('/settings/compliance/haccp')
@@ -137,9 +132,9 @@ export async function toggleHACCPSection(sectionId: string, enabled: boolean) {
  */
 export async function updateHACCPSectionNotes(sectionId: string, notes: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: plan } = await fromHACCP(supabase)
+  const { data: plan } = await fromHACCP(db)
     .select('plan_data')
     .eq('chef_id', chef.entityId)
     .single()
@@ -152,9 +147,7 @@ export async function updateHACCPSectionNotes(sectionId: string, notes: string) 
     customNotes: notes || undefined,
   }
 
-  const { error } = await fromHACCP(supabase)
-    .update({ plan_data: planData })
-    .eq('chef_id', chef.entityId)
+  const { error } = await fromHACCP(db).update({ plan_data: planData }).eq('chef_id', chef.entityId)
 
   if (error) throw new Error('Failed to update HACCP section notes')
   revalidatePath('/settings/compliance/haccp')
@@ -165,9 +158,9 @@ export async function updateHACCPSectionNotes(sectionId: string, notes: string) 
  */
 export async function markHACCPReviewed() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await fromHACCP(supabase)
+  const { error } = await fromHACCP(db)
     .update({ last_reviewed_at: new Date().toISOString() })
     .eq('chef_id', chef.entityId)
 
@@ -181,9 +174,9 @@ export async function markHACCPReviewed() {
  */
 export async function resetHACCPPlan() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: plan } = await fromHACCP(supabase)
+  const { data: plan } = await fromHACCP(db)
     .select('archetype')
     .eq('chef_id', chef.entityId)
     .single()
@@ -192,7 +185,7 @@ export async function resetHACCPPlan() {
 
   const planData = generateHACCPPlan(plan.archetype as ArchetypeId)
 
-  const { error } = await fromHACCP(supabase)
+  const { error } = await fromHACCP(db)
     .update({
       plan_data: planData,
       last_reviewed_at: null,

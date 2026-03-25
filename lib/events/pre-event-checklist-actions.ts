@@ -1,7 +1,7 @@
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -11,10 +11,10 @@ import { revalidatePath } from 'next/cache'
  */
 export async function confirmPreEventChecklist(eventId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership and status
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, status, client_id, tenant_id')
     .eq('id', eventId)
@@ -26,7 +26,7 @@ export async function confirmPreEventChecklist(eventId: string) {
     throw new Error('Pre-event checklist is only available for confirmed events')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       pre_event_checklist_confirmed_at: new Date().toISOString(),
@@ -49,9 +49,9 @@ export async function confirmPreEventChecklist(eventId: string) {
  */
 export async function updateClientJourneyNote(eventId: string, note: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({ client_journey_note: note.trim() || null })
     .eq('id', eventId)
@@ -69,10 +69,10 @@ export async function updateClientJourneyNote(eventId: string, note: string) {
  */
 export async function getPreEventChecklistData(eventId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [{ data: event }, { data: client }] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         `
@@ -87,7 +87,7 @@ export async function getPreEventChecklistData(eventId: string) {
       .eq('client_id', user.entityId)
       .single(),
 
-    supabase
+    db
       .from('clients')
       .select(
         `

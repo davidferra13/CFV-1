@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -34,10 +34,10 @@ export interface InquiryTriageResult {
 export async function getInquiryTriage(): Promise<InquiryTriageResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch open inquiries with client info
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select(
       `
@@ -53,7 +53,7 @@ export async function getInquiryTriage(): Promise<InquiryTriageResult | null> {
   if (error || !inquiries) return null
 
   // Fetch upcoming confirmed events for conflict detection
-  const { data: confirmedEvents } = await supabase
+  const { data: confirmedEvents } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', tenantId)
@@ -62,7 +62,7 @@ export async function getInquiryTriage(): Promise<InquiryTriageResult | null> {
   const confirmedDates = new Set((confirmedEvents || []).map((e: any) => e.event_date))
 
   // Fetch historical response times (for context)
-  const { data: recentConverted } = await supabase
+  const { data: recentConverted } = await db
     .from('inquiries')
     .select('created_at, updated_at')
     .eq('tenant_id', tenantId)

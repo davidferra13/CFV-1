@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -31,13 +31,13 @@ export type LogPriceInput = z.infer<typeof LogPriceSchema>
 export async function logIngredientPrice(input: LogPriceInput) {
   const user = await requireChef()
   const validated = LogPriceSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Auto-compute price_per_unit if not provided
   const pricePerUnit =
     validated.price_per_unit_cents ?? Math.round(validated.price_cents / validated.quantity)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ingredient_price_history')
     .insert({
       ...validated,
@@ -63,9 +63,9 @@ export async function logIngredientPrice(input: LogPriceInput) {
  */
 export async function getIngredientPriceHistory(ingredientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ingredient_price_history')
     .select('*')
     .eq('ingredient_id', ingredientId)
@@ -85,9 +85,9 @@ export async function getIngredientPriceHistory(ingredientId: string) {
  */
 export async function getIngredientAveragePrice(ingredientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ingredient_price_history')
     .select('price_per_unit_cents, store_name, purchase_date')
     .eq('ingredient_id', ingredientId)
@@ -144,10 +144,10 @@ export async function getIngredientAveragePrice(ingredientId: string) {
  */
 export async function getIngredientPriceAlerts() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all ingredients with price history
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await db
     .from('ingredients')
     .select('id, name, average_price_cents, last_price_cents, price_unit')
     .eq('tenant_id', user.tenantId!)
@@ -193,9 +193,9 @@ export async function getIngredientPriceAlerts() {
  */
 export async function getStoreComparison(ingredientId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ingredient_price_history')
     .select('store_name, price_per_unit_cents, unit')
     .eq('ingredient_id', ingredientId)
@@ -226,9 +226,9 @@ export async function getStoreComparison(ingredientId: string) {
 // --- Internal helper ---
 
 async function updateIngredientPriceFields(ingredientId: string, tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: history } = await supabase
+  const { data: history } = await db
     .from('ingredient_price_history')
     .select('price_per_unit_cents, purchase_date')
     .eq('ingredient_id', ingredientId)
@@ -241,7 +241,7 @@ async function updateIngredientPriceFields(ingredientId: string, tenantId: strin
   const prices = history.map((h: any) => h.price_per_unit_cents!).filter(Boolean)
   const avg = Math.round(prices.reduce((a: any, b: any) => a + b, 0) / prices.length)
 
-  await supabase
+  await db
     .from('ingredients')
     .update({
       last_price_cents: prices[0],

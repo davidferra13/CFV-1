@@ -65,7 +65,7 @@ export const factories = {
     }
   },
 
-  /** Auth user (Supabase auth.users shape) */
+  /** Auth user (Auth.js.users shape) */
   authUser(overrides: Record<string, unknown> = {}) {
     return {
       id: uuid(),

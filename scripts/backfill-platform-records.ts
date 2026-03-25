@@ -11,20 +11,20 @@
  *   npx tsx scripts/backfill-platform-records.ts --dry-run
  */
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import dotenv from 'dotenv'
 import path from 'path'
 
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') })
 
-const supabase = createAdminClient()
+const db = createAdminClient()
 const isDryRun = process.argv.includes('--dry-run')
 
 async function main() {
   console.log(`\n=== Backfill platform_records ${isDryRun ? '(DRY RUN)' : ''} ===\n`)
 
   // Fetch all marketplace inquiries
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select(
       'id, tenant_id, client_id, converted_to_event_id, channel, status, external_platform, external_inquiry_id, external_link, unknown_fields, confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_budget_cents, created_at'
@@ -45,7 +45,7 @@ async function main() {
 
   for (const inq of inquiries) {
     // Check if platform_record already exists
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('platform_records')
       .select('id')
       .eq('inquiry_id', inq.id)
@@ -89,7 +89,7 @@ async function main() {
       continue
     }
 
-    const { data: newRecord, error: insertError } = await supabase
+    const { data: newRecord, error: insertError } = await db
       .from('platform_records')
       .insert(record as any)
       .select('id')
@@ -103,7 +103,7 @@ async function main() {
 
     // Create initial snapshot from inquiry data
     if (newRecord) {
-      await supabase.from('platform_snapshots').insert({
+      await db.from('platform_snapshots').insert({
         tenant_id: inq.tenant_id,
         platform_record_id: newRecord.id,
         inquiry_id: inq.id,
@@ -129,7 +129,7 @@ async function main() {
         const commissionPct =
           latestPayout?.commission_percent ?? tacFinance?.commission_percent ?? null
 
-        await supabase.from('platform_payouts').insert({
+        await db.from('platform_payouts').insert({
           tenant_id: inq.tenant_id,
           platform_record_id: newRecord.id,
           inquiry_id: inq.id,

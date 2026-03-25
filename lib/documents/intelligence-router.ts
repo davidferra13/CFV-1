@@ -10,7 +10,7 @@
 // This wires the existing document_intelligence_items table to actual processing.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export type RouteResult = {
@@ -26,10 +26,10 @@ export type RouteResult = {
  */
 export async function routeIntelligenceItem(itemId: string): Promise<RouteResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the item
-  const { data: item, error: fetchError } = await (supabase
+  const { data: item, error: fetchError } = await (db
     .from('document_intelligence_items' as any)
     .select('*')
     .eq('id', itemId)
@@ -54,7 +54,7 @@ export async function routeIntelligenceItem(itemId: string): Promise<RouteResult
   }
 
   // Mark as routing
-  await (supabase
+  await (db
     .from('document_intelligence_items' as any)
     .update({ status: 'routing' })
     .eq('id', itemId) as any)
@@ -64,28 +64,28 @@ export async function routeIntelligenceItem(itemId: string): Promise<RouteResult
 
     switch (detectedType) {
       case 'receipt':
-        result = await routeToReceipt(supabase, user, item)
+        result = await routeToReceipt(db, user, item)
         break
       case 'document':
       case 'contract':
       case 'policy':
       case 'checklist':
       case 'note':
-        result = await routeToDocument(supabase, user, item, detectedType)
+        result = await routeToDocument(db, user, item, detectedType)
         break
       case 'recipe':
-        result = await routeToRecipe(supabase, user, item)
+        result = await routeToRecipe(db, user, item)
         break
       case 'client_info':
-        result = await routeToClient(supabase, user, item)
+        result = await routeToClient(db, user, item)
         break
       default:
         // Unknown type: store as generic document
-        result = await routeToDocument(supabase, user, item, 'general')
+        result = await routeToDocument(db, user, item, 'general')
     }
 
     if (result.success) {
-      await (supabase
+      await (db
         .from('document_intelligence_items' as any)
         .update({
           status: 'completed',
@@ -94,7 +94,7 @@ export async function routeIntelligenceItem(itemId: string): Promise<RouteResult
         })
         .eq('id', itemId) as any)
     } else {
-      await (supabase
+      await (db
         .from('document_intelligence_items' as any)
         .update({ status: 'failed', error_message: result.error })
         .eq('id', itemId) as any)
@@ -105,7 +105,7 @@ export async function routeIntelligenceItem(itemId: string): Promise<RouteResult
     return result
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Routing failed'
-    await (supabase
+    await (db
       .from('document_intelligence_items' as any)
       .update({ status: 'failed', error_message: msg })
       .eq('id', itemId) as any)
@@ -116,12 +116,12 @@ export async function routeIntelligenceItem(itemId: string): Promise<RouteResult
 // ─── Route handlers ────────────────────────────────────────────────────────────
 
 async function routeToReceipt(
-  supabase: any,
+  db: any,
   user: { id: string; tenantId: string | null },
   item: any
 ): Promise<RouteResult> {
   // Create receipt_photo record from the intelligence item's stored file
-  const { data: photo, error } = await supabase
+  const { data: photo, error } = await db
     .from('receipt_photos')
     .insert({
       tenant_id: user.tenantId!,
@@ -141,13 +141,13 @@ async function routeToReceipt(
 }
 
 async function routeToDocument(
-  supabase: any,
+  db: any,
   user: { id: string; tenantId: string | null },
   item: any,
   docType: string
 ): Promise<RouteResult> {
   const extractedData = item.extracted_data as any
-  const { data: doc, error } = await supabase
+  const { data: doc, error } = await db
     .from('chef_documents')
     .insert({
       tenant_id: user.tenantId!,
@@ -169,13 +169,13 @@ async function routeToDocument(
 }
 
 async function routeToRecipe(
-  supabase: any,
+  db: any,
   user: { id: string; tenantId: string | null },
   item: any
 ): Promise<RouteResult> {
   const extractedData = item.extracted_data as any
   // Create a minimal recipe record; chef will review and complete it
-  const { data: recipe, error } = await supabase
+  const { data: recipe, error } = await db
     .from('recipes')
     .insert({
       tenant_id: user.tenantId!,
@@ -195,7 +195,7 @@ async function routeToRecipe(
 }
 
 async function routeToClient(
-  supabase: any,
+  db: any,
   user: { id: string; tenantId: string | null },
   item: any
 ): Promise<RouteResult> {
@@ -205,7 +205,7 @@ async function routeToClient(
   }
 
   // Check for duplicate before inserting
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('clients')
     .select('id')
     .eq('tenant_id', user.tenantId!)
@@ -217,7 +217,7 @@ async function routeToClient(
     return { success: true, destination: 'clients', entityId: existing.id }
   }
 
-  const { data: client, error } = await supabase
+  const { data: client, error } = await db
     .from('clients')
     .insert({
       tenant_id: user.tenantId!,

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { FDA_BIG_9, COMMON_ALLERGENS } from '@/lib/constants/allergens'
 import { z } from 'zod'
@@ -87,10 +87,10 @@ export async function getClientDietaryProfile(
   clientId: string
 ): Promise<ClientDietaryProfile | null> {
   const user = await requireChef()
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
   // Fetch client
-  const { data: client, error: clientError } = await supabase
+  const { data: client, error: clientError } = await db
     .from('clients')
     .select('id, full_name, allergies, dietary_restrictions, dislikes, updated_at')
     .eq('id', clientId)
@@ -100,7 +100,7 @@ export async function getClientDietaryProfile(
   if (clientError || !client) return null
 
   // Fetch all guests across this client's events (deduplicated by name)
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id')
     .eq('client_id', clientId)
@@ -111,7 +111,7 @@ export async function getClientDietaryProfile(
   let guests: GuestDietary[] = []
 
   if (eventIds.length > 0) {
-    const { data: guestRows } = await supabase
+    const { data: guestRows } = await db
       .from('event_guests')
       .select(
         'full_name, allergies, dietary_restrictions, plus_one_name, plus_one_allergies, plus_one_dietary'
@@ -199,7 +199,7 @@ export async function getClientDietaryProfile(
   // Recent events with menu info
   let recentEvents: RecentEventDietary[] = []
   if (eventIds.length > 0) {
-    const { data: recentEventRows } = await supabase
+    const { data: recentEventRows } = await db
       .from('events')
       .select('id, event_date, title')
       .eq('client_id', clientId)
@@ -249,11 +249,11 @@ export async function updateClientDietary(
   data: { allergies: string[]; dietaryRestrictions: string[]; dislikes: string[] }
 ) {
   const user = await requireChef()
-  const supabase: any = await createServerClient()
+  const db: any = await createServerClient()
 
   const parsed = UpdateDietarySchema.parse(data)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('clients')
     .update({
       allergies: parsed.allergies,

@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getSplitBilling } from '@/lib/operations/split-billing-actions'
 import { SplitBillingForm } from '@/components/operations/split-billing-form'
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'Split Billing - ChefFlow' }
 
 export default async function SplitBillingPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   let splitData: Awaited<ReturnType<typeof getSplitBilling>> | null = null
   try {
@@ -27,7 +27,7 @@ export default async function SplitBillingPage({ params }: { params: { id: strin
     occasion: string | null
   } | null = null
   try {
-    const { data } = await supabase
+    const { data } = await db
       .from('events')
       .select('id, quoted_price_cents, occasion')
       .eq('id', params.id)
@@ -40,7 +40,7 @@ export default async function SplitBillingPage({ params }: { params: { id: strin
 
   let rawClients: { id: string; full_name: string; email: string }[] = []
   try {
-    const { data } = await supabase
+    const { data } = await db
       .from('clients')
       .select('id, full_name, email')
       .eq('chef_id', user.tenantId!)

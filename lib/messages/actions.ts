@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
@@ -66,9 +66,9 @@ export type UpdateTemplateInput = z.infer<typeof UpdateTemplateSchema>
 export async function createMessage(input: CreateMessageInput) {
   const user = await requireChef()
   const validated = CreateMessageSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: message, error } = await supabase
+  const { data: message, error } = await db
     .from('messages')
     .insert({
       tenant_id: user.tenantId!,
@@ -101,7 +101,7 @@ export async function createMessage(input: CreateMessageInput) {
   // Read status first, then build one atomic UPDATE with status-aware timer
   if (validated.direction === 'outbound' && validated.inquiry_id) {
     try {
-      const { data: inq } = await supabase
+      const { data: inq } = await db
         .from('inquiries')
         .select('status')
         .eq('id', validated.inquiry_id)
@@ -136,7 +136,7 @@ export async function createMessage(input: CreateMessageInput) {
             ;(updatePayload as Record<string, string | null>).status = 'awaiting_client'
           }
 
-          await supabase
+          await db
             .from('inquiries')
             .update(updatePayload)
             .eq('id', validated.inquiry_id)
@@ -184,9 +184,9 @@ export async function getMessages(filters?: {
   dateTo?: string
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase.from('messages').select('*').eq('tenant_id', user.tenantId!)
+  let query = db.from('messages').select('*').eq('tenant_id', user.tenantId!)
 
   if (filters?.inquiry_id) query = query.eq('inquiry_id', filters.inquiry_id)
   if (filters?.event_id) query = query.eq('event_id', filters.event_id)
@@ -220,11 +220,11 @@ export async function getMessageThread(
   options?: { includeInquiryMessages?: boolean; inquiryId?: string }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (entityType === 'client') {
     // Client thread: ALL messages for this client across all inquiries and events
-    const { data: messages, error } = await supabase
+    const { data: messages, error } = await db
       .from('messages')
       .select('*')
       .eq('tenant_id', user.tenantId!)
@@ -243,7 +243,7 @@ export async function getMessageThread(
   // For inquiry or event, build combined thread if needed
   const filterColumn = entityType === 'inquiry' ? 'inquiry_id' : 'event_id'
 
-  let query = supabase.from('messages').select('*').eq('tenant_id', user.tenantId!)
+  let query = db.from('messages').select('*').eq('tenant_id', user.tenantId!)
 
   if (options?.includeInquiryMessages && options?.inquiryId && entityType === 'event') {
     // Combined thread: event messages + inquiry messages
@@ -269,9 +269,9 @@ export async function getMessageThread(
 export async function updateMessage(id: string, input: UpdateMessageInput) {
   const user = await requireChef()
   const validated = UpdateMessageSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: message, error } = await supabase
+  const { data: message, error } = await db
     .from('messages')
     .update(validated)
     .eq('id', id)
@@ -293,13 +293,9 @@ export async function updateMessage(id: string, input: UpdateMessageInput) {
 
 export async function deleteMessage(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
-    .from('messages')
-    .delete()
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
+  const { error } = await db.from('messages').delete().eq('id', id).eq('tenant_id', user.tenantId!)
 
   if (error) {
     console.error('[deleteMessage] Error:', error)
@@ -316,9 +312,9 @@ export async function deleteMessage(id: string) {
 export async function createResponseTemplate(input: CreateTemplateInput) {
   const user = await requireChef()
   const validated = CreateTemplateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: template, error } = await supabase
+  const { data: template, error } = await db
     .from('response_templates')
     .insert({
       tenant_id: user.tenantId!,
@@ -344,9 +340,9 @@ export async function createResponseTemplate(input: CreateTemplateInput) {
 
 export async function getResponseTemplates(category?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('response_templates')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -373,9 +369,9 @@ export async function getResponseTemplates(category?: string) {
 export async function updateResponseTemplate(id: string, input: UpdateTemplateInput) {
   const user = await requireChef()
   const validated = UpdateTemplateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: template, error } = await supabase
+  const { data: template, error } = await db
     .from('response_templates')
     .update(validated)
     .eq('id', id)
@@ -398,9 +394,9 @@ export async function updateResponseTemplate(id: string, input: UpdateTemplateIn
 
 export async function deleteResponseTemplate(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('response_templates')
     .delete()
     .eq('id', id)
@@ -486,10 +482,10 @@ export async function getDefaultTemplates(): Promise<
  */
 export async function seedDefaultTemplates() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check if chef already has templates
-  const { count } = await supabase
+  const { count } = await db
     .from('response_templates')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -500,7 +496,7 @@ export async function seedDefaultTemplates() {
 
   const defaults = await getDefaultTemplates()
 
-  const { error } = await supabase.from('response_templates').insert(
+  const { error } = await db.from('response_templates').insert(
     defaults.map((t) => ({
       tenant_id: user.tenantId!,
       name: t.name,

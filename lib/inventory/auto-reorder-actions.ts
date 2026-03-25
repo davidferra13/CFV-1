@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getReorderSuggestions } from './demand-forecast-actions'
 import { createPurchaseOrder, addPOItem } from './purchase-order-actions'
 
@@ -40,14 +40,14 @@ export type AutoReorderResult = {
  */
 export async function previewAutoReorder(): Promise<AutoReorderPreview[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const suggestions = await getReorderSuggestions()
   if (suggestions.length === 0) return []
 
   // Look up reorder settings for custom reorder quantities
   const ingredientIds = suggestions.flatMap((g) => g.items.map((i) => i.ingredientId))
-  const reorderQtyMap = await getReorderQuantities(supabase, user.tenantId!, ingredientIds)
+  const reorderQtyMap = await getReorderQuantities(db, user.tenantId!, ingredientIds)
 
   return suggestions.map((group) => ({
     vendorName: group.vendorName,
@@ -78,7 +78,7 @@ export async function previewAutoReorder(): Promise<AutoReorderPreview[]> {
  */
 export async function generateAutoReorderPOs(): Promise<AutoReorderResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const preview = await previewAutoReorder()
   if (preview.length === 0) {
@@ -138,14 +138,14 @@ export async function generateAutoReorderPOs(): Promise<AutoReorderResult> {
  * Look up custom reorder quantities from reorder_settings.
  */
 async function getReorderQuantities(
-  supabase: any,
+  db: any,
   chefId: string,
   ingredientIds: string[]
 ): Promise<Map<string, number>> {
   const map = new Map<string, number>()
   if (ingredientIds.length === 0) return map
 
-  const { data } = await supabase
+  const { data } = await db
     .from('reorder_settings')
     .select('ingredient_id, reorder_qty')
     .eq('chef_id', chefId)

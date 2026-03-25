@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -47,10 +47,10 @@ export async function generateDemandForecast(
 ): Promise<{ success: boolean; months: DemandForecastMonth[] }> {
   const validated = GenerateForecastSchema.parse({ year })
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all inquiries for this chef, grouped by year-month
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('created_at')
     .eq('tenant_id', user.tenantId!)
@@ -124,7 +124,7 @@ export async function generateDemandForecast(
 
   // Upsert all 12 months into demand_forecasts
   for (const r of results) {
-    const { error } = await supabase.from('demand_forecasts').upsert(
+    const { error } = await db.from('demand_forecasts').upsert(
       {
         chef_id: user.tenantId!,
         month: r.month,
@@ -155,9 +155,9 @@ export async function getSeasonalHeatmap(year?: number): Promise<SeasonalHeatmap
   const targetYear = validated.year ?? new Date().getFullYear()
 
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: forecasts, error } = await supabase
+  const { data: forecasts, error } = await db
     .from('demand_forecasts')
     .select('*')
     .eq('chef_id', user.tenantId!)

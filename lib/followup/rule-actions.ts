@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -60,9 +60,9 @@ export async function createFollowupRule(
 ): Promise<FollowupRule> {
   const user = await requireChef()
   const parsed = CreateFollowupRuleSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('followup_rules')
     .insert({
       chef_id: user.tenantId!,
@@ -83,9 +83,9 @@ export async function createFollowupRule(
 
 export async function listFollowupRules(): Promise<FollowupRule[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('followup_rules')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -99,9 +99,9 @@ export async function listFollowupRules(): Promise<FollowupRule[]> {
 
 export async function toggleFollowupRule(id: string, isActive: boolean): Promise<FollowupRule> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('followup_rules')
     .update({ is_active: isActive })
     .eq('id', id)
@@ -124,10 +124,10 @@ export async function toggleFollowupRule(id: string, isActive: boolean): Promise
  */
 export async function processFollowupRules(): Promise<PendingFollowup[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all active rules
-  const { data: rules, error: rulesError } = await supabase
+  const { data: rules, error: rulesError } = await db
     .from('followup_rules')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -149,7 +149,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
 
   // --- proposal_sent: quotes in 'proposed' status ---
   if (rulesByTrigger['proposal_sent']) {
-    const { data: quotes } = await supabase
+    const { data: quotes } = await db
       .from('quotes')
       .select('id, event_id, created_at')
       .eq('chef_id', user.tenantId!)
@@ -175,7 +175,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
 
   // --- proposal_viewed: check proposal_views for quotes ---
   if (rulesByTrigger['proposal_viewed']) {
-    const { data: views } = await supabase
+    const { data: views } = await db
       .from('proposal_views')
       .select('quote_id, viewed_at')
       .order('viewed_at', { ascending: false })
@@ -208,7 +208,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
 
   // --- booking_confirmed: events that transitioned to 'confirmed' ---
   if (rulesByTrigger['booking_confirmed']) {
-    const { data: transitions } = await supabase
+    const { data: transitions } = await db
       .from('event_transitions' as any)
       .select('event_id, transitioned_at')
       .eq('to_status', 'confirmed')
@@ -233,7 +233,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
 
   // --- event_completed: events in 'completed' status ---
   if (rulesByTrigger['event_completed']) {
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('id, client_id, updated_at')
       .eq('chef_id', user.tenantId!)
@@ -261,7 +261,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
   if (rulesByTrigger['dormant']) {
     const ninetyDaysAgo = addDays(now, -90).toISOString()
 
-    const { data: clients } = await supabase
+    const { data: clients } = await db
       .from('clients')
       .select('id, last_event_date')
       .eq('tenant_id', user.tenantId!)

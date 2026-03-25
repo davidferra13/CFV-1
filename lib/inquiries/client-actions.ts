@@ -6,7 +6,7 @@
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -54,9 +54,9 @@ export type ClientInquiryDetail = ClientInquiryListItem & {
  */
 export async function getClientInquiries(): Promise<ClientInquiryListItem[]> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('inquiries')
     .select(
       `
@@ -91,9 +91,9 @@ export async function getClientInquiries(): Promise<ClientInquiryListItem[]> {
  */
 export async function getClientInquiryById(inquiryId: string): Promise<ClientInquiryDetail | null> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiry, error } = await supabase
+  const { data: inquiry, error } = await db
     .from('inquiries')
     .select(
       `
@@ -121,14 +121,14 @@ export async function getClientInquiryById(inquiryId: string): Promise<ClientInq
   if (error || !inquiry) return null
 
   // Fetch transition history - RLS policy covers this
-  const { data: transitions } = await supabase
+  const { data: transitions } = await db
     .from('inquiry_state_transitions')
     .select('id, from_status, to_status, transitioned_at, reason')
     .eq('inquiry_id', inquiryId)
     .order('transitioned_at', { ascending: true })
 
   // Fetch linked quotes - quotes_client_can_view_own RLS policy covers this
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select('id, quote_name, total_quoted_cents, status, pricing_model, sent_at')
     .eq('inquiry_id', inquiryId)

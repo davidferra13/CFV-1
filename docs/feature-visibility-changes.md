@@ -18,7 +18,7 @@ Both layers have been removed. All features are now visible by default.
 | `lib/billing/modules.ts`                                                   | Set all 6 extended modules to `defaultEnabled: true`                         |
 | `lib/archetypes/presets.ts`                                                | Updated `ALWAYS_ON` to include all 11 module slugs                           |
 | `lib/billing/focus-mode.ts`                                                | Added missing `station-ops` and `operations` to `EXTENDED_MODULES` (bug fix) |
-| `supabase/migrations/20260401000099_enable_all_modules_existing_chefs.sql` | Auto-upgrades existing chefs with old defaults to all modules                |
+| `database/migrations/20260401000099_enable_all_modules_existing_chefs.sql` | Auto-upgrades existing chefs with old defaults to all modules                |
 
 ## What Stays the Same
 

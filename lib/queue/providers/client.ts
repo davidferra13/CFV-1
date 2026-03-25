@@ -5,7 +5,7 @@ import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 import { getMilestoneOutreachSuggestions } from '@/lib/clients/milestones'
 
-export async function getClientQueueItems(supabase: any, tenantId: string): Promise<QueueItem[]> {
+export async function getClientQueueItems(db: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 
@@ -50,7 +50,7 @@ export async function getClientQueueItems(supabase: any, tenantId: string): Prom
 
   // 2. Dormant clients (top 5 by lifetime value) from client_financial_summary view
   try {
-    const { data: dormantClients } = await supabase
+    const { data: dormantClients } = await db
       .from('client_financial_summary')
       .select('client_id, last_event_date, is_dormant, lifetime_value_cents')
       .eq('tenant_id', tenantId)
@@ -60,10 +60,7 @@ export async function getClientQueueItems(supabase: any, tenantId: string): Prom
 
     if (dormantClients && dormantClients.length > 0) {
       const clientIds = dormantClients.map((c: any) => c.client_id).filter(Boolean) as string[]
-      const { data: clients } = await supabase
-        .from('clients')
-        .select('id, full_name')
-        .in('id', clientIds)
+      const { data: clients } = await db.from('clients').select('id, full_name').in('id', clientIds)
 
       const nameMap = new Map((clients || []).map((c: any) => [c.id, c.full_name]))
 

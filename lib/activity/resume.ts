@@ -4,10 +4,10 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { ResumeItem } from './chef-types'
 
-type SupabaseClient = any
+type DbClient = any
 
 type EventRow = {
   id: string
@@ -62,15 +62,15 @@ type NoteRow = {
 
 export async function getResumeItems(): Promise<ResumeItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const [events, menus, inquiries, quotes, recentNotes] = await Promise.all([
-    getActiveEvents(supabase, tenantId),
-    getActiveMenus(supabase, tenantId),
-    getActiveInquiries(supabase, tenantId),
-    getActiveQuotes(supabase, tenantId),
-    getRecentPinnedNotes(supabase, tenantId),
+    getActiveEvents(db, tenantId),
+    getActiveMenus(db, tenantId),
+    getActiveInquiries(db, tenantId),
+    getActiveQuotes(db, tenantId),
+    getRecentPinnedNotes(db, tenantId),
   ])
 
   const items = [...events, ...menus, ...inquiries, ...quotes, ...recentNotes]
@@ -82,8 +82,8 @@ export async function getResumeItems(): Promise<ResumeItem[]> {
   return items.slice(0, 15)
 }
 
-async function getActiveEvents(supabase: SupabaseClient, tenantId: string): Promise<ResumeItem[]> {
-  const { data, error } = await supabase
+async function getActiveEvents(db: DbClient, tenantId: string): Promise<ResumeItem[]> {
+  const { data, error } = await db
     .from('events')
     .select(
       'id, status, occasion, event_date, guest_count, updated_at, clients:client_id(full_name)'
@@ -116,8 +116,8 @@ async function getActiveEvents(supabase: SupabaseClient, tenantId: string): Prom
   })
 }
 
-async function getActiveMenus(supabase: SupabaseClient, tenantId: string): Promise<ResumeItem[]> {
-  const { data, error } = await supabase
+async function getActiveMenus(db: DbClient, tenantId: string): Promise<ResumeItem[]> {
+  const { data, error } = await db
     .from('menus')
     .select('id, name, status, updated_at, events:event_id(occasion, clients:client_id(full_name))')
     .eq('tenant_id', tenantId)
@@ -131,7 +131,7 @@ async function getActiveMenus(supabase: SupabaseClient, tenantId: string): Promi
   const menuIds = rows.map((m) => m.id)
   const { data: dishes } =
     menuIds.length > 0
-      ? await supabase.from('dishes').select('menu_id').in('menu_id', menuIds)
+      ? await db.from('dishes').select('menu_id').in('menu_id', menuIds)
       : { data: [] }
 
   const dishCounts: Record<string, number> = {}
@@ -163,11 +163,8 @@ async function getActiveMenus(supabase: SupabaseClient, tenantId: string): Promi
   })
 }
 
-async function getActiveInquiries(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<ResumeItem[]> {
-  const { data, error } = await supabase
+async function getActiveInquiries(db: DbClient, tenantId: string): Promise<ResumeItem[]> {
+  const { data, error } = await db
     .from('inquiries')
     .select(
       'id, status, channel, confirmed_occasion, next_action_required, next_action_by, follow_up_due_at, updated_at, clients:client_id(full_name)'
@@ -207,8 +204,8 @@ async function getActiveInquiries(
   })
 }
 
-async function getActiveQuotes(supabase: SupabaseClient, tenantId: string): Promise<ResumeItem[]> {
-  const { data, error } = await supabase
+async function getActiveQuotes(db: DbClient, tenantId: string): Promise<ResumeItem[]> {
+  const { data, error } = await db
     .from('quotes')
     .select(
       'id, status, quote_name, total_quoted_cents, valid_until, updated_at, clients:client_id(full_name), events:event_id(occasion)'
@@ -245,13 +242,10 @@ async function getActiveQuotes(supabase: SupabaseClient, tenantId: string): Prom
   })
 }
 
-async function getRecentPinnedNotes(
-  supabase: SupabaseClient,
-  tenantId: string
-): Promise<ResumeItem[]> {
+async function getRecentPinnedNotes(db: DbClient, tenantId: string): Promise<ResumeItem[]> {
   const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_notes')
     .select('id, client_id, note_text, category, pinned, created_at, clients:client_id(full_name)')
     .eq('tenant_id', tenantId)

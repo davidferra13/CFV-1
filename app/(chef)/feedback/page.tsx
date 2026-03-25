@@ -4,21 +4,21 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export const metadata: Metadata = { title: 'Client Feedback | ChefFlow' }
 
 export default async function FeedbackPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { count: surveyCount } = await supabase
+  const { count: surveyCount } = await db
     .from('surveys')
     .select('*', { count: 'exact', head: true })
     .eq('chef_id', chef.entityId)
 
-  const { count: responseCount } = await supabase
+  const { count: responseCount } = await db
     .from('surveys')
     .select('*', { count: 'exact', head: true })
     .eq('chef_id', chef.entityId)

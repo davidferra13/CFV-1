@@ -8,7 +8,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { generateICS } from '@/lib/scheduling/generate-ics'
 
 const DOWNLOADABLE_STATUSES = ['paid', 'confirmed', 'in_progress', 'completed']
@@ -16,11 +16,11 @@ const DOWNLOADABLE_STATUSES = ['paid', 'confirmed', 'in_progress', 'completed']
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await requireClient()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
     const eventId = params.id
 
     // Fetch event - must belong to this client
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select(
         'id, status, occasion, event_date, serve_time, location_address, location_city, location_state, guest_count, special_requests'

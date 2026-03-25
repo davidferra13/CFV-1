@@ -73,7 +73,7 @@ The beta environment should use beta-specific values for:
 
 - `NEXT_PUBLIC_SITE_URL`
 - `NEXT_PUBLIC_APP_URL`
-- Supabase auth redirect URLs
+- PostgreSQL auth redirect URLs
 - Google OAuth callback URLs
 - Stripe mode and webhook settings
 - `CRON_SECRET`

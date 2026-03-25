@@ -1,5 +1,5 @@
 import { requireAuth, requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -58,9 +58,9 @@ function isMissingRelation(error: any): boolean {
 
 export async function getContractVersions(contractId: string): Promise<ContractVersion[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract, error: contractError } = await supabase
+  const { data: contract, error: contractError } = await db
     .from('event_contracts')
     .select('id')
     .eq('id', contractId)
@@ -71,7 +71,7 @@ export async function getContractVersions(contractId: string): Promise<ContractV
     throw new Error('Contract not found')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_contract_versions')
     .select('id, contract_id, version_number, body_snapshot, change_note, created_by, created_at')
     .eq('contract_id', contractId)
@@ -91,9 +91,9 @@ export async function createContractVersion(
 ): Promise<ContractVersion> {
   const user = await requireChef()
   const validated = CreateVersionSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract, error: contractError } = await supabase
+  const { data: contract, error: contractError } = await db
     .from('event_contracts')
     .select('id, event_id')
     .eq('id', contractId)
@@ -104,7 +104,7 @@ export async function createContractVersion(
     throw new Error('Contract not found')
   }
 
-  const { data: latest } = await supabase
+  const { data: latest } = await db
     .from('event_contract_versions')
     .select('version_number')
     .eq('contract_id', contractId)
@@ -114,7 +114,7 @@ export async function createContractVersion(
 
   const nextVersion = Number(latest?.version_number || 0) + 1
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_contract_versions')
     .insert({
       contract_id: contractId,
@@ -130,7 +130,7 @@ export async function createContractVersion(
     throw new Error(`Failed to create contract version: ${error?.message || 'Unknown error'}`)
   }
 
-  await supabase
+  await db
     .from('event_contracts')
     .update({
       body_snapshot: validated.body_snapshot,
@@ -147,9 +147,9 @@ export async function createContractVersion(
 
 export async function getContractSigners(contractId: string): Promise<ContractSigner[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract, error: contractError } = await supabase
+  const { data: contract, error: contractError } = await db
     .from('event_contracts')
     .select('id')
     .eq('id', contractId)
@@ -160,7 +160,7 @@ export async function getContractSigners(contractId: string): Promise<ContractSi
     throw new Error('Contract not found')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_contract_signers')
     .select(
       'id, contract_id, signer_role, signer_name, signer_email, required, signing_order, signed_at'
@@ -182,9 +182,9 @@ export async function addContractSigner(
 ): Promise<ContractSigner> {
   const user = await requireChef()
   const validated = AddSignerSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: contract, error: contractError } = await supabase
+  const { data: contract, error: contractError } = await db
     .from('event_contracts')
     .select('id')
     .eq('id', contractId)
@@ -195,7 +195,7 @@ export async function addContractSigner(
     throw new Error('Contract not found')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_contract_signers')
     .insert({
       contract_id: contractId,
@@ -235,9 +235,9 @@ export async function getContractSigningSummary(contractId: string): Promise<Sig
 export async function signContractAsParty(input: z.infer<typeof SignPartySchema>) {
   const user = await requireAuth()
   const validated = SignPartySchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: signer, error: signerError } = await supabase
+  const { data: signer, error: signerError } = await db
     .from('event_contract_signers')
     .select(
       'id, contract_id, signer_email, required, signed_at, event_contracts(id, chef_id, client_id, event_id, status)'
@@ -267,7 +267,7 @@ export async function signContractAsParty(input: z.infer<typeof SignPartySchema>
     throw new Error('Unauthorized signer')
   }
 
-  const { error: updateSignerError } = await supabase
+  const { error: updateSignerError } = await db
     .from('event_contract_signers')
     .update({
       signed_at: new Date().toISOString(),
@@ -287,7 +287,7 @@ export async function signContractAsParty(input: z.infer<typeof SignPartySchema>
   const summary = await getContractSigningSummary(validated.contract_id)
 
   if (summary.fullySigned) {
-    await supabase
+    await db
       .from('event_contracts')
       .update({
         status: 'signed',

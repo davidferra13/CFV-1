@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -97,9 +97,9 @@ export async function getRevenuePerUnitStats(
   endDate: string
 ): Promise<RevenuePerUnitStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       `
@@ -116,7 +116,7 @@ export async function getRevenuePerUnitStats(
     .gte('event_date', startDate)
     .lte('event_date', endDate)
 
-  const { data: ledger } = await supabase
+  const { data: ledger } = await db
     .from('ledger_entries')
     .select('amount_cents, is_refund, event_id')
     .eq('tenant_id', chef.id)
@@ -166,9 +166,9 @@ export async function getRevenueByDayOfWeek(
   endDate: string
 ): Promise<RevenueByDayOfWeek[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, quoted_price_cents')
     .eq('tenant_id', chef.id)
@@ -200,9 +200,9 @@ export async function getRevenueByEventType(
   endDate: string
 ): Promise<RevenueByEventType[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('occasion, quoted_price_cents, guest_count')
     .eq('tenant_id', chef.id)
@@ -234,9 +234,9 @@ export async function getRevenueByEventType(
 
 export async function getRevenueBySeason(): Promise<RevenueBySeason[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('event_date, quoted_price_cents')
     .eq('tenant_id', chef.id)
@@ -267,10 +267,10 @@ export async function getTrueLaborCostStats(
   endDate: string
 ): Promise<TrueLaborCostStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get owner hourly rate from preferences
-  const { data: prefs } = await supabase
+  const { data: prefs } = await db
     .from('chef_preferences')
     .select('owner_hourly_rate_cents')
     .eq('tenant_id', chef.id)
@@ -279,7 +279,7 @@ export async function getTrueLaborCostStats(
   const ownerRateCents = prefs?.owner_hourly_rate_cents ?? 0
 
   // Get completed events in period with time tracking
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select(
       `
@@ -321,7 +321,7 @@ export async function getTrueLaborCostStats(
   const eventIds = (events ?? []).map((e: any) => e.id)
   let staffCostCents = 0
   if (eventIds.length > 0) {
-    const { data: staff } = await supabase
+    const { data: staff } = await db
       .from('event_staff_assignments')
       .select('pay_amount_cents')
       .in('event_id', eventIds)
@@ -334,7 +334,7 @@ export async function getTrueLaborCostStats(
   // Expenses (non-labor)
   let totalExpenses = 0
   if (eventIds.length > 0) {
-    const { data: expenses } = await supabase
+    const { data: expenses } = await db
       .from('expenses')
       .select('amount_cents')
       .in('event_id', eventIds)
@@ -359,9 +359,9 @@ export async function getTrueLaborCostStats(
 export async function getCapacityStats(month: string): Promise<CapacityStats> {
   // month = YYYY-MM
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: prefs } = await supabase
+  const { data: prefs } = await db
     .from('chef_preferences')
     .select('max_events_per_month')
     .eq('tenant_id', chef.id)
@@ -374,7 +374,7 @@ export async function getCapacityStats(month: string): Promise<CapacityStats> {
     .toISOString()
     .slice(0, 10)
 
-  const { count: booked } = await supabase
+  const { count: booked } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.id)
@@ -386,7 +386,7 @@ export async function getCapacityStats(month: string): Promise<CapacityStats> {
   const utilization = maxEvents ? pct(bookedCount, maxEvents) : 0
 
   // Declined inquiries due to date/capacity conflict
-  const { count: overflow } = await supabase
+  const { count: overflow } = await db
     .from('inquiries')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.id)
@@ -408,9 +408,9 @@ export async function getCarryForwardStats(
   endDate: string
 ): Promise<CarryForwardStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('leftover_value_carried_forward_cents, leftover_value_received_cents, id')
     .eq('tenant_id', chef.id)
@@ -430,7 +430,7 @@ export async function getCarryForwardStats(
   const eventIds = (events ?? []).map((e: any) => e.id)
   let totalFoodCost = 0
   if (eventIds.length > 0) {
-    const { data: expenses } = await supabase
+    const { data: expenses } = await db
       .from('expenses')
       .select('amount_cents')
       .in('event_id', eventIds)
@@ -451,13 +451,13 @@ export async function getCarryForwardStats(
 
 export async function getBreakEvenStats(): Promise<BreakEvenStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Estimate fixed costs: last 3 months avg of non-event expenses
   const threeMonthsAgo = new Date()
   threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3)
 
-  const { data: nonEventExpenses } = await supabase
+  const { data: nonEventExpenses } = await db
     .from('expenses')
     .select('amount_cents')
     .eq('tenant_id', chef.id)
@@ -471,7 +471,7 @@ export async function getBreakEvenStats(): Promise<BreakEvenStats> {
   const oneYearAgo = new Date()
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
 
-  const { count: eventsYtd } = await supabase
+  const { count: eventsYtd } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.id)
@@ -481,7 +481,7 @@ export async function getBreakEvenStats(): Promise<BreakEvenStats> {
   const avgEventsPerMonth = Math.round(((eventsYtd ?? 0) / 12) * 10) / 10
 
   // Average revenue per event
-  const { data: revenueData } = await supabase
+  const { data: revenueData } = await db
     .from('events')
     .select('quoted_price_cents')
     .eq('tenant_id', chef.id)

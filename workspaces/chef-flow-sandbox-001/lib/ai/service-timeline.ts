@@ -7,7 +7,7 @@
 // Output is DRAFT ONLY — chef approves before printing or sharing with staff.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import { parseWithOllama } from './parse-ollama'
 
@@ -75,10 +75,10 @@ Return ONLY valid JSON:
 
 export async function generateServiceTimeline(eventId: string): Promise<ServiceTimeline> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const db = createServerClient()
 
   const [eventResult, menuResult, staffResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests'
@@ -86,11 +86,11 @@ export async function generateServiceTimeline(eventId: string): Promise<ServiceT
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase as any)
+    (db as any)
       .from('event_menu_components')
       .select('name, course_type, description, prep_time_minutes, cook_time_minutes')
       .eq('event_id', eventId),
-    supabase
+    db
       .from('event_staff_assignments')
       .select('role_override, staff_members(name, role)')
       .eq('event_id', eventId),

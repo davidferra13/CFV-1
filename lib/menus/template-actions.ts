@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -123,9 +123,9 @@ function getWeekOfSeason(date: Date): number {
 export async function createMenuTemplate(input: CreateTemplateInput) {
   const user = await requireChef()
   const validated = CreateTemplateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_templates')
     .insert({
       tenant_id: user.tenantId!,
@@ -152,9 +152,9 @@ export async function getMenuTemplates(
   tags?: string[]
 ): Promise<MenuTemplate[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('menu_templates')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -178,9 +178,9 @@ export async function getMenuTemplates(
 
 export async function getMenuTemplate(templateId: string): Promise<MenuTemplate | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_templates')
     .select('*')
     .eq('id', templateId)
@@ -197,7 +197,7 @@ export async function getMenuTemplate(templateId: string): Promise<MenuTemplate 
 export async function updateMenuTemplate(templateId: string, input: UpdateTemplateInput) {
   const user = await requireChef()
   const validated = UpdateTemplateSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = { updated_by: user.id }
   if (validated.name !== undefined) updates.name = validated.name
@@ -208,7 +208,7 @@ export async function updateMenuTemplate(templateId: string, input: UpdateTempla
   if (validated.tags !== undefined) updates.tags = validated.tags
   if (validated.is_active !== undefined) updates.is_active = validated.is_active
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_templates')
     .update(updates)
     .eq('id', templateId)
@@ -224,9 +224,9 @@ export async function updateMenuTemplate(templateId: string, input: UpdateTempla
 
 export async function deleteMenuTemplate(templateId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('menu_templates')
     .delete()
     .eq('id', templateId)
@@ -248,10 +248,10 @@ export async function deleteMenuTemplate(templateId: string) {
  */
 export async function createMenuFromTemplate(templateId: string, eventId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch template
-  const { data: template, error: tErr } = await supabase
+  const { data: template, error: tErr } = await db
     .from('menu_templates')
     .select('*')
     .eq('id', templateId)
@@ -262,7 +262,7 @@ export async function createMenuFromTemplate(templateId: string, eventId?: strin
 
   // Verify event ownership if provided
   if (eventId) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('tenant_id')
       .eq('id', eventId)
@@ -274,7 +274,7 @@ export async function createMenuFromTemplate(templateId: string, eventId?: strin
   const dishes = (template.dishes ?? []) as TemplateDish[]
 
   // Create the menu
-  const { data: menu, error: mErr } = await supabase
+  const { data: menu, error: mErr } = await db
     .from('menus')
     .insert({
       tenant_id: user.tenantId!,
@@ -301,7 +301,7 @@ export async function createMenuFromTemplate(templateId: string, eventId?: strin
     updated_by: user.id,
   }))
 
-  const { data: createdDishes, error: dErr } = await supabase
+  const { data: createdDishes, error: dErr } = await db
     .from('dishes')
     .insert(dishInserts)
     .select('id, course_number')
@@ -336,7 +336,7 @@ export async function createMenuFromTemplate(templateId: string, eventId?: strin
     }
 
     if (componentInserts.length > 0) {
-      const { error: cErr } = await supabase.from('components').insert(componentInserts)
+      const { error: cErr } = await db.from('components').insert(componentInserts)
       if (cErr) {
         console.error('[template] Failed to create components:', cErr.message)
       }
@@ -344,7 +344,7 @@ export async function createMenuFromTemplate(templateId: string, eventId?: strin
   }
 
   // Increment times_used and set last_used_at
-  await supabase
+  await db
     .from('menu_templates')
     .update({
       times_used: (template.times_used ?? 0) + 1,
@@ -368,10 +368,10 @@ export async function saveMenuAsTemplate(
   tags?: string[]
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch menu with dishes and components
-  const { data: menu, error: menuErr } = await supabase
+  const { data: menu, error: menuErr } = await db
     .from('menus')
     .select('id, name, description, tenant_id')
     .eq('id', menuId)
@@ -380,7 +380,7 @@ export async function saveMenuAsTemplate(
 
   if (menuErr || !menu) throw new Error('Menu not found')
 
-  const { data: dishes, error: dishErr } = await supabase
+  const { data: dishes, error: dishErr } = await db
     .from('dishes')
     .select('id, course_name, course_number')
     .eq('menu_id', menuId)
@@ -395,7 +395,7 @@ export async function saveMenuAsTemplate(
   // Bulk-fetch all components for all dishes in one query
   let dishToComps = new Map<string, { name: string; recipe_id: string | null }[]>()
   if (dishIds.length > 0) {
-    const { data: allComps } = await supabase
+    const { data: allComps } = await db
       .from('components')
       .select('dish_id, name, recipe_id, sort_order')
       .in('dish_id', dishIds)
@@ -424,7 +424,7 @@ export async function saveMenuAsTemplate(
     })
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_templates')
     .insert({
       tenant_id: user.tenantId!,
@@ -462,9 +462,9 @@ export interface SeasonalCalendarEntry {
  */
 export async function getSeasonalCalendar(_year: number): Promise<SeasonalCalendarEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: templates, error } = await supabase
+  const { data: templates, error } = await db
     .from('menu_templates')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -511,14 +511,14 @@ export async function suggestTemplate(
   clientId?: string
 ): Promise<MenuTemplate | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const date = new Date(eventDate)
   const season = getSeasonForDate(date)
   const weekNum = getWeekOfSeason(date)
 
   // Fetch all active templates for this season (plus all_season)
-  const { data: templates, error } = await supabase
+  const { data: templates, error } = await db
     .from('menu_templates')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -534,7 +534,7 @@ export async function suggestTemplate(
   // If clientId provided, exclude templates already used for this client's events
   if (clientId) {
     // Get menu names used for this client's events
-    const { data: clientMenus } = await supabase
+    const { data: clientMenus } = await db
       .from('menus')
       .select('name, events!inner(client_id)')
       .eq('tenant_id', user.tenantId!)

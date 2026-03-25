@@ -35,7 +35,7 @@ function getDashboardWidgetsFromUnknown(raw: unknown): { id: string; enabled: bo
 
 export const GET = withApiAuth(
   async (_req, ctx) => {
-    const { data } = await ctx.supabase
+    const { data } = await ctx.db
       .from('chef_preferences')
       .select('dashboard_widgets')
       .eq('chef_id', ctx.tenantId)
@@ -75,7 +75,7 @@ export const PATCH = withApiAuth(
     }
 
     // Merge with existing: keep existing widgets not in the update, override those in the update
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('chef_preferences')
       .select('dashboard_widgets')
       .eq('chef_id', ctx.tenantId)
@@ -90,7 +90,7 @@ export const PATCH = withApiAuth(
       enabled: updateMap.has(w.id) ? updateMap.get(w.id)! : w.enabled,
     }))
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('chef_preferences')
       .upsert(
         {

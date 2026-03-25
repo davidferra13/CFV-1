@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef, requireStaff } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { assignStaffToEvent, checkAssignmentConflict } from '@/lib/staff/actions'
 import { clockIn, clockOut } from '@/lib/staff/clock-actions'
 
@@ -100,23 +100,23 @@ export async function getStaffSchedulerData(
 ): Promise<StaffSchedulerData> {
   const user = await requireChef()
   const parsed = DateRangeSchema.parse({ startDate, endDate })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [staffResult, eventsResult, assignmentResult, availabilityResult] = await Promise.all([
-    supabase
+    db
       .from('staff_members')
       .select('id, name, role, hourly_rate_cents')
       .eq('chef_id', user.tenantId!)
       .eq('status', 'active')
       .order('name'),
-    supabase
+    db
       .from('events')
       .select('id, occasion, event_date, status')
       .eq('tenant_id', user.tenantId!)
       .gte('event_date', parsed.startDate)
       .lte('event_date', parsed.endDate)
       .order('event_date'),
-    supabase
+    db
       .from('event_staff_assignments')
       .select(
         `
@@ -132,7 +132,7 @@ export async function getStaffSchedulerData(
       `
       )
       .eq('chef_id', user.tenantId!),
-    supabase
+    db
       .from('staff_availability')
       .select('staff_member_id, date, is_available')
       .eq('chef_id', user.tenantId!)
@@ -206,9 +206,9 @@ export async function scheduleStaffMemberWithConflictCheck(input: {
 }) {
   const parsed = ScheduleSchema.parse(input)
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, event_date')
     .eq('id', parsed.eventId)
@@ -245,23 +245,23 @@ export async function getTimeTrackerData(
 ): Promise<TimeTrackerData> {
   const user = await requireChef()
   const parsed = DateRangeSchema.parse({ startDate, endDate })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [staffResult, eventsResult, entriesResult] = await Promise.all([
-    supabase
+    db
       .from('staff_members')
       .select('id, name, hourly_rate_cents')
       .eq('chef_id', user.tenantId!)
       .eq('status', 'active')
       .order('name'),
-    supabase
+    db
       .from('events')
       .select('id, occasion, event_date')
       .eq('tenant_id', user.tenantId!)
       .gte('event_date', parsed.startDate)
       .lte('event_date', parsed.endDate)
       .order('event_date'),
-    supabase
+    db
       .from('staff_clock_entries')
       .select(
         `
@@ -342,9 +342,9 @@ export async function clockInFromTimeTracker(input: {
       throw new Error('Staff can only clock in themselves')
     }
 
-    const supabase: any = createServerClient({ admin: true })
+    const db: any = createServerClient({ admin: true })
     if (parsed.eventId) {
-      const { data: event } = await supabase
+      const { data: event } = await db
         .from('events')
         .select('id')
         .eq('id', parsed.eventId)
@@ -353,7 +353,7 @@ export async function clockInFromTimeTracker(input: {
       if (!event) throw new Error('Event not found')
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('staff_clock_entries')
       .insert({
         staff_member_id: staffUser.staffMemberId,
@@ -408,9 +408,9 @@ export async function clockOutFromTimeTracker(entryId: string) {
     entry = await clockOut(entryId)
   } else {
     const staffUser = await requireStaff()
-    const supabase: any = createServerClient({ admin: true })
+    const db: any = createServerClient({ admin: true })
 
-    const { data: existing, error: fetchError } = await supabase
+    const { data: existing, error: fetchError } = await db
       .from('staff_clock_entries')
       .select('*')
       .eq('id', entryId)
@@ -431,7 +431,7 @@ export async function clockOutFromTimeTracker(entryId: string) {
       )
     )
 
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('staff_clock_entries')
       .update({
         clock_out_at: clockOutAt,
@@ -472,23 +472,23 @@ export async function getStaffPortalTimeTrackerData(
 ): Promise<TimeTrackerData> {
   const user = await requireStaff()
   const parsed = DateRangeSchema.parse({ startDate, endDate })
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const [staffResult, eventsResult, entriesResult] = await Promise.all([
-    supabase
+    db
       .from('staff_members')
       .select('id, name, hourly_rate_cents')
       .eq('id', user.staffMemberId)
       .eq('chef_id', user.tenantId)
       .limit(1),
-    supabase
+    db
       .from('events')
       .select('id, occasion, event_date')
       .eq('tenant_id', user.tenantId)
       .gte('event_date', parsed.startDate)
       .lte('event_date', parsed.endDate)
       .order('event_date'),
-    supabase
+    db
       .from('staff_clock_entries')
       .select(
         `
@@ -548,9 +548,9 @@ export async function getPayrollReportForPeriod(
 ): Promise<PayrollReportData> {
   const user = await requireChef()
   const parsed = DateRangeSchema.parse({ startDate, endDate })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_clock_entries')
     .select(
       `

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 export type MenuRevision = {
@@ -18,9 +18,9 @@ export type MenuRevision = {
 
 export async function getRevisionHistory(menuId: string, eventId: string): Promise<MenuRevision[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menu_revisions')
     .select('*')
     .eq('menu_id', menuId)
@@ -41,9 +41,9 @@ export async function compareRevisions(
   revisionBId: string
 ): Promise<{ added: any[]; removed: any[]; modified: any[] } | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: revisions } = await supabase
+  const { data: revisions } = await db
     .from('menu_revisions')
     .select('*')
     .in('id', [revisionAId, revisionBId])

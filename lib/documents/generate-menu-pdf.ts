@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { allergenShortName } from '@/lib/constants/allergens'
 import { format } from 'date-fns'
@@ -62,14 +62,14 @@ function dietaryShort(tag: string): string {
 export async function generateMenuPdf(menuId: string, options?: MenuPdfOptions): Promise<string> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   const showDescriptions = options?.showDescriptions ?? true
   const showDietary = options?.showDietary ?? true
   const showCourseHeaders = options?.showCourseHeaders ?? true
 
   // Fetch menu
-  const { data: menu, error: menuErr } = await supabase
+  const { data: menu, error: menuErr } = await db
     .from('menus')
     .select('id, name, description, cuisine_type, service_style')
     .eq('id', menuId)
@@ -81,17 +81,13 @@ export async function generateMenuPdf(menuId: string, options?: MenuPdfOptions):
   }
 
   // Fetch chef business info
-  const { data: chef } = await supabase
-    .from('chefs')
-    .select('business_name')
-    .eq('id', tenantId)
-    .single()
+  const { data: chef } = await db.from('chefs').select('business_name').eq('id', tenantId).single()
 
   const businessName = chef?.business_name || 'Chef'
   const businessTagline: string | null = null
 
   // Fetch dishes with components and linked recipes
-  const { data: dishes, error: dishErr } = await supabase
+  const { data: dishes, error: dishErr } = await db
     .from('dishes')
     .select(
       `

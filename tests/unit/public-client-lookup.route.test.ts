@@ -59,7 +59,7 @@ function getFilter(
 }
 
 function loadRouteModule(clientRow: { id: string } | null) {
-  const adminPath = require.resolve('../../lib/supabase/admin.ts')
+  const adminPath = require.resolve('../../lib/db/admin.ts')
   const chefLookupPath = require.resolve('../../lib/profile/public-chef.ts')
   const rateLimitPath = require.resolve('../../lib/rateLimit.ts')
   const routePath = require.resolve('../../app/api/public/client-lookup/route.ts')

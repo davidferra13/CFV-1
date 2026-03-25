@@ -1,7 +1,7 @@
 // Admin Referral Partners - platform-wide view of all referral partners across all tenants
 
 import { requireAdmin } from '@/lib/auth/admin'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Handshake, Globe, ExternalLink } from '@/components/ui/icons'
@@ -27,10 +27,10 @@ export default async function AdminReferralPartnersPage() {
     redirect('/unauthorized')
   }
 
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Fetch all referral partners across all tenants
-  const { data: rawPartners, error } = await supabase
+  const { data: rawPartners, error } = await db
     .from('referral_partners')
     .select(
       'id, tenant_id, name, partner_type, status, email, website, is_showcase_visible, created_at'
@@ -44,10 +44,7 @@ export default async function AdminReferralPartnersPage() {
   const tenantIds = [...new Set(partners.map((p) => p.tenant_id).filter(Boolean))] as string[]
   let chefMap: Record<string, string> = {}
   if (tenantIds.length > 0) {
-    const { data: chefs } = await supabase
-      .from('chefs')
-      .select('id, business_name')
-      .in('id', tenantIds)
+    const { data: chefs } = await db.from('chefs').select('id, business_name').in('id', tenantIds)
     chefMap = Object.fromEntries(
       (chefs ?? []).map((c: any) => [c.id, c.business_name ?? 'Unnamed'])
     )

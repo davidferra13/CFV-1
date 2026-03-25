@@ -7,7 +7,7 @@
 // to a known client, stores in messages table, and classifies with Ollama.
 // If classification is "inquiry", creates an inquiry automatically.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { classifyEmail } from '@/lib/gmail/classify'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { createClientFromLead } from '@/lib/clients/actions'
@@ -28,13 +28,13 @@ export async function ingestInboundSms(
   body: string,
   timestamp?: string
 ): Promise<SmsIngestResult> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const receivedAt = timestamp ? new Date(timestamp).toISOString() : new Date().toISOString()
 
   // 1. Try to match sender phone number to a known client
   const normalizedPhone = from.replace(/\D/g, '').slice(-10)
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id, full_name, email')
     .eq('tenant_id', tenantId)
@@ -43,7 +43,7 @@ export async function ingestInboundSms(
     .maybeSingle()
 
   // 2. Load known client emails for classification context
-  const { data: clients } = await supabase.from('clients').select('email').eq('tenant_id', tenantId)
+  const { data: clients } = await db.from('clients').select('email').eq('tenant_id', tenantId)
 
   const knownClientEmails = (clients ?? []).map((c: any) => c.email).filter(Boolean) as string[]
 
@@ -65,7 +65,7 @@ export async function ingestInboundSms(
   }
 
   // 4. Store the message
-  const { data: message, error: msgError } = await supabase
+  const { data: message, error: msgError } = await db
     .from('messages')
     .insert({
       tenant_id: tenantId,
@@ -107,7 +107,7 @@ export async function ingestInboundSms(
       }
 
       // Create inquiry
-      const { data: inquiry, error: inqError } = await supabase
+      const { data: inquiry, error: inqError } = await db
         .from('inquiries')
         .insert({
           tenant_id: tenantId,
@@ -131,7 +131,7 @@ export async function ingestInboundSms(
 
       // Link message to inquiry
       if (message?.id) {
-        await supabase
+        await db
           .from('messages')
           .update({ inquiry_id: inquiry.id, client_id: clientId })
           .eq('id', message.id)
@@ -175,7 +175,7 @@ export async function ingestInboundSms(
   // If existing client replied - auto-advance any awaiting_client inquiry
   if (client?.id && classification.category === 'existing_thread') {
     try {
-      const { data: openInquiry } = await supabase
+      const { data: openInquiry } = await db
         .from('inquiries')
         .select('id, status')
         .eq('tenant_id', tenantId)
@@ -186,7 +186,7 @@ export async function ingestInboundSms(
         .maybeSingle()
 
       if (openInquiry) {
-        await supabase
+        await db
           .from('inquiries')
           .update({
             status: 'awaiting_chef',
@@ -199,10 +199,7 @@ export async function ingestInboundSms(
 
         // Link message to inquiry
         if (message?.id) {
-          await supabase
-            .from('messages')
-            .update({ inquiry_id: openInquiry.id })
-            .eq('id', message.id)
+          await db.from('messages').update({ inquiry_id: openInquiry.id }).eq('id', message.id)
         }
 
         // Notify chef

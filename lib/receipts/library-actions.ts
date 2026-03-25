@@ -9,7 +9,7 @@
 //   - getAllReceiptsForChef() returns all receipts across all events with fresh signed URLs
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { processReceiptOCR } from './actions'
 
@@ -51,11 +51,11 @@ export async function uploadStandaloneReceipt(
   opts: { eventId?: string; clientId?: string; notes?: string } = {}
 ): Promise<UploadStandaloneResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If an eventId was provided, verify it belongs to this chef (security check - no state restriction)
   if (opts.eventId) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('id')
       .eq('id', opts.eventId)
@@ -67,7 +67,7 @@ export async function uploadStandaloneReceipt(
 
   // If a clientId was provided, verify it belongs to this chef
   if (opts.clientId) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('id')
       .eq('id', opts.clientId)
@@ -95,7 +95,7 @@ export async function uploadStandaloneReceipt(
   const contextFolder = opts.eventId ?? 'general'
   const storagePath = `${user.tenantId}/${contextFolder}/${pathKey}.${ext}`
 
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await db.storage
     .from(RECEIPTS_BUCKET)
     .upload(storagePath, file, { contentType: file.type, upsert: false })
 
@@ -105,16 +105,16 @@ export async function uploadStandaloneReceipt(
   }
 
   // Generate a short-lived signed URL for the initial OCR window
-  const { data: signedData, error: signError } = await supabase.storage
+  const { data: signedData, error: signError } = await db.storage
     .from(RECEIPTS_BUCKET)
     .createSignedUrl(storagePath, 86400) // 24h for OCR processing window
 
   if (signError || !signedData?.signedUrl) {
-    await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath])
+    await db.storage.from(RECEIPTS_BUCKET).remove([storagePath])
     return { success: false, error: 'Failed to generate access URL - please try again' }
   }
 
-  const { data: photoRecord, error: dbError } = await supabase
+  const { data: photoRecord, error: dbError } = await db
     .from('receipt_photos')
     .insert({
       event_id: opts.eventId ?? null,
@@ -130,7 +130,7 @@ export async function uploadStandaloneReceipt(
 
   if (dbError || !photoRecord) {
     console.error('[uploadStandaloneReceipt] DB insert error:', dbError)
-    await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath])
+    await db.storage.from(RECEIPTS_BUCKET).remove([storagePath])
     return { success: false, error: 'Failed to register receipt - please try again' }
   }
 
@@ -202,9 +202,9 @@ export async function getAllReceiptsForChef(
   } = {}
 ): Promise<AllReceiptPhoto[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('receipt_photos')
     .select(
       `
@@ -243,7 +243,7 @@ export async function getAllReceiptsForChef(
   // Batch-sign all paths in one call (more efficient than individual calls)
   const signedMap = new Map<string, string>()
   if (pathsToSign.length > 0) {
-    const { data: signedUrls } = await supabase.storage
+    const { data: signedUrls } = await db.storage
       .from(RECEIPTS_BUCKET)
       .createSignedUrls(pathsToSign, DISPLAY_URL_EXPIRY_SECONDS)
 
@@ -303,9 +303,9 @@ export async function getAllReceiptsForChef(
 /** Fetch all events for the chef - used to populate the event selector on the upload form. */
 export async function getEventOptionsForChef(): Promise<EventOption[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('events')
     .select('id, occasion, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -321,9 +321,9 @@ export async function getEventOptionsForChef(): Promise<EventOption[]> {
 /** Fetch all clients for the chef - used to populate the client selector on the upload form. */
 export async function getClientOptionsForChef(): Promise<ClientOption[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('clients')
     .select('id, name')
     .eq('tenant_id', user.tenantId!)

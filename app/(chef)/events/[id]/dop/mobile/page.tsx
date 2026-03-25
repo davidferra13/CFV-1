@@ -5,7 +5,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventDOPSchedule } from '@/lib/scheduling/actions'
 import { getDOPManualCompletions } from '@/lib/scheduling/dop-completions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { notFound } from 'next/navigation'
 import { DopMobileView } from '@/components/scheduling/dop-mobile-view'
 import type { Metadata } from 'next'
@@ -24,10 +24,10 @@ interface Props {
 
 export default async function DopMobilePage({ params }: Props) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event basics for the header
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, occasion, serve_time, event_date')
     .eq('id', params.id)

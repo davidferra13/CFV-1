@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,10 +49,10 @@ export interface UntappedMarketsResult {
 export async function getUntappedMarkets(): Promise<UntappedMarketsResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all inquiries with occasion data
-  const { data: inquiries, error: iqErr } = await supabase
+  const { data: inquiries, error: iqErr } = await db
     .from('inquiries')
     .select('id, status, occasion, guest_count, converted_to_event_id')
     .eq('tenant_id', tenantId)
@@ -60,7 +60,7 @@ export async function getUntappedMarkets(): Promise<UntappedMarketsResult | null
   if (iqErr || !inquiries || inquiries.length < 3) return null
 
   // Fetch completed events
-  const { data: events, error: evErr } = await supabase
+  const { data: events, error: evErr } = await db
     .from('events')
     .select('id, occasion, service_style, guest_count, quoted_price_cents, status, event_date')
     .eq('tenant_id', tenantId)
@@ -74,10 +74,7 @@ export async function getUntappedMarkets(): Promise<UntappedMarketsResult | null
     .map((e: any) => e.id)
   const { data: expenses } =
     completedIds.length > 0
-      ? await supabase
-          .from('expenses')
-          .select('event_id, amount_cents')
-          .in('event_id', completedIds)
+      ? await db.from('expenses').select('event_id, amount_cents').in('event_id', completedIds)
       : { data: [] }
 
   const expenseByEvent = new Map<string, number>()
@@ -114,7 +111,7 @@ export async function getUntappedMarkets(): Promise<UntappedMarketsResult | null
   }
 
   // Fetch quotes for avg pricing
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select('id, total_quoted_cents, inquiry_id')
     .eq('tenant_id', tenantId)

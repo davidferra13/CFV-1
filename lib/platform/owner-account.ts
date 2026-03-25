@@ -60,7 +60,7 @@ export function __resetOwnerIdentityCacheForTests() {
   ownerIdentityCache = null
 }
 
-export async function resolveOwnerIdentity(supabase: any): Promise<OwnerIdentity> {
+export async function resolveOwnerIdentity(db: any): Promise<OwnerIdentity> {
   const now = Date.now()
   if (ownerIdentityCache && now < ownerIdentityCache.expiresAt) {
     return ownerIdentityCache.value
@@ -69,7 +69,7 @@ export async function resolveOwnerIdentity(supabase: any): Promise<OwnerIdentity
   const warnings: string[] = []
   const adminEmails = getAdminEmails()
 
-  const { data: founderChef, error: founderError } = await supabase
+  const { data: founderChef, error: founderError } = await db
     .from('chefs')
     .select('id')
     .ilike('email', FOUNDER_EMAIL)
@@ -95,7 +95,7 @@ export async function resolveOwnerIdentity(supabase: any): Promise<OwnerIdentity
 
   let ownerAuthUserId: string | null = null
   if (ownerChefId) {
-    const { data: ownerRole, error: roleError } = await supabase
+    const { data: ownerRole, error: roleError } = await db
       .from('user_roles')
       .select('auth_user_id')
       .eq('role', 'chef')
@@ -128,12 +128,12 @@ export async function resolveOwnerIdentity(supabase: any): Promise<OwnerIdentity
   return identity
 }
 
-export async function resolveOwnerChefId(supabase: any): Promise<string | null> {
-  const identity = await resolveOwnerIdentity(supabase)
+export async function resolveOwnerChefId(db: any): Promise<string | null> {
+  const identity = await resolveOwnerIdentity(db)
   return identity.ownerChefId
 }
 
-export async function resolveOwnerAuthUserId(supabase: any): Promise<string | null> {
-  const identity = await resolveOwnerIdentity(supabase)
+export async function resolveOwnerAuthUserId(db: any): Promise<string | null> {
+  const identity = await resolveOwnerIdentity(db)
   return identity.ownerAuthUserId
 }

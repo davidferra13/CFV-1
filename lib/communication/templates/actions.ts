@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -44,9 +44,9 @@ export type TemplateCategory =
 
 export async function getTemplates(category?: TemplateCategory): Promise<ResponseTemplate[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('response_templates')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -70,9 +70,9 @@ export async function getTemplates(category?: TemplateCategory): Promise<Respons
 
 export async function getTemplate(id: string): Promise<ResponseTemplate | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('response_templates')
     .select('*')
     .eq('id', id)
@@ -121,18 +121,18 @@ export async function createTemplate(
     return { success: false, error: 'Invalid template data.' }
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If this is set as default, unset other defaults in same category
   if (parsed.data.is_default) {
-    await supabase
+    await db
       .from('response_templates')
       .update({ is_default: false })
       .eq('chef_id', user.entityId)
       .eq('category', parsed.data.category)
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('response_templates')
     .insert({
       chef_id: user.entityId,
@@ -176,12 +176,12 @@ export async function updateTemplate(
     return { success: false, error: 'Invalid template data.' }
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If setting as default, unset others
   if (parsed.data.is_default) {
     // Get category of this template first
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('response_templates')
       .select('category')
       .eq('id', parsed.data.id)
@@ -189,7 +189,7 @@ export async function updateTemplate(
       .single()
 
     if (existing) {
-      await supabase
+      await db
         .from('response_templates')
         .update({ is_default: false })
         .eq('chef_id', user.entityId)
@@ -206,7 +206,7 @@ export async function updateTemplate(
     updates.occasion_filter = parsed.data.occasion_filter
   if (parsed.data.is_default !== undefined) updates.is_default = parsed.data.is_default
 
-  const { error } = await supabase
+  const { error } = await db
     .from('response_templates')
     .update(updates)
     .eq('id', parsed.data.id)
@@ -223,9 +223,9 @@ export async function updateTemplate(
 
 export async function deleteTemplate(id: string): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('response_templates')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', id)

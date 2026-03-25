@@ -5,8 +5,8 @@
 // These run in the public route context - no auth required to VIEW the page,
 // but the user must sign in/have an account before claiming the invite.
 
-import { createServerClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createServerClient } from '@/lib/db/server'
+import { createAdminClient } from '@/lib/db/admin'
 
 // ─── Look Up Invite by Token ──────────────────────────────────────────────────
 
@@ -15,9 +15,9 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * Returns null if the token is invalid, expired, already claimed, or not approved.
  */
 export async function getCannabisInviteByToken(token: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('cannabis_tier_invitations')
     .select(
       'id, invitee_email, invitee_name, personal_note, expires_at, claimed_at, admin_approval_status'
@@ -50,13 +50,13 @@ export async function getCannabisInviteByToken(token: string) {
  * 2. Inserts a cannabis_tier_users row for the claiming user
  */
 export async function claimCannabisInvite(token: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get current user
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser()
+  } = await db.auth.getUser()
 
   if (authError || !user) {
     return { success: false, error: 'You must be signed in to claim this invitation.' }
@@ -72,14 +72,14 @@ export async function claimCannabisInvite(token: string) {
   }
 
   // Get user role info
-  const { data: roleData } = await supabase
+  const { data: roleData } = await db
     .from('user_roles')
     .select('role, entity_id')
     .eq('auth_user_id', user.id)
     .single()
 
   // Check if they already have tier access
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('cannabis_tier_users')
     .select('status')
     .eq('auth_user_id', user.id)

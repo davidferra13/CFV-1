@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { computeProfitAndLoss } from '@/lib/ledger/compute'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Card } from '@/components/ui/card'
 import {
   Table,
@@ -42,13 +42,13 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
   const yearOptions = [currentYear, currentYear - 1, currentYear - 2]
 
   // Run P&L compute and events query in parallel
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const startDate = `${validYear}-01-01`
   const endDate = `${validYear}-12-31`
 
   const [pl, eventsResult] = await Promise.all([
     computeProfitAndLoss(validYear),
-    supabase
+    db
       .from('events')
       .select('id, occasion, event_date, status')
       .eq('tenant_id', user.tenantId!)

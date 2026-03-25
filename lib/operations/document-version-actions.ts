@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -68,10 +68,10 @@ function mapDocumentVersion(row: any): DocumentVersion {
 export async function saveDocumentVersion(input: SaveDocumentVersionInput) {
   const user = await requireChef()
   const validated = SaveDocumentVersionSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find the current highest version number for this entity
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('document_versions')
     .select('version_number')
     .eq('tenant_id', user.tenantId!)
@@ -86,7 +86,7 @@ export async function saveDocumentVersion(input: SaveDocumentVersionInput) {
   const snapshot =
     typeof validated.content === 'string' ? { text: validated.content } : validated.content
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('document_versions')
     .insert({
       tenant_id: user.tenantId!,
@@ -119,9 +119,9 @@ export async function getDocumentVersions(
   entityId: string
 ): Promise<DocumentVersion[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('document_versions')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -143,10 +143,10 @@ export async function getDocumentVersions(
  */
 export async function revertToVersion(versionId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the version to revert to
-  const { data: oldVersion, error: fetchError } = await supabase
+  const { data: oldVersion, error: fetchError } = await db
     .from('document_versions')
     .select('*')
     .eq('id', versionId)
@@ -159,7 +159,7 @@ export async function revertToVersion(versionId: string) {
   }
 
   // Find the current highest version number for this entity
-  const { data: latest } = await supabase
+  const { data: latest } = await db
     .from('document_versions')
     .select('version_number')
     .eq('tenant_id', user.tenantId!)
@@ -171,7 +171,7 @@ export async function revertToVersion(versionId: string) {
   const nextVersion = latest && latest.length > 0 ? latest[0].version_number + 1 : 1
 
   // Create a new version with the old content
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('document_versions')
     .insert({
       tenant_id: user.tenantId!,

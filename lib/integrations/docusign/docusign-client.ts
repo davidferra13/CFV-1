@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { encryptOAuthToken, decryptOAuthToken } from '@/lib/integrations/core/token-crypto'
@@ -37,11 +37,11 @@ function getApiBase() {
 export async function initiateDocuSignConnect(): Promise<{ redirectUrl: string }> {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const state = crypto.randomUUID()
 
-  await supabase.from('social_oauth_states').insert({
+  await db.from('social_oauth_states').insert({
     id: crypto.randomUUID(),
     tenant_id: user.entityId,
     platform: 'docusign',
@@ -105,9 +105,9 @@ export async function exchangeDocuSignCode(code: string, tenantId: string): Prom
   const defaultAccount = userInfo.accounts.find((a) => a.is_default) || userInfo.accounts[0]
   if (!defaultAccount) throw new Error('No DocuSign account found')
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  await supabase.from('integration_connections').upsert(
+  await db.from('integration_connections').upsert(
     {
       id: crypto.randomUUID(),
       chef_id: tenantId,
@@ -133,9 +133,9 @@ export async function exchangeDocuSignCode(code: string, tenantId: string): Prom
 }
 
 async function refreshDocuSignToken(tenantId: string): Promise<string> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('integration_connections')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -169,7 +169,7 @@ async function refreshDocuSignToken(tenantId: string): Promise<string> {
   })
 
   if (!response.ok) {
-    await supabase
+    await db
       .from('integration_connections')
       .update({ status: 'reauth_required', last_error: 'Token refresh failed' })
       .eq('tenant_id', tenantId)
@@ -183,7 +183,7 @@ async function refreshDocuSignToken(tenantId: string): Promise<string> {
     expires_in: number
   }
 
-  await supabase
+  await db
     .from('integration_connections')
     .update({
       access_token: encryptOAuthToken(tokens.access_token),
@@ -210,9 +210,9 @@ export async function sendContractForSignature(
     emailBody?: string
   }
 ) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('integration_connections')
     .select('config')
     .eq('tenant_id', tenantId)
@@ -289,7 +289,7 @@ export async function sendContractForSignature(
   }
 
   // Update contract record with DocuSign envelope info
-  await supabase
+  await db
     .from('contracts' as any)
     .update({
       docusign_envelope_id: envelope.envelopeId,
@@ -303,9 +303,9 @@ export async function sendContractForSignature(
 }
 
 export async function getEnvelopeStatus(tenantId: string, envelopeId: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('integration_connections')
     .select('config')
     .eq('tenant_id', tenantId)
@@ -333,9 +333,9 @@ export async function getEnvelopeStatus(tenantId: string, envelopeId: string) {
 }
 
 export async function getDocuSignConnectionStatus(tenantId: string) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('integration_connections')
     .select('status, external_account_name, connected_at, last_error, config')
     .eq('tenant_id', tenantId)
@@ -357,9 +357,9 @@ export async function getDocuSignConnectionStatus(tenantId: string) {
 export async function disconnectDocuSign() {
   await requirePro('integrations')
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  await supabase
+  await db
     .from('integration_connections')
     .update({ status: 'disconnected' })
     .eq('tenant_id', user.entityId)

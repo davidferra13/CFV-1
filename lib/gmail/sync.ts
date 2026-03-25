@@ -1,9 +1,9 @@
 // Gmail Sync Engine
 // Core pipeline: fetch emails → classify → create inquiries / log messages
-// Runs with admin Supabase client (no user session required) so it works
+// Runs with admin DB client (no user session required) so it works
 // from both the manual UI trigger and the cron endpoint.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type DbClient = { from: (table: string) => any; rpc: (...args: any[]) => any }
 import { getGoogleAccessToken } from '@/lib/google/auth'
@@ -99,7 +99,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
     errors: [],
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // 1. Get valid access token (auto-refreshes if needed)
   let accessToken: string
@@ -112,7 +112,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
   }
 
   // 2. Get current sync state
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('google_connections')
     .select('gmail_history_id')
     .eq('chef_id', chefId)
@@ -134,7 +134,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
 
       // Bootstrap the history ID for future incremental syncs
       const profile = await getGmailProfile(accessToken)
-      await supabase
+      await db
         .from('google_connections')
         .update({ gmail_history_id: profile.historyId })
         .eq('chef_id', chefId)
@@ -151,12 +151,12 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
         })
         messageIds = messages.map((m) => m.id)
         const profile = await getGmailProfile(accessToken)
-        await supabase
+        await db
           .from('google_connections')
           .update({ gmail_history_id: profile.historyId })
           .eq('chef_id', chefId)
       } else if (historyResult.latestHistoryId) {
-        await supabase
+        await db
           .from('google_connections')
           .update({ gmail_history_id: historyResult.latestHistoryId })
           .eq('chef_id', chefId)
@@ -165,10 +165,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
   } catch (err) {
     if (err instanceof GmailScopeError) {
       // Mark connection as needing reauth so the UI shows a reconnect prompt
-      await supabase
-        .from('google_connections')
-        .update({ gmail_sync_errors: 99 })
-        .eq('chef_id', chefId)
+      await db.from('google_connections').update({ gmail_sync_errors: 99 }).eq('chef_id', chefId)
       result.errors.push(
         'Gmail permissions are insufficient. Please disconnect and reconnect your Gmail in Settings.'
       )
@@ -200,12 +197,12 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
   }
 
   // 4. Load known client emails for classification context
-  const { data: clients } = await supabase.from('clients').select('email').eq('tenant_id', tenantId)
+  const { data: clients } = await db.from('clients').select('email').eq('tenant_id', tenantId)
 
   const knownClientEmails = (clients || []).map((c: any) => c.email).filter(Boolean) as string[]
 
   // 5. Batch-fetch already-synced message IDs to avoid N+1 dedup queries
-  const { data: alreadySynced } = await supabase
+  const { data: alreadySynced } = await db
     .from('gmail_sync_log')
     .select('gmail_message_id')
     .eq('tenant_id', tenantId)
@@ -220,7 +217,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
     }
     try {
       await processMessage(
-        supabase as unknown as DbClient,
+        db as unknown as DbClient,
         accessToken,
         messageId,
         chefId,
@@ -235,7 +232,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
   }
 
   // 7. Update sync timestamp
-  await supabase
+  await db
     .from('google_connections')
     .update({
       gmail_last_sync_at: new Date().toISOString(),
@@ -249,7 +246,7 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
 // ─── Process Single Message ─────────────────────────────────────────────────
 
 async function processMessage(
-  supabase: DbClient,
+  db: DbClient,
   accessToken: string,
   messageId: string,
   chefId: string,
@@ -264,14 +261,14 @@ async function processMessage(
   result.processed++
 
   // Skip emails sent by the chef themselves (outbound)
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('google_connections')
     .select('connected_email')
     .eq('chef_id', chefId)
     .single()
 
   if (conn?.connected_email && email.from.email === conn.connected_email) {
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'personal',
       confidence: 'high',
       action_taken: 'skipped',
@@ -285,18 +282,18 @@ async function processMessage(
   // Skips Ollama classification entirely - platform emails are consistently
   // formatted and don't need AI to classify.
   if (isTakeAChefEmail(email.from.email)) {
-    await handleTakeAChefEmail(supabase, email, chefId, tenantId, result)
+    await handleTakeAChefEmail(db, email, chefId, tenantId, result)
     return
   }
 
   if (isYhangryEmail(email.from.email)) {
-    await handleYhangryEmail(supabase, email, chefId, tenantId, result)
+    await handleYhangryEmail(db, email, chefId, tenantId, result)
     return
   }
 
   if (isThumbtackEmail(email.from.email)) {
     await handleGenericPlatformEmail(
-      supabase,
+      db,
       email,
       chefId,
       tenantId,
@@ -309,7 +306,7 @@ async function processMessage(
 
   if (isTheKnotEmail(email.from.email)) {
     await handleGenericPlatformEmail(
-      supabase,
+      db,
       email,
       chefId,
       tenantId,
@@ -321,21 +318,13 @@ async function processMessage(
   }
 
   if (isBarkEmail(email.from.email)) {
-    await handleGenericPlatformEmail(
-      supabase,
-      email,
-      chefId,
-      tenantId,
-      result,
-      'bark',
-      parseBarkEmail
-    )
+    await handleGenericPlatformEmail(db, email, chefId, tenantId, result, 'bark', parseBarkEmail)
     return
   }
 
   if (isCozymealEmail(email.from.email)) {
     await handleGenericPlatformEmail(
-      supabase,
+      db,
       email,
       chefId,
       tenantId,
@@ -348,7 +337,7 @@ async function processMessage(
 
   if (isGigSaladEmail(email.from.email)) {
     await handleGenericPlatformEmail(
-      supabase,
+      db,
       email,
       chefId,
       tenantId,
@@ -361,7 +350,7 @@ async function processMessage(
 
   if (isGoogleBusinessEmailWithSubject(email.from.email, email.subject || '')) {
     await handleGenericPlatformEmail(
-      supabase,
+      db,
       email,
       chefId,
       tenantId,
@@ -374,7 +363,7 @@ async function processMessage(
 
   if (isWixFormsEmail(email.from.email)) {
     await handleGenericPlatformEmail(
-      supabase,
+      db,
       email,
       chefId,
       tenantId,
@@ -387,7 +376,7 @@ async function processMessage(
 
   if (isPrivateChefManagerEmail(email.from.email)) {
     await handleGenericPlatformEmail(
-      supabase,
+      db,
       email,
       chefId,
       tenantId,
@@ -400,7 +389,7 @@ async function processMessage(
 
   if (isHireAChefEmail(email.from.email)) {
     await handleGenericPlatformEmail(
-      supabase,
+      db,
       email,
       chefId,
       tenantId,
@@ -413,7 +402,7 @@ async function processMessage(
 
   if (isCuisineistChefEmail(email.from.email)) {
     await handleGenericPlatformEmail(
-      supabase,
+      db,
       email,
       chefId,
       tenantId,
@@ -468,16 +457,16 @@ async function processMessage(
   // Route by classification
   switch (classification.category) {
     case 'inquiry':
-      await handleInquiry(supabase, email, chefId, tenantId, classification, result)
+      await handleInquiry(db, email, chefId, tenantId, classification, result)
       break
 
     case 'existing_thread':
-      await handleExistingThread(supabase, email, tenantId, classification, result)
+      await handleExistingThread(db, email, tenantId, classification, result)
       break
 
     default:
       // personal, spam, marketing - just log
-      await logSyncEntry(supabase, tenantId, email, {
+      await logSyncEntry(db, tenantId, email, {
         classification: classification.category,
         confidence: classification.confidence,
         action_taken: 'skipped',
@@ -490,7 +479,7 @@ async function processMessage(
 // ─── Handle Inquiry Email ───────────────────────────────────────────────────
 
 async function handleInquiry(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
@@ -576,7 +565,7 @@ async function handleInquiry(
     }
 
     // Create the inquiry
-    const { data: inquiry, error: inquiryError } = await supabase
+    const { data: inquiry, error: inquiryError } = await db
       .from('inquiries')
       .insert({
         tenant_id: tenantId,
@@ -627,7 +616,7 @@ async function handleInquiry(
     if (inquiryError) throw new Error(inquiryError.message)
 
     // Log the raw message in the messages table
-    const { data: message } = await supabase
+    const { data: message } = await db
       .from('messages')
       .insert({
         tenant_id: tenantId,
@@ -646,7 +635,7 @@ async function handleInquiry(
       .single()
 
     // Log in sync log
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: classification.category,
       confidence: classification.confidence,
       action_taken: 'created_inquiry',
@@ -733,7 +722,7 @@ async function handleInquiry(
     result.inquiriesCreated++
   } catch (err) {
     const error = err as Error
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: classification.category,
       confidence: classification.confidence,
       action_taken: 'error',
@@ -746,7 +735,7 @@ async function handleInquiry(
 // ─── Handle Existing Thread Email ───────────────────────────────────────────
 
 async function handleExistingThread(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   tenantId: string,
   classification: { category: string; confidence: string },
@@ -754,7 +743,7 @@ async function handleExistingThread(
 ) {
   try {
     // Find the client by email
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -762,7 +751,7 @@ async function handleExistingThread(
       .single()
 
     // Log the message linked to the client (and optionally inquiry by thread)
-    const { data: message } = await supabase
+    const { data: message } = await db
       .from('messages')
       .insert({
         tenant_id: tenantId,
@@ -782,7 +771,7 @@ async function handleExistingThread(
     // Link message to inquiry by thread and auto-advance inquiry status
     let linkedInquiryId: string | null = null
     if (email.threadId) {
-      const { data: threadMessage } = await supabase
+      const { data: threadMessage } = await db
         .from('messages')
         .select('inquiry_id')
         .eq('tenant_id', tenantId)
@@ -796,15 +785,12 @@ async function handleExistingThread(
 
         // Link this reply message to the same inquiry
         if (message?.id) {
-          await supabase
-            .from('messages')
-            .update({ inquiry_id: linkedInquiryId })
-            .eq('id', message.id)
+          await db.from('messages').update({ inquiry_id: linkedInquiryId }).eq('id', message.id)
         }
 
         // Auto-advance: awaiting_client → awaiting_chef (client replied)
         // DB trigger auto-logs to inquiry_state_transitions
-        const { data: inquiry } = await supabase
+        const { data: inquiry } = await db
           .from('inquiries')
           .select(
             'status, confirmed_date, confirmed_guest_count, confirmed_budget_cents, confirmed_location, confirmed_occasion, confirmed_dietary_restrictions, confirmed_cannabis_preference, unknown_fields'
@@ -814,7 +800,7 @@ async function handleExistingThread(
           .single()
 
         if (inquiry?.status === 'awaiting_client') {
-          await supabase
+          await db
             .from('inquiries')
             .update({
               status: 'awaiting_chef',
@@ -884,7 +870,7 @@ async function handleExistingThread(
                 updates.chef_likelihood = newScore.lead_tier
               }
 
-              await supabase
+              await db
                 .from('inquiries')
                 .update(updates)
                 .eq('id', linkedInquiryId)
@@ -905,8 +891,8 @@ async function handleExistingThread(
         try {
           const { routeEmailReplyToCircle } = await import('@/lib/hub/email-to-circle')
           const convertedEventId = inquiry
-            ? ((await supabase.from('events').select('id').eq('id', linkedInquiryId).maybeSingle())
-                .data?.id ?? null)
+            ? ((await db.from('events').select('id').eq('id', linkedInquiryId).maybeSingle()).data
+                ?.id ?? null)
             : null
 
           await routeEmailReplyToCircle({
@@ -925,7 +911,7 @@ async function handleExistingThread(
       }
     }
 
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: classification.category,
       confidence: classification.confidence,
       action_taken: 'logged_message',
@@ -937,7 +923,7 @@ async function handleExistingThread(
       const chefUserId = await getChefAuthUserId(tenantId)
       if (chefUserId) {
         const clientName = client?.id
-          ? (await supabase.from('clients').select('full_name').eq('id', client.id).single()).data
+          ? (await db.from('clients').select('full_name').eq('id', client.id).single()).data
               ?.full_name
           : email.from.name || email.from.email
         await createNotification({
@@ -959,7 +945,7 @@ async function handleExistingThread(
     result.messagesLogged++
   } catch (err) {
     const error = err as Error
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: classification.category,
       confidence: classification.confidence,
       action_taken: 'error',
@@ -972,7 +958,7 @@ async function handleExistingThread(
 // ─── TakeAChef Email Handler ────────────────────────────────────────────────
 
 async function handleTakeAChefEmail(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
@@ -987,28 +973,28 @@ async function handleTakeAChefEmail(
   try {
     switch (parsed.emailType) {
       case 'tac_new_inquiry':
-        await handleTacNewInquiry(supabase, email, parsed, chefId, tenantId, result)
+        await handleTacNewInquiry(db, email, parsed, chefId, tenantId, result)
         break
 
       case 'tac_client_message':
-        await handleTacClientMessage(supabase, email, parsed, tenantId, result)
+        await handleTacClientMessage(db, email, parsed, tenantId, result)
         break
 
       case 'tac_booking_confirmed':
-        await handleTacBookingConfirmed(supabase, email, parsed, chefId, tenantId, result)
+        await handleTacBookingConfirmed(db, email, parsed, chefId, tenantId, result)
         break
 
       case 'tac_customer_info':
-        await handleTacCustomerInfo(supabase, email, parsed, tenantId, result)
+        await handleTacCustomerInfo(db, email, parsed, tenantId, result)
         break
 
       case 'tac_payment':
-        await handleTacPayment(supabase, email, parsed, tenantId, result)
+        await handleTacPayment(db, email, parsed, tenantId, result)
         break
 
       case 'tac_administrative':
       default:
-        await logSyncEntry(supabase, tenantId, email, {
+        await logSyncEntry(db, tenantId, email, {
           classification: 'marketing',
           confidence: 'high',
           action_taken: 'administrative_skipped',
@@ -1019,7 +1005,7 @@ async function handleTakeAChefEmail(
     }
   } catch (err) {
     const error = err as Error
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'inquiry',
       confidence: 'high',
       action_taken: 'error',
@@ -1033,7 +1019,7 @@ async function handleTakeAChefEmail(
 // ─── TAC: New Inquiry ──────────────────────────────────────────────────────
 
 async function handleTacNewInquiry(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: TacParseResult,
   chefId: string,
@@ -1042,7 +1028,7 @@ async function handleTacNewInquiry(
 ) {
   const inquiry = parsed.inquiry
   if (!inquiry) {
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'inquiry',
       confidence: 'high',
       action_taken: 'error',
@@ -1054,7 +1040,7 @@ async function handleTacNewInquiry(
   }
 
   // Dedup check - same inquiry sent multiple times?
-  const dedup = await checkPlatformInquiryDuplicate(supabase, tenantId, {
+  const dedup = await checkPlatformInquiryDuplicate(db, tenantId, {
     channel: 'take_a_chef',
     externalId: inquiry.ctaUriToken || undefined,
     externalIds: inquiry.identityKeys,
@@ -1063,7 +1049,7 @@ async function handleTacNewInquiry(
   })
 
   if (dedup.isDuplicate) {
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'inquiry',
       confidence: 'high',
       action_taken: 'duplicate_skipped',
@@ -1145,7 +1131,7 @@ async function handleTacNewInquiry(
   })
 
   // Create the inquiry
-  const { data: newInquiry, error: inquiryError } = await supabase
+  const { data: newInquiry, error: inquiryError } = await db
     .from('inquiries')
     .insert({
       tenant_id: tenantId,
@@ -1195,7 +1181,7 @@ async function handleTacNewInquiry(
 
   // Write-through: create platform_record + email snapshot (non-blocking)
   try {
-    const platformRecordId = await ensurePlatformRecord(supabase, {
+    const platformRecordId = await ensurePlatformRecord(db, {
       tenantId,
       inquiryId: newInquiry.id,
       clientId,
@@ -1216,7 +1202,7 @@ async function handleTacNewInquiry(
     })
 
     if (platformRecordId) {
-      await createEmailSnapshot(supabase, {
+      await createEmailSnapshot(db, {
         tenantId,
         platformRecordId,
         inquiryId: newInquiry.id,
@@ -1242,7 +1228,7 @@ async function handleTacNewInquiry(
   }
 
   // Log in sync log
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'inquiry',
     confidence: 'high',
     action_taken: 'created_inquiry',
@@ -1301,7 +1287,7 @@ async function handleTacNewInquiry(
 // ─── TAC: Client Message ───────────────────────────────────────────────────
 
 async function handleTacClientMessage(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
@@ -1312,7 +1298,7 @@ async function handleTacClientMessage(
   const eventDate = msg?.eventDate || null
 
   // Find the existing inquiry
-  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+  const inquiryId = await findPlatformInquiryByContext(db, tenantId, {
     channel: 'take_a_chef',
     clientName,
     eventDate,
@@ -1322,7 +1308,7 @@ async function handleTacClientMessage(
 
   if (inquiryId) {
     // Advance status to awaiting_chef (client has messaged - chef needs to respond)
-    const { data: inquiry } = await supabase
+    const { data: inquiry } = await db
       .from('inquiries')
       .select('status, external_link, unknown_fields')
       .eq('id', inquiryId)
@@ -1330,7 +1316,7 @@ async function handleTacClientMessage(
       .single()
 
     if (inquiry && ['new', 'awaiting_client'].includes(inquiry.status)) {
-      await supabase
+      await db
         .from('inquiries')
         .update({
           status: 'awaiting_chef',
@@ -1370,7 +1356,7 @@ async function handleTacClientMessage(
     }
   }
 
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'existing_thread',
     confidence: 'high',
     action_taken: inquiryId ? 'logged_message' : 'unmatched_message',
@@ -1382,7 +1368,7 @@ async function handleTacClientMessage(
 }
 
 async function ensureTacSeriesEvents(params: {
-  supabase: DbClient
+  db: DbClient
   tenantId: string
   inquiryId: string
   booking: NonNullable<TacParseResult['booking']>
@@ -1402,7 +1388,7 @@ async function ensureTacSeriesEvents(params: {
     source_message?: string | null
   }
 }): Promise<string | null> {
-  const { supabase, tenantId, inquiryId, booking, existingInquiry } = params
+  const { db, tenantId, inquiryId, booking, existingInquiry } = params
   const clientId = existingInquiry.client_id
   if (!clientId) return null
 
@@ -1430,7 +1416,7 @@ async function ensureTacSeriesEvents(params: {
     `${existingInquiry.source_message || ''}\n${booking.address || ''}`
   )
 
-  const { data: existingSeries } = await supabase
+  const { data: existingSeries } = await db
     .from('event_series')
     .select('id, service_mode')
     .eq('tenant_id', tenantId)
@@ -1445,7 +1431,7 @@ async function ensureTacSeriesEvents(params: {
   } | null
 
   if (!series) {
-    const { data: createdSeries, error: seriesError } = await supabase
+    const { data: createdSeries, error: seriesError } = await db
       .from('event_series')
       .insert({
         tenant_id: tenantId,
@@ -1501,7 +1487,7 @@ async function ensureTacSeriesEvents(params: {
   }
 
   const sessions = await materializeSeriesSessions({
-    supabase,
+    db,
     tenantId,
     actorId: null,
     series,
@@ -1511,7 +1497,7 @@ async function ensureTacSeriesEvents(params: {
   })
 
   const events = await materializeSeriesEvents({
-    supabase,
+    db,
     tenantId,
     actorId: null,
     inquiry: inquiryContext,
@@ -1534,7 +1520,7 @@ async function ensureTacSeriesEvents(params: {
 // ─── TAC: Booking Confirmed ────────────────────────────────────────────────
 
 async function handleTacBookingConfirmed(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: TacParseResult,
   chefId: string,
@@ -1543,7 +1529,7 @@ async function handleTacBookingConfirmed(
 ) {
   const booking = parsed.booking
   if (!booking) {
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'inquiry',
       confidence: 'high',
       action_taken: 'error',
@@ -1554,7 +1540,7 @@ async function handleTacBookingConfirmed(
   }
 
   // Find existing inquiry by client name + date
-  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+  const inquiryId = await findPlatformInquiryByContext(db, tenantId, {
     channel: 'take_a_chef',
     clientName: booking.clientName,
     eventDate: booking.primaryServiceDate,
@@ -1581,7 +1567,7 @@ async function handleTacBookingConfirmed(
   } | null = null
 
   if (inquiryId) {
-    const { data: fetchedInquiry } = await supabase
+    const { data: fetchedInquiry } = await db
       .from('inquiries')
       .select(
         'id, client_id, referral_partner_id, partner_location_id, confirmed_date, confirmed_guest_count, confirmed_occasion, confirmed_location, confirmed_service_expectations, confirmed_dietary_restrictions, confirmed_cannabis_preference, source_message, converted_to_event_id, external_link, unknown_fields'
@@ -1598,7 +1584,7 @@ async function handleTacBookingConfirmed(
     const existingScheduleRequest = (uf.schedule_request_jsonb as Json) || null
 
     // Store the Order ID for future matching (customer info, payment)
-    await supabase
+    await db
       .from('inquiries')
       .update({
         status: 'confirmed',
@@ -1635,7 +1621,7 @@ async function handleTacBookingConfirmed(
         ))
     ) {
       const eventId = await ensureTacSeriesEvents({
-        supabase,
+        db,
         tenantId,
         inquiryId,
         booking,
@@ -1646,10 +1632,7 @@ async function handleTacBookingConfirmed(
       })
 
       if (eventId) {
-        await supabase
-          .from('inquiries')
-          .update({ converted_to_event_id: eventId })
-          .eq('id', inquiryId)
+        await db.from('inquiries').update({ converted_to_event_id: eventId }).eq('id', inquiryId)
 
         try {
           const { logChefActivity } = await import('@/lib/activity/log-chef')
@@ -1686,7 +1669,7 @@ async function handleTacBookingConfirmed(
       const clientId = existingInquiry.client_id
       if (!clientId) return // Cannot create event without a client
 
-      const { data: event } = await supabase
+      const { data: event } = await db
         .from('events')
         .insert({
           tenant_id: tenantId,
@@ -1707,13 +1690,10 @@ async function handleTacBookingConfirmed(
 
       if (event) {
         // Link inquiry to event
-        await supabase
-          .from('inquiries')
-          .update({ converted_to_event_id: event.id })
-          .eq('id', inquiryId)
+        await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiryId)
 
         // Log event state transition
-        await supabase.from('event_state_transitions').insert({
+        await db.from('event_state_transitions').insert({
           tenant_id: tenantId,
           event_id: event.id,
           from_status: null,
@@ -1772,7 +1752,7 @@ async function handleTacBookingConfirmed(
   // Write-through: update platform_record status + create booking snapshot (non-blocking)
   if (inquiryId) {
     try {
-      const recordId = await updatePlatformRecordStatus(supabase, {
+      const recordId = await updatePlatformRecordStatus(db, {
         tenantId,
         inquiryId,
         statusOnPlatform: 'booked',
@@ -1784,7 +1764,7 @@ async function handleTacBookingConfirmed(
       // If no record existed yet (inquiry was created before write-through), create one
       const platformRecordId =
         recordId ||
-        (await ensurePlatformRecord(supabase, {
+        (await ensurePlatformRecord(db, {
           tenantId,
           inquiryId,
           clientId: existingInquiry?.client_id || null,
@@ -1798,7 +1778,7 @@ async function handleTacBookingConfirmed(
         }))
 
       if (platformRecordId) {
-        await createEmailSnapshot(supabase, {
+        await createEmailSnapshot(db, {
           tenantId,
           platformRecordId,
           inquiryId,
@@ -1820,7 +1800,7 @@ async function handleTacBookingConfirmed(
         if (booking.amountCents) {
           const commissionPct = getDefaultTakeAChefCommissionPercent(email.date ?? null)
           const commissionCents = Math.round(booking.amountCents * (commissionPct / 100))
-          await upsertPlatformPayout(supabase, {
+          await upsertPlatformPayout(db, {
             tenantId,
             platformRecordId,
             inquiryId,
@@ -1839,7 +1819,7 @@ async function handleTacBookingConfirmed(
     }
   }
 
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'inquiry',
     confidence: 'high',
     action_taken: inquiryId ? 'booking_confirmed' : 'booking_confirmed_unmatched',
@@ -1853,7 +1833,7 @@ async function handleTacBookingConfirmed(
 // ─── TAC: Customer Information (Personal Info Reveal) ──────────────────────
 
 async function handleTacCustomerInfo(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
@@ -1861,7 +1841,7 @@ async function handleTacCustomerInfo(
 ) {
   const info = parsed.customerInfo
   if (!info) {
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'personal',
       confidence: 'high',
       action_taken: 'error',
@@ -1872,7 +1852,7 @@ async function handleTacCustomerInfo(
   }
 
   // Find existing inquiry to get the client
-  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+  const inquiryId = await findPlatformInquiryByContext(db, tenantId, {
     channel: 'take_a_chef',
     clientName: info.guestName,
     eventDate: null,
@@ -1882,7 +1862,7 @@ async function handleTacCustomerInfo(
 
   if (inquiryId) {
     // Get the linked client
-    const { data: inquiry } = await supabase
+    const { data: inquiry } = await db
       .from('inquiries')
       .select('client_id, external_link, unknown_fields')
       .eq('id', inquiryId)
@@ -1897,7 +1877,7 @@ async function handleTacCustomerInfo(
       if (info.guestName) updates.full_name = info.guestName
 
       if (Object.keys(updates).length > 0) {
-        await supabase
+        await db
           .from('clients')
           .update(updates)
           .eq('id', inquiry.client_id)
@@ -1905,7 +1885,7 @@ async function handleTacCustomerInfo(
       }
     }
 
-    await supabase
+    await db
       .from('inquiries')
       .update({
         external_link: info.ctaLink || inquiry?.external_link || null,
@@ -1942,16 +1922,16 @@ async function handleTacCustomerInfo(
 
     // Write-through: contact reveal snapshot (non-blocking)
     try {
-      const platformRecordId = await getPlatformRecordIdByInquiry(supabase, tenantId, inquiryId)
+      const platformRecordId = await getPlatformRecordIdByInquiry(db, tenantId, inquiryId)
       if (platformRecordId) {
-        await updatePlatformRecordStatus(supabase, {
+        await updatePlatformRecordStatus(db, {
           tenantId,
           inquiryId,
           statusOnPlatform: 'contact_revealed',
           clientId: inquiry?.client_id || null,
         })
 
-        await createEmailSnapshot(supabase, {
+        await createEmailSnapshot(db, {
           tenantId,
           platformRecordId,
           inquiryId,
@@ -1974,7 +1954,7 @@ async function handleTacCustomerInfo(
     }
   }
 
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'personal',
     confidence: 'high',
     action_taken: inquiryId ? 'customer_info_merged' : 'customer_info_unmatched',
@@ -1988,7 +1968,7 @@ async function handleTacCustomerInfo(
 // ─── TAC: Payment ──────────────────────────────────────────────────────────
 
 async function handleTacPayment(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: TacParseResult,
   tenantId: string,
@@ -1999,7 +1979,7 @@ async function handleTacPayment(
   // Try to match the payment to an existing inquiry by order ID
   let matchedInquiryId: string | null = null
   if (payment?.orderId) {
-    const { data: match } = await supabase
+    const { data: match } = await db
       .from('inquiries')
       .select('id, converted_to_event_id, unknown_fields')
       .eq('tenant_id', tenantId)
@@ -2033,7 +2013,7 @@ async function handleTacPayment(
           currency: payment.currency,
         }
 
-        await supabase
+        await db
           .from('inquiries')
           .update({
             unknown_fields: {
@@ -2075,13 +2055,9 @@ async function handleTacPayment(
   // Write-through: upsert payout on platform_payouts (non-blocking)
   if (matchedInquiryId && payment) {
     try {
-      const platformRecordId = await getPlatformRecordIdByInquiry(
-        supabase,
-        tenantId,
-        matchedInquiryId
-      )
+      const platformRecordId = await getPlatformRecordIdByInquiry(db, tenantId, matchedInquiryId)
       if (platformRecordId) {
-        await upsertPlatformPayout(supabase, {
+        await upsertPlatformPayout(db, {
           tenantId,
           platformRecordId,
           inquiryId: matchedInquiryId,
@@ -2095,13 +2071,13 @@ async function handleTacPayment(
           source: 'payment_email',
         })
 
-        await updatePlatformRecordStatus(supabase, {
+        await updatePlatformRecordStatus(db, {
           tenantId,
           inquiryId: matchedInquiryId,
           statusOnPlatform: 'paid',
         })
 
-        await createEmailSnapshot(supabase, {
+        await createEmailSnapshot(db, {
           tenantId,
           platformRecordId,
           inquiryId: matchedInquiryId,
@@ -2123,7 +2099,7 @@ async function handleTacPayment(
     }
   }
 
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'personal',
     confidence: 'high',
     action_taken: matchedInquiryId ? 'payment_reconciled' : 'payment_logged',
@@ -2136,7 +2112,7 @@ async function handleTacPayment(
 // ─── Yhangry Email Handler ─────────────────────────────────────────────────
 
 async function handleYhangryEmail(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
@@ -2151,20 +2127,20 @@ async function handleYhangryEmail(
   try {
     switch (parsed.emailType) {
       case 'yhangry_new_inquiry':
-        await handleYhangryNewInquiry(supabase, email, parsed, chefId, tenantId, result)
+        await handleYhangryNewInquiry(db, email, parsed, chefId, tenantId, result)
         break
 
       case 'yhangry_client_message':
-        await handleYhangryClientMessage(supabase, email, parsed, tenantId, result)
+        await handleYhangryClientMessage(db, email, parsed, tenantId, result)
         break
 
       case 'yhangry_booking_confirmed':
-        await handleYhangryBookingConfirmed(supabase, email, parsed, chefId, tenantId, result)
+        await handleYhangryBookingConfirmed(db, email, parsed, chefId, tenantId, result)
         break
 
       case 'yhangry_administrative':
       default:
-        await logSyncEntry(supabase, tenantId, email, {
+        await logSyncEntry(db, tenantId, email, {
           classification: 'marketing',
           confidence: 'high',
           action_taken: 'administrative_skipped',
@@ -2175,7 +2151,7 @@ async function handleYhangryEmail(
     }
   } catch (err) {
     const error = err as Error
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'inquiry',
       confidence: 'high',
       action_taken: 'error',
@@ -2189,7 +2165,7 @@ async function handleYhangryEmail(
 // ─── Yhangry: New Inquiry ─────────────────────────────────────────────────
 
 async function handleYhangryNewInquiry(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: YhangryParseResult,
   chefId: string,
@@ -2198,7 +2174,7 @@ async function handleYhangryNewInquiry(
 ) {
   const inquiry = parsed.inquiry
   if (!inquiry) {
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'inquiry',
       confidence: 'high',
       action_taken: 'error',
@@ -2210,7 +2186,7 @@ async function handleYhangryNewInquiry(
   }
 
   // Dedup check
-  const dedup = await checkPlatformInquiryDuplicate(supabase, tenantId, {
+  const dedup = await checkPlatformInquiryDuplicate(db, tenantId, {
     channel: 'yhangry',
     externalId: inquiry.quoteId || undefined,
     clientName: inquiry.clientName || 'Yhangry Client',
@@ -2218,7 +2194,7 @@ async function handleYhangryNewInquiry(
   })
 
   if (dedup.isDuplicate) {
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'inquiry',
       confidence: 'high',
       action_taken: 'duplicate_skipped',
@@ -2271,7 +2247,7 @@ async function handleYhangryNewInquiry(
   }
 
   // Create the inquiry
-  const { data: newInquiry, error: inquiryError } = await supabase
+  const { data: newInquiry, error: inquiryError } = await db
     .from('inquiries')
     .insert({
       tenant_id: tenantId,
@@ -2309,7 +2285,7 @@ async function handleYhangryNewInquiry(
   }
 
   // Log in sync log
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'inquiry',
     confidence: 'high',
     action_taken: 'created_inquiry',
@@ -2367,7 +2343,7 @@ async function handleYhangryNewInquiry(
 // ─── Yhangry: Client Message ──────────────────────────────────────────────
 
 async function handleYhangryClientMessage(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: YhangryParseResult,
   tenantId: string,
@@ -2375,7 +2351,7 @@ async function handleYhangryClientMessage(
 ) {
   // Find existing inquiry by quote URL or context
   const quoteId = parsed.inquiry?.quoteId || parsed.message?.quoteId || null
-  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+  const inquiryId = await findPlatformInquiryByContext(db, tenantId, {
     channel: 'yhangry',
     clientName: null,
     eventDate: null,
@@ -2383,7 +2359,7 @@ async function handleYhangryClientMessage(
   })
 
   if (inquiryId) {
-    const { data: inquiry } = await supabase
+    const { data: inquiry } = await db
       .from('inquiries')
       .select('status, external_link')
       .eq('id', inquiryId)
@@ -2391,7 +2367,7 @@ async function handleYhangryClientMessage(
       .single()
 
     if (inquiry && ['new', 'awaiting_client'].includes(inquiry.status)) {
-      await supabase
+      await db
         .from('inquiries')
         .update({
           status: 'awaiting_chef',
@@ -2421,7 +2397,7 @@ async function handleYhangryClientMessage(
     }
   }
 
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'existing_thread',
     confidence: 'high',
     action_taken: inquiryId ? 'logged_message' : 'unmatched_message',
@@ -2435,7 +2411,7 @@ async function handleYhangryClientMessage(
 // ─── Yhangry: Booking Confirmed ──────────────────────────────────────────
 
 async function handleYhangryBookingConfirmed(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: YhangryParseResult,
   chefId: string,
@@ -2443,7 +2419,7 @@ async function handleYhangryBookingConfirmed(
   result: SyncResult
 ) {
   const quoteId = parsed.booking?.quoteId || null
-  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+  const inquiryId = await findPlatformInquiryByContext(db, tenantId, {
     channel: 'yhangry',
     clientName: null,
     eventDate: null,
@@ -2451,7 +2427,7 @@ async function handleYhangryBookingConfirmed(
   })
 
   if (inquiryId) {
-    await supabase
+    await db
       .from('inquiries')
       .update({
         status: 'confirmed',
@@ -2482,7 +2458,7 @@ async function handleYhangryBookingConfirmed(
     }
   }
 
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'inquiry',
     confidence: 'high',
     action_taken: inquiryId ? 'booking_confirmed' : 'unmatched_booking',
@@ -2569,7 +2545,7 @@ const CLIENT_MESSAGE_SUFFIXES = ['_client_message', '_lead_update']
 const BOOKING_CONFIRMED_SUFFIXES = ['_booking_confirmed', '_booking']
 
 async function handleGenericPlatformEmail(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   chefId: string,
   tenantId: string,
@@ -2615,14 +2591,14 @@ async function handleGenericPlatformEmail(
 
     // Route by email type category
     if (NEW_LEAD_SUFFIXES.some((s) => emailType.endsWith(s))) {
-      await handleGenericNewLead(supabase, email, parsed, chefId, tenantId, result, platform)
+      await handleGenericNewLead(db, email, parsed, chefId, tenantId, result, platform)
     } else if (CLIENT_MESSAGE_SUFFIXES.some((s) => emailType.endsWith(s))) {
-      await handleGenericClientMessage(supabase, email, parsed, tenantId, result, platform)
+      await handleGenericClientMessage(db, email, parsed, tenantId, result, platform)
     } else if (BOOKING_CONFIRMED_SUFFIXES.some((s) => emailType.endsWith(s))) {
-      await handleGenericBookingConfirmed(supabase, email, parsed, tenantId, result, platform)
+      await handleGenericBookingConfirmed(db, email, parsed, tenantId, result, platform)
     } else {
       // Administrative, payment, etc. - log and skip
-      await logSyncEntry(supabase, tenantId, email, {
+      await logSyncEntry(db, tenantId, email, {
         classification: 'marketing',
         confidence: 'high',
         action_taken: 'administrative_skipped',
@@ -2632,7 +2608,7 @@ async function handleGenericPlatformEmail(
     }
   } catch (err) {
     const error = err as Error
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'inquiry',
       confidence: 'high',
       action_taken: 'error',
@@ -2707,7 +2683,7 @@ function extractLeadFields(parsed: GenericParseResult): {
 }
 
 async function handleGenericNewLead(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: GenericParseResult,
   chefId: string,
@@ -2720,7 +2696,7 @@ async function handleGenericNewLead(
   const channelValue = PLATFORM_TO_INQUIRY_CHANNEL[platform]
 
   // Dedup check
-  const dedup = await checkPlatformInquiryDuplicate(supabase, tenantId, {
+  const dedup = await checkPlatformInquiryDuplicate(db, tenantId, {
     channel: channelValue,
     externalId: fields.externalId || undefined,
     clientName: fields.clientName,
@@ -2728,7 +2704,7 @@ async function handleGenericNewLead(
   })
 
   if (dedup.isDuplicate) {
-    await logSyncEntry(supabase, tenantId, email, {
+    await logSyncEntry(db, tenantId, email, {
       classification: 'inquiry',
       confidence: 'high',
       action_taken: 'duplicate_skipped',
@@ -2795,7 +2771,7 @@ async function handleGenericNewLead(
   }
 
   // Create the inquiry
-  const { data: newInquiry, error: inquiryError } = await supabase
+  const { data: newInquiry, error: inquiryError } = await db
     .from('inquiries')
     .insert({
       tenant_id: tenantId,
@@ -2844,7 +2820,7 @@ async function handleGenericNewLead(
 
   // Write-through: create platform_record + email snapshot (non-blocking)
   try {
-    const platformRecordId = await ensurePlatformRecord(supabase, {
+    const platformRecordId = await ensurePlatformRecord(db, {
       tenantId,
       inquiryId: newInquiry.id,
       clientId,
@@ -2859,7 +2835,7 @@ async function handleGenericNewLead(
     })
 
     if (platformRecordId) {
-      await createEmailSnapshot(supabase, {
+      await createEmailSnapshot(db, {
         tenantId,
         platformRecordId,
         inquiryId: newInquiry.id,
@@ -2883,7 +2859,7 @@ async function handleGenericNewLead(
   }
 
   // Log in sync log
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'inquiry',
     confidence: 'high',
     action_taken: 'created_inquiry',
@@ -2942,7 +2918,7 @@ async function handleGenericNewLead(
 // ─── Generic: Client Message ─────────────────────────────────────────────────
 
 async function handleGenericClientMessage(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: GenericParseResult,
   tenantId: string,
@@ -2954,7 +2930,7 @@ async function handleGenericClientMessage(
   const fields = extractLeadFields(parsed)
 
   // Find existing inquiry by context
-  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+  const inquiryId = await findPlatformInquiryByContext(db, tenantId, {
     channel: channelValue,
     clientName: fields.clientName !== 'Unknown' ? fields.clientName : null,
     eventDate: fields.eventDate,
@@ -2963,7 +2939,7 @@ async function handleGenericClientMessage(
 
   if (inquiryId) {
     // Advance status to awaiting_chef (client has messaged - chef needs to respond)
-    const { data: inquiry } = await supabase
+    const { data: inquiry } = await db
       .from('inquiries')
       .select('status, external_link')
       .eq('id', inquiryId)
@@ -2971,7 +2947,7 @@ async function handleGenericClientMessage(
       .single()
 
     if (inquiry && ['new', 'awaiting_client'].includes(inquiry.status)) {
-      await supabase
+      await db
         .from('inquiries')
         .update({
           status: 'awaiting_chef',
@@ -3003,7 +2979,7 @@ async function handleGenericClientMessage(
     }
   }
 
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'existing_thread',
     confidence: 'high',
     action_taken: inquiryId ? 'logged_message' : 'unmatched_message',
@@ -3017,7 +2993,7 @@ async function handleGenericClientMessage(
 // ─── Generic: Booking Confirmed ──────────────────────────────────────────────
 
 async function handleGenericBookingConfirmed(
-  supabase: DbClient,
+  db: DbClient,
   email: ParsedEmail,
   parsed: GenericParseResult,
   tenantId: string,
@@ -3029,7 +3005,7 @@ async function handleGenericBookingConfirmed(
   const fields = extractLeadFields(parsed)
 
   // Find existing inquiry
-  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+  const inquiryId = await findPlatformInquiryByContext(db, tenantId, {
     channel: channelValue,
     clientName: fields.clientName !== 'Unknown' ? fields.clientName : null,
     eventDate: fields.eventDate,
@@ -3037,7 +3013,7 @@ async function handleGenericBookingConfirmed(
   })
 
   if (inquiryId) {
-    await supabase
+    await db
       .from('inquiries')
       .update({
         status: 'confirmed',
@@ -3069,7 +3045,7 @@ async function handleGenericBookingConfirmed(
 
     // Write-through: update platform_record + create booking snapshot (non-blocking)
     try {
-      const recordId = await updatePlatformRecordStatus(supabase, {
+      const recordId = await updatePlatformRecordStatus(db, {
         tenantId,
         inquiryId,
         statusOnPlatform: 'booked',
@@ -3079,7 +3055,7 @@ async function handleGenericBookingConfirmed(
 
       const platformRecordId =
         recordId ||
-        (await ensurePlatformRecord(supabase, {
+        (await ensurePlatformRecord(db, {
           tenantId,
           inquiryId,
           platform: channelValue,
@@ -3090,7 +3066,7 @@ async function handleGenericBookingConfirmed(
         }))
 
       if (platformRecordId) {
-        await createEmailSnapshot(supabase, {
+        await createEmailSnapshot(db, {
           tenantId,
           platformRecordId,
           inquiryId,
@@ -3110,7 +3086,7 @@ async function handleGenericBookingConfirmed(
     }
   }
 
-  await logSyncEntry(supabase, tenantId, email, {
+  await logSyncEntry(db, tenantId, email, {
     classification: 'inquiry',
     confidence: 'high',
     action_taken: inquiryId ? 'booking_confirmed' : 'unmatched_booking',
@@ -3124,7 +3100,7 @@ async function handleGenericBookingConfirmed(
 // ─── Log Sync Entry ─────────────────────────────────────────────────────────
 
 async function logSyncEntry(
-  supabase: DbClient,
+  db: DbClient,
   tenantId: string,
   email: ParsedEmail,
   entry: {
@@ -3147,7 +3123,7 @@ async function logSyncEntry(
     }
   }
 
-  await supabase.from('gmail_sync_log').upsert(
+  await db.from('gmail_sync_log').upsert(
     {
       tenant_id: tenantId,
       gmail_message_id: email.messageId,

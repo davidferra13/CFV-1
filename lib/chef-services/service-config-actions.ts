@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidateTag } from 'next/cache'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -147,13 +147,9 @@ const DEFAULTS: ChefServiceConfig = {
 export async function getServiceConfig(): Promise<ChefServiceConfig> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
-    .from('chef_service_config')
-    .select('*')
-    .eq('chef_id', tenantId)
-    .single()
+  const { data } = await db.from('chef_service_config').select('*').eq('chef_id', tenantId).single()
 
   if (!data) return { ...DEFAULTS }
 
@@ -165,13 +161,9 @@ export async function getServiceConfig(): Promise<ChefServiceConfig> {
 // ─── Read for Remy (no auth - called from context loader with tenantId) ────
 
 export async function getServiceConfigForTenant(tenantId: string): Promise<ChefServiceConfig> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
-    .from('chef_service_config')
-    .select('*')
-    .eq('chef_id', tenantId)
-    .single()
+  const { data } = await db.from('chef_service_config').select('*').eq('chef_id', tenantId).single()
 
   if (!data) return { ...DEFAULTS }
 
@@ -186,7 +178,7 @@ export async function saveServiceConfig(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const payload = {
     chef_id: tenantId,
@@ -195,9 +187,7 @@ export async function saveServiceConfig(
     updated_at: new Date().toISOString(),
   }
 
-  const { error } = await supabase
-    .from('chef_service_config')
-    .upsert(payload, { onConflict: 'chef_id' })
+  const { error } = await db.from('chef_service_config').upsert(payload, { onConflict: 'chef_id' })
 
   if (error) {
     console.error('[service-config] Save failed:', error)

@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Shield, FileCheck, Award, FileText, Layers, AlertTriangle } from '@/components/ui/icons'
@@ -13,24 +13,24 @@ export const metadata: Metadata = { title: 'Protection Hub | ChefFlow' }
 
 export default async function ProtectionHubPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const tenantId = chef.tenantId!
 
   // Fetch insurance policies
-  const { data: policies } = await supabase
+  const { data: policies } = await db
     .from('chef_insurance_policies')
     .select('id, status, expiry_date')
     .eq('tenant_id', tenantId)
 
   // Fetch business health checklist items
-  const { data: healthItems } = await supabase
+  const { data: healthItems } = await db
     .from('chef_business_health_items')
     .select('id, completed')
     .eq('tenant_id', tenantId)
 
   // Fetch certifications
-  const { data: certifications } = await supabase
+  const { data: certifications } = await db
     .from('chef_certifications')
     .select('id, status, expiry_date')
     .eq('tenant_id', tenantId)

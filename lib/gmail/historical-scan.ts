@@ -3,7 +3,7 @@
 // staging potential missed inquiries for chef review.
 //
 // Key design principles:
-// - Runs via cron (no user session). Uses admin Supabase client.
+// - Runs via cron (no user session). Uses admin DB client.
 // - Processes BATCH_SIZE messages per call, persists pagination token so it
 //   resumes exactly where it left off on next run.
 // - Reuses existing gmail_sync_log dedup constraint - any email already
@@ -13,7 +13,7 @@
 // - Nothing is auto-imported. Findings wait in gmail_historical_findings for
 //   explicit chef review.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getGoogleAccessToken } from '@/lib/google/auth'
 import { listMessagesPage, getFullMessage } from './client'
 import { classifyEmail } from './classify'
@@ -44,10 +44,10 @@ export async function runHistoricalScanBatch(
     status: 'in_progress',
   }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // ── Load connection row ────────────────────────────────────────────────────
-  const { data: conn, error: connErr } = await supabase
+  const { data: conn, error: connErr } = await db
     .from('google_connections')
     .select(
       'connected_email, gmail_connected, historical_scan_enabled, historical_scan_status, historical_scan_page_token, historical_scan_total_processed, historical_scan_lookback_days'
@@ -120,7 +120,7 @@ export async function runHistoricalScanBatch(
   }
 
   // ── Load known client emails for richer classification context ─────────────
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('email')
     .eq('tenant_id', tenantId)
@@ -136,7 +136,7 @@ export async function runHistoricalScanBatch(
   for (const msgRef of pageResult.messages) {
     try {
       await processHistoricalMessage(
-        supabase,
+        db,
         accessToken,
         msgRef.id,
         chefId,
@@ -172,7 +172,7 @@ export async function runHistoricalScanBatch(
     }
   }
 
-  await supabase.from('google_connections').update(progressUpdate).eq('chef_id', chefId)
+  await db.from('google_connections').update(progressUpdate).eq('chef_id', chefId)
 
   return result
 }
@@ -180,7 +180,7 @@ export async function runHistoricalScanBatch(
 // ─── Process a Single Historical Message ─────────────────────────────────────
 
 async function processHistoricalMessage(
-  supabase: any,
+  db: any,
   accessToken: string,
   messageId: string,
   chefId: string,
@@ -190,7 +190,7 @@ async function processHistoricalMessage(
   result: HistoricalScanBatchResult
 ) {
   // Dedup - skip if already in gmail_sync_log (live sync or prior historical scan)
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('gmail_sync_log')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -209,7 +209,7 @@ async function processHistoricalMessage(
   // Skip outbound (emails sent by the chef themselves)
   if (connectedEmail && email.from.email.toLowerCase() === connectedEmail.toLowerCase()) {
     await logScanEntry(
-      supabase,
+      db,
       tenantId,
       messageId,
       { ...email, body: email.body, date: email.date },
@@ -231,7 +231,7 @@ async function processHistoricalMessage(
 
   // Record in gmail_sync_log for dedup on future runs
   await logScanEntry(
-    supabase,
+    db,
     tenantId,
     messageId,
     { ...email, body: email.body, date: email.date },
@@ -263,7 +263,7 @@ async function processHistoricalMessage(
   }
 
   // Upsert into gmail_historical_findings
-  await supabase.from('gmail_historical_findings').upsert(
+  await db.from('gmail_historical_findings').upsert(
     {
       tenant_id: tenantId,
       chef_id: chefId,
@@ -287,7 +287,7 @@ async function processHistoricalMessage(
 // ─── Log Scan Entry in gmail_sync_log ─────────────────────────────────────────
 
 async function logScanEntry(
-  supabase: any,
+  db: any,
   tenantId: string,
   messageId: string,
   email: {
@@ -312,7 +312,7 @@ async function logScanEntry(
   }
 
   try {
-    await supabase.from('gmail_sync_log').insert({
+    await db.from('gmail_sync_log').insert({
       tenant_id: tenantId,
       gmail_message_id: messageId,
       gmail_thread_id: email.threadId || null,

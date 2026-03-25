@@ -2,7 +2,7 @@
 // Loads ONLY public-safe data for the visitor-facing Remy.
 // No financials, no client lists, no internal notes.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import {
   getServiceConfigForTenant,
   formatServiceConfigForPrompt,
@@ -26,11 +26,11 @@ export interface RemyPublicContext {
  * Uses admin client since there's no authenticated user.
  */
 export async function loadRemyPublicContext(tenantId: string): Promise<RemyPublicContext> {
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Load chef public profile + service config in parallel
   const [{ data: chef }, serviceConfig] = await Promise.all([
-    supabase
+    db
       .from('chefs')
       .select('display_name, business_name, tagline, bio')
       .eq('id', tenantId)
@@ -41,7 +41,7 @@ export async function loadRemyPublicContext(tenantId: string): Promise<RemyPubli
   // Load culinary profile (public-safe subset)
   let culinaryProfile: string | null = null
   try {
-    const { data: profile } = await (supabase
+    const { data: profile } = await (db
       .from('chef_culinary_profiles' as any)
       .select('question_key, answer')
       .eq('tenant_id', tenantId) as any)

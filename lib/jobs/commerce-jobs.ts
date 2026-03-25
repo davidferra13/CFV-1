@@ -7,7 +7,7 @@
 // All jobs are non-blocking. Failures are logged, never thrown to callers.
 
 import { inngest } from './inngest-client'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { createLogger } from '@/lib/logger'
 
 const log = createLogger('commerce-jobs')
@@ -27,14 +27,14 @@ export const commerceDayCloseout = inngest.createFunction(
     const { tenantId, reportDate } = event.data
 
     const result = await step.run('generate-reconciliation-report', async () => {
-      const supabase: any = createAdminClient()
+      const db: any = createAdminClient()
 
       // Date range for the report day
       const dayStart = `${reportDate}T00:00:00.000Z`
       const dayEnd = `${reportDate}T23:59:59.999Z`
 
       // Sales totals
-      const { data: sales } = await supabase
+      const { data: sales } = await db
         .from('sales')
         .select('id, subtotal_cents, tax_cents, total_cents, tip_cents, status')
         .eq('tenant_id', tenantId)
@@ -54,7 +54,7 @@ export const commerceDayCloseout = inngest.createFunction(
       const totalTaxCents = validSales.reduce((sum: number, s: any) => sum + (s.tax_cents ?? 0), 0)
 
       // Payment breakdown
-      const { data: payments } = await supabase
+      const { data: payments } = await db
         .from('commerce_payments')
         .select('amount_cents, payment_method, status')
         .eq('tenant_id', tenantId)
@@ -73,7 +73,7 @@ export const commerceDayCloseout = inngest.createFunction(
       }
 
       // Refunds
-      const { data: refunds } = await supabase
+      const { data: refunds } = await db
         .from('commerce_refunds')
         .select('amount_cents')
         .eq('tenant_id', tenantId)
@@ -87,7 +87,7 @@ export const commerceDayCloseout = inngest.createFunction(
       )
 
       // Cash drawer
-      const { data: sessions } = await supabase
+      const { data: sessions } = await db
         .from('register_sessions' as any)
         .select('opening_cash_cents, closing_cash_cents, expected_cash_cents, cash_variance_cents')
         .eq('tenant_id', tenantId)
@@ -120,7 +120,7 @@ export const commerceDayCloseout = inngest.createFunction(
       }
 
       // Upsert
-      const { error } = await supabase.from('daily_reconciliation_reports' as any).upsert(
+      const { error } = await db.from('daily_reconciliation_reports' as any).upsert(
         {
           tenant_id: tenantId,
           report_date: reportDate,
@@ -174,13 +174,13 @@ export const commercePaymentReconciliation = inngest.createFunction(
     const { tenantId, reportDate } = event.data
 
     const result = await step.run('reconcile-payments', async () => {
-      const supabase: any = createAdminClient()
+      const db: any = createAdminClient()
 
       const dayStart = `${reportDate}T00:00:00.000Z`
       const dayEnd = `${reportDate}T23:59:59.999Z`
 
       // Get all captured/settled payments for the day
-      const { data: payments } = await supabase
+      const { data: payments } = await db
         .from('commerce_payments')
         .select('id, amount_cents, ledger_entry_id, transaction_reference')
         .eq('tenant_id', tenantId)
@@ -206,7 +206,7 @@ export const commercePaymentReconciliation = inngest.createFunction(
       }
 
       // Check for commerce ledger entries without matching payments
-      const { data: ledgerEntries } = await supabase
+      const { data: ledgerEntries } = await db
         .from('ledger_entries')
         .select('id, transaction_reference, amount_cents')
         .eq('tenant_id', tenantId)
@@ -232,7 +232,7 @@ export const commercePaymentReconciliation = inngest.createFunction(
 
       // Append flags to reconciliation report if it exists
       if (flags.length > 0) {
-        const { data: report } = await supabase
+        const { data: report } = await db
           .from('daily_reconciliation_reports' as any)
           .select('id, flags')
           .eq('tenant_id', tenantId)
@@ -247,7 +247,7 @@ export const commercePaymentReconciliation = inngest.createFunction(
           )
           const mergedFlags = [...existingFlags, ...flags]
 
-          await supabase
+          await db
             .from('daily_reconciliation_reports' as any)
             .update({ flags: JSON.stringify(mergedFlags) } as any)
             .eq('id', (report as any).id)
@@ -279,12 +279,12 @@ export const commerceSettlementMapping = inngest.createFunction(
     const { tenantId, stripePayoutId, payoutAmountCents, payoutStatus, arrivalDate } = event.data
 
     const result = await step.run('map-settlement-payments', async () => {
-      const supabase: any = createAdminClient()
+      const db: any = createAdminClient()
 
       // Find unsettled payments that could be part of this payout.
       // In practice, Stripe provides balance_transaction details; here we match by
       // unsettled captured payments for the tenant ordered by creation date.
-      const { data: unsettledPayments } = await supabase
+      const { data: unsettledPayments } = await db
         .from('commerce_payments')
         .select('id, amount_cents, tip_cents, stripe_payment_intent_id')
         .eq('tenant_id', tenantId)
@@ -308,7 +308,7 @@ export const commerceSettlementMapping = inngest.createFunction(
       const netCents = payoutAmountCents
 
       // Upsert settlement record
-      const { error: settleErr } = await supabase.from('settlement_records' as any).upsert(
+      const { error: settleErr } = await db.from('settlement_records' as any).upsert(
         {
           tenant_id: tenantId,
           stripe_payout_id: stripePayoutId,
@@ -333,7 +333,7 @@ export const commerceSettlementMapping = inngest.createFunction(
 
       // Mark matched payments as settled
       if (matchedPaymentIds.length > 0) {
-        await supabase
+        await db
           .from('commerce_payments')
           .update({
             status: 'settled',

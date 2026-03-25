@@ -1,12 +1,12 @@
 // Daily Report Computation
 // Pure function - no 'use server', no requireChef().
-// Accepts a tenantId and admin Supabase client so it works from both:
+// Accepts a tenantId and admin DB client so it works from both:
 //   - The cron route (no user session)
 //   - The app page server action (via requireChef + admin client)
 
 import type { DailyReportContent, HighIntentVisit, DailyReportEvent } from './types'
 
-// Accept any client with a Supabase-compatible query builder API
+// Accept any client with a database-compatible query builder API
 type AdminClient = { from: (table: string) => any; rpc: (fn: string, params?: any) => any }
 
 /**
@@ -26,7 +26,7 @@ async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promis
  * All queries use the admin client for service-role access.
  */
 export async function computeDailyReport(
-  supabase: AdminClient,
+  db: AdminClient,
   tenantId: string,
   reportDate: string // YYYY-MM-DD
 ): Promise<DailyReportContent> {
@@ -77,7 +77,7 @@ export async function computeDailyReport(
     safe(
       'eventsToday',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('events')
           .select('id, occasion, serve_time, guest_count, status, client:clients(full_name)')
           .eq('tenant_id', tenantId)
@@ -93,7 +93,7 @@ export async function computeDailyReport(
     safe(
       'upcomingEvents',
       async () => {
-        const { count } = await supabase
+        const { count } = await db
           .from('events')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
@@ -109,7 +109,7 @@ export async function computeDailyReport(
     safe(
       'inquiryStats',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('inquiries')
           .select('status')
           .eq('tenant_id', tenantId)
@@ -127,7 +127,7 @@ export async function computeDailyReport(
     safe(
       'quoteStats',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('quotes')
           .select(
             'id, valid_until, total_quoted_cents, inquiry:inquiries(client:clients(full_name))'
@@ -147,7 +147,7 @@ export async function computeDailyReport(
       async () => {
         const threeDaysAgo = new Date(reportDateObj)
         threeDaysAgo.setDate(threeDaysAgo.getDate() - 3)
-        const { count } = await supabase
+        const { count } = await db
           .from('inquiries')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
@@ -162,7 +162,7 @@ export async function computeDailyReport(
     safe(
       'currentMonthPayments',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('ledger_entries')
           .select('amount_cents, is_refund')
           .eq('tenant_id', tenantId)
@@ -182,7 +182,7 @@ export async function computeDailyReport(
     safe(
       'prevMonthPayments',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('ledger_entries')
           .select('amount_cents, is_refund')
           .eq('tenant_id', tenantId)
@@ -202,7 +202,7 @@ export async function computeDailyReport(
     safe(
       'outstandingEvents',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('event_financial_summary')
           .select('outstanding_balance_cents')
           .eq('tenant_id', tenantId)
@@ -220,7 +220,7 @@ export async function computeDailyReport(
     safe(
       'clientActivity',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('activity_events')
           .select('client_id, event_type, created_at, metadata')
           .eq('tenant_id', tenantId)
@@ -244,7 +244,7 @@ export async function computeDailyReport(
     safe(
       'closureTasks',
       async () => {
-        const { count } = await supabase
+        const { count } = await db
           .from('events')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
@@ -261,7 +261,7 @@ export async function computeDailyReport(
     safe(
       'pipelineForecast',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('quotes')
           .select('total_quoted_cents, status')
           .eq('tenant_id', tenantId)
@@ -280,7 +280,7 @@ export async function computeDailyReport(
     safe(
       'responseTime',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('inquiries')
           .select('created_at, first_response_at')
           .eq('tenant_id', tenantId)
@@ -299,7 +299,7 @@ export async function computeDailyReport(
           }
         }
         // Count overdue (no response in 24h)
-        const { count: overdueCount } = await supabase
+        const { count: overdueCount } = await db
           .from('inquiries')
           .select('id', { count: 'exact', head: true })
           .eq('tenant_id', tenantId)
@@ -318,7 +318,7 @@ export async function computeDailyReport(
     safe(
       'foodCost',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('event_financial_summary')
           .select('food_cost_percentage')
           .eq('tenant_id', tenantId)
@@ -351,7 +351,7 @@ export async function computeDailyReport(
     safe(
       'closureStreak',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('events')
           .select('event_date, aar_filed, reset_complete, follow_up_sent, financially_closed')
           .eq('tenant_id', tenantId)
@@ -382,7 +382,7 @@ export async function computeDailyReport(
     safe(
       'milestones',
       async () => {
-        const { data } = await supabase
+        const { data } = await db
           .from('clients')
           .select('id, full_name, birthday, anniversary')
           .eq('tenant_id', tenantId)
@@ -425,7 +425,7 @@ export async function computeDailyReport(
       async () => {
         const ninetyDaysAgo = new Date(reportDateObj)
         ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
-        const { data } = await supabase
+        const { data } = await db
           .from('clients')
           .select('id, full_name')
           .eq('tenant_id', tenantId)
@@ -433,7 +433,7 @@ export async function computeDailyReport(
         if (!data || data.length === 0) return []
         const results: any[] = []
         for (const client of data.slice(0, 50)) {
-          const { data: lastEvent } = await supabase
+          const { data: lastEvent } = await db
             .from('events')
             .select('event_date')
             .eq('tenant_id', tenantId)
@@ -467,7 +467,7 @@ export async function computeDailyReport(
       async () => {
         const thirtyDaysOut = new Date(reportDateObj)
         thirtyDaysOut.setDate(thirtyDaysOut.getDate() + 30)
-        const { data } = await supabase
+        const { data } = await db
           .from('events')
           .select('event_date')
           .eq('tenant_id', tenantId)
@@ -492,7 +492,7 @@ export async function computeDailyReport(
       'nextBestActions',
       async () => {
         // Simplified: find clients needing attention
-        const { data } = await supabase
+        const { data } = await db
           .from('inquiries')
           .select('id, status, confirmed_occasion, client:clients(id, full_name)')
           .eq('tenant_id', tenantId)
@@ -527,10 +527,7 @@ export async function computeDailyReport(
   const clientIds = [...new Set(clientActivity.map((a: any) => a.client_id).filter(Boolean))]
   let clientNames: Record<string, string> = {}
   if (clientIds.length > 0) {
-    const { data: clients } = await supabase
-      .from('clients')
-      .select('id, full_name')
-      .in('id', clientIds)
+    const { data: clients } = await db.from('clients').select('id, full_name').in('id', clientIds)
     for (const c of clients || []) {
       clientNames[c.id] = c.full_name
     }
@@ -563,7 +560,7 @@ export async function computeDailyReport(
   const todayPayments = await safe(
     'todayPayments',
     async () => {
-      const { data } = await supabase
+      const { data } = await db
         .from('ledger_entries')
         .select('amount_cents, is_refund')
         .eq('tenant_id', tenantId)
@@ -589,7 +586,7 @@ export async function computeDailyReport(
   const newInquiriesToday = await safe(
     'newInquiriesToday',
     async () => {
-      const { count } = await supabase
+      const { count } = await db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)

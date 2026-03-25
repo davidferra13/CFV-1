@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ---------------------------------------------------------------------------
 // Circle Lookup Helpers
@@ -24,11 +24,11 @@ export async function getCircleForContext(input: {
 }): Promise<CircleContext | null> {
   if (!input.eventId && !input.inquiryId) return null
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Try event-linked circle first
   if (input.eventId) {
-    const { data } = await supabase
+    const { data } = await db
       .from('hub_groups')
       .select('id, group_token, tenant_id')
       .eq('event_id', input.eventId)
@@ -43,7 +43,7 @@ export async function getCircleForContext(input: {
 
   // Fall back to inquiry-linked circle
   if (input.inquiryId) {
-    const { data } = await supabase
+    const { data } = await db
       .from('hub_groups')
       .select('id, group_token, tenant_id')
       .eq('inquiry_id', input.inquiryId)
@@ -65,17 +65,13 @@ export async function getCircleForContext(input: {
  * Returns null if chef has no hub profile (circle posts will be skipped).
  */
 export async function getChefHubProfileId(tenantId: string): Promise<string | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: chef } = await supabase
-    .from('chefs')
-    .select('auth_user_id')
-    .eq('id', tenantId)
-    .single()
+  const { data: chef } = await db.from('chefs').select('auth_user_id').eq('id', tenantId).single()
 
   if (!chef?.auth_user_id) return null
 
-  const { data: profile } = await supabase
+  const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
     .eq('auth_user_id', chef.auth_user_id)
@@ -93,19 +89,19 @@ export async function getCircleForEvent(eventId: string): Promise<{
   groupToken: string
   tenantId: string
 } | null> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Direct event circle
   const direct = await getCircleForContext({ eventId })
   if (direct) return direct
 
   // Check if event came from an inquiry (inquiry circle may exist)
-  const { data: event } = await supabase.from('events').select('id').eq('id', eventId).single()
+  const { data: event } = await db.from('events').select('id').eq('id', eventId).single()
 
   if (!event) return null
 
   // Look up inquiry that converted to this event
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select('id')
     .eq('converted_to_event_id', eventId)

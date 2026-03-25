@@ -1,5 +1,5 @@
 // Agent Account Bootstrap
-// Creates/updates a persistent VS Code agent account in Supabase.
+// Creates/updates a persistent VS Code agent account in the database.
 // Idempotent - safe to run multiple times.
 //
 // Usage: npx tsx scripts/setup-agent-account.ts
@@ -7,7 +7,7 @@
 // Follows the same patterns as tests/helpers/e2e-seed.ts:
 //   ensureAuthUser → upsertChef → ensureChefRole → ensureChefPreferences
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { mkdirSync, writeFileSync } from 'fs'
 import dotenv from 'dotenv'
 
@@ -20,7 +20,7 @@ async function main() {
   const admin = createAdminClient()
 
   console.log(`[agent-setup] Setting up agent account: ${AGENT_EMAIL}`)
-  console.log(`[agent-setup] Supabase: using createAdminClient()`)
+  console.log(`[agent-setup] DB: using createAdminClient()`)
 
   // 1. Ensure auth user (create or update)
   const { data: listed, error: listError } = await admin.auth.admin.listUsers({

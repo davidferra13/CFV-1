@@ -17,7 +17,7 @@ import {
   type DiscoveryProfile,
 } from '@/lib/discovery/profile'
 import { isFounderEmail } from '@/lib/platform/owner-account'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type DirectoryPartnerLocation = {
   id: string
@@ -75,11 +75,11 @@ function isRelationMissingError(error: any) {
  * Safe to call from public (no-auth) server components.
  */
 export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Query all chefs who have a slug and are network-discoverable.
   // Then filter in-app by directory_approved OR founder email.
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chefs')
     .select(
       `
@@ -117,7 +117,7 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
 
   if (chefIds.length > 0) {
     const [partnerResult, marketplaceResult, listingResult] = await Promise.all([
-      supabase
+      db
         .from('referral_partners')
         .select(
           `
@@ -136,7 +136,7 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
         .eq('is_showcase_visible', true)
         .eq('status', 'active')
         .order('showcase_order', { ascending: true }),
-      (supabase as any)
+      (db as any)
         .from('chef_marketplace_profiles')
         .select(
           [
@@ -162,7 +162,7 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
           ].join(', ')
         )
         .in('chef_id', chefIds),
-      (supabase as any)
+      (db as any)
         .from('chef_directory_listings')
         .select(
           [

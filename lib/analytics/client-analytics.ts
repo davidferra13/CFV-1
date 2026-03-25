@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -71,10 +71,10 @@ function pct(numerator: number, denominator: number): number {
 
 export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Count distinct clients with completed events
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, event_date')
     .eq('tenant_id', chef.tenantId!)
@@ -134,14 +134,14 @@ export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
 
 export async function getClientChurnStats(): Promise<ClientChurnStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString()
   const oneTwentyDaysAgo = new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000).toISOString()
 
   // Get all clients with their last completed event date and total event count
-  const { data } = await supabase
+  const { data } = await db
     .from('clients')
     .select('id, last_event_date, total_events_count')
     .eq('tenant_id', chef.tenantId!)
@@ -179,10 +179,10 @@ export async function getClientChurnStats(): Promise<ClientChurnStats> {
 
 export async function getRevenueConcentration(): Promise<RevenueConcentrationStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get total revenue per client from ledger
-  const { data: ledger } = await supabase
+  const { data: ledger } = await db
     .from('ledger_entries')
     .select('client_id, amount_cents, is_refund')
     .eq('tenant_id', chef.tenantId!)
@@ -214,10 +214,7 @@ export async function getRevenueConcentration(): Promise<RevenueConcentrationSta
 
   // Get client names
   const clientIds = sorted.map(([id]) => id)
-  const { data: clients } = await supabase
-    .from('clients')
-    .select('id, full_name')
-    .in('id', clientIds)
+  const { data: clients } = await db.from('clients').select('id, full_name').in('id', clientIds)
 
   const nameMap = new Map<string, string>()
   for (const c of clients ?? []) {
@@ -252,10 +249,10 @@ export async function getClientAcquisitionStats(
   endDate: string
 ): Promise<ClientAcquisitionStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // New clients in period = clients whose first_event_date falls in range
-  const { count: newClients } = await supabase
+  const { count: newClients } = await db
     .from('clients')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.tenantId!)
@@ -269,7 +266,7 @@ export async function getClientAcquisitionStats(
   const cac = newClientCount > 0 ? Math.round(totalSpend / newClientCount) : 0
 
   // Average first-event value
-  const { data: firstEvents } = await supabase
+  const { data: firstEvents } = await db
     .from('clients')
     .select('average_spend_cents')
     .eq('tenant_id', chef.tenantId!)
@@ -293,9 +290,9 @@ export async function getClientAcquisitionStats(
 
 export async function getReferralConversionStats(): Promise<ReferralConversionStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('status, converted_to_event_id')
     .eq('tenant_id', chef.tenantId!)
@@ -311,7 +308,7 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
 
   let referralRevenue = 0
   if (eventIds.length > 0) {
-    const { data: ledger } = await supabase
+    const { data: ledger } = await db
       .from('ledger_entries')
       .select('amount_cents, is_refund')
       .eq('tenant_id', chef.tenantId!)

@@ -5,13 +5,13 @@
 // Usage: npx k6 run tests/load/scenarios/04-api-v2-reads.js
 //   -e API_KEY=cf_live_xxx        (optional: use API key auth)
 //
-// Without API_KEY, authenticates via Supabase and uses the access token.
+// Without API_KEY, authenticates via database and uses the access token.
 
 import http from 'k6/http'
 import { sleep } from 'k6'
 import { Trend } from 'k6/metrics'
 import { BASE_URL, DEFAULT_THRESHOLDS } from '../config.js'
-import { authenticateViaSupabase, getApiHeaders } from '../helpers/auth.js'
+import { authenticateViaDb, getApiHeaders } from '../helpers/auth.js'
 import { checkJsonOk } from '../helpers/checks.js'
 
 const PROFILE = __ENV.PROFILE || 'load'
@@ -66,7 +66,7 @@ function pickRoute() {
 }
 
 export function setup() {
-  const auth = authenticateViaSupabase()
+  const auth = authenticateViaDb()
   if (!auth) {
     throw new Error('Failed to authenticate. Cannot run API tests.')
   }

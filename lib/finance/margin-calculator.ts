@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -111,16 +111,16 @@ function monthLabel(yyyymm: string): string {
  */
 export async function getEventMargin(eventId: string): Promise<EventMargin | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [financialRes, eventRes] = await Promise.all([
-    supabase
+    db
       .from('event_financial_summary')
       .select('*')
       .eq('event_id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase
+    db
       .from('events')
       .select('id, event_date, occasion, guest_count, client_id, clients(full_name)')
       .eq('id', eventId)
@@ -161,10 +161,10 @@ export async function getClientLifetimeMargin(
   clientId: string
 ): Promise<ClientLifetimeMargin | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get client name
-  const { data: client, error: clientErr } = await supabase
+  const { data: client, error: clientErr } = await db
     .from('clients')
     .select('full_name')
     .eq('id', clientId)
@@ -174,7 +174,7 @@ export async function getClientLifetimeMargin(
   if (clientErr) return null
 
   // Get all events for this client with financial summaries
-  const { data: events, error: eventsErr } = await supabase
+  const { data: events, error: eventsErr } = await db
     .from('events')
     .select('id, event_date')
     .eq('client_id', clientId)
@@ -199,7 +199,7 @@ export async function getClientLifetimeMargin(
 
   const eventIds = events.map((e: any) => e.id)
 
-  const { data: financials } = await supabase
+  const { data: financials } = await db
     .from('event_financial_summary')
     .select('event_id, net_revenue_cents, total_expenses_cents')
     .eq('tenant_id', user.tenantId!)
@@ -249,13 +249,13 @@ export async function getMonthlyMargins(
   month?: number
 ): Promise<MonthlyMarginSummary[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const startDate = month ? `${year}-${String(month).padStart(2, '0')}-01` : `${year}-01-01`
   const endDate = month ? `${year}-${String(month).padStart(2, '0')}-31` : `${year}-12-31`
 
   // Get events in range
-  const { data: events, error: eventsErr } = await supabase
+  const { data: events, error: eventsErr } = await db
     .from('events')
     .select('id, event_date, occasion')
     .eq('tenant_id', user.tenantId!)
@@ -268,7 +268,7 @@ export async function getMonthlyMargins(
 
   const eventIds = events.map((e: any) => e.id)
 
-  const { data: financials } = await supabase
+  const { data: financials } = await db
     .from('event_financial_summary')
     .select('event_id, net_revenue_cents, total_expenses_cents')
     .eq('tenant_id', user.tenantId!)
@@ -345,7 +345,7 @@ export async function getMonthlyMargins(
  */
 export async function getProfitDashboard(): Promise<ProfitDashboardData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const year = now.getFullYear()
@@ -365,7 +365,7 @@ export async function getProfitDashboard(): Promise<ProfitDashboardData> {
   const lmEnd = `${lmYear}-${String(lmMonth).padStart(2, '0')}-31`
 
   // Fetch all YTD events with client names
-  const { data: ytdEvents } = await supabase
+  const { data: ytdEvents } = await db
     .from('events')
     .select('id, event_date, occasion, client_id, clients(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -380,7 +380,7 @@ export async function getProfitDashboard(): Promise<ProfitDashboardData> {
   // Fetch financials for all YTD events
   let finMap = new Map<string, { revenue: number; expenses: number }>()
   if (eventIds.length > 0) {
-    const { data: financials } = await supabase
+    const { data: financials } = await db
       .from('event_financial_summary')
       .select('event_id, net_revenue_cents, total_expenses_cents')
       .eq('tenant_id', user.tenantId!)

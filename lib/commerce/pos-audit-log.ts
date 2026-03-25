@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 type PosAuditInput = {
   tenantId: string
@@ -12,8 +12,8 @@ type PosAuditInput = {
 }
 
 export async function appendPosAuditLog(input: PosAuditInput) {
-  const supabase: any = createServerClient()
-  const { error } = await (supabase.from('audit_log').insert({
+  const db: any = createServerClient()
+  const { error } = await (db.from('audit_log').insert({
     tenant_id: input.tenantId,
     table_name: input.tableName,
     record_id: input.recordId,

@@ -5,7 +5,7 @@
 // All mutations are tenant-scoped and chef-authenticated.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type {
   TravelLeg,
   TravelLegType,
@@ -30,10 +30,10 @@ function createClient() {
 /** Fetch all travel legs for an event (primary + consolidated that link this event) */
 export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
   // Fetch legs where this event is primary OR in linked_event_ids
-  const { data: legs, error } = await supabase
+  const { data: legs, error } = await db
     .from('event_travel_legs')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -48,7 +48,7 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
   let ingredients: TravelLegIngredient[] = []
 
   if (legIds.length > 0) {
-    const { data: rawIngredients } = await supabase
+    const { data: rawIngredients } = await db
       .from('travel_leg_ingredients')
       .select(
         `
@@ -76,7 +76,7 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
   }
 
   // Fetch nearby events (same chef, within ±7 days of the primary event)
-  const { data: primaryEvent } = await supabase
+  const { data: primaryEvent } = await db
     .from('events')
     .select('event_date')
     .eq('id', eventId)
@@ -91,7 +91,7 @@ export async function getTravelPlan(eventId: string): Promise<TravelPlan> {
     const upper = new Date(eventDate)
     upper.setDate(upper.getDate() + 7)
 
-    const { data: nearby } = await supabase
+    const { data: nearby } = await db
       .from('events')
       .select(
         `
@@ -153,9 +153,9 @@ export async function getAllTravelLegs(options?: {
   status?: string
 }): Promise<TravelLegWithIngredients[]> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
-  let query = supabase.from('event_travel_legs').select('*').eq('tenant_id', user.tenantId!)
+  let query = db.from('event_travel_legs').select('*').eq('tenant_id', user.tenantId!)
 
   if (options?.fromDate) {
     query = query.gte('leg_date', options.fromDate)
@@ -190,7 +190,7 @@ export async function getAllTravelLegs(options?: {
 
 export async function createTravelLeg(input: CreateTravelLegInput): Promise<TravelLeg> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
   // Compute totals if stops provided
   const stops = input.stops ?? []
@@ -199,7 +199,7 @@ export async function createTravelLeg(input: CreateTravelLegInput): Promise<Trav
   const totalEstimatedMinutes =
     totalDriveMinutes !== null ? totalDriveMinutes + totalStopMinutes : null
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_travel_legs')
     .insert({
       chef_id: user.tenantId!,
@@ -243,7 +243,7 @@ export async function createTravelLeg(input: CreateTravelLegInput): Promise<Trav
 
 export async function updateTravelLeg(input: UpdateTravelLegInput): Promise<TravelLeg> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
   const { id, ...rest } = input
 
@@ -259,7 +259,7 @@ export async function updateTravelLeg(input: UpdateTravelLegInput): Promise<Trav
     }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_travel_legs')
     .update(updates)
     .eq('id', id)
@@ -283,9 +283,9 @@ export async function updateTravelLeg(input: UpdateTravelLegInput): Promise<Trav
 
 export async function markLegComplete(legId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_travel_legs')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('id', legId)
@@ -296,9 +296,9 @@ export async function markLegComplete(legId: string): Promise<void> {
 
 export async function markLegInProgress(legId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_travel_legs')
     .update({ status: 'in_progress' })
     .eq('id', legId)
@@ -309,9 +309,9 @@ export async function markLegInProgress(legId: string): Promise<void> {
 
 export async function cancelTravelLeg(legId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_travel_legs')
     .update({ status: 'cancelled' })
     .eq('id', legId)
@@ -326,9 +326,9 @@ export async function cancelTravelLeg(legId: string): Promise<void> {
 
 export async function deleteTravelLeg(legId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_travel_legs')
     .delete()
     .eq('id', legId)
@@ -345,10 +345,10 @@ export async function upsertLegIngredient(
   input: UpsertTravelLegIngredientInput
 ): Promise<TravelLegIngredient> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
   // Verify leg ownership
-  const { data: leg } = await supabase
+  const { data: leg } = await db
     .from('event_travel_legs')
     .select('id')
     .eq('id', input.leg_id)
@@ -357,7 +357,7 @@ export async function upsertLegIngredient(
 
   if (!leg) throw new Error('Travel leg not found or unauthorized')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('travel_leg_ingredients')
     .upsert(
       {
@@ -394,10 +394,10 @@ export async function upsertLegIngredient(
 
 export async function markIngredientSourced(ingredientRowId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
   // Verify ownership through leg
-  const { data: row } = await supabase
+  const { data: row } = await db
     .from('travel_leg_ingredients')
     .select('leg_id')
     .eq('id', ingredientRowId)
@@ -405,7 +405,7 @@ export async function markIngredientSourced(ingredientRowId: string): Promise<vo
 
   if (!row) throw new Error('Ingredient not found')
 
-  const { data: leg } = await supabase
+  const { data: leg } = await db
     .from('event_travel_legs')
     .select('id')
     .eq('id', row.leg_id)
@@ -414,7 +414,7 @@ export async function markIngredientSourced(ingredientRowId: string): Promise<vo
 
   if (!leg) throw new Error('Unauthorized')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('travel_leg_ingredients')
     .update({ status: 'sourced', sourced_at: new Date().toISOString() })
     .eq('id', ingredientRowId)
@@ -427,10 +427,10 @@ export async function updateIngredientStatus(
   status: TravelIngredientStatus
 ): Promise<void> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
   // Verify ownership through leg
-  const { data: row }: any = await supabase
+  const { data: row }: any = await db
     .from('travel_leg_ingredients')
     .select('leg_id')
     .eq('id', ingredientRowId)
@@ -438,7 +438,7 @@ export async function updateIngredientStatus(
 
   if (!row) throw new Error('Ingredient not found')
 
-  const { data: leg }: any = await supabase
+  const { data: leg }: any = await db
     .from('event_travel_legs')
     .select('id')
     .eq('id', row.leg_id)
@@ -447,7 +447,7 @@ export async function updateIngredientStatus(
 
   if (!leg) throw new Error('Unauthorized')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('travel_leg_ingredients')
     .update({
       status,
@@ -460,10 +460,10 @@ export async function updateIngredientStatus(
 
 export async function deleteLegIngredient(ingredientRowId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
   // Verify ownership through leg
-  const { data: row }: any = await supabase
+  const { data: row }: any = await db
     .from('travel_leg_ingredients')
     .select('leg_id')
     .eq('id', ingredientRowId)
@@ -471,7 +471,7 @@ export async function deleteLegIngredient(ingredientRowId: string): Promise<void
 
   if (!row) throw new Error('Ingredient not found')
 
-  const { data: leg }: any = await supabase
+  const { data: leg }: any = await db
     .from('event_travel_legs')
     .select('id')
     .eq('id', row.leg_id)
@@ -480,7 +480,7 @@ export async function deleteLegIngredient(ingredientRowId: string): Promise<void
 
   if (!leg) throw new Error('Unauthorized')
 
-  const { error } = await supabase.from('travel_leg_ingredients').delete().eq('id', ingredientRowId)
+  const { error } = await db.from('travel_leg_ingredients').delete().eq('id', ingredientRowId)
 
   if (error) throw new Error(`Failed to delete leg ingredient: ${error.message}`)
 }
@@ -494,11 +494,11 @@ export async function searchIngredientsForEvent(
   query: string
 ): Promise<{ id: string; name: string; category: string }[]> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
   // Scope to ingredients used in this event's recipe graph
   // events → menus → dishes → components → recipes → recipe_ingredients → ingredients
-  const { data } = await supabase
+  const { data } = await db
     .from('recipe_ingredients')
     .select(
       `
@@ -509,19 +509,19 @@ export async function searchIngredientsForEvent(
     .in(
       'recipe_id',
       (
-        await supabase
+        await db
           .from('components')
           .select('recipe_id')
           .in(
             'dish_id',
             (
-              await supabase
+              await db
                 .from('dishes')
                 .select('id')
                 .in(
                   'menu_id',
                   (
-                    await supabase
+                    await db
                       .from('menus')
                       .select('id')
                       .eq('event_id', eventId)
@@ -561,10 +561,10 @@ export async function searchIngredientsForEvent(
  *  Safe to call repeatedly - skips if legs already exist. */
 export async function autoCreateServiceLegs(eventId: string): Promise<void> {
   const user = await requireChef()
-  const supabase = createClient()
+  const db = createClient()
 
   // Check if service legs already exist
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('event_travel_legs')
     .select('leg_type')
     .eq('primary_event_id', eventId)
@@ -577,7 +577,7 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
 
   // Fetch event and chef prefs to pre-populate addresses
   const [{ data: event }, { data: prefs }]: any[] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'event_date, location_address, location_city, location_state, arrival_time, travel_time_minutes, clients (full_name)'
@@ -585,7 +585,7 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase
+    db
       .from('chef_preferences')
       .select('home_address, home_city, home_state')
       .eq('chef_id', user.tenantId!)
@@ -605,7 +605,7 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
   const clientName = (event.clients as { full_name: string } | null)?.full_name
 
   if (!hasServiceTravel) {
-    await supabase.from('event_travel_legs').insert({
+    await db.from('event_travel_legs').insert({
       chef_id: user.tenantId!,
       tenant_id: user.tenantId!,
       primary_event_id: eventId,
@@ -633,7 +633,7 @@ export async function autoCreateServiceLegs(eventId: string): Promise<void> {
   }
 
   if (!hasReturnHome) {
-    await supabase.from('event_travel_legs').insert({
+    await db.from('event_travel_legs').insert({
       chef_id: user.tenantId!,
       tenant_id: user.tenantId!,
       primary_event_id: eventId,

@@ -1,13 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import crypto from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getProviderMeta } from '@/lib/integrations/core/providers'
 
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: { provider: string } }
-) {
+export async function GET(_request: NextRequest, { params }: { params: { provider: string } }) {
   try {
     await requireChef()
   } catch {
@@ -23,7 +20,8 @@ export async function GET(
     return NextResponse.json({
       provider: meta.provider,
       status: 'pending_oauth_implementation',
-      message: 'OAuth connect flow is scaffolded. Provider-specific auth implementation is the next phase.',
+      message:
+        'OAuth connect flow is scaffolded. Provider-specific auth implementation is the next phase.',
     })
   }
 
@@ -34,10 +32,7 @@ export async function GET(
   })
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { provider: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { provider: string } }) {
   let user
   try {
     user = await requireChef()
@@ -57,7 +52,7 @@ export async function POST(
     // Body is optional for manual connection creation.
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const webhookSecret = meta.supportsWebhook ? crypto.randomBytes(32).toString('hex') : null
 
   const payload = {
@@ -66,13 +61,15 @@ export async function POST(
     provider: meta.provider,
     auth_type: (body.apiKey ? 'api_key' : 'none') as 'api_key' | 'none',
     status: 'connected',
-    external_account_id: typeof body.externalAccountId === 'string' ? body.externalAccountId.trim() : null,
-    external_account_name: typeof body.externalAccountName === 'string' ? body.externalAccountName.trim() : null,
+    external_account_id:
+      typeof body.externalAccountId === 'string' ? body.externalAccountId.trim() : null,
+    external_account_name:
+      typeof body.externalAccountName === 'string' ? body.externalAccountName.trim() : null,
     api_key: typeof body.apiKey === 'string' ? body.apiKey.trim() : null,
     webhook_secret: webhookSecret,
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('integration_connections')
     .insert(payload)
     .select('id, provider, webhook_secret')
@@ -80,7 +77,7 @@ export async function POST(
 
   if (error) {
     if (error.code === '23505') {
-      const { data: existing } = await supabase
+      const { data: existing } = await db
         .from('integration_connections')
         .select('id, provider, webhook_secret')
         .eq('tenant_id', user.tenantId)

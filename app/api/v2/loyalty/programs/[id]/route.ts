@@ -37,7 +37,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Loyalty program')
 
-    const { data: config, error } = await (ctx.supabase as any)
+    const { data: config, error } = await (ctx.db as any)
       .from('loyalty_config')
       .select('*')
       .eq('id', id)
@@ -47,7 +47,7 @@ export const GET = withApiAuth(
     if (error || !config) return apiNotFound('Loyalty program')
 
     // Fetch rewards for this program
-    const { data: rewards } = await (ctx.supabase as any)
+    const { data: rewards } = await (ctx.db as any)
       .from('loyalty_rewards')
       .select('*')
       .eq('tenant_id', ctx.tenantId)
@@ -74,7 +74,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     // Verify config belongs to tenant
-    const { data: existing } = await (ctx.supabase as any)
+    const { data: existing } = await (ctx.db as any)
       .from('loyalty_config')
       .select('id')
       .eq('id', id)
@@ -83,7 +83,7 @@ export const PATCH = withApiAuth(
 
     if (!existing) return apiNotFound('Loyalty program')
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('loyalty_config')
       .update(parsed.data as any)
       .eq('id', id)

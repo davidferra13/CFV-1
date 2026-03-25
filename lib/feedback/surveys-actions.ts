@@ -4,14 +4,14 @@ import * as crypto from 'crypto'
 import { createElement } from 'react'
 import { z } from 'zod'
 import { generateSurveyToken, verifySurveyToken } from '@/lib/feedback/survey-tokens'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export async function createPostEventSurvey(
   eventId: string
 ): Promise<{ success: boolean; surveyId?: string; error?: string }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, client_id, tenant_id, occasion, event_date')
     .eq('id', eventId)
@@ -21,7 +21,7 @@ export async function createPostEventSurvey(
     return { success: false, error: 'Event not found or no client.' }
   }
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('post_event_surveys')
     .select('id')
     .eq('event_id', eventId)
@@ -34,7 +34,7 @@ export async function createPostEventSurvey(
   const surveyId = crypto.randomUUID()
   const token = generateSurveyToken(surveyId, event.client_id, event.tenant_id)
 
-  const { error } = await supabase.from('post_event_surveys').insert({
+  const { error } = await db.from('post_event_surveys').insert({
     id: surveyId,
     event_id: eventId,
     tenant_id: event.tenant_id,
@@ -53,9 +53,9 @@ export async function createPostEventSurvey(
 export async function sendSurveyEmail(
   surveyId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: survey } = await supabase
+  const { data: survey } = await db
     .from('post_event_surveys')
     .select('id, survey_token, event_id, client_id, tenant_id, sent_at')
     .eq('id', surveyId)
@@ -65,9 +65,9 @@ export async function sendSurveyEmail(
   if (survey.sent_at) return { success: false, error: 'Survey already sent.' }
 
   const [{ data: client }, { data: chef }, { data: event }] = await Promise.all([
-    supabase.from('clients').select('full_name, email').eq('id', survey.client_id).single(),
-    supabase.from('chefs').select('business_name').eq('id', survey.tenant_id).single(),
-    supabase.from('events').select('occasion, event_date').eq('id', survey.event_id).single(),
+    db.from('clients').select('full_name, email').eq('id', survey.client_id).single(),
+    db.from('chefs').select('business_name').eq('id', survey.tenant_id).single(),
+    db.from('events').select('occasion, event_date').eq('id', survey.event_id).single(),
   ])
 
   if (!client?.email) return { success: false, error: 'No client email.' }
@@ -104,7 +104,7 @@ export async function sendSurveyEmail(
     return { success: false, error: 'Failed to send email.' }
   }
 
-  await supabase
+  await db
     .from('post_event_surveys')
     .update({ sent_at: new Date().toISOString() })
     .eq('id', surveyId)
@@ -146,9 +146,9 @@ export async function submitSurveyResponse(
   const tokenData = verifySurveyToken(parsed.data.token)
   if (!tokenData) return { success: false, error: 'This survey link has expired.' }
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('post_event_surveys')
     .select('id, completed_at')
     .eq('id', tokenData.surveyId)
@@ -159,7 +159,7 @@ export async function submitSurveyResponse(
     return { success: false, error: 'You have already submitted this survey. Thank you!' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('post_event_surveys')
     .update({
       food_quality: parsed.data.food_quality,
@@ -185,7 +185,7 @@ export async function submitSurveyResponse(
   }
 
   try {
-    await supabase.from('notifications').insert({
+    await db.from('notifications').insert({
       tenant_id: tokenData.tenantId,
       recipient_id: tokenData.tenantId,
       recipient_role: 'chef',

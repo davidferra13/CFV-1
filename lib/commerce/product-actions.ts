@@ -5,7 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { TaxClass } from './constants'
 
@@ -58,13 +58,13 @@ function isValidBarcode(code: string) {
 export async function createProduct(input: CreateProductInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!Number.isInteger(input.priceCents) || input.priceCents < 0) {
     throw new Error('Price must be a non-negative integer (cents)')
   }
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('product_projections')
     .insert({
       tenant_id: user.tenantId!,
@@ -101,7 +101,7 @@ export async function createProduct(input: CreateProductInput) {
 export async function createQuickBarcodeProduct(input: CreateQuickBarcodeProductInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const barcode = normalizeBarcode(input.barcode)
   const name = input.name.trim()
@@ -116,7 +116,7 @@ export async function createQuickBarcodeProduct(input: CreateQuickBarcodeProduct
     throw new Error('Price must be a positive integer (cents)')
   }
 
-  const { data: existing } = await (supabase
+  const { data: existing } = await (db
     .from('product_projections')
     .select(
       'id, name, barcode, price_cents, category, image_url, is_active, modifiers, tax_class, cost_cents, track_inventory, available_qty, low_stock_threshold'
@@ -132,7 +132,7 @@ export async function createQuickBarcodeProduct(input: CreateQuickBarcodeProduct
     }
   }
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('product_projections')
     .insert({
       tenant_id: user.tenantId!,
@@ -169,7 +169,7 @@ export async function createQuickBarcodeProduct(input: CreateQuickBarcodeProduct
 export async function updateProduct(input: UpdateProductInput) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, any> = {}
   if (input.name !== undefined) updates.name = input.name
@@ -196,7 +196,7 @@ export async function updateProduct(input: UpdateProductInput) {
 
   if (Object.keys(updates).length === 0) return
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('product_projections')
     .update(updates as any)
     .eq('id', input.id)
@@ -212,9 +212,9 @@ export async function updateProduct(input: UpdateProductInput) {
 export async function toggleProductActive(productId: string, isActive: boolean) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('product_projections')
     .update({ is_active: isActive } as any)
     .eq('id', productId)
@@ -236,9 +236,9 @@ export async function listProducts(filters?: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('product_projections')
     .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
@@ -270,9 +270,9 @@ export async function listProducts(filters?: {
 export async function getProduct(productId: string) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('product_projections')
     .select('*')
     .eq('id', productId)
@@ -297,10 +297,10 @@ export async function snapshotProductFromRecipe(input: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch recipe details
-  const { data: recipe, error: recipeErr } = await (supabase
+  const { data: recipe, error: recipeErr } = await (db
     .from('recipes')
     .select('id, name, category, allergen_flags, dietary_tags')
     .eq('id', input.recipeId)
@@ -311,7 +311,7 @@ export async function snapshotProductFromRecipe(input: {
 
   // Fetch recipe cost from view (if available)
   let costCents: number | null = null
-  const { data: costData } = await (supabase
+  const { data: costData } = await (db
     .from('recipe_cost_summary' as any)
     .select('total_cost_cents')
     .eq('recipe_id', input.recipeId)

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { generatePairingCode, generateDeviceToken, hashToken } from './token'
@@ -37,8 +37,8 @@ export async function createDevice(input: unknown) {
   const pairingCodeHash = hashToken(pairingCode)
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString() // 15 min
 
-  const supabase: any = createServerClient()
-  const { data, error } = await supabase
+  const db: any = createServerClient()
+  const { data, error } = await db
     .from('devices')
     .insert({
       tenant_id: user.entityId,
@@ -66,9 +66,9 @@ export async function createDevice(input: unknown) {
 
 export async function listDevices(): Promise<DeviceWithOnlineStatus[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('devices')
     .select('*')
     .eq('tenant_id', user.entityId)
@@ -79,7 +79,7 @@ export async function listDevices(): Promise<DeviceWithOnlineStatus[]> {
   // Fetch active sessions to show who's currently using each device
   const deviceIds = (data || []).map((d: any) => d.id)
   const { data: activeSessions } = deviceIds.length
-    ? await supabase
+    ? await db
         .from('device_sessions')
         .select('device_id, staff_member_id')
         .in('device_id', deviceIds)
@@ -95,7 +95,7 @@ export async function listDevices(): Promise<DeviceWithOnlineStatus[]> {
     ),
   ]
   const { data: staffMembers } = staffIds.length
-    ? await supabase.from('staff_members').select('id, name').in('id', staffIds)
+    ? await db.from('staff_members').select('id, name').in('id', staffIds)
     : { data: [] }
 
   const staffMap = new Map((staffMembers || []).map((s: any) => [s.id, s.name]))
@@ -114,9 +114,9 @@ export async function listDevices(): Promise<DeviceWithOnlineStatus[]> {
 
 export async function getDeviceDetail(deviceId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: device, error } = await supabase
+  const { data: device, error } = await db
     .from('devices')
     .select('*')
     .eq('id', deviceId)
@@ -125,7 +125,7 @@ export async function getDeviceDetail(deviceId: string) {
 
   if (error || !device) throw new Error('Device not found')
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('device_events')
     .select('*')
     .eq('device_id', deviceId)
@@ -142,10 +142,10 @@ export async function getDeviceDetail(deviceId: string) {
 
 export async function enableDevice(deviceId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Only disabled devices can be re-enabled
-  const { data: device } = await supabase
+  const { data: device } = await db
     .from('devices')
     .select('status')
     .eq('id', deviceId)
@@ -155,7 +155,7 @@ export async function enableDevice(deviceId: string) {
   if (!device) throw new Error('Device not found')
   if (device.status !== 'disabled') throw new Error('Only disabled devices can be re-enabled')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('devices')
     .update({ status: 'active' })
     .eq('id', deviceId)
@@ -164,7 +164,7 @@ export async function enableDevice(deviceId: string) {
   if (error) throw new Error(`Failed to enable device: ${error.message}`)
 
   try {
-    await supabase.from('device_events').insert({
+    await db.from('device_events').insert({
       device_id: deviceId,
       tenant_id: user.entityId,
       type: 'enabled',
@@ -182,9 +182,9 @@ export async function enableDevice(deviceId: string) {
 
 export async function disableDevice(deviceId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('devices')
     .update({ status: 'disabled' })
     .eq('id', deviceId)
@@ -194,7 +194,7 @@ export async function disableDevice(deviceId: string) {
 
   // Log event (non-blocking)
   try {
-    await supabase.from('device_events').insert({
+    await db.from('device_events').insert({
       device_id: deviceId,
       tenant_id: user.entityId,
       type: 'disabled',
@@ -212,9 +212,9 @@ export async function disableDevice(deviceId: string) {
 
 export async function revokeDevice(deviceId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('devices')
     .update({ status: 'revoked', token_hash: null })
     .eq('id', deviceId)
@@ -223,7 +223,7 @@ export async function revokeDevice(deviceId: string) {
   if (error) throw new Error(`Failed to revoke device: ${error.message}`)
 
   try {
-    await supabase.from('device_events').insert({
+    await db.from('device_events').insert({
       device_id: deviceId,
       tenant_id: user.entityId,
       type: 'revoked',
@@ -241,10 +241,10 @@ export async function revokeDevice(deviceId: string) {
 
 export async function regeneratePairingCode(deviceId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify device belongs to tenant and is in pending_pair or disabled state
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('devices')
     .select('status')
     .eq('id', deviceId)
@@ -258,7 +258,7 @@ export async function regeneratePairingCode(deviceId: string) {
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString()
 
   // Reset to pending_pair with new code
-  const { error } = await supabase
+  const { error } = await db
     .from('devices')
     .update({
       pairing_code_hash: pairingCodeHash,
@@ -282,8 +282,8 @@ export async function updateDevice(deviceId: string, input: unknown) {
   const user = await requireChef()
   const parsed = UpdateDeviceSchema.parse(input)
 
-  const supabase: any = createServerClient()
-  const { error } = await supabase
+  const db: any = createServerClient()
+  const { error } = await db
     .from('devices')
     .update(parsed)
     .eq('id', deviceId)
@@ -299,9 +299,9 @@ export async function updateDevice(deviceId: string, input: unknown) {
 
 export async function listDeviceEvents(deviceId: string, limit = 50) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('device_events')
     .select('id, device_id, staff_member_id, type, payload, created_at')
     .eq('device_id', deviceId)
@@ -314,7 +314,7 @@ export async function listDeviceEvents(deviceId: string, limit = 50) {
   // Fetch staff names for attribution
   const staffIds = [...new Set((data || []).map((e: any) => e.staff_member_id).filter(Boolean))]
   const { data: staffMembers } = staffIds.length
-    ? await supabase
+    ? await db
         .from('staff_members')
         .select('id, name')
         .in('id', staffIds as string[])
@@ -338,10 +338,10 @@ export async function setStaffPin(staffMemberId: string, pin: string) {
   }
 
   const pinHash = hashToken(pin)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check uniqueness within tenant before setting
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('staff_members')
     .select('id, name')
     .eq('chef_id', user.entityId)
@@ -356,7 +356,7 @@ export async function setStaffPin(staffMemberId: string, pin: string) {
     )
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('staff_members')
     .update({ kiosk_pin: pinHash })
     .eq('id', staffMemberId)
@@ -370,9 +370,9 @@ export async function setStaffPin(staffMemberId: string, pin: string) {
 
 export async function removeStaffPin(staffMemberId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('staff_members')
     .update({ kiosk_pin: null })
     .eq('id', staffMemberId)
@@ -388,9 +388,9 @@ export async function removeStaffPin(staffMemberId: string) {
 
 export async function listStaffWithPinStatus() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_members')
     .select('id, name, role, status, kiosk_pin')
     .eq('chef_id', user.entityId)

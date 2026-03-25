@@ -11,7 +11,7 @@ import http from 'k6/http'
 import { sleep } from 'k6'
 import { SharedArray } from 'k6/data'
 import { BASE_URL, DEFAULT_THRESHOLDS } from '../config.js'
-import { authenticateViaSupabase, getApiHeaders } from '../helpers/auth.js'
+import { authenticateViaDb, getApiHeaders } from '../helpers/auth.js'
 import { checkMutation, checkJsonOk } from '../helpers/checks.js'
 
 const PROFILE = __ENV.PROFILE || 'load'
@@ -40,7 +40,7 @@ export const options = {
 const createdEventIds = []
 
 export function setup() {
-  const auth = authenticateViaSupabase()
+  const auth = authenticateViaDb()
   if (!auth) {
     throw new Error('Failed to authenticate. Cannot run write tests.')
   }

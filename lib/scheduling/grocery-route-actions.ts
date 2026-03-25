@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 
 // --- Types ---
@@ -59,11 +59,11 @@ const EventIdSchema = z.string().uuid()
  */
 export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
   // Fetch event details
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, occasion, event_date')
     .eq('id', validatedEventId)
@@ -75,7 +75,7 @@ export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
   }
 
   // Fetch menus for this event
-  const { data: menus } = await supabase.from('menus').select('id').eq('event_id', validatedEventId)
+  const { data: menus } = await db.from('menus').select('id').eq('event_id', validatedEventId)
 
   if (!menus || menus.length === 0) {
     return {
@@ -91,7 +91,7 @@ export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
   const menuIds = menus.map((m: any) => m.id)
 
   // Fetch dishes from menus
-  const { data: dishes } = await supabase.from('dishes').select('id, name').in('menu_id', menuIds)
+  const { data: dishes } = await db.from('dishes').select('id, name').in('menu_id', menuIds)
 
   if (!dishes || dishes.length === 0) {
     return {
@@ -120,7 +120,7 @@ export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
   }
 
   // Fetch ingredients for all recipes
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await db
     .from('recipe_ingredients')
     .select('id, name, quantity, unit, recipe_id, vendor_id')
     .in('recipe_id', recipeIds)
@@ -147,7 +147,7 @@ export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
 
   const vendorMap = new Map<string, string>()
   if (vendorIds.length > 0) {
-    const { data: vendors } = await supabase
+    const { data: vendors } = await db
       .from('vendors')
       .select('id, name')
       .eq('chef_id', user.tenantId!)

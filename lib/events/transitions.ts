@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef, requireClient, getCurrentUser } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger'
 import { revalidatePath } from 'next/cache'
 import { TransitionEventInputSchema } from '@/lib/validation/schemas'
@@ -65,10 +65,10 @@ export async function transitionEvent({
 }) {
   // Validate inputs before any DB access
   const parsed = TransitionEventInputSchema.parse({ eventId, toStatus, metadata, systemTransition })
-  const supabase = createServerClient({ admin: parsed.systemTransition })
+  const db = createServerClient({ admin: parsed.systemTransition })
 
   // Fetch current event
-  const { data: event, error: fetchError } = await supabase
+  const { data: event, error: fetchError } = await db
     .from('events')
     .select('*')
     .eq('id', eventId)
@@ -170,7 +170,7 @@ export async function transitionEvent({
     ...(readinessWarnings.length > 0 && { readiness_warnings: readinessWarnings }),
   }
 
-  const { error: transitionError } = await supabase.rpc('transition_event_atomic', {
+  const { error: transitionError } = await db.rpc('transition_event_atomic', {
     p_event_id: parsed.eventId,
     p_to_status: parsed.toStatus,
     p_from_status: fromStatus,
@@ -347,17 +347,17 @@ export async function transitionEvent({
 
   // Send transactional emails (non-blocking)
   try {
-    const supabaseAdmin = createServerClient({ admin: true })
+    const dbAdmin = createServerClient({ admin: true })
 
     // Fetch client details for email
-    const { data: client } = await supabaseAdmin
+    const { data: client } = await dbAdmin
       .from('clients')
       .select('email, full_name')
       .eq('id', event.client_id)
       .single()
 
     // Fetch chef name
-    const { data: chef } = await supabaseAdmin
+    const { data: chef } = await dbAdmin
       .from('chefs')
       .select('business_name, email')
       .eq('id', event.tenant_id)
@@ -448,7 +448,7 @@ export async function transitionEvent({
 
         // Persist an FOH HTML render for the linked event menu (non-blocking).
         try {
-          const { data: eventMenu } = await supabaseAdmin
+          const { data: eventMenu } = await dbAdmin
             .from('menus')
             .select('id')
             .eq('event_id', eventId)
@@ -627,14 +627,14 @@ export async function transitionEvent({
   // Create post-event survey and email client (non-blocking)
   if (toStatus === 'completed' && fromStatus === 'in_progress') {
     try {
-      const supabaseAdmin = createServerClient({ admin: true })
-      const { data: client } = await supabaseAdmin
+      const dbAdmin = createServerClient({ admin: true })
+      const { data: client } = await dbAdmin
         .from('clients')
         .select('email, full_name')
         .eq('id', event.client_id)
         .single()
 
-      const { data: chef } = await supabaseAdmin
+      const { data: chef } = await dbAdmin
         .from('chefs')
         .select('business_name')
         .eq('id', event.tenant_id)

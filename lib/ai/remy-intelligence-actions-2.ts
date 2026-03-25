@@ -59,9 +59,9 @@ export async function executeClientReferralHealth() {
 
 export async function executeClientNDAStatus() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('client_ndas')
     .select('id, client_id, signed_at, expires_at, status')
     .eq('tenant_id', user.tenantId!)
@@ -130,9 +130,9 @@ export async function executeInquiryFollowUps() {
 
 export async function executeInquiryLikelihood() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('inquiries')
     .select('id, client_name, occasion, event_date, chef_likelihood, status, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -173,9 +173,9 @@ export async function executeMenuShowcase() {
 
 export async function executeRecipeAllergens() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('recipe_allergens')
     .select('id, recipe_id, allergen, severity, notes')
     .eq('tenant_id', user.tenantId!)
@@ -187,12 +187,12 @@ export async function executeRecipeNutrition(inputs: Record<string, unknown>) {
   const recipeId = String(inputs.recipeId ?? inputs.recipeName ?? '')
   if (!recipeId) return { error: 'Please specify a recipe name or ID.' }
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
   // Try to find recipe by name if not UUID
   let resolvedId = recipeId
   if (!/^[0-9a-f]{8}-/.test(recipeId)) {
-    const { data: recipes } = await supabase
+    const { data: recipes } = await db
       .from('recipes')
       .select('id')
       .eq('tenant_id', user.tenantId!)
@@ -201,7 +201,7 @@ export async function executeRecipeNutrition(inputs: Record<string, unknown>) {
     resolvedId = recipes?.[0]?.id
     if (!resolvedId) return { error: `Could not find recipe "${recipeId}".` }
   }
-  const { data } = await supabase
+  const { data } = await db
     .from('recipe_nutrition')
     .select('*')
     .eq('recipe_id', resolvedId)
@@ -212,9 +212,9 @@ export async function executeRecipeNutrition(inputs: Record<string, unknown>) {
 
 export async function executeRecipeProductionLogs() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('production_logs')
     .select('id, recipe_id, event_id, batch_size, notes, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -486,9 +486,9 @@ export async function executeBusinessHealthScore() {
 
 export async function executeLoyaltyRedemptions() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('loyalty_redemptions')
     .select('id, client_id, points_redeemed, reward_name, redeemed_at')
     .eq('tenant_id', user.tenantId!)
@@ -499,9 +499,9 @@ export async function executeLoyaltyRedemptions() {
 
 export async function executeLoyaltyGiftCards() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('gift_cards')
     .select('id, code, balance_cents, original_amount_cents, purchaser_name, status, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -514,9 +514,9 @@ export async function executeLoyaltyGiftCards() {
 
 export async function executeInventoryStatus() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('inventory_items')
     .select('id, name, category, quantity_on_hand, unit, reorder_point, last_counted_at')
     .eq('tenant_id', user.tenantId!)
@@ -531,9 +531,9 @@ export async function executeInventoryStatus() {
 
 export async function executePurchaseOrders() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('purchase_orders')
     .select('id, vendor_id, status, total_cents, ordered_at, received_at')
     .eq('tenant_id', user.tenantId!)
@@ -546,10 +546,10 @@ export async function executePurchaseOrders() {
 
 export async function executeCommerceSalesSummary() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
-  const { data } = await supabase
+  const { data } = await db
     .from('commerce_sales')
     .select('id, total_cents, payment_method, status, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -568,9 +568,9 @@ export async function executeGuestList(inputs: Record<string, unknown>) {
   const resolved = await resolveEventId(eventId)
   if (!resolved) return { error: `Could not find event "${eventId}".` }
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('event_guests')
     .select('id, name, dietary_restrictions, allergies, rsvp_status, notes')
     .eq('event_id', resolved)
@@ -582,9 +582,9 @@ export async function executeGuestList(inputs: Record<string, unknown>) {
 
 export async function executeMarketingCampaigns() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('campaigns')
     .select('id, name, status, type, sent_count, open_count, click_count, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -595,9 +595,9 @@ export async function executeMarketingCampaigns() {
 
 export async function executeNewsletterStatus() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('newsletters')
     .select('id, subject, status, sent_at, recipient_count, open_rate')
     .eq('tenant_id', user.tenantId!)
@@ -610,9 +610,9 @@ export async function executeNewsletterStatus() {
 
 export async function executeReviewsSummary() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('reviews')
     .select('id, client_id, rating, comment, source, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -630,9 +630,9 @@ export async function executeReviewsSummary() {
 
 export async function executeGmailSenderReputation() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('gmail_sender_reputation')
     .select(
       'sender_email, sender_name, total_emails, spam_count, important_count, reputation_score'
@@ -649,9 +649,9 @@ export async function executeDocumentSnapshots(inputs: Record<string, unknown>) 
   const documentId = String(inputs.documentId ?? '')
   if (!documentId) return { error: 'Please specify a document ID.' }
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('document_snapshots')
     .select('id, document_id, version, created_at, created_by')
     .eq('document_id', documentId)
@@ -664,9 +664,9 @@ export async function executeDocumentSnapshots(inputs: Record<string, unknown>) 
 
 export async function executeNotificationPreferences() {
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data } = await db
     .from('notification_settings')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -680,9 +680,9 @@ async function resolveEventId(nameOrId: string): Promise<string | null> {
   if (!nameOrId) return null
   if (/^[0-9a-f]{8}-/.test(nameOrId)) return nameOrId
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data: events } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data: events } = await db
     .from('events')
     .select('id, occasion')
     .eq('tenant_id', user.tenantId!)
@@ -695,9 +695,9 @@ async function resolveClientId(nameOrId: string): Promise<string | null> {
   if (!nameOrId) return null
   if (/^[0-9a-f]{8}-/.test(nameOrId)) return nameOrId
   const user = await requireChef()
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase: any = createServerClient()
-  const { data: clients } = await supabase
+  const { createServerClient } = await import('@/lib/db/server')
+  const db: any = createServerClient()
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', user.tenantId!)

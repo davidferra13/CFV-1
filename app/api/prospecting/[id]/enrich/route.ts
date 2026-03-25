@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { validateProspectingAuth } from '@/lib/prospecting/api-auth'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 interface EnrichPayload {
   event_signals?: string | null
@@ -63,9 +63,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
   // Always stamp the enrichment timestamp
   updates.last_enriched_at = new Date().toISOString()
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('prospects' as any)
     .update(updates)
     .eq('id', params.id)

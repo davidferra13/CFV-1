@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { ensureAgentActionsRegistered } from '@/lib/ai/agent-actions'
 import { listAgentActions } from '@/lib/ai/agent-registry'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
@@ -52,8 +52,8 @@ interface RawPolicyRow {
 export async function getTenantRemyApprovalPolicyMap(
   tenantId: string
 ): Promise<RemyApprovalPolicyMap> {
-  const supabase: any = createServerClient()
-  const { data, error } = await supabase
+  const db: any = createServerClient()
+  const { data, error } = await db
     .from('remy_approval_policies')
     .select('task_type, decision, reason, enabled')
     .eq('tenant_id', tenantId)
@@ -99,7 +99,7 @@ export async function upsertRemyApprovalPolicy(input: {
   const enabled = input.enabled ?? true
   const reason = input.reason?.trim() ? input.reason.trim() : null
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const payload = {
     tenant_id: tenantId,
     task_type: taskType,
@@ -111,7 +111,7 @@ export async function upsertRemyApprovalPolicy(input: {
     updated_at: new Date().toISOString(),
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('remy_approval_policies')
     .upsert(payload, { onConflict: 'tenant_id,task_type' })
     .select('task_type, decision, reason, enabled')
@@ -134,8 +134,8 @@ export async function deleteRemyApprovalPolicy(taskType: string): Promise<void> 
   const tenantId = user.tenantId!
   const normalized = normalizeRemyTaskType(taskType)
 
-  const supabase: any = createServerClient()
-  const { error } = await supabase
+  const db: any = createServerClient()
+  const { error } = await db
     .from('remy_approval_policies')
     .delete()
     .eq('tenant_id', tenantId)

@@ -6,7 +6,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { fetchPackingListData } from '@/lib/documents/generate-packing-list'
 import { getPackingStatus } from '@/lib/packing/actions'
 import { getEventWeather, type EventWeather } from '@/lib/weather/open-meteo'
@@ -21,8 +21,8 @@ import { format, parseISO } from 'date-fns'
  */
 async function fetchEventWeather(eventId: string, tenantId: string): Promise<EventWeather | null> {
   try {
-    const supabase: any = createServerClient()
-    const { data } = await supabase
+    const db: any = createServerClient()
+    const { data } = await db
       .from('events')
       .select('location_lat, location_lng, event_date')
       .eq('id', eventId)

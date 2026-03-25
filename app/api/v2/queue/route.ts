@@ -17,7 +17,7 @@ export const GET = withApiAuth(
     const in7days = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
     // Pending inquiries (new, no response)
-    const { data: pendingInquiries } = await ctx.supabase
+    const { data: pendingInquiries } = await ctx.db
       .from('inquiries')
       .select('id, client_name, client_email, event_date, guest_count, occasion, created_at')
       .eq('tenant_id', ctx.tenantId)
@@ -26,7 +26,7 @@ export const GET = withApiAuth(
       .limit(limit)
 
     // Upcoming events (next 7 days)
-    const { data: upcomingEvents } = await ctx.supabase
+    const { data: upcomingEvents } = await ctx.db
       .from('events')
       .select(
         'id, occasion, event_date, serve_time, guest_count, status, location_city, client:clients(id, full_name)'
@@ -39,7 +39,7 @@ export const GET = withApiAuth(
       .limit(limit)
 
     // Draft quotes (need to be sent)
-    const { data: draftQuotes } = await ctx.supabase
+    const { data: draftQuotes } = await ctx.db
       .from('quotes')
       .select('id, quote_name, total_quoted_cents, created_at, client:clients(id, full_name)')
       .eq('tenant_id', ctx.tenantId)
@@ -48,7 +48,7 @@ export const GET = withApiAuth(
       .limit(limit)
 
     // Events needing confirmation (paid but not confirmed)
-    const { data: needsConfirmation } = await ctx.supabase
+    const { data: needsConfirmation } = await ctx.db
       .from('events')
       .select('id, occasion, event_date, guest_count, client:clients(id, full_name)')
       .eq('tenant_id', ctx.tenantId)

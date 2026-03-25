@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -23,10 +23,10 @@ export type KitchenRentalInput = z.infer<typeof KitchenRentalSchema>
 
 export async function createKitchenRental(input: KitchenRentalInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = KitchenRentalSchema.parse(input)
 
-  const { error } = await supabase.from('kitchen_rentals').insert({ ...data, chef_id: chef.id })
+  const { error } = await db.from('kitchen_rentals').insert({ ...data, chef_id: chef.id })
 
   if (error) throw new Error(error.message)
   revalidatePath('/operations/kitchen-rentals')
@@ -34,10 +34,10 @@ export async function createKitchenRental(input: KitchenRentalInput) {
 
 export async function updateKitchenRental(id: string, input: KitchenRentalInput) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = KitchenRentalSchema.parse(input)
 
-  const { error } = await supabase
+  const { error } = await db
     .from('kitchen_rentals')
     .update(data)
     .eq('id', id)
@@ -49,13 +49,9 @@ export async function updateKitchenRental(id: string, input: KitchenRentalInput)
 
 export async function deleteKitchenRental(id: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
-    .from('kitchen_rentals')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', chef.id)
+  const { error } = await db.from('kitchen_rentals').delete().eq('id', id).eq('chef_id', chef.id)
 
   if (error) throw new Error(error.message)
   revalidatePath('/operations/kitchen-rentals')
@@ -63,9 +59,9 @@ export async function deleteKitchenRental(id: string) {
 
 export async function listKitchenRentals(limit = 50) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('kitchen_rentals')
     .select('*')
     .eq('chef_id', chef.id)
@@ -78,9 +74,9 @@ export async function listKitchenRentals(limit = 50) {
 
 export async function getKitchenRentalsForEvent(eventId: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('kitchen_rentals')
     .select('*')
     .eq('chef_id', chef.id)
@@ -93,13 +89,13 @@ export async function getKitchenRentalsForEvent(eventId: string) {
 
 export async function getMonthlyKitchenCosts(year: number, month: number) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build date range for the month
   const start = `${year}-${String(month).padStart(2, '0')}-01`
   const end = new Date(year, month, 0).toISOString().slice(0, 10) // last day
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('kitchen_rentals')
     .select('cost_cents, facility_name, rental_date, hours_booked')
     .eq('chef_id', chef.id)

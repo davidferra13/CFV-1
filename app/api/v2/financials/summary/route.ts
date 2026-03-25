@@ -14,7 +14,7 @@ export const GET = withApiAuth(
 
     if (eventId) {
       // Per-event financial summary from the view
-      const { data, error } = await ctx.supabase
+      const { data, error } = await ctx.db
         .from('event_financial_summary' as any)
         .select('*')
         .eq('event_id', eventId)
@@ -23,13 +23,13 @@ export const GET = withApiAuth(
 
       if (error) {
         // View might not exist or event not found; fall back to manual computation
-        const { data: entries } = await ctx.supabase
+        const { data: entries } = await ctx.db
           .from('ledger_entries')
           .select('amount_cents, entry_type')
           .eq('event_id', eventId)
           .eq('tenant_id', ctx.tenantId)
 
-        const { data: expenses } = await ctx.supabase
+        const { data: expenses } = await ctx.db
           .from('expenses')
           .select('amount_cents')
           .eq('event_id', eventId)
@@ -71,12 +71,12 @@ export const GET = withApiAuth(
     }
 
     // Tenant-wide summary
-    const { data: entries } = await ctx.supabase
+    const { data: entries } = await ctx.db
       .from('ledger_entries')
       .select('amount_cents, entry_type')
       .eq('tenant_id', ctx.tenantId)
 
-    const { data: expenses } = await ctx.supabase
+    const { data: expenses } = await ctx.db
       .from('expenses')
       .select('amount_cents')
       .eq('tenant_id', ctx.tenantId)

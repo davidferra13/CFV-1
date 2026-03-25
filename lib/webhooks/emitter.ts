@@ -5,7 +5,7 @@
 // Uses the existing deliverWebhook() infrastructure for actual HTTP delivery,
 // then updates failure_count / last_triggered_at / auto-disable on the endpoint row.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createHmac } from 'crypto'
 import type { WebhookEventType } from './types'
 
@@ -22,10 +22,10 @@ export async function emitWebhook(
   payload: Record<string, unknown>
 ): Promise<void> {
   try {
-    const supabase = createServerClient({ admin: true })
+    const db = createServerClient({ admin: true })
 
     // Find all active subscriptions that listen for this event type
-    const { data: endpointsRaw } = await supabase
+    const { data: endpointsRaw } = await db
       .from('webhook_endpoints' as any)
       .select('*')
       .eq('tenant_id', chefId)
@@ -90,7 +90,7 @@ export async function emitWebhook(
 
       // Log delivery attempt
       try {
-        await supabase.from('webhook_deliveries' as any).insert({
+        await db.from('webhook_deliveries' as any).insert({
           endpoint_id: endpoint.id,
           tenant_id: chefId,
           event_type: eventType,
@@ -110,7 +110,7 @@ export async function emitWebhook(
       try {
         if (success) {
           // Reset failure count on success
-          await supabase
+          await db
             .from('webhook_endpoints' as any)
             .update({
               failure_count: 0,
@@ -127,7 +127,7 @@ export async function emitWebhook(
           if (newFailureCount >= 10) {
             updatePayload.is_active = false
           }
-          await supabase
+          await db
             .from('webhook_endpoints' as any)
             .update(updatePayload)
             .eq('id', endpoint.id)

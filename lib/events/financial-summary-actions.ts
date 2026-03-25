@@ -6,7 +6,7 @@
 // with mileage tracking, leftover carry-forward, and historical comparison.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getEventProfitSummary } from '@/lib/expenses/actions'
 import { revalidatePath } from 'next/cache'
 
@@ -88,10 +88,10 @@ export async function getEventFinancialSummaryFull(
   eventId: string
 ): Promise<EventFinancialSummaryData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch base event data with financial fields
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -183,7 +183,7 @@ export async function getEventFinancialSummaryFull(
 
   // Historical comparison - fetch chef's average across completed events
   let comparison: EventFinancialSummaryData['comparison'] = null
-  const { data: historicalSummaries } = await supabase
+  const { data: historicalSummaries } = await db
     .from('event_financial_summary')
     .select('food_cost_percentage, profit_margin, event_id')
     .eq('tenant_id', user.tenantId!)
@@ -273,17 +273,17 @@ export async function getEventFinancialSummaryFull(
  */
 export async function markFinancialClosed(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the event date for streak calculation before closing
-  const { data: eventRow } = await supabase
+  const { data: eventRow } = await db
     .from('events')
     .select('event_date')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({
       financial_closed: true,
@@ -338,9 +338,9 @@ export async function recordTip({
     throw new Error('Tip amount must be a positive integer (cents)')
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id, client_id, status')
     .eq('id', eventId)
@@ -352,9 +352,9 @@ export async function recordTip({
     throw new Error('Tips can only be recorded for in-progress or completed events')
   }
 
-  const supabaseAdmin = createServerClient({ admin: true })
+  const dbAdmin = createServerClient({ admin: true })
 
-  const { data: entry, error } = await supabaseAdmin
+  const { data: entry, error } = await dbAdmin
     .from('ledger_entries')
     .insert({
       tenant_id: event.tenant_id,
@@ -429,10 +429,10 @@ export type CloseOutData = {
  */
 export async function getEventCloseOutData(eventId: string): Promise<CloseOutData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with client name
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -452,14 +452,14 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
 
   // Parallel fetches: financial summary view, tip entry, expenses, AAR check
   const [financialRow, tipRow, expenses, aarRow] = await Promise.all([
-    supabase
+    db
       .from('event_financial_summary')
       .select('*')
       .eq('event_id', eventId)
       .single()
       .then((r: any) => r.data),
 
-    supabase
+    db
       .from('ledger_entries')
       .select('amount_cents, payment_method')
       .eq('event_id', eventId)
@@ -469,7 +469,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       .limit(1)
       .then((r: any) => r.data?.[0] ?? null),
 
-    supabase
+    db
       .from('expenses')
       .select('id, description, amount_cents, receipt_uploaded')
       .eq('event_id', eventId)
@@ -477,7 +477,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       .order('created_at', { ascending: true })
       .then((r: any) => r.data ?? []),
 
-    supabase
+    db
       .from('after_action_reviews')
       .select('id')
       .eq('event_id', eventId)
@@ -508,7 +508,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
   const netProfitWithTipCents = grossProfit + tipCents
 
   // Effective hourly rate - columns use time_ prefix (added in 20260216000003_operational_refinements.sql)
-  const { data: timeRow } = await supabase
+  const { data: timeRow } = await db
     .from('events')
     .select(
       'time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes'
@@ -579,11 +579,11 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
  */
 export async function updateMileage(eventId: string, mileageMiles: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (mileageMiles < 0) throw new Error('Mileage must be non-negative')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('events')
     .update({ mileage_miles: mileageMiles })
     .eq('id', eventId)

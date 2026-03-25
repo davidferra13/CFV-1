@@ -6,7 +6,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -83,10 +83,10 @@ export type StaffMealFilters = z.infer<typeof StaffMealFilterSchema>
 export async function logStaffMeal(input: LogStaffMealInput): Promise<StaffMeal> {
   const user = await requireChef()
   const parsed = LogStaffMealSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Insert the staff meal header
-  const { data: meal, error: mealError } = await supabase
+  const { data: meal, error: mealError } = await db
     .from('staff_meals' as any)
     .insert({
       chef_id: user.tenantId!,
@@ -114,7 +114,7 @@ export async function logStaffMeal(input: LogStaffMealInput): Promise<StaffMeal>
   let priceMap = new Map<string, number>()
 
   if (ingredientIds.length > 0) {
-    const { data: ingredients } = await supabase
+    const { data: ingredients } = await db
       .from('ingredients')
       .select('id, last_price_cents')
       .in('id', ingredientIds)
@@ -140,7 +140,7 @@ export async function logStaffMeal(input: LogStaffMealInput): Promise<StaffMeal>
       totalCostCents += costCents
     }
 
-    const { data: itemRow, error: itemError } = await supabase
+    const { data: itemRow, error: itemError } = await db
       .from('staff_meal_items' as any)
       .insert({
         staff_meal_id: mealData.id,
@@ -167,7 +167,7 @@ export async function logStaffMeal(input: LogStaffMealInput): Promise<StaffMeal>
 
     // Create a negative inventory transaction (non-blocking side effect)
     try {
-      await supabase.from('inventory_transactions' as any).insert({
+      await db.from('inventory_transactions' as any).insert({
         chef_id: user.tenantId!,
         ingredient_id: item.ingredientId ?? null,
         ingredient_name: item.ingredientName,
@@ -184,7 +184,7 @@ export async function logStaffMeal(input: LogStaffMealInput): Promise<StaffMeal>
 
   // Update total cost on the staff meal record
   if (totalCostCents > 0) {
-    const { error: updateError } = await supabase
+    const { error: updateError } = await db
       .from('staff_meals' as any)
       .update({ total_cost_cents: totalCostCents })
       .eq('id', mealData.id)
@@ -223,9 +223,9 @@ export async function logStaffMeal(input: LogStaffMealInput): Promise<StaffMeal>
  */
 export async function getStaffMeals(filters?: StaffMealFilters): Promise<StaffMeal[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('staff_meals' as any)
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -245,7 +245,7 @@ export async function getStaffMeals(filters?: StaffMealFilters): Promise<StaffMe
   // Fetch all items for these meals in one query
   const mealIds = (meals as any[]).map((m: any) => m.id)
 
-  const { data: allItems, error: itemsError } = await supabase
+  const { data: allItems, error: itemsError } = await db
     .from('staff_meal_items' as any)
     .select('*')
     .in('staff_meal_id', mealIds)
@@ -292,9 +292,9 @@ export async function getStaffMealCostSummary(
   endDate: string
 ): Promise<StaffMealCostSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: meals, error } = await supabase
+  const { data: meals, error } = await db
     .from('staff_meals' as any)
     .select('total_cost_cents, staff_count')
     .eq('chef_id', user.tenantId!)

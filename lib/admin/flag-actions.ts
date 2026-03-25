@@ -4,7 +4,7 @@
 // Writes to chef_feature_flags table via service role.
 // All mutations are audit-logged.
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from './audit'
 
@@ -18,9 +18,9 @@ export async function toggleChefFlag(
   enabled: boolean
 ): Promise<{ success: boolean; error?: string }> {
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_feature_flags')
     .upsert(
       { chef_id: chefId, flag_name: flagName, enabled, updated_at: new Date().toISOString() },
@@ -53,7 +53,7 @@ export async function setBulkChefFlags(
   flags: Record<string, boolean>
 ): Promise<{ success: boolean; error?: string }> {
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   const rows = Object.entries(flags).map(([flag_name, enabled]) => ({
     chef_id: chefId,
@@ -64,7 +64,7 @@ export async function setBulkChefFlags(
 
   if (rows.length === 0) return { success: true }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_feature_flags')
     .upsert(rows, { onConflict: 'chef_id,flag_name' })
 

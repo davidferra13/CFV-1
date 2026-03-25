@@ -45,7 +45,7 @@ Do not treat source checkout, desktop installers, or app-store packages as the r
 - Public production host later: Vercel
 - Required environment isolation:
   - beta URL vars
-  - Supabase redirect URLs
+  - PostgreSQL redirect URLs
   - Google OAuth callbacks
   - Stripe mode separation
   - `CRON_SECRET`

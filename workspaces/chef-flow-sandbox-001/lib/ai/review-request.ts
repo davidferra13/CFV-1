@@ -7,7 +7,7 @@
 // Output is DRAFT ONLY — chef must approve before sending.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import { parseWithOllama } from './parse-ollama'
 
@@ -49,10 +49,10 @@ Return ONLY valid JSON:
 
 export async function draftReviewRequest(eventId: string): Promise<ReviewRequestDraft> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const db = createServerClient()
 
   const [eventResult, chefResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         `
@@ -64,7 +64,7 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase.from('chefs').select('display_name, business_name').eq('id', user.tenantId!).single(),
+    db.from('chefs').select('display_name, business_name').eq('id', user.tenantId!).single(),
   ])
 
   const event = eventResult.data
@@ -76,7 +76,7 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
   const firstName = clientName.split(' ')[0]
 
   // Get event highlights (menu)
-  const menuResult = await (supabase as any)
+  const menuResult = await (db as any)
     .from('event_menu_components')
     .select('name, course_type')
     .eq('event_id', eventId)

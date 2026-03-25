@@ -37,7 +37,7 @@ type Tracker = {
   auditCalls: any[]
 }
 
-class SupabaseQueryBuilder implements PromiseLike<QueryResult> {
+class DbQueryBuilder implements PromiseLike<QueryResult> {
   private readonly table: string
   private readonly config: MockConfig
   private readonly tracker: Tracker
@@ -127,10 +127,10 @@ class SupabaseQueryBuilder implements PromiseLike<QueryResult> {
   }
 }
 
-function createMockSupabase(config: MockConfig, tracker: Tracker) {
+function createMockDb(config: MockConfig, tracker: Tracker) {
   return {
     from(table: string) {
-      return new SupabaseQueryBuilder(table, config, tracker)
+      return new DbQueryBuilder(table, config, tracker)
     },
   }
 }
@@ -141,24 +141,24 @@ function loadRegisterActionsWithMocks(config: MockConfig, tracker: Tracker) {
 
   const authPath = require.resolve('../../lib/auth/get-user.ts')
   const proPath = require.resolve('../../lib/billing/require-pro.ts')
-  const supabasePath = require.resolve('../../lib/supabase/server.ts')
+  const dbPath = require.resolve('../../lib/db/server.ts')
   const auditPath = require.resolve('../../lib/commerce/pos-audit-log.ts')
   const cachePath = require.resolve('next/cache')
   const actionsPath = require.resolve('../../lib/commerce/register-actions.ts')
 
   require(authPath)
   require(proPath)
-  require(supabasePath)
+  require(dbPath)
   require(auditPath)
   require(cachePath)
 
   const originalAuth = require.cache[authPath]!.exports
   const originalPro = require.cache[proPath]!.exports
-  const originalSupabase = require.cache[supabasePath]!.exports
+  const originalDb = require.cache[dbPath]!.exports
   const originalAudit = require.cache[auditPath]!.exports
   const originalCache = require.cache[cachePath]!.exports
 
-  const supabase = createMockSupabase(config, tracker)
+  const db = createMockDb(config, tracker)
 
   require.cache[authPath]!.exports = {
     requireChef: async () => ({ tenantId: 'tenant-1', id: 'auth-user-1' }),
@@ -166,8 +166,8 @@ function loadRegisterActionsWithMocks(config: MockConfig, tracker: Tracker) {
   require.cache[proPath]!.exports = {
     requirePro: async () => undefined,
   }
-  require.cache[supabasePath]!.exports = {
-    createServerClient: () => supabase,
+  require.cache[dbPath]!.exports = {
+    createServerClient: () => db,
   }
   require.cache[auditPath]!.exports = {
     appendPosAuditLog: async (input: unknown) => {
@@ -186,7 +186,7 @@ function loadRegisterActionsWithMocks(config: MockConfig, tracker: Tracker) {
   const restore = () => {
     require.cache[authPath]!.exports = originalAuth
     require.cache[proPath]!.exports = originalPro
-    require.cache[supabasePath]!.exports = originalSupabase
+    require.cache[dbPath]!.exports = originalDb
     require.cache[auditPath]!.exports = originalAudit
     require.cache[cachePath]!.exports = originalCache
     delete require.cache[actionsPath]

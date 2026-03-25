@@ -1,7 +1,7 @@
 // Yelp Business API - Review sync following the Google Places pattern.
 // Pulls reviews from a Yelp business profile and upserts into external_reviews.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 const YELP_API_BASE = 'https://api.yelp.com/v3'
 
@@ -144,7 +144,7 @@ export async function syncYelpReviews(
   tenantId: string,
   config: Record<string, unknown>
 ) {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   try {
     const reviews = await fetchYelpReviews(config)
@@ -166,7 +166,7 @@ export async function syncYelpReviews(
 
     let upserted = 0
     if (rows.length > 0) {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('external_reviews')
         .upsert(rows, { onConflict: 'tenant_id,provider,source_review_id' })
         .select('id')
@@ -176,7 +176,7 @@ export async function syncYelpReviews(
     }
 
     // Update source sync state
-    await supabase
+    await db
       .from('external_review_sources')
       .update({
         last_synced_at: nowIso,
@@ -189,7 +189,7 @@ export async function syncYelpReviews(
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown Yelp sync error'
 
-    await supabase
+    await db
       .from('external_review_sources')
       .update({ last_error: message, updated_at: new Date().toISOString() })
       .eq('id', sourceId)

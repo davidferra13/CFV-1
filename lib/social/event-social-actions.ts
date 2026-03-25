@@ -9,7 +9,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import type { SocialPlatform } from './types'
@@ -61,7 +61,7 @@ export async function createPostFromEvent(input: {
 }): Promise<{ success: true; postId: string } | { success: false; error: string }> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const parsed = CreatePostFromEventSchema.safeParse(input)
   if (!parsed.success) {
@@ -71,7 +71,7 @@ export async function createPostFromEvent(input: {
   const { eventId, photoIds, caption, platforms } = parsed.data
 
   // Verify event belongs to this tenant
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id, occasion, event_date, status')
     .eq('id', eventId)
@@ -90,7 +90,7 @@ export async function createPostFromEvent(input: {
   const postCode = `EVT-${now.getFullYear()}-W${String(weekNum).padStart(2, '0')}-${Date.now().toString(36).slice(-4).toUpperCase()}`
 
   // Insert the social post
-  const { data: post, error: insertError } = await supabase
+  const { data: post, error: insertError } = await db
     .from('social_posts')
     .insert({
       tenant_id: user.tenantId!,
@@ -127,10 +127,10 @@ export async function createPostFromEvent(input: {
     // Try linking. social_post_assets might not exist for event_photos.
     // We store the photo IDs in the post notes field as a fallback.
     try {
-      await supabase.from('social_post_assets').insert(assetLinks)
+      await db.from('social_post_assets').insert(assetLinks)
     } catch {
       // Fallback: store photo IDs in notes so the chef can find them
-      await supabase
+      await db
         .from('social_posts')
         .update({ notes: `Event photos: ${photoIds.join(', ')}` })
         .eq('id', post.id)
@@ -157,10 +157,10 @@ export async function generateCaption(
 > {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event details
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -179,7 +179,7 @@ export async function generateCaption(
   // Get client name
   let clientName = 'my client'
   if (event.client_id) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('first_name')
       .eq('id', event.client_id)
@@ -191,7 +191,7 @@ export async function generateCaption(
 
   // Get menu name if linked
   let menuName: string | null = null
-  const { data: menu } = await supabase
+  const { data: menu } = await db
     .from('menus')
     .select('name, cuisine_type')
     .eq('event_id', eventId)
@@ -282,9 +282,9 @@ function buildFallbackCaption(
 export async function getEventSocialPosts(eventId: string): Promise<EventSocialPost[]> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('social_posts')
     .select(
       'id, event_id, title, caption_master, platforms, published_to_platforms, status, created_at, schedule_at'
@@ -306,10 +306,10 @@ export async function getEventSocialPosts(eventId: string): Promise<EventSocialP
 export async function getUnpostedEvents(): Promise<UnpostedEvent[]> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get completed events that have no social posts linked
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -332,7 +332,7 @@ export async function getUnpostedEvents(): Promise<UnpostedEvent[]> {
 
   // Get event IDs that already have social posts
   const eventIds = events.map((e: any) => e.id)
-  const { data: existingPosts } = await supabase
+  const { data: existingPosts } = await db
     .from('social_posts')
     .select('event_id')
     .eq('tenant_id', user.tenantId!)
@@ -344,7 +344,7 @@ export async function getUnpostedEvents(): Promise<UnpostedEvent[]> {
   const unpostedIds = eventIds.filter((id: string) => !postedEventIds.has(id))
   if (unpostedIds.length === 0) return []
 
-  const { data: photoCounts } = await supabase
+  const { data: photoCounts } = await db
     .from('event_photos')
     .select('event_id')
     .in('event_id', unpostedIds)
@@ -379,10 +379,10 @@ export async function markPostPublished(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current published platforms
-  const { data: post, error: fetchError } = await supabase
+  const { data: post, error: fetchError } = await db
     .from('social_posts')
     .select('published_to_platforms, platforms, status')
     .eq('id', postId)
@@ -404,7 +404,7 @@ export async function markPostPublished(
   const allPlatforms: string[] = post.platforms ?? []
   const allPublished = allPlatforms.every((p: string) => updatedPublished.includes(p))
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('social_posts')
     .update({
       published_to_platforms: updatedPublished,
@@ -431,9 +431,9 @@ export async function getPostCaptionText(
 ): Promise<{ success: true; text: string } | { success: false; error: string }> {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: post, error } = await supabase
+  const { data: post, error } = await db
     .from('social_posts')
     .select('caption_master, title')
     .eq('id', postId)

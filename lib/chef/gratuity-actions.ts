@@ -5,7 +5,7 @@
 // Modes: discretionary (client decides), auto_service_fee (automatic %), included_in_rate, none
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -23,9 +23,9 @@ export type GratuitySettings = {
 
 export async function getGratuitySettings(): Promise<GratuitySettings> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select('gratuity_mode, gratuity_service_fee_pct, gratuity_display_label')
     .eq('id', user.tenantId!)
@@ -44,9 +44,9 @@ export async function updateGratuitySettings(
   const user = await requireChef()
   const validated = GratuitySettingsSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({
       gratuity_mode: validated.gratuity_mode,

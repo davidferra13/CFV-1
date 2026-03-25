@@ -510,7 +510,7 @@ Remy remembers facts about the chef's business across conversations.
 ### Operations
 
 - **Extraction:** Ollama extracts NEW facts from chef messages only (never Remy's own responses)
-- **Storage:** `remy_memories` table (Supabase)
+- **Storage:** `remy_memories` table (PostgreSQL)
 - **Decay:** Memories not accessed in 90 days with importance < 5 and access_count < 3 auto-deactivate
 - **User control:** "Show my memories" / "Remember that..." / tap X to delete
 
@@ -590,11 +590,11 @@ Admins (`ADMIN_EMAILS` env var) skip ALL guardrails — never rate-limited, neve
 
 | Data                                                 | Stored?                | Where                  | Who Sees It               |
 | ---------------------------------------------------- | ---------------------- | ---------------------- | ------------------------- |
-| Business data (clients, events, recipes, financials) | Yes                    | Supabase (encrypted)   | Chef only (tenant-scoped) |
+| Business data (clients, events, recipes, financials) | Yes                    | PostgreSQL (encrypted) | Chef only (tenant-scoped) |
 | Conversation content (prompts + responses)           | **No**                 | Browser IndexedDB only | Chef only                 |
-| Anonymous usage metrics (counts only)                | Yes                    | Supabase               | ChefFlow (aggregate)      |
+| Anonymous usage metrics (counts only)                | Yes                    | PostgreSQL             | ChefFlow (aggregate)      |
 | Error logs (stack traces)                            | Yes                    | Server logs            | Engineering               |
-| Conversations shared via "Send to Support"           | Only if chef initiates | Supabase               | Support team              |
+| Conversations shared via "Send to Support"           | Only if chef initiates | PostgreSQL             | Support team              |
 
 **Data flow:** Chef types → Browser sends to API → API routes to local Ollama → Response streams back → Stored in IndexedDB → Nothing on servers.
 

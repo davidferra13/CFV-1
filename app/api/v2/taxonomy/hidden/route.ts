@@ -33,7 +33,7 @@ export const POST = withApiAuth(
       )
     }
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('chef_taxonomy_hidden' as any)
       .insert({
         chef_id: ctx.tenantId,

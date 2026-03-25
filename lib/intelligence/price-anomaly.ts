@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,10 +43,10 @@ export interface PriceAnomalyResult {
 export async function getPriceAnomalies(): Promise<PriceAnomalyResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch completed events with pricing data
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select('id, event_date, quoted_price_cents, guest_count, occasion, status')
     .eq('tenant_id', tenantId)
@@ -59,7 +59,7 @@ export async function getPriceAnomalies(): Promise<PriceAnomalyResult | null> {
 
   // Fetch expenses grouped by event
   const eventIds = events.map((e: any) => e.id)
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('event_id, amount_cents')
     .in('event_id', eventIds)
@@ -74,7 +74,7 @@ export async function getPriceAnomalies(): Promise<PriceAnomalyResult | null> {
 
   // Fetch recent quotes (last 90 days)
   const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString()
-  const { data: recentQuotes } = await supabase
+  const { data: recentQuotes } = await db
     .from('quotes')
     .select('total_quoted_cents, guest_count_estimated, created_at')
     .eq('tenant_id', tenantId)

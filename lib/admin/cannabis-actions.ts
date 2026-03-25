@@ -5,7 +5,7 @@
 // Only callable by users in ADMIN_EMAILS env var.
 
 import { revalidateTag } from 'next/cache'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { requireAdmin } from '@/lib/auth/admin'
 import { logAdminAction } from './audit'
 import { randomBytes } from 'crypto'
@@ -14,9 +14,9 @@ import { randomBytes } from 'crypto'
 
 export async function getAllCannabisUsers() {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('cannabis_tier_users')
     .select('*')
     .order('granted_at', { ascending: false })
@@ -39,9 +39,9 @@ export async function getAllCannabisUsers() {
 
 export async function getPendingInvites() {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('cannabis_tier_invitations')
     .select('*')
     .eq('admin_approval_status', 'pending')
@@ -64,9 +64,9 @@ export async function getPendingInvites() {
 
 export async function getAllCannabisInvites() {
   await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('cannabis_tier_invitations')
     .select('*')
     .order('created_at', { ascending: false })
@@ -102,9 +102,9 @@ export async function grantCannabisTier(input: {
   notes?: string
 }) {
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { error } = await supabase.from('cannabis_tier_users').upsert(
+  const { error } = await db.from('cannabis_tier_users').upsert(
     {
       auth_user_id: input.authUserId,
       user_type: input.userType,
@@ -137,9 +137,9 @@ export async function grantCannabisTier(input: {
 
 export async function revokeCannabisTier(authUserId: string) {
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('cannabis_tier_users')
     .update({ status: 'suspended' })
     .eq('auth_user_id', authUserId)
@@ -166,12 +166,12 @@ export async function revokeCannabisTier(authUserId: string) {
 
 export async function approveInvite(inviteId: string) {
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   const token = randomBytes(32).toString('hex')
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
 
-  const { error } = await supabase
+  const { error } = await db
     .from('cannabis_tier_invitations')
     .update({
       admin_approval_status: 'approved',
@@ -202,9 +202,9 @@ export async function approveInvite(inviteId: string) {
 
 export async function rejectInvite(inviteId: string, reason?: string) {
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('cannabis_tier_invitations')
     .update({
       admin_approval_status: 'rejected',
@@ -233,10 +233,10 @@ export async function rejectInvite(inviteId: string, reason?: string) {
 
 export async function adminGrantTierByEmail(input: { email: string; notes?: string }) {
   const admin = await requireAdmin()
-  const supabase: any = createAdminClient()
+  const db: any = createAdminClient()
 
   // Look up the auth user by email
-  const { data: authData, error: authError } = await supabase.auth.admin.listUsers()
+  const { data: authData, error: authError } = await db.auth.admin.listUsers()
   if (authError) throw new Error('Failed to look up users')
 
   const targetUser = authData.users.find(
@@ -245,7 +245,7 @@ export async function adminGrantTierByEmail(input: { email: string; notes?: stri
   if (!targetUser) throw new Error(`No account found for email: ${input.email}`)
 
   // Get their role
-  const { data: roleData } = await supabase
+  const { data: roleData } = await db
     .from('user_roles')
     .select('role, entity_id')
     .eq('auth_user_id', targetUser.id)

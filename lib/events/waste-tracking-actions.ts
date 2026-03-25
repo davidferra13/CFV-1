@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -44,9 +44,9 @@ export type WasteEntryInput = {
 export async function addWasteEntry(eventId: string, data: WasteEntryInput) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: entry, error } = await supabase
+  const { data: entry, error } = await db
     .from('event_waste_logs')
     .insert({
       tenant_id: tenantId,
@@ -72,9 +72,9 @@ export async function addWasteEntry(eventId: string, data: WasteEntryInput) {
 export async function getEventWaste(eventId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_waste_logs')
     .select('*')
     .eq('event_id', eventId)
@@ -91,7 +91,7 @@ export async function getEventWaste(eventId: string) {
 export async function updateWasteEntry(entryId: string, data: Partial<WasteEntryInput>) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updatePayload: Record<string, unknown> = {}
   if (data.item_name !== undefined) updatePayload.item_name = data.item_name
@@ -103,7 +103,7 @@ export async function updateWasteEntry(entryId: string, data: Partial<WasteEntry
   if (data.reason !== undefined) updatePayload.reason = data.reason
   if (data.notes !== undefined) updatePayload.notes = data.notes
 
-  const { data: entry, error } = await supabase
+  const { data: entry, error } = await db
     .from('event_waste_logs')
     .update(updatePayload)
     .eq('id', entryId)
@@ -122,10 +122,10 @@ export async function updateWasteEntry(entryId: string, data: Partial<WasteEntry
 export async function deleteWasteEntry(entryId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch first to get event_id for revalidation
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('event_waste_logs')
     .select('event_id')
     .eq('id', entryId)
@@ -134,7 +134,7 @@ export async function deleteWasteEntry(entryId: string) {
 
   if (fetchError || !existing) throw new Error('Waste entry not found')
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_waste_logs')
     .delete()
     .eq('id', entryId)
@@ -164,9 +164,9 @@ export async function getWasteSummary(dateRange?: {
 }): Promise<WasteSummary> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase.from('event_waste_logs').select('*').eq('tenant_id', tenantId)
+  let query = db.from('event_waste_logs').select('*').eq('tenant_id', tenantId)
 
   if (dateRange?.from) query = query.gte('logged_at', dateRange.from)
   if (dateRange?.to) query = query.lte('logged_at', dateRange.to)
@@ -266,10 +266,10 @@ export type WasteInsight = {
 export async function getWasteInsights(): Promise<WasteInsight[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all waste entries
-  const { data: wasteData, error: wasteError } = await supabase
+  const { data: wasteData, error: wasteError } = await db
     .from('event_waste_logs')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -338,7 +338,7 @@ export async function getWasteInsights(): Promise<WasteInsight[]> {
   // 4. Waste cost vs food cost ratio (per event)
   // Get events with their food cost from the financial summary view
   const uniqueEventIds = [...new Set(entries.map((e) => e.event_id))]
-  const { data: eventFinancials } = await supabase
+  const { data: eventFinancials } = await db
     .from('event_financial_summary')
     .select('event_id, total_expense_cents')
     .eq('tenant_id', tenantId)

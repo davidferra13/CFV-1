@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -22,9 +22,9 @@ export type RecipeStepPhoto = {
 
 export async function getRecipeStepPhotos(recipeId: string): Promise<RecipeStepPhoto[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('recipe_step_photos')
     .select('*')
     .eq('recipe_id', recipeId)
@@ -49,11 +49,11 @@ export async function addRecipeStepPhoto(data: {
   caption?: string
 }): Promise<RecipeStepPhoto> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Determine next sort_order for this step
-  const { count } = await supabase
+  const { count } = await db
     .from('recipe_step_photos')
     .select('*', { count: 'exact', head: true })
     .eq('recipe_id', data.recipeId)
@@ -62,7 +62,7 @@ export async function addRecipeStepPhoto(data: {
 
   const nextOrder = count ?? 0
 
-  const { data: photo, error } = await supabase
+  const { data: photo, error } = await db
     .from('recipe_step_photos')
     .insert({
       chef_id: tenantId,
@@ -89,13 +89,13 @@ export async function updateRecipeStepPhoto(
   data: { caption?: string; sortOrder?: number }
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
   if (data.caption !== undefined) updates.caption = data.caption
   if (data.sortOrder !== undefined) updates.sort_order = data.sortOrder
 
-  const { error } = await supabase
+  const { error } = await db
     .from('recipe_step_photos')
     .update(updates)
     .eq('id', id)
@@ -111,9 +111,9 @@ export async function updateRecipeStepPhoto(
 
 export async function deleteRecipeStepPhoto(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('recipe_step_photos')
     .delete()
     .eq('id', id)
@@ -133,12 +133,12 @@ export async function reorderStepPhotos(
   photoIds: string[]
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Update each photo's sort_order based on position in the array
   const updates = photoIds.map((photoId, index) =>
-    supabase
+    db
       .from('recipe_step_photos')
       .update({ sort_order: index, updated_at: new Date().toISOString() })
       .eq('id', photoId)

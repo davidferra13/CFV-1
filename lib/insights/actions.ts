@@ -1,4 +1,4 @@
-// chat_insights table migration exists (20260220000004). Uses `as any` on supabase
+// chat_insights table migration exists (20260220000004). Uses `as any` on db
 // client to bypass generated type limitations until types/database.ts is regenerated.
 
 // Chat Insights Server Actions
@@ -15,7 +15,7 @@
 'use server'
 
 import { requireAuth, requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { analyzeMessageForInsights } from '@/lib/ai/chat-insights'
 import { addClientNote } from '@/lib/notes/actions'
 import { revalidatePath } from 'next/cache'
@@ -70,10 +70,10 @@ export interface ChatInsight {
  */
 export async function processMessageInsights(messageId: string, conversationId: string) {
   try {
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
 
     // Get the message
-    const { data: message } = await supabase
+    const { data: message } = await db
       .from('chat_messages')
       .select('body, sender_id, conversation_id')
       .eq('id', messageId)
@@ -82,7 +82,7 @@ export async function processMessageInsights(messageId: string, conversationId: 
     if (!message?.body) return
 
     // Get conversation for tenant context
-    const { data: conversation } = await supabase
+    const { data: conversation } = await db
       .from('conversations')
       .select('tenant_id')
       .eq('id', conversationId)
@@ -91,7 +91,7 @@ export async function processMessageInsights(messageId: string, conversationId: 
     if (!conversation) return
 
     // Get recent conversation context (last 5 messages before this one)
-    const { data: recentMessages } = await supabase
+    const { data: recentMessages } = await db
       .from('chat_messages')
       .select('body, sender_id, created_at')
       .eq('conversation_id', conversationId)
@@ -107,7 +107,7 @@ export async function processMessageInsights(messageId: string, conversationId: 
       .join('\n---\n')
 
     // Resolve client ID from sender
-    const { data: clientRow } = await supabase
+    const { data: clientRow } = await db
       .from('clients')
       .select('id, dietary_restrictions, allergies, favorite_cuisines')
       .eq('auth_user_id', message.sender_id)
@@ -152,7 +152,7 @@ export async function processMessageInsights(messageId: string, conversationId: 
       confidence: i.confidence,
     }))
 
-    const { error } = await supabase.from('chat_insights').insert(insightRows)
+    const { error } = await db.from('chat_insights').insert(insightRows)
 
     if (error) {
       console.error('[processMessageInsights] Insert error:', error)
@@ -173,7 +173,7 @@ export async function processMessageInsights(messageId: string, conversationId: 
 
       for (const insight of allergyInsights) {
         await autoEscalateAllergyInsight({
-          supabase,
+          db,
           tenantId: conversation.tenant_id,
           clientId: clientRow.id,
           messageId,
@@ -201,13 +201,13 @@ export async function processMessageInsights(messageId: string, conversationId: 
  * but never surface to the message sender.
  */
 async function autoEscalateAllergyInsight({
-  supabase,
+  db,
   tenantId,
   clientId,
   messageId,
   insight,
 }: {
-  supabase: any
+  db: any
   tenantId: string
   clientId: string
   messageId: string
@@ -248,7 +248,7 @@ async function autoEscalateAllergyInsight({
   // 1. Upsert client_allergy_records (ON CONFLICT on lower(allergen) per client)
   //    We use a raw insert with ON CONFLICT DO NOTHING so we don't overwrite
   //    chef-confirmed records with AI guesses.
-  const { error: upsertError } = await supabase.from('client_allergy_records').upsert(
+  const { error: upsertError } = await db.from('client_allergy_records').upsert(
     {
       tenant_id: tenantId,
       client_id: clientId,
@@ -326,9 +326,9 @@ async function autoEscalateAllergyInsight({
  */
 export async function getPendingInsights(conversationId: string): Promise<ChatInsight[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chat_insights')
     .select('*')
     .eq('conversation_id', conversationId)
@@ -354,10 +354,10 @@ export async function acceptInsight(
   }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the insight
-  const { data: insight, error: fetchError } = await supabase
+  const { data: insight, error: fetchError } = await db
     .from('chat_insights')
     .select('*')
     .eq('id', insightId)
@@ -392,7 +392,7 @@ export async function acceptInsight(
   }
 
   // Mark as accepted
-  const { error } = await supabase
+  const { error } = await db
     .from('chat_insights')
     .update({
       status: 'accepted',
@@ -415,9 +415,9 @@ export async function acceptInsight(
  */
 export async function dismissInsight(insightId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chat_insights')
     .update({
       status: 'dismissed',

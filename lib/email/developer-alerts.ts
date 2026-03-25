@@ -96,18 +96,15 @@ export async function sendDeveloperDigest(): Promise<{
   ollamaOnline: boolean
 }> {
   try {
-    // Use createClient directly (no cookies needed for cron context)
-    const { createClient } = await import('@supabase/supabase-js')
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+    // Use admin client (no cookies needed for cron context)
+    const { createAdminClient } = await import('@/lib/db/admin')
+    const db = createAdminClient()
 
     const now = new Date()
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()
 
     // ── Cron health ─────────────────────────────────────────────────────
-    const { data: cronRuns } = await supabase
+    const { data: cronRuns } = await db
       .from('cron_executions')
       .select('cron_name, executed_at, status, error_text')
       .gte('executed_at', twentyFourHoursAgo)

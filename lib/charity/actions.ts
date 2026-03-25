@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { buildCharityOrFilter, isCharityRelated } from './charity-keywords'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ export type CharityMiscItem = {
 
 export async function getCharityEvents(): Promise<CharityEvent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const orFilter = buildCharityOrFilter([
     'occasion',
@@ -54,7 +54,7 @@ export async function getCharityEvents(): Promise<CharityEvent[]> {
     'site_notes',
   ])
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('events')
     .select('id, occasion, event_date, status, guest_count, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -83,11 +83,11 @@ export async function getCharityEvents(): Promise<CharityEvent[]> {
 
 export async function getCharityMenus(): Promise<CharityMenu[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const orFilter = buildCharityOrFilter(['name', 'description', 'notes'])
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('menus')
     .select('id, name, description, created_at, event_id')
     .eq('tenant_id', user.tenantId!)
@@ -114,11 +114,11 @@ export async function getCharityMenus(): Promise<CharityMenu[]> {
 
 export async function getCharityFinancials(): Promise<CharityLedgerEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const orFilter = buildCharityOrFilter(['description', 'internal_notes'])
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ledger_entries')
     .select('id, description, amount_cents, entry_type, created_at, event_id')
     .eq('tenant_id', user.tenantId!)
@@ -145,7 +145,7 @@ export async function getCharityFinancials(): Promise<CharityLedgerEntry[]> {
 
 export async function getCharityMisc(): Promise<CharityMiscItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // All queries are independent - run in parallel
   const [
@@ -158,21 +158,21 @@ export async function getCharityMisc(): Promise<CharityMiscItem[]> {
     { data: messages },
   ] = await Promise.all([
     // Client notes
-    supabase
+    db
       .from('client_notes')
       .select('id, note_text, client_id, created_at')
       .eq('tenant_id', user.tenantId!)
       .or(buildCharityOrFilter(['note_text']))
       .limit(20),
     // Inquiry notes
-    supabase
+    db
       .from('inquiry_notes')
       .select('id, note_text, inquiry_id, created_at')
       .eq('tenant_id', user.tenantId!)
       .or(buildCharityOrFilter(['note_text']))
       .limit(20),
     // Inquiries (source_message, confirmed_occasion)
-    supabase
+    db
       .from('inquiries')
       .select('id, source_message, confirmed_occasion, created_at')
       .eq('tenant_id', user.tenantId!)
@@ -180,27 +180,27 @@ export async function getCharityMisc(): Promise<CharityMiscItem[]> {
       .is('deleted_at' as any, null)
       .limit(20),
     // Client tags
-    supabase
+    db
       .from('client_tags')
       .select('id, tag, client_id, created_at')
       .eq('tenant_id', user.tenantId!)
       .or(buildCharityOrFilter(['tag']))
       .limit(20),
     // Prospects - text columns (uses chef_id, not tenant_id)
-    supabase
+    db
       .from('prospects')
       .select('id, name, notes, talking_points, created_at')
       .eq('chef_id', user.tenantId!)
       .or(buildCharityOrFilter(['notes', 'talking_points', 'description']))
       .limit(20),
     // Prospects - all (for array field post-filtering)
-    supabase
+    db
       .from('prospects')
       .select('id, name, tags, event_types_hosted, created_at')
       .eq('chef_id', user.tenantId!)
       .limit(200),
     // Messages (capped at 15 to avoid noise)
-    supabase
+    db
       .from('messages')
       .select('id, subject, body, client_id, inquiry_id, created_at')
       .eq('tenant_id', user.tenantId!)

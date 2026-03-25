@@ -5,7 +5,7 @@
 // These functions let Remy read, search, and summarize the chef's email inbox.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
@@ -14,9 +14,9 @@ import { z } from 'zod'
 export async function getRecentEmails(limit = 10) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('gmail_sync_log')
     .select(
       'gmail_message_id, gmail_thread_id, from_address, subject, snippet, classification, confidence, action_taken, received_at, inquiry_id'
@@ -48,12 +48,12 @@ export async function getRecentEmails(limit = 10) {
 export async function searchEmails(query: string, limit = 10) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const searchTerm = `%${query.toLowerCase()}%`
 
   // Search across subject, from_address, and body_preview
-  const { data } = await supabase
+  const { data } = await db
     .from('gmail_sync_log')
     .select(
       'gmail_message_id, gmail_thread_id, from_address, subject, snippet, body_preview, classification, received_at, inquiry_id'
@@ -88,10 +88,10 @@ export async function searchEmails(query: string, limit = 10) {
 export async function getEmailThread(threadId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all emails in this thread from sync log
-  const { data: syncEmails } = await supabase
+  const { data: syncEmails } = await db
     .from('gmail_sync_log')
     .select('gmail_message_id, from_address, subject, body_preview, classification, received_at')
     .eq('tenant_id', tenantId)
@@ -100,7 +100,7 @@ export async function getEmailThread(threadId: string) {
     .limit(30)
 
   // Also get stored messages (may have richer body content)
-  const { data: messages } = await supabase
+  const { data: messages } = await db
     .from('messages')
     .select('direction, subject, body, sent_at, channel')
     .eq('tenant_id', tenantId)
@@ -109,7 +109,7 @@ export async function getEmailThread(threadId: string) {
     .limit(30)
 
   // Check if this thread is linked to an inquiry
-  const { data: inquiryMsg } = await supabase
+  const { data: inquiryMsg } = await db
     .from('messages')
     .select('inquiry_id')
     .eq('tenant_id', tenantId)
@@ -144,14 +144,14 @@ export async function getEmailThread(threadId: string) {
 export async function summarizeInbox() {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const today = now.toISOString().split('T')[0]
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   // Count by classification (last 7 days)
-  const { data: recentEmails } = await supabase
+  const { data: recentEmails } = await db
     .from('gmail_sync_log')
     .select('classification, action_taken, received_at')
     .eq('tenant_id', tenantId)
@@ -172,7 +172,7 @@ export async function summarizeInbox() {
   const inquiryEmails = emails.filter((e: any) => e.action_taken === 'created_inquiry')
 
   // Get last sync time
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('google_connections')
     .select('gmail_last_sync_at')
     .eq('chef_id', user.entityId)
@@ -195,10 +195,10 @@ export async function summarizeInbox() {
 export async function draftEmailReply(messageId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load the email we're replying to
-  const { data: email } = await supabase
+  const { data: email } = await db
     .from('gmail_sync_log')
     .select('from_address, subject, body_preview, classification, gmail_thread_id')
     .eq('tenant_id', tenantId)
@@ -212,7 +212,7 @@ export async function draftEmailReply(messageId: string) {
   // Load thread context if available
   let threadContext = ''
   if (email.gmail_thread_id) {
-    const { data: threadMsgs } = await supabase
+    const { data: threadMsgs } = await db
       .from('messages')
       .select('direction, body, sent_at')
       .eq('tenant_id', tenantId)
@@ -233,7 +233,7 @@ export async function draftEmailReply(messageId: string) {
   // Load client context if we can match sender to a client
   let clientContext = ''
   if (email.from_address) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('full_name, dietary_restrictions, allergies, vibe_notes')
       .eq('tenant_id', tenantId)
@@ -274,11 +274,11 @@ ${clientContext ? `\n${clientContext}` : ''}`,
 // Used by remy-context.ts to build the email awareness tier.
 
 export async function loadEmailDigest(tenantId: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const now = new Date()
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('gmail_sync_log')
     .select('from_address, subject, snippet, classification, action_taken, received_at')
     .eq('tenant_id', tenantId)

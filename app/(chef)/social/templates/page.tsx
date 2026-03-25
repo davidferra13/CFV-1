@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -12,9 +12,9 @@ export const metadata: Metadata = { title: 'Social Templates | ChefFlow' }
 
 export default async function SocialTemplatesPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: templates } = await supabase
+  const { data: templates } = await db
     .from('social_post_templates')
     .select('id, name, caption_template, platform, category, created_at')
     .eq('chef_id', chef.entityId)

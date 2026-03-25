@@ -9,7 +9,7 @@ import http from 'k6/http'
 import { sleep } from 'k6'
 import { Trend, Counter, Rate } from 'k6/metrics'
 import { BASE_URL, LOAD_STAGES, STRESS_STAGES, SPIKE_STAGES } from '../config.js'
-import { authenticateViaSupabase, getApiHeaders } from '../helpers/auth.js'
+import { authenticateViaDb, getApiHeaders } from '../helpers/auth.js'
 import {
   checkPageLoad,
   checkJsonOk,
@@ -94,7 +94,7 @@ export const options = {
 export function setup() {
   let auth = null
   try {
-    auth = authenticateViaSupabase()
+    auth = authenticateViaDb()
   } catch (e) {
     console.warn('Auth failed. Authenticated scenarios will skip auth.')
   }

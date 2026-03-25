@@ -14,15 +14,12 @@ function getMonthBounds(now: Date) {
   }
 }
 
-export async function getFinancialQueueItems(
-  supabase: any,
-  tenantId: string
-): Promise<QueueItem[]> {
+export async function getFinancialQueueItems(db: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 
   // 1. Outstanding balances on non-draft, non-cancelled events
-  const { data: outstandingSummaries } = await supabase
+  const { data: outstandingSummaries } = await db
     .from('event_financial_summary')
     .select('event_id, outstanding_balance_cents, total_paid_cents')
     .eq('tenant_id', tenantId)
@@ -30,7 +27,7 @@ export async function getFinancialQueueItems(
 
   if (outstandingSummaries && outstandingSummaries.length > 0) {
     const eventIds = outstandingSummaries.map((s: any) => s.event_id).filter(Boolean) as string[]
-    const { data: events } = await supabase
+    const { data: events } = await db
       .from('events')
       .select('id, occasion, event_date, status, client:clients(full_name)')
       .eq('tenant_id', tenantId)
@@ -71,7 +68,7 @@ export async function getFinancialQueueItems(
   }
 
   // 2. Business expenses missing receipt photos (capped at 10)
-  const { data: expensesNoReceipt } = await supabase
+  const { data: expensesNoReceipt } = await db
     .from('expenses')
     .select('id, description, amount_cents, expense_date, vendor_name, event_id')
     .eq('tenant_id', tenantId)
@@ -109,7 +106,7 @@ export async function getFinancialQueueItems(
   }
 
   // 3. Completed events not financially closed (capped at 10)
-  const { data: unclosedEvents } = await supabase
+  const { data: unclosedEvents } = await db
     .from('events')
     .select('id, occasion, event_date, client:clients(full_name)')
     .eq('tenant_id', tenantId)
@@ -149,7 +146,7 @@ export async function getFinancialQueueItems(
 
   // 4. Revenue goal gap (if program enabled)
   const { start: monthStart, end: monthEnd, endDate: monthEndDate } = getMonthBounds(now)
-  const { data: prefs } = await supabase
+  const { data: prefs } = await db
     .from('chef_preferences')
     .select('revenue_goal_program_enabled, target_monthly_revenue_cents')
     .eq('tenant_id', tenantId)
@@ -160,7 +157,7 @@ export async function getFinancialQueueItems(
       0,
       Number((prefs as any)?.target_monthly_revenue_cents ?? 1000000)
     )
-    const { data: monthEvents } = await supabase
+    const { data: monthEvents } = await db
       .from('events')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -173,7 +170,7 @@ export async function getFinancialQueueItems(
     let averagePaidCents = 150000
 
     if (monthEventIds.length > 0) {
-      const { data: summaries } = await supabase
+      const { data: summaries } = await db
         .from('event_financial_summary')
         .select('event_id, total_paid_cents')
         .eq('tenant_id', tenantId)

@@ -5,7 +5,7 @@
 'use server'
 
 import { requireAuth, requireChef, requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { processMessageInsights } from '@/lib/insights/actions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -107,10 +107,10 @@ const GetMessagesSchema = z.object({
 export async function createConversation(input: z.infer<typeof CreateConversationSchema>) {
   const user = await requireChef()
   const validated = CreateConversationSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to this tenant
-  const { data: client, error: clientError } = await supabase
+  const { data: client, error: clientError } = await db
     .from('clients')
     .select('id, auth_user_id, tenant_id')
     .eq('id', validated.client_id)
@@ -122,7 +122,7 @@ export async function createConversation(input: z.infer<typeof CreateConversatio
   }
 
   // Create the conversation
-  const { data: conversation, error: convError } = await supabase
+  const { data: conversation, error: convError } = await db
     .from('conversations')
     .insert({
       tenant_id: user.tenantId!,
@@ -154,18 +154,18 @@ export async function createConversation(input: z.infer<typeof CreateConversatio
     })
   }
 
-  const { error: partError } = await supabase.from('conversation_participants').insert(participants)
+  const { error: partError } = await db.from('conversation_participants').insert(participants)
 
   if (partError) {
     console.error('[createConversation] Participant error:', partError)
     // Cleanup: delete the conversation if we can't add participants
-    await supabase.from('conversations').delete().eq('id', conversation.id)
+    await db.from('conversations').delete().eq('id', conversation.id)
     throw new Error('Failed to add participants to conversation')
   }
 
   // Send initial message if provided
   if (validated.initial_message) {
-    await supabase.from('chat_messages').insert({
+    await db.from('chat_messages').insert({
       conversation_id: conversation.id,
       sender_id: user.id,
       message_type: 'text',
@@ -188,11 +188,11 @@ export async function getOrCreateConversation(input: {
   event_id?: string
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const contextType = input.context_type || 'standalone'
 
   // Try to find existing conversation
-  let query = supabase.from('conversations').select('*').eq('tenant_id', user.tenantId!)
+  let query = db.from('conversations').select('*').eq('tenant_id', user.tenantId!)
 
   if (contextType === 'event' && input.event_id) {
     query = query.eq('event_id', input.event_id).eq('context_type', 'event')
@@ -227,10 +227,10 @@ export async function getOrCreateConversation(input: {
  */
 export async function getConversationInbox(): Promise<ConversationWithDetails[]> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get conversations the user participates in
-  const { data: participantRows, error: partError } = await supabase
+  const { data: participantRows, error: partError } = await db
     .from('conversation_participants')
     .select('conversation_id')
     .eq('auth_user_id', user.id)
@@ -242,7 +242,7 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
   const conversationIds = participantRows.map((p: any) => p.conversation_id)
 
   // Fetch conversations with participants
-  const { data: conversations, error: convError } = await supabase
+  const { data: conversations, error: convError } = await db
     .from('conversations')
     .select(
       `
@@ -266,7 +266,7 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
   }
 
   // Get unread counts via RPC
-  const { data: unreadData } = await supabase.rpc('get_unread_counts', {
+  const { data: unreadData } = await db.rpc('get_unread_counts', {
     p_user_id: user.id,
   })
 
@@ -296,7 +296,7 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
     const userIdArray = Array.from(otherUserIds)
 
     // Get chef names
-    const { data: chefs } = await supabase
+    const { data: chefs } = await db
       .from('chefs')
       .select('auth_user_id, business_name, email')
       .in('auth_user_id', userIdArray)
@@ -308,7 +308,7 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
     }
 
     // Get client names
-    const { data: clients } = await supabase
+    const { data: clients } = await db
       .from('clients')
       .select('auth_user_id, full_name, email')
       .in('auth_user_id', userIdArray)
@@ -355,9 +355,9 @@ export async function getConversationInbox(): Promise<ConversationWithDetails[]>
  */
 export async function getConversation(conversationId: string): Promise<Conversation | null> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('conversations')
     .select('*')
     .eq('id', conversationId)
@@ -366,7 +366,7 @@ export async function getConversation(conversationId: string): Promise<Conversat
   if (error || !data) return null
 
   // RLS handles access control, but double-check participation
-  const { data: participant } = await supabase
+  const { data: participant } = await db
     .from('conversation_participants')
     .select('id')
     .eq('conversation_id', conversationId)
@@ -386,10 +386,10 @@ export async function getConversationParticipants(
   conversationId: string
 ): Promise<(ConversationParticipant & { name: string; email: string })[]> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify caller is a participant in this conversation
-  const { data: self } = await supabase
+  const { data: self } = await db
     .from('conversation_participants')
     .select('id')
     .eq('conversation_id', conversationId)
@@ -398,7 +398,7 @@ export async function getConversationParticipants(
 
   if (!self) return []
 
-  const { data: participants, error } = await supabase
+  const { data: participants, error } = await db
     .from('conversation_participants')
     .select('*')
     .eq('conversation_id', conversationId)
@@ -413,7 +413,7 @@ export async function getConversationParticipants(
     let email = ''
 
     if (p.role === 'chef') {
-      const { data: chef } = await supabase
+      const { data: chef } = await db
         .from('chefs')
         .select('business_name, email')
         .eq('auth_user_id', p.auth_user_id)
@@ -423,7 +423,7 @@ export async function getConversationParticipants(
         email = chef.email
       }
     } else {
-      const { data: client } = await supabase
+      const { data: client } = await db
         .from('clients')
         .select('full_name, email')
         .eq('auth_user_id', p.auth_user_id)
@@ -450,10 +450,10 @@ export async function getConversationParticipants(
 export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) {
   const user = await requireAuth()
   const validated = SendMessageSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify participation (RLS also enforces this)
-  const { data: participant } = await supabase
+  const { data: participant } = await db
     .from('conversation_participants')
     .select('id')
     .eq('conversation_id', validated.conversation_id)
@@ -489,7 +489,7 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
     }
   }
 
-  const { data: message, error } = await supabase
+  const { data: message, error } = await db
     .from('chat_messages')
     .insert(insertData)
     .select()
@@ -501,7 +501,7 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
   }
 
   // Auto-mark as read for sender
-  await supabase
+  await db
     .from('conversation_participants')
     .update({ last_read_at: new Date().toISOString() })
     .eq('conversation_id', validated.conversation_id)
@@ -569,10 +569,10 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
  */
 export async function sendImageMessage(conversationId: string, formData: FormData) {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify participation
-  const { data: participant } = await supabase
+  const { data: participant } = await db
     .from('conversation_participants')
     .select('id')
     .eq('conversation_id', conversationId)
@@ -584,7 +584,7 @@ export async function sendImageMessage(conversationId: string, formData: FormDat
   }
 
   // Get the conversation's tenant_id for storage path
-  const { data: conversation } = await supabase
+  const { data: conversation } = await db
     .from('conversations')
     .select('tenant_id')
     .eq('id', conversationId)
@@ -615,12 +615,10 @@ export async function sendImageMessage(conversationId: string, formData: FormDat
   const storagePath = `${conversation.tenant_id}/${conversationId}/${messageId}.${ext}`
 
   // Upload to storage
-  const { error: uploadError } = await supabase.storage
-    .from(CHAT_BUCKET)
-    .upload(storagePath, file, {
-      contentType: file.type,
-      upsert: false,
-    })
+  const { error: uploadError } = await db.storage.from(CHAT_BUCKET).upload(storagePath, file, {
+    contentType: file.type,
+    upsert: false,
+  })
 
   if (uploadError) {
     console.error('[sendImageMessage] Upload error:', uploadError)
@@ -628,7 +626,7 @@ export async function sendImageMessage(conversationId: string, formData: FormDat
   }
 
   // Create the chat message
-  const { data: message, error: msgError } = await supabase
+  const { data: message, error: msgError } = await db
     .from('chat_messages')
     .insert({
       id: messageId,
@@ -647,12 +645,12 @@ export async function sendImageMessage(conversationId: string, formData: FormDat
   if (msgError || !message) {
     console.error('[sendImageMessage] Message error:', msgError)
     // Cleanup uploaded file
-    await supabase.storage.from(CHAT_BUCKET).remove([storagePath])
+    await db.storage.from(CHAT_BUCKET).remove([storagePath])
     throw new Error('Failed to create message')
   }
 
   // Auto-mark as read for sender
-  await supabase
+  await db
     .from('conversation_participants')
     .update({ last_read_at: new Date().toISOString() })
     .eq('conversation_id', conversationId)
@@ -687,10 +685,10 @@ export async function sendImageMessage(conversationId: string, formData: FormDat
  */
 export async function sendFileMessage(conversationId: string, formData: FormData) {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify participation
-  const { data: participant } = await supabase
+  const { data: participant } = await db
     .from('conversation_participants')
     .select('id')
     .eq('conversation_id', conversationId)
@@ -702,7 +700,7 @@ export async function sendFileMessage(conversationId: string, formData: FormData
   }
 
   // Get the conversation's tenant_id for storage path
-  const { data: conversation } = await supabase
+  const { data: conversation } = await db
     .from('conversations')
     .select('tenant_id')
     .eq('id', conversationId)
@@ -741,12 +739,10 @@ export async function sendFileMessage(conversationId: string, formData: FormData
   const storagePath = `${conversation.tenant_id}/${conversationId}/${messageId}.${ext}`
 
   // Upload to storage
-  const { error: uploadError } = await supabase.storage
-    .from(CHAT_BUCKET)
-    .upload(storagePath, file, {
-      contentType: file.type,
-      upsert: false,
-    })
+  const { error: uploadError } = await db.storage.from(CHAT_BUCKET).upload(storagePath, file, {
+    contentType: file.type,
+    upsert: false,
+  })
 
   if (uploadError) {
     console.error('[sendFileMessage] Upload error:', uploadError)
@@ -755,7 +751,7 @@ export async function sendFileMessage(conversationId: string, formData: FormData
 
   // Create the chat message
   const messageType = isImage ? 'image' : 'file'
-  const { data: message, error: msgError } = await supabase
+  const { data: message, error: msgError } = await db
     .from('chat_messages')
     .insert({
       id: messageId,
@@ -774,12 +770,12 @@ export async function sendFileMessage(conversationId: string, formData: FormData
   if (msgError || !message) {
     console.error('[sendFileMessage] Message error:', msgError)
     // Cleanup uploaded file
-    await supabase.storage.from(CHAT_BUCKET).remove([storagePath])
+    await db.storage.from(CHAT_BUCKET).remove([storagePath])
     throw new Error('Failed to create message')
   }
 
   // Auto-mark as read for sender
-  await supabase
+  await db
     .from('conversation_participants')
     .update({ last_read_at: new Date().toISOString() })
     .eq('conversation_id', conversationId)
@@ -822,10 +818,10 @@ export async function sendFileMessage(conversationId: string, formData: FormData
 export async function getConversationMessages(input: z.infer<typeof GetMessagesSchema>) {
   const user = await requireAuth()
   const validated = GetMessagesSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify caller is a participant in this conversation
-  const { data: self } = await supabase
+  const { data: self } = await db
     .from('conversation_participants')
     .select('id')
     .eq('conversation_id', validated.conversation_id)
@@ -837,7 +833,7 @@ export async function getConversationMessages(input: z.infer<typeof GetMessagesS
   }
 
   // Fetch one extra to determine hasMore
-  let query = supabase
+  let query = db
     .from('chat_messages')
     .select('*')
     .eq('conversation_id', validated.conversation_id)
@@ -875,9 +871,9 @@ export async function getConversationMessages(input: z.infer<typeof GetMessagesS
  */
 export async function markConversationRead(conversationId: string) {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('conversation_participants')
     .update({ last_read_at: new Date().toISOString() })
     .eq('conversation_id', conversationId)
@@ -896,9 +892,9 @@ export async function markConversationRead(conversationId: string) {
  */
 export async function getUnreadCounts(): Promise<Record<string, number>> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase.rpc('get_unread_counts', {
+  const { data, error } = await db.rpc('get_unread_counts', {
     p_user_id: user.id,
   })
 
@@ -919,9 +915,9 @@ export async function getUnreadCounts(): Promise<Record<string, number>> {
  */
 export async function getTotalUnreadCount(): Promise<number> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase.rpc('get_total_unread_count', {
+  const { data, error } = await db.rpc('get_total_unread_count', {
     p_user_id: user.id,
   })
 
@@ -943,10 +939,10 @@ export async function getTotalUnreadCount(): Promise<number> {
  */
 export async function getChatAttachmentUrl(messageId: string): Promise<string | null> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the message and verify access via RLS
-  const { data: message, error } = await supabase
+  const { data: message, error } = await db
     .from('chat_messages')
     .select('attachment_storage_path, conversation_id')
     .eq('id', messageId)
@@ -957,7 +953,7 @@ export async function getChatAttachmentUrl(messageId: string): Promise<string | 
   }
 
   // Generate signed URL (1 hour expiry)
-  const { data: signedUrlData, error: signError } = await supabase.storage
+  const { data: signedUrlData, error: signError } = await db.storage
     .from(CHAT_BUCKET)
     .createSignedUrl(message.attachment_storage_path, 3600)
 
@@ -982,11 +978,11 @@ export async function clientGetOrCreateConversation(input?: {
   inquiry_id?: string
 }) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const contextType = input?.context_type || 'standalone'
 
   // Try to find existing conversation for this context
-  let query = supabase.from('conversations').select('*').eq('tenant_id', user.tenantId!)
+  let query = db.from('conversations').select('*').eq('tenant_id', user.tenantId!)
 
   if (contextType === 'event' && input?.event_id) {
     query = query.eq('event_id', input.event_id).eq('context_type', 'event')
@@ -1000,7 +996,7 @@ export async function clientGetOrCreateConversation(input?: {
 
   if (existing) {
     // Verify client is a participant
-    const { data: participant } = await supabase
+    const { data: participant } = await db
       .from('conversation_participants')
       .select('id')
       .eq('conversation_id', existing.id)
@@ -1013,7 +1009,7 @@ export async function clientGetOrCreateConversation(input?: {
   }
 
   // Create new conversation
-  const { data: conversation, error: convError } = await supabase
+  const { data: conversation, error: convError } = await db
     .from('conversations')
     .insert({
       tenant_id: user.tenantId!,
@@ -1030,7 +1026,7 @@ export async function clientGetOrCreateConversation(input?: {
   }
 
   // Find the chef's auth_user_id (tenant owner)
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('auth_user_id')
     .eq('id', user.tenantId!)
@@ -1046,11 +1042,11 @@ export async function clientGetOrCreateConversation(input?: {
     { conversation_id: conversation.id, auth_user_id: chef.auth_user_id, role: 'chef' as const },
   ]
 
-  const { error: partError } = await supabase.from('conversation_participants').insert(participants)
+  const { error: partError } = await db.from('conversation_participants').insert(participants)
 
   if (partError) {
     console.error('[clientGetOrCreateConversation] Participant error:', partError)
-    await supabase.from('conversations').delete().eq('id', conversation.id)
+    await db.from('conversations').delete().eq('id', conversation.id)
     throw new Error('Failed to add participants to conversation')
   }
 
@@ -1070,10 +1066,10 @@ export async function searchChatMessages(
   query: string
 ): Promise<ChatMessage[]> {
   const user = await requireAuth()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify participation
-  const { data: participant } = await supabase
+  const { data: participant } = await db
     .from('conversation_participants')
     .select('id')
     .eq('conversation_id', conversationId)
@@ -1084,7 +1080,7 @@ export async function searchChatMessages(
     throw new Error('You are not a participant in this conversation')
   }
 
-  const { data: messages, error } = await supabase
+  const { data: messages, error } = await db
     .from('chat_messages')
     .select('*')
     .eq('conversation_id', conversationId)
@@ -1114,11 +1110,11 @@ async function notifyChefOfClientMessage(
   messageBody: string,
   clientTenantId: string | undefined | null
 ): Promise<void> {
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase = createServerClient({ admin: true })
+  const { createServerClient } = await import('@/lib/db/server')
+  const db = createServerClient({ admin: true })
 
   // Load conversation to get tenant_id (the chef's tenant)
-  const { data: conversation } = await supabase
+  const { data: conversation } = await db
     .from('conversations')
     .select('tenant_id, last_message_at')
     .eq('id', conversationId)
@@ -1139,7 +1135,7 @@ async function notifyChefOfClientMessage(
   if (!chefUserId) return
 
   // Load client name from conversation participants
-  const { data: participants } = await supabase
+  const { data: participants } = await db
     .from('conversation_participants')
     .select('auth_user_id, role')
     .eq('conversation_id', conversationId)
@@ -1149,7 +1145,7 @@ async function notifyChefOfClientMessage(
   let clientName = 'A client'
   if (participants?.[0]) {
     const clientAuthId = participants[0].auth_user_id
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('full_name')
       .eq('auth_user_id', clientAuthId)
@@ -1173,7 +1169,7 @@ async function notifyChefOfClientMessage(
   // Email - rate-limited to once per conversation per hour
   if (chefProfile) {
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-    const { data: recentLog } = await supabase
+    const { data: recentLog } = await db
       .from('notification_delivery_log')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -1208,11 +1204,11 @@ async function notifyClientOfChefMessage(
   messageBody: string,
   tenantId: string
 ): Promise<void> {
-  const { createServerClient } = await import('@/lib/supabase/server')
-  const supabase = createServerClient({ admin: true })
+  const { createServerClient } = await import('@/lib/db/server')
+  const db = createServerClient({ admin: true })
 
   // Find the client participant in this conversation
-  const { data: participants } = await supabase
+  const { data: participants } = await db
     .from('conversation_participants')
     .select('auth_user_id, role')
     .eq('conversation_id', conversationId)
@@ -1224,7 +1220,7 @@ async function notifyClientOfChefMessage(
   const clientAuthId = participants[0].auth_user_id
 
   // Get client entity ID
-  const { data: clientRole } = await supabase
+  const { data: clientRole } = await db
     .from('user_roles')
     .select('entity_id')
     .eq('auth_user_id', clientAuthId)

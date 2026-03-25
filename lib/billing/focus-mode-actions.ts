@@ -5,7 +5,7 @@
 
 import { revalidateTag } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { CHEF_LAYOUT_CACHE_TAG } from '@/lib/chef/layout-cache'
 import { ALL_MODULE_SLUGS } from '@/lib/billing/modules'
 import { CORE_MODULES } from '@/lib/billing/focus-mode'
@@ -16,9 +16,9 @@ import { CORE_MODULES } from '@/lib/billing/focus-mode'
  */
 export async function isFocusModeEnabled(): Promise<boolean> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_preferences')
     .select('focus_mode')
     .eq('chef_id', user.entityId)
@@ -35,11 +35,11 @@ export async function isFocusModeEnabled(): Promise<boolean> {
  */
 export async function toggleFocusMode(enabled: boolean): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const modules = enabled ? [...CORE_MODULES] : [...ALL_MODULE_SLUGS]
 
-  await supabase
+  await db
     .from('chef_preferences')
     .update({
       focus_mode: enabled,

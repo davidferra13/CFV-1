@@ -7,7 +7,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,10 +71,10 @@ export async function recordPricePoint(
   }
 ): Promise<{ id: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Insert price history entry
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ingredient_price_history')
     .insert({
       tenant_id: user.tenantId!,
@@ -94,7 +94,7 @@ export async function recordPricePoint(
 
   // Update ingredient's last known price (non-blocking)
   try {
-    await supabase
+    await db
       .from('ingredients')
       .update({
         last_price_cents: priceCents,
@@ -119,9 +119,9 @@ export async function getIngredientPriceHistory(
   options?: { months?: number; limit?: number }
 ): Promise<PriceHistoryEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('ingredient_price_history')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -164,9 +164,9 @@ export async function getIngredientPriceHistory(
  */
 export async function getIngredientPriceTrend(ingredientId: string): Promise<PriceTrend> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ingredient_price_history')
     .select('price_cents')
     .eq('tenant_id', user.tenantId!)
@@ -232,9 +232,9 @@ export async function getIngredientPriceTrend(ingredientId: string): Promise<Pri
  */
 export async function getSeasonalPricePattern(ingredientId: string): Promise<SeasonalPattern[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ingredient_monthly_price_avg')
     .select('month, avg_price_cents, min_price_cents, max_price_cents, data_points')
     .eq('tenant_id', user.tenantId!)
@@ -303,14 +303,14 @@ export async function getMonthlyPriceAverages(
   months: number = 12
 ): Promise<MonthlyAverage[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setMonth(cutoff.getMonth() - months)
   const cutoffYear = cutoff.getFullYear()
   const cutoffMonth = cutoff.getMonth() + 1
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('ingredient_monthly_price_avg')
     .select('year, month, avg_price_cents, data_points')
     .eq('tenant_id', user.tenantId!)

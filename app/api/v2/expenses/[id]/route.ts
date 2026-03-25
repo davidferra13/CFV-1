@@ -34,7 +34,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Expense')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('expenses')
       .select('*')
       .eq('id', id)
@@ -63,7 +63,7 @@ export const PATCH = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     // Verify expense belongs to tenant
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('expenses')
       .select('id')
       .eq('id', id)
@@ -72,7 +72,7 @@ export const PATCH = withApiAuth(
 
     if (!existing) return apiNotFound('Expense')
 
-    const { data, error } = await ctx.supabase
+    const { data, error } = await ctx.db
       .from('expenses')
       .update({ ...parsed.data, updated_at: new Date().toISOString() } as any)
       .eq('id', id)
@@ -96,7 +96,7 @@ export const DELETE = withApiAuth(
     if (!id) return apiNotFound('Expense')
 
     // Verify ownership before deleting
-    const { data: existing } = await ctx.supabase
+    const { data: existing } = await ctx.db
       .from('expenses')
       .select('id')
       .eq('id', id)
@@ -105,7 +105,7 @@ export const DELETE = withApiAuth(
 
     if (!existing) return apiNotFound('Expense')
 
-    const { error } = await ctx.supabase
+    const { error } = await ctx.db
       .from('expenses')
       .delete()
       .eq('id', id)

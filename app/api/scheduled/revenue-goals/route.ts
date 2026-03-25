@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 import { getRevenueGoalSnapshotForTenantAdmin } from '@/lib/revenue-goals/actions'
 import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
@@ -29,19 +29,19 @@ async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true }) as any
+  const db = createServerClient({ admin: true }) as any
   const now = new Date()
   const today = now.toISOString().slice(0, 10)
 
   // ── 1. Collect all tenant IDs to process ────────────────────────────────────
   // Legacy: chefs with revenue_goal_program_enabled
-  const { data: prefRows } = await supabase
+  const { data: prefRows } = await db
     .from('chef_preferences')
     .select('tenant_id')
     .eq('revenue_goal_program_enabled', true)
 
   // New-style: chefs with any active chef_goals
-  const { data: activeGoalRows } = await supabase
+  const { data: activeGoalRows } = await db
     .from('chef_goals')
     .select('tenant_id')
     .eq('status', 'active')
@@ -70,14 +70,14 @@ async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
   for (const tenantId of tenantIds) {
     try {
       // ── 2. Write goal snapshots for new-style chef_goals ─────────────────────
-      await writeGoalSnapshotsForTenant(supabase, tenantId, now, today)
-      const goalSignalResult = await emitGoalSignalNotifications(supabase, tenantId, now, today)
+      await writeGoalSnapshotsForTenant(db, tenantId, now, today)
+      const goalSignalResult = await emitGoalSignalNotifications(db, tenantId, now, today)
       milestoneNotified += goalSignalResult.milestoneNotified
       weeklyDigestNotified += goalSignalResult.weeklyDigestNotified
       goalSignalSkipped += goalSignalResult.skipped
 
       // ── 3. Legacy revenue-goal snapshot + notification ────────────────────────
-      const snapshot = await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, supabase)
+      const snapshot = await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, db)
       if (
         !snapshot.enabled ||
         snapshot.monthly.gapCents <= 0 ||
@@ -88,7 +88,7 @@ async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
       }
 
       // De-duplicate: max 1 goal nudge per tenant per day
-      const { data: existingToday } = await supabase
+      const { data: existingToday } = await db
         .from('notifications')
         .select('id')
         .eq('tenant_id', tenantId)
@@ -148,12 +148,12 @@ export { handleRevenueGoals as GET, handleRevenueGoals as POST }
 // ── Snapshot writing for new-style goals ──────────────────────────────────────
 
 async function writeGoalSnapshotsForTenant(
-  supabase: any,
+  db: any,
   tenantId: string,
   now: Date,
   today: string
 ): Promise<void> {
-  const { data: goals } = await supabase
+  const { data: goals } = await db
     .from('chef_goals')
     .select('id, goal_type, target_value, period_start, period_end')
     .eq('tenant_id', tenantId)
@@ -181,7 +181,7 @@ async function writeGoalSnapshotsForTenant(
   )
   let revenueSnapshot: RevenueGoalSnapshot | null = null
   if (hasRevenueGoal) {
-    revenueSnapshot = await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, supabase)
+    revenueSnapshot = await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, db)
   }
 
   for (const goal of goalList) {
@@ -207,25 +207,15 @@ async function writeGoalSnapshotsForTenant(
           currentValue = snap.monthly.projectedCents
         }
       } else if (goal.goal_type === 'booking_count') {
-        currentValue = await fetchBookingCount(
-          supabase,
-          tenantId,
-          goal.period_start,
-          goal.period_end
-        )
+        currentValue = await fetchBookingCount(db, tenantId, goal.period_start, goal.period_end)
       } else if (goal.goal_type === 'new_clients') {
-        currentValue = await fetchNewClientCount(
-          supabase,
-          tenantId,
-          goal.period_start,
-          goal.period_end
-        )
+        currentValue = await fetchNewClientCount(db, tenantId, goal.period_start, goal.period_end)
       } else if (goal.goal_type === 'recipe_library') {
-        currentValue = await fetchRecipeCount(supabase, tenantId)
+        currentValue = await fetchRecipeCount(db, tenantId)
       } else if (goal.goal_type === 'profit_margin') {
-        currentValue = await fetchTrailingProfitMarginBp(supabase, tenantId, 90)
+        currentValue = await fetchTrailingProfitMarginBp(db, tenantId, 90)
       } else if (goal.goal_type === 'expense_ratio') {
-        currentValue = await fetchTrailingExpenseRatioBp(supabase, tenantId, 90)
+        currentValue = await fetchTrailingExpenseRatioBp(db, tenantId, 90)
       }
 
       const gapValue = Math.max(0, goal.target_value - currentValue)
@@ -236,7 +226,7 @@ async function writeGoalSnapshotsForTenant(
 
       // upsert with ignoreDuplicates: true is idempotent - re-running the cron
       // on the same day will not overwrite an existing snapshot.
-      await supabase.from('goal_snapshots').upsert(
+      await db.from('goal_snapshots').upsert(
         {
           tenant_id: tenantId,
           goal_id: goal.id,
@@ -258,12 +248,12 @@ async function writeGoalSnapshotsForTenant(
 }
 
 async function emitGoalSignalNotifications(
-  supabase: any,
+  db: any,
   tenantId: string,
   now: Date,
   today: string
 ): Promise<{ milestoneNotified: number; weeklyDigestNotified: number; skipped: number }> {
-  const { data: activeGoals } = await supabase
+  const { data: activeGoals } = await db
     .from('chef_goals')
     .select('id, label')
     .eq('tenant_id', tenantId)
@@ -281,7 +271,7 @@ async function emitGoalSignalNotifications(
     .slice(0, 10)
   const weekStart = getUtcWeekStart(now)
 
-  const { data: snapshots } = await supabase
+  const { data: snapshots } = await db
     .from('goal_snapshots')
     .select('goal_id, snapshot_date, progress_percent')
     .eq('tenant_id', tenantId)
@@ -335,7 +325,7 @@ async function emitGoalSignalNotifications(
     if (crossedMilestones.length === 0) continue
 
     const milestone = crossedMilestones[crossedMilestones.length - 1]
-    const { data: existingMilestone } = await supabase
+    const { data: existingMilestone } = await db
       .from('notifications')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -373,7 +363,7 @@ async function emitGoalSignalNotifications(
     milestoneNotified += 1
   }
 
-  const { data: existingDigest } = await supabase
+  const { data: existingDigest } = await db
     .from('notifications')
     .select('id')
     .eq('tenant_id', tenantId)

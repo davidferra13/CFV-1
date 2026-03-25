@@ -2,7 +2,7 @@
  * Event FSM - Pure Logic Layer
  *
  * Contains ONLY the state machine rules and validation functions.
- * No 'use server', no Supabase calls, no side effects.
+ * No 'use server', no calls, no side effects.
  * This module is safe to import in unit tests and client components.
  *
  * The authoritative enforcement is done by:

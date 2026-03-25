@@ -12,7 +12,7 @@
 //
 // Existing chefs: subscription_status = 'grandfathered' → no banner ever.
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type Stripe from 'stripe'
 
 const SITE_URL =
@@ -56,8 +56,8 @@ export async function createStripeCustomer(
     metadata: { chef_id: chefId },
   })
 
-  const supabase = createServerClient({ admin: true })
-  const { error } = await supabase
+  const db = createServerClient({ admin: true })
+  const { error } = await db
     .from('chefs')
     .update({ stripe_customer_id: customer.id } as any)
     .eq('id', chefId)
@@ -78,8 +78,8 @@ export async function startTrial(chefId: string, days = 14): Promise<void> {
   const trialEndsAt = new Date()
   trialEndsAt.setDate(trialEndsAt.getDate() + trialDays)
 
-  const supabase = createServerClient({ admin: true })
-  const { error } = await supabase
+  const db = createServerClient({ admin: true })
+  const { error } = await db
     .from('chefs')
     .update({
       subscription_status: 'trialing',
@@ -97,9 +97,9 @@ export async function startTrial(chefId: string, days = 14): Promise<void> {
  * Pass chefId explicitly (preferred) or omit to use the current session.
  */
 export async function getSubscriptionStatus(chefId: string): Promise<SubscriptionStatus> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: rawChef } = await supabase
+  const { data: rawChef } = await db
     .from('chefs')
     .select(
       'subscription_status, trial_ends_at, subscription_current_period_end, stripe_customer_id, stripe_subscription_id'
@@ -163,7 +163,7 @@ export async function getSubscriptionStatus(chefId: string): Promise<Subscriptio
  * Updates subscription_status, stripe_subscription_id, and period end.
  */
 export async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const customerId =
     typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
 
@@ -172,7 +172,7 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     ? new Date(sub.current_period_end * 1000).toISOString()
     : null
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({
       stripe_subscription_id: subscription.id,
@@ -192,11 +192,11 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
  * Marks the chef's subscription as canceled.
  */
 export async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const customerId =
     typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({
       subscription_status: 'canceled',
@@ -223,9 +223,9 @@ export async function createCheckoutSession(chefId: string): Promise<string> {
   if (!priceId) throw new Error('STRIPE_SUBSCRIPTION_PRICE_ID is not configured')
 
   const stripe = getStripe()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: rawChef2 } = await supabase
+  const { data: rawChef2 } = await db
     .from('chefs')
     .select('stripe_customer_id')
     .eq('id', chefId)
@@ -251,9 +251,9 @@ export async function createCheckoutSession(chefId: string): Promise<string> {
  */
 export async function createBillingPortalSession(chefId: string): Promise<string> {
   const stripe = getStripe()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: rawChef3 } = await supabase
+  const { data: rawChef3 } = await db
     .from('chefs')
     .select('stripe_customer_id')
     .eq('id', chefId)

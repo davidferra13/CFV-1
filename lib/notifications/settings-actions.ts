@@ -4,7 +4,7 @@
 // All mutations are scoped to the authenticated chef's own user.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { NotificationCategory } from './types'
 
@@ -34,9 +34,9 @@ export type NotificationExperienceSettings = {
  */
 export async function getNotificationPreferences(): Promise<CategoryPreference[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('notification_preferences')
     .select('category, email_enabled, push_enabled, sms_enabled')
     .eq('auth_user_id', user.id)
@@ -63,9 +63,9 @@ export async function upsertCategoryPreference(
 ): Promise<{ error: string | null }> {
   const user = await requireChef()
   if (!user.tenantId) return { error: 'No tenant context' }
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('notification_preferences').upsert(
+  const { error } = await db.from('notification_preferences').upsert(
     {
       tenant_id: user.tenantId,
       auth_user_id: user.id,
@@ -90,9 +90,9 @@ export async function upsertCategoryPreference(
  */
 export async function getSmsSettings(): Promise<SmsSettings> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_preferences')
     .select('sms_opt_in, sms_notify_phone')
     .eq('tenant_id', user.tenantId!)
@@ -112,7 +112,7 @@ export async function getSmsSettings(): Promise<SmsSettings> {
 export async function updateSmsSettings(settings: SmsSettings): Promise<{ error: string | null }> {
   const user = await requireChef()
   if (!user.tenantId) return { error: 'No tenant context' }
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const update: Record<string, unknown> = {
     sms_opt_in: settings.sms_opt_in,
@@ -121,7 +121,7 @@ export async function updateSmsSettings(settings: SmsSettings): Promise<{ error:
 
   if (settings.sms_opt_in) {
     // Only set opt_in_at if opting in for the first time
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('chef_preferences')
       .select('sms_opt_in_at')
       .eq('tenant_id', user.tenantId)
@@ -134,10 +134,7 @@ export async function updateSmsSettings(settings: SmsSettings): Promise<{ error:
     update.sms_opt_in_at = null
   }
 
-  const { error } = await supabase
-    .from('chef_preferences')
-    .update(update)
-    .eq('tenant_id', user.tenantId)
+  const { error } = await db.from('chef_preferences').update(update).eq('tenant_id', user.tenantId)
 
   if (error) {
     console.error('[updateSmsSettings] Update failed:', error)
@@ -150,9 +147,9 @@ export async function updateSmsSettings(settings: SmsSettings): Promise<{ error:
 
 export async function getNotificationExperienceSettings(): Promise<NotificationExperienceSettings> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_preferences')
     .select(
       'notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_digest_enabled, notification_digest_interval_minutes'
@@ -183,12 +180,12 @@ export async function updateNotificationExperienceSettings(
 ): Promise<{ error: string | null }> {
   const user = await requireChef()
   if (!user.tenantId) return { error: 'No tenant context' }
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const quietHoursEnabled = Boolean(settings.quiet_hours_enabled)
   const digestInterval = Math.min(120, Math.max(5, Number(settings.digest_interval_minutes || 15)))
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_preferences')
     .update({
       notification_quiet_hours_enabled: quietHoursEnabled,

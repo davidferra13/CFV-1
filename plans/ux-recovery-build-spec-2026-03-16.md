@@ -165,7 +165,7 @@ Exit criteria:
 ## Out of scope for this build
 
 - redesigning the entire chef navigation model
-- changing billing, onboarding data model, or Supabase schema
+- changing billing, onboarding data model, or PostgreSQL schema
 - removing compliance prompts entirely
 - broad copy or brand refactors outside the verified friction points
 

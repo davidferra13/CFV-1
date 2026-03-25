@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -13,11 +13,11 @@ export async function submitCheckin(input: {
 }) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const today = new Date().toISOString().split('T')[0]
 
-  const { error } = await supabase.from('chef_growth_checkins').upsert(
+  const { error } = await db.from('chef_growth_checkins').upsert(
     {
       tenant_id: tenantId,
       checkin_date: today,
@@ -48,9 +48,9 @@ export async function getCheckinHistory(): Promise<
 > {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_growth_checkins')
     .select(
       'id, checkin_date, satisfaction_score, learned_this_quarter, draining_this_quarter, goal_next_quarter, track_request, created_at'
@@ -65,12 +65,12 @@ export async function getCheckinHistory(): Promise<
 export async function isDue(): Promise<boolean> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const since = new Date()
   since.setDate(since.getDate() - 90)
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_growth_checkins')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -84,9 +84,9 @@ export async function isDue(): Promise<boolean> {
 export async function getLatestSatisfactionScore(): Promise<number | null> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_growth_checkins')
     .select('satisfaction_score')
     .eq('tenant_id', tenantId)

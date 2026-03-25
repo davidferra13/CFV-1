@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { canonicalizeDishName } from './dish-index-constants'
@@ -75,12 +75,12 @@ export async function createDishIndexEntry(input: CreateDishIndexInput) {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const parsed = CreateDishIndexSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const canonical = canonicalizeDishName(parsed.name)
 
   // Check for existing dish with same canonical name + course
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('dish_index')
     .select('id, name')
     .eq('tenant_id', tenantId)
@@ -92,7 +92,7 @@ export async function createDishIndexEntry(input: CreateDishIndexInput) {
     return { error: `A dish named "${existing.name}" already exists as ${parsed.course}` }
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('dish_index')
     .insert({
       tenant_id: tenantId,
@@ -139,9 +139,9 @@ export async function getDishIndex(filters?: {
   offset?: number
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('dish_index')
     .select(
       `
@@ -199,9 +199,9 @@ export async function getDishIndex(filters?: {
  */
 export async function getDishById(dishId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('dish_index')
     .select(
       `
@@ -235,7 +235,7 @@ export async function updateDishIndexEntry(dishId: string, input: UpdateDishInde
   const user = await requireChef()
   const tenantId = user.tenantId!
   const parsed = UpdateDishIndexSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = { ...parsed }
 
@@ -252,7 +252,7 @@ export async function updateDishIndexEntry(dishId: string, input: UpdateDishInde
     updates.retirement_reason = null
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dish_index')
     .update(updates)
     .eq('id', dishId)
@@ -269,9 +269,9 @@ export async function updateDishIndexEntry(dishId: string, input: UpdateDishInde
  */
 export async function archiveDish(dishId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dish_index')
     .update({ archived: true })
     .eq('id', dishId)
@@ -286,9 +286,9 @@ export async function archiveDish(dishId: string) {
  */
 export async function restoreDish(dishId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dish_index')
     .update({ archived: false })
     .eq('id', dishId)
@@ -303,9 +303,9 @@ export async function restoreDish(dishId: string) {
  */
 export async function linkRecipeToDish(dishId: string, recipeId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dish_index')
     .update({ linked_recipe_id: recipeId })
     .eq('id', dishId)
@@ -321,9 +321,9 @@ export async function linkRecipeToDish(dishId: string, recipeId: string) {
  */
 export async function unlinkRecipeFromDish(dishId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('dish_index')
     .update({ linked_recipe_id: null })
     .eq('id', dishId)
@@ -343,9 +343,9 @@ export async function unlinkRecipeFromDish(dishId: string) {
  */
 export async function getDishAppearances(dishId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dish_appearances')
     .select('*')
     .eq('dish_id', dishId)
@@ -361,9 +361,9 @@ export async function getDishAppearances(dishId: string) {
  */
 export async function getClientDishHistory(clientName: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dish_appearances')
     .select(
       `
@@ -393,9 +393,9 @@ export async function addDishAppearance(input: {
 }) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('dish_appearances').insert({
+  const { error } = await db.from('dish_appearances').insert({
     dish_id: input.dish_id,
     tenant_id: tenantId,
     event_date: input.event_date || null,
@@ -409,7 +409,7 @@ export async function addDishAppearance(input: {
   if (error) throw new Error(`Failed to add appearance: ${error.message}`)
 
   // Update dish times_served and dates
-  const { data: dish } = await supabase
+  const { data: dish } = await db
     .from('dish_index')
     .select('times_served, first_served, last_served')
     .eq('id', input.dish_id)
@@ -428,11 +428,7 @@ export async function addDishAppearance(input: {
         updates.last_served = input.event_date
       }
     }
-    await supabase
-      .from('dish_index')
-      .update(updates)
-      .eq('id', input.dish_id)
-      .eq('tenant_id', tenantId)
+    await db.from('dish_index').update(updates).eq('id', input.dish_id).eq('tenant_id', tenantId)
   }
 
   revalidatePath('/culinary/dish-index')
@@ -449,9 +445,9 @@ export async function addDishAppearance(input: {
 export async function addDishFeedback(input: z.infer<typeof DishFeedbackSchema>) {
   const user = await requireChef()
   const parsed = DishFeedbackSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('dish_feedback').insert({
+  const { error } = await db.from('dish_feedback').insert({
     dish_id: parsed.dish_id,
     tenant_id: user.tenantId!,
     event_id: parsed.event_id || null,
@@ -470,9 +466,9 @@ export async function addDishFeedback(input: z.infer<typeof DishFeedbackSchema>)
  */
 export async function getDishFeedback(dishId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dish_feedback')
     .select('*')
     .eq('dish_id', dishId)
@@ -493,10 +489,10 @@ export async function getDishFeedback(dishId: string) {
  */
 export async function findPotentialDuplicates() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get all non-archived dishes
-  const { data: dishes, error } = await supabase
+  const { data: dishes, error } = await db
     .from('dish_index')
     .select('id, name, canonical_name, course, times_served')
     .eq('tenant_id', user.tenantId!)
@@ -541,10 +537,10 @@ export async function findPotentialDuplicates() {
 export async function mergeDishes(keepId: string, mergeId: string) {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Transfer all appearances from mergeId to keepId
-  const { error: transferError } = await supabase
+  const { error: transferError } = await db
     .from('dish_appearances')
     .update({ dish_id: keepId })
     .eq('dish_id', mergeId)
@@ -553,21 +549,21 @@ export async function mergeDishes(keepId: string, mergeId: string) {
   if (transferError) throw new Error(`Failed to transfer appearances: ${transferError.message}`)
 
   // Transfer feedback
-  await supabase
+  await db
     .from('dish_feedback')
     .update({ dish_id: keepId })
     .eq('dish_id', mergeId)
     .eq('tenant_id', tenantId)
 
   // Recalculate times_served for the kept dish
-  const { count } = await supabase
+  const { count } = await db
     .from('dish_appearances')
     .select('id', { count: 'exact', head: true })
     .eq('dish_id', keepId)
     .eq('tenant_id', tenantId)
 
   // Get date range
-  const { data: dateRange } = await supabase
+  const { data: dateRange } = await db
     .from('dish_appearances')
     .select('event_date')
     .eq('dish_id', keepId)
@@ -577,7 +573,7 @@ export async function mergeDishes(keepId: string, mergeId: string) {
 
   const dates = (dateRange ?? []).map((r: any) => r.event_date).filter(Boolean)
 
-  await supabase
+  await db
     .from('dish_index')
     .update({
       times_served: count ?? 0,
@@ -588,7 +584,7 @@ export async function mergeDishes(keepId: string, mergeId: string) {
     .eq('tenant_id', tenantId)
 
   // Transfer linked_recipe_id if the kept dish has none and the merged dish does
-  const { data: keptDish } = await supabase
+  const { data: keptDish } = await db
     .from('dish_index')
     .select('linked_recipe_id')
     .eq('id', keepId)
@@ -596,7 +592,7 @@ export async function mergeDishes(keepId: string, mergeId: string) {
     .single()
 
   if (!keptDish?.linked_recipe_id) {
-    const { data: mergedDish } = await supabase
+    const { data: mergedDish } = await db
       .from('dish_index')
       .select('linked_recipe_id')
       .eq('id', mergeId)
@@ -604,7 +600,7 @@ export async function mergeDishes(keepId: string, mergeId: string) {
       .single()
 
     if (mergedDish?.linked_recipe_id) {
-      await supabase
+      await db
         .from('dish_index')
         .update({ linked_recipe_id: mergedDish.linked_recipe_id })
         .eq('id', keepId)
@@ -613,11 +609,7 @@ export async function mergeDishes(keepId: string, mergeId: string) {
   }
 
   // Archive the merged dish
-  await supabase
-    .from('dish_index')
-    .update({ archived: true })
-    .eq('id', mergeId)
-    .eq('tenant_id', tenantId)
+  await db.from('dish_index').update({ archived: true }).eq('id', mergeId).eq('tenant_id', tenantId)
 
   revalidatePath('/culinary/dish-index')
 }
@@ -631,10 +623,10 @@ export async function mergeDishes(keepId: string, mergeId: string) {
  */
 export async function getDishIndexStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dish_index')
     .select('id, course, rotation_status, linked_recipe_id, is_signature, times_served')
     .eq('tenant_id', tenantId)
@@ -678,9 +670,9 @@ export async function getDishIndexStats() {
  */
 export async function getSeasonalDistribution() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('dish_appearances')
     .select('dish_id, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -704,11 +696,11 @@ export async function getSeasonalDistribution() {
  */
 export async function getDishPairings(dishId: string, limit = 10) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Get all upload job IDs where this dish appeared
-  const { data: appearances } = await supabase
+  const { data: appearances } = await db
     .from('dish_appearances')
     .select('menu_upload_job_id, menu_id')
     .eq('dish_id', dishId)
@@ -722,7 +714,7 @@ export async function getDishPairings(dishId: string, limit = 10) {
   if (jobIds.length === 0 && menuIds.length === 0) return []
 
   // Find other dishes that appeared in the same menus
-  let query = supabase
+  let query = db
     .from('dish_appearances')
     .select('dish_id, dish:dish_id(id, name, course)')
     .eq('tenant_id', tenantId)

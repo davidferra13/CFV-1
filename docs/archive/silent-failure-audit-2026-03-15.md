@@ -32,7 +32,7 @@ Comprehensive audit of agent-orchestrated codebase for silent failures: errors t
 
 | File                                                           | Purpose                                                           |
 | -------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `supabase/migrations/20260401000064_side_effect_failures.sql`  | New table for structured failure capture                          |
+| `database/migrations/20260401000064_side_effect_failures.sql`  | New table for structured failure capture                          |
 | `lib/monitoring/non-blocking.ts`                               | `nonBlocking()` wrapper + `recordSideEffectFailure()` utility     |
 | `lib/monitoring/failure-actions.ts`                            | Server actions for the admin dashboard (read, dismiss, summarize) |
 | `app/(admin)/admin/silent-failures/page.tsx`                   | Admin dashboard page with severity cards + source breakdown       |
@@ -58,7 +58,7 @@ Indexes: recent undismissed (for dashboard), per-tenant (for per-chef queries)
 
 RLS: enabled, service role full access.
 
-**Apply with:** `supabase db push` (after backup)
+**Apply with:** `drizzle-kit push` (after backup)
 
 ## Tier 3 Recommendations (not yet built)
 

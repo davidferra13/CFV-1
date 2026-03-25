@@ -1,5 +1,5 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { INTEGRATION_PROVIDER_META } from '@/lib/integrations/core/providers'
 import type { IntegrationProvider } from '@/lib/integrations/core/types'
 import { isPosProvider, normalizePosConnectionInput } from './providers/pos-integration'
@@ -54,10 +54,10 @@ async function persistTenantIntegrationSettings(
   provider: IntegrationProvider,
   settings: Record<string, unknown>
 ) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   try {
-    await supabase.from('tenant_settings').upsert(
+    await db.from('tenant_settings').upsert(
       {
         tenant_id: tenantId,
         integration_connection_settings: {
@@ -75,9 +75,9 @@ async function persistTenantIntegrationSettings(
 
 export async function listConnectedAccounts(): Promise<ConnectedAccount[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('integration_connections')
     .select(
       'id, provider, status, auth_type, external_account_name, external_account_id, last_sync_at, connected_at'
@@ -120,7 +120,7 @@ export async function listConnectedAccounts(): Promise<ConnectedAccount[]> {
 
 export async function connectIntegrationAccount(input: ConnectIntegrationInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const meta = INTEGRATION_PROVIDER_META.find((item) => item.provider === input.provider)
 
   if (!meta) {
@@ -175,7 +175,7 @@ export async function connectIntegrationAccount(input: ConnectIntegrationInput) 
     updated_at: new Date().toISOString(),
   }
 
-  const insert = await supabase
+  const insert = await db
     .from('integration_connections')
     .insert(payload)
     .select(
@@ -187,7 +187,7 @@ export async function connectIntegrationAccount(input: ConnectIntegrationInput) 
   let error = insert.error
 
   if (error && isUniqueConstraint(error)) {
-    const update = await supabase
+    const update = await db
       .from('integration_connections')
       .update({
         status: 'connected',
@@ -218,9 +218,9 @@ export async function connectIntegrationAccount(input: ConnectIntegrationInput) 
 
 export async function disconnectIntegrationAccount(connectionId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('integration_connections')
     .update({
       status: 'disconnected',

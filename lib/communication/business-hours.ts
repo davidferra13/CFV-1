@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -16,9 +16,9 @@ import type { BusinessHoursConfig, WeekSchedule } from './business-hours-utils'
 
 export async function getBusinessHoursConfig(): Promise<BusinessHoursConfig | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('business_hours_config')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -34,9 +34,9 @@ export async function getBusinessHoursConfig(): Promise<BusinessHoursConfig | nu
 
 // Non-authenticated version for checking hours from cron/system contexts
 export async function getBusinessHoursForChef(chefId: string): Promise<BusinessHoursConfig | null> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data } = await supabase
+  const { data } = await db
     .from('business_hours_config')
     .select('*')
     .eq('chef_id', chefId)
@@ -73,9 +73,9 @@ export async function updateBusinessHoursConfig(
     return { success: false, error: 'Invalid configuration.' }
   }
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('business_hours_config').upsert(
+  const { error } = await db.from('business_hours_config').upsert(
     {
       chef_id: user.entityId,
       timezone: parsed.data.timezone,

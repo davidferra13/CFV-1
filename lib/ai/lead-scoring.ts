@@ -14,7 +14,7 @@
 // continue to work without changing import paths.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { scoreFromExtraction, type LeadScoreResult } from '@/lib/inquiries/goldmine-lead-score'
 
 // ── Output type (adapted from GOLDMINE for badge compatibility) ──────────
@@ -42,10 +42,10 @@ function getRecommendation(tier: 'hot' | 'warm' | 'cold', score: number): string
 
 export async function scoreInquiry(inquiryId: string): Promise<LeadScore> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the inquiry and its related data
-  const { data: inquiry, error } = await supabase
+  const { data: inquiry, error } = await db
     .from('inquiries')
     .select(
       `
@@ -66,7 +66,7 @@ export async function scoreInquiry(inquiryId: string): Promise<LeadScore> {
   const messageCount = Array.isArray(inquiry.messages) ? inquiry.messages.length : 0
 
   // Check if chef has quoted pricing (any event with a quoted price)
-  const { count: quotedCount } = await supabase
+  const { count: quotedCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('inquiry_id', inquiryId)

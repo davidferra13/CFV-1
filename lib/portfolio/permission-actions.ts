@@ -1,13 +1,13 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export async function updatePhotoPermission(photoId: string, permissionOverride: string) {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
-  const { error } = await supabase
+  const db: any = createServerClient()
+  const { error } = await db
     .from('event_photos')
     .update({ permission_override: permissionOverride })
     .eq('id', photoId)
@@ -17,8 +17,8 @@ export async function updatePhotoPermission(photoId: string, permissionOverride:
 
 export async function getPortfolioPermissionAudit() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('event_photos')
     .select(
       'id, url, event_id, client_id, permission_override, clients(full_name, photo_permission)'

@@ -12,7 +12,7 @@ type IdempotencyState = {
   metricInserts: any[]
 }
 
-function createMockSupabase(existingResponse: unknown = null) {
+function createMockDb(existingResponse: unknown = null) {
   const state: IdempotencyState = {
     existingResponse,
     mutationUpserts: [],
@@ -64,11 +64,11 @@ function createMockSupabase(existingResponse: unknown = null) {
 
 describe('mutations/idempotency - executeWithIdempotency', () => {
   it('runs execute directly when no idempotency key provided', async () => {
-    const supabase = createMockSupabase()
+    const db = createMockDb()
     let executeCalls = 0
 
     const result = await executeWithIdempotency({
-      supabase,
+      db,
       tenantId: 'tenant-1',
       actionName: 'updateEvent',
       execute: async () => {
@@ -79,15 +79,15 @@ describe('mutations/idempotency - executeWithIdempotency', () => {
 
     assert.equal(executeCalls, 1)
     assert.deepEqual(result, { ok: true, id: 'e1' })
-    assert.equal(supabase.state.mutationUpserts.length, 0)
+    assert.equal(db.state.mutationUpserts.length, 0)
   })
 
   it('returns cached response for duplicate key and skips execute', async () => {
-    const supabase = createMockSupabase({ ok: true, fromCache: true })
+    const db = createMockDb({ ok: true, fromCache: true })
     let executeCalls = 0
 
     const result = await executeWithIdempotency({
-      supabase,
+      db,
       tenantId: 'tenant-1',
       actionName: 'updateEvent',
       idempotencyKey: 'idem-1',
@@ -99,14 +99,14 @@ describe('mutations/idempotency - executeWithIdempotency', () => {
 
     assert.equal(executeCalls, 0)
     assert.deepEqual(result, { ok: true, fromCache: true })
-    assert.equal(supabase.state.mutationUpserts.length, 0)
+    assert.equal(db.state.mutationUpserts.length, 0)
   })
 
   it('records duplicate_create_prevented metric for duplicate create action', async () => {
-    const supabase = createMockSupabase({ id: 'new-item' })
+    const db = createMockDb({ id: 'new-item' })
 
     const result = await executeWithIdempotency({
-      supabase,
+      db,
       tenantId: 'tenant-1',
       actorId: 'actor-1',
       actionName: 'createInvoice',
@@ -115,18 +115,18 @@ describe('mutations/idempotency - executeWithIdempotency', () => {
     })
 
     assert.deepEqual(result, { id: 'new-item' })
-    assert.equal(supabase.state.metricInserts.length, 1)
-    assert.equal(supabase.state.metricInserts[0].tenant_id, 'tenant-1')
-    assert.equal(supabase.state.metricInserts[0].actor_id, 'actor-1')
-    assert.equal(supabase.state.metricInserts[0].metric_key, 'duplicate_create_prevented')
+    assert.equal(db.state.metricInserts.length, 1)
+    assert.equal(db.state.metricInserts[0].tenant_id, 'tenant-1')
+    assert.equal(db.state.metricInserts[0].actor_id, 'actor-1')
+    assert.equal(db.state.metricInserts[0].metric_key, 'duplicate_create_prevented')
   })
 
   it('executes and persists response when key is new', async () => {
-    const supabase = createMockSupabase(null)
+    const db = createMockDb(null)
     let executeCalls = 0
 
     const result = await executeWithIdempotency({
-      supabase,
+      db,
       tenantId: 'tenant-2',
       actionName: 'updateInvoice',
       idempotencyKey: 'idem-3',
@@ -138,16 +138,16 @@ describe('mutations/idempotency - executeWithIdempotency', () => {
 
     assert.equal(executeCalls, 1)
     assert.deepEqual(result, { success: true, version: 2 })
-    assert.equal(supabase.state.mutationUpserts.length, 1)
+    assert.equal(db.state.mutationUpserts.length, 1)
     assert.equal(
-      supabase.state.mutationUpserts[0].options.onConflict,
+      db.state.mutationUpserts[0].options.onConflict,
       'tenant_id,action_name,idempotency_key'
     )
-    assert.equal(supabase.state.mutationUpserts[0].payload.tenant_id, 'tenant-2')
-    assert.equal(supabase.state.mutationUpserts[0].payload.actor_id, null)
-    assert.equal(supabase.state.mutationUpserts[0].payload.action_name, 'updateInvoice')
-    assert.equal(supabase.state.mutationUpserts[0].payload.idempotency_key, 'idem-3')
-    assert.deepEqual(supabase.state.mutationUpserts[0].payload.response_data, {
+    assert.equal(db.state.mutationUpserts[0].payload.tenant_id, 'tenant-2')
+    assert.equal(db.state.mutationUpserts[0].payload.actor_id, null)
+    assert.equal(db.state.mutationUpserts[0].payload.action_name, 'updateInvoice')
+    assert.equal(db.state.mutationUpserts[0].payload.idempotency_key, 'idem-3')
+    assert.deepEqual(db.state.mutationUpserts[0].payload.response_data, {
       success: true,
       version: 2,
     })

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createPaymentCheckoutUrl } from '@/lib/stripe/checkout'
 import { revalidatePath } from 'next/cache'
 
@@ -17,9 +17,9 @@ export async function generateHostedInvoicePaymentLink(eventId: string): Promise
   expiresAtIso: string
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: event, error } = await (supabase
+  const { data: event, error } = await (db
     .from('events')
     .select('id, tenant_id, status')
     .eq('id', eventId)
@@ -48,7 +48,7 @@ export async function listInvoicePaymentStatusSummaries(
   eventIds: string[]
 ): Promise<Record<string, InvoicePaymentStatusSummary>> {
   await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const ids = Array.from(
     new Set(
@@ -59,7 +59,7 @@ export async function listInvoicePaymentStatusSummaries(
   )
   if (ids.length === 0) return {}
 
-  const { data, error } = await (supabase
+  const { data, error } = await (db
     .from('event_financial_summary')
     .select('event_id, payment_status, total_paid_cents, outstanding_balance_cents')
     .in('event_id', ids as any) as any)

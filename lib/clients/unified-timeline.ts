@@ -5,7 +5,7 @@
 // into a single chronological feed for the client detail page.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { TimelineItemSource } from './unified-timeline-utils'
 
 // Re-export type so existing imports from this file still work
@@ -41,12 +41,12 @@ export async function getUnifiedClientTimeline(
   limit = 60
 ): Promise<UnifiedTimelineItem[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Parallel fetch from all sources
   const [eventsRes, inquiriesRes, messagesRes, ledgerRes, reviewsRes] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'id, created_at, event_date, status, occasion, guest_count, quoted_price_cents, cancelled_at'
@@ -56,7 +56,7 @@ export async function getUnifiedClientTimeline(
       .order('created_at', { ascending: false })
       .limit(30),
 
-    supabase
+    db
       .from('inquiries')
       .select('id, created_at, first_contact_at, last_response_at, status, channel, confirmed_date')
       .eq('client_id', clientId)
@@ -64,7 +64,7 @@ export async function getUnifiedClientTimeline(
       .order('created_at', { ascending: false })
       .limit(20),
 
-    supabase
+    db
       .from('messages')
       .select('id, created_at, sent_at, channel, direction, body, status, subject')
       .eq('client_id', clientId)
@@ -72,7 +72,7 @@ export async function getUnifiedClientTimeline(
       .order('created_at', { ascending: false })
       .limit(30),
 
-    supabase
+    db
       .from('ledger_entries')
       .select('id, created_at, received_at, entry_type, amount_cents, payment_method, description')
       .eq('client_id', clientId)
@@ -80,7 +80,7 @@ export async function getUnifiedClientTimeline(
       .order('created_at', { ascending: false })
       .limit(30),
 
-    supabase
+    db
       .from('client_reviews')
       .select('id, created_at, rating, what_they_loved, what_could_improve')
       .eq('client_id', clientId)

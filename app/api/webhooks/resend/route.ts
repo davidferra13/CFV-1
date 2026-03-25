@@ -8,7 +8,7 @@
 // 3. Copy the signing secret → set RESEND_WEBHOOK_SECRET env var
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { logWebhookEvent } from '@/lib/webhooks/audit-log'
 
 // Resend signs webhooks with HMAC-SHA256. We verify to prevent spoofing.
@@ -107,13 +107,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Use admin client to bypass RLS
-  const supabase = createAdminClient()
+  const db = createAdminClient()
 
   const now = data.created_at ?? new Date().toISOString()
 
   const updateField = HANDLED_TYPES[type]
 
-  const { error } = await supabase
+  const { error } = await db
     .from('campaign_recipients' as any)
     .update({ [updateField]: now })
     .eq('resend_message_id', messageId)

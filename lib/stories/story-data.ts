@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type StoryDish = {
   courseName: string
@@ -36,11 +36,11 @@ export type StoryData = {
 
 export async function getStoryData(eventId: string): Promise<StoryData> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event, chef, and menu data in parallel
   const [eventResult, chefResult, menuResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'event_date, occasion, guest_count, service_style, location_city, location_state, dietary_restrictions, allergies, total_price_cents, status, tenant_id'
@@ -49,9 +49,9 @@ export async function getStoryData(eventId: string): Promise<StoryData> {
       .eq('tenant_id', user.tenantId!)
       .single(),
 
-    supabase.from('chefs').select('business_name, logo_url').eq('id', user.tenantId!).single(),
+    db.from('chefs').select('business_name, logo_url').eq('id', user.tenantId!).single(),
 
-    supabase
+    db
       .from('menus')
       .select(
         `

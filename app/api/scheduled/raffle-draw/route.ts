@@ -6,7 +6,7 @@
 // Each entry has equal odds. Drawing is cryptographically random and provably fair.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 import { drawRaffleWinner } from '@/lib/raffle/actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
@@ -15,11 +15,11 @@ async function handleRaffleDraw(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const today = new Date().toISOString().split('T')[0]
 
   // Find all active rounds whose month has ended
-  const { data: expiredRounds, error } = await (supabase
+  const { data: expiredRounds, error } = await (db
     .from('raffle_rounds' as any)
     .select('id, month_label, tenant_id')
     .eq('status', 'active')

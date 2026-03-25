@@ -11,7 +11,7 @@ Verify that:
 
 ## Prerequisites
 
-- Supabase project with migrations applied
+- database project with migrations applied
 - Environment variables configured in `.env.local`
 - At least 2 test users:
   - 1 chef account
@@ -22,7 +22,7 @@ Verify that:
 ### 1. Create Test Chef Account
 
 ```bash
-# In Supabase Dashboard > Authentication > Users
+# In PostgreSQL Dashboard > Authentication > Users
 # Or via API/CLI
 
 Email: testchef@example.com

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -23,10 +23,10 @@ export type AddCompInput = z.infer<typeof AddCompSchema>
 
 export async function addComp(input: AddCompInput) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = AddCompSchema.parse(input)
 
-  const { data: comp, error } = await supabase
+  const { data: comp, error } = await db
     .from('guest_comps')
     .insert({
       guest_id: data.guest_id,
@@ -49,9 +49,9 @@ export async function addComp(input: AddCompInput) {
 
 export async function redeemComp(compId: string, redeemedBy?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: comp, error } = await supabase
+  const { data: comp, error } = await db
     .from('guest_comps')
     .update({
       redeemed_at: new Date().toISOString(),
@@ -75,9 +75,9 @@ export async function redeemComp(compId: string, redeemedBy?: string) {
 
 export async function listActiveComps(guestId?: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let q = supabase
+  let q = db
     .from('guest_comps')
     .select('*, guests(name)')
     .eq('chef_id', user.tenantId!)
@@ -100,9 +100,9 @@ export async function listActiveComps(guestId?: string) {
 
 export async function listAllComps(guestId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_comps')
     .select('*')
     .eq('guest_id', guestId)

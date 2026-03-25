@@ -6,7 +6,7 @@
 // Output is DRAFT ONLY - chef must approve before sending any response.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from './parse-ollama'
 import { OllamaOfflineError } from './ollama-errors'
 import { z } from 'zod'
@@ -28,9 +28,9 @@ export type TriageResult = z.infer<typeof TriageResultSchema>
 
 export async function triageIncomingMessage(messageId: string): Promise<TriageResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: message } = await supabase
+  const { data: message } = await db
     .from('messages')
     .select(
       `

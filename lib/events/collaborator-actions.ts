@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export type Collaborator = {
@@ -56,9 +56,9 @@ export type CollaboratorSummary = {
 export async function getEventCollaborators(eventId: string): Promise<Collaborator[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_collaborators')
     .select('*')
     .eq('event_id', eventId)
@@ -78,7 +78,7 @@ export async function addCollaborator(
 ): Promise<{ success: boolean; error?: string }> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!input.collaborator_name.trim()) {
     return { success: false, error: 'Collaborator name is required' }
@@ -90,7 +90,7 @@ export async function addCollaborator(
   }
 
   // Check total split won't exceed 100%
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('event_collaborators')
     .select('revenue_split_pct')
     .eq('event_id', eventId)
@@ -108,7 +108,7 @@ export async function addCollaborator(
     }
   }
 
-  const { error } = await supabase.from('event_collaborators').insert({
+  const { error } = await db.from('event_collaborators').insert({
     event_id: eventId,
     chef_id: tenantId,
     collaborator_chef_id: input.collaborator_chef_id || null,
@@ -134,10 +134,10 @@ export async function updateCollaborator(
 ): Promise<{ success: boolean; error?: string }> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership
-  const { data: collab } = await supabase
+  const { data: collab } = await db
     .from('event_collaborators')
     .select('id, event_id, revenue_split_pct')
     .eq('id', collaboratorId)
@@ -154,7 +154,7 @@ export async function updateCollaborator(
       return { success: false, error: 'Revenue split must be between 0 and 100' }
     }
 
-    const { data: others } = await supabase
+    const { data: others } = await db
       .from('event_collaborators')
       .select('revenue_split_pct')
       .eq('event_id', collab.event_id)
@@ -176,14 +176,15 @@ export async function updateCollaborator(
 
   const updateData: Record<string, unknown> = {}
   if (input.collaborator_name !== undefined) updateData.collaborator_name = input.collaborator_name
-  if (input.collaborator_email !== undefined) updateData.collaborator_email = input.collaborator_email
+  if (input.collaborator_email !== undefined)
+    updateData.collaborator_email = input.collaborator_email
   if (input.assigned_station !== undefined) updateData.assigned_station = input.assigned_station
   if (input.role !== undefined) updateData.role = input.role
   if (input.revenue_split_pct !== undefined) updateData.revenue_split_pct = input.revenue_split_pct
   if (input.notes !== undefined) updateData.notes = input.notes
   if (input.status !== undefined) updateData.status = input.status
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_collaborators')
     .update(updateData)
     .eq('id', collaboratorId)
@@ -202,10 +203,10 @@ export async function removeCollaborator(
 ): Promise<{ success: boolean; error?: string }> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify ownership and get event_id for revalidation
-  const { data: collab } = await supabase
+  const { data: collab } = await db
     .from('event_collaborators')
     .select('id, event_id')
     .eq('id', collaboratorId)
@@ -216,7 +217,7 @@ export async function removeCollaborator(
     return { success: false, error: 'Collaborator not found' }
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_collaborators')
     .delete()
     .eq('id', collaboratorId)

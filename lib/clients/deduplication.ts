@@ -1,6 +1,6 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export interface DuplicatePair {
   client1: { id: string; full_name: string; email: string | null; phone: string | null }
@@ -15,9 +15,9 @@ function normalize(s: string | null | undefined): string {
 
 export async function findDuplicateClients(): Promise<DuplicatePair[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, email, phone')
     .eq('chef_id', user.entityId)

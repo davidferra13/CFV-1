@@ -1,7 +1,7 @@
 // Smart Pricing Insights - Pure math aggregations over historical quote data
 // Formula > AI: no LLM needed, just database queries and arithmetic
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -39,14 +39,12 @@ const EMPTY_INSIGHTS: PricingInsights = {
 
 // ─── Core Query ──────────────────────────────────────────────────────────────
 
-export async function getPricingInsights(
-  params: PricingInsightsParams
-): Promise<PricingInsights> {
-  const supabase: any = createServerClient()
+export async function getPricingInsights(params: PricingInsightsParams): Promise<PricingInsights> {
+  const db: any = createServerClient()
   const { tenantId, eventType, guestCountRange } = params
 
   // Build query: quotes joined with events for occasion/guest_count filtering
-  let query = supabase
+  let query = db
     .from('quotes')
     .select(
       'id, status, total_quoted_cents, guest_count_estimated, created_at, event:events(occasion, guest_count)'
@@ -67,7 +65,7 @@ export async function getPricingInsights(
     return EMPTY_INSIGHTS
   }
 
-  // Post-filter by event type and guest count range (join filtering is limited in Supabase)
+  // Post-filter by event type and guest count range (join filtering is limited in the database)
   let filtered = quotes as any[]
 
   if (eventType) {
@@ -146,7 +144,9 @@ export async function getPricingInsights(
 
   const avgPerGuestCents =
     perGuestEntries.length > 0
-      ? Math.round(perGuestEntries.reduce((s: number, v: number) => s + v, 0) / perGuestEntries.length)
+      ? Math.round(
+          perGuestEntries.reduce((s: number, v: number) => s + v, 0) / perGuestEntries.length
+        )
       : 0
 
   // Recent trend: compare avg of last 30% of quotes vs first 30%

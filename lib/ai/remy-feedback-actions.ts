@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 interface SaveFeedbackInput {
@@ -15,9 +15,9 @@ interface SaveFeedbackInput {
 
 export async function saveRemyFeedback(input: SaveFeedbackInput) {
   const user = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
-  const { error } = await supabase.from('remy_feedback').insert({
+  const { error } = await db.from('remy_feedback').insert({
     tenant_id: user.tenantId!,
     chef_id: user.entityId!,
     user_message: input.userMessage,

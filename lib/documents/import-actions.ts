@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import type { ParsedDocument } from '@/lib/ai/parse-document-text'
 
@@ -17,9 +17,9 @@ export async function importDocument(
   sourceFilename?: string
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_documents')
     .insert({
       tenant_id: user.tenantId!,

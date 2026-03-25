@@ -35,7 +35,7 @@ export const GET = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Call')
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('scheduled_calls')
       .select('*, client:clients(id, full_name, email)')
       .eq('id', id)
@@ -63,7 +63,7 @@ export const PATCH = withApiAuth(
     const parsed = UpdateCallBody.safeParse(body)
     if (!parsed.success) return apiValidationError(parsed.error)
 
-    const { data: existing } = await (ctx.supabase as any)
+    const { data: existing } = await (ctx.db as any)
       .from('scheduled_calls')
       .select('id')
       .eq('id', id)
@@ -84,7 +84,7 @@ export const PATCH = withApiAuth(
       updatePayload.cancelled_at = new Date().toISOString()
     }
 
-    const { data, error } = await (ctx.supabase as any)
+    const { data, error } = await (ctx.db as any)
       .from('scheduled_calls')
       .update(updatePayload)
       .eq('id', id)
@@ -108,7 +108,7 @@ export const DELETE = withApiAuth(
     if (!id) return apiNotFound('Call')
 
     // Cancel the call (soft delete via status change)
-    const { error } = await (ctx.supabase as any)
+    const { error } = await (ctx.db as any)
       .from('scheduled_calls')
       .update({
         status: 'cancelled',

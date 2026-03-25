@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ---- Types ------------------------------------------------------------------
@@ -38,9 +38,9 @@ export type UpcomingTouchpoint = {
 
 export async function getTouchpointRules(): Promise<TouchpointRule[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_touchpoint_rules')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -56,16 +56,14 @@ export async function createTouchpointRule(input: {
   action_suggestion?: string
 }): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
-    .from('client_touchpoint_rules')
-    .insert({
-      chef_id: user.entityId,
-      rule_type: input.rule_type,
-      trigger_value: input.trigger_value || null,
-      action_suggestion: input.action_suggestion || null,
-    })
+  const { error } = await db.from('client_touchpoint_rules').insert({
+    chef_id: user.entityId,
+    rule_type: input.rule_type,
+    trigger_value: input.trigger_value || null,
+    action_suggestion: input.action_suggestion || null,
+  })
 
   if (error) throw new Error(`Failed to create touchpoint rule: ${error.message}`)
   revalidatePath('/clients')
@@ -80,10 +78,10 @@ export async function updateTouchpointRule(
     trigger_value?: string | null
     action_suggestion?: string | null
     is_active?: boolean
-  },
+  }
 ): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, unknown> = {}
   if (input.rule_type !== undefined) updates.rule_type = input.rule_type
@@ -91,7 +89,7 @@ export async function updateTouchpointRule(
   if (input.action_suggestion !== undefined) updates.action_suggestion = input.action_suggestion
   if (input.is_active !== undefined) updates.is_active = input.is_active
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_touchpoint_rules')
     .update(updates)
     .eq('id', id)
@@ -105,10 +103,10 @@ export async function updateTouchpointRule(
 
 export async function deleteTouchpointRule(id: string): Promise<{ success: true }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Soft delete: set inactive
-  const { error } = await supabase
+  const { error } = await db
     .from('client_touchpoint_rules')
     .update({ is_active: false })
     .eq('id', id)
@@ -124,10 +122,10 @@ export async function deleteTouchpointRule(id: string): Promise<{ success: true 
 
 export async function getUpcomingTouchpoints(): Promise<UpcomingTouchpoint[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load active rules
-  const { data: rules } = await supabase
+  const { data: rules } = await db
     .from('client_touchpoint_rules')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -136,7 +134,7 @@ export async function getUpcomingTouchpoints(): Promise<UpcomingTouchpoint[]> {
   if (!rules || rules.length === 0) return []
 
   // Load all clients for this chef
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, first_name, last_name, date_of_birth')
     .eq('tenant_id', user.tenantId!)
@@ -147,11 +145,10 @@ export async function getUpcomingTouchpoints(): Promise<UpcomingTouchpoint[]> {
   const touchpoints: UpcomingTouchpoint[] = []
 
   for (const client of clients) {
-    const name =
-      [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Client'
+    const name = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Client'
 
     for (const rule of rules as TouchpointRule[]) {
-      const match = await evaluateRule(rule, client, name, now, supabase, user)
+      const match = await evaluateRule(rule, client, name, now, db, user)
       if (match) touchpoints.push(match)
     }
   }
@@ -167,27 +164,32 @@ export async function getUpcomingTouchpoints(): Promise<UpcomingTouchpoint[]> {
 
 async function evaluateRule(
   rule: TouchpointRule,
-  client: { id: string; first_name: string | null; last_name: string | null; date_of_birth: string | null },
+  client: {
+    id: string
+    first_name: string | null
+    last_name: string | null
+    date_of_birth: string | null
+  },
   clientName: string,
   now: Date,
-  supabase: any,
-  user: { entityId: string; tenantId: string | null },
+  db: any,
+  user: { entityId: string; tenantId: string | null }
 ): Promise<UpcomingTouchpoint | null> {
   switch (rule.rule_type) {
     case 'birthday':
       return evaluateBirthday(rule, client, clientName, now)
 
     case 'days_since_last_event':
-      return await evaluateDaysSinceLastEvent(rule, client, clientName, now, supabase, user)
+      return await evaluateDaysSinceLastEvent(rule, client, clientName, now, db, user)
 
     case 'lifetime_spend_milestone':
-      return await evaluateLifetimeSpend(rule, client, clientName, supabase, user)
+      return await evaluateLifetimeSpend(rule, client, clientName, db, user)
 
     case 'streak_milestone':
-      return await evaluateStreakMilestone(rule, client, clientName, supabase, user)
+      return await evaluateStreakMilestone(rule, client, clientName, db, user)
 
     case 'anniversary':
-      return await evaluateAnniversary(rule, client, clientName, now, supabase, user)
+      return await evaluateAnniversary(rule, client, clientName, now, db, user)
 
     case 'custom':
       // Custom rules have no automatic evaluation; they serve as manual reminders
@@ -202,7 +204,7 @@ function evaluateBirthday(
   rule: TouchpointRule,
   client: { date_of_birth: string | null; id: string },
   clientName: string,
-  now: Date,
+  now: Date
 ): UpcomingTouchpoint | null {
   if (!client.date_of_birth) return null
 
@@ -212,9 +214,7 @@ function evaluateBirthday(
     thisYearBday.setFullYear(thisYearBday.getFullYear() + 1)
   }
 
-  const daysUntil = Math.ceil(
-    (thisYearBday.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-  )
+  const daysUntil = Math.ceil((thisYearBday.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
   // Default window: 7 days, or use trigger_value if set
   const windowDays = rule.trigger_value ? parseInt(rule.trigger_value, 10) : 7
@@ -238,13 +238,13 @@ async function evaluateDaysSinceLastEvent(
   client: { id: string },
   clientName: string,
   now: Date,
-  supabase: any,
-  user: { tenantId: string | null },
+  db: any,
+  user: { tenantId: string | null }
 ): Promise<UpcomingTouchpoint | null> {
   const threshold = rule.trigger_value ? parseInt(rule.trigger_value, 10) : 90
   if (isNaN(threshold)) return null
 
-  const { data: recentEvents } = await supabase
+  const { data: recentEvents } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', user.tenantId!)
@@ -255,9 +255,7 @@ async function evaluateDaysSinceLastEvent(
   if (!recentEvents || recentEvents.length === 0) return null
 
   const lastEventDate = new Date(recentEvents[0].event_date)
-  const daysSince = Math.floor(
-    (now.getTime() - lastEventDate.getTime()) / (1000 * 60 * 60 * 24),
-  )
+  const daysSince = Math.floor((now.getTime() - lastEventDate.getTime()) / (1000 * 60 * 60 * 24))
 
   if (daysSince < threshold) return null
 
@@ -275,18 +273,16 @@ async function evaluateLifetimeSpend(
   rule: TouchpointRule,
   client: { id: string },
   clientName: string,
-  supabase: any,
-  user: { tenantId: string | null },
+  db: any,
+  user: { tenantId: string | null }
 ): Promise<UpcomingTouchpoint | null> {
   // trigger_value is the milestone in dollars (e.g., "5000" for $5,000)
-  const milestoneDollars = rule.trigger_value
-    ? parseInt(rule.trigger_value, 10)
-    : 5000
+  const milestoneDollars = rule.trigger_value ? parseInt(rule.trigger_value, 10) : 5000
   if (isNaN(milestoneDollars)) return null
   const milestoneCents = milestoneDollars * 100
 
   // Sum payments from ledger_entries for this client's events
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id')
     .eq('tenant_id', user.tenantId!)
@@ -296,7 +292,7 @@ async function evaluateLifetimeSpend(
 
   const eventIds = events.map((e: { id: string }) => e.id)
 
-  const { data: ledgerEntries } = await supabase
+  const { data: ledgerEntries } = await db
     .from('ledger_entries')
     .select('amount_cents')
     .eq('tenant_id', user.tenantId!)
@@ -307,7 +303,7 @@ async function evaluateLifetimeSpend(
 
   const totalCents = ledgerEntries.reduce(
     (sum: number, e: { amount_cents: number }) => sum + e.amount_cents,
-    0,
+    0
   )
 
   if (totalCents < milestoneCents) return null
@@ -330,14 +326,14 @@ async function evaluateStreakMilestone(
   rule: TouchpointRule,
   client: { id: string },
   clientName: string,
-  supabase: any,
-  user: { tenantId: string | null },
+  db: any,
+  user: { tenantId: string | null }
 ): Promise<UpcomingTouchpoint | null> {
   // trigger_value is the event count milestone (e.g., "10")
   const milestone = rule.trigger_value ? parseInt(rule.trigger_value, 10) : 10
   if (isNaN(milestone)) return null
 
-  const { count } = await supabase
+  const { count } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -362,11 +358,11 @@ async function evaluateAnniversary(
   client: { id: string },
   clientName: string,
   now: Date,
-  supabase: any,
-  user: { tenantId: string | null },
+  db: any,
+  user: { tenantId: string | null }
 ): Promise<UpcomingTouchpoint | null> {
   // Anniversary of the client's first event
-  const { data: firstEvents } = await supabase
+  const { data: firstEvents } = await db
     .from('events')
     .select('event_date')
     .eq('tenant_id', user.tenantId!)
@@ -377,17 +373,13 @@ async function evaluateAnniversary(
   if (!firstEvents || firstEvents.length === 0) return null
 
   const firstDate = new Date(firstEvents[0].event_date)
-  const anniversaryThisYear = new Date(
-    now.getFullYear(),
-    firstDate.getMonth(),
-    firstDate.getDate(),
-  )
+  const anniversaryThisYear = new Date(now.getFullYear(), firstDate.getMonth(), firstDate.getDate())
   if (anniversaryThisYear < now) {
     anniversaryThisYear.setFullYear(anniversaryThisYear.getFullYear() + 1)
   }
 
   const daysUntil = Math.ceil(
-    (anniversaryThisYear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+    (anniversaryThisYear.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
   )
   const windowDays = rule.trigger_value ? parseInt(rule.trigger_value, 10) : 7
   if (isNaN(windowDays) || daysUntil > windowDays) return null

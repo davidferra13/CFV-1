@@ -19,7 +19,7 @@ function buildTweetText(post: SocialPost): string {
 
 /** Upload media from a public URL to Twitter's media endpoint. Returns media_id_string. */
 async function uploadMediaFromUrl(mediaUrl: string, token: string): Promise<string> {
-  // Fetch the image/video from Supabase storage
+  // Fetch the image/video from the database storage
   const mediaRes = await fetch(mediaUrl)
   if (!mediaRes.ok) throw new Error(`Failed to fetch media from URL: ${mediaRes.status}`)
   const blob = await mediaRes.blob()

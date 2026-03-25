@@ -6,7 +6,7 @@
 // Each file goes through: validate -> upload to storage -> DB record -> background OCR.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { processReceiptOCR } from './actions'
 
@@ -47,11 +47,11 @@ export async function uploadReceiptBatch(
   opts: { eventId?: string; clientId?: string; notes?: string } = {}
 ): Promise<BatchUploadResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event ownership if provided
   if (opts.eventId) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('id')
       .eq('id', opts.eventId)
@@ -70,7 +70,7 @@ export async function uploadReceiptBatch(
 
   // Verify client ownership if provided
   if (opts.clientId) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients')
       .select('id')
       .eq('id', opts.clientId)
@@ -122,7 +122,7 @@ export async function uploadReceiptBatch(
   for (let i = 0; i < files.length; i += CONCURRENCY) {
     const batch = files.slice(i, i + CONCURRENCY)
     const batchResults = await Promise.allSettled(
-      batch.map((file) => uploadSingleFile(supabase, user, file, opts))
+      batch.map((file) => uploadSingleFile(db, user, file, opts))
     )
 
     for (let j = 0; j < batchResults.length; j++) {
@@ -159,7 +159,7 @@ export async function uploadReceiptBatch(
 // ─── Internal: upload a single file ──────────────────────────────────────────
 
 async function uploadSingleFile(
-  supabase: any,
+  db: any,
   user: { id: string; tenantId: string | null },
   file: File,
   opts: { eventId?: string; clientId?: string; notes?: string }
@@ -188,7 +188,7 @@ async function uploadSingleFile(
   const storagePath = `${user.tenantId}/${contextFolder}/${pathKey}.${ext}`
 
   // Upload to storage
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await db.storage
     .from(RECEIPTS_BUCKET)
     .upload(storagePath, file, { contentType: file.type, upsert: false })
 
@@ -197,17 +197,17 @@ async function uploadSingleFile(
   }
 
   // Generate signed URL for OCR processing window
-  const { data: signedData, error: signError } = await supabase.storage
+  const { data: signedData, error: signError } = await db.storage
     .from(RECEIPTS_BUCKET)
     .createSignedUrl(storagePath, 86400)
 
   if (signError || !signedData?.signedUrl) {
-    await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath])
+    await db.storage.from(RECEIPTS_BUCKET).remove([storagePath])
     return { filename: file.name, success: false, error: 'Failed to generate access URL' }
   }
 
   // Create DB record
-  const { data: photoRecord, error: dbError } = await supabase
+  const { data: photoRecord, error: dbError } = await db
     .from('receipt_photos')
     .insert({
       event_id: opts.eventId ?? null,
@@ -222,7 +222,7 @@ async function uploadSingleFile(
     .single()
 
   if (dbError || !photoRecord) {
-    await supabase.storage.from(RECEIPTS_BUCKET).remove([storagePath])
+    await db.storage.from(RECEIPTS_BUCKET).remove([storagePath])
     return { filename: file.name, success: false, error: 'Failed to register receipt' }
   }
 

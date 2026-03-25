@@ -1,5 +1,5 @@
 export async function findChefByPublicSlug<T>(
-  supabase: any,
+  db: any,
   slug: string,
   select: string
 ): Promise<{ data: T | null; matchedOn: 'slug' | 'booking_slug' | null; error: any }> {
@@ -10,8 +10,8 @@ export async function findChefByPublicSlug<T>(
 
   // Run both lookups in parallel instead of sequentially
   const [bySlug, byBookingSlug] = await Promise.all([
-    supabase.from('chefs').select(select).eq('slug', normalizedSlug).maybeSingle(),
-    supabase.from('chefs').select(select).eq('booking_slug', normalizedSlug).maybeSingle(),
+    db.from('chefs').select(select).eq('slug', normalizedSlug).maybeSingle(),
+    db.from('chefs').select(select).eq('booking_slug', normalizedSlug).maybeSingle(),
   ])
 
   // Prefer slug match over booking_slug match

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 const DEFAULT_SAFETY_ITEMS = [
@@ -23,10 +23,10 @@ const DEFAULT_SAFETY_ITEMS = [
 export async function getOrCreateSafetyChecklist(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Try to fetch existing checklist
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('event_safety_checklists')
     .select('*')
     .eq('event_id', eventId)
@@ -48,7 +48,7 @@ export async function getOrCreateSafetyChecklist(eventId: string) {
     completed_at: null,
   }))
 
-  const { data: created, error: createError } = await supabase
+  const { data: created, error: createError } = await db
     .from('event_safety_checklists')
     .insert({
       event_id: eventId,
@@ -69,9 +69,9 @@ export async function getOrCreateSafetyChecklist(eventId: string) {
 export async function toggleSafetyItem(checklistId: string, itemKey: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: checklist, error: fetchError } = await supabase
+  const { data: checklist, error: fetchError } = await db
     .from('event_safety_checklists')
     .select('*')
     .eq('id', checklistId)
@@ -101,7 +101,7 @@ export async function toggleSafetyItem(checklistId: string, itemKey: string) {
     return item
   })
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('event_safety_checklists')
     .update({ items, updated_at: new Date().toISOString() })
     .eq('id', checklistId)
@@ -117,9 +117,9 @@ export async function toggleSafetyItem(checklistId: string, itemKey: string) {
 export async function completeSafetyChecklist(checklistId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: checklist, error: fetchError } = await supabase
+  const { data: checklist, error: fetchError } = await db
     .from('event_safety_checklists')
     .select('event_id')
     .eq('id', checklistId)
@@ -130,7 +130,7 @@ export async function completeSafetyChecklist(checklistId: string) {
     throw new Error('Safety checklist not found')
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('event_safety_checklists')
     .update({
       completed_at: new Date().toISOString(),
@@ -145,7 +145,7 @@ export async function completeSafetyChecklist(checklistId: string) {
 
   // Mark event-level safety checklist complete flag (non-blocking)
   try {
-    await supabase
+    await db
       .from('events')
       .update({ safety_checklist_complete: true })
       .eq('id', checklist.event_id)

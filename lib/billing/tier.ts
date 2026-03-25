@@ -11,7 +11,7 @@
 //   null          → Free (safety fallback)
 
 import { cache } from 'react'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { PRO_PRICE_MONTHLY } from '@/lib/billing/constants'
 
 /** Monthly price in dollars - single source of truth for display. */
@@ -30,8 +30,8 @@ export type TierStatus = {
  * so multiple components/actions in the same render don't re-query.
  */
 export const getTierForChef = cache(async (chefId: string): Promise<TierStatus> => {
-  const supabase: any = createAdminClient()
-  const { data } = await supabase
+  const db: any = createAdminClient()
+  const { data } = await db
     .from('chefs')
     .select('subscription_status, trial_ends_at')
     .eq('id', chefId)

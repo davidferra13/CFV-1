@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { findCoolingClients } from '@/lib/clients/cooling-alert'
 import type { CoolingClient } from '@/lib/clients/cooling-alert'
 
@@ -10,10 +10,10 @@ export type { CoolingClient }
 export async function getCoolingClients(): Promise<CoolingClient[]> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all clients with tier info
-  const { data: clients, error } = await supabase
+  const { data: clients, error } = await db
     .from('clients')
     .select('id, full_name, loyalty_tier')
     .eq('tenant_id', tenantId)
@@ -21,7 +21,7 @@ export async function getCoolingClients(): Promise<CoolingClient[]> {
   if (error) throw new Error(`Failed to fetch clients: ${error.message}`)
 
   // Fetch last event date per client
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('client_id, event_date')
     .eq('tenant_id', tenantId)
@@ -49,9 +49,9 @@ export async function getCoolingClients(): Promise<CoolingClient[]> {
 export async function markIntentionallyInactive(clientId: string): Promise<void> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('clients')
     .select('vibe_notes')
     .eq('id', clientId)
@@ -62,7 +62,7 @@ export async function markIntentionallyInactive(clientId: string): Promise<void>
   const marker = '[INTENTIONALLY_INACTIVE]'
   if (currentNotes.includes(marker)) return // already marked
 
-  await supabase
+  await db
     .from('clients')
     .update({ vibe_notes: `${currentNotes}\n${marker}`.trim() })
     .eq('id', clientId)

@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 /**
@@ -16,12 +16,12 @@ export async function triggerAARReminders(): Promise<{
   skipped: number
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Find completed events older than 24 hours
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: events, error: eventsError } = await supabase
+  const { data: events, error: eventsError } = await db
     .from('events')
     .select('id, occasion, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -44,7 +44,7 @@ export async function triggerAARReminders(): Promise<{
   let skipped = 0
 
   for (const event of events) {
-    const { data: existing, error: todoError } = await supabase
+    const { data: existing, error: todoError } = await db
       .from('chef_todos')
       .select('id')
       .eq('chef_id', user.entityId)
@@ -73,7 +73,7 @@ export async function triggerAARReminders(): Promise<{
 
     const todoText = `Complete AAR for ${occasion} on ${dateStr} → /events/${event.id}/aar`
 
-    const { error: insertError } = await supabase.from('chef_todos').insert({
+    const { error: insertError } = await db.from('chef_todos').insert({
       chef_id: user.entityId,
       text: todoText,
       completed: false,

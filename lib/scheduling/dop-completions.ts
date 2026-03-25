@@ -6,7 +6,7 @@
 // (e.g., "kitchen clean before dessert", "receipt photo taken at store").
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 /**
@@ -15,9 +15,9 @@ import { revalidatePath } from 'next/cache'
  */
 export async function getDOPManualCompletions(eventId: string): Promise<Set<string>> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('dop_task_completions')
     .select('task_key')
     .eq('event_id', eventId)
@@ -37,10 +37,10 @@ export async function toggleDOPTaskCompletion(
   notes?: string
 ): Promise<{ completed: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check if already completed
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('dop_task_completions')
     .select('id')
     .eq('event_id', eventId)
@@ -50,7 +50,7 @@ export async function toggleDOPTaskCompletion(
 
   if (existing) {
     // Un-mark (delete)
-    await supabase
+    await db
       .from('dop_task_completions')
       .delete()
       .eq('id', existing.id)
@@ -62,7 +62,7 @@ export async function toggleDOPTaskCompletion(
     return { completed: false }
   } else {
     // Mark complete
-    await supabase.from('dop_task_completions').insert({
+    await db.from('dop_task_completions').insert({
       event_id: eventId,
       tenant_id: user.tenantId!,
       task_key: taskKey,

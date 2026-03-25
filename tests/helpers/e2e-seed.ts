@@ -1,9 +1,9 @@
 // @ts-nocheck
-// E2E Remote Seed — creates comprehensive test data against remote Supabase
+// E2E Remote Seed — creates comprehensive test data against remote database
 // Called from tests/helpers/global-setup.ts and scripts/seed-e2e-remote.ts (CLI)
 // All data namespaced under *@chefflow.test emails to isolate from real chef data
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '.env.local' })
@@ -66,26 +66,26 @@ function assertRemoteTestAllowed(url: string) {
   const isLocalTarget = /127\.0\.0\.1|localhost/.test(url)
 
   if (isLocalTarget) {
-    if (process.env.SUPABASE_E2E_ALLOW_LOCAL !== 'true') {
+    if (process.env.DATABASE_E2E_ALLOW_LOCAL !== 'true') {
       throw new Error(
         '[e2e-seed] Local E2E seed refused.\n' +
-          'Add SUPABASE_E2E_ALLOW_LOCAL=true to your environment to proceed.\n' +
+          'Add DATABASE_E2E_ALLOW_LOCAL=true to your environment to proceed.\n' +
           'This guard prevents accidental seeding against the wrong local database.'
       )
     }
     return
   }
 
-  if (process.env.SUPABASE_E2E_ALLOW_REMOTE !== 'true') {
+  if (process.env.DATABASE_E2E_ALLOW_REMOTE !== 'true') {
     throw new Error(
       '[e2e-seed] Remote E2E seed refused.\n' +
-        'Add SUPABASE_E2E_ALLOW_REMOTE=true to .env.local to proceed.\n' +
+        'Add DATABASE_E2E_ALLOW_REMOTE=true to .env.local to proceed.\n' +
         'This guard prevents accidental seeding against the production database.'
     )
   }
-  if (!url.includes('supabase.co') && !url.includes('supabase.in')) {
+  if (!url.includes('db.co') && !url.includes('db.in')) {
     throw new Error(
-      `[e2e-seed] Expected remote Supabase URL (*.supabase.co), got: ${url}.\n` +
+      `[e2e-seed] Expected remote database URL (*.db.co), got: ${url}.\n` +
         'For local Docker testing use scripts/seed-local-demo.ts instead.'
     )
   }
@@ -899,8 +899,8 @@ async function ensurePartnerRole(admin, authUserId: string, partnerId: string) {
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 export async function seedE2EData(): Promise<SeedResult> {
-  const supabaseUrl = requireEnv('NEXT_PUBLIC_SUPABASE_URL')
-  assertRemoteTestAllowed(supabaseUrl)
+  const dbUrl = requireEnv('NEXT_PUBLIC_DB_URL')
+  assertRemoteTestAllowed(dbUrl)
 
   const admin = createAdminClient()
   const suffix = getIsolationSuffix()

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { geocodeAddress as geocodeWithGeocodio } from '@/lib/geo/geocodio'
 import { geocodeAddress as geocodeWithNominatim } from '@/lib/geocoding/nominatim'
 import { revalidatePath } from 'next/cache'
@@ -14,10 +14,10 @@ export async function geocodeEventAddress(eventId: string): Promise<{
   error?: string
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the event (tenant-scoped)
-  const { data: event, error: fetchError } = await supabase
+  const { data: event, error: fetchError } = await db
     .from('events')
     .select('id, location_address, location_city, location_state, location_zip, tenant_id')
     .eq('id', eventId)
@@ -78,7 +78,7 @@ export async function geocodeEventAddress(eventId: string): Promise<{
     return { success: false, error: 'Address not found - try adding more detail' }
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('events')
     .update({
       location_lat: lat,

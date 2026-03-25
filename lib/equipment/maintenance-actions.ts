@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { addDays } from 'date-fns'
@@ -54,11 +54,13 @@ export type LogMaintenanceInput = z.infer<typeof LogMaintenanceSchema>
  */
 export async function getMaintenanceSchedule(): Promise<EquipmentMaintenanceStatus[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('equipment_items')
-    .select('id, name, category, maintenance_interval_days, last_maintained_at, next_maintenance_due, calibration_required, status')
+    .select(
+      'id, name, category, maintenance_interval_days, last_maintained_at, next_maintenance_due, calibration_required, status'
+    )
     .eq('chef_id', user.tenantId!)
     .eq('status', 'owned')
     .order('next_maintenance_due', { ascending: true, nullsFirst: false })
@@ -68,42 +70,44 @@ export async function getMaintenanceSchedule(): Promise<EquipmentMaintenanceStat
   const now = new Date()
   const sevenDaysFromNow = addDays(now, 7)
 
-  return (data ?? []).map((item: any) => {
-    let status: EquipmentMaintenanceStatus['status'] = 'no_schedule'
-    let daysUntilDue: number | null = null
+  return (data ?? [])
+    .map((item: any) => {
+      let status: EquipmentMaintenanceStatus['status'] = 'no_schedule'
+      let daysUntilDue: number | null = null
 
-    if (item.next_maintenance_due) {
-      const dueDate = new Date(item.next_maintenance_due)
-      daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      if (item.next_maintenance_due) {
+        const dueDate = new Date(item.next_maintenance_due)
+        daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
-      if (dueDate <= now) {
+        if (dueDate <= now) {
+          status = 'overdue'
+        } else if (dueDate <= sevenDaysFromNow) {
+          status = 'due_soon'
+        } else {
+          status = 'ok'
+        }
+      } else if (item.maintenance_interval_days && !item.last_maintained_at) {
+        // Has an interval but never maintained = overdue
         status = 'overdue'
-      } else if (dueDate <= sevenDaysFromNow) {
-        status = 'due_soon'
-      } else {
-        status = 'ok'
+        daysUntilDue = 0
       }
-    } else if (item.maintenance_interval_days && !item.last_maintained_at) {
-      // Has an interval but never maintained = overdue
-      status = 'overdue'
-      daysUntilDue = 0
-    }
 
-    return {
-      id: item.id,
-      name: item.name,
-      category: item.category,
-      maintenanceIntervalDays: item.maintenance_interval_days,
-      lastMaintainedAt: item.last_maintained_at,
-      nextMaintenanceDue: item.next_maintenance_due,
-      calibrationRequired: item.calibration_required ?? false,
-      status,
-      daysUntilDue,
-    }
-  }).sort((a: EquipmentMaintenanceStatus, b: EquipmentMaintenanceStatus) => {
-    const priority: Record<string, number> = { overdue: 0, due_soon: 1, ok: 2, no_schedule: 3 }
-    return (priority[a.status] ?? 3) - (priority[b.status] ?? 3)
-  })
+      return {
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        maintenanceIntervalDays: item.maintenance_interval_days,
+        lastMaintainedAt: item.last_maintained_at,
+        nextMaintenanceDue: item.next_maintenance_due,
+        calibrationRequired: item.calibration_required ?? false,
+        status,
+        daysUntilDue,
+      }
+    })
+    .sort((a: EquipmentMaintenanceStatus, b: EquipmentMaintenanceStatus) => {
+      const priority: Record<string, number> = { overdue: 0, due_soon: 1, ok: 2, no_schedule: 3 }
+      return (priority[a.status] ?? 3) - (priority[b.status] ?? 3)
+    })
 }
 
 /**
@@ -116,12 +120,12 @@ export async function logMaintenance(
 ): Promise<MaintenanceLogEntry> {
   const user = await requireChef()
   const validated = LogMaintenanceSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const performedAt = validated.performedAt || new Date().toISOString()
 
   // Insert the maintenance log entry
-  const { data: logEntry, error: logError } = await supabase
+  const { data: logEntry, error: logError } = await db
     .from('equipment_maintenance_log')
     .insert({
       equipment_id: equipmentId,
@@ -138,7 +142,7 @@ export async function logMaintenance(
   if (logError) throw new Error('Failed to log maintenance event')
 
   // Fetch the equipment item to compute next due date
-  const { data: equipment } = await supabase
+  const { data: equipment } = await db
     .from('equipment_items')
     .select('maintenance_interval_days')
     .eq('id', equipmentId)
@@ -159,7 +163,7 @@ export async function logMaintenance(
     updateData.next_maintenance_due = null
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('equipment_items')
     .update(updateData)
     .eq('id', equipmentId)
@@ -187,13 +191,11 @@ export async function logMaintenance(
 /**
  * Get maintenance history for a specific equipment item.
  */
-export async function getMaintenanceHistory(
-  equipmentId: string
-): Promise<MaintenanceLogEntry[]> {
+export async function getMaintenanceHistory(equipmentId: string): Promise<MaintenanceLogEntry[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('equipment_maintenance_log')
     .select('*, equipment_items(name)')
     .eq('equipment_id', equipmentId)

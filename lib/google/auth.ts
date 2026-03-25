@@ -1,11 +1,11 @@
 // Google OAuth - Connect, Token Refresh, Disconnect
 // Handles the workspace OAuth flow for Gmail/Calendar API access.
-// This is SEPARATE from the Supabase Google sign-in flow.
+// This is SEPARATE from the Google OAuth flow.
 
 'use server'
 
 import { cookies } from 'next/headers'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { randomBytes } from 'crypto'
 import type { GoogleConnectionStatus } from './types'
@@ -92,9 +92,9 @@ export async function initiateGoogleConnect(scopes: string[]): Promise<{ redirec
 // ─── Get Valid Access Token (refresh if needed) ─────────────────────────────
 
 export async function getGoogleAccessToken(chefId: string): Promise<string> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: conn, error } = await supabase
+  const { data: conn, error } = await db
     .from('google_connections')
     .select('access_token, refresh_token, token_expires_at, gmail_connected, gmail_sync_errors')
     .eq('chef_id', chefId)
@@ -132,7 +132,7 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
 
   if (!response.ok) {
     // Token was revoked - mark as disconnected
-    await supabase
+    await db
       .from('google_connections')
       .update({
         gmail_connected: false,
@@ -146,7 +146,7 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
   const tokens = await response.json()
   const newExpiresAt = new Date(Date.now() + tokens.expires_in * 1000).toISOString()
 
-  await supabase
+  await db
     .from('google_connections')
     .update({
       access_token: tokens.access_token,
@@ -161,9 +161,9 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
 
 export async function getGoogleConnection(): Promise<GoogleConnectionStatus> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('google_connections')
     .select(
       'connected_email, gmail_connected, gmail_last_sync_at, gmail_sync_errors, calendar_connected'
@@ -198,9 +198,9 @@ export async function getGoogleConnection(): Promise<GoogleConnectionStatus> {
 
 export async function disconnectGoogle(service: 'gmail' | 'calendar') {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: conn } = await supabase
+  const { data: conn } = await db
     .from('google_connections')
     .select('gmail_connected, calendar_connected, refresh_token')
     .eq('chef_id', user.entityId)
@@ -240,10 +240,7 @@ export async function disconnectGoogle(service: 'gmail' | 'calendar') {
     updates.scopes = []
   }
 
-  const { error } = await supabase
-    .from('google_connections')
-    .update(updates)
-    .eq('chef_id', user.entityId)
+  const { error } = await db.from('google_connections').update(updates).eq('chef_id', user.entityId)
 
   if (error) throw new Error(error.message)
   return { success: true }

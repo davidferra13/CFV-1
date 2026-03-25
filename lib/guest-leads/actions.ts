@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { z } from 'zod'
 
@@ -21,9 +21,9 @@ const GuestLeadSchema = z.object({
  * Public - no auth required. Returns only public-safe fields.
  */
 export async function getChefByGuestCode(code: string) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id')
     .eq('guest_code', code)
@@ -31,7 +31,7 @@ export async function getChefByGuestCode(code: string) {
 
   if (!event) return null
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select(
       'id, display_name, business_name, bio, profile_image_url, portal_primary_color, portal_background_color, tagline'
@@ -65,10 +65,10 @@ export async function submitGuestLead(input: {
   message?: string
 }) {
   const validated = GuestLeadSchema.parse(input)
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Resolve guest code → event + tenant
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, tenant_id')
     .eq('guest_code', validated.guestCode)
@@ -79,7 +79,7 @@ export async function submitGuestLead(input: {
   }
 
   // Deduplicate: if this email already submitted for this event, update instead
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('guest_leads')
     .select('id')
     .eq('event_id', event.id)
@@ -88,7 +88,7 @@ export async function submitGuestLead(input: {
 
   if (existing) {
     // Update existing lead with new info
-    await supabase
+    await db
       .from('guest_leads')
       .update({
         name: validated.name.trim(),
@@ -101,7 +101,7 @@ export async function submitGuestLead(input: {
   }
 
   // Insert new lead
-  const { error } = await supabase.from('guest_leads').insert({
+  const { error } = await db.from('guest_leads').insert({
     tenant_id: event.tenant_id,
     event_id: event.id,
     name: validated.name.trim(),
@@ -144,9 +144,9 @@ export async function submitGuestLead(input: {
  */
 export async function getGuestLeads(filters?: { status?: string }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('guest_leads')
     .select(
       `
@@ -176,9 +176,9 @@ export async function getGuestLeads(filters?: { status?: string }) {
  */
 export async function getGuestLeadStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('guest_leads')
     .select('status')
     .eq('tenant_id', user.tenantId!)
@@ -205,9 +205,9 @@ export async function updateGuestLeadStatus(
   status: 'new' | 'contacted' | 'converted' | 'archived'
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('guest_leads')
     .update({ status })
     .eq('id', leadId)
@@ -225,10 +225,10 @@ export async function updateGuestLeadStatus(
  */
 export async function convertLeadToClient(leadId: string) {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Get lead data
-  const { data: lead, error: leadError } = await supabase
+  const { data: lead, error: leadError } = await db
     .from('guest_leads')
     .select('*')
     .eq('id', leadId)
@@ -244,7 +244,7 @@ export async function convertLeadToClient(leadId: string) {
   }
 
   // Check if client already exists by email
-  const { data: existingClient } = await supabase
+  const { data: existingClient } = await db
     .from('clients')
     .select('id')
     .eq('tenant_id', user.tenantId!)
@@ -257,7 +257,7 @@ export async function convertLeadToClient(leadId: string) {
     clientId = existingClient.id
   } else {
     // Create new client
-    const { data: newClient, error: clientError } = await supabase
+    const { data: newClient, error: clientError } = await db
       .from('clients')
       .insert({
         tenant_id: user.tenantId!,
@@ -278,7 +278,7 @@ export async function convertLeadToClient(leadId: string) {
   }
 
   // Mark lead as converted
-  await supabase
+  await db
     .from('guest_leads')
     .update({
       status: 'converted',
@@ -294,9 +294,9 @@ export async function convertLeadToClient(leadId: string) {
  */
 export async function getEventGuestCode(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('events')
     .select('guest_code')
     .eq('id', eventId)
@@ -311,9 +311,9 @@ export async function getEventGuestCode(eventId: string) {
  */
 export async function getEventGuestLeadCount(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('guest_leads')
     .select('id', { count: 'exact' })
     .eq('event_id', eventId)
@@ -328,17 +328,17 @@ export async function getEventGuestLeadCount(eventId: string) {
  */
 export async function draftGuestOutreachEmail(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get event + chef info
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('occasion, event_date, guest_code')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name, booking_slug')
     .eq('id', user.tenantId!)

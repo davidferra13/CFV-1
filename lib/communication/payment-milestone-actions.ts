@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -33,9 +33,9 @@ export async function getMilestones(eventId: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('payment_milestones')
     .select('*')
     .eq('event_id', eventId)
@@ -64,13 +64,13 @@ export async function createMilestone(input: {
   notes?: string
 }): Promise<{ data: PaymentMilestone | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (input.amount_cents < 0) {
     return { data: null, error: 'Amount cannot be negative' }
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('payment_milestones')
     .insert({
       event_id: input.event_id,
@@ -98,9 +98,9 @@ export async function markMilestonePaid(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('payment_milestones')
     .update({
       status: 'paid',
@@ -133,7 +133,7 @@ export async function updateMilestone(
   }
 ): Promise<{ data: PaymentMilestone | null; error: string | null }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (input.amount_cents !== undefined && input.amount_cents < 0) {
     return { data: null, error: 'Amount cannot be negative' }
@@ -149,7 +149,7 @@ export async function updateMilestone(
   if (input.notes !== undefined) updateData.notes = input.notes
   if (input.status !== undefined) updateData.status = input.status
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('payment_milestones')
     .update(updateData)
     .eq('id', id)
@@ -170,10 +170,10 @@ export async function sendMilestoneReminder(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the milestone to verify ownership and get event details
-  const { data: milestone, error: fetchError } = await supabase
+  const { data: milestone, error: fetchError } = await db
     .from('payment_milestones')
     .select('*')
     .eq('id', id)
@@ -189,7 +189,7 @@ export async function sendMilestoneReminder(id: string): Promise<{
   }
 
   // Mark reminder as sent
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('payment_milestones')
     .update({
       reminder_sent_at: new Date().toISOString(),

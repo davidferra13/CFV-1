@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -12,9 +12,9 @@ export async function upsertCapability(input: {
 }) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('chef_capability_inventory').upsert(
+  const { error } = await db.from('chef_capability_inventory').upsert(
     {
       tenant_id: tenantId,
       capability_type: input.capability_type,
@@ -44,9 +44,9 @@ export async function getCapabilityProfile(): Promise<
 > {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_capability_inventory')
     .select('capability_type, capability_key, confidence, notes')
     .eq('tenant_id', tenantId)
@@ -72,9 +72,9 @@ export async function getCapabilityProfile(): Promise<
 export async function checkCapabilityForCuisine(cuisine: string): Promise<string | null> {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chef_capability_inventory')
     .select('confidence')
     .eq('tenant_id', tenantId)

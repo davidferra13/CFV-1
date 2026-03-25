@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   type ExternalReviewProvider,
   syncExternalReviewSourceById,
@@ -63,12 +63,8 @@ function toSummary(row: any): ExternalReviewSourceSummary {
   }
 }
 
-async function getChefWebsiteUrl(supabase: any, chefId: string) {
-  const { data, error } = await supabase
-    .from('chefs')
-    .select('website_url')
-    .eq('id', chefId)
-    .single()
+async function getChefWebsiteUrl(db: any, chefId: string) {
+  const { data, error } = await db.from('chefs').select('website_url').eq('id', chefId).single()
 
   if (error) {
     throw new Error('Failed to load chef website URL for validation')
@@ -79,9 +75,9 @@ async function getChefWebsiteUrl(supabase: any, chefId: string) {
 
 export async function getExternalReviewSources(): Promise<ExternalReviewSourceSummary[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('external_review_sources')
     .select(
       'id, provider, label, active, sync_interval_minutes, config, last_synced_at, last_error, created_at'
@@ -101,7 +97,7 @@ export async function getExternalReviewSources(): Promise<ExternalReviewSourceSu
 export async function createExternalReviewSource(input: CreateExternalReviewSourceInput) {
   const user = await requireChef()
   const validated = CreateExternalReviewSourceSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   let config: Record<string, unknown>
 
@@ -111,7 +107,7 @@ export async function createExternalReviewSource(input: CreateExternalReviewSour
       place_url: validated.place_url?.trim() || null,
     }
   } else {
-    const chefWebsiteUrl = await getChefWebsiteUrl(supabase, user.entityId)
+    const chefWebsiteUrl = await getChefWebsiteUrl(db, user.entityId)
     const normalized = validateOwnedWebsiteUrls(chefWebsiteUrl, validated.urls)
 
     config = {
@@ -119,7 +115,7 @@ export async function createExternalReviewSource(input: CreateExternalReviewSour
     }
   }
 
-  const { error } = await supabase.from('external_review_sources').insert({
+  const { error } = await db.from('external_review_sources').insert({
     tenant_id: user.tenantId,
     provider: validated.provider,
     label: validated.label,
@@ -143,9 +139,9 @@ export async function createExternalReviewSource(input: CreateExternalReviewSour
 
 export async function toggleExternalReviewSource(sourceId: string, active: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('external_review_sources')
     .update({ active })
     .eq('id', sourceId)
@@ -162,9 +158,9 @@ export async function toggleExternalReviewSource(sourceId: string, active: boole
 
 export async function deleteExternalReviewSource(sourceId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('external_review_sources')
     .delete()
     .eq('id', sourceId)
@@ -181,9 +177,9 @@ export async function deleteExternalReviewSource(sourceId: string) {
 
 export async function syncExternalReviewSourceNow(sourceId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: source, error: sourceError } = await supabase
+  const { data: source, error: sourceError } = await db
     .from('external_review_sources')
     .select('id')
     .eq('id', sourceId)
@@ -205,9 +201,9 @@ export async function syncExternalReviewSourceNow(sourceId: string) {
 
 export async function syncAllExternalReviewSourcesForChef() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('external_review_sources')
     .select('id')
     .eq('tenant_id', user.tenantId)

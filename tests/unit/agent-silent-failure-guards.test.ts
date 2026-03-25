@@ -69,7 +69,7 @@ test('queue actions durably record state-transition failures instead of ignoring
   assert.match(source, /releaseClaimAfterIncrementFailure/)
   assert.doesNotMatch(
     source,
-    /completeTask[\s\S]*await supabase\s*\.from\('ai_task_queue'\)\s*\.update\([\s\S]*?\)\s*\.eq\('id', taskId\)\s*\n\s*\n\s*\/\/ If recurring/s,
+    /completeTask[\s\S]*await db\s*\.from\('ai_task_queue'\)\s*\.update\([\s\S]*?\)\s*\.eq\('id', taskId\)\s*\n\s*\n\s*\/\/ If recurring/s,
     'completeTask should not leave queue updates unchecked'
   )
 })

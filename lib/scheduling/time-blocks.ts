@@ -1,5 +1,5 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { detectOverlaps, type TimeRange } from './overlap-detection'
@@ -66,9 +66,9 @@ function buildWorkdayWindow(date: string): { startAt: string; endAt: string } {
 
 export async function listTimeBlocks(rangeStart: string, rangeEnd: string): Promise<TimeBlock[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('time_blocks' as any)
     .select('id, tenant_id, title, start_at, end_at, block_type, notes, created_at')
     .eq('tenant_id', user.tenantId!)
@@ -87,7 +87,7 @@ export async function listTimeBlocks(rangeStart: string, rangeEnd: string): Prom
 export async function createTimeBlock(input: z.infer<typeof TimeBlockSchema>) {
   const user = await requireChef()
   const validated = TimeBlockSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const date = validated.startAt.slice(0, 10)
   const existing = await listTimeBlocks(date, date)
@@ -109,7 +109,7 @@ export async function createTimeBlock(input: z.infer<typeof TimeBlockSchema>) {
     throw new Error('Time block overlaps an existing block')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('time_blocks' as any)
     .insert({
       tenant_id: user.tenantId!,
@@ -134,9 +134,9 @@ export async function createTimeBlock(input: z.infer<typeof TimeBlockSchema>) {
 
 export async function deleteTimeBlock(timeBlockId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('time_blocks' as any)
     .delete()
     .eq('id', timeBlockId)
@@ -158,18 +158,18 @@ export async function getSchedulingAvailability(date: string): Promise<{
   overlaps: ReturnType<typeof detectOverlaps>
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const dayStart = `${date}T00:00:00`
   const dayEnd = `${date}T23:59:59`
 
   const [timeBlocksResult, eventsResult] = await Promise.all([
-    supabase
+    db
       .from('time_blocks' as any)
       .select('id, title, start_at, end_at')
       .eq('tenant_id', user.tenantId!)
       .gte('start_at', dayStart)
       .lte('end_at', dayEnd),
-    supabase
+    db
       .from('events')
       .select('id, occasion, event_date, serve_time, arrival_time, status')
       .eq('tenant_id', user.tenantId!)

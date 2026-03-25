@@ -7,7 +7,7 @@
 // Formula > AI: pure date math and existence checks, zero LLM dependency.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -26,19 +26,15 @@ export type EventNeedingAAR = {
  * Returns an empty array if all recent events have AARs or there are no
  * recently completed events.
  */
-export async function getEventsNeedingAAR(
-  tenantId: string
-): Promise<EventNeedingAAR[]> {
+export async function getEventsNeedingAAR(tenantId: string): Promise<EventNeedingAAR[]> {
   const user = await requireChef()
   const safeTenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Look back 7 days for completed events
-  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000)
-    .toISOString()
-    .split('T')[0]
+  const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0]
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -56,17 +52,15 @@ export async function getEventsNeedingAAR(
   // Check which events already have AARs
   const eventIds = events.map((e: any) => e.id)
 
-  const { data: existingAARs } = await supabase
+  const { data: existingAARs } = await db
     .from('after_action_reviews')
     .select('event_id')
     .in('event_id', eventIds)
 
-  const completedAARs = new Set(
-    (existingAARs ?? []).map((a: any) => a.event_id)
-  )
+  const completedAARs = new Set((existingAARs ?? []).map((a: any) => a.event_id))
 
   // Also check the aar_filed flag on the event itself as a fallback
-  const { data: filedEvents } = await supabase
+  const { data: filedEvents } = await db
     .from('events')
     .select('id')
     .in('id', eventIds)

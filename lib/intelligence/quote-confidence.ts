@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -36,9 +36,9 @@ export async function getQuoteConfidence(
 ): Promise<QuoteConfidenceScore | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: quotes, error } = await supabase
+  const { data: quotes, error } = await db
     .from('quotes')
     .select('id, total_quoted_cents, guest_count_estimated, status, pricing_model, created_at')
     .eq('tenant_id', tenantId)
@@ -162,9 +162,9 @@ export async function getQuoteConfidence(
 export async function getQuoteIntelligence(): Promise<QuoteConfidenceIntelligence | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: quotes, error } = await supabase
+  const { data: quotes, error } = await db
     .from('quotes')
     .select(
       'id, total_quoted_cents, guest_count_estimated, status, pricing_model, sent_at, accepted_at, rejected_at, created_at, inquiry_id'
@@ -178,11 +178,11 @@ export async function getQuoteIntelligence(): Promise<QuoteConfidenceIntelligenc
   const inquiryIds = [...new Set(quotes.map((q: any) => q.inquiry_id).filter(Boolean))]
   const { data: inquiries } =
     inquiryIds.length > 0
-      ? await supabase.from('inquiries').select('id, confirmed_date').in('id', inquiryIds)
+      ? await db.from('inquiries').select('id, confirmed_date').in('id', inquiryIds)
       : { data: [] }
 
   // Fetch events for occasion data
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, inquiry_id')
     .eq('tenant_id', tenantId)

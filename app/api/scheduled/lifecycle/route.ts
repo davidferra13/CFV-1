@@ -5,7 +5,7 @@
 // Respects chef_automation_settings per tenant and clients.automated_emails_enabled.
 
 import { NextResponse, type NextRequest } from 'next/server'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
@@ -43,7 +43,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   const results = {
     inquiriesExpired: 0,
     inquiriesSkipped: 0,
@@ -61,7 +61,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
   // Skipped for tenants with inquiry_auto_expiry_enabled = false.
 
   try {
-    const { data: candidateInquiries, error: candidateInquiriesError } = await supabase
+    const { data: candidateInquiries, error: candidateInquiriesError } = await db
       .from('inquiries')
       .select('id, tenant_id, updated_at, client:clients(id, full_name)')
       .eq('status', 'awaiting_client')
@@ -93,7 +93,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           }
 
           // Transition to expired
-          const { error: expireInquiryError } = await supabase
+          const { error: expireInquiryError } = await db
             .from('inquiries')
             .update({
               status: 'expired',
@@ -154,7 +154,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
   // Notifies both chef and client when a quote expires.
 
   try {
-    const { data: expiredQuotes, error: expiredQuotesError } = await supabase
+    const { data: expiredQuotes, error: expiredQuotesError } = await db
       .from('quotes')
       .select(
         `
@@ -184,7 +184,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             continue
           }
 
-          const { error: expireQuoteError } = await supabase
+          const { error: expireQuoteError } = await db
             .from('quotes')
             .update({ status: 'expired' })
             .eq('id', quote.id)
@@ -211,7 +211,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
               automated_emails_enabled: boolean
             } | null
 
-            const { data: chef } = await supabase
+            const { data: chef } = await db
               .from('chefs')
               .select('business_name, email')
               .eq('id', quote.tenant_id)
@@ -299,7 +299,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     tomorrow.setDate(tomorrow.getDate() + 1)
     const tomorrowDate = tomorrow.toISOString().split('T')[0]
 
-    const { data: upcomingEvents, error: upcomingEventsError } = await supabase
+    const { data: upcomingEvents, error: upcomingEventsError } = await db
       .from('events')
       .select(
         `
@@ -347,7 +347,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           }
 
           // Get chef name
-          const { data: chef } = await supabase
+          const { data: chef } = await db
             .from('chefs')
             .select('business_name')
             .eq('id', event.tenant_id)
@@ -395,7 +395,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const sevenDaysOutDate = sevenDaysOut.toISOString().split('T')[0]
     const todayDate = today.toISOString().split('T')[0]
 
-    const { data: unpaidEvents, error: unpaidEventsError } = await supabase
+    const { data: unpaidEvents, error: unpaidEventsError } = await db
       .from('events')
       .select(
         `
@@ -449,14 +449,14 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           const daysUntilEvent = Math.round((eventDateMs - today.getTime()) / (1000 * 60 * 60 * 24))
 
           // Get chef details
-          const { data: chef } = await supabase
+          const { data: chef } = await db
             .from('chefs')
             .select('business_name')
             .eq('id', event.tenant_id)
             .single()
 
           // Get outstanding balance
-          const { data: financial } = await supabase
+          const { data: financial } = await db
             .from('event_financial_summary')
             .select('outstanding_balance_cents')
             .eq('event_id', event.id)
@@ -489,7 +489,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             // Mark as sent
             // Cast to any: new column not yet in generated types
             const reminderSentAt = new Date().toISOString()
-            const { error: paymentReminderMarkerError } = await supabase
+            const { error: paymentReminderMarkerError } = await db
               .from('events')
               .update({ [threshold.column]: reminderSentAt })
               .eq('id', event.id)
@@ -570,7 +570,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const todayDate5 = today5.toISOString().split('T')[0]
     const thirtyDaysOutDate5 = thirtyDaysOut5.toISOString().split('T')[0]
 
-    const { data: upcomingEvents5, error: upcomingEvents5Error } = await supabase
+    const { data: upcomingEvents5, error: upcomingEvents5Error } = await db
       .from('events')
       .select(
         `
@@ -628,7 +628,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             continue
           }
 
-          const { data: chef } = await supabase
+          const { data: chef } = await db
             .from('chefs')
             .select('business_name')
             .eq('id', event.tenant_id)
@@ -757,7 +757,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
             // Mark as sent
             const reminderSentAt = new Date().toISOString()
-            const { error: preEventMarkerError } = await supabase
+            const { error: preEventMarkerError } = await db
               .from('events')
               .update({ [threshold.column]: reminderSentAt })
               .eq('id', event.id)
@@ -795,7 +795,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const now6 = new Date()
     const fortyEightHoursOut6 = new Date(now6.getTime() + 48 * 60 * 60 * 1000)
 
-    const { data: expiringQuotes, error: expiringQuotesError } = await supabase
+    const { data: expiringQuotes, error: expiringQuotesError } = await db
       .from('quotes')
       .select(
         `
@@ -829,7 +829,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           if (!tenantSettings.client_event_reminders_enabled) continue
 
           // Fetch client
-          const { data: client, error: clientError } = await supabase
+          const { data: client, error: clientError } = await db
             .from('clients')
             .select('id, email, full_name, automated_emails_enabled')
             .eq('id', quote.client_id)
@@ -851,7 +851,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           if (client.automated_emails_enabled === false) continue
 
           // Fetch chef name
-          const { data: chef } = await supabase
+          const { data: chef } = await db
             .from('chefs')
             .select('business_name')
             .eq('id', quote.tenant_id)
@@ -860,7 +860,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           // Fetch occasion from inquiry or event
           let occasion6: string | null = null
           if (quote.inquiry_id) {
-            const { data: inq } = await supabase
+            const { data: inq } = await db
               .from('inquiries')
               .select('confirmed_occasion')
               .eq('id', quote.inquiry_id)
@@ -868,7 +868,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             occasion6 = inq?.confirmed_occasion ?? null
           }
           if (!occasion6 && quote.event_id) {
-            const { data: evt } = await supabase
+            const { data: evt } = await db
               .from('events')
               .select('occasion')
               .eq('id', quote.event_id)
@@ -915,7 +915,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
           // Mark warning as sent
           const warningSentAt = new Date().toISOString()
-          const { error: quoteWarningMarkerError } = await supabase
+          const { error: quoteWarningMarkerError } = await db
             .from('quotes')
             .update({ expiry_warning_sent_at: warningSentAt })
             .eq('id', quote.id)
@@ -956,7 +956,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const tenDaysAgo = new Date(now7.getTime() - 10 * 86_400_000).toISOString().split('T')[0]
     const threeDaysAgo = new Date(now7.getTime() - 3 * 86_400_000).toISOString().split('T')[0]
 
-    const { data: completedEvents, error: completedEventsError } = await supabase
+    const { data: completedEvents, error: completedEventsError } = await db
       .from('events')
       .select(
         `
@@ -1003,7 +1003,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           }
 
           // Get chef name
-          const { data: chef } = await supabase
+          const { data: chef } = await db
             .from('chefs')
             .select('business_name, display_name')
             .eq('id', event.tenant_id)
@@ -1044,7 +1044,7 @@ ${chefName}`
 
           // Mark as sent
           const reviewRequestSentAt = now7.toISOString()
-          const { error: reviewRequestMarkerError } = await supabase
+          const { error: reviewRequestMarkerError } = await db
             .from('events')
             .update({ review_request_sent_at: reviewRequestSentAt })
             .eq('id', event.id)

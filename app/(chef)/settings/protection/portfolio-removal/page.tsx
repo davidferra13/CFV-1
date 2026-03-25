@@ -1,11 +1,11 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { RemovalRequestList } from '@/components/protection/removal-request-list'
 
 export default async function PortfolioRemovalPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('chef_portfolio_removal_requests')
     .select('*, clients(display_name)')
     .eq('tenant_id', chef.tenantId!)

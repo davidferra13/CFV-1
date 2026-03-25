@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { createInquiry } from '@/lib/inquiries/actions'
 import { addClientNote } from '@/lib/notes/actions'
 import { isTakeAChefEmail, parseTakeAChefEmail } from '@/lib/gmail/take-a-chef-parser'
@@ -74,8 +74,8 @@ async function logAction(input: {
   previousState: Record<string, unknown>
   newState: Record<string, unknown>
 }) {
-  const supabase: any = createServerClient({ admin: true })
-  await supabase.from('communication_action_log' as any).insert({
+  const db: any = createServerClient({ admin: true })
+  await db.from('communication_action_log' as any).insert({
     tenant_id: input.tenantId,
     communication_event_id: input.communicationEventId || null,
     thread_id: input.threadId || null,
@@ -101,11 +101,11 @@ export async function getCommunicationInbox(
   >
 > {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   await seedDefaultCommunicationRules(user.tenantId!)
 
-  let query = supabase
+  let query = db
     .from('communication_inbox_items' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -126,7 +126,7 @@ export async function getCommunicationInbox(
   const eventIds = items.map((item) => item.communication_event_id)
 
   const { data: suggestions } = eventIds.length
-    ? await supabase
+    ? await db
         .from('suggested_links' as any)
         .select(
           'id, communication_event_id, suggested_entity_type, suggested_entity_id, confidence_score, status'
@@ -156,21 +156,21 @@ export async function getCommunicationInbox(
 
   const [{ data: clients }, { data: inquiries }, { data: events }] = await Promise.all([
     clientIds.length
-      ? supabase
+      ? db
           .from('clients')
           .select('id, full_name')
           .eq('tenant_id', user.tenantId!)
           .in('id', clientIds)
       : Promise.resolve({ data: [] as any[] }),
     inquiryIds.length
-      ? supabase
+      ? db
           .from('inquiries')
           .select('id, confirmed_occasion')
           .eq('tenant_id', user.tenantId!)
           .in('id', inquiryIds)
       : Promise.resolve({ data: [] as any[] }),
     eventLinkIds.length
-      ? supabase
+      ? db
           .from('events')
           .select('id, occasion')
           .eq('tenant_id', user.tenantId!)
@@ -203,9 +203,9 @@ export async function getCommunicationInbox(
 
 export async function getCommunicationInboxStats(): Promise<CommunicationInboxStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('communication_inbox_items' as any)
     .select('tab')
     .eq('tenant_id', user.tenantId!)
@@ -239,9 +239,9 @@ export async function linkCommunicationEventToInquiry(
   inquiryId: string
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: current } = await supabase
+  const { data: current } = await db
     .from('communication_events' as any)
     .select('id, tenant_id, thread_id, status, linked_entity_type, linked_entity_id')
     .eq('id', communicationEventId)
@@ -252,7 +252,7 @@ export async function linkCommunicationEventToInquiry(
     throw new Error('Communication event not found')
   }
 
-  await supabase
+  await db
     .from('communication_events' as any)
     .update({
       linked_entity_type: 'inquiry',
@@ -262,7 +262,7 @@ export async function linkCommunicationEventToInquiry(
     .eq('id', communicationEventId)
     .eq('tenant_id', user.tenantId!)
 
-  const { error: rejectErr } = await supabase
+  const { error: rejectErr } = await db
     .from('suggested_links' as any)
     .update({ status: 'rejected' })
     .eq('tenant_id', user.tenantId!)
@@ -273,7 +273,7 @@ export async function linkCommunicationEventToInquiry(
     console.error('[linkCommunicationEventToInquiry] Failed to reject suggested_links:', rejectErr)
   }
 
-  const { error: acceptErr } = await supabase
+  const { error: acceptErr } = await db
     .from('suggested_links' as any)
     .update({ status: 'accepted' })
     .eq('tenant_id', user.tenantId!)
@@ -313,9 +313,9 @@ export async function attachCommunicationEventToEvent(
   eventId: string
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: current } = await supabase
+  const { data: current } = await db
     .from('communication_events' as any)
     .select('id, tenant_id, thread_id, status, linked_entity_type, linked_entity_id')
     .eq('id', communicationEventId)
@@ -326,7 +326,7 @@ export async function attachCommunicationEventToEvent(
     throw new Error('Communication event not found')
   }
 
-  await supabase
+  await db
     .from('communication_events' as any)
     .update({
       linked_entity_type: 'event',
@@ -336,7 +336,7 @@ export async function attachCommunicationEventToEvent(
     .eq('id', communicationEventId)
     .eq('tenant_id', user.tenantId!)
 
-  const { error: rejectErr } = await supabase
+  const { error: rejectErr } = await db
     .from('suggested_links' as any)
     .update({ status: 'rejected' })
     .eq('tenant_id', user.tenantId!)
@@ -347,7 +347,7 @@ export async function attachCommunicationEventToEvent(
     console.error('[attachCommunicationEventToEvent] Failed to reject suggested_links:', rejectErr)
   }
 
-  const { error: acceptErr } = await supabase
+  const { error: acceptErr } = await db
     .from('suggested_links' as any)
     .update({ status: 'accepted' })
     .eq('tenant_id', user.tenantId!)
@@ -384,9 +384,9 @@ export async function attachCommunicationEventToEvent(
 
 export async function createInquiryFromCommunicationEvent(communicationEventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('communication_events' as any)
     .select(
       'id, tenant_id, source, sender_identity, raw_content, resolved_client_id, thread_id, status, linked_entity_type, linked_entity_id'
@@ -411,7 +411,7 @@ export async function createInquiryFromCommunicationEvent(communicationEventId: 
 
   const inquiryId = inquiry.inquiry?.id
 
-  await supabase
+  await db
     .from('communication_events' as any)
     .update({
       linked_entity_type: 'inquiry',
@@ -450,14 +450,14 @@ export async function addInternalNoteFromCommunication(
   noteText: string
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const trimmed = noteText.trim()
   if (!trimmed) {
     throw new Error('Note cannot be empty')
   }
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('communication_events' as any)
     .select('id, tenant_id, thread_id, resolved_client_id')
     .eq('id', communicationEventId)
@@ -497,9 +497,9 @@ export async function addInternalNoteFromCommunication(
 
 export async function snoozeThread(threadId: string, hours = 24) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: current } = await supabase
+  const { data: current } = await db
     .from('conversation_threads' as any)
     .select('id, state, snoozed_until')
     .eq('id', threadId)
@@ -512,7 +512,7 @@ export async function snoozeThread(threadId: string, hours = 24) {
 
   const snoozedUntil = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString()
 
-  await supabase
+  await db
     .from('conversation_threads' as any)
     .update({ state: 'snoozed', snoozed_until: snoozedUntil })
     .eq('id', threadId)
@@ -534,9 +534,9 @@ export async function snoozeThread(threadId: string, hours = 24) {
 
 export async function unsnoozeThread(threadId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: current } = await supabase
+  const { data: current } = await db
     .from('conversation_threads' as any)
     .select('id, state, snoozed_until')
     .eq('id', threadId)
@@ -547,7 +547,7 @@ export async function unsnoozeThread(threadId: string) {
     throw new Error('Thread not found')
   }
 
-  await supabase
+  await db
     .from('conversation_threads' as any)
     .update({ state: 'active', snoozed_until: null })
     .eq('id', threadId)
@@ -569,9 +569,9 @@ export async function unsnoozeThread(threadId: string) {
 
 export async function markCommunicationResolved(communicationEventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('communication_events' as any)
     .select('id, status, thread_id, sender_identity')
     .eq('id', communicationEventId)
@@ -582,13 +582,13 @@ export async function markCommunicationResolved(communicationEventId: string) {
     throw new Error('Communication event not found')
   }
 
-  await supabase
+  await db
     .from('communication_events' as any)
     .update({ status: 'resolved' })
     .eq('id', communicationEventId)
     .eq('tenant_id', user.tenantId!)
 
-  await supabase
+  await db
     .from('conversation_threads' as any)
     .update({ state: 'closed', snoozed_until: null })
     .eq('id', event.thread_id)
@@ -618,9 +618,9 @@ export async function markCommunicationResolved(communicationEventId: string) {
 
 export async function reopenCommunication(communicationEventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('communication_events' as any)
     .select('id, status, thread_id')
     .eq('id', communicationEventId)
@@ -633,13 +633,13 @@ export async function reopenCommunication(communicationEventId: string) {
 
   const nextStatus = event.status === 'resolved' ? 'linked' : event.status
 
-  await supabase
+  await db
     .from('communication_events' as any)
     .update({ status: nextStatus })
     .eq('id', communicationEventId)
     .eq('tenant_id', user.tenantId!)
 
-  await supabase
+  await db
     .from('conversation_threads' as any)
     .update({ state: 'active', snoozed_until: null })
     .eq('id', event.thread_id)
@@ -664,9 +664,9 @@ export async function getCommunicationClassificationRules(): Promise<
   CommunicationClassificationRule[]
 > {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('communication_classification_rules' as any)
     .select('id, name, is_active, match_field, operator, match_value, label, priority')
     .eq('tenant_id', user.tenantId!)
@@ -682,9 +682,9 @@ export async function getCommunicationClassificationRules(): Promise<
 
 export async function toggleThreadStar(threadId: string, starred: boolean) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: current } = await supabase
+  const { data: current } = await db
     .from('conversation_threads' as any)
     .select('id, is_starred')
     .eq('id', threadId)
@@ -695,7 +695,7 @@ export async function toggleThreadStar(threadId: string, starred: boolean) {
     throw new Error('Thread not found')
   }
 
-  await supabase
+  await db
     .from('conversation_threads' as any)
     .update({ is_starred: starred })
     .eq('id', threadId)
@@ -717,12 +717,12 @@ export async function toggleThreadStar(threadId: string, starred: boolean) {
 
 export async function bulkMarkDone(communicationEventIds: string[]) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const uniqueIds = Array.from(new Set(communicationEventIds))
   if (uniqueIds.length === 0) return { success: true, count: 0 }
 
   // Fetch all events in one query to get their thread IDs + sender identities
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('communication_events' as any)
     .select('id, status, thread_id, sender_identity')
     .eq('tenant_id', user.tenantId!)
@@ -735,7 +735,7 @@ export async function bulkMarkDone(communicationEventIds: string[]) {
   )
 
   // Batch update all communication events to resolved
-  await supabase
+  await db
     .from('communication_events' as any)
     .update({ status: 'resolved' })
     .eq('tenant_id', user.tenantId!)
@@ -743,7 +743,7 @@ export async function bulkMarkDone(communicationEventIds: string[]) {
 
   // Batch update all threads to closed
   if (threadIds.length > 0) {
-    await supabase
+    await db
       .from('conversation_threads' as any)
       .update({ state: 'closed', snoozed_until: null })
       .eq('tenant_id', user.tenantId!)
@@ -776,14 +776,14 @@ export async function bulkMarkDone(communicationEventIds: string[]) {
 
 export async function bulkSnooze24h(threadIds: string[]) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const uniqueIds = Array.from(new Set(threadIds))
   if (uniqueIds.length === 0) return { success: true, count: 0 }
 
   const snoozedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 
   // Batch update all threads to snoozed
-  await supabase
+  await db
     .from('conversation_threads' as any)
     .update({ state: 'snoozed', snoozed_until: snoozedUntil })
     .eq('tenant_id', user.tenantId!)
@@ -805,17 +805,17 @@ export async function bulkSnooze24h(threadIds: string[]) {
 
 export async function bulkUnassign(communicationEventIds: string[]) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
   const uniqueIds = Array.from(new Set(communicationEventIds))
   if (uniqueIds.length === 0) return { success: true, count: 0 }
 
-  const { data: currentRows } = await supabase
+  const { data: currentRows } = await db
     .from('communication_events' as any)
     .select('id, thread_id, linked_entity_type, linked_entity_id, status')
     .eq('tenant_id', user.tenantId!)
     .in('id', uniqueIds)
 
-  await supabase
+  await db
     .from('communication_events' as any)
     .update({
       linked_entity_type: null,
@@ -883,10 +883,10 @@ export async function upsertCommunicationClassificationRule(
   rule: Omit<CommunicationClassificationRule, 'id'> & { id?: string }
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   if (rule.id) {
-    await supabase
+    await db
       .from('communication_classification_rules' as any)
       .update({
         name: rule.name,
@@ -900,7 +900,7 @@ export async function upsertCommunicationClassificationRule(
       .eq('id', rule.id)
       .eq('tenant_id', user.tenantId!)
   } else {
-    await supabase.from('communication_classification_rules' as any).insert({
+    await db.from('communication_classification_rules' as any).insert({
       tenant_id: user.tenantId!,
       name: rule.name,
       is_active: rule.is_active,
@@ -962,9 +962,9 @@ export type ThreadDetail = {
 
 export async function getThreadWithEvents(threadId: string): Promise<ThreadDetail> {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data: thread, error: threadError } = await supabase
+  const { data: thread, error: threadError } = await db
     .from('conversation_threads' as any)
     .select('id, state, snoozed_until, is_starred, last_activity_at, client_id')
     .eq('id', threadId)
@@ -979,7 +979,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   let client_name: string | null = null
   let client_email: string | null = null
   if (thread.client_id) {
-    const { data: client } = await supabase
+    const { data: client } = await db
       .from('clients' as any)
       .select('name, email')
       .eq('id', thread.client_id)
@@ -992,7 +992,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   }
 
   // Fetch all events for this thread in chronological order
-  const { data: events, error: eventsError } = await supabase
+  const { data: events, error: eventsError } = await db
     .from('communication_events' as any)
     .select(
       'id, timestamp, direction, source, sender_identity, raw_content, linked_entity_type, linked_entity_id, status'
@@ -1013,7 +1013,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   const lastLinked = linkedEvents[linkedEvents.length - 1] as any | undefined
 
   if (lastLinked?.linked_entity_type === 'inquiry' && lastLinked.linked_entity_id) {
-    const { data: inquiry } = await supabase
+    const { data: inquiry } = await db
       .from('inquiries' as any)
       .select('id, occasion, event_date')
       .eq('id', lastLinked.linked_entity_id)
@@ -1029,7 +1029,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
       linked_inquiry = { id: inquiry.id, title: label || 'Inquiry' }
     }
   } else if (lastLinked?.linked_entity_type === 'event' && lastLinked.linked_entity_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events' as any)
       .select('id, title, event_date')
       .eq('id', lastLinked.linked_entity_id)
@@ -1051,7 +1051,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   const enrichedSuggestions: ThreadDetail['suggestions'] = []
 
   if (eventIds.length > 0) {
-    const { data: rawSuggestions } = await supabase
+    const { data: rawSuggestions } = await db
       .from('suggested_links' as any)
       .select(
         'id, communication_event_id, suggested_entity_type, suggested_entity_id, confidence_score'
@@ -1063,7 +1063,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
     for (const s of rawSuggestions ?? []) {
       let entity_title = 'Unknown'
       if (s.suggested_entity_type === 'inquiry') {
-        const { data: inq } = await supabase
+        const { data: inq } = await db
           .from('inquiries' as any)
           .select('occasion, event_date')
           .eq('id', s.suggested_entity_id)
@@ -1076,7 +1076,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
               .join(' · ') || 'Inquiry'
         }
       } else if (s.suggested_entity_type === 'event') {
-        const { data: ev } = await supabase
+        const { data: ev } = await db
           .from('events' as any)
           .select('title, event_date')
           .eq('id', s.suggested_entity_id)
@@ -1107,7 +1107,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
   const systemEvents: TimelineSystemEvent[] = []
 
   // 1. Communication action log entries for this thread
-  const { data: actionLogs } = await supabase
+  const { data: actionLogs } = await db
     .from('communication_action_log' as any)
     .select('id, action, source, created_at, new_state')
     .eq('tenant_id', user.tenantId!)
@@ -1155,7 +1155,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
 
   // 2. Inquiry state transitions if thread is linked to an inquiry
   if (linked_inquiry) {
-    const { data: inquiryTransitions } = await supabase
+    const { data: inquiryTransitions } = await db
       .from('inquiry_state_transitions' as any)
       .select('id, from_status, to_status, transitioned_at, reason')
       .eq('tenant_id', user.tenantId!)
@@ -1175,7 +1175,7 @@ export async function getThreadWithEvents(threadId: string): Promise<ThreadDetai
 
   // 3. Event state transitions if thread is linked to an event
   if (linked_event) {
-    const { data: eventTransitions } = await supabase
+    const { data: eventTransitions } = await db
       .from('event_state_transitions' as any)
       .select('id, from_status, to_status, transitioned_at, reason')
       .eq('tenant_id', user.tenantId!)
@@ -1220,14 +1220,14 @@ export async function logMessageToThread(input: {
   direction: 'inbound' | 'outbound'
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const content = input.content.trim()
   const senderIdentity = input.senderIdentity.trim()
   if (!content) throw new Error('Content is required')
 
   // Verify thread belongs to this chef
-  const { data: thread, error } = await supabase
+  const { data: thread, error } = await db
     .from('conversation_threads' as any)
     .select('id')
     .eq('id', input.threadId)
@@ -1238,7 +1238,7 @@ export async function logMessageToThread(input: {
 
   const now = new Date().toISOString()
 
-  await supabase.from('communication_events' as any).insert({
+  await db.from('communication_events' as any).insert({
     tenant_id: user.tenantId!,
     thread_id: input.threadId,
     source: 'manual_log',
@@ -1250,7 +1250,7 @@ export async function logMessageToThread(input: {
   })
 
   // Update thread last_activity_at
-  await supabase
+  await db
     .from('conversation_threads' as any)
     .update({ last_activity_at: now })
     .eq('id', input.threadId)
@@ -1274,10 +1274,10 @@ export async function logMessageToThread(input: {
 
 export async function getUnreadThreadCount(): Promise<number> {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Get all active/snoozed threads
-  const { data: threads } = await supabase
+  const { data: threads } = await db
     .from('conversation_threads' as any)
     .select('id, last_activity_at')
     .eq('tenant_id', user.tenantId!)
@@ -1288,7 +1288,7 @@ export async function getUnreadThreadCount(): Promise<number> {
   const threadIds = threads.map((t: any) => t.id)
 
   // Get read receipts
-  const { data: reads } = await supabase
+  const { data: reads } = await db
     .from('conversation_thread_reads' as any)
     .select('thread_id, last_read_at')
     .eq('tenant_id', user.tenantId!)
@@ -1309,9 +1309,9 @@ export async function getUnreadThreadCount(): Promise<number> {
 
 export async function markThreadRead(threadId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  await supabase.from('conversation_thread_reads' as any).upsert(
+  await db.from('conversation_thread_reads' as any).upsert(
     {
       tenant_id: user.tenantId!,
       thread_id: threadId,
@@ -1340,9 +1340,9 @@ export async function getRawCommunicationFeed(limit = 100): Promise<
   }>
 > {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('communication_events' as any)
     .select(
       'id, source, timestamp, sender_identity, raw_content, direction, thread_id, status, linked_entity_type'
@@ -1441,12 +1441,12 @@ export async function sendReplyViaChannel(input: {
   recipientAddress: string // email address, phone number, or whatsapp number
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   const { threadId, content, channel, recipientAddress } = input
 
   // Verify thread belongs to this chef
-  const { data: thread, error: threadErr } = await supabase
+  const { data: thread, error: threadErr } = await db
     .from('conversation_threads' as any)
     .select('id, client_id')
     .eq('id', threadId)
@@ -1456,7 +1456,7 @@ export async function sendReplyViaChannel(input: {
   if (threadErr || !thread) throw new Error('Thread not found')
 
   // Validate recipient matches thread's known contact
-  const { data: latestInboundForValidation } = await supabase
+  const { data: latestInboundForValidation } = await db
     .from('communication_events' as any)
     .select('sender_identity')
     .eq('thread_id', threadId)
@@ -1499,7 +1499,7 @@ export async function sendReplyViaChannel(input: {
     const token = await getGoogleAccessToken(user.tenantId!)
 
     // Get thread context for email subject
-    const { data: lastInbound } = await supabase
+    const { data: lastInbound } = await db
       .from('communication_events' as any)
       .select('raw_content, sender_identity')
       .eq('thread_id', threadId)
@@ -1526,7 +1526,7 @@ export async function sendReplyViaChannel(input: {
   }
 
   // Log the sent message as an outbound event
-  await supabase.from('communication_events' as any).insert({
+  await db.from('communication_events' as any).insert({
     tenant_id: user.tenantId!,
     thread_id: threadId,
     source: channel === 'email' ? 'email' : channel,
@@ -1537,7 +1537,7 @@ export async function sendReplyViaChannel(input: {
     direction: 'outbound',
   })
 
-  await supabase
+  await db
     .from('conversation_threads' as any)
     .update({ last_activity_at: now })
     .eq('id', threadId)

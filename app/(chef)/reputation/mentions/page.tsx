@@ -1,11 +1,11 @@
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { MentionFeed } from '@/components/reputation/mention-feed'
 
 export default async function MentionsPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
-  const { data } = await supabase
+  const db: any = createServerClient()
+  const { data } = await db
     .from('chef_brand_mentions')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

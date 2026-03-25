@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 
 const SubmitSchema = z.object({
@@ -28,10 +28,10 @@ export async function submitTestimonialByToken(input: {
   }
 
   const { token, rating, content, displayName, allowPublicDisplay } = parsed.data
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Look up the request by token
-  const { data: existing, error: lookupError } = await supabase
+  const { data: existing, error: lookupError } = await db
     .from('testimonials' as any)
     .select('id, submitted_at, client_name')
     .eq('request_token', token)
@@ -46,7 +46,7 @@ export async function submitTestimonialByToken(input: {
     return { success: false, error: 'This review has already been submitted' }
   }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('testimonials' as any)
     .update({
       rating,
@@ -65,7 +65,7 @@ export async function submitTestimonialByToken(input: {
   // Non-blocking notification to chef
   try {
     // Look up tenant_id for notification
-    const { data: testimonial } = await supabase
+    const { data: testimonial } = await db
       .from('testimonials' as any)
       .select('tenant_id, client_name')
       .eq('id', (existing as any).id)
@@ -101,9 +101,9 @@ export async function getReviewRequestByToken(token: string): Promise<{
   eventType: string | null
   eventDate: string | null
 } | null> {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('testimonials' as any)
     .select('id, client_name, event_type, submitted_at, event_id')
     .eq('request_token', token)
@@ -116,7 +116,7 @@ export async function getReviewRequestByToken(token: string): Promise<{
   // Try to get event date if event_id exists
   let eventDate: string | null = null
   if (row.event_id) {
-    const { data: event } = await supabase
+    const { data: event } = await db
       .from('events')
       .select('event_date')
       .eq('id', row.event_id)

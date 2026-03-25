@@ -1,10 +1,10 @@
 // Google OAuth Callback for workspace services (Gmail, Calendar)
 // Exchanges the auth code for tokens and stores them in google_connections.
-// This is SEPARATE from the Supabase Google sign-in callback at /auth/callback.
+// This is SEPARATE from the Google OAuth callback at /auth/callback.
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getCurrentUser } from '@/lib/auth/get-user'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
@@ -125,9 +125,9 @@ export async function GET(request: NextRequest) {
 
   // Merge with existing connection so we don't overwrite the other service's flag.
   // E.g. if Gmail is already connected and we're adding Calendar, keep gmail_connected = true.
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('google_connections')
     .select('gmail_connected, calendar_connected, scopes, refresh_token')
     .eq('chef_id', state.chefId)
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
   // Google only returns refresh_token on first consent; preserve the existing one
   const refreshToken = tokens.refresh_token || existing?.refresh_token || null
 
-  const { error: upsertError } = await supabase.from('google_connections').upsert(
+  const { error: upsertError } = await db.from('google_connections').upsert(
     {
       chef_id: state.chefId,
       tenant_id: currentUser.tenantId || state.chefId,

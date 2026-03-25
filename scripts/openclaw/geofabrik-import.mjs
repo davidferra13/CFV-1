@@ -3,13 +3,13 @@
 // Geofabrik Global Bulk Importer - Phase 1 acquisition.
 // Downloads per-region OSM extracts from Geofabrik, streams each through
 // filtering for food businesses, stores findings LOCALLY on the Pi.
-// NO automatic sync to Supabase. Data moves only when you say so.
+// NO automatic sync to PostgreSQL. Data moves only when you say so.
 //
 // After completion, auto-starts OpenClaw for long-tail crawling.
 //
 // Usage:
 //   node geofabrik-import.mjs              # Full run: all regions, local only
-//   node geofabrik-import.mjs --sync-only  # Manual push to Supabase (you trigger this)
+//   node geofabrik-import.mjs --sync-only  # Manual push to PostgreSQL (you trigger this)
 //   DRY_RUN=1 node geofabrik-import.mjs   # Parse but don't write files
 
 import { createReadStream, existsSync, mkdirSync, writeFileSync, readFileSync, statSync, unlinkSync } from 'fs'
@@ -499,9 +499,9 @@ function saveRegionFindings(regionCode, byCityMap) {
 // ─── Manual sync (--sync-only) ──────────────────────────────────────────────
 
 async function syncFindings() {
-  log('Syncing all local findings to Supabase...')
-  const { syncToSupabase } = await import('./lib/sync.mjs')
-  const result = await syncToSupabase()
+  log('Syncing all local findings to PostgreSQL...')
+  const { syncToDatabase } = await import('./lib/sync.mjs')
+  const result = await syncToDatabase()
   log(`Sync complete: ${result.synced} synced, ${result.skipped} skipped, ${result.failed} failed`)
 }
 
@@ -516,7 +516,7 @@ async function main() {
   log('ALL DATA STAYS LOCAL. No auto-sync.')
   log('='.repeat(60))
   if (DRY_RUN) log('*** DRY RUN MODE ***')
-  if (SYNC_ONLY) log('*** SYNC ONLY (manual push to Supabase) ***')
+  if (SYNC_ONLY) log('*** SYNC ONLY (manual push to PostgreSQL) ***')
   log('')
 
   try {
@@ -587,7 +587,7 @@ async function main() {
     log(`${progress.completedRegions.length}/${REGIONS.length} regions succeeded`)
     log(`${progress.totalBusinesses.toLocaleString()} total businesses saved locally`)
     log('')
-    log('ALL DATA IS LOCAL. To push to Supabase:')
+    log('ALL DATA IS LOCAL. To push to PostgreSQL:')
     log('  node geofabrik-import.mjs --sync-only')
     log('='.repeat(60))
 

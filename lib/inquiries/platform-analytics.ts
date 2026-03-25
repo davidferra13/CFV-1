@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 export interface PlatformStat {
@@ -54,9 +54,9 @@ const CHANNEL_DISPLAY: Record<string, string> = {
  */
 export async function getPlatformAnalytics(): Promise<PlatformAnalytics> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiries, error } = await supabase
+  const { data: inquiries, error } = await db
     .from('inquiries')
     .select('channel, status, unknown_fields')
     .eq('tenant_id', user.tenantId!)

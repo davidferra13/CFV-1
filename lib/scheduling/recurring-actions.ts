@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import {
   addDays,
@@ -137,13 +137,13 @@ export async function createRecurringSchedule(
   data: CreateRecurringScheduleData
 ): Promise<RecurringSchedule> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Calculate first next occurrence
   const nextOcc = calculateNextOccurrences(data.frequency, data.dayOfWeek ?? null, new Date(), 1)
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('recurring_schedules' as any)
     .insert({
       tenant_id: tenantId,
@@ -177,7 +177,7 @@ export async function updateRecurringSchedule(
   data: UpdateRecurringScheduleData
 ): Promise<RecurringSchedule> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const updatePayload: Record<string, unknown> = {
@@ -203,7 +203,7 @@ export async function updateRecurringSchedule(
     }
   }
 
-  const { data: row, error } = await supabase
+  const { data: row, error } = await db
     .from('recurring_schedules' as any)
     .update(updatePayload)
     .eq('id', id)
@@ -223,11 +223,11 @@ export async function updateRecurringSchedule(
 
 export async function deleteRecurringSchedule(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Soft delete: set is_active = false
-  const { error } = await supabase
+  const { error } = await db
     .from('recurring_schedules' as any)
     .update({
       is_active: false,
@@ -247,10 +247,10 @@ export async function deleteRecurringSchedule(id: string): Promise<void> {
 
 export async function getRecurringSchedules(clientId?: string): Promise<RecurringSchedule[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  let query = supabase
+  let query = db
     .from('recurring_schedules' as any)
     .select('*, clients(full_name), menus(name)')
     .eq('tenant_id', tenantId)
@@ -279,11 +279,11 @@ export async function generateUpcomingEvents(
   count: number = 4
 ): Promise<{ created: number; dates: string[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Fetch the schedule
-  const { data: schedule, error: fetchErr } = await supabase
+  const { data: schedule, error: fetchErr } = await db
     .from('recurring_schedules' as any)
     .select('*, clients(full_name, address, city, state, zip)')
     .eq('id', scheduleId)
@@ -339,7 +339,7 @@ export async function generateUpcomingEvents(
     created_by: user.id,
   }))
 
-  const { data: events, error: insertErr } = await supabase
+  const { data: events, error: insertErr } = await db
     .from('events')
     .insert(eventPayloads)
     .select('id, event_date')
@@ -358,7 +358,7 @@ export async function generateUpcomingEvents(
     1
   )
 
-  await supabase
+  await db
     .from('recurring_schedules' as any)
     .update({
       last_generated_date: format(lastDate, 'yyyy-MM-dd'),
@@ -385,10 +385,10 @@ export async function getUpcomingRecurringEvents(): Promise<
   { scheduleId: string; title: string; clientName: string; date: string; frequency: Frequency }[]
 > {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data: schedules, error } = await supabase
+  const { data: schedules, error } = await db
     .from('recurring_schedules' as any)
     .select('*, clients(full_name)')
     .eq('tenant_id', tenantId)

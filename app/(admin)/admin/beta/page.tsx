@@ -2,7 +2,7 @@
 // View and manage beta signup requests from the public /beta page.
 
 import { requireAdmin } from '@/lib/auth/admin'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import type { Metadata } from 'next'
 import { BetaSignupsTable } from '@/components/admin/beta-signups-table'
 
@@ -11,8 +11,8 @@ export const metadata: Metadata = { title: 'Early Signups - Admin' }
 export default async function AdminBetaPage() {
   await requireAdmin()
 
-  const supabase: any = createAdminClient()
-  const { data: rows, error } = await supabase
+  const db: any = createAdminClient()
+  const { data: rows, error } = await db
     .from('beta_signups')
     .select('*')
     .order('created_at', { ascending: false })

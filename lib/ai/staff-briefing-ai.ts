@@ -6,7 +6,7 @@
 
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { withAiFallback } from '@/lib/ai/with-ai-fallback'
 import { generateStaffBriefingTemplate } from '@/lib/templates/staff-briefing'
@@ -55,10 +55,10 @@ interface StaffAssignmentRow {
 
 export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffBriefing> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [eventResult, menuResult, guestsResult, staffResult, chefResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, kitchen_notes'
@@ -66,20 +66,20 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    (supabase as any)
+    (db as any)
       .from('event_menu_components')
       .select('name, course_type, description, allergen_tags')
       .eq('event_id', eventId)
       .order('created_at', { ascending: true }),
-    supabase
+    db
       .from('event_guests')
       .select('full_name, dietary_restrictions, allergies')
       .eq('event_id', eventId),
-    supabase
+    db
       .from('event_staff_assignments')
       .select('role_override, staff_members(name, role)')
       .eq('event_id', eventId),
-    supabase.from('chefs').select('display_name, business_name').eq('id', user.tenantId!).single(),
+    db.from('chefs').select('display_name, business_name').eq('id', user.tenantId!).single(),
   ])
 
   const event = eventResult.data

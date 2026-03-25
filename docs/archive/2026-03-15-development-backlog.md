@@ -135,11 +135,11 @@ Comprehensive, prioritized list of all identified tasks to improve performance, 
 
 **Type:** Modification
 **Files:** `app/(public)/contact/page.tsx`, `lib/contact/actions.ts`
-**Issue:** 15.1s load time. Server action chains 2-3 sequential Supabase operations.
+**Issue:** 15.1s load time. Server action chains 2-3 sequential PostgreSQL operations.
 **Fix:**
 
 - Page load should be static (no server-side data fetching needed for a form)
-- Parallelize Supabase operations in the submit action where possible
+- Parallelize PostgreSQL operations in the submit action where possible
 - Add loading state so users see immediate feedback
   **Effort:** 1 hour
 
@@ -147,11 +147,11 @@ Comprehensive, prioritized list of all identified tasks to improve performance, 
 
 **Type:** Modification
 **File:** `app/auth/partner-signup/page.tsx`
-**Issue:** 29.3s load time. Multiple sequential async operations: server action, Supabase client init, auth sign-in, route navigation.
+**Issue:** 29.3s load time. Multiple sequential async operations: server action, database client init, auth sign-in, route navigation.
 **Fix:**
 
 - Defer non-critical operations (partner invite claim) to after page render
-- Reduce Supabase round-trips by combining operations
+- Reduce PostgreSQL round-trips by combining operations
 - Add a loading skeleton while the Suspense boundary resolves
   **Effort:** 1.5 hours
 

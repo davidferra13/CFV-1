@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -36,13 +36,13 @@ export interface SavingsOpportunity {
 export async function getIngredientConsolidation(): Promise<IngredientConsolidationResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch upcoming events (next 14 days) with menus
   const today = new Date().toISOString().split('T')[0]
   const twoWeeksOut = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -64,7 +64,7 @@ export async function getIngredientConsolidation(): Promise<IngredientConsolidat
   if (menuIds.length === 0) return null
 
   // Fetch dishes linked to these menus
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id, menu_id, recipe_id')
     .in('menu_id', menuIds)
@@ -75,7 +75,7 @@ export async function getIngredientConsolidation(): Promise<IngredientConsolidat
   const recipeIds = [...new Set((dishes || []).map((d: any) => d.recipe_id).filter(Boolean))]
   if (recipeIds.length === 0) return null
 
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await db
     .from('ingredients')
     .select('id, name, quantity, unit, recipe_id, average_price_cents')
     .in('recipe_id', recipeIds)

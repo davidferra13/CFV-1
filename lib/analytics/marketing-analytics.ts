@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { Database } from '@/types/database'
 
 type InquiryChannel = Database['public']['Enums']['inquiry_channel']
@@ -67,9 +67,9 @@ function pct(n: number, d: number) {
 
 export async function getCampaignEmailStats(): Promise<CampaignEmailStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: campaigns } = await supabase
+  const { data: campaigns } = await db
     .from('marketing_campaigns')
     .select('id, name')
     .eq('chef_id', chef.entityId)
@@ -91,7 +91,7 @@ export async function getCampaignEmailStats(): Promise<CampaignEmailStats> {
 
   const campaignIds = campaigns.map((c: any) => c.id)
 
-  const { data: recipients } = await supabase
+  const { data: recipients } = await db
     .from('campaign_recipients')
     .select('sent_at, opened_at, clicked_at, bounced_at, spam_at, unsubscribed_at, campaign_id')
     .eq('chef_id', chef.entityId)
@@ -139,9 +139,9 @@ export async function getMarketingSpendByChannel(
   endDate: string
 ): Promise<MarketingSpendByChannel[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('marketing_spend_log')
     .select('channel, amount_cents')
     .eq('chef_id', chef.entityId)
@@ -170,10 +170,10 @@ export async function getCostPerLeadByChannel(
   endDate: string
 ): Promise<CostPerLeadByChannel[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Marketing spend by channel in period
-  const { data: spendData } = await supabase
+  const { data: spendData } = await db
     .from('marketing_spend_log')
     .select('channel, amount_cents')
     .eq('chef_id', chef.entityId)
@@ -201,7 +201,7 @@ export async function getCostPerLeadByChannel(
     let booked = 0
 
     if (inquiryChannels.length > 0) {
-      const { count: leadCount } = await supabase
+      const { count: leadCount } = await db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', chef.tenantId!)
@@ -209,7 +209,7 @@ export async function getCostPerLeadByChannel(
         .gte('created_at', startDate)
         .lte('created_at', endDate)
 
-      const { count: bookedCount } = await supabase
+      const { count: bookedCount } = await db
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', chef.tenantId!)
@@ -237,15 +237,15 @@ export async function getCostPerLeadByChannel(
 
 export async function getReviewStats(): Promise<ReviewStats> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: reviews } = await supabase
+  const { data: reviews } = await db
     .from('client_reviews')
     .select('rating, created_at, client_id')
     .eq('tenant_id', chef.tenantId!)
     .order('created_at', { ascending: false })
 
-  const { count: completedEvents } = await supabase
+  const { count: completedEvents } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', chef.tenantId!)
@@ -270,10 +270,7 @@ export async function getReviewStats(): Promise<ReviewStats> {
     .slice(0, 5)
     .map((r: any) => r.client_id)
     .filter(Boolean) as string[]
-  const { data: clients } = await supabase
-    .from('clients')
-    .select('id, full_name')
-    .in('id', recentIds)
+  const { data: clients } = await db.from('clients').select('id, full_name').in('id', recentIds)
 
   const nameMap = new Map((clients ?? []).map((c: any) => [c.id, c.full_name]))
 
@@ -294,9 +291,9 @@ export async function getReviewStats(): Promise<ReviewStats> {
 
 export async function getWebsiteStats(): Promise<WebsiteStatsLatest> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('website_stats_snapshots')
     .select('*')
     .eq('chef_id', chef.entityId)

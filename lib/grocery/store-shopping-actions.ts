@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 
@@ -60,9 +60,9 @@ export type StoreSplit = {
 
 export async function getPreferredStores(): Promise<PreferredStore[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('chef_preferred_stores')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -82,18 +82,18 @@ export async function addPreferredStore(input: {
   sort_order?: number
 }): Promise<PreferredStore> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If setting as default, unset other defaults first
   if (input.is_default) {
-    await (supabase as any)
+    await (db as any)
       .from('chef_preferred_stores')
       .update({ is_default: false })
       .eq('chef_id', user.tenantId!)
       .eq('is_default', true)
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('chef_preferred_stores')
     .insert({
       chef_id: user.tenantId!,
@@ -124,11 +124,11 @@ export async function updatePreferredStore(
   }
 ): Promise<PreferredStore> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If setting as default, unset other defaults first
   if (input.is_default) {
-    await (supabase as any)
+    await (db as any)
       .from('chef_preferred_stores')
       .update({ is_default: false })
       .eq('chef_id', user.tenantId!)
@@ -143,7 +143,7 @@ export async function updatePreferredStore(
   if (input.is_default !== undefined) updateData.is_default = input.is_default
   if (input.sort_order !== undefined) updateData.sort_order = input.sort_order
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('chef_preferred_stores')
     .update(updateData)
     .eq('id', id)
@@ -158,9 +158,9 @@ export async function updatePreferredStore(
 
 export async function deletePreferredStore(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('chef_preferred_stores')
     .delete()
     .eq('id', id)
@@ -180,11 +180,11 @@ export async function assignItemToStore(
   reason?: AssignmentReason
 ): Promise<StoreAssignment> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const normalizedKeyword = keyword.trim().toLowerCase()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('store_item_assignments')
     .upsert(
       {
@@ -207,9 +207,9 @@ export async function getStoreAssignments(): Promise<
   (StoreAssignment & { store: PreferredStore })[]
 > {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('store_item_assignments')
     .select('*, store:chef_preferred_stores(*)')
     .eq('chef_id', user.tenantId!)
@@ -221,9 +221,9 @@ export async function getStoreAssignments(): Promise<
 
 export async function deleteStoreAssignment(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('store_item_assignments')
     .delete()
     .eq('id', id)
@@ -235,9 +235,9 @@ export async function deleteStoreAssignment(id: string): Promise<void> {
 
 export async function getStoreShoppingList(storeId: string): Promise<StoreAssignment[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await (db as any)
     .from('store_item_assignments')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -252,7 +252,7 @@ export async function bulkAssignItems(
   assignments: { keyword: string; storeId: string; reason?: AssignmentReason }[]
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const rows = assignments.map((a) => ({
     chef_id: user.tenantId!,
@@ -261,7 +261,7 @@ export async function bulkAssignItems(
     reason: a.reason ?? null,
   }))
 
-  const { error } = await (supabase as any)
+  const { error } = await (db as any)
     .from('store_item_assignments')
     .upsert(rows, { onConflict: 'chef_id,ingredient_keyword' })
 
@@ -282,16 +282,16 @@ export async function splitListByStore(
   items: GroceryItem[]
 ): Promise<{ splits: StoreSplit[]; unassigned: GroceryItem[] }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch stores and assignments in parallel
   const [storesResult, assignmentsResult] = await Promise.all([
-    (supabase as any)
+    (db as any)
       .from('chef_preferred_stores')
       .select('*')
       .eq('chef_id', user.tenantId!)
       .order('sort_order', { ascending: true }),
-    (supabase as any).from('store_item_assignments').select('*').eq('chef_id', user.tenantId!),
+    (db as any).from('store_item_assignments').select('*').eq('chef_id', user.tenantId!),
   ])
 
   if (storesResult.error) throw new Error(storesResult.error.message)

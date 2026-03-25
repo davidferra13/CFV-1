@@ -6,7 +6,7 @@
 // Pure math/pattern matching only, no AI.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ const MIN_EVENTS_FOR_ANALYSIS = 5
 export async function getTriageSuggestions(): Promise<TriageSuggestion[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const suggestions: TriageSuggestion[] = []
 
@@ -46,7 +46,7 @@ export async function getTriageSuggestions(): Promise<TriageSuggestion[]> {
   const ninetyDaysAgo = new Date()
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90)
 
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select(
       'id, channel, occasion, guest_count, budget_cents, status, created_at, updated_at, client_id'

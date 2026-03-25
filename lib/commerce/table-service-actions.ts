@@ -2,7 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { assertPosRoleAccess } from './pos-authorization'
 import type {
@@ -114,22 +114,22 @@ function isUniqueViolation(error: unknown) {
 export async function listDiningLayout(): Promise<DiningLayoutZone[]> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const [zonesRes, tablesRes, checksRes] = await Promise.all([
-    supabase
+    db
       .from('commerce_dining_zones' as any)
       .select('*')
       .eq('tenant_id', user.tenantId!)
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true }),
-    supabase
+    db
       .from('commerce_dining_tables' as any)
       .select('*')
       .eq('tenant_id', user.tenantId!)
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true }),
-    supabase
+    db
       .from('commerce_dining_checks' as any)
       .select('id, table_id, guest_name')
       .eq('tenant_id', user.tenantId!)
@@ -178,7 +178,7 @@ export async function listOpenDiningChecks(input?: {
 }): Promise<OpenDiningCheckWithTable[]> {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const limit =
     Number.isInteger(input?.limit) && (input?.limit as number) > 0
@@ -186,14 +186,14 @@ export async function listOpenDiningChecks(input?: {
       : 100
 
   const [checksRes, tablesRes] = await Promise.all([
-    supabase
+    db
       .from('commerce_dining_checks' as any)
       .select('*')
       .eq('tenant_id', user.tenantId!)
       .eq('status', 'open')
       .order('opened_at', { ascending: true })
       .limit(limit),
-    supabase
+    db
       .from('commerce_dining_tables' as any)
       .select('id, table_label, status')
       .eq('tenant_id', user.tenantId!),
@@ -224,9 +224,9 @@ export async function listOpenDiningChecks(input?: {
 export async function createDiningZone(input: { name: string; sortOrder?: number }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'manage dining zones',
     requiredLevel: 'lead',
@@ -237,7 +237,7 @@ export async function createDiningZone(input: { name: string; sortOrder?: number
     throw new Error('Zone name must be 64 characters or fewer')
   }
 
-  const { error } = await (supabase.from('commerce_dining_zones' as any).insert({
+  const { error } = await (db.from('commerce_dining_zones' as any).insert({
     tenant_id: user.tenantId!,
     name,
     sort_order: parseSortOrder(input.sortOrder),
@@ -261,9 +261,9 @@ export async function createDiningTable(input: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'manage dining tables',
     requiredLevel: 'lead',
@@ -275,7 +275,7 @@ export async function createDiningTable(input: {
     throw new Error('Table label must be 32 characters or fewer')
   }
 
-  const { data: zone, error: zoneErr } = await (supabase
+  const { data: zone, error: zoneErr } = await (db
     .from('commerce_dining_zones' as any)
     .select('id')
     .eq('tenant_id', user.tenantId!)
@@ -285,7 +285,7 @@ export async function createDiningTable(input: {
     throw new Error('Zone not found')
   }
 
-  const { error } = await (supabase.from('commerce_dining_tables' as any).insert({
+  const { error } = await (db.from('commerce_dining_tables' as any).insert({
     tenant_id: user.tenantId!,
     zone_id: zoneId,
     table_label: tableLabel,
@@ -307,9 +307,9 @@ export async function createDiningTable(input: {
 export async function setDiningTableStatus(input: { tableId: string; status: DiningTableStatus }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'update dining table status',
     requiredLevel: 'lead',
@@ -318,7 +318,7 @@ export async function setDiningTableStatus(input: { tableId: string; status: Din
   const tableId = requireNonEmpty(String(input.tableId ?? ''), 'Table')
   const status = normalizeTableStatus(input.status)
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('commerce_dining_tables' as any)
     .update({ status } as any)
     .eq('tenant_id', user.tenantId!)
@@ -337,9 +337,9 @@ export async function openDiningCheck(input: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'open dining checks',
     requiredLevel: 'cashier',
@@ -347,7 +347,7 @@ export async function openDiningCheck(input: {
 
   const tableId = requireNonEmpty(String(input.tableId ?? ''), 'Table')
 
-  const { data: table, error: tableErr } = await (supabase
+  const { data: table, error: tableErr } = await (db
     .from('commerce_dining_tables' as any)
     .select('id, status, is_active')
     .eq('tenant_id', user.tenantId!)
@@ -367,7 +367,7 @@ export async function openDiningCheck(input: {
       : parseSeatCapacity(Number(input.guestCount))
   const notes = String(input.notes ?? '').trim() || null
 
-  const { data: inserted, error } = await (supabase
+  const { data: inserted, error } = await (db
     .from('commerce_dining_checks' as any)
     .insert({
       tenant_id: user.tenantId!,
@@ -389,7 +389,7 @@ export async function openDiningCheck(input: {
     throw new Error(`Failed to open dining check: ${error.message}`)
   }
 
-  await (supabase
+  await (db
     .from('commerce_dining_tables' as any)
     .update({ status: 'seated' } as any)
     .eq('tenant_id', user.tenantId!)
@@ -408,16 +408,16 @@ export async function closeDiningCheck(input: {
 }) {
   const user = await requireChef()
   await requirePro('commerce')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   await assertPosRoleAccess({
-    supabase,
+    db,
     user,
     action: 'close dining checks',
     requiredLevel: 'cashier',
   })
 
   const checkId = requireNonEmpty(String(input.checkId ?? ''), 'Check')
-  const { data: check, error: checkErr } = await (supabase
+  const { data: check, error: checkErr } = await (db
     .from('commerce_dining_checks' as any)
     .select('id, table_id, status, notes')
     .eq('tenant_id', user.tenantId!)
@@ -434,7 +434,7 @@ export async function closeDiningCheck(input: {
   const mergedNotes = [existingNotes, closeNotes].filter(Boolean).join('\n')
   const closedAt = new Date().toISOString()
 
-  const { error } = await (supabase
+  const { error } = await (db
     .from('commerce_dining_checks' as any)
     .update({
       status: 'closed',
@@ -448,7 +448,7 @@ export async function closeDiningCheck(input: {
     .eq('status', 'open') as any)
   if (error) throw new Error(`Failed to close dining check: ${error.message}`)
 
-  const { count: openCount } = await (supabase
+  const { count: openCount } = await (db
     .from('commerce_dining_checks' as any)
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
@@ -456,7 +456,7 @@ export async function closeDiningCheck(input: {
     .eq('status', 'open') as any)
 
   if ((openCount ?? 0) === 0) {
-    await (supabase
+    await (db
       .from('commerce_dining_tables' as any)
       .update({ status: 'available' } as any)
       .eq('tenant_id', user.tenantId!)

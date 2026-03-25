@@ -18,7 +18,7 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { searchWeb, readWebPage } from '@/lib/ai/remy-web-actions'
@@ -449,12 +449,12 @@ async function gatherNewsIntel(
 // ── Progress helper ─────────────────────────────────────────────────────────
 
 async function updateProgress(
-  supabase: any,
+  db: any,
   sessionId: string,
   message: string,
   extraFields?: Record<string, unknown>
 ) {
-  await supabase
+  await db
     .from('prospect_scrub_sessions')
     .update({ progress_message: message, ...extraFields })
     .eq('id', sessionId)
@@ -465,12 +465,12 @@ async function updateProgress(
 export async function scrubProspects(query: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!query.trim()) throw new Error('Query is required')
 
   // #7 - Rate limiting: prevent concurrent scrubs
-  const { data: activeSessions } = await supabase
+  const { data: activeSessions } = await db
     .from('prospect_scrub_sessions')
     .select('id, status')
     .eq('chef_id', user.tenantId!)
@@ -481,7 +481,7 @@ export async function scrubProspects(query: string) {
   }
 
   // Create scrub session
-  const { data: session, error: sessionError } = await supabase
+  const { data: session, error: sessionError } = await db
     .from('prospect_scrub_sessions')
     .insert({
       chef_id: user.tenantId!,
@@ -502,7 +502,7 @@ export async function scrubProspects(query: string) {
   try {
     // ─── Phase 1: Ollama generates prospect list ──────────────────────
 
-    await updateProgress(supabase, session.id, 'Phase 1: AI is generating prospects...')
+    await updateProgress(db, session.id, 'Phase 1: AI is generating prospects...')
 
     const wrappedPrompt =
       SCRUB_SYSTEM_PROMPT +
@@ -518,7 +518,7 @@ export async function scrubProspects(query: string) {
       )
     } catch (err) {
       // Phase 1 failure = real failure, no prospects to show
-      await supabase
+      await db
         .from('prospect_scrub_sessions')
         .update({
           status: 'failed',
@@ -532,7 +532,7 @@ export async function scrubProspects(query: string) {
     const prospects = parsedResult.prospects.slice(0, MAX_PROSPECTS_PER_SCRUB)
 
     if (prospects.length === 0) {
-      await supabase
+      await db
         .from('prospect_scrub_sessions')
         .update({
           status: 'failed',
@@ -546,7 +546,7 @@ export async function scrubProspects(query: string) {
     // ─── Phase 1b: Reality check - web-validate each prospect (#1) ───
 
     await updateProgress(
-      supabase,
+      db,
       session.id,
       `Validating ${prospects.length} prospects against the web...`
     )
@@ -581,9 +581,9 @@ export async function scrubProspects(query: string) {
 
     // ─── Fuzzy deduplication (#2) ────────────────────────────────────
 
-    await updateProgress(supabase, session.id, 'Deduplicating against existing prospects...')
+    await updateProgress(db, session.id, 'Deduplicating against existing prospects...')
 
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('prospects')
       .select('name, city')
       .eq('chef_id', user.tenantId!)
@@ -645,7 +645,7 @@ export async function scrubProspects(query: string) {
     }))
 
     if (insertRows.length > 0) {
-      const { error: insertError } = await supabase.from('prospects').insert(insertRows)
+      const { error: insertError } = await db.from('prospects').insert(insertRows)
       if (insertError) {
         console.error('[scrubProspects] Insert error:', insertError)
       }
@@ -654,7 +654,7 @@ export async function scrubProspects(query: string) {
     insertedCount = insertRows.length
 
     await updateProgress(
-      supabase,
+      db,
       session.id,
       `Generated ${insertRows.length} prospects. Starting enrichment...`,
       {
@@ -665,7 +665,7 @@ export async function scrubProspects(query: string) {
 
     // ─── Phase 2: Deep Web Enrichment + News Intel ─────────────────────
 
-    const { data: insertedProspects } = await supabase
+    const { data: insertedProspects } = await db
       .from('prospects')
       .select('id, name, city, state, region')
       .eq('scrub_session_id', session.id)
@@ -682,7 +682,7 @@ export async function scrubProspects(query: string) {
 
       const prospect = enrichSlice[i]
       await updateProgress(
-        supabase,
+        db,
         session.id,
         `Deep-enriching ${i + 1}/${enrichSlice.length}: ${prospect.name}...`
       )
@@ -727,7 +727,7 @@ export async function scrubProspects(query: string) {
         }
 
         // News intelligence - search for recent press/news
-        await updateProgress(supabase, session.id, `Gathering news on ${prospect.name}...`)
+        await updateProgress(db, session.id, `Gathering news on ${prospect.name}...`)
         const newsIntel = await gatherNewsIntel(prospect.name, prospect.city, prospect.state)
         if (newsIntel) enrichUpdates.news_intel = newsIntel
 
@@ -736,7 +736,7 @@ export async function scrubProspects(query: string) {
           enrichUpdates.last_enriched_at = new Date().toISOString()
 
           // Recompute lead score with enrichment data
-          const { data: currentProspect } = await supabase
+          const { data: currentProspect } = await db
             .from('prospects')
             .select('*')
             .eq('id', prospect.id)
@@ -766,7 +766,7 @@ export async function scrubProspects(query: string) {
             })
           }
 
-          await supabase.from('prospects').update(enrichUpdates).eq('id', prospect.id)
+          await db.from('prospects').update(enrichUpdates).eq('id', prospect.id)
           enrichedCount++
         }
       } catch (err) {
@@ -777,7 +777,7 @@ export async function scrubProspects(query: string) {
     // ─── Phase 3: AI Approach (#5 time budget, #9 pass enriched data) ────
 
     await updateProgress(
-      supabase,
+      db,
       session.id,
       `Enriched ${enrichedCount}. Generating approach strategies...`
     )
@@ -798,7 +798,7 @@ export async function scrubProspects(query: string) {
 
       const prospect = approachSlice[i]
       await updateProgress(
-        supabase,
+        db,
         session.id,
         `Strategy ${i + 1}/${approachSlice.length}: ${prospect.name}...`
       )
@@ -806,7 +806,7 @@ export async function scrubProspects(query: string) {
       try {
         if (i > 0) await sleep(APPROACH_COOLDOWN_MS)
 
-        const { data: fullProspect } = await supabase
+        const { data: fullProspect } = await db
           .from('prospects')
           .select('*')
           .eq('id', prospect.id)
@@ -851,7 +851,7 @@ export async function scrubProspects(query: string) {
           { modelTier: 'fast', timeoutMs: 45_000 }
         )
 
-        await supabase
+        await db
           .from('prospects')
           .update({
             talking_points: approachResult.talkingPoints,
@@ -871,7 +871,7 @@ export async function scrubProspects(query: string) {
 
     // ─── Phase 4: Cold Email Drafts ────────────────────────────────────
 
-    await updateProgress(supabase, session.id, 'Drafting personalized outreach emails...')
+    await updateProgress(db, session.id, 'Drafting personalized outreach emails...')
 
     const emailSlice = (insertedProspects ?? []).slice(0, MAX_EMAIL_DRAFTS)
     let emailConsecutiveFailures = 0
@@ -889,7 +889,7 @@ export async function scrubProspects(query: string) {
 
       const prospect = emailSlice[i]
       await updateProgress(
-        supabase,
+        db,
         session.id,
         `Drafting email ${i + 1}/${emailSlice.length}: ${prospect.name}...`
       )
@@ -897,7 +897,7 @@ export async function scrubProspects(query: string) {
       try {
         if (i > 0) await sleep(APPROACH_COOLDOWN_MS)
 
-        const { data: fullProspect } = await supabase
+        const { data: fullProspect } = await db
           .from('prospects')
           .select('*')
           .eq('id', prospect.id)
@@ -934,7 +934,7 @@ export async function scrubProspects(query: string) {
         )
 
         const draftEmail = `Subject: ${emailResult.subject}\n\n${emailResult.body}`
-        await supabase.from('prospects').update({ draft_email: draftEmail }).eq('id', prospect.id)
+        await db.from('prospects').update({ draft_email: draftEmail }).eq('id', prospect.id)
 
         emailConsecutiveFailures = 0
       } catch (err) {
@@ -948,7 +948,7 @@ export async function scrubProspects(query: string) {
 
     // ─── Finalize session ────────────────────────────────────────────
 
-    await supabase
+    await db
       .from('prospect_scrub_sessions')
       .update({
         status: 'completed',
@@ -970,7 +970,7 @@ export async function scrubProspects(query: string) {
   } catch (err) {
     // #8 - Partial failure: if we already inserted prospects, mark completed-with-warning
     if (insertedCount > 0) {
-      await supabase
+      await db
         .from('prospect_scrub_sessions')
         .update({
           status: 'completed',
@@ -994,7 +994,7 @@ export async function scrubProspects(query: string) {
     }
 
     // True failure - Phase 1 produced nothing
-    await supabase
+    await db
       .from('prospect_scrub_sessions')
       .update({
         status: 'failed',
@@ -1014,9 +1014,9 @@ export async function scrubProspects(query: string) {
 export async function reEnrichProspect(prospectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: prospect, error } = await supabase
+  const { data: prospect, error } = await db
     .from('prospects')
     .select('*')
     .eq('id', prospectId)
@@ -1179,7 +1179,7 @@ export async function reEnrichProspect(prospectId: string) {
 
   enrichUpdates.source = 'web_enriched'
   enrichUpdates.last_enriched_at = new Date().toISOString()
-  await supabase.from('prospects').update(enrichUpdates).eq('id', prospect.id)
+  await db.from('prospects').update(enrichUpdates).eq('id', prospect.id)
 
   revalidatePath('/prospecting')
   return { success: true }
@@ -1191,12 +1191,12 @@ export async function reEnrichProspect(prospectId: string) {
 export async function batchReEnrich() {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Find prospects that are stale (>14 days since enrichment) or never enriched
   const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: staleProspects } = await supabase
+  const { data: staleProspects } = await db
     .from('prospects')
     .select('id')
     .eq('chef_id', user.tenantId!)
@@ -1235,9 +1235,9 @@ export async function batchReEnrich() {
 export async function getScrubSessionProgress(sessionId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('prospect_scrub_sessions')
     .select('id, status, progress_message, prospect_count, enriched_count')
     .eq('id', sessionId)
@@ -1255,12 +1255,12 @@ export async function getScrubSessionProgress(sessionId: string) {
 export async function competitorIntelScrub(region: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (!region.trim()) throw new Error('Region is required for competitor intelligence scrub')
 
   // Create scrub session
-  const { data: session, error: sessionError } = await supabase
+  const { data: session, error: sessionError } = await db
     .from('prospect_scrub_sessions')
     .insert({
       chef_id: user.tenantId!,
@@ -1279,7 +1279,7 @@ export async function competitorIntelScrub(region: string) {
 
   try {
     // Step 1: Search for competing chefs/caterers in the region
-    await updateProgress(supabase, session.id, 'Finding competing chefs and caterers...')
+    await updateProgress(db, session.id, 'Finding competing chefs and caterers...')
 
     const searchQueries = [
       `private chef ${region} testimonials portfolio`,
@@ -1315,7 +1315,7 @@ export async function competitorIntelScrub(region: string) {
     }
 
     if (competitorPages.length === 0) {
-      await supabase
+      await db
         .from('prospect_scrub_sessions')
         .update({
           status: 'failed',
@@ -1330,7 +1330,7 @@ export async function competitorIntelScrub(region: string) {
 
     // Step 2: Extract venue/client names from competitor pages via Ollama
     await updateProgress(
-      supabase,
+      db,
       session.id,
       `Analyzing ${competitorPages.length} competitor websites for client intel...`
     )
@@ -1363,7 +1363,7 @@ export async function competitorIntelScrub(region: string) {
     }
 
     if (allExtractedProspects.length === 0) {
-      await supabase
+      await db
         .from('prospect_scrub_sessions')
         .update({
           status: 'completed',
@@ -1381,9 +1381,9 @@ export async function competitorIntelScrub(region: string) {
     }
 
     // Step 3: Deduplicate against existing database
-    await updateProgress(supabase, session.id, 'Deduplicating extracted prospects...')
+    await updateProgress(db, session.id, 'Deduplicating extracted prospects...')
 
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('prospects')
       .select('name, city')
       .eq('chef_id', user.tenantId!)
@@ -1430,7 +1430,7 @@ export async function competitorIntelScrub(region: string) {
     }))
 
     if (insertRows.length > 0) {
-      const { error: insertError } = await supabase.from('prospects').insert(insertRows)
+      const { error: insertError } = await db.from('prospects').insert(insertRows)
       if (insertError) {
         console.error('[competitor-intel] Insert error:', insertError)
       }
@@ -1440,12 +1440,12 @@ export async function competitorIntelScrub(region: string) {
 
     // Step 5: Enrich the new prospects (web verify + contact extraction)
     await updateProgress(
-      supabase,
+      db,
       session.id,
       `Inserted ${insertedCount} prospects from competitor intel. Enriching...`
     )
 
-    const { data: insertedProspects } = await supabase
+    const { data: insertedProspects } = await db
       .from('prospects')
       .select('id')
       .eq('scrub_session_id', session.id)
@@ -1461,7 +1461,7 @@ export async function competitorIntelScrub(region: string) {
       await sleep(2_000)
     }
 
-    await supabase
+    await db
       .from('prospect_scrub_sessions')
       .update({
         status: 'completed',
@@ -1481,7 +1481,7 @@ export async function competitorIntelScrub(region: string) {
     }
   } catch (err) {
     if (insertedCount > 0) {
-      await supabase
+      await db
         .from('prospect_scrub_sessions')
         .update({
           status: 'completed',
@@ -1501,7 +1501,7 @@ export async function competitorIntelScrub(region: string) {
       }
     }
 
-    await supabase
+    await db
       .from('prospect_scrub_sessions')
       .update({
         status: 'failed',
@@ -1520,10 +1520,10 @@ export async function competitorIntelScrub(region: string) {
 export async function lookalikeProspect(sourceProspectId: string) {
   await requireAdmin()
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load the source prospect
-  const { data: source, error } = await supabase
+  const { data: source, error } = await db
     .from('prospects')
     .select('*')
     .eq('id', sourceProspectId)
@@ -1535,7 +1535,7 @@ export async function lookalikeProspect(sourceProspectId: string) {
   }
 
   // Create scrub session
-  const { data: session, error: sessionError } = await supabase
+  const { data: session, error: sessionError } = await db
     .from('prospect_scrub_sessions')
     .insert({
       chef_id: user.tenantId!,
@@ -1554,11 +1554,7 @@ export async function lookalikeProspect(sourceProspectId: string) {
 
   try {
     // Step 1: Generate lookalikes via Ollama
-    await updateProgress(
-      supabase,
-      session.id,
-      `AI is finding prospects similar to ${source.name}...`
-    )
+    await updateProgress(db, session.id, `AI is finding prospects similar to ${source.name}...`)
 
     const wrappedPrompt =
       LOOKALIKE_SYSTEM_PROMPT +
@@ -1584,7 +1580,7 @@ export async function lookalikeProspect(sourceProspectId: string) {
         { timeoutMs: PHASE_1_TIMEOUT_MS }
       )
     } catch {
-      await supabase
+      await db
         .from('prospect_scrub_sessions')
         .update({
           status: 'failed',
@@ -1598,7 +1594,7 @@ export async function lookalikeProspect(sourceProspectId: string) {
     const prospects = parsedResult.prospects.slice(0, MAX_PROSPECTS_PER_SCRUB)
 
     if (prospects.length === 0) {
-      await supabase
+      await db
         .from('prospect_scrub_sessions')
         .update({
           status: 'completed',
@@ -1616,11 +1612,7 @@ export async function lookalikeProspect(sourceProspectId: string) {
     }
 
     // Step 2: Reality check via web search
-    await updateProgress(
-      supabase,
-      session.id,
-      `Validating ${prospects.length} lookalike prospects...`
-    )
+    await updateProgress(db, session.id, `Validating ${prospects.length} lookalike prospects...`)
 
     const validatedProspects: Array<z.infer<typeof ProspectFromAI> & { verified: boolean }> = []
     for (const prospect of prospects) {
@@ -1634,9 +1626,9 @@ export async function lookalikeProspect(sourceProspectId: string) {
     }
 
     // Step 3: Dedup
-    await updateProgress(supabase, session.id, 'Deduplicating lookalike prospects...')
+    await updateProgress(db, session.id, 'Deduplicating lookalike prospects...')
 
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('prospects')
       .select('name, city')
       .eq('chef_id', user.tenantId!)
@@ -1693,7 +1685,7 @@ export async function lookalikeProspect(sourceProspectId: string) {
     }))
 
     if (insertRows.length > 0) {
-      const { error: insertError } = await supabase.from('prospects').insert(insertRows)
+      const { error: insertError } = await db.from('prospects').insert(insertRows)
       if (insertError) {
         console.error('[lookalike] Insert error:', insertError)
       }
@@ -1703,12 +1695,12 @@ export async function lookalikeProspect(sourceProspectId: string) {
 
     // Step 5: Enrich top prospects
     await updateProgress(
-      supabase,
+      db,
       session.id,
       `Inserted ${insertedCount} lookalikes. Enriching top prospects...`
     )
 
-    const { data: insertedProspects } = await supabase
+    const { data: insertedProspects } = await db
       .from('prospects')
       .select('id')
       .eq('scrub_session_id', session.id)
@@ -1724,7 +1716,7 @@ export async function lookalikeProspect(sourceProspectId: string) {
       await sleep(2_000)
     }
 
-    await supabase
+    await db
       .from('prospect_scrub_sessions')
       .update({
         status: 'completed',
@@ -1744,7 +1736,7 @@ export async function lookalikeProspect(sourceProspectId: string) {
     }
   } catch (err) {
     if (insertedCount > 0) {
-      await supabase
+      await db
         .from('prospect_scrub_sessions')
         .update({
           status: 'completed',
@@ -1764,7 +1756,7 @@ export async function lookalikeProspect(sourceProspectId: string) {
       }
     }
 
-    await supabase
+    await db
       .from('prospect_scrub_sessions')
       .update({
         status: 'failed',

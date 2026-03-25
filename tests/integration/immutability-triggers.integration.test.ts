@@ -5,7 +5,7 @@
  * quote_state_transitions) reject UPDATE and DELETE operations.
  * This is P1 — if these fail, financial records can be tampered with.
  *
- * Requires: NEXT_PUBLIC_SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in env
+ * Requires: NEXT_PUBLIC_DB_URL + DB_SERVICE_ROLE_KEY in env
  *
  * Run: npm run test:integration
  */
@@ -14,10 +14,10 @@ import { describe, it, before, after } from 'node:test'
 import assert from 'node:assert/strict'
 import { testDb } from '../helpers/test-db.js'
 
-// Skip if no Supabase credentials
-testDb.skipIfNoSupabase()
+// Skip if no credentials
+testDb.skipIfNoDatabase()
 
-const supabase = testDb.getClient()
+const db = testDb.getClient()
 
 let chefId: string
 let clientId: string
@@ -50,7 +50,7 @@ describe('Immutability Triggers', () => {
 
   describe('ledger_entries immutability', () => {
     it('INSERT succeeds (append-only is allowed)', async () => {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('ledger_entries')
         .select('id')
         .eq('id', ledgerEntryId)
@@ -61,7 +61,7 @@ describe('Immutability Triggers', () => {
     })
 
     it('UPDATE is rejected by immutability trigger', async () => {
-      const { error } = await supabase
+      const { error } = await db
         .from('ledger_entries')
         .update({ description: 'TAMPERED' })
         .eq('id', ledgerEntryId)
@@ -71,13 +71,13 @@ describe('Immutability Triggers', () => {
     })
 
     it('DELETE is rejected by immutability trigger', async () => {
-      const { error } = await supabase.from('ledger_entries').delete().eq('id', ledgerEntryId)
+      const { error } = await db.from('ledger_entries').delete().eq('id', ledgerEntryId)
 
       assert.ok(error, 'DELETE on ledger_entries must fail')
     })
 
     it('ledger entry is unchanged after failed UPDATE', async () => {
-      const { data } = await supabase
+      const { data } = await db
         .from('ledger_entries')
         .select('description')
         .eq('id', ledgerEntryId)
@@ -99,7 +99,7 @@ describe('Immutability Triggers', () => {
 
     before(async () => {
       // Create a transition record
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('event_transitions')
         .insert({
           event_id: eventId,
@@ -122,7 +122,7 @@ describe('Immutability Triggers', () => {
 
     it('UPDATE is rejected', async () => {
       if (!transitionId) return
-      const { error } = await supabase
+      const { error } = await db
         .from('event_transitions')
         .update({ to_status: 'cancelled' })
         .eq('id', transitionId)
@@ -132,7 +132,7 @@ describe('Immutability Triggers', () => {
 
     it('DELETE is rejected', async () => {
       if (!transitionId) return
-      const { error } = await supabase.from('event_transitions').delete().eq('id', transitionId)
+      const { error } = await db.from('event_transitions').delete().eq('id', transitionId)
 
       assert.ok(error, 'DELETE on event_transitions must fail')
     })
@@ -146,7 +146,7 @@ describe('Immutability Triggers', () => {
 
     before(async () => {
       // Create a quote first
-      const { data: quote, error: quoteError } = await supabase
+      const { data: quote, error: quoteError } = await db
         .from('quotes')
         .insert({
           tenant_id: chefId,
@@ -162,7 +162,7 @@ describe('Immutability Triggers', () => {
       quoteId = quote.id
 
       // Create a quote state transition
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('quote_state_transitions')
         .insert({
           quote_id: quoteId,
@@ -188,7 +188,7 @@ describe('Immutability Triggers', () => {
 
     it('UPDATE is rejected', async () => {
       if (!quoteTransitionId) return
-      const { error } = await supabase
+      const { error } = await db
         .from('quote_state_transitions')
         .update({ to_status: 'approved' })
         .eq('id', quoteTransitionId)
@@ -198,7 +198,7 @@ describe('Immutability Triggers', () => {
 
     it('DELETE is rejected', async () => {
       if (!quoteTransitionId) return
-      const { error } = await supabase
+      const { error } = await db
         .from('quote_state_transitions')
         .delete()
         .eq('id', quoteTransitionId)

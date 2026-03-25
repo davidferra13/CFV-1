@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -22,7 +22,7 @@ export interface PipelineSummary {
 export async function getPipelineSummary(): Promise<PipelineSummary | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const oneWeekAgo = new Date(now.getTime() - 7 * 86400000)
@@ -30,13 +30,13 @@ export async function getPipelineSummary(): Promise<PipelineSummary | null> {
 
   const [openRes, historicalRes, thisWeekRes, lastWeekRes] = await Promise.all([
     // Open inquiries for pipeline value
-    supabase
+    db
       .from('inquiries')
       .select('id, status, confirmed_budget_cents, created_at')
       .eq('tenant_id', tenantId)
       .in('status', ['new', 'awaiting_response', 'awaiting_chef', 'awaiting_client', 'quoted']),
     // Historical closed inquiries for conversion rate
-    supabase
+    db
       .from('inquiries')
       .select('id, status, created_at, updated_at')
       .eq('tenant_id', tenantId)
@@ -44,13 +44,13 @@ export async function getPipelineSummary(): Promise<PipelineSummary | null> {
       .order('created_at', { ascending: false })
       .limit(200),
     // This week's new inquiries
-    supabase
+    db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .gte('created_at', oneWeekAgo.toISOString()),
     // Last week's new inquiries
-    supabase
+    db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)

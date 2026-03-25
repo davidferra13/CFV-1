@@ -107,7 +107,7 @@ function hasFilter(query: QueryState, op: string, column: string): boolean {
   return query.filters.some((f) => f.op === op && f.column === column)
 }
 
-function createMockSupabase(resolver: Resolver) {
+function createMockDb(resolver: Resolver) {
   return {
     from(table: string) {
       return new MockQueryBuilder(table, resolver)
@@ -366,8 +366,8 @@ function standardResolver(query: QueryState): QueryResult {
 }
 
 test('computeDailyReport aggregates core metrics and mappings', async () => {
-  const supabase = createMockSupabase(standardResolver)
-  const report = await computeDailyReport(supabase, 'tenant-1', '2026-03-10')
+  const db = createMockDb(standardResolver)
+  const report = await computeDailyReport(db, 'tenant-1', '2026-03-10')
 
   assert.equal(report.eventsToday.length, 2)
   assert.equal(report.eventsToday[0].clientName, 'Alex Rivera')
@@ -387,8 +387,8 @@ test('computeDailyReport aggregates core metrics and mappings', async () => {
 })
 
 test('computeDailyReport computes trends, streaks, and schedule conflicts', async () => {
-  const supabase = createMockSupabase(standardResolver)
-  const report = await computeDailyReport(supabase, 'tenant-1', '2026-03-10')
+  const db = createMockDb(standardResolver)
+  const report = await computeDailyReport(db, 'tenant-1', '2026-03-10')
 
   assert.equal(report.avgResponseTimeHours, 4)
   assert.equal(report.overdueResponses, 1)
@@ -400,8 +400,8 @@ test('computeDailyReport computes trends, streaks, and schedule conflicts', asyn
 })
 
 test('computeDailyReport computes milestones and dormant clients', async () => {
-  const supabase = createMockSupabase(standardResolver)
-  const report = await computeDailyReport(supabase, 'tenant-1', '2026-03-10')
+  const db = createMockDb(standardResolver)
+  const report = await computeDailyReport(db, 'tenant-1', '2026-03-10')
 
   assert.equal(report.upcomingMilestones.length, 2)
   assert.equal(report.upcomingMilestones[0].clientName, 'Alex Rivera')
@@ -413,7 +413,7 @@ test('computeDailyReport computes milestones and dormant clients', async () => {
 })
 
 test('computeDailyReport safe wrapper falls back when stale inquiry query fails', async () => {
-  const supabase = createMockSupabase((query) => {
+  const db = createMockDb((query) => {
     const isStaleInquiriesCountQuery =
       query.table === 'inquiries' &&
       query.selection === 'id' &&
@@ -427,13 +427,13 @@ test('computeDailyReport safe wrapper falls back when stale inquiry query fails'
     return standardResolver(query)
   })
 
-  const report = await computeDailyReport(supabase, 'tenant-1', '2026-03-10')
+  const report = await computeDailyReport(db, 'tenant-1', '2026-03-10')
   assert.equal(report.staleFollowUps, 0)
   assert.equal(report.eventsToday.length, 2)
 })
 
 test('computeDailyReport sets MoM change to 0 when previous month revenue is zero', async () => {
-  const supabase = createMockSupabase((query) => {
+  const db = createMockDb((query) => {
     if (query.table === 'ledger_entries' && query.selection === 'amount_cents, is_refund') {
       const createdAtStart = String(getFilter(query, 'gte', 'created_at') ?? '')
       if (createdAtStart.startsWith('2026-03-01')) {
@@ -446,7 +446,7 @@ test('computeDailyReport sets MoM change to 0 when previous month revenue is zer
     return standardResolver(query)
   })
 
-  const report = await computeDailyReport(supabase, 'tenant-1', '2026-03-10')
+  const report = await computeDailyReport(db, 'tenant-1', '2026-03-10')
   assert.equal(report.monthRevenueToDateCents, 10000)
   assert.equal(report.monthOverMonthChangePercent, 0)
 })

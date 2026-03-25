@@ -1,7 +1,7 @@
 'use server'
 
 import { createElement } from 'react'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import type { Json } from '@/types/database'
 import { getCircleForContext, getChefHubProfileId } from './circle-lookup'
 import type { HubNotificationType } from './types'
@@ -88,10 +88,10 @@ export async function circleFirstNotify(input: CircleFirstInput): Promise<void> 
     return
   }
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // 1. Post the notification message to the circle
-  await supabase.from('hub_messages').insert({
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'notification',
@@ -127,21 +127,17 @@ async function notifyMembersOfUpdate(input: {
   messagePreview: string
 }): Promise<void> {
   try {
-    const supabase: any = createServerClient({ admin: true })
+    const db: any = createServerClient({ admin: true })
 
     const [groupResult, membersResult, chefResult] = await Promise.all([
-      supabase.from('hub_groups').select('name').eq('id', input.groupId).single(),
-      supabase
+      db.from('hub_groups').select('name').eq('id', input.groupId).single(),
+      db
         .from('hub_group_members')
         .select(
           'profile_id, notifications_muted, last_notified_at, notify_email, hub_guest_profiles(id, email, display_name, notifications_enabled, auth_user_id)'
         )
         .eq('group_id', input.groupId),
-      supabase
-        .from('chefs')
-        .select('display_name, business_name')
-        .eq('id', input.chefTenantId)
-        .single(),
+      db.from('chefs').select('display_name, business_name').eq('id', input.chefTenantId).single(),
     ])
 
     const group = groupResult.data
@@ -196,7 +192,7 @@ async function notifyMembersOfUpdate(input: {
           }),
         })
 
-        await supabase
+        await db
           .from('hub_group_members')
           .update({ last_notified_at: new Date().toISOString() })
           .eq('group_id', input.groupId)

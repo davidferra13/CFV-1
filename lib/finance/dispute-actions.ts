@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -56,9 +56,9 @@ function mapRow(row: any): PaymentDispute {
 
 export async function getDisputes(status?: string): Promise<PaymentDispute[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('payment_disputes')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -77,9 +77,9 @@ export async function createDispute(
 ): Promise<PaymentDispute> {
   const user = await requireChef()
   const parsed = CreateDisputeSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('payment_disputes')
     .insert({
       chef_id: user.tenantId!,
@@ -105,7 +105,7 @@ export async function updateDisputeEvidence(
 ): Promise<PaymentDispute> {
   const user = await requireChef()
   const parsed = UpdateEvidenceSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updates: Record<string, any> = {}
   if (parsed.evidenceNotes !== undefined) updates.evidence_notes = parsed.evidenceNotes
@@ -114,7 +114,7 @@ export async function updateDisputeEvidence(
   // Move to under_review when evidence is added
   updates.status = 'under_review'
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('payment_disputes')
     .update(updates)
     .eq('id', parsed.disputeId)
@@ -133,9 +133,9 @@ export async function resolveDispute(
   outcome: 'won' | 'lost'
 ): Promise<PaymentDispute> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('payment_disputes')
     .update({
       status: outcome,

@@ -2,7 +2,7 @@
 import fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env.local' });
-import { createAnonClient } from './lib/supabase.mjs';
+import { createAnonClient } from './lib/db.mjs';
 
 async function main() {
   // Sign in

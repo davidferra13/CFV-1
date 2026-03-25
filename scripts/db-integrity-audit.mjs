@@ -4,7 +4,7 @@
  *  ChefFlow Database Integrity Audit
  * ══════════════════════════════════════════════════════════════
  *
- *  Connects directly to Supabase (service role, bypasses RLS).
+ *  Connects directly to PostgreSQL (service role, bypasses RLS).
  *  Validates every record against business rules.
  *  No browser, no server needed - just the database.
  *
@@ -21,15 +21,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 dotenv.config({ path: path.join(ROOT, '.env.local') });
 
-import { createAdminClient } from './lib/supabase.mjs';
+import { createAdminClient } from './lib/db.mjs';
 
 const DATE = new Date().toISOString().slice(0, 10);
 const REPORTS_DIR = path.join(ROOT, 'reports', `overnight-${DATE}`);
 const startTime = Date.now();
 
-// ═══════════════════════ SUPABASE CLIENT ═════════════════════
+// ═══════════════════════ DATABASE CLIENT ═════════════════════
 
-const supabase = createAdminClient();
+const db = createAdminClient();
 
 // ═══════════════════════ UTILITIES ════════════════════════════
 
@@ -47,7 +47,7 @@ async function fetchAll(table, select = '*') {
   const all = [];
   let offset = 0;
   while (true) {
-    const { data, error } = await supabase.from(table).select(select).range(offset, offset + 999);
+    const { data, error } = await db.from(table).select(select).range(offset, offset + 999);
     if (error) throw new Error(`${table}: ${error.message}`);
     if (!data || data.length === 0) break;
     all.push(...data);
@@ -629,7 +629,7 @@ function generateReport(results, dataCounts) {
   w('# ChefFlow Database Integrity Report');
   w('');
   w(`> **Generated:** ${new Date().toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`);
-  w(`> **Database:** ${SUPABASE_URL.replace('https://', '').split('.')[0]}.supabase.co`);
+  w(`> **Database:** ${DB_URL.replace('https://', '').split('.')[0]}.db.local`);
   w(`> **Duration:** ${(totalDuration / 1000).toFixed(1)}s`);
   w('');
 
@@ -753,7 +753,7 @@ async function main() {
   console.log('='.repeat(60) + '\n');
 
   // Load all data
-  log('Loading data from Supabase...');
+  log('Loading data from database...');
   let data;
   try {
     const [events, clients, chefs, ledger, quotes, inquiries, eventTransitions, quoteTransitions] = await Promise.all([

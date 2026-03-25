@@ -5,7 +5,7 @@
 // Columns were added by migration 20260322000012_capacity_protection.sql.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -34,9 +34,9 @@ export type CapacityCheckResult = {
 
 export async function getCapacitySettings(): Promise<CapacitySettings & OffHoursSettings> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('chefs')
     .select(
       'max_events_per_week, max_events_per_month, max_consecutive_working_days, min_rest_days_per_week, max_hours_per_week, off_hours_start, off_hours_end, off_days'
@@ -66,9 +66,9 @@ export async function updateCapacitySettings(input: {
   max_hours_per_week?: number | null
 }): Promise<{ success: boolean }> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({
       max_events_per_week: input.max_events_per_week ?? null,
@@ -96,9 +96,9 @@ export async function updateOffHoursSettings(input: {
   off_days?: string[] | null
 }): Promise<{ success: boolean }> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chefs')
     .update({
       off_hours_start: input.off_hours_start ?? null,
@@ -124,11 +124,11 @@ export async function updateOffHoursSettings(input: {
  */
 export async function checkCapacityForDate(eventDate: string): Promise<CapacityCheckResult> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
   // Fetch current limits
-  const { data: chefData } = await supabase
+  const { data: chefData } = await db
     .from('chefs')
     .select('max_events_per_week, max_events_per_month')
     .eq('id', tenantId)
@@ -153,7 +153,7 @@ export async function checkCapacityForDate(eventDate: string): Promise<CapacityC
 
   const fmt = (d: Date) => d.toISOString().slice(0, 10)
 
-  const { count: weekCount } = await supabase
+  const { count: weekCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -161,7 +161,7 @@ export async function checkCapacityForDate(eventDate: string): Promise<CapacityC
     .lte('event_date', fmt(weekEnd))
     .not('status', 'in', '("cancelled","draft")')
 
-  const { count: monthCount } = await supabase
+  const { count: monthCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)

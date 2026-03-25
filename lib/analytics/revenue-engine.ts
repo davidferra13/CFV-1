@@ -1,4 +1,4 @@
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -93,11 +93,11 @@ export function solveRevenueClosure(
 
 export async function computeDashboardKPIs(range: DateRange): Promise<DashboardKPIs> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = chef.tenantId!
 
   // Events in range
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, status, quoted_price_cents, guest_count, event_date')
     .eq('tenant_id', tenantId)
@@ -105,7 +105,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     .lte('event_date', range.end)
 
   // Ledger entries for revenue
-  const { data: ledger } = await supabase
+  const { data: ledger } = await db
     .from('ledger_entries')
     .select('id, entry_type, amount_cents')
     .eq('tenant_id', tenantId)
@@ -113,7 +113,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     .lte('created_at', range.end)
 
   // Inquiries in range
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, status, converted_to_event_id')
     .eq('tenant_id', tenantId)
@@ -180,9 +180,9 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
 
 export async function computeRevenueByMonth(range: DateRange): Promise<RevenueByPeriod[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: ledger } = await supabase
+  const { data: ledger } = await db
     .from('ledger_entries')
     .select('entry_type, amount_cents, created_at')
     .eq('tenant_id', chef.tenantId!)
@@ -208,9 +208,9 @@ export async function computeRevenueByMonth(range: DateRange): Promise<RevenueBy
 
 export async function computeTopClients(range: DateRange): Promise<TopClient[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, client_id, quoted_price_cents, status, client:clients(full_name)')
     .eq('tenant_id', chef.tenantId!)
@@ -248,9 +248,9 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
 
 export async function computeSeasonalPerformance(range: DateRange): Promise<SeasonalMonth[]> {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, event_date, status, guest_count, quoted_price_cents')
     .eq('tenant_id', chef.tenantId!)

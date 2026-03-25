@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type ChefTransfer = {
   id: string
@@ -37,14 +37,14 @@ export type ChefPayoutSummary = {
  */
 export async function getChefPayoutSummary(): Promise<ChefPayoutSummary> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: transfers } = await supabase
+  const { data: transfers } = await db
     .from('stripe_transfers')
     .select('gross_amount_cents, platform_fee_cents, net_transfer_cents, status, created_at')
     .eq('tenant_id', user.entityId)
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('stripe_account_id, stripe_onboarding_complete')
     .eq('id', user.entityId)
@@ -92,12 +92,12 @@ export async function getChefTransfers(opts?: {
   offset?: number
 }): Promise<ChefTransfer[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const limit = opts?.limit ?? 50
   const offset = opts?.offset ?? 0
 
-  const { data } = await supabase
+  const { data } = await db
     .from('stripe_transfers')
     .select(
       `

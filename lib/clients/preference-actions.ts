@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -90,12 +90,12 @@ export async function addPreference(
   data: z.infer<typeof AddPreferenceSchema>
 ): Promise<ClientPreference> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validClientId = z.string().uuid().parse(clientId)
   const validated = AddPreferenceSchema.parse(data)
 
   // Verify client belongs to this tenant
-  const { data: client, error: clientErr } = await supabase
+  const { data: client, error: clientErr } = await db
     .from('clients')
     .select('id')
     .eq('id', validClientId)
@@ -106,7 +106,7 @@ export async function addPreference(
     throw new Error('Client not found')
   }
 
-  const { data: pref, error } = await supabase
+  const { data: pref, error } = await db
     .from('client_preferences')
     .insert({
       tenant_id: user.tenantId!,
@@ -139,10 +139,10 @@ export async function getClientPreferences(
   itemType?: PreferenceItemType
 ): Promise<ClientPreference[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validClientId = z.string().uuid().parse(clientId)
 
-  let query = supabase
+  let query = db
     .from('client_preferences')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -209,13 +209,13 @@ export async function recordPostEventFeedback(
   feedback: Array<z.infer<typeof PostEventFeedbackItemSchema>>
 ): Promise<ClientPreference[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validEventId = z.string().uuid().parse(eventId)
   const validClientId = z.string().uuid().parse(clientId)
   const validFeedback = z.array(PostEventFeedbackItemSchema).min(1).parse(feedback)
 
   // Verify event and client belong to this tenant
-  const { data: event, error: eventErr } = await supabase
+  const { data: event, error: eventErr } = await db
     .from('events')
     .select('id, client_id')
     .eq('id', validEventId)
@@ -241,7 +241,7 @@ export async function recordPostEventFeedback(
     observed_at: new Date().toISOString(),
   }))
 
-  const { data, error } = await supabase.from('client_preferences').insert(rows).select()
+  const { data, error } = await db.from('client_preferences').insert(rows).select()
 
   if (error) {
     console.error('[recordPostEventFeedback] Error:', error)
@@ -258,10 +258,10 @@ export async function recordPostEventFeedback(
  */
 export async function suggestAvoidItems(clientId: string): Promise<ClientPreference[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validClientId = z.string().uuid().parse(clientId)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_preferences')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -283,11 +283,11 @@ export async function suggestAvoidItems(clientId: string): Promise<ClientPrefere
  */
 export async function deletePreference(preferenceId: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const validId = z.string().uuid().parse(preferenceId)
 
   // Verify preference belongs to this tenant before deleting
-  const { data: pref, error: fetchErr } = await supabase
+  const { data: pref, error: fetchErr } = await db
     .from('client_preferences')
     .select('id, client_id')
     .eq('id', validId)
@@ -298,7 +298,7 @@ export async function deletePreference(preferenceId: string): Promise<void> {
     throw new Error('Preference not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_preferences')
     .delete()
     .eq('id', validId)

@@ -6,7 +6,8 @@ import type { AgentActionDefinition } from '@/lib/ai/agent-registry'
 import type { AgentActionPreview } from '@/lib/ai/command-types'
 import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-actions'
 import { generateFirstResponse } from '@/lib/templates/inquiry-first-response'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
+import type { PricingConfig } from '@/lib/pricing/config-types'
 
 // ─── Resolve inquiry from DB ────────────────────────────────────────────────
 
@@ -20,9 +21,9 @@ async function resolveInquiry(
   dietaryRestrictions: string[]
   occasion: string | null
 } | null> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select('*, clients(full_name)')
     .eq('id', inquiryId)
@@ -43,9 +44,9 @@ async function resolveInquiry(
 // ─── Resolve chef name ──────────────────────────────────────────────────────
 
 async function resolveChefFirstName(tenantId: string): Promise<string> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', tenantId)
@@ -74,12 +75,15 @@ const draftInquiryFirstResponse: AgentActionDefinition = {
       throw new Error('inquiryId is required')
     }
 
-    // Load inquiry data, chef config, and chef name in parallel
-    const [inquiryData, serviceConfig, chefFirstName] = await Promise.all([
+    // Load inquiry data, chef config, pricing config, and chef name in parallel
+    const db: any = createServerClient()
+    const [inquiryData, serviceConfig, chefFirstName, pricingData] = await Promise.all([
       resolveInquiry(inquiryId, ctx.tenantId),
       getServiceConfigForTenant(ctx.tenantId),
       resolveChefFirstName(ctx.tenantId),
+      db.from('chef_pricing_config').select('*').eq('chef_id', ctx.tenantId).single(),
     ])
+    const pricingConfig = (pricingData.data as unknown as PricingConfig) ?? null
 
     if (!inquiryData) {
       throw new Error(`Inquiry ${inquiryId} not found`)
@@ -90,6 +94,7 @@ const draftInquiryFirstResponse: AgentActionDefinition = {
       ...inquiryData,
       chefFirstName,
       serviceConfig,
+      pricingConfig,
     })
 
     const preview: AgentActionPreview = {

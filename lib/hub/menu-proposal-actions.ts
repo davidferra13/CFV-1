@@ -1,10 +1,10 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getCircleForContext, getChefHubProfileId } from './circle-lookup'
 import { generateMenuProposalMessage, type MenuOption } from '@/lib/templates/menu-proposal-message'
 
-type UntypedSupabaseClient = {
+type UntypedDbClient = {
   from: (table: string) => any
 }
 
@@ -66,11 +66,11 @@ export async function shareMenuProposalToCircle(input: {
   }
 
   // Keep the result shapes explicit here so build type-checking does not
-  // expand the full generated Supabase query-builder types for every chain.
-  const supabase = createServerClient({ admin: true }) as unknown as UntypedSupabaseClient
+  // expand the full generated query-builder types for every chain.
+  const db = createServerClient({ admin: true }) as unknown as UntypedDbClient
 
   // Load chef first name
-  const { data: chef } = (await supabase
+  const { data: chef } = (await db
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', circle.tenantId)
@@ -83,7 +83,7 @@ export async function shareMenuProposalToCircle(input: {
   const menus: MenuOption[] = []
 
   for (const menuId of input.menuIds) {
-    const { data: menu } = (await supabase
+    const { data: menu } = (await db
       .from('menus')
       .select('id, name, description')
       .eq('id', menuId)
@@ -92,7 +92,7 @@ export async function shareMenuProposalToCircle(input: {
 
     if (!menu) continue
 
-    const { data: courses } = (await supabase
+    const { data: courses } = (await db
       .from('menu_courses')
       .select('id, name, display_order')
       .eq('menu_id', menuId)
@@ -101,7 +101,7 @@ export async function shareMenuProposalToCircle(input: {
     const menuCourses: MenuOption['courses'] = []
 
     for (const course of courses ?? []) {
-      const { data: dishes } = (await supabase
+      const { data: dishes } = (await db
         .from('menu_dishes')
         .select('name')
         .eq('course_id', course.id)
@@ -140,7 +140,7 @@ export async function shareMenuProposalToCircle(input: {
   })
 
   // Post to circle
-  await supabase.from('hub_messages').insert({
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'text',

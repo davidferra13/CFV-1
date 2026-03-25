@@ -3,7 +3,7 @@
 // Uncomment when the menu_items migration is applied.
 // 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 
 // ─── BCG Matrix Quadrants ───────────────────────────────────────────────────
@@ -54,10 +54,10 @@ export async function computeMenuEngineering(
   targetFoodCostPct: number = 30
 ): Promise<MenuEngineeringResult> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const db = await createServerClient()
 
   // Get dishes with their linked recipes and cost data
-  let query = (supabase as any)
+  let query = (db as any)
     .from('dishes')
     .select(
       `
@@ -91,7 +91,7 @@ export async function computeMenuEngineering(
 
   let recipeCostMap = new Map<string, number>()
   if (recipeIds.length > 0) {
-    const { data: costData } = await (supabase as any)
+    const { data: costData } = await (db as any)
       .from('recipe_cost_summary')
       .select('recipe_id, cost_per_portion_cents')
       .in('recipe_id', recipeIds)

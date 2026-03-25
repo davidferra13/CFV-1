@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -68,9 +68,9 @@ export type RecordHoursInput = z.infer<typeof RecordHoursSchema>
 export async function createStaffMember(input: CreateStaffInput) {
   const user = await requireChef()
   const validated = CreateStaffSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_members')
     .insert({ ...validated, chef_id: user.tenantId! })
     .select()
@@ -88,9 +88,9 @@ export async function createStaffMember(input: CreateStaffInput) {
 export async function updateStaffMember(id: string, input: UpdateStaffInput) {
   const user = await requireChef()
   const validated = UpdateStaffSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('staff_members')
     .update(validated)
     .eq('id', id)
@@ -109,9 +109,9 @@ export async function updateStaffMember(id: string, input: UpdateStaffInput) {
 
 export async function deactivateStaffMember(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('staff_members')
     .update({ status: 'inactive' })
     .eq('id', id)
@@ -123,9 +123,9 @@ export async function deactivateStaffMember(id: string) {
 
 export async function listStaffMembers(activeOnly = true) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase.from('staff_members').select('*').eq('chef_id', user.tenantId!).order('name')
+  let query = db.from('staff_members').select('*').eq('chef_id', user.tenantId!).order('name')
 
   if (activeOnly) query = query.eq('status', 'active')
 
@@ -143,9 +143,9 @@ export async function searchStaffMembers(filters: {
   status?: string
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase.from('staff_members').select('*').eq('chef_id', user.tenantId!).order('name')
+  let query = db.from('staff_members').select('*').eq('chef_id', user.tenantId!).order('name')
 
   if (filters.search) {
     query = query.ilike('name', `%${filters.search}%`)
@@ -167,9 +167,9 @@ export async function searchStaffMembers(filters: {
  */
 export async function getStaffMember(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: member, error } = await supabase
+  const { data: member, error } = await db
     .from('staff_members')
     .select('*')
     .eq('id', id)
@@ -179,7 +179,7 @@ export async function getStaffMember(id: string) {
   if (error || !member) throw new Error('Staff member not found')
 
   // Load assignment history
-  const { data: assignments } = await supabase
+  const { data: assignments } = await db
     .from('event_staff_assignments')
     .select(
       `
@@ -193,14 +193,14 @@ export async function getStaffMember(id: string) {
     .limit(20)
 
   // Load onboarding checklist
-  const { data: onboarding } = await supabase
+  const { data: onboarding } = await db
     .from('staff_onboarding_items')
     .select('*')
     .eq('staff_member_id', id)
     .eq('tenant_id', user.tenantId!)
 
   // Load contractor agreements
-  const { data: agreements } = await supabase
+  const { data: agreements } = await db
     .from('contractor_service_agreements')
     .select('*')
     .eq('staff_member_id', id)
@@ -208,7 +208,7 @@ export async function getStaffMember(id: string) {
     .order('created_at', { ascending: false })
 
   // Load performance score
-  const { data: performance } = await supabase
+  const { data: performance } = await db
     .from('staff_performance_scores')
     .select('*')
     .eq('staff_member_id', id)
@@ -234,9 +234,9 @@ export async function checkAssignmentConflict(
   excludeEventId?: string
 ) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('event_staff_assignments')
     .select(
       `
@@ -265,9 +265,9 @@ export async function checkAssignmentConflict(
 export async function assignStaffToEvent(input: AssignStaffInput) {
   const user = await requireChef()
   const validated = AssignStaffSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_staff_assignments')
     .upsert(
       {
@@ -296,9 +296,9 @@ export async function assignStaffToEvent(input: AssignStaffInput) {
 
 export async function removeStaffFromEvent(assignmentId: string, eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('event_staff_assignments')
     .delete()
     .eq('id', assignmentId)
@@ -310,9 +310,9 @@ export async function removeStaffFromEvent(assignmentId: string, eventId: string
 
 export async function getEventStaffRoster(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_staff_assignments')
     .select(
       `
@@ -335,10 +335,10 @@ export async function getEventStaffRoster(eventId: string) {
 export async function recordStaffHours(input: RecordHoursInput) {
   const user = await requireChef()
   const validated = RecordHoursSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Load assignment + staff default rate
-  const { data: assignment } = await supabase
+  const { data: assignment } = await db
     .from('event_staff_assignments')
     .select(
       `
@@ -357,7 +357,7 @@ export async function recordStaffHours(input: RecordHoursInput) {
   const effectiveRate = assignment.rate_override_cents ?? staffRate
   const payAmountCents = Math.round(validated.actual_hours * effectiveRate)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_staff_assignments')
     .update({
       actual_hours: validated.actual_hours,
@@ -383,9 +383,9 @@ export async function recordStaffHours(input: RecordHoursInput) {
  */
 export async function computeEventLaborCost(eventId: string): Promise<number> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_staff_assignments')
     .select('pay_amount_cents')
     .eq('event_id', eventId)
@@ -431,7 +431,7 @@ export async function checkStaffHasLogin(staffMemberId: string): Promise<boolean
  *  1. Validate inputs (Zod)
  *  2. Verify the staff member belongs to the current chef's tenant
  *  3. Check for existing login (prevent duplicates)
- *  4. Create a Supabase auth user via admin API
+ *  4. Create a Auth.js user via admin API
  *  5. Insert a user_roles row linking auth_user_id → staff_member entity_id
  *  6. Store the email on the staff_members row if not already set
  */
@@ -462,7 +462,7 @@ export async function createStaffLogin(input: {
     throw new Error('This staff member already has a portal login')
   }
 
-  // 3. Create auth user via Supabase admin API
+  // 3. Create auth user via the database admin API
   const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
     email: validated.email,
     password: validated.password,

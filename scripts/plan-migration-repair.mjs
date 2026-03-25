@@ -63,7 +63,7 @@ export function inspectLocalMigrationDirectory(migrationsDir) {
   }
 }
 
-export function parseSupabaseMigrationListOutput(text) {
+export function parseMigrationListOutput(text) {
   const localVersions = new Set()
   const remoteVersions = new Set()
 
@@ -109,7 +109,7 @@ export function buildMigrationRepairPlan({ localVersions, remoteVersions }) {
       repairCommands.push({
         version,
         action: repair.action,
-        command: `npx supabase migration repair --linked --status ${repair.action} ${version}`,
+        command: `npx database migration repair --linked --status ${repair.action} ${version}`,
         reason: repair.reason,
       })
     } else {
@@ -125,7 +125,7 @@ export function buildMigrationRepairPlan({ localVersions, remoteVersions }) {
       repairCommands.push({
         version,
         action: repair.action,
-        command: `npx supabase migration repair --linked --status ${repair.action} ${version}`,
+        command: `npx database migration repair --linked --status ${repair.action} ${version}`,
         reason: repair.reason,
       })
     }
@@ -161,7 +161,7 @@ function readCommandOutput(command) {
 }
 
 function readMigrationListFromCli() {
-  return readCommandOutput('npx supabase migration list --linked')
+  return readCommandOutput('npx database migration list --linked')
 }
 
 function parseArgs(argv) {
@@ -246,7 +246,7 @@ function printHumanReport(report) {
 
   if (report.plan.pushableLocalOnly.length > 0) {
     console.log('Push command after repairs:')
-    console.log('- npx supabase db push --linked --include-all')
+    console.log('- npx database push --linked --include-all')
     console.log('')
   }
 
@@ -263,7 +263,7 @@ export function createMigrationRepairReport({
   migrationListOutput,
 }) {
   const local = inspectLocalMigrationDirectory(migrationsDir)
-  const remote = parseSupabaseMigrationListOutput(migrationListOutput)
+  const remote = parseMigrationListOutput(migrationListOutput)
   const plan = buildMigrationRepairPlan({
     localVersions: local.versions,
     remoteVersions: remote.remoteVersions,
@@ -284,7 +284,7 @@ function main() {
   const args = parseArgs(process.argv.slice(2))
   const scriptPath = fileURLToPath(import.meta.url)
   const projectRoot = join(dirname(scriptPath), '..')
-  const migrationsDir = join(projectRoot, 'supabase', 'migrations')
+  const migrationsDir = join(projectRoot, 'database', 'migrations')
   const migrationListOutput = args.fromFile
     ? readFileSync(args.fromFile, 'utf8')
     : readMigrationListFromCli()

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -38,16 +38,16 @@ export interface DietaryIntelligenceResult {
 export async function getDietaryIntelligence(): Promise<DietaryIntelligenceResult | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch clients with dietary restrictions
-  const { data: clients, error: clientError } = await supabase
+  const { data: clients, error: clientError } = await db
     .from('clients')
     .select('id, dietary_restrictions')
     .eq('tenant_id', tenantId)
 
   // Fetch events with dietary data and dates (for trend analysis)
-  const { data: events, error: eventError } = await supabase
+  const { data: events, error: eventError } = await db
     .from('events')
     .select('id, event_date, dietary_restrictions, guest_count, client_id')
     .eq('tenant_id', tenantId)

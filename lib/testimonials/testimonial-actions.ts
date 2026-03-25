@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import crypto from 'crypto'
 
@@ -52,11 +52,11 @@ export async function requestTestimonial(eventId: string): Promise<{
   url: string
 }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Look up event + client info
-  const { data: event, error: eventError } = await supabase
+  const { data: event, error: eventError } = await db
     .from('events')
     .select('id, occasion, client_id, clients(full_name)')
     .eq('id', eventId)
@@ -70,7 +70,7 @@ export async function requestTestimonial(eventId: string): Promise<{
   const token = crypto.randomUUID()
   const clientName = (event.clients as any)?.full_name ?? 'Guest'
 
-  const { error } = await supabase.from('testimonials' as any).insert({
+  const { error } = await db.from('testimonials' as any).insert({
     tenant_id: tenantId,
     client_id: event.client_id,
     event_id: eventId,
@@ -99,9 +99,9 @@ export async function requestTestimonial(eventId: string): Promise<{
  */
 export async function getTestimonials(filters?: TestimonialFilters): Promise<TestimonialRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('testimonials' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -134,9 +134,9 @@ export async function getTestimonials(filters?: TestimonialFilters): Promise<Tes
  */
 export async function approveTestimonial(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('testimonials' as any)
     .update({ is_approved: true })
     .eq('id', id)
@@ -155,10 +155,10 @@ export async function approveTestimonial(id: string): Promise<void> {
  */
 export async function featureTestimonial(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch current state to toggle
-  const { data: current, error: fetchError } = await supabase
+  const { data: current, error: fetchError } = await db
     .from('testimonials' as any)
     .select('is_featured')
     .eq('id', id)
@@ -169,7 +169,7 @@ export async function featureTestimonial(id: string): Promise<void> {
     throw new Error('Testimonial not found')
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('testimonials' as any)
     .update({ is_featured: !(current as any).is_featured })
     .eq('id', id)
@@ -188,9 +188,9 @@ export async function featureTestimonial(id: string): Promise<void> {
  */
 export async function deleteTestimonial(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('testimonials' as any)
     .delete()
     .eq('id', id)
@@ -220,9 +220,9 @@ export async function getPublicTestimonials(chefId: string): Promise<
     submitted_at: string | null
   }[]
 > {
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('testimonials' as any)
     .select('id, display_name, client_name, rating, content, event_type, is_featured, submitted_at')
     .eq('tenant_id', chefId)
@@ -245,9 +245,9 @@ export async function getPublicTestimonials(chefId: string): Promise<
  */
 export async function getTestimonialStats(): Promise<TestimonialStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('testimonials' as any)
     .select('id, rating, is_approved, is_featured, submitted_at')
     .eq('tenant_id', user.tenantId!)

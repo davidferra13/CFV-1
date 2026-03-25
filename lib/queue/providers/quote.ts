@@ -4,11 +4,11 @@
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 
-export async function getQuoteQueueItems(supabase: any, tenantId: string): Promise<QueueItem[]> {
+export async function getQuoteQueueItems(db: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select(
       `

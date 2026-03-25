@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getEventPhotosForChef } from '@/lib/events/photo-actions'
 import { getEventSocialPosts } from '@/lib/social/event-social-actions'
 import { EventPostComposer } from '@/components/social/event-post-composer'
@@ -24,10 +24,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function SocialComposePage({ params }: PageProps) {
   const user = await requireChef()
   await requirePro('marketing')
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event details
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `

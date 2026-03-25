@@ -11,7 +11,7 @@ dotenv.config({ path: '.env.local' })
 
 const SOAK_URL = 'http://localhost:3200'
 // Auth against dev server (port 3100) because the E2E auth endpoint
-// returns 403 in production mode (next start). Auth tokens (Supabase JWT)
+// returns 403 in production mode (next start). Auth tokens (JWT)
 // are valid regardless of which port issued them.
 const AUTH_URL = 'http://localhost:3100'
 

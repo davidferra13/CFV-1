@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { SUPPORTED_PLATFORMS } from './platform-connections-constants'
 
@@ -21,10 +21,10 @@ const VALID_PLATFORM_KEYS = new Set(SUPPORTED_PLATFORMS.map((p) => p.key))
 export async function getPlatformConnectionStatuses(): Promise<PlatformConnectionStatus[]> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
     const chefId = user.tenantId!
 
-    const { data: rows, error } = await supabase
+    const { data: rows, error } = await db
       .from('platform_api_connections')
       .select('platform, status, connected_at, last_sync_at, last_error')
       .eq('chef_id', chefId)
@@ -88,14 +88,14 @@ export async function updatePlatformConnection(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
     const chefId = user.tenantId!
 
     if (!VALID_PLATFORM_KEYS.has(platform)) {
       return { success: false, error: `Unsupported platform: ${platform}` }
     }
 
-    const { error } = await supabase.from('platform_api_connections').upsert(
+    const { error } = await db.from('platform_api_connections').upsert(
       {
         chef_id: chefId,
         platform,
@@ -124,14 +124,14 @@ export async function disconnectPlatformConnection(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const user = await requireChef()
-    const supabase: any = createServerClient()
+    const db: any = createServerClient()
     const chefId = user.tenantId!
 
     if (!VALID_PLATFORM_KEYS.has(platform)) {
       return { success: false, error: `Unsupported platform: ${platform}` }
     }
 
-    const { error } = await supabase
+    const { error } = await db
       .from('platform_api_connections')
       .update({
         status: 'disconnected',

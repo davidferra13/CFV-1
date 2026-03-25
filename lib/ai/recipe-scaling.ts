@@ -8,7 +8,7 @@
 // Output is DRAFT ONLY - chef must confirm scaled recipe before using.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { z } from 'zod'
 
@@ -59,9 +59,9 @@ export async function scaleRecipeWithAI(
   targetServings: number
 ): Promise<ScaledRecipe> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: recipe } = await supabase
+  const { data: recipe } = await db
     .from('recipes')
     .select(
       `

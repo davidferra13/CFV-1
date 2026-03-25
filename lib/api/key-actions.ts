@@ -1,13 +1,13 @@
 'use server'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { generateApiKey, hashApiKey } from './auth-api-key'
 import { revalidatePath } from 'next/cache'
 import { LEGACY_DEFAULT_SCOPES, API_SCOPES, type ApiScope } from './v2/scopes'
 
 export async function createApiKey(name: string, scopes?: ApiScope[]): Promise<{ key: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const key = generateApiKey()
   const keyHash = hashApiKey(key)
   const keyPrefix = key.substring(0, 15)
@@ -18,7 +18,7 @@ export async function createApiKey(name: string, scopes?: ApiScope[]): Promise<{
     throw new Error('At least one scope is required')
   }
 
-  const { error } = await supabase.from('chef_api_keys' as any).insert({
+  const { error } = await db.from('chef_api_keys' as any).insert({
     tenant_id: user.entityId,
     name,
     key_hash: keyHash,
@@ -32,8 +32,8 @@ export async function createApiKey(name: string, scopes?: ApiScope[]): Promise<{
 
 export async function revokeApiKey(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
-  await supabase
+  const db: any = createServerClient()
+  await db
     .from('chef_api_keys' as any)
     .update({ is_active: false })
     .eq('id', id)

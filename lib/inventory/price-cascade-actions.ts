@@ -6,7 +6,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -64,13 +64,11 @@ export async function previewPriceCascade(
 ): Promise<PriceCascadePreview> {
   const user = await requireChef()
   PreviewPriceCascadeSchema.parse({ ingredientId, newPriceCents })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get the current price point for this ingredient
   // vendor_price_points uses item_name (not ingredient_name) and recorded_at (not effective_date)
-  const { data: pricePoint, error: priceError } = await (
-    supabase.from('vendor_price_points') as any
-  )
+  const { data: pricePoint, error: priceError } = await (db.from('vendor_price_points') as any)
     .select('*')
     .eq('ingredient_id', ingredientId)
     .eq('chef_id', user.tenantId!)
@@ -87,7 +85,7 @@ export async function previewPriceCascade(
   // Get all recipe_ingredients rows that reference this ingredient
   // Note: recipe_ingredients does not have cost_cents in the DB schema,
   // so we compute costs from the price point and quantity
-  const { data: recipeIngredients, error: riError } = await supabase
+  const { data: recipeIngredients, error: riError } = await db
     .from('recipe_ingredients')
     .select('id, recipe_id, ingredient_id, quantity, unit')
     .eq('ingredient_id', ingredientId)
@@ -110,7 +108,7 @@ export async function previewPriceCascade(
   const recipeIds = [...new Set((recipeIngredients as any[]).map((ri: any) => ri.recipe_id))]
 
   // Fetch recipe details - tenant-scoped (recipes use tenant_id)
-  const { data: recipes, error: recipesError } = await supabase
+  const { data: recipes, error: recipesError } = await db
     .from('recipes')
     .select('id, name')
     .eq('tenant_id', user.tenantId!)
@@ -176,7 +174,7 @@ export async function cascadeIngredientPrice(
 ): Promise<PriceCascadeResult> {
   const user = await requireChef()
   CascadeIngredientPriceSchema.parse({ ingredientId, newPriceCents })
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get preview first to know what needs to change
   const preview = await previewPriceCascade(ingredientId, newPriceCents)
@@ -184,7 +182,7 @@ export async function cascadeIngredientPrice(
   // Insert a new price point (append-only: we don't update the old one)
   // vendor_price_points requires: chef_id, item_name, price_cents, unit, vendor_id
   // We need to fetch the existing price point to get the vendor_id and unit
-  const { data: existingPP } = await (supabase.from('vendor_price_points') as any)
+  const { data: existingPP } = await (db.from('vendor_price_points') as any)
     .select('vendor_id, unit')
     .eq('ingredient_id', ingredientId)
     .eq('chef_id', user.tenantId!)
@@ -192,7 +190,7 @@ export async function cascadeIngredientPrice(
     .limit(1)
     .single()
 
-  const { error: insertError } = await (supabase.from('vendor_price_points') as any).insert({
+  const { error: insertError } = await (db.from('vendor_price_points') as any).insert({
     chef_id: user.tenantId!,
     ingredient_id: ingredientId,
     item_name: preview.ingredientName,
@@ -206,7 +204,7 @@ export async function cascadeIngredientPrice(
 
   // Update ingredient.last_price_cents
   try {
-    await supabase
+    await db
       .from('ingredients')
       .update({ last_price_cents: newPriceCents } as any)
       .eq('id', ingredientId)

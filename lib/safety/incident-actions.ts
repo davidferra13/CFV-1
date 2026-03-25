@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -59,9 +59,9 @@ export async function createIncident(input: CreateIncidentInput) {
   const tenantId = chef.tenantId!
   const validated = IncidentSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_incidents')
     .insert({
       ...validated,
@@ -87,9 +87,9 @@ export async function updateIncident(id: string, input: UpdateIncidentInput) {
   const tenantId = chef.tenantId!
   const validated = UpdateIncidentSchema.parse(input)
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('chef_incidents')
     .select('id')
     .eq('id', id)
@@ -98,7 +98,7 @@ export async function updateIncident(id: string, input: UpdateIncidentInput) {
 
   if (!existing) throw new Error('Incident not found or access denied')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_incidents')
     .update({ ...validated, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -120,9 +120,9 @@ export async function addFollowUpStep(id: string, step: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('chef_incidents')
     .select('follow_up_steps')
     .eq('id', id)
@@ -142,7 +142,7 @@ export async function addFollowUpStep(id: string, step: string) {
 
   const updatedSteps = [...currentSteps, newStep]
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_incidents')
     .update({
       follow_up_steps: updatedSteps,
@@ -166,9 +166,9 @@ export async function toggleFollowUpStep(incidentId: string, stepId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing, error: fetchError } = await supabase
+  const { data: existing, error: fetchError } = await db
     .from('chef_incidents')
     .select('follow_up_steps')
     .eq('id', incidentId)
@@ -189,7 +189,7 @@ export async function toggleFollowUpStep(incidentId: string, stepId: string) {
     }
   })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_incidents')
     .update({
       follow_up_steps: updatedSteps,
@@ -216,9 +216,9 @@ export async function updateResolutionStatus(
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('chef_incidents')
     .select('id')
     .eq('id', id)
@@ -227,7 +227,7 @@ export async function updateResolutionStatus(
 
   if (!existing) throw new Error('Incident not found or access denied')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_incidents')
     .update({ resolution_status: status, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -252,9 +252,9 @@ export async function getIncidents(filters?: {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let query = supabase
+  let query = db
     .from('chef_incidents')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -281,9 +281,9 @@ export async function getIncident(id: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_incidents')
     .select('*')
     .eq('id', id)
@@ -303,10 +303,10 @@ export async function getIncidentsByEvent(eventId: string) {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
 
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify the event belongs to this tenant
-  const { data: eventCheck } = await supabase
+  const { data: eventCheck } = await db
     .from('events')
     .select('id')
     .eq('id', eventId)
@@ -315,7 +315,7 @@ export async function getIncidentsByEvent(eventId: string) {
 
   if (!eventCheck) throw new Error('Event not found or access denied')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('chef_incidents')
     .select('*')
     .eq('tenant_id', tenantId)

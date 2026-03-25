@@ -6,7 +6,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database, Json } from '@/types/database'
@@ -68,13 +68,13 @@ export async function checkInquiryDuplicates(
   candidates: { client_name: string; first_contact_at: string }[]
 ): Promise<Map<string, boolean>> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build a map: "name|date" → is duplicate
   const results = new Map<string, boolean>()
 
   // Fetch all existing inquiries for this tenant (name + date pairs)
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('inquiries')
     .select('unknown_fields, confirmed_date, first_contact_at, client:clients(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -116,7 +116,7 @@ async function importSingleInquiry(
   tenantId: string,
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const validated = ImportInquirySchema.parse(input)
 
@@ -133,7 +133,7 @@ async function importSingleInquiry(
   let clientId: string | null = null
 
   if (validated.client_email) {
-    const { data: existingClient } = await supabase
+    const { data: existingClient } = await db
       .from('clients')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -160,7 +160,7 @@ async function importSingleInquiry(
     : new Date().toISOString()
 
   // Insert inquiry
-  const { data: inquiry, error } = await supabase
+  const { data: inquiry, error } = await db
     .from('inquiries')
     .insert({
       tenant_id: tenantId,
@@ -192,7 +192,7 @@ async function importSingleInquiry(
 
   // Insert initial state transition (no side effects - just the record)
   try {
-    await supabase.from('inquiry_state_transitions').insert({
+    await db.from('inquiry_state_transitions').insert({
       inquiry_id: inquiry.id,
       tenant_id: tenantId,
       from_status: null,

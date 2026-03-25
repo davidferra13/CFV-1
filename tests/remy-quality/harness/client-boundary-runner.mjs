@@ -15,7 +15,7 @@
  * Run: npm run test:remy-quality:client:boundary
  */
 
-import { createClient } from '../../../scripts/lib/supabase.mjs'
+import { createClient } from '../../../scripts/lib/db.mjs'
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { execSync, spawn } from 'child_process'
 import { fileURLToPath } from 'url'
@@ -31,15 +31,15 @@ const BASE_URL = 'http://localhost:3100'
 const CLIENT_ENDPOINT = `${BASE_URL}/api/remy/client`
 const OLLAMA_URL = 'http://localhost:11434'
 const INTER_REQUEST_DELAY_MS = 6500 // stay under 12/min rate limit
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const DB_URL = process.env.NEXT_PUBLIC_DB_URL
+const DB_ANON_KEY = process.env.NEXT_PUBLIC_DB_ANON_KEY
 
 // ─── Internal Leak Terms ────────────────────────────────────────────────────
 
 const INTERNAL_LEAK_TERMS = [
   'node_modules', 'ECONNREFUSED', 'at Object.', 'at Module.', 'at async',
   'stack trace', 'TypeError:', '/app/', '/lib/', 'postgresql', '.next/',
-  'supabase', 'tenant_id', 'entity_id', 'webpack',
+  'database', 'tenant_id', 'entity_id', 'webpack',
 ]
 
 function hasInternalLeak(text) {
@@ -75,18 +75,18 @@ function loadEnv() {
 async function authenticate() {
   loadEnv()
 
-  const supabaseUrl = SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  const dbUrl = DB_URL || process.env.NEXT_PUBLIC_DB_URL
+  const dbKey = DB_ANON_KEY || process.env.NEXT_PUBLIC_DB_ANON_KEY
+  if (!dbUrl || !dbKey) {
+    throw new Error('Missing NEXT_PUBLIC_DB_URL or NEXT_PUBLIC_DB_ANON_KEY')
   }
 
   // Read client credentials
   const seedPath = join(PROJECT_ROOT, '.auth', 'seed-ids.json')
   const seeds = JSON.parse(readFileSync(seedPath, 'utf-8'))
 
-  const supabase = createClient(supabaseUrl, supabaseKey)
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const db = createClient(dbUrl, dbKey)
+  const { data, error } = await db.auth.signInWithPassword({
     email: seeds.clientEmail,
     password: seeds.clientPassword,
   })
@@ -96,8 +96,8 @@ async function authenticate() {
   }
 
   // Build cookie (same pattern as other runners)
-  const projectRef = supabaseUrl.match(/\/\/([^.]+)\./)?.[1]
-  if (!projectRef) throw new Error('Cannot extract project ref from Supabase URL')
+  const projectRef = dbUrl.match(/\/\/([^.]+)\./)?.[1]
+  if (!projectRef) throw new Error('Cannot extract project ref from database URL')
 
   const sessionPayload = JSON.stringify({
     access_token: data.session.access_token,
@@ -124,20 +124,20 @@ async function authenticate() {
 
 // Also get a chef cookie (for wrong-role test reuse, if needed)
 async function getChefCookie() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const dbUrl = process.env.NEXT_PUBLIC_DB_URL
+  const dbKey = process.env.NEXT_PUBLIC_DB_ANON_KEY
   const seedPath = join(PROJECT_ROOT, '.auth', 'seed-ids.json')
   const seeds = JSON.parse(readFileSync(seedPath, 'utf-8'))
 
-  const supabase = createClient(supabaseUrl, supabaseKey)
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const db = createClient(dbUrl, dbKey)
+  const { data, error } = await db.auth.signInWithPassword({
     email: seeds.chefEmail,
     password: seeds.chefPassword,
   })
 
   if (error || !data.session) return null
 
-  const projectRef = supabaseUrl.match(/\/\/([^.]+)\./)?.[1]
+  const projectRef = dbUrl.match(/\/\/([^.]+)\./)?.[1]
   const sessionPayload = JSON.stringify({
     access_token: data.session.access_token,
     refresh_token: data.session.refresh_token,

@@ -1,7 +1,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   SNAPSHOT_DOCUMENT_TYPES,
   type SnapshotDocumentType,
@@ -130,9 +130,9 @@ export async function getEventDocumentSnapshots(
   limit = 200
 ): Promise<EventDocumentSnapshot[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_document_snapshots')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -150,9 +150,9 @@ export async function getEventDocumentSnapshots(
 
 export async function getRecentDocumentSnapshots(limit = 80): Promise<RecentDocumentSnapshot[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_document_snapshots')
     .select(
       `
@@ -189,7 +189,7 @@ export async function getEventDocumentSnapshotDrilldown(
   filters: SnapshotDrilldownFilters = {}
 ): Promise<EventSnapshotDrilldownResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const docType = filters.docType ?? null
   const fromDate = normalizeDateInput(filters.fromDate)
@@ -227,7 +227,7 @@ export async function getEventDocumentSnapshotDrilldown(
   }
 
   const listQuery = applyCoreFilters(
-    supabase.from('event_document_snapshots').select('*', { count: 'exact' })
+    db.from('event_document_snapshots').select('*', { count: 'exact' })
   )
     .order('generated_at', { ascending: order === 'oldest' })
     .range(rangeFrom, rangeTo)
@@ -235,7 +235,7 @@ export async function getEventDocumentSnapshotDrilldown(
   const versionOptionsPromise: Promise<number[]> = (async () => {
     if (!docType) return []
     const { data: versionRows, error: versionError } = await applyCoreFilters(
-      supabase.from('event_document_snapshots').select('version_number'),
+      db.from('event_document_snapshots').select('version_number'),
       true,
       false
     )
@@ -263,13 +263,13 @@ export async function getEventDocumentSnapshotDrilldown(
     Promise.all(
       SNAPSHOT_DOCUMENT_TYPES.map(async (type) => {
         const countQuery = applyCoreFilters(
-          supabase.from('event_document_snapshots').select('id', { count: 'exact', head: true }),
+          db.from('event_document_snapshots').select('id', { count: 'exact', head: true }),
           false,
           false
         ).eq('document_type', type)
 
         const latestQuery = applyCoreFilters(
-          supabase.from('event_document_snapshots').select('*'),
+          db.from('event_document_snapshots').select('*'),
           false,
           false
         )
@@ -324,7 +324,7 @@ export async function getEventDocumentSnapshotDrilldown(
     const fallbackFrom = (safePage - 1) * pageSize
     const fallbackTo = fallbackFrom + pageSize - 1
     const { data: fallbackRows, error: fallbackError } = await applyCoreFilters(
-      supabase.from('event_document_snapshots').select('*')
+      db.from('event_document_snapshots').select('*')
     )
       .order('generated_at', { ascending: order === 'oldest' })
       .range(fallbackFrom, fallbackTo)
@@ -370,7 +370,7 @@ export async function getTenantDocumentSnapshotDrilldown(
   filters: TenantSnapshotDrilldownFilters = {}
 ): Promise<TenantSnapshotDrilldownResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const eventId = filters.eventId?.trim() || null
   const docType = filters.docType ?? null
@@ -442,7 +442,7 @@ export async function getTenantDocumentSnapshotDrilldown(
 
   const queryPath = async (): Promise<TenantSnapshotDrilldownResult> => {
     const { data: allRows, error } = await applyCoreFilters(
-      supabase.from('event_document_snapshots').select(baseSelect)
+      db.from('event_document_snapshots').select(baseSelect)
     )
       .order('generated_at', { ascending: order === 'oldest' })
       .limit(SEARCH_MAX_ROWS)
@@ -518,7 +518,7 @@ export async function getTenantDocumentSnapshotDrilldown(
   }
 
   const listQuery = applyCoreFilters(
-    supabase
+    db
       .from('event_document_snapshots')
       .select(baseSelect, { count: 'exact' })
       .order('generated_at', { ascending: order === 'oldest' })
@@ -530,14 +530,11 @@ export async function getTenantDocumentSnapshotDrilldown(
     Promise.all(
       SNAPSHOT_DOCUMENT_TYPES.map(async (type) => {
         const countQuery = applyCoreFilters(
-          supabase.from('event_document_snapshots').select('id', { count: 'exact', head: true }),
+          db.from('event_document_snapshots').select('id', { count: 'exact', head: true }),
           false
         ).eq('document_type', type)
 
-        const latestQuery = applyCoreFilters(
-          supabase.from('event_document_snapshots').select('*'),
-          false
-        )
+        const latestQuery = applyCoreFilters(db.from('event_document_snapshots').select('*'), false)
           .eq('document_type', type)
           .order('generated_at', { ascending: false })
           .limit(1)
@@ -586,7 +583,7 @@ export async function getTenantDocumentSnapshotDrilldown(
     const fallbackFrom = (safePage - 1) * pageSize
     const fallbackTo = fallbackFrom + pageSize - 1
     const { data: fallbackRows, error: fallbackError } = await applyCoreFilters(
-      supabase.from('event_document_snapshots').select(baseSelect)
+      db.from('event_document_snapshots').select(baseSelect)
     )
       .order('generated_at', { ascending: order === 'oldest' })
       .range(fallbackFrom, fallbackTo)

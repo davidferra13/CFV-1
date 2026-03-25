@@ -7,7 +7,7 @@
 //   "birthday: January 15", "anniversary: March 3", "born: 12/4", etc.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { parseISO, format, addDays, isWithinInterval, setYear } from 'date-fns'
 
 export type UpcomingMilestone = {
@@ -88,9 +88,9 @@ function nextOccurrence(month: number, day: number, today: Date): Date {
  */
 export async function getUpcomingMilestones(lookaheadDays = 14): Promise<UpcomingMilestone[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, personal_milestones')
     .eq('tenant_id', user.tenantId!)

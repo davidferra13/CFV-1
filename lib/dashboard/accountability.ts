@@ -8,7 +8,7 @@
 // No ledger writes, no lifecycle transitions - read-only queries only.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type OverdueFollowUpEvent = {
   eventId: string
@@ -33,14 +33,14 @@ export type WeeklyAccountabilityStats = {
  */
 export async function getOverdueFollowUps(limit = 5): Promise<OverdueFollowUpEvent[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setHours(cutoff.getHours() - 24)
   const cutoffStr = cutoff.toISOString()
 
   // Events that are completed, have no follow-up, and were completed >24h ago
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, updated_at, client:clients(id, full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -73,7 +73,7 @@ export async function getOverdueFollowUps(limit = 5): Promise<OverdueFollowUpEve
  */
 export async function getWeeklyAccountabilityStats(): Promise<WeeklyAccountabilityStats> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const now = new Date()
   const weekStart = new Date(now)
@@ -82,7 +82,7 @@ export async function getWeeklyAccountabilityStats(): Promise<WeeklyAccountabili
   const weekStartStr = weekStart.toISOString()
 
   // Events completed this week
-  const { data: completedEvents } = await supabase
+  const { data: completedEvents } = await db
     .from('events')
     .select('id, follow_up_sent, financial_closed, financial_closed_at, updated_at')
     .eq('tenant_id', user.tenantId!)
@@ -104,7 +104,7 @@ export async function getWeeklyAccountabilityStats(): Promise<WeeklyAccountabili
   const eventIds = completedEvents?.map((e: any) => e.id) ?? []
   let receiptsUploadedThisWeek = 0
   if (eventIds.length > 0) {
-    const { count } = await supabase
+    const { count } = await db
       .from('expenses')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', user.tenantId!)
@@ -116,7 +116,7 @@ export async function getWeeklyAccountabilityStats(): Promise<WeeklyAccountabili
   // Total overdue follow-ups across all time
   const cutoff24h = new Date()
   cutoff24h.setHours(cutoff24h.getHours() - 24)
-  const { count: overdueCount } = await supabase
+  const { count: overdueCount } = await db
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)

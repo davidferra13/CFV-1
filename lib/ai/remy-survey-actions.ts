@@ -4,7 +4,7 @@
 // Reads/writes the survey_state JSONB column on ai_preferences.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { addRemyMemoryManual } from '@/lib/ai/remy-memory-actions'
 import { saveCulinaryProfileAnswer } from '@/lib/ai/chef-profile-actions'
 import {
@@ -19,9 +19,9 @@ import type { SurveyState } from '@/lib/ai/remy-survey-constants'
 
 export async function getSurveyState(): Promise<SurveyState | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('ai_preferences')
     .select('survey_state')
     .eq('tenant_id', user.tenantId!)
@@ -34,12 +34,12 @@ export async function getSurveyState(): Promise<SurveyState | null> {
 
 export async function startSurvey(): Promise<{ success: boolean; state: SurveyState }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   const state = createInitialSurveyState()
 
-  const { error } = await supabase.from('ai_preferences').upsert(
+  const { error } = await db.from('ai_preferences').upsert(
     {
       tenant_id: tenantId,
       survey_state: state,
@@ -60,11 +60,11 @@ export async function startSurvey(): Promise<{ success: boolean; state: SurveySt
 
 export async function completeIntro(): Promise<{ success: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Load current state
-  const { data } = await supabase
+  const { data } = await db
     .from('ai_preferences')
     .select('survey_state')
     .eq('tenant_id', tenantId)
@@ -73,7 +73,7 @@ export async function completeIntro(): Promise<{ success: boolean }> {
   const state = (data?.survey_state as SurveyState) ?? createInitialSurveyState()
   state.introCompleted = true
 
-  const { error } = await supabase.from('ai_preferences').upsert(
+  const { error } = await db.from('ai_preferences').upsert(
     {
       tenant_id: tenantId,
       survey_state: state,
@@ -97,11 +97,11 @@ export async function saveSurveyAnswer(
   extractedAnswer: string
 ): Promise<{ success: boolean; isComplete: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
   // Load current state
-  const { data } = await supabase
+  const { data } = await db
     .from('ai_preferences')
     .select('survey_state')
     .eq('tenant_id', tenantId)
@@ -157,7 +157,7 @@ export async function saveSurveyAnswer(
   }
 
   // Persist
-  const { error } = await supabase.from('ai_preferences').upsert(
+  const { error } = await db.from('ai_preferences').upsert(
     {
       tenant_id: tenantId,
       survey_state: state,
@@ -180,10 +180,10 @@ export async function skipSurveyQuestion(
   questionKey: string
 ): Promise<{ success: boolean; isComplete: boolean }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const { data } = await supabase
+  const { data } = await db
     .from('ai_preferences')
     .select('survey_state')
     .eq('tenant_id', tenantId)
@@ -208,7 +208,7 @@ export async function skipSurveyQuestion(
     state.completedAt = new Date().toISOString()
   }
 
-  const { error } = await supabase.from('ai_preferences').upsert(
+  const { error } = await db.from('ai_preferences').upsert(
     {
       tenant_id: tenantId,
       survey_state: state,

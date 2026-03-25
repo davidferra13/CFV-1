@@ -28,7 +28,7 @@ export function parsePagination(url: URL): PaginationParams {
 }
 
 /**
- * Apply pagination to a Supabase query using .range().
+ * Apply pagination to a database query using .range().
  * Returns the query with range applied.
  */
 export function applyPagination<T extends { range: (from: number, to: number) => T }>(

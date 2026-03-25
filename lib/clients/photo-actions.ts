@@ -5,7 +5,7 @@
 // Chef-only - clients cannot see these photos.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -38,14 +38,14 @@ export type { PhotoCategory, ClientPhoto } from './photo-constants'
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function hydrateSignedUrls(
-  supabase: any,
+  db: any,
   photos: Omit<ClientPhoto, 'signedUrl'>[]
 ): Promise<ClientPhoto[]> {
   if (photos.length === 0) return []
 
   const paths = photos.map((p) => p.storage_path)
 
-  const { data: signedData } = await supabase.storage
+  const { data: signedData } = await db.storage
     .from(BUCKET)
     .createSignedUrls(paths, SIGNED_URL_EXPIRY_SECONDS)
 
@@ -67,10 +67,10 @@ export async function uploadClientPhoto(
   formData: FormData
 ): Promise<{ success: true; photo: ClientPhoto } | { success: false; error: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify client belongs to this chef's tenant
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('id')
     .eq('id', clientId)
@@ -82,7 +82,7 @@ export async function uploadClientPhoto(
   }
 
   // Enforce per-client photo cap
-  const { count } = await supabase
+  const { count } = await db
     .from('client_photos')
     .select('id', { count: 'exact', head: true })
     .eq('client_id', clientId)
@@ -118,8 +118,8 @@ export async function uploadClientPhoto(
   const ext = MIME_TO_EXT[file.type]
   const storagePath = `${user.tenantId}/${clientId}/${photoId}.${ext}`
 
-  // Upload to Supabase Storage
-  const { error: uploadError } = await supabase.storage.from(BUCKET).upload(storagePath, file, {
+  // Upload to local storage
+  const { error: uploadError } = await db.storage.from(BUCKET).upload(storagePath, file, {
     contentType: file.type,
     upsert: false,
   })
@@ -130,7 +130,7 @@ export async function uploadClientPhoto(
   }
 
   // Determine display_order
-  const { data: lastPhoto } = await supabase
+  const { data: lastPhoto } = await db
     .from('client_photos')
     .select('display_order')
     .eq('client_id', clientId)
@@ -143,7 +143,7 @@ export async function uploadClientPhoto(
   const displayOrder = lastPhoto ? lastPhoto.display_order + 1 : 0
 
   // Insert DB record
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted, error: insertError } = await db
     .from('client_photos')
     .insert({
       id: photoId,
@@ -162,12 +162,12 @@ export async function uploadClientPhoto(
     .single()
 
   if (insertError || !inserted) {
-    await supabase.storage.from(BUCKET).remove([storagePath])
+    await db.storage.from(BUCKET).remove([storagePath])
     console.error('[uploadClientPhoto] DB insert failed:', insertError)
     return { success: false, error: 'Failed to save photo record' }
   }
 
-  const { data: signed } = await supabase.storage
+  const { data: signed } = await db.storage
     .from(BUCKET)
     .createSignedUrl(storagePath, SIGNED_URL_EXPIRY_SECONDS)
 
@@ -183,9 +183,9 @@ export async function uploadClientPhoto(
 
 export async function getClientPhotos(clientId: string): Promise<ClientPhoto[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: photos, error } = await supabase
+  const { data: photos, error } = await db
     .from('client_photos')
     .select('*')
     .eq('client_id', clientId)
@@ -200,7 +200,7 @@ export async function getClientPhotos(clientId: string): Promise<ClientPhoto[]> 
 
   if (!photos?.length) return []
 
-  return hydrateSignedUrls(supabase, photos as any)
+  return hydrateSignedUrls(db, photos as any)
 }
 
 // ─── deleteClientPhoto ────────────────────────────────────────────────────────
@@ -209,9 +209,9 @@ export async function deleteClientPhoto(
   photoId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: photo } = await supabase
+  const { data: photo } = await db
     .from('client_photos')
     .select('storage_path, client_id, deleted_at')
     .eq('id', photoId)
@@ -221,7 +221,7 @@ export async function deleteClientPhoto(
   if (!photo) return { success: false, error: 'Photo not found' }
   if (photo.deleted_at) return { success: true }
 
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('client_photos')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', photoId)
@@ -232,7 +232,7 @@ export async function deleteClientPhoto(
     return { success: false, error: 'Failed to delete photo' }
   }
 
-  const { error: storageError } = await supabase.storage.from(BUCKET).remove([photo.storage_path])
+  const { error: storageError } = await db.storage.from(BUCKET).remove([photo.storage_path])
 
   if (storageError) {
     console.warn('[deleteClientPhoto] Storage remove failed (non-fatal):', storageError)
@@ -249,9 +249,9 @@ export async function updateClientPhotoCaption(
   caption: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: photo, error } = await supabase
+  const { data: photo, error } = await db
     .from('client_photos')
     .update({ caption: caption.trim() || null })
     .eq('id', photoId)
@@ -276,9 +276,9 @@ export async function updateClientPhotoCategory(
   category: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: photo, error } = await supabase
+  const { data: photo, error } = await db
     .from('client_photos')
     .update({ category } as any)
     .eq('id', photoId)

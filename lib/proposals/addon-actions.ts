@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -48,9 +48,9 @@ export async function createAddon(
 ): Promise<ProposalAddon> {
   const user = await requireChef()
   const parsed = CreateAddonSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('proposal_addons')
     .insert({
       chef_id: user.tenantId!,
@@ -71,9 +71,9 @@ export async function createAddon(
 
 export async function listAddons(): Promise<ProposalAddon[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('proposal_addons')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -90,7 +90,7 @@ export async function updateAddon(
 ): Promise<ProposalAddon> {
   const user = await requireChef()
   const parsed = UpdateAddonSchema.parse(updates)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Build update payload - only include provided fields
   const payload: Record<string, unknown> = {}
@@ -104,7 +104,7 @@ export async function updateAddon(
     throw new Error('No fields to update')
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('proposal_addons')
     .update(payload)
     .eq('id', id)
@@ -121,9 +121,9 @@ export async function updateAddon(
 
 export async function deleteAddon(id: string): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('proposal_addons')
     .delete()
     .eq('id', id)
@@ -140,10 +140,10 @@ export async function toggleAddonForQuote(
   enabled: boolean
 ): Promise<AddonToggleResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch the addon to get its price (with tenant check)
-  const { data: addon, error } = await supabase
+  const { data: addon, error } = await db
     .from('proposal_addons')
     .select('id, name, price_cents_per_person')
     .eq('id', addonId)
@@ -154,7 +154,7 @@ export async function toggleAddonForQuote(
 
   if (enabled) {
     // Insert into quote_selected_addons (upsert to handle re-enables)
-    const { error: insertError } = await supabase.from('quote_selected_addons').upsert(
+    const { error: insertError } = await db.from('quote_selected_addons').upsert(
       {
         quote_id: quoteId,
         addon_id: addonId,
@@ -166,7 +166,7 @@ export async function toggleAddonForQuote(
     if (insertError) throw new Error(`Failed to enable addon: ${insertError.message}`)
   } else {
     // Remove from quote_selected_addons
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await db
       .from('quote_selected_addons')
       .delete()
       .eq('quote_id', quoteId)
@@ -192,9 +192,9 @@ export async function toggleAddonForQuote(
  */
 export async function getSelectedAddonsForQuote(quoteId: string): Promise<string[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data } = await supabase
+  const { data } = await db
     .from('quote_selected_addons')
     .select('addon_id')
     .eq('quote_id', quoteId)

@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { extractTextFromFile } from '@/lib/menus/extract-text'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import {
   queueVendorCatalogRows,
   type QueueVendorCatalogResult,
@@ -207,8 +207,8 @@ function cleanString(value: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null
 }
 
-async function assertVendorAccess(supabase: any, tenantId: string, vendorId: string) {
-  const { data: vendor, error } = await supabase
+async function assertVendorAccess(db: any, tenantId: string, vendorId: string) {
+  const { data: vendor, error } = await db
     .from('vendors')
     .select('id')
     .eq('id', vendorId)
@@ -433,7 +433,7 @@ function normalizeCategory(value: string): string {
 }
 
 async function recordInvoiceLineItemPricePoints(params: {
-  supabase: any
+  db: any
   tenantId: string
   vendorId: string
   invoiceNumber: string | null
@@ -451,7 +451,7 @@ async function recordInvoiceLineItemPricePoints(params: {
   for (const line of dedupedByItem.values()) {
     try {
       await recordVendorPricePoint({
-        supabase: params.supabase,
+        db: params.db,
         tenantId: params.tenantId,
         vendorId: params.vendorId,
         itemName: line.description,
@@ -706,7 +706,7 @@ function expenseRowKey(input: {
 }
 
 async function findPotentialInvoiceDuplicates(params: {
-  supabase: any
+  db: any
   tenantId: string
   vendorId: string
   invoiceNumber: string | null
@@ -716,7 +716,7 @@ async function findPotentialInvoiceDuplicates(params: {
   const duplicates: Array<{ id: string; reason: string }> = []
 
   if (params.invoiceNumber) {
-    const { data: matchesByNumber } = await params.supabase
+    const { data: matchesByNumber } = await params.db
       .from('vendor_invoices')
       .select('id, invoice_number')
       .eq('chef_id', params.tenantId)
@@ -729,7 +729,7 @@ async function findPotentialInvoiceDuplicates(params: {
     }
   }
 
-  const { data: matchesByDateTotal } = await params.supabase
+  const { data: matchesByDateTotal } = await params.db
     .from('vendor_invoices')
     .select('id, invoice_date, total_cents')
     .eq('chef_id', params.tenantId)
@@ -753,7 +753,7 @@ async function findPotentialInvoiceDuplicates(params: {
 }
 
 async function findPotentialExpenseDuplicates(params: {
-  supabase: any
+  db: any
   tenantId: string
   vendorName: string | null
   rows: Array<{
@@ -779,7 +779,7 @@ async function findPotentialExpenseDuplicates(params: {
     200
   )
 
-  let query = params.supabase
+  let query = params.db
     .from('expenses')
     .select('id, expense_date, amount_cents, description, vendor_name')
     .eq('tenant_id', params.tenantId)
@@ -865,7 +865,7 @@ export async function uploadVendorDocument(
   formData: FormData
 ): Promise<UploadVendorDocumentResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const vendorId = String(formData.get('vendor_id') || '')
   const documentTypeRaw = String(formData.get('document_type') || '')
@@ -886,7 +886,7 @@ export async function uploadVendorDocument(
     }
   }
 
-  await assertVendorAccess(supabase, user.tenantId!, vendorId)
+  await assertVendorAccess(db, user.tenantId!, vendorId)
 
   const normalizedFileName = safeFileName(file.name)
   const ext = normalizedFileName.split('.').pop()?.toLowerCase() || ''
@@ -901,7 +901,7 @@ export async function uploadVendorDocument(
   const fileBuffer = Buffer.from(arrayBuffer)
   const fileHash = createHash('sha256').update(fileBuffer).digest('hex')
 
-  const { data: duplicate } = await supabase
+  const { data: duplicate } = await db
     .from('vendor_document_uploads')
     .select('id, status')
     .eq('chef_id', user.tenantId!)
@@ -918,7 +918,7 @@ export async function uploadVendorDocument(
     }
   }
 
-  const { data: insertedRow, error: insertError } = await supabase
+  const { data: insertedRow, error: insertError } = await db
     .from('vendor_document_uploads')
     .insert({
       chef_id: user.tenantId!,
@@ -938,7 +938,7 @@ export async function uploadVendorDocument(
   }
 
   const storagePath = `${user.tenantId}/${vendorId}/${insertedRow.id}/${normalizedFileName}`
-  const { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await db.storage
     .from(VENDOR_DOCUMENTS_BUCKET)
     .upload(storagePath, file, {
       contentType: file.type || 'application/octet-stream',
@@ -946,7 +946,7 @@ export async function uploadVendorDocument(
     })
 
   if (uploadError) {
-    await supabase
+    await db
       .from('vendor_document_uploads')
       .update({
         status: 'failed',
@@ -958,7 +958,7 @@ export async function uploadVendorDocument(
     return { success: false, error: `Upload failed: ${uploadError.message}` }
   }
 
-  await supabase
+  await db
     .from('vendor_document_uploads')
     .update({ file_storage_path: storagePath, status: 'processing' })
     .eq('id', insertedRow.id)
@@ -988,7 +988,7 @@ export async function uploadVendorDocument(
 
       if (parsedCatalog.rows.length === 0) {
         const lineError = parsedCatalog.lineErrors[0] || 'No valid catalog rows found'
-        await supabase
+        await db
           .from('vendor_document_uploads')
           .update({
             status: 'failed',
@@ -1018,7 +1018,7 @@ export async function uploadVendorDocument(
       })
 
       const nextStatus: VendorDocumentStatus = queueResult.needsReview > 0 ? 'review' : 'completed'
-      await supabase
+      await db
         .from('vendor_document_uploads')
         .update({
           status: nextStatus,
@@ -1064,7 +1064,7 @@ export async function uploadVendorDocument(
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Catalog parsing failed'
-      await supabase
+      await db
         .from('vendor_document_uploads')
         .update({
           status: 'failed',
@@ -1090,7 +1090,7 @@ export async function uploadVendorDocument(
           throw new Error('No invoice line items were detected in this file')
         }
 
-        await supabase
+        await db
           .from('vendor_document_uploads')
           .update({
             status: 'review',
@@ -1131,7 +1131,7 @@ export async function uploadVendorDocument(
         throw new Error('No expense rows were detected in this file')
       }
 
-      await supabase
+      await db
         .from('vendor_document_uploads')
         .update({
           status: 'review',
@@ -1167,7 +1167,7 @@ export async function uploadVendorDocument(
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to extract draft data'
-      await supabase
+      await db
         .from('vendor_document_uploads')
         .update({
           status: 'failed',
@@ -1213,7 +1213,7 @@ export async function uploadVendorDocument(
           throw new Error('No invoice line items were detected in this file')
         }
 
-        await supabase
+        await db
           .from('vendor_document_uploads')
           .update({
             status: 'review',
@@ -1256,7 +1256,7 @@ export async function uploadVendorDocument(
         throw new Error('No expense rows were detected in this file')
       }
 
-      await supabase
+      await db
         .from('vendor_document_uploads')
         .update({
           status: 'review',
@@ -1294,7 +1294,7 @@ export async function uploadVendorDocument(
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to extract text from document'
-      await supabase
+      await db
         .from('vendor_document_uploads')
         .update({
           status: 'failed',
@@ -1309,7 +1309,7 @@ export async function uploadVendorDocument(
     }
   }
 
-  await supabase
+  await db
     .from('vendor_document_uploads')
     .update({
       status: 'review',
@@ -1347,10 +1347,10 @@ export async function applyVendorDocumentDraft(
   input: ApplyVendorDocumentDraftInput
 ): Promise<ApplyVendorDocumentDraftResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const data = ApplyVendorDocumentDraftSchema.parse(input)
 
-  const { data: uploadRow, error: uploadError } = await supabase
+  const { data: uploadRow, error: uploadError } = await db
     .from('vendor_document_uploads')
     .select('id, vendor_id, document_type, source_filename, status, parse_summary')
     .eq('id', data.upload_id)
@@ -1397,7 +1397,7 @@ export async function applyVendorDocumentDraft(
     const invoiceTotal = inferredTotal > 0 ? inferredTotal : computedTotal
 
     const duplicateCandidates = await findPotentialInvoiceDuplicates({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       vendorId: uploadRow.vendor_id,
       invoiceNumber,
@@ -1445,7 +1445,7 @@ export async function applyVendorDocumentDraft(
 
     if (duplicateCandidates.length > 0 && !data.force_apply) {
       const existingInvoiceId = duplicateCandidates[0]?.id ?? null
-      await supabase
+      await db
         .from('vendor_document_uploads')
         .update({
           status: 'completed',
@@ -1488,7 +1488,7 @@ export async function applyVendorDocumentDraft(
       }
     }
 
-    const { data: invoice, error: invoiceInsertError } = await supabase
+    const { data: invoice, error: invoiceInsertError } = await db
       .from('vendor_invoices')
       .insert({
         chef_id: user.tenantId!,
@@ -1505,7 +1505,7 @@ export async function applyVendorDocumentDraft(
       return { success: false, error: invoiceInsertError?.message || 'Failed to create invoice' }
     }
 
-    const { error: lineItemsError } = await supabase.from('vendor_invoice_line_items').insert(
+    const { error: lineItemsError } = await db.from('vendor_invoice_line_items').insert(
       sanitizedLineItems.map((line) => ({
         invoice_id: invoice.id,
         chef_id: user.tenantId!,
@@ -1521,14 +1521,14 @@ export async function applyVendorDocumentDraft(
     }
 
     await recordInvoiceLineItemPricePoints({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       vendorId: uploadRow.vendor_id,
       invoiceNumber,
       lineItems: sanitizedLineItems,
     })
 
-    await supabase
+    await db
       .from('vendor_document_uploads')
       .update({
         status: 'completed',
@@ -1581,7 +1581,7 @@ export async function applyVendorDocumentDraft(
       ? parseSummary.applied_expense_ids.filter((id): id is string => typeof id === 'string')
       : []
 
-    const { data: vendorRow } = await supabase
+    const { data: vendorRow } = await db
       .from('vendors')
       .select('name')
       .eq('id', uploadRow.vendor_id)
@@ -1615,7 +1615,7 @@ export async function applyVendorDocumentDraft(
     }
 
     const duplicateRows = await findPotentialExpenseDuplicates({
-      supabase,
+      db,
       tenantId: user.tenantId!,
       vendorName,
       rows: expenseRows.map((row) => ({
@@ -1684,7 +1684,7 @@ export async function applyVendorDocumentDraft(
 
     let insertedExpenses: Array<{ id: string }> = []
     if (rowsToInsert.length > 0) {
-      const { data: inserted, error: expenseInsertError } = await supabase
+      const { data: inserted, error: expenseInsertError } = await db
         .from('expenses')
         .insert(
           rowsToInsert.map((row) => ({
@@ -1721,7 +1721,7 @@ export async function applyVendorDocumentDraft(
           : 'all_rows_matched_existing'
         : null
 
-    await supabase
+    await db
       .from('vendor_document_uploads')
       .update({
         status: 'completed',
@@ -1782,12 +1782,12 @@ export async function listVendorDocumentUploads(
   limit = 40
 ): Promise<VendorDocumentUploadRow[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const safeLimit = Math.min(Math.max(limit, 1), 200)
 
-  await assertVendorAccess(supabase, user.tenantId!, vendorId)
+  await assertVendorAccess(db, user.tenantId!, vendorId)
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('vendor_document_uploads')
     .select(
       'id, vendor_id, document_type, source_filename, file_storage_path, file_mime_type, file_size_bytes, file_hash, status, parse_summary, error_message, created_at, processed_at'
@@ -1824,7 +1824,7 @@ export async function listVendorDocumentUploads(
 
   const signedMap = new Map<string, string>()
   if (pathsToSign.length > 0) {
-    const { data: signedUrls } = await supabase.storage
+    const { data: signedUrls } = await db.storage
       .from(VENDOR_DOCUMENTS_BUCKET)
       .createSignedUrls(pathsToSign, SIGNED_URL_EXPIRY_SECONDS)
 

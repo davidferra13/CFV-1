@@ -56,11 +56,11 @@ function channelLabel(channel: string): string {
   }
 }
 
-export async function getInquiryQueueItems(supabase: any, tenantId: string): Promise<QueueItem[]> {
+export async function getInquiryQueueItems(db: any, tenantId: string): Promise<QueueItem[]> {
   const items: QueueItem[] = []
   const now = new Date()
 
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select(
       `

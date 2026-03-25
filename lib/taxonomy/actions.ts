@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { getSystemDefaults } from './system-defaults'
@@ -13,13 +13,13 @@ import type { TaxonomyCategory, TaxonomyEntry } from './types'
 export async function getTaxonomy(category: TaxonomyCategory): Promise<TaxonomyEntry[]> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get system defaults for this category
   const systemDefaults = getSystemDefaults(category)
 
   // Get chef's hidden entries
-  const { data: hiddenRows } = await supabase
+  const { data: hiddenRows } = await db
     .from('chef_taxonomy_hidden' as any)
     .select('value')
     .eq('chef_id', chefId)
@@ -28,7 +28,7 @@ export async function getTaxonomy(category: TaxonomyCategory): Promise<TaxonomyE
   const hiddenSet = new Set((hiddenRows ?? []).map((r: any) => r.value))
 
   // Get chef's custom entries
-  const { data: customRows } = await supabase
+  const { data: customRows } = await db
     .from('chef_taxonomy_extensions' as any)
     .select('*')
     .eq('chef_id', chefId)
@@ -95,7 +95,7 @@ export async function addTaxonomyEntry(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const slug = value
     .toLowerCase()
@@ -103,7 +103,7 @@ export async function addTaxonomyEntry(
     .replace(/[^a-z0-9_]/g, '')
   if (!slug) return { success: false, error: 'Invalid value' }
 
-  const { error } = await supabase.from('chef_taxonomy_extensions' as any).insert({
+  const { error } = await db.from('chef_taxonomy_extensions' as any).insert({
     chef_id: chefId,
     category,
     value: slug,
@@ -135,9 +135,9 @@ export async function removeTaxonomyEntry(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_taxonomy_extensions' as any)
     .delete()
     .eq('id', id)
@@ -164,9 +164,9 @@ export async function hideTaxonomyDefault(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase.from('chef_taxonomy_hidden' as any).insert({
+  const { error } = await db.from('chef_taxonomy_hidden' as any).insert({
     chef_id: chefId,
     category,
     value,
@@ -190,9 +190,9 @@ export async function unhideTaxonomyDefault(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('chef_taxonomy_hidden' as any)
     .delete()
     .eq('chef_id', chefId)
@@ -214,10 +214,10 @@ export async function reorderTaxonomy(
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const chefId = user.entityId
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   for (let i = 0; i < orderedIds.length; i++) {
-    const { error } = await supabase
+    const { error } = await db
       .from('chef_taxonomy_extensions' as any)
       .update({ sort_order: i })
       .eq('id', orderedIds[i])

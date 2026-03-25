@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -64,13 +64,11 @@ function rowToProfile(row: Record<string, unknown>): ClientTasteProfile {
 
 // --- Actions ---
 
-export async function getTasteProfile(
-  clientId: string
-): Promise<ClientTasteProfile | null> {
+export async function getTasteProfile(clientId: string): Promise<ClientTasteProfile | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_taste_profiles')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -91,7 +89,7 @@ export async function upsertTasteProfile(
   input: TasteProfileInput
 ): Promise<ClientTasteProfile> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const parsed = TasteProfileSchema.parse(input)
 
   const row = {
@@ -107,7 +105,7 @@ export async function upsertTasteProfile(
     special_occasions_notes: parsed.specialOccasionsNotes || null,
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('client_taste_profiles')
     .upsert(row, { onConflict: 'client_id,tenant_id' })
     .select('*')

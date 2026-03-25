@@ -6,7 +6,7 @@
 // MUST fit on ONE page - no exceptions.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
 
@@ -80,11 +80,11 @@ const EQUIPMENT_TRIGGERS: Record<string, string[]> = {
 
 export async function fetchPackingListData(eventId: string): Promise<PackingListData | null> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event with client site info
   // Note: equipment_must_bring, kitchen_notes, house_rules were added in operational_refinements migration
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select(
       `
@@ -123,7 +123,7 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
     : null
 
   // Find the menu for this event
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('event_id', eventId)
@@ -138,7 +138,7 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
 
   if (menuId) {
     // Fetch dishes for this menu
-    const { data: dishes } = await supabase
+    const { data: dishes } = await db
       .from('dishes')
       .select('id, course_name, course_number')
       .eq('menu_id', menuId)
@@ -152,7 +152,7 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
       // Fetch only make-ahead components - these are what get packed
       // Note: transport_category was added in migration 20260301000001.
       // Using .returns<>() to override inferred type until types/database.ts is regenerated
-      // via `supabase gen types typescript --linked > types/database.ts`.
+      // via `db gen types typescript --linked > types/database.ts`.
       type RawComp = {
         name: string
         transport_category: string | null
@@ -160,7 +160,7 @@ export async function fetchPackingListData(eventId: string): Promise<PackingList
         sort_order: number
         dish_id: string
       }
-      const { data: rawComps } = await supabase
+      const { data: rawComps } = await db
         .from('components')
         .select('name, transport_category, storage_notes, sort_order, dish_id')
         .in('dish_id', dishIds)

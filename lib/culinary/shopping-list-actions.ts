@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { createPurchaseOrder, addPOItem } from '@/lib/inventory/purchase-order-actions'
 
@@ -37,11 +37,11 @@ function round2(value: number) {
 }
 
 async function getRecipeMultipliersForEvents(
-  supabase: any,
+  db: any,
   tenantId: string,
   eventIds: string[]
 ): Promise<Map<string, number>> {
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -49,7 +49,7 @@ async function getRecipeMultipliersForEvents(
 
   if (!menus?.length) return new Map()
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await db
     .from('dishes')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -60,7 +60,7 @@ async function getRecipeMultipliersForEvents(
 
   if (!dishes?.length) return new Map()
 
-  const { data: components } = await supabase
+  const { data: components } = await db
     .from('components')
     .select('recipe_id, scale_factor')
     .eq('tenant_id', tenantId)
@@ -88,7 +88,7 @@ async function getRecipeMultipliersForEvents(
     if (batch.length === 0) break
     batch.forEach((id) => visited.add(id))
 
-    const { data: subRecipes } = await supabase
+    const { data: subRecipes } = await db
       .from('recipe_sub_recipes')
       .select('parent_recipe_id, child_recipe_id, quantity')
       .in('parent_recipe_id', batch)
@@ -114,9 +114,9 @@ export async function generateShoppingList(input: {
 }): Promise<ShoppingListResult> {
   const user = await requireChef()
   const parsed = ShoppingListInputSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  let eventsQuery = supabase
+  let eventsQuery = db
     .from('events')
     .select('id, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -142,7 +142,7 @@ export async function generateShoppingList(input: {
   }
 
   const eventIds = events.map((event: any) => event.id)
-  const recipeMultipliers = await getRecipeMultipliersForEvents(supabase, user.tenantId!, eventIds)
+  const recipeMultipliers = await getRecipeMultipliersForEvents(db, user.tenantId!, eventIds)
 
   if (recipeMultipliers.size === 0) {
     return {
@@ -154,7 +154,7 @@ export async function generateShoppingList(input: {
     }
   }
 
-  const { data: recipeIngredients, error: recipeIngredientsError } = await supabase
+  const { data: recipeIngredients, error: recipeIngredientsError } = await db
     .from('recipe_ingredients')
     .select('recipe_id, ingredient_id, quantity, unit')
     .in('recipe_id', Array.from(recipeMultipliers.keys()))
@@ -178,22 +178,22 @@ export async function generateShoppingList(input: {
   }
 
   const [ingredientRows, stockRows, vendorItemsRows, vendorRows] = await Promise.all([
-    supabase
+    db
       .from('ingredients')
       .select('id, name, category, last_price_cents, preferred_vendor')
       .eq('tenant_id', user.tenantId!)
       .in('id', ingredientIds),
-    supabase
+    db
       .from('inventory_transactions')
       .select('ingredient_id, quantity')
       .eq('chef_id', user.tenantId!)
       .in('ingredient_id', ingredientIds),
-    supabase
+    db
       .from('vendor_items')
       .select('ingredient_id, vendor_id, unit_price_cents')
       .eq('chef_id', user.tenantId!)
       .in('ingredient_id', ingredientIds),
-    supabase.from('vendors').select('id, name').eq('chef_id', user.tenantId!),
+    db.from('vendors').select('id, name').eq('chef_id', user.tenantId!),
   ])
 
   if (ingredientRows.error)
@@ -304,7 +304,7 @@ export async function createPurchaseOrderFromShoppingList(input: {
   }>
 }) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const filteredItems = input.items.filter((item) => item.toBuy > 0)
   if (!filteredItems.length)
@@ -312,7 +312,7 @@ export async function createPurchaseOrderFromShoppingList(input: {
 
   let vendorId: string | undefined
   if (input.supplier && input.supplier !== 'Unassigned') {
-    const { data: vendor } = await supabase
+    const { data: vendor } = await db
       .from('vendors')
       .select('id')
       .eq('chef_id', user.tenantId!)

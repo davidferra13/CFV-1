@@ -4,16 +4,16 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { IncidentList } from '@/components/safety/incident-list'
 
 export const metadata: Metadata = { title: 'Incident Documentation | ChefFlow' }
 
 export default async function IncidentsPage() {
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: incidents } = await supabase
+  const { data: incidents } = await db
     .from('chef_incidents')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

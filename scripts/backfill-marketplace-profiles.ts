@@ -14,21 +14,21 @@
  * Usage:
  *   npx tsx scripts/backfill-marketplace-profiles.ts
  *
- * Requires SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in .env.local
+ * Requires DB_URL + DB_SERVICE_ROLE_KEY in .env.local
  */
 
 import { config } from 'dotenv'
 config({ path: '.env.local' })
 
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
-const supabase = createAdminClient()
+const db = createAdminClient()
 
 async function backfillMarketplaceProfiles() {
   console.log('=== Backfill Marketplace Profiles ===\n')
 
   // 1. Fetch all clients that have an auth_user_id (registered users)
-  const { data: clients, error: clientErr } = await supabase
+  const { data: clients, error: clientErr } = await db
     .from('clients')
     .select('id, auth_user_id, email, full_name, tenant_id, phone')
     .not('auth_user_id', 'is', null)
@@ -55,7 +55,7 @@ async function backfillMarketplaceProfiles() {
     const primary = clientRecords[0]
 
     // Upsert marketplace_profile
-    const { data: profile, error: profileErr } = await supabase
+    const { data: profile, error: profileErr } = await db
       .from('marketplace_profiles')
       .upsert(
         {
@@ -79,7 +79,7 @@ async function backfillMarketplaceProfiles() {
 
     // Create links for each client record
     for (const client of clientRecords) {
-      const { error: linkErr } = await supabase.from('marketplace_client_links').upsert(
+      const { error: linkErr } = await db.from('marketplace_client_links').upsert(
         {
           marketplace_profile_id: profile.id,
           client_id: client.id,
@@ -100,7 +100,7 @@ async function backfillMarketplaceProfiles() {
   console.log(`Client links created/updated: ${linksCreated}\n`)
 
   // 2. Backfill chef marketplace profiles for directory-approved chefs
-  const { data: chefs, error: chefErr } = await supabase
+  const { data: chefs, error: chefErr } = await db
     .from('chefs')
     .select('id, display_name, business_name, tagline, profile_image_url, slug')
     .eq('directory_approved', true)
@@ -116,7 +116,7 @@ async function backfillMarketplaceProfiles() {
   let chefProfilesCreated = 0
 
   for (const chef of chefs) {
-    const { error: cmpErr } = await supabase.from('chef_marketplace_profiles').upsert(
+    const { error: cmpErr } = await db.from('chef_marketplace_profiles').upsert(
       {
         chef_id: chef.id,
         hero_image_url: chef.profile_image_url,

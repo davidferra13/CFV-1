@@ -3,7 +3,7 @@
 // Requires device token in Authorization header
 
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { extractBearerToken, validateDeviceToken } from '@/lib/devices/token'
 import { z } from 'zod'
@@ -43,12 +43,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid or inactive device' }, { status: 401 })
     }
 
-    const supabase: any = createAdminClient()
+    const db: any = createAdminClient()
     const tenantId = device.tenantId
 
     // DB-based rate limit - count recent submissions for this device
     const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MS).toISOString()
-    const { count: recentCount } = await supabase
+    const { count: recentCount } = await db
       .from('device_events')
       .select('*', { count: 'exact', head: true })
       .eq('device_id', device.deviceId)
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
 
     // Duplicate inquiry detection - same name + date from same device within 5 min
     const dedupStart = new Date(Date.now() - DEDUP_WINDOW_MS).toISOString()
-    const { count: dupeCount } = await supabase
+    const { count: dupeCount } = await db
       .from('device_events')
       .select('*', { count: 'exact', head: true })
       .eq('device_id', device.deviceId)
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
       .filter(Boolean)
       .join('\n')
 
-    const { data: inquiry, error: inquiryError } = await supabase
+    const { data: inquiry, error: inquiryError } = await db
       .from('inquiries')
       .insert({
         tenant_id: tenantId,
@@ -141,7 +141,7 @@ export async function POST(request: Request) {
     }
 
     // 3. Create draft event
-    const { data: event, error: eventError } = await supabase
+    const { data: event, error: eventError } = await db
       .from('events')
       .insert({
         tenant_id: tenantId,
@@ -161,7 +161,7 @@ export async function POST(request: Request) {
 
     if (!eventError && event) {
       // Log state transition
-      await supabase.from('event_state_transitions').insert({
+      await db.from('event_state_transitions').insert({
         tenant_id: tenantId,
         event_id: event.id,
         from_status: null,
@@ -174,16 +174,13 @@ export async function POST(request: Request) {
       })
 
       // Link inquiry to event
-      await supabase
-        .from('inquiries')
-        .update({ converted_to_event_id: event.id })
-        .eq('id', inquiry.id)
+      await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
     }
 
     // 4. Log device event
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
     try {
-      await supabase.from('device_events').insert({
+      await db.from('device_events').insert({
         device_id: device.deviceId,
         tenant_id: tenantId,
         staff_member_id: parsed.staff_member_id || null,

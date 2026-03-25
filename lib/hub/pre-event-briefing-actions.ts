@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { getCircleForEvent, getChefHubProfileId } from './circle-lookup'
 import { generatePreEventBriefing } from '@/lib/templates/pre-event-briefing'
 
@@ -23,11 +23,11 @@ export async function postPreEventBriefing(input: {
     return { success: false, error: 'Chef hub profile not found' }
   }
 
-  const supabase: any = createServerClient({ admin: true })
+  const db: any = createServerClient({ admin: true })
 
   // Load event + client + chef + menu in parallel
   const [eventResult, chefResult] = await Promise.all([
-    supabase
+    db
       .from('events')
       .select(
         'event_date, serve_time, arrival_time, occasion, guest_count, location_name, location_address, client_id'
@@ -35,7 +35,7 @@ export async function postPreEventBriefing(input: {
       .eq('id', input.eventId)
       .eq('tenant_id', circle.tenantId)
       .single(),
-    supabase.from('chefs').select('display_name, business_name').eq('id', circle.tenantId).single(),
+    db.from('chefs').select('display_name, business_name').eq('id', circle.tenantId).single(),
   ])
 
   const event = eventResult.data
@@ -46,14 +46,14 @@ export async function postPreEventBriefing(input: {
   }
 
   // Load client name
-  const { data: client } = await supabase
+  const { data: client } = await db
     .from('clients')
     .select('full_name')
     .eq('id', event.client_id)
     .single()
 
   // Load linked menu with courses and top dishes
-  const { data: menu } = await supabase
+  const { data: menu } = await db
     .from('menus')
     .select('id, name')
     .eq('event_id', input.eventId)
@@ -64,14 +64,14 @@ export async function postPreEventBriefing(input: {
 
   let courseHighlights: string[] = []
   if (menu) {
-    const { data: courses } = await supabase
+    const { data: courses } = await db
       .from('menu_courses')
       .select('id, name')
       .eq('menu_id', menu.id)
       .order('display_order', { ascending: true })
 
     for (const course of courses ?? []) {
-      const { data: dishes } = await supabase
+      const { data: dishes } = await db
         .from('menu_dishes')
         .select('name')
         .eq('course_id', course.id)
@@ -87,7 +87,7 @@ export async function postPreEventBriefing(input: {
 
   // Load dietary restrictions from event or inquiry
   let dietaryConfirmed: string[] = []
-  const { data: inquiry } = await supabase
+  const { data: inquiry } = await db
     .from('inquiries')
     .select('confirmed_dietary_restrictions')
     .eq('converted_to_event_id', input.eventId)
@@ -130,7 +130,7 @@ export async function postPreEventBriefing(input: {
   })
 
   // Post to circle
-  await supabase.from('hub_messages').insert({
+  await db.from('hub_messages').insert({
     group_id: circle.groupId,
     author_profile_id: chefProfileId,
     message_type: 'text',

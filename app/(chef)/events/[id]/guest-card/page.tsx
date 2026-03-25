@@ -6,7 +6,7 @@ import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { PrintableCard } from '@/components/guest-leads/printable-card'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 type Props = { params: { id: string } }
 
@@ -17,8 +17,8 @@ export default async function GuestCardPage({ params }: Props) {
   if (!event) notFound()
 
   // Get chef display info
-  const supabase: any = createServerClient()
-  const { data: chef } = await supabase
+  const db: any = createServerClient()
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name, tagline, profile_image_url')
     .eq('id', user.tenantId!)

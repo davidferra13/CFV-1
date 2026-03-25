@@ -144,7 +144,7 @@ Files to review:
 
 ## Standalone Admin Client (`createAdminClient()`)
 
-Only one file defines it: `lib/supabase/admin.ts`.
+Only one file defines it: `lib/database/admin.ts`.
 
 Importers: `tests/helpers/e2e-seed.ts` (test-only). No production code imports
 `createAdminClient()` directly; all production usage goes through

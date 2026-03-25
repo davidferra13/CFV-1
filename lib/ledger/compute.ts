@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger'
 
 /**
@@ -12,9 +12,9 @@ import { log } from '@/lib/logger'
  */
 export async function getEventFinancialSummary(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', eventId)
@@ -49,11 +49,11 @@ export async function getEventFinancialSummary(eventId: string) {
  */
 export async function getTenantFinancialSummary() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Hard limit to prevent memory exhaustion - a single tenant should never have
   // more than 50K ledger entries. If they do, this caps the computation.
-  const { data: entries, error } = await supabase
+  const { data: entries, error } = await db
     .from('ledger_entries')
     .select('entry_type, amount_cents, is_refund')
     .eq('tenant_id', user.tenantId!)
@@ -95,11 +95,11 @@ export async function getTenantFinancialSummary() {
  */
 export async function getYtdCarryForwardSavings() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const yearStart = `${new Date().getFullYear()}-01-01`
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('events')
     .select('leftover_value_received_cents')
     .eq('tenant_id', user.tenantId!)
@@ -120,13 +120,13 @@ export async function getYtdCarryForwardSavings() {
  */
 export async function computeProfitAndLoss(year: number) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const startDate = `${year}-01-01`
   const endDate = `${year}-12-31`
 
   // Revenue from ledger (capped at 50K entries per year - prevents memory exhaustion)
-  const { data: ledgerEntries, error: ledgerError } = await supabase
+  const { data: ledgerEntries, error: ledgerError } = await db
     .from('ledger_entries')
     .select('entry_type, amount_cents, created_at, is_refund')
     .eq('tenant_id', user.tenantId!)
@@ -140,7 +140,7 @@ export async function computeProfitAndLoss(year: number) {
   }
 
   // Expenses (capped at 50K per year)
-  const { data: expenses, error: expenseError } = await supabase
+  const { data: expenses, error: expenseError } = await db
     .from('expenses')
     .select('amount_cents, category, description, expense_date')
     .eq('tenant_id', user.tenantId!)

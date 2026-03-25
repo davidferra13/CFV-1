@@ -1,5 +1,5 @@
 // Admin Presence Page - Real-time view of every visitor on the site
-// The AdminPresencePanel client component handles the Supabase Realtime subscription
+// The AdminPresencePanel client component handles the SSE realtime subscription
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { redirect } from 'next/navigation'

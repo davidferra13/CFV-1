@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import type { NotificationAction } from '@/lib/notifications/types'
 import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 
-const supabaseAdmin = createAdminClient()
+const dbAdmin = createAdminClient()
 
 const RENEWAL_SYSTEM_KEY = 'renewal_reminder'
 
@@ -21,7 +21,7 @@ async function hasRenewalNotification({
   renewalId,
   expiryDate,
 }: RenewalNotificationInput): Promise<boolean> {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await dbAdmin
     .from('notifications')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -65,7 +65,7 @@ export async function GET(request: Request) {
     }
 
     // Check insurance policies expiring within 30 and 7 days
-    const { data: expiringPolicies } = await supabaseAdmin
+    const { data: expiringPolicies } = await dbAdmin
       .from('chef_insurance_policies')
       .select('id, tenant_id, policy_type, expiry_date')
       .gte('expiry_date', today)
@@ -118,7 +118,7 @@ export async function GET(request: Request) {
     }
 
     // Check certifications expiring within 90, 30, and 7 days
-    const { data: expiringCerts } = await supabaseAdmin
+    const { data: expiringCerts } = await dbAdmin
       .from('chef_certifications')
       .select('id, tenant_id, cert_type, cert_name, expiry_date')
       .eq('is_active', true)

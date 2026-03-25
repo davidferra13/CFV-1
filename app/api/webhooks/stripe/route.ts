@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server'
 import type Stripe from 'stripe'
 import { appendLedgerEntryFromWebhook } from '@/lib/ledger/append-internal'
 import { transitionEvent } from '@/lib/events/transitions'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { logWebhookEvent } from '@/lib/webhooks/audit-log'
 import { revalidatePath } from 'next/cache'
 
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
   // Uses transaction_reference column for deduplication.
   // NOTE: checkout.session.completed does NOT write to ledger_entries, so it has
   // its own idempotency check inside handleGiftCardPurchaseCompleted().
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Events that do not write ledger entries bypass the ledger idempotency check
   const isNonLedgerEvent =
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
     event.type === 'payout.failed'
 
   if (!isNonLedgerEvent) {
-    const { data: existingEntry } = await supabase
+    const { data: existingEntry } = await db
       .from('ledger_entries')
       .select('id')
       .eq('transaction_reference', event.id)
@@ -116,7 +116,7 @@ export async function POST(req: Request) {
     // Route to appropriate handler
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleGiftCardPurchaseCompleted(event, supabase)
+        await handleGiftCardPurchaseCompleted(event, db)
         break
 
       case 'payment_intent.succeeded': {
@@ -220,7 +220,7 @@ export async function POST(req: Request) {
  *
  * Idempotency: Checks gift_card_purchase_intents.status - if already 'paid', returns early.
  */
-async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: any) {
+async function handleGiftCardPurchaseCompleted(event: Stripe.Event, db: any) {
   const session = event.data.object as Stripe.Checkout.Session
 
   // Only handle gift card purchases (ignore other checkout sessions)
@@ -242,7 +242,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
   )
 
   // Idempotency: if already processed, skip
-  const { data: intent } = await (supabase
+  const { data: intent } = await (db
     .from('gift_card_purchase_intents')
     .select('*')
     .eq('id', purchase_intent_id)
@@ -269,7 +269,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
   const code = `GFT-${crypto.randomBytes(8).toString('hex').toUpperCase()}`
 
   // Fetch the chef's display name and email for the gift card title and notification
-  const { data: chef } = await supabase
+  const { data: chef } = await db
     .from('chefs')
     .select('display_name, business_name, email')
     .eq('id', tenant_id)
@@ -279,7 +279,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
   const amountDollars = (intent.amount_cents / 100).toFixed(2)
 
   // Create the client_incentives row (the actual gift card)
-  const { data: incentive, error: incentiveError } = await (supabase
+  const { data: incentive, error: incentiveError } = await (db
     .from('client_incentives')
     .insert({
       tenant_id,
@@ -309,7 +309,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
   if (incentiveError || !incentive) {
     console.error('[handleGiftCardPurchaseCompleted] Failed to create incentive:', incentiveError)
     // Mark as failed so we can retry / investigate
-    await (supabase
+    await (db
       .from('gift_card_purchase_intents')
       .update({ status: 'failed' } as any)
       .eq('id', purchase_intent_id) as any)
@@ -317,7 +317,7 @@ async function handleGiftCardPurchaseCompleted(event: Stripe.Event, supabase: an
   }
 
   // Mark the intent as paid and link the created incentive
-  await (supabase
+  await (db
     .from('gift_card_purchase_intents')
     .update({
       status: 'paid',
@@ -430,8 +430,8 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   // Security: verify the metadata actually maps to a real event owned by that tenant.
   // This prevents crafted PaymentIntents (with arbitrary metadata) from writing
   // to the ledger for an event they don't own - even if RLS has a gap.
-  const supabaseAdmin = createServerClient({ admin: true })
-  const { data: ownershipCheck } = await supabaseAdmin
+  const dbAdmin = createServerClient({ admin: true })
+  const { data: ownershipCheck } = await dbAdmin
     .from('events')
     .select('id')
     .eq('id', event_id)
@@ -524,7 +524,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   }
 
   // 3. Check financial summary (reuse the admin client created above)
-  const { data: financialSummary } = await (supabaseAdmin
+  const { data: financialSummary } = await (dbAdmin
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', event_id)
@@ -634,19 +634,19 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
     // Chef email notification (chef-only, stays as standalone email)
     try {
-      const { data: eventData } = await supabaseAdmin
+      const { data: eventData } = await dbAdmin
         .from('events')
         .select('occasion, event_date')
         .eq('id', event_id)
         .single()
 
-      const { data: clientData } = await (supabaseAdmin
+      const { data: clientData } = await (dbAdmin
         .from('clients')
         .select('email, full_name')
         .eq('id', client_id)
         .single() as any)
 
-      const { data: chefData } = await supabaseAdmin
+      const { data: chefData } = await dbAdmin
         .from('chefs')
         .select('email, business_name, display_name')
         .eq('id', tenant_id)
@@ -676,19 +676,19 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     const bookingSource = paymentIntent.metadata.booking_source
     if (bookingSource === 'instant_book') {
       try {
-        const { data: eventData } = await (supabaseAdmin
+        const { data: eventData } = await (dbAdmin
           .from('events')
           .select('occasion, event_date, guest_count, quoted_price_cents, deposit_amount_cents')
           .eq('id', event_id)
           .single() as any)
 
-        const { data: clientData } = await supabaseAdmin
+        const { data: clientData } = await dbAdmin
           .from('clients')
           .select('email, full_name')
           .eq('id', client_id)
           .single()
 
-        const { data: chefData } = await supabaseAdmin
+        const { data: chefData } = await dbAdmin
           .from('chefs')
           .select('email, business_name, display_name')
           .eq('id', tenant_id)
@@ -749,7 +749,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       if (chefUserId) {
         const amountFormatted = `$${(paymentIntent.amount / 100).toFixed(2)}`
         // Fetch client name for the push notification message
-        const { data: pushClientData } = await supabaseAdmin
+        const { data: pushClientData } = await dbAdmin
           .from('clients')
           .select('full_name')
           .eq('id', client_id)
@@ -795,7 +795,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
     // Insert audit trail so failed transition can be investigated and resolved manually
     try {
-      await supabaseAdmin.from('event_state_transitions').insert({
+      await dbAdmin.from('event_state_transitions').insert({
         event_id,
         tenant_id,
         from_status: null,
@@ -887,14 +887,14 @@ async function handlePaymentFailed(event: Stripe.Event) {
 
   // Send payment failed email to client (non-blocking)
   try {
-    const supabase = createServerClient({ admin: true })
-    const { data: eventData } = await supabase
+    const db = createServerClient({ admin: true })
+    const { data: eventData } = await db
       .from('events')
       .select('occasion')
       .eq('id', event_id)
       .single()
 
-    const { data: clientData } = await supabase
+    const { data: clientData } = await db
       .from('clients')
       .select('email, full_name')
       .eq('id', client_id)
@@ -1088,14 +1088,14 @@ async function handleRefund(event: Stripe.Event) {
 
   // Send refund email to client (non-blocking)
   try {
-    const supabase = createServerClient({ admin: true })
-    const { data: clientData } = await supabase
+    const db = createServerClient({ admin: true })
+    const { data: clientData } = await db
       .from('clients')
       .select('email, full_name')
       .eq('id', client_id)
       .single()
 
-    const { data: chefData } = await supabase
+    const { data: chefData } = await db
       .from('chefs')
       .select('business_name, display_name')
       .eq('id', tenant_id)
@@ -1315,9 +1315,9 @@ async function handleTransferEvent(event: Stripe.Event) {
 
   console.info('[handleTransferEvent]', event.type, 'transfer:', transfer.id)
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
+  const db = db as any
 
   // Check if we already track this transfer
   const { data: existing } = await db
@@ -1346,7 +1346,7 @@ async function handleTransferEvent(event: Stripe.Event) {
         : ((transfer.destination as any)?.id ?? '')
 
     // Try to find tenant_id from the destination account
-    const { data: chef } = await supabase
+    const { data: chef } = await db
       .from('chefs')
       .select('id')
       .eq('stripe_account_id', destination)
@@ -1382,7 +1382,7 @@ async function handleApplicationFeeRefunded(event: Stripe.Event) {
   const feeRefund = event.data.object as Stripe.ApplicationFee
   console.info('[handleApplicationFeeRefunded] fee:', feeRefund.id)
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Find the associated transfer record via the charge
   const chargeId =
@@ -1397,7 +1397,7 @@ async function handleApplicationFeeRefunded(event: Stripe.Event) {
   let stripeTransferId: string | null = null
 
   if (chargeId) {
-    const { data: transferRecord } = await (supabase
+    const { data: transferRecord } = await (db
       .from('stripe_transfers')
       .select('tenant_id, event_id, stripe_payment_intent_id, stripe_transfer_id')
       .eq('stripe_charge_id', chargeId)
@@ -1419,7 +1419,7 @@ async function handleApplicationFeeRefunded(event: Stripe.Event) {
         : ((feeRefund.account as any)?.id ?? null)
 
     if (accountId) {
-      const { data: chef } = await supabase
+      const { data: chef } = await db
         .from('chefs')
         .select('id')
         .eq('stripe_account_id', accountId)
@@ -1476,10 +1476,10 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
 
   console.info('[handleCommercePaymentSucceeded] Processing commerce payment for sale:', sale_id)
 
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Verify the sale exists and belongs to the tenant
-  const { data: sale } = await (supabase
+  const { data: sale } = await (db
     .from('sales' as any)
     .select('id, client_id, event_id')
     .eq('id', sale_id)
@@ -1496,7 +1496,7 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
   const txnRef = `commerce_${paymentIntent.id}`
 
   // Insert into commerce_payments - DB trigger handles ledger entry
-  const { error: insertErr } = await (supabase.from('commerce_payments').insert({
+  const { error: insertErr } = await (db.from('commerce_payments').insert({
     tenant_id,
     sale_id,
     event_id: (sale as any).event_id ?? null,
@@ -1530,7 +1530,7 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
   }
 
   // Update sale status
-  const { data: payments } = await (supabase
+  const { data: payments } = await (db
     .from('commerce_payments')
     .select('amount_cents, status')
     .eq('sale_id', sale_id)
@@ -1540,7 +1540,7 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
     .filter((p) => ['captured', 'settled'].includes(p.status))
     .reduce((sum, p) => sum + p.amount_cents, 0)
 
-  const { data: saleData } = await (supabase
+  const { data: saleData } = await (db
     .from('sales' as any)
     .select('total_cents, status')
     .eq('id', sale_id)
@@ -1556,7 +1556,7 @@ async function handleCommercePaymentSucceeded(event: Stripe.Event) {
     })
 
     if (newStatus !== (saleData as any).status) {
-      await (supabase as any)
+      await (db as any)
         .from('sales')
         .update({ status: newStatus })
         .eq('id', sale_id)
@@ -1583,8 +1583,8 @@ async function handlePayoutEvent(event: Stripe.Event) {
     return
   }
 
-  const supabase = createServerClient({ admin: true })
-  const { data: chef } = await supabase
+  const db = createServerClient({ admin: true })
+  const { data: chef } = await db
     .from('chefs')
     .select('id')
     .eq('stripe_account_id', connectedAccountId)

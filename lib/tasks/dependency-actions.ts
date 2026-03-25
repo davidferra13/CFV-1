@@ -6,7 +6,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { calculateCriticalPath, wouldCreateCycle } from '@/lib/formulas/critical-path'
 import type { TaskNode, CriticalPathResult } from '@/lib/formulas/critical-path'
 
@@ -41,10 +41,10 @@ export async function getTasksWithDependencies(options?: {
   dateFilter?: string // ISO date to filter by due_date
 }): Promise<TaskWithDeps[]> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch tasks
-  let query = supabase
+  let query = db
     .from('tasks')
     .select('id, text, due_date, due_time, completed, estimated_minutes')
     .eq('chef_id', user.entityId)
@@ -67,7 +67,7 @@ export async function getTasksWithDependencies(options?: {
   const taskIds = tasks.map((t: any) => t.id)
 
   // Fetch dependencies for these tasks
-  const { data: deps, error: depError } = await supabase
+  const { data: deps, error: depError } = await db
     .from('task_dependencies')
     .select('task_id, depends_on_task_id')
     .eq('chef_id', user.entityId)
@@ -113,14 +113,14 @@ export async function addDependency(input: {
   dependencyType?: 'finish_to_start' | 'start_to_start'
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (input.taskId === input.dependsOnTaskId) {
     return { success: false, error: 'A task cannot depend on itself' }
   }
 
   // Verify both tasks belong to this chef
-  const { data: tasks } = await supabase
+  const { data: tasks } = await db
     .from('tasks')
     .select('id, text, estimated_minutes')
     .eq('chef_id', user.entityId)
@@ -131,13 +131,13 @@ export async function addDependency(input: {
   }
 
   // Fetch all existing dependencies to check for cycles
-  const { data: allDeps } = await supabase
+  const { data: allDeps } = await db
     .from('task_dependencies')
     .select('task_id, depends_on_task_id')
     .eq('chef_id', user.entityId)
 
   // Fetch all tasks for cycle detection
-  const { data: allTasks } = await supabase
+  const { data: allTasks } = await db
     .from('tasks')
     .select('id, text, estimated_minutes')
     .eq('chef_id', user.entityId)
@@ -161,7 +161,7 @@ export async function addDependency(input: {
   }
 
   // Insert the dependency
-  const { error } = await supabase.from('task_dependencies').insert({
+  const { error } = await db.from('task_dependencies').insert({
     chef_id: user.entityId,
     task_id: input.taskId,
     depends_on_task_id: input.dependsOnTaskId,
@@ -190,9 +190,9 @@ export async function removeDependency(
   dependencyId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('task_dependencies')
     .delete()
     .eq('id', dependencyId)
@@ -218,10 +218,10 @@ export async function getCriticalPath(options?: {
   dateFilter?: string
 }): Promise<CriticalPathResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch tasks
-  let query = supabase
+  let query = db
     .from('tasks')
     .select('id, text, estimated_minutes')
     .eq('chef_id', user.entityId)
@@ -245,7 +245,7 @@ export async function getCriticalPath(options?: {
   const taskIds = tasks.map((t: any) => t.id)
 
   // Fetch dependencies
-  const { data: deps } = await supabase
+  const { data: deps } = await db
     .from('task_dependencies')
     .select('task_id, depends_on_task_id')
     .eq('chef_id', user.entityId)

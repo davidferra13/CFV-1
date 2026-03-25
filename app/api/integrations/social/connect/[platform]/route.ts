@@ -5,7 +5,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import crypto from 'crypto'
 import { requireChef } from '@/lib/auth/get-user'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 import { getOAuthConfig, getRedirectUri, SOCIAL_PLATFORMS } from '@/lib/social/oauth/config'
 
 function generatePKCE(): { codeVerifier: string; codeChallenge: string } {
@@ -63,8 +63,8 @@ export async function GET(
     codeChallenge = pkce.codeChallenge
   }
 
-  const supabase: any = createAdminClient()
-  const { error: stateErr } = await supabase.from('social_oauth_states').insert({
+  const db: any = createAdminClient()
+  const { error: stateErr } = await db.from('social_oauth_states').insert({
     tenant_id: user.tenantId,
     platform,
     state,

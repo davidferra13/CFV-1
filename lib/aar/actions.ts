@@ -5,7 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -52,10 +52,10 @@ export type UpdateAARInput = z.infer<typeof UpdateAARSchema>
 export async function createAAR(input: CreateAARInput) {
   const user = await requireChef()
   const validated = CreateAARSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify event belongs to this tenant and exists
-  const { data: event } = await supabase
+  const { data: event } = await db
     .from('events')
     .select('id, status, aar_filed')
     .eq('id', validated.event_id)
@@ -71,7 +71,7 @@ export async function createAAR(input: CreateAARInput) {
   }
 
   // Insert AAR
-  const { data: aar, error } = await supabase
+  const { data: aar, error } = await db
     .from('after_action_reviews')
     .insert({
       tenant_id: user.tenantId!,
@@ -100,7 +100,7 @@ export async function createAAR(input: CreateAARInput) {
   }
 
   // Mark event as AAR filed
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('events')
     .update({ aar_filed: true, updated_by: user.id })
     .eq('id', validated.event_id)
@@ -157,9 +157,9 @@ export async function createAAR(input: CreateAARInput) {
  */
 export async function getAARByEventId(eventId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: aar, error } = await supabase
+  const { data: aar, error } = await db
     .from('after_action_reviews')
     .select('*')
     .eq('event_id', eventId)
@@ -179,9 +179,9 @@ export async function getAARByEventId(eventId: string) {
  */
 export async function getAAR(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: aar, error } = await supabase
+  const { data: aar, error } = await db
     .from('after_action_reviews')
     .select(
       `
@@ -207,10 +207,10 @@ export async function getAAR(id: string) {
 export async function updateAAR(id: string, input: UpdateAARInput) {
   const user = await requireChef()
   const validated = UpdateAARSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Verify AAR exists and belongs to tenant
-  const { data: existing } = await supabase
+  const { data: existing } = await db
     .from('after_action_reviews')
     .select('id, event_id')
     .eq('id', id)
@@ -221,7 +221,7 @@ export async function updateAAR(id: string, input: UpdateAARInput) {
     throw new Error('AAR not found')
   }
 
-  const { data: aar, error } = await supabase
+  const { data: aar, error } = await db
     .from('after_action_reviews')
     .update({
       ...validated,
@@ -250,9 +250,9 @@ export async function updateAAR(id: string, input: UpdateAARInput) {
  */
 export async function getEventsWithoutAAR() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: events, error } = await supabase
+  const { data: events, error } = await db
     .from('events')
     .select(
       `
@@ -278,9 +278,9 @@ export async function getEventsWithoutAAR() {
  */
 export async function getRecentAARs(limit = 10) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: aars, error } = await supabase
+  const { data: aars, error } = await db
     .from('after_action_reviews')
     .select(
       `
@@ -305,10 +305,10 @@ export async function getRecentAARs(limit = 10) {
  */
 export async function getAARStats() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch all AARs ordered by event date for trend analysis
-  const { data: aars, error } = await supabase
+  const { data: aars, error } = await db
     .from('after_action_reviews')
     .select(
       `
@@ -393,9 +393,9 @@ export async function getAARStats() {
  */
 export async function getForgottenItemsFrequency() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data: aars, error } = await supabase
+  const { data: aars, error } = await db
     .from('after_action_reviews')
     .select('forgotten_items')
     .eq('tenant_id', user.tenantId!)

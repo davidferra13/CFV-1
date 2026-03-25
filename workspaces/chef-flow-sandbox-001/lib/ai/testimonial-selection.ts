@@ -6,7 +6,7 @@
 // Output is SUGGESTION ONLY — chef decides which to publish.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import { parseWithOllama } from './parse-ollama'
 
@@ -88,11 +88,11 @@ Return ONLY valid JSON:
 
 export async function selectTestimonialHighlights(): Promise<TestimonialSelectionResult> {
   const user = await requireChef()
-  const supabase = createServerClient()
+  const db = createServerClient()
 
   // Gather AAR client feedback and positive messages
   const [aarResult, surveysResult] = await Promise.all([
-    (supabase as any)
+    (db as any)
       .from('aars')
       .select(
         `
@@ -103,7 +103,7 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .eq('tenant_id', user.tenantId!)
       .not('client_feedback', 'is', null)
       .limit(30),
-    (supabase as any)
+    (db as any)
       .from('client_surveys')
       .select(
         `

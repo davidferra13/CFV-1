@@ -59,7 +59,7 @@ export class SoakMetricsCollector {
   constructor(page: Page) {
     this.page = page
 
-    // Track console errors — filter out benign noise from Supabase, Next.js, etc.
+    // Track console errors — filter out benign noise from the database, Next.js, etc.
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
         const text = msg.text()
@@ -269,9 +269,9 @@ export function printReport(report: SoakReport): void {
 
 /** Patterns for benign console errors that don't indicate real bugs */
 const IGNORED_ERROR_PATTERNS = [
-  // Supabase Realtime channel lifecycle messages
+  // SSE realtime channel lifecycle messages
   /realtime/i,
-  /supabase/i,
+  /db/i,
   /websocket/i,
   // Next.js hydration / dev warnings
   /hydration/i,

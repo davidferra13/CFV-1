@@ -1,9 +1,8 @@
 /**
- * Supabase PostgREST Compatibility Layer
+ * PostgreSQL Query Builder Compatibility Layer
  *
- * Translates Supabase query builder API calls to raw SQL via postgres.js.
- * This allows removing the @supabase/supabase-js SDK while keeping all
- * 1,000+ consumer files unchanged.
+ * Provides a chainable query builder API backed by raw SQL via postgres.js.
+ * All consumer files use this for database access.
  *
  * Supported patterns:
  *   .from('table').select('*').eq('col', val).order('col', { ascending: false }).limit(n)
@@ -425,7 +424,7 @@ class QueryBuilder<T = any> {
 
   // ── Execution ───────────────────────────────────────────────────────────
 
-  /** Make this thenable so `await supabase.from(...).select(...)` works */
+  /** Make this thenable so `await db.from(...).select(...)` works */
   then<TResult1 = PostgrestResponse<any>, TResult2 = never>(
     resolve?: ((value: PostgrestResponse<any>) => TResult1 | PromiseLike<TResult1>) | null,
     reject?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null
@@ -1243,14 +1242,12 @@ class AuthCompat {
   async getUser() {
     // Auth is handled by Auth.js now. This stub exists for compatibility
     // with code that hasn't been updated yet.
-    console.warn('[compat] supabase.auth.getUser() called - use Auth.js auth() instead')
+    console.warn('[compat] db.auth.getUser() called - use Auth.js auth() instead')
     return { data: { user: null }, error: { message: 'Use Auth.js auth() instead' } }
   }
 
   async signInWithPassword(_opts: { email: string; password: string }) {
-    console.warn(
-      '[compat] supabase.auth.signInWithPassword() called - use Auth.js signIn() instead'
-    )
+    console.warn('[compat] db.auth.signInWithPassword() called - use Auth.js signIn() instead')
     return {
       data: { user: null, session: null },
       error: { message: 'Use Auth.js signIn() instead' },

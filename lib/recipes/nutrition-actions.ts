@@ -6,7 +6,7 @@
 // upstream in lib/nutrition/usda.ts, so repeat lookups are free.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { searchFoods, getNutritionSummary } from '@/lib/nutrition/usda'
 import type { NutritionSummary } from '@/lib/nutrition/usda'
 
@@ -134,10 +134,10 @@ function estimateGrams(quantity: number, unit: string): number | null {
 
 export async function getRecipeNutrition(recipeId: string): Promise<RecipeNutritionResult> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // 1. Fetch recipe + ingredients
-  const { data: recipe, error: recipeError } = await supabase
+  const { data: recipe, error: recipeError } = await db
     .from('recipes')
     .select('id, name, yield_quantity, yield_unit')
     .eq('id', recipeId)
@@ -148,7 +148,7 @@ export async function getRecipeNutrition(recipeId: string): Promise<RecipeNutrit
     throw new Error('Recipe not found')
   }
 
-  const { data: recipeIngredients } = await supabase
+  const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select(
       `

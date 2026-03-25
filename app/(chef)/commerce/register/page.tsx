@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { listProducts } from '@/lib/commerce/product-actions'
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 
@@ -47,7 +47,7 @@ export default async function RegisterPage() {
 
   const terminal = getPaymentTerminalAdapter()
   const hardware = getPosHardwareStack()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const closeVarianceReasonThresholdCents = readPositiveInt(
     process.env.POS_CLOSE_REASON_THRESHOLD_CENTS,
     500
@@ -76,7 +76,7 @@ export default async function RegisterPage() {
   }> = []
 
   if (registerSession?.id) {
-    const { data: registerSales } = await (supabase
+    const { data: registerSales } = await (db
       .from('sales')
       .select('id, sale_number, status, total_cents, created_at')
       .eq('tenant_id', user.tenantId!)
@@ -88,7 +88,7 @@ export default async function RegisterPage() {
     const paymentBySaleId = new Map<string, any>()
 
     if (saleIds.length > 0) {
-      const { data: payments } = await (supabase
+      const { data: payments } = await (db
         .from('commerce_payments')
         .select('sale_id, payment_method, status, created_at')
         .eq('tenant_id', user.tenantId!)
@@ -120,11 +120,7 @@ export default async function RegisterPage() {
   let defaultTaxRate: number | undefined
   let taxServiceAvailable: boolean | undefined
   try {
-    const { data: chef } = await supabase
-      .from('chefs')
-      .select('zip')
-      .eq('id', user.tenantId!)
-      .single()
+    const { data: chef } = await db.from('chefs').select('zip').eq('id', user.tenantId!).single()
     const chefZip = String((chef as any)?.zip ?? '').trim()
     if (chefZip) {
       defaultTaxZip = chefZip

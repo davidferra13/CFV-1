@@ -5,7 +5,7 @@
 'use server'
 
 import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { breakers } from '@/lib/resilience/circuit-breaker'
 import { isConnectOnboardingRequiredForPayments } from '@/lib/stripe/payment-policy'
 import type Stripe from 'stripe'
@@ -38,10 +38,10 @@ function getStripe(): Stripe {
  */
 export async function createPaymentIntent(eventId: string): Promise<CreatePaymentIntentResult> {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event and verify ownership
-  const { data: event, error } = await supabase
+  const { data: event, error } = await db
     .from('events')
     .select('*')
     .eq('id', eventId)
@@ -73,7 +73,7 @@ export async function createPaymentIntent(eventId: string): Promise<CreatePaymen
   }
 
   // Determine amount from financial summary
-  const { data: financial } = await supabase
+  const { data: financial } = await db
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', eventId)
@@ -174,10 +174,10 @@ export async function createPaymentIntent(eventId: string): Promise<CreatePaymen
  */
 export async function getEventPaymentStatus(eventId: string) {
   const user = await requireClient()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Fetch event
-  const { data: event, error } = await supabase
+  const { data: event, error } = await db
     .from('events')
     .select('*')
     .eq('id', eventId)
@@ -189,7 +189,7 @@ export async function getEventPaymentStatus(eventId: string) {
   }
 
   // Fetch financial summary from view
-  const { data: summary, error: summaryError } = await supabase
+  const { data: summary, error: summaryError } = await db
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', eventId)

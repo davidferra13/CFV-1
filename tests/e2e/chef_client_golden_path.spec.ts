@@ -1,10 +1,10 @@
 import { test, expect } from '../helpers/fixtures'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createAdminClient } from '@/lib/db/admin'
 
 const BASE_URL = 'http://localhost:3100'
 const TRANSIENT_500_TEXT = /internal server error/i
 
-function getAdminSupabase() {
+function getAdminDb() {
   return createAdminClient()
 }
 
@@ -38,7 +38,7 @@ test.describe('Chef <-> Client Golden Contract Flow', () => {
     browser,
     seedIds,
   }) => {
-    const admin = getAdminSupabase()
+    const admin = getAdminDb()
     const suffix = Date.now().toString()
 
     const goldenQuoteName = `TEST Golden Quote ${suffix}`

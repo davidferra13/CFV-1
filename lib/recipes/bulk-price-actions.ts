@@ -5,20 +5,20 @@
 // Separated from lib/recipes/actions.ts to keep the panel import path clean.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 export async function bulkUpdateIngredientPrices(
   updates: Array<{ ingredientId: string; pricePerUnitCents: number }>
 ): Promise<void> {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   if (updates.length === 0) return
 
   await Promise.all(
     updates.map(({ ingredientId, pricePerUnitCents }) =>
-      supabase
+      db
         .from('ingredients')
         .update({
           last_price_cents: pricePerUnitCents,

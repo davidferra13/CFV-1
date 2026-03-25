@@ -6,7 +6,7 @@
 
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import crypto from 'crypto'
@@ -26,11 +26,11 @@ function hashToken(raw: string): string {
  * for tokens generated before the hashing migration.
  */
 export async function getInvitationByToken(token: string) {
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   const hashed = hashToken(token)
 
   // Try hashed match first (new tokens)
-  const { data: invitation } = await supabase
+  const { data: invitation } = await db
     .from('client_invitations')
     .select('*')
     .eq('token', hashed)
@@ -41,7 +41,7 @@ export async function getInvitationByToken(token: string) {
   if (invitation) return invitation
 
   // Fallback: plaintext match for legacy tokens created before hashing
-  const { data: legacyInvitation } = await supabase
+  const { data: legacyInvitation } = await db
     .from('client_invitations')
     .select('*')
     .eq('token', token)
@@ -56,9 +56,9 @@ export async function getInvitationByToken(token: string) {
  * Mark invitation as used (called during signup)
  */
 export async function markInvitationUsed(invitationId: string) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_invitations')
     .update({ used_at: new Date().toISOString() })
     .eq('id', invitationId)
@@ -77,9 +77,9 @@ export async function markInvitationUsed(invitationId: string) {
  */
 export async function revokeInvitation(invitationId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('client_invitations')
     .update({ used_at: new Date().toISOString() })
     .eq('id', invitationId)

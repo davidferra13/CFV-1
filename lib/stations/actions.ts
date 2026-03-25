@@ -4,7 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -63,11 +63,11 @@ export type UpdateComponentInput = z.infer<typeof UpdateComponentSchema>
 export async function createStation(input: CreateStationInput) {
   const user = await requireChef()
   const validated = CreateStationSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // If no display_order specified, place at end
   if (validated.display_order === 0) {
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('stations')
       .select('display_order')
       .eq('chef_id', user.tenantId!)
@@ -78,7 +78,7 @@ export async function createStation(input: CreateStationInput) {
       existing && existing.length > 0 ? (existing[0] as any).display_order + 1 : 0
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('stations')
     .insert({
       chef_id: user.tenantId!,
@@ -101,14 +101,14 @@ export async function createStation(input: CreateStationInput) {
 export async function updateStation(id: string, input: UpdateStationInput) {
   const user = await requireChef()
   const validated = UpdateStationSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   const updatePayload: Record<string, unknown> = {}
   if (validated.name !== undefined) updatePayload.name = validated.name
   if (validated.description !== undefined) updatePayload.description = validated.description
   if (validated.display_order !== undefined) updatePayload.display_order = validated.display_order
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('stations')
     .update(updatePayload)
     .eq('id', id)
@@ -128,10 +128,10 @@ export async function updateStation(id: string, input: UpdateStationInput) {
 
 export async function deleteStation(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Check for existing clipboard entries - prevent deletion if any exist
-  const { data: entries } = await supabase
+  const { data: entries } = await db
     .from('clipboard_entries')
     .select('id')
     .eq('station_id', id)
@@ -143,7 +143,7 @@ export async function deleteStation(id: string) {
   }
 
   // Delete components first (through menu items)
-  const { data: menuItems } = await supabase
+  const { data: menuItems } = await db
     .from('station_menu_items')
     .select('id')
     .eq('station_id', id)
@@ -151,7 +151,7 @@ export async function deleteStation(id: string) {
 
   if (menuItems && menuItems.length > 0) {
     const menuItemIds = menuItems.map((mi: any) => mi.id)
-    await supabase
+    await db
       .from('station_components')
       .delete()
       .in('station_menu_item_id', menuItemIds)
@@ -159,18 +159,10 @@ export async function deleteStation(id: string) {
   }
 
   // Delete menu items
-  await supabase
-    .from('station_menu_items')
-    .delete()
-    .eq('station_id', id)
-    .eq('chef_id', user.tenantId!)
+  await db.from('station_menu_items').delete().eq('station_id', id).eq('chef_id', user.tenantId!)
 
   // Delete the station
-  const { error } = await supabase
-    .from('stations')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', user.tenantId!)
+  const { error } = await db.from('stations').delete().eq('id', id).eq('chef_id', user.tenantId!)
 
   if (error) {
     console.error('[deleteStation] Error:', error)
@@ -182,9 +174,9 @@ export async function deleteStation(id: string) {
 
 export async function listStations() {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('stations')
     .select(
       `
@@ -217,9 +209,9 @@ export async function listStations() {
 
 export async function getStation(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('stations')
     .select(
       `
@@ -260,9 +252,9 @@ export async function getStation(id: string) {
 export async function addMenuItemToStation(input: AddMenuItemInput) {
   const user = await requireChef()
   const validated = AddMenuItemSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('station_menu_items')
     .insert({
       chef_id: user.tenantId!,
@@ -285,10 +277,10 @@ export async function addMenuItemToStation(input: AddMenuItemInput) {
 
 export async function removeMenuItemFromStation(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Get station_id for revalidation
-  const { data: menuItem } = await supabase
+  const { data: menuItem } = await db
     .from('station_menu_items')
     .select('station_id')
     .eq('id', id)
@@ -296,14 +288,14 @@ export async function removeMenuItemFromStation(id: string) {
     .single()
 
   // Delete components under this menu item
-  await supabase
+  await db
     .from('station_components')
     .delete()
     .eq('station_menu_item_id', id)
     .eq('chef_id', user.tenantId!)
 
   // Delete the menu item
-  const { error } = await supabase
+  const { error } = await db
     .from('station_menu_items')
     .delete()
     .eq('id', id)
@@ -324,10 +316,10 @@ export async function removeMenuItemFromStation(id: string) {
 export async function addComponent(input: AddComponentInput) {
   const user = await requireChef()
   const validated = AddComponentSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
   // Look up station_id from the menu item for revalidation
-  const { data: menuItem } = await supabase
+  const { data: menuItem } = await db
     .from('station_menu_items')
     .select('station_id')
     .eq('id', validated.station_menu_item_id)
@@ -336,7 +328,7 @@ export async function addComponent(input: AddComponentInput) {
 
   if (!menuItem) throw new Error('Menu item not found')
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('station_components')
     .insert({
       chef_id: user.tenantId!,
@@ -363,9 +355,9 @@ export async function addComponent(input: AddComponentInput) {
 export async function updateComponent(id: string, input: UpdateComponentInput) {
   const user = await requireChef()
   const validated = UpdateComponentSchema.parse(input)
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('station_components')
     .update(validated)
     .eq('id', id)
@@ -384,9 +376,9 @@ export async function updateComponent(id: string, input: UpdateComponentInput) {
 
 export async function removeComponent(id: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await db
     .from('station_components')
     .delete()
     .eq('id', id)
@@ -402,9 +394,9 @@ export async function removeComponent(id: string) {
 
 export async function listStationComponents(stationId: string) {
   const user = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('station_menu_items')
     .select(
       `

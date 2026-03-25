@@ -5,7 +5,7 @@
 'use server'
 
 import { requireAuth } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 
 export type PushSubscriptionInput = {
   endpoint: string
@@ -20,14 +20,14 @@ export type PushSubscriptionInput = {
  */
 export async function savePushSubscription(input: PushSubscriptionInput): Promise<void> {
   const user = await requireAuth()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   if (!user.tenantId) {
     console.error('[savePushSubscription] No tenantId on user - skipping')
     return
   }
 
-  const { error } = await supabase.from('push_subscriptions').upsert(
+  const { error } = await db.from('push_subscriptions').upsert(
     {
       tenant_id: user.tenantId,
       auth_user_id: user.id,
@@ -53,9 +53,9 @@ export async function savePushSubscription(input: PushSubscriptionInput): Promis
  */
 export async function removePushSubscription(endpoint: string): Promise<void> {
   const user = await requireAuth()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { error } = await supabase
+  const { error } = await db
     .from('push_subscriptions')
     .update({ is_active: false })
     .eq('endpoint', endpoint)
@@ -75,11 +75,11 @@ export async function resubscribePushSubscription(
   newSub: PushSubscriptionInput
 ): Promise<void> {
   const user = await requireAuth()
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Deactivate old subscription if known
   if (oldEndpoint) {
-    await supabase
+    await db
       .from('push_subscriptions')
       .update({ is_active: false })
       .eq('endpoint', oldEndpoint)
@@ -95,9 +95,9 @@ export async function resubscribePushSubscription(
  * Used by the channel router to send to all devices.
  */
 export async function getActiveSubscriptions(authUserId: string) {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  const { data, error } = await supabase
+  const { data, error } = await db
     .from('push_subscriptions')
     .select('id, endpoint, p256dh, auth_key')
     .eq('auth_user_id', authUserId)
@@ -117,9 +117,9 @@ export async function getActiveSubscriptions(authUserId: string) {
  * Service role only - called from channel-router.ts.
  */
 export async function deactivateSubscription(endpoint: string): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
-  await supabase.from('push_subscriptions').update({ is_active: false }).eq('endpoint', endpoint)
+  await db.from('push_subscriptions').update({ is_active: false }).eq('endpoint', endpoint)
 }
 
 /**
@@ -127,17 +127,17 @@ export async function deactivateSubscription(endpoint: string): Promise<void> {
  * Subscriptions with failed_count >= 5 are excluded from future sends.
  */
 export async function incrementSubscriptionFailureCount(endpoint: string): Promise<void> {
-  const supabase = createServerClient({ admin: true })
+  const db = createServerClient({ admin: true })
 
   // Read current count and bump by 1
-  const { data } = await supabase
+  const { data } = await db
     .from('push_subscriptions')
     .select('failed_count')
     .eq('endpoint', endpoint)
     .single()
 
   if (data) {
-    await supabase
+    await db
       .from('push_subscriptions')
       .update({ failed_count: (data.failed_count ?? 0) + 1 })
       .eq('endpoint', endpoint)

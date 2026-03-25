@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { navGroups, standaloneBottom, standaloneTop } from '@/components/navigation/nav-config'
 
@@ -34,7 +34,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   if (!query || query.length < 2) return { results: [], grouped: {} }
 
   const chef = await requireChef()
-  const supabase: any = createServerClient()
+  const db: any = createServerClient()
   // Escape PostgREST filter metacharacters to prevent filter string injection
   const safeQuery = query.replace(/[%_,.()"'\\]/g, '')
   const q = `%${safeQuery}%`
@@ -95,7 +95,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search clients (full_name, email, phone - scoped by tenant_id).
-  const { data: clients } = await supabase
+  const { data: clients } = await db
     .from('clients')
     .select('id, full_name, email, phone')
     .eq('tenant_id', chef.tenantId!)
@@ -115,7 +115,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search events (occasion, notes, address, status - scoped by tenant_id).
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from('events')
     .select('id, occasion, event_date, status, location_address, special_requests')
     .eq('tenant_id', chef.tenantId!)
@@ -136,7 +136,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search inquiries (message, occasion, status - scoped by tenant_id).
-  const { data: inquiries } = await supabase
+  const { data: inquiries } = await db
     .from('inquiries')
     .select('id, source_message, confirmed_occasion, confirmed_date, status')
     .eq('tenant_id', chef.tenantId!)
@@ -157,7 +157,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search menus (name, description, notes - scoped by tenant_id).
-  const { data: menus } = await supabase
+  const { data: menus } = await db
     .from('menus')
     .select('id, name, description, notes, status')
     .eq('tenant_id', chef.tenantId!)
@@ -178,7 +178,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search recipes (name, description, notes - scoped by tenant_id).
-  const { data: recipes } = await supabase
+  const { data: recipes } = await db
     .from('recipes')
     .select('id, name, description, notes, category')
     .eq('tenant_id', chef.tenantId!)
@@ -199,7 +199,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search quotes (name, notes - scoped by tenant_id).
-  const { data: quotes } = await supabase
+  const { data: quotes } = await db
     .from('quotes')
     .select(
       'id, quote_name, status, total_quoted_cents, valid_until, internal_notes, pricing_notes'
@@ -222,7 +222,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search expenses (description, vendor, notes - scoped by tenant_id).
-  const { data: expenses } = await supabase
+  const { data: expenses } = await db
     .from('expenses')
     .select('id, description, vendor_name, category, amount_cents, expense_date, notes')
     .eq('tenant_id', chef.tenantId!)
@@ -243,7 +243,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search referral partners (name, contact, notes - scoped by tenant_id).
-  const { data: partners } = await supabase
+  const { data: partners } = await db
     .from('referral_partners')
     .select('id, name, contact_name, email, status, notes')
     .eq('tenant_id', chef.tenantId!)
@@ -264,7 +264,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search client notes (note_text - scoped by tenant_id).
-  const { data: notes } = await supabase
+  const { data: notes } = await db
     .from('client_notes')
     .select('id, client_id, note_text, category, pinned')
     .eq('tenant_id', chef.tenantId!)
@@ -285,7 +285,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search messages (subject, body - scoped by tenant_id).
-  const { data: messages } = await supabase
+  const { data: messages } = await db
     .from('messages')
     .select('id, subject, body, status, channel, client_id, event_id, inquiry_id')
     .eq('tenant_id', chef.tenantId!)
@@ -314,7 +314,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Search chat conversations (last preview - scoped by tenant_id).
-  const { data: conversations } = await supabase
+  const { data: conversations } = await db
     .from('conversations')
     .select('id, context_type, last_message_preview')
     .eq('tenant_id', chef.tenantId!)
