@@ -1455,14 +1455,14 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 
 > **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Onboarding & Import Pages
 
-| Route                 | Content                                                                                                                                                                                                   |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/onboarding`         | Guided setup wizard with progress steps (profile, clients, recipes, staff, loyalty)                                                                                                                       |
-| `/onboarding/clients` | Client import step (CSV upload, manual entry, skip)                                                                                                                                                       |
-| `/onboarding/loyalty` | Loyalty setup step (program name, earn rates, tier config)                                                                                                                                                |
-| `/onboarding/recipes` | Recipe import step (CSV, URL paste, manual)                                                                                                                                                               |
-| `/onboarding/staff`   | Staff setup step (add team members, roles)                                                                                                                                                                |
-| `/import`             | Smart import hub — 10 modes: Brain Dump, CSV/Spreadsheet, Past Events, Take a Chef, **Import Inquiries** (CSV + freeform AI), Import Clients, Import Recipe, Import Receipt, Import Document, Upload File |
+| Route                 | Content                                                                                                                                                                                                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/onboarding`         | Guided setup wizard with progress steps (profile, clients, recipes, staff, loyalty)                                                                                                                                                                                    |
+| `/onboarding/clients` | Client import step (CSV upload, manual entry, skip)                                                                                                                                                                                                                    |
+| `/onboarding/loyalty` | Loyalty setup step (program name, earn rates, tier config)                                                                                                                                                                                                             |
+| `/onboarding/recipes` | Recipe import step (CSV, URL paste, manual)                                                                                                                                                                                                                            |
+| `/onboarding/staff`   | Staff setup step (add team members, roles)                                                                                                                                                                                                                             |
+| `/import`             | Smart import hub — 11 modes: Brain Dump, CSV/Spreadsheet, Past Events, Take a Chef, **Import Inquiries** (CSV + freeform AI), Import Clients, Import Recipe, **Recipe Photos** (batch photo-to-recipe via Gemini vision), Import Receipt, Import Document, Upload File |
 
 ---
 

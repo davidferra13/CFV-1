@@ -28,11 +28,13 @@ import { CsvImport } from './csv-import'
 import { PastEventsImport } from './past-events-import'
 import { TakeAChefImport } from './take-a-chef-import'
 import { InquiryImport } from './inquiry-import'
+import { RecipePhotoImport } from './recipe-photo-import'
 
 export type ImportMode =
   | 'brain-dump'
   | 'clients'
   | 'recipe'
+  | 'recipe-photos'
   | 'receipt'
   | 'document'
   | 'file-upload'
@@ -84,6 +86,12 @@ const TABS: TabConfig[] = [
     mode: 'recipe',
     label: 'Import Recipe',
     placeholder: `Type or paste a recipe description.\n\nExample:\nPan sauce - sear the steak first, set it aside. Saute shallots and mushrooms in the same pan. Deglaze with wine. Add stock and heavy cream. Splash of worcestershire, spoon of dijon. Let it reduce. Finish with butter, squeeze of lemon, and fresh parsley. Serves 4, makes about 2 cups.`,
+  },
+  {
+    mode: 'recipe-photos',
+    label: 'Recipe Photos',
+    placeholder: '',
+    isCustomComponent: true,
   },
   {
     mode: 'receipt',
@@ -431,6 +439,7 @@ export function SmartImportHub({
       )}
       {isCustomMode && mode === 'take-a-chef' && <TakeAChefImport aiConfigured={aiConfigured} />}
       {isCustomMode && mode === 'inquiries' && <InquiryImport aiConfigured={aiConfigured} />}
+      {isCustomMode && mode === 'recipe-photos' && <RecipePhotoImport />}
 
       {/* INPUT PHASE - AI-driven modes only */}
       {!isCustomMode && (phase === 'input' || phase === 'parsing') && (
