@@ -18,15 +18,23 @@ export default async function MenuDetailPage({ params }: Props) {
   const user = await requireChef()
   const { id } = await params
 
-  const [menu, event, costSummaries] = await Promise.all([
-    getMenuById(id),
-    getMenuEvent(id),
-    getMenuCostSummaries(),
-  ])
-
+  // Critical fetch: menu itself (notFound if missing)
+  const menu = await getMenuById(id)
   if (!menu) {
     notFound()
   }
+
+  // Non-critical fetches: degrade gracefully on failure
+  const [event, costSummaries] = await Promise.all([
+    getMenuEvent(id).catch((err) => {
+      console.error('[menu-detail] Event fetch failed (non-blocking):', err.message)
+      return null
+    }),
+    getMenuCostSummaries().catch((err) => {
+      console.error('[menu-detail] Cost summaries fetch failed (non-blocking):', err.message)
+      return [] as Awaited<ReturnType<typeof getMenuCostSummaries>>
+    }),
+  ])
 
   // Collect recipe_ids from components to fetch recipe names
   const recipeIds = new Set<string>()
@@ -47,6 +55,11 @@ export default async function MenuDetailPage({ params }: Props) {
           )
           .in('id', Array.from(recipeIds))
           .eq('tenant_id', user.tenantId!)
+          .then((res: any) => res)
+          .catch((err: any) => {
+            console.error('[menu-detail] Recipe map fetch failed (non-blocking):', err.message)
+            return { data: null }
+          })
       : Promise.resolve({ data: null }),
     getMenuRecommendations({
       dietaryRestrictions: (event as any)?.dietary_restrictions ?? [],

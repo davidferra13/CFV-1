@@ -117,10 +117,10 @@ export async function autoLogMenuFromEvent(
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Fetch event with client info
+  // Fetch event with client info and menu link
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select('id, client_id, event_date, guest_count, status')
+    .select('id, client_id, event_date, guest_count, status, menu_id')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -142,16 +142,21 @@ export async function autoLogMenuFromEvent(
     return { data: null, error: 'Menu history already logged for this event' }
   }
 
-  // Fetch menu items if a menu is assigned
-  const { data: menuItems } = await supabase
-    .from('menu_items')
-    .select('name, category')
-    .eq('event_id', eventId)
+  // Fetch dishes from the assigned menu (via the real menu model: menus > dishes)
+  let dishes: DishEntry[] = []
+  if (event.menu_id) {
+    const { data: menuDishes } = await supabase
+      .from('dishes')
+      .select('name, course_name')
+      .eq('menu_id', event.menu_id)
+      .eq('tenant_id', user.tenantId!)
+      .order('course_number', { ascending: true })
 
-  const dishes: DishEntry[] = (menuItems ?? []).map((item: any) => ({
-    name: item.name,
-    category: item.category ?? undefined,
-  }))
+    dishes = (menuDishes ?? []).map((d: any) => ({
+      name: d.name || d.course_name || 'Unnamed Dish',
+      category: d.course_name ?? undefined,
+    }))
+  }
 
   // Create the history entry
   const { data, error } = await supabase
@@ -160,6 +165,7 @@ export async function autoLogMenuFromEvent(
       chef_id: user.tenantId!,
       client_id: event.client_id,
       event_id: eventId,
+      menu_id: event.menu_id ?? null,
       served_date: event.event_date,
       dishes_served: dishes,
       guest_count: event.guest_count ?? null,
@@ -258,9 +264,7 @@ export async function getDishFrequency(
  * Get recipes the chef has that were never served to this client.
  * Cross-references the recipes table.
  */
-export async function getNeverServedDishes(
-  clientId: string
-): Promise<{
+export async function getNeverServedDishes(clientId: string): Promise<{
   data: { id: string; name: string; category: string | null }[]
   error: string | null
 }> {

@@ -1,11 +1,18 @@
 // Tasting Menu Builder - Server Actions
 // Multi-course tasting menu CRUD with course management and duplication
+// Hooked into the main menu engine via tasting-menu-bridge.ts for intelligence features.
 
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import {
+  syncTastingMenuToEngine,
+  syncSingleCourse,
+  removeMaterializedDish,
+  deleteMaterializedMenu,
+} from './tasting-menu-bridge'
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
 
@@ -189,6 +196,28 @@ export async function updateTastingMenu(
     throw new Error('Failed to update tasting menu')
   }
 
+  // Sync name/metadata to materialized menu (non-blocking)
+  if (input.name) {
+    try {
+      const { data: tm } = await supabase
+        .from('tasting_menus')
+        .select('materialized_menu_id')
+        .eq('id', id)
+        .eq('chef_id', user.tenantId!)
+        .single()
+
+      if (tm?.materialized_menu_id) {
+        await supabase
+          .from('menus')
+          .update({ name: input.name, updated_by: user.id })
+          .eq('id', tm.materialized_menu_id)
+          .eq('tenant_id', user.tenantId!)
+      }
+    } catch (err) {
+      console.error('[updateTastingMenu] Shadow menu sync failed (non-blocking):', err)
+    }
+  }
+
   revalidatePath('/menus/tasting')
   return { success: true }
 }
@@ -198,6 +227,31 @@ export async function updateTastingMenu(
 export async function deleteTastingMenu(id: string): Promise<{ success: true }> {
   const user = await requireChef()
   const supabase: any = createServerClient()
+
+  // Clean up materialized menu first (before the tasting menu is deleted)
+  try {
+    const { data: tm } = await supabase
+      .from('tasting_menus')
+      .select('materialized_menu_id, event_id')
+      .eq('id', id)
+      .eq('chef_id', user.tenantId!)
+      .single()
+
+    if (tm?.materialized_menu_id) {
+      // Clear event's menu_id if it points to our materialized menu
+      if (tm.event_id) {
+        await supabase
+          .from('events')
+          .update({ menu_id: null })
+          .eq('id', tm.event_id)
+          .eq('tenant_id', user.tenantId!)
+          .eq('menu_id', tm.materialized_menu_id)
+      }
+      await deleteMaterializedMenu(supabase, tm.materialized_menu_id, user.tenantId!)
+    }
+  } catch (err) {
+    console.error('[deleteTastingMenu] Materialized menu cleanup failed (non-blocking):', err)
+  }
 
   const { error } = await supabase
     .from('tasting_menus')
@@ -214,6 +268,112 @@ export async function deleteTastingMenu(id: string): Promise<{ success: true }> 
   return { success: true }
 }
 
+// ─── Link to Event ──────────────────────────────────────────────────────────────
+
+/**
+ * Link a tasting menu to an event. Materializes the tasting courses into the main
+ * menu engine so all intelligence features (cost, allergens, repeat detection, etc.) work.
+ */
+export async function linkTastingMenuToEvent(
+  tastingMenuId: string,
+  eventId: string
+): Promise<{ success: true; materializedMenuId: string }> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  // Verify tasting menu ownership
+  const { data: tm, error: tmErr } = await supabase
+    .from('tasting_menus')
+    .select('id, chef_id')
+    .eq('id', tastingMenuId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (tmErr || !tm) throw new Error('Tasting menu not found')
+
+  // Verify event ownership
+  const { data: event, error: evErr } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (evErr || !event) throw new Error('Event not found')
+
+  // Set event_id on tasting menu
+  await supabase
+    .from('tasting_menus')
+    .update({ event_id: eventId })
+    .eq('id', tastingMenuId)
+    .eq('chef_id', user.tenantId!)
+
+  // Full sync: materialize courses into main engine
+  const { materializedMenuId } = await syncTastingMenuToEngine(
+    supabase,
+    tastingMenuId,
+    user.tenantId!,
+    user.id
+  )
+
+  // Point the event's menu_id to the materialized menu
+  await supabase
+    .from('events')
+    .update({ menu_id: materializedMenuId })
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  revalidatePath('/menus')
+  revalidatePath('/events')
+  return { success: true, materializedMenuId }
+}
+
+/**
+ * Unlink a tasting menu from its event. Deletes the materialized menu and all
+ * its dishes/components. The tasting menu itself is preserved.
+ */
+export async function unlinkTastingMenuFromEvent(
+  tastingMenuId: string
+): Promise<{ success: true }> {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: tm, error: tmErr } = await supabase
+    .from('tasting_menus')
+    .select('id, event_id, materialized_menu_id')
+    .eq('id', tastingMenuId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (tmErr || !tm) throw new Error('Tasting menu not found')
+
+  // Clear event's menu_id if it points to our materialized menu
+  if (tm.event_id && tm.materialized_menu_id) {
+    await supabase
+      .from('events')
+      .update({ menu_id: null })
+      .eq('id', tm.event_id)
+      .eq('tenant_id', user.tenantId!)
+      .eq('menu_id', tm.materialized_menu_id)
+  }
+
+  // Delete materialized menu (CASCADE cleans up dishes + components)
+  if (tm.materialized_menu_id) {
+    await deleteMaterializedMenu(supabase, tm.materialized_menu_id, user.tenantId!)
+  }
+
+  // Clear links on tasting menu
+  await supabase
+    .from('tasting_menus')
+    .update({ event_id: null, materialized_menu_id: null })
+    .eq('id', tastingMenuId)
+    .eq('chef_id', user.tenantId!)
+
+  revalidatePath('/menus')
+  revalidatePath('/events')
+  return { success: true }
+}
+
 // ─── Add Course ─────────────────────────────────────────────────────────────────
 
 export async function addCourse(
@@ -223,10 +383,10 @@ export async function addCourse(
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Verify menu ownership
+  // Verify menu ownership and get materialized menu link
   const { data: menu, error: menuError } = await supabase
     .from('tasting_menus')
-    .select('id')
+    .select('id, materialized_menu_id')
     .eq('id', menuId)
     .eq('chef_id', user.tenantId!)
     .single()
@@ -257,6 +417,15 @@ export async function addCourse(
     throw new Error('Failed to add course')
   }
 
+  // Sync new course to materialized menu (non-blocking)
+  if (menu.materialized_menu_id) {
+    try {
+      await syncSingleCourse(supabase, data.id, menu.materialized_menu_id, user.tenantId!, user.id)
+    } catch (err) {
+      console.error('[addCourse] Bridge sync failed (non-blocking):', err)
+    }
+  }
+
   revalidatePath('/menus/tasting')
   return { success: true, id: data.id }
 }
@@ -270,10 +439,10 @@ export async function updateCourse(
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Verify ownership via join
+  // Verify ownership via join (also fetch materialized_menu_id for bridge sync)
   const { data: course, error: findError } = await supabase
     .from('tasting_menu_courses')
-    .select('id, tasting_menus!inner(chef_id)')
+    .select('id, tasting_menus!inner(chef_id, materialized_menu_id)')
     .eq('id', courseId)
     .single()
 
@@ -281,7 +450,10 @@ export async function updateCourse(
     throw new Error('Course not found')
   }
 
-  const menuData = course.tasting_menus as unknown as { chef_id: string }
+  const menuData = course.tasting_menus as unknown as {
+    chef_id: string
+    materialized_menu_id: string | null
+  }
   if (menuData.chef_id !== user.tenantId!) {
     throw new Error('Not authorized')
   }
@@ -291,6 +463,21 @@ export async function updateCourse(
   if (error) {
     console.error('[updateCourse] Error:', error)
     throw new Error('Failed to update course')
+  }
+
+  // Sync changes to materialized dish (non-blocking)
+  if (menuData.materialized_menu_id) {
+    try {
+      await syncSingleCourse(
+        supabase,
+        courseId,
+        menuData.materialized_menu_id,
+        user.tenantId!,
+        user.id
+      )
+    } catch (err) {
+      console.error('[updateCourse] Bridge sync failed (non-blocking):', err)
+    }
   }
 
   revalidatePath('/menus/tasting')
@@ -303,10 +490,10 @@ export async function removeCourse(courseId: string): Promise<{ success: true }>
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Verify ownership via join
+  // Verify ownership via join (also fetch materialized_menu_id for bridge sync)
   const { data: course, error: findError } = await supabase
     .from('tasting_menu_courses')
-    .select('id, tasting_menus!inner(chef_id)')
+    .select('id, tasting_menus!inner(chef_id, materialized_menu_id)')
     .eq('id', courseId)
     .single()
 
@@ -314,9 +501,26 @@ export async function removeCourse(courseId: string): Promise<{ success: true }>
     throw new Error('Course not found')
   }
 
-  const menuData = course.tasting_menus as unknown as { chef_id: string }
+  const menuData = course.tasting_menus as unknown as {
+    chef_id: string
+    materialized_menu_id: string | null
+  }
   if (menuData.chef_id !== user.tenantId!) {
     throw new Error('Not authorized')
+  }
+
+  // Remove materialized dish BEFORE deleting the course (need the FK reference)
+  if (menuData.materialized_menu_id) {
+    try {
+      await removeMaterializedDish(
+        supabase,
+        courseId,
+        menuData.materialized_menu_id,
+        user.tenantId!
+      )
+    } catch (err) {
+      console.error('[removeCourse] Bridge cleanup failed (non-blocking):', err)
+    }
   }
 
   const { error } = await supabase.from('tasting_menu_courses').delete().eq('id', courseId)
@@ -339,10 +543,10 @@ export async function reorderCourses(
   const user = await requireChef()
   const supabase: any = createServerClient()
 
-  // Verify menu ownership
+  // Verify menu ownership and get materialized menu link
   const { data: menu, error: menuError } = await supabase
     .from('tasting_menus')
-    .select('id')
+    .select('id, materialized_menu_id')
     .eq('id', menuId)
     .eq('chef_id', user.tenantId!)
     .single()
@@ -366,6 +570,22 @@ export async function reorderCourses(
   if (failed?.error) {
     console.error('[reorderCourses] Error:', failed.error)
     throw new Error('Failed to reorder courses')
+  }
+
+  // Sync reordered course_numbers to materialized dishes (non-blocking)
+  if (menu.materialized_menu_id) {
+    try {
+      for (const [index, courseId] of courseIds.entries()) {
+        await supabase
+          .from('dishes')
+          .update({ course_number: index + 1, sort_order: index + 1 })
+          .eq('source_tasting_course_id', courseId)
+          .eq('menu_id', menu.materialized_menu_id)
+          .eq('tenant_id', user.tenantId!)
+      }
+    } catch (err) {
+      console.error('[reorderCourses] Bridge sync failed (non-blocking):', err)
+    }
   }
 
   revalidatePath('/menus/tasting')

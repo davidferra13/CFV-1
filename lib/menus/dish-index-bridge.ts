@@ -4,6 +4,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
+import { requireChef } from '@/lib/auth/get-user'
 import { canonicalizeDishName } from './dish-index-constants'
 import { revalidatePath } from 'next/cache'
 
@@ -17,6 +18,7 @@ import { revalidatePath } from 'next/cache'
  * - Create a dish_appearance record linking to the menu's event
  */
 export async function indexDishesFromMenu(menuId: string, tenantId: string, userId: string) {
+  await requireChef()
   const supabase: any = createServerClient()
 
   // Get the menu with its event info and all dishes
@@ -66,85 +68,120 @@ export async function indexDishesFromMenu(menuId: string, tenantId: string, user
     return { indexed: 0 }
   }
 
-  let indexedCount = 0
-
-  for (const dish of dishes) {
-    // Prefer the actual dish name; fall back to course label for legacy rows
-    const dishName = (dish as any).name || dish.course_name || 'Unnamed Dish'
+  // Pre-compute canonical names and courses for all dishes
+  const dishMeta = dishes.map((dish: any) => {
+    const dishName = dish.name || dish.course_name || 'Unnamed Dish'
     const course = normalizeCourseForIndex(dish.course_name)
     const canonical = canonicalizeDishName(dishName)
+    return { dish, dishName, course, canonical }
+  })
 
-    // Check if dish already exists in the index
-    const { data: existing } = await supabase
-      .from('dish_index')
-      .select('id, times_served, first_served')
-      .eq('tenant_id', tenantId)
-      .eq('canonical_name', canonical)
-      .eq('course', course)
-      .maybeSingle()
+  // Bulk-fetch all existing dish_index entries for this tenant matching any canonical name
+  const canonicalNames = [...new Set(dishMeta.map((m: { canonical: string }) => m.canonical))]
+  const { data: existingEntries } = await supabase
+    .from('dish_index')
+    .select('id, canonical_name, course, times_served, first_served')
+    .eq('tenant_id', tenantId)
+    .in('canonical_name', canonicalNames)
 
-    let dishIndexId: string
-
-    if (existing) {
-      // Update existing dish - increment count and update dates
-      const updates: Record<string, unknown> = {
-        times_served: existing.times_served + 1,
-      }
-      if (eventDate) {
-        updates.last_served = eventDate
-        if (!existing.first_served || eventDate < existing.first_served) {
-          updates.first_served = eventDate
-        }
-      }
-      await supabase
-        .from('dish_index')
-        .update(updates)
-        .eq('id', existing.id)
-        .eq('tenant_id', tenantId)
-
-      dishIndexId = existing.id
-    } else {
-      // Create new dish index entry
-      const { data: newEntry, error: insertError } = await supabase
-        .from('dish_index')
-        .insert({
-          tenant_id: tenantId,
-          name: dishName,
-          canonical_name: canonical,
-          course,
-          description: dish.description || null,
-          dietary_tags: dish.dietary_tags || [],
-          times_served: 1,
-          first_served: eventDate,
-          last_served: eventDate,
-        })
-        .select('id')
-        .single()
-
-      if (insertError) {
-        console.error(`[dish-index-bridge] Failed to index "${dishName}":`, insertError.message)
-        continue
-      }
-      dishIndexId = newEntry.id
-    }
-
-    // Create appearance record
-    try {
-      await supabase.from('dish_appearances').insert({
-        dish_id: dishIndexId,
-        tenant_id: tenantId,
-        menu_id: menuId,
-        event_id: menu.event_id || null,
-        event_date: eventDate,
-        event_type: eventType,
-        client_name: clientName,
-      })
-    } catch (err) {
-      console.error('[dish-index-bridge] Appearance insert failed (non-blocking):', err)
-    }
-
-    indexedCount++
+  // Build lookup: "canonical|course" -> existing entry
+  const existingMap = new Map<string, any>()
+  for (const entry of existingEntries ?? []) {
+    existingMap.set(`${entry.canonical_name}|${entry.course}`, entry)
   }
+
+  // Separate into updates vs new inserts
+  const toUpdate: { entry: any; meta: (typeof dishMeta)[0] }[] = []
+  const toInsert: (typeof dishMeta)[0][] = []
+
+  for (const meta of dishMeta) {
+    const key = `${meta.canonical}|${meta.course}`
+    const existing = existingMap.get(key)
+    if (existing) {
+      toUpdate.push({ entry: existing, meta })
+    } else {
+      toInsert.push(meta)
+    }
+  }
+
+  // Execute updates (each needs its own update call due to different values)
+  for (const { entry } of toUpdate) {
+    const updates: Record<string, unknown> = {
+      times_served: entry.times_served + 1,
+    }
+    if (eventDate) {
+      updates.last_served = eventDate
+      if (!entry.first_served || eventDate < entry.first_served) {
+        updates.first_served = eventDate
+      }
+    }
+    await supabase.from('dish_index').update(updates).eq('id', entry.id).eq('tenant_id', tenantId)
+  }
+
+  // Batch-insert new dish index entries
+  const newEntryIds = new Map<string, string>() // canonical|course -> id
+  if (toInsert.length > 0) {
+    const insertPayloads = toInsert.map((meta) => ({
+      tenant_id: tenantId,
+      name: meta.dishName,
+      canonical_name: meta.canonical,
+      course: meta.course,
+      description: meta.dish.description || null,
+      dietary_tags: meta.dish.dietary_tags || [],
+      times_served: 1,
+      first_served: eventDate,
+      last_served: eventDate,
+    }))
+
+    const { data: inserted, error: insertError } = await supabase
+      .from('dish_index')
+      .insert(insertPayloads)
+      .select('id, canonical_name, course')
+
+    if (insertError) {
+      console.error('[dish-index-bridge] Batch insert failed:', insertError.message)
+    } else {
+      for (const entry of inserted ?? []) {
+        newEntryIds.set(`${entry.canonical_name}|${entry.course}`, entry.id)
+      }
+    }
+  }
+
+  // Build full ID map for appearance records
+  const dishIndexIdMap = new Map<string, string>()
+  for (const { entry, meta } of toUpdate) {
+    dishIndexIdMap.set(`${meta.canonical}|${meta.course}`, entry.id)
+  }
+  for (const [key, id] of newEntryIds) {
+    dishIndexIdMap.set(key, id)
+  }
+
+  // Batch-insert all appearance records
+  const appearanceInserts: any[] = []
+  for (const meta of dishMeta) {
+    const key = `${meta.canonical}|${meta.course}`
+    const dishIndexId = dishIndexIdMap.get(key)
+    if (!dishIndexId) continue
+    appearanceInserts.push({
+      dish_id: dishIndexId,
+      tenant_id: tenantId,
+      menu_id: menuId,
+      event_id: menu.event_id || null,
+      event_date: eventDate,
+      event_type: eventType,
+      client_name: clientName,
+    })
+  }
+
+  if (appearanceInserts.length > 0) {
+    try {
+      await supabase.from('dish_appearances').insert(appearanceInserts)
+    } catch (err) {
+      console.error('[dish-index-bridge] Appearance batch insert failed (non-blocking):', err)
+    }
+  }
+
+  const indexedCount = dishIndexIdMap.size
 
   console.log(
     `[dish-index-bridge] Indexed ${indexedCount}/${dishes.length} dishes from menu ${menuId}`

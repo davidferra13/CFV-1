@@ -14,7 +14,15 @@ import { IngredientConsolidationBar } from '@/components/intelligence/ingredient
 
 export default async function MenusPage() {
   const user = await requireChef()
-  const [menus, costSummaries] = await Promise.all([getMenus(), getMenuCostSummaries()])
+
+  // Critical fetch: menu list. Non-critical: cost summaries (degrade gracefully)
+  const [menus, costSummaries] = await Promise.all([
+    getMenus(),
+    getMenuCostSummaries().catch((err) => {
+      console.error('[menus-list] Cost summaries fetch failed (non-blocking):', err.message)
+      return [] as Awaited<ReturnType<typeof getMenuCostSummaries>>
+    }),
+  ])
 
   const eventIds = Array.from(
     new Set(menus.map((menu: any) => menu.event_id).filter(Boolean))
@@ -25,14 +33,18 @@ export default async function MenusPage() {
   > = {}
 
   if (eventIds.length > 0) {
-    const supabase: any = createServerClient()
-    const { data: events } = await supabase
-      .from('events')
-      .select('id, occasion, event_date, status')
-      .in('id', eventIds)
-      .eq('tenant_id', user.tenantId!)
+    try {
+      const supabase: any = createServerClient()
+      const { data: events } = await supabase
+        .from('events')
+        .select('id, occasion, event_date, status')
+        .in('id', eventIds)
+        .eq('tenant_id', user.tenantId!)
 
-    eventsById = Object.fromEntries((events || []).map((event: any) => [event.id, event]))
+      eventsById = Object.fromEntries((events || []).map((event: any) => [event.id, event]))
+    } catch (err: any) {
+      console.error('[menus-list] Events fetch failed (non-blocking):', err.message)
+    }
   }
 
   const costByMenuId = Object.fromEntries(

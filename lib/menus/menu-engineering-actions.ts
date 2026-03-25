@@ -675,6 +675,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
           .from('client_allergy_records')
           .select('allergen, severity, confirmed_by_chef')
           .eq('client_id', event.client_id)
+          .eq('tenant_id', tenantId)
 
         guestAllergens = (allergies ?? []).map((a: any) => ({
           allergen: a.allergen,
@@ -733,6 +734,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
         .from('recipe_ingredients')
         .select('recipe_id, ingredient_id')
         .in('recipe_id', recipeIds)
+        .eq('tenant_id', tenantId)
 
       const ingredientIds = [
         ...new Set(
@@ -748,6 +750,7 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
           .from('ingredients')
           .select('id, name')
           .in('id', ingredientIds)
+          .eq('tenant_id', tenantId)
 
         for (const ing of ingredients ?? []) {
           ingredientNameMap.set(ing.id, ing.name)
@@ -802,11 +805,6 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
   }
 
   // 4. Get available recipes (tenant recipes not currently on this menu) as swap candidates
-  const usedRecipeIds = new Set<string>()
-  for (const d of currentDishes) {
-    // We already tracked dish-recipe mapping above
-  }
-
   // Get all tenant recipes with costs (limit to those with cost data for useful swaps)
   const { data: allRecipes } = await supabase
     .from('recipe_cost_summary')
@@ -816,26 +814,61 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
     .limit(100)
 
   const availableRecipes: SimulatorDish[] = []
-  for (const r of allRecipes ?? []) {
-    if (!r.recipe_id) continue
-    // Get ingredients for this recipe
-    const { data: recipeIngs } = await supabase
+  const availRecipeIds = (allRecipes ?? []).map((r: any) => r.recipe_id).filter(Boolean) as string[]
+
+  if (availRecipeIds.length > 0) {
+    // Bulk query: all recipe_ingredients for all available recipes
+    const { data: availRecipeIngs } = await supabase
       .from('recipe_ingredients')
-      .select('ingredient_id, ingredients(name)')
-      .eq('recipe_id', r.recipe_id)
-      .limit(30)
+      .select('recipe_id, ingredient_id')
+      .in('recipe_id', availRecipeIds)
+      .eq('tenant_id', tenantId)
 
-    const ingredients = (recipeIngs ?? [])
-      .map((ri: any) => ({ name: ri.ingredients?.name }))
-      .filter((i: any) => i.name)
+    // Collect unique ingredient IDs
+    const availIngIds = [
+      ...new Set(
+        (availRecipeIngs ?? [])
+          .filter((ri: any) => ri.ingredient_id)
+          .map((ri: any) => ri.ingredient_id!)
+      ),
+    ]
 
-    availableRecipes.push({
-      id: r.recipe_id,
-      name: r.recipe_name ?? 'Unnamed',
-      ingredients,
-      costPerServingCents: r.cost_per_portion_cents ?? r.total_ingredient_cost_cents ?? 0,
-      prepTimeMinutes: null,
-    })
+    // Bulk query: all ingredient names
+    let availIngNameMap = new Map<string, string>()
+    if (availIngIds.length > 0) {
+      const { data: availIngs } = await supabase
+        .from('ingredients')
+        .select('id, name')
+        .in('id', availIngIds)
+        .eq('tenant_id', tenantId)
+
+      for (const ing of availIngs ?? []) {
+        availIngNameMap.set(ing.id, ing.name)
+      }
+    }
+
+    // Build recipe -> ingredients map in memory
+    const availRecipeIngMap = new Map<string, { name: string }[]>()
+    for (const ri of availRecipeIngs ?? []) {
+      if (!ri.recipe_id || !ri.ingredient_id) continue
+      const name = availIngNameMap.get(ri.ingredient_id)
+      if (!name) continue
+      const existing = availRecipeIngMap.get(ri.recipe_id) ?? []
+      existing.push({ name })
+      availRecipeIngMap.set(ri.recipe_id, existing)
+    }
+
+    // Assemble available recipes
+    for (const r of allRecipes ?? []) {
+      if (!r.recipe_id) continue
+      availableRecipes.push({
+        id: r.recipe_id,
+        name: r.recipe_name ?? 'Unnamed',
+        ingredients: availRecipeIngMap.get(r.recipe_id) ?? [],
+        costPerServingCents: r.cost_per_portion_cents ?? r.total_ingredient_cost_cents ?? 0,
+        prepTimeMinutes: null,
+      })
+    }
   }
 
   return {

@@ -290,40 +290,55 @@ export async function createMenuFromTemplate(templateId: string, eventId?: strin
 
   if (mErr) throw new Error(`Failed to create menu: ${mErr.message}`)
 
-  // Create dishes and components
-  for (const dish of dishes) {
-    const { data: createdDish, error: dErr } = await supabase
-      .from('dishes')
-      .insert({
-        tenant_id: user.tenantId!,
-        menu_id: menu.id,
-        course_name: dish.courseName,
-        course_number: dish.courseNumber,
-        sort_order: dish.courseNumber,
-        created_by: user.id,
-        updated_by: user.id,
-      })
-      .select()
-      .single()
+  // Batch-insert all dishes in one query
+  const dishInserts = dishes.map((dish, idx) => ({
+    tenant_id: user.tenantId!,
+    menu_id: menu.id,
+    course_name: dish.courseName,
+    course_number: dish.courseNumber,
+    sort_order: dish.courseNumber ?? idx,
+    created_by: user.id,
+    updated_by: user.id,
+  }))
 
-    if (dErr) {
-      console.error('[template] Failed to create dish:', dErr.message)
-      continue
+  const { data: createdDishes, error: dErr } = await supabase
+    .from('dishes')
+    .insert(dishInserts)
+    .select('id, course_number')
+
+  if (dErr) {
+    console.error('[template] Failed to create dishes:', dErr.message)
+  }
+
+  // Map created dishes back to template dishes by course_number for component linking
+  if (createdDishes && createdDishes.length > 0) {
+    const dishByCourse = new Map<number, string>()
+    for (const d of createdDishes) {
+      dishByCourse.set(d.course_number, d.id)
     }
 
-    for (const comp of dish.components) {
-      const { error: cErr } = await supabase.from('components').insert({
-        tenant_id: user.tenantId!,
-        dish_id: createdDish.id,
-        name: comp.name,
-        category: 'main',
-        recipe_id: comp.recipeId ?? null,
-        created_by: user.id,
-        updated_by: user.id,
-      })
+    // Collect all component inserts
+    const componentInserts: any[] = []
+    for (const dish of dishes) {
+      const dishId = dishByCourse.get(dish.courseNumber)
+      if (!dishId) continue
+      for (const comp of dish.components) {
+        componentInserts.push({
+          tenant_id: user.tenantId!,
+          dish_id: dishId,
+          name: comp.name,
+          category: 'main',
+          recipe_id: comp.recipeId ?? null,
+          created_by: user.id,
+          updated_by: user.id,
+        })
+      }
+    }
 
+    if (componentInserts.length > 0) {
+      const { error: cErr } = await supabase.from('components').insert(componentInserts)
       if (cErr) {
-        console.error('[template] Failed to create component:', cErr.message)
+        console.error('[template] Failed to create components:', cErr.message)
       }
     }
   }
@@ -375,19 +390,34 @@ export async function saveMenuAsTemplate(
   if (dishErr) throw new Error(`Failed to fetch dishes: ${dishErr.message}`)
 
   const templateDishes: TemplateDish[] = []
+  const dishIds = (dishes ?? []).map((d: any) => d.id)
+
+  // Bulk-fetch all components for all dishes in one query
+  let dishToComps = new Map<string, { name: string; recipe_id: string | null }[]>()
+  if (dishIds.length > 0) {
+    const { data: allComps } = await supabase
+      .from('components')
+      .select('dish_id, name, recipe_id, sort_order')
+      .in('dish_id', dishIds)
+      .eq('tenant_id', user.tenantId!)
+
+    for (const c of allComps ?? []) {
+      const existing = dishToComps.get(c.dish_id) ?? []
+      existing.push(c)
+      dishToComps.set(c.dish_id, existing)
+    }
+    // Sort components by sort_order within each dish
+    for (const [, comps] of dishToComps) {
+      comps.sort((a: any, b: any) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    }
+  }
 
   for (const dish of dishes ?? []) {
-    const { data: comps } = await supabase
-      .from('components')
-      .select('name, recipe_id')
-      .eq('dish_id', dish.id)
-      .eq('tenant_id', user.tenantId!)
-      .order('sort_order', { ascending: true })
-
+    const comps = dishToComps.get(dish.id) ?? []
     templateDishes.push({
       courseName: dish.course_name,
       courseNumber: dish.course_number,
-      components: (comps ?? []).map((c: { name: string; recipe_id: string | null }) => ({
+      components: comps.map((c: { name: string; recipe_id: string | null }) => ({
         name: c.name,
         ...(c.recipe_id ? { recipeId: c.recipe_id } : {}),
       })),
