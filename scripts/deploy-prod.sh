@@ -128,8 +128,17 @@ BUILD_MIN=$((BUILD_DURATION / 60))
 BUILD_SEC=$((BUILD_DURATION % 60))
 echo "  Build time: ${BUILD_MIN}m ${BUILD_SEC}s"
 
-# Step 6: Atomic swap
-echo "[6/7] Swapping builds..."
+# Step 6: Stop server + swap builds
+echo "[6/7] Stopping server and swapping builds..."
+
+# Kill existing process on port 3300 BEFORE swap (it locks .next)
+EXISTING_PID=$(netstat -ano 2>/dev/null | grep ":3300 " | grep "LISTENING" | awk '{print $5}' | head -1)
+if [ -n "$EXISTING_PID" ] && [ "$EXISTING_PID" != "0" ]; then
+  taskkill //PID "$EXISTING_PID" //F 2>/dev/null || true
+  sleep 2
+  echo "  Stopped server (PID: $EXISTING_PID)"
+fi
+
 rm -rf .next.backup 2>/dev/null || true
 if [ -d .next ] && [ -f .next/BUILD_ID ]; then
   mv .next .next.backup
@@ -142,13 +151,6 @@ echo "  Staging build promoted to live (BUILD_ID: $(cat .next/BUILD_ID))"
 
 # Step 7: Restart production server
 echo "[7/7] Restarting production server on port 3300..."
-
-# Kill any existing process on port 3300
-EXISTING_PID=$(netstat -ano 2>/dev/null | grep ":3300 " | grep "LISTENING" | awk '{print $5}' | head -1)
-if [ -n "$EXISTING_PID" ] && [ "$EXISTING_PID" != "0" ]; then
-  taskkill //PID "$EXISTING_PID" //F 2>/dev/null || true
-  sleep 2
-fi
 
 # Start Next.js production server hidden (no visible window)
 powershell.exe -NoProfile -Command "
