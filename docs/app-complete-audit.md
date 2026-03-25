@@ -695,6 +695,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 - **`/recipes/production-log`** — Global production log (business owner view). Stats cards (total productions, unique recipes, use-soon, expired). Search + shelf status filter. Color-coded entries link to recipe detail.
 - **`/recipes/ingredients`** — Ingredient library with inline edit per row (name, category, unit, price).
 - **`/recipes/sprint`** — Queue-based recipe capture: paste description → AI parse → save → next. Progress bar + skip/done.
+- **`/recipes/dump`** — Standalone recipe brain dump: type name + dump everything you know in natural language, Ollama parses into structured recipe, review, save. Supports recipe families (variations): after saving, click "Add Variation" to group related recipes (e.g., Classic, Vegan, GF versions of same dish). Ctrl+Enter keyboard shortcuts. Session counter.
 
 ### 6.3 Ingredients
 

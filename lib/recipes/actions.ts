@@ -285,6 +285,9 @@ export type RecipeListItem = {
   season: string[]
   occasion_tags: string[]
   photo_url: string | null
+  family_id: string | null
+  variation_label: string | null
+  family_name: string | null
 }
 
 export async function getRecipes(filters?: {
@@ -345,6 +348,17 @@ export async function getRecipes(filters?: {
 
   const costMap = new Map<string, any>((costData || []).map((c: any) => [c.recipe_id, c]))
 
+  // Get family names for recipes that have a family_id
+  const familyIds = [...new Set((recipes || []).map((r: any) => r.family_id).filter(Boolean))]
+  let familyMap = new Map<string, string>()
+  if (familyIds.length > 0) {
+    const { data: families } = await supabase
+      .from('recipe_families')
+      .select('id, name')
+      .in('id', familyIds)
+    familyMap = new Map((families || []).map((f: any) => [f.id, f.name]))
+  }
+
   const result: RecipeListItem[] = (recipes || []).map((r: any) => {
     const cost = costMap.get(r.id)
     return {
@@ -370,6 +384,9 @@ export async function getRecipes(filters?: {
       season: r.season || [],
       occasion_tags: r.occasion_tags || [],
       photo_url: r.photo_url ?? null,
+      family_id: r.family_id ?? null,
+      variation_label: r.variation_label ?? null,
+      family_name: r.family_id ? (familyMap.get(r.family_id) ?? null) : null,
     }
   })
 
@@ -1490,4 +1507,201 @@ export async function createRecipeDraft(rawText: string) {
   revalidatePath('/dashboard')
   revalidatePath('/recipes')
   return { success: true, name }
+}
+
+// ============================================
+// RECIPE FAMILIES (Variations)
+// ============================================
+
+export type RecipeFamily = {
+  id: string
+  name: string
+  description: string | null
+  created_at: string
+  recipe_count: number
+}
+
+/**
+ * Create a new recipe family and optionally assign a recipe to it.
+ */
+export async function createRecipeFamily(
+  name: string,
+  description?: string,
+  initialRecipeId?: string,
+  variationLabel?: string
+) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  if (!name.trim()) throw new Error('Family name is required')
+
+  const { data: family, error } = await supabase
+    .from('recipe_families')
+    .insert({
+      tenant_id: user.tenantId!,
+      name: name.trim(),
+      description: description?.trim() || null,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    if (error.code === '23505') {
+      throw new Error(`A recipe family named "${name}" already exists`)
+    }
+    console.error('[createRecipeFamily] Error:', error)
+    throw new Error('Failed to create recipe family')
+  }
+
+  // If an initial recipe was provided, assign it to this family
+  if (initialRecipeId) {
+    await supabase
+      .from('recipes')
+      .update({
+        family_id: family.id,
+        variation_label: variationLabel?.trim() || null,
+      })
+      .eq('id', initialRecipeId)
+      .eq('tenant_id', user.tenantId!)
+  }
+
+  revalidatePath('/recipes')
+  return { success: true, family }
+}
+
+/**
+ * Assign a recipe to an existing family with a variation label.
+ */
+export async function assignRecipeToFamily(
+  recipeId: string,
+  familyId: string,
+  variationLabel?: string
+) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { error } = await supabase
+    .from('recipes')
+    .update({
+      family_id: familyId,
+      variation_label: variationLabel?.trim() || null,
+    })
+    .eq('id', recipeId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[assignRecipeToFamily] Error:', error)
+    throw new Error('Failed to assign recipe to family')
+  }
+
+  revalidatePath('/recipes')
+  return { success: true }
+}
+
+/**
+ * Remove a recipe from its family.
+ */
+export async function removeRecipeFromFamily(recipeId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { error } = await supabase
+    .from('recipes')
+    .update({ family_id: null, variation_label: null })
+    .eq('id', recipeId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[removeRecipeFromFamily] Error:', error)
+    throw new Error('Failed to remove recipe from family')
+  }
+
+  revalidatePath('/recipes')
+  return { success: true }
+}
+
+/**
+ * Get all recipe families for the current chef with recipe counts.
+ */
+export async function getRecipeFamilies() {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: families, error } = await supabase
+    .from('recipe_families')
+    .select('*')
+    .eq('tenant_id', user.tenantId!)
+    .order('name')
+
+  if (error) {
+    console.error('[getRecipeFamilies] Error:', error)
+    throw new Error('Failed to fetch recipe families')
+  }
+
+  // Count recipes per family
+  const familyIds = (families || []).map((f: any) => f.id)
+  let countMap = new Map<string, number>()
+  if (familyIds.length > 0) {
+    const { data: recipes } = await supabase
+      .from('recipes')
+      .select('family_id')
+      .in('family_id', familyIds)
+      .eq('tenant_id', user.tenantId!)
+      .eq('archived', false)
+
+    for (const r of recipes || []) {
+      countMap.set(r.family_id, (countMap.get(r.family_id) || 0) + 1)
+    }
+  }
+
+  return (families || []).map(
+    (f: any): RecipeFamily => ({
+      id: f.id,
+      name: f.name,
+      description: f.description,
+      created_at: f.created_at,
+      recipe_count: countMap.get(f.id) || 0,
+    })
+  )
+}
+
+/**
+ * Get all recipes in a specific family.
+ */
+export async function getRecipesInFamily(familyId: string) {
+  const user = await requireChef()
+  const supabase: any = createServerClient()
+
+  const { data: recipes, error } = await supabase
+    .from('recipes')
+    .select('id, name, category, variation_label, dietary_tags, times_cooked, photo_url')
+    .eq('family_id', familyId)
+    .eq('tenant_id', user.tenantId!)
+    .eq('archived', false)
+    .order('variation_label')
+
+  if (error) {
+    console.error('[getRecipesInFamily] Error:', error)
+    throw new Error('Failed to fetch family recipes')
+  }
+
+  return recipes || []
+}
+
+/**
+ * Create a recipe and assign it to a family in one step.
+ * Used by the Recipe Dump "Add Variation" flow.
+ */
+export async function createRecipeInFamily(
+  input: CreateRecipeInput,
+  familyId: string,
+  variationLabel: string
+) {
+  const result = await createRecipe(input)
+
+  if (result.success && result.recipe?.id) {
+    await assignRecipeToFamily(result.recipe.id, familyId, variationLabel)
+  }
+
+  return result
 }

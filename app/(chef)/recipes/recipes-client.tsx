@@ -179,6 +179,9 @@ export function RecipeLibraryClient({ recipes }: Props) {
               >
                 Batch Import
               </Button>
+              <Button href="/recipes/dump" variant="secondary" className="w-full justify-start">
+                Recipe Dump
+              </Button>
             </div>
           )}
         </div>
@@ -195,6 +198,9 @@ export function RecipeLibraryClient({ recipes }: Props) {
           <Button variant="secondary" onClick={() => setBatchImportOpen(true)}>
             Batch Import
           </Button>
+          <Link href="/recipes/dump">
+            <Button variant="secondary">Recipe Dump</Button>
+          </Link>
           <Link href="/recipes/new" data-tour="add-recipe">
             <Button>New Recipe</Button>
           </Link>
@@ -366,8 +372,11 @@ export function RecipeLibraryClient({ recipes }: Props) {
               Start by importing recipes from text or recording them after your next dinner.
             </p>
             <div className="flex gap-3 justify-center">
+              <Link href="/recipes/dump">
+                <Button>Recipe Dump</Button>
+              </Link>
               <Link href="/recipes/new">
-                <Button>Create First Recipe</Button>
+                <Button variant="secondary">Create Recipe</Button>
               </Link>
               <Link href="/import">
                 <Button variant="secondary">Smart Import</Button>
@@ -409,7 +418,17 @@ export function RecipeLibraryClient({ recipes }: Props) {
                   <CardContent className="p-4">
                     <h3 className="font-semibold text-stone-100 leading-tight mb-1">
                       {recipe.name}
+                      {recipe.variation_label && (
+                        <span className="ml-1.5 text-xs font-normal text-brand-400">
+                          ({recipe.variation_label})
+                        </span>
+                      )}
                     </h3>
+                    {recipe.family_name && (
+                      <p className="text-xs text-brand-500/70 mb-0.5">
+                        {recipe.family_name} family
+                      </p>
+                    )}
 
                     {recipe.method && (
                       <p className="text-sm text-stone-400 line-clamp-2 mb-3">{recipe.method}</p>
