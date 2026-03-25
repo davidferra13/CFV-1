@@ -6,11 +6,13 @@
 
 import { useCallback } from 'react'
 import { useTour } from './tour-provider'
+import { useOverlaySlot } from '@/lib/overlay/overlay-queue'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2 } from '@/components/ui/icons'
 
 export function WelcomeModal() {
   const tour = useTour()
+  const { visible } = useOverlaySlot('welcome', 0, tour.showWelcome)
 
   const handleStartTour = useCallback(() => {
     tour.markWelcomeSeen()
@@ -21,7 +23,7 @@ export function WelcomeModal() {
     tour.markWelcomeSeen()
   }, [tour])
 
-  if (!tour.showWelcome) return null
+  if (!tour.showWelcome || !visible) return null
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">

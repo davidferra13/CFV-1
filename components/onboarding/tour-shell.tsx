@@ -8,6 +8,7 @@ import { OnboardingTourProvider } from './tour-provider'
 import { WelcomeModal } from './welcome-modal'
 import { TourChecklist } from './tour-checklist'
 import { TourSpotlight } from './tour-spotlight'
+import { OverlayQueueProvider } from '@/lib/overlay/overlay-queue'
 import type { TourConfig } from '@/lib/onboarding/tour-config'
 import type { TourProgress } from '@/lib/onboarding/tour-actions'
 import type { ReactNode } from 'react'
@@ -20,11 +21,13 @@ type TourShellProps = {
 
 export function TourShell({ config, initialProgress, children }: TourShellProps) {
   return (
-    <OnboardingTourProvider config={config} initialProgress={initialProgress}>
-      {children}
-      <WelcomeModal />
-      <TourChecklist />
-      <TourSpotlight />
-    </OnboardingTourProvider>
+    <OverlayQueueProvider>
+      <OnboardingTourProvider config={config} initialProgress={initialProgress}>
+        {children}
+        <WelcomeModal />
+        <TourChecklist />
+        <TourSpotlight />
+      </OnboardingTourProvider>
+    </OverlayQueueProvider>
   )
 }

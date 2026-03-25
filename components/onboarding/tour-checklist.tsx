@@ -7,11 +7,13 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTour } from './tour-provider'
+import { useOverlaySlot } from '@/lib/overlay/overlay-queue'
 import { Button } from '@/components/ui/button'
 import { CheckCircle2, Circle, ChevronDown, ChevronUp, X, Sparkles } from '@/components/ui/icons'
 
 export function TourChecklist() {
   const tour = useTour()
+  const { visible } = useOverlaySlot('tour-checklist', 2, tour.showChecklist)
   const router = useRouter()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -31,7 +33,7 @@ export function TourChecklist() {
     [router, tour]
   )
 
-  if (!mounted || !tour.showChecklist) return null
+  if (!mounted || !tour.showChecklist || !visible) return null
 
   return (
     <div className="fixed bottom-24 left-4 right-4 z-50 max-h-[65vh] overflow-hidden rounded-xl border border-stone-700 bg-stone-900 shadow-2xl animate-in slide-in-from-bottom-4 fade-in duration-300 sm:bottom-20 sm:left-auto sm:right-4 sm:w-80 sm:max-h-[80vh]">

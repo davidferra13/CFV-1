@@ -7,6 +7,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTour } from './tour-provider'
+import { useOverlaySlot } from '@/lib/overlay/overlay-queue'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, X } from '@/components/ui/icons'
 
@@ -14,6 +15,7 @@ type Rect = { top: number; left: number; width: number; height: number }
 
 export function TourSpotlight() {
   const tour = useTour()
+  const { visible } = useOverlaySlot('tour-spotlight', 1, tour.isTourActive)
   const router = useRouter()
   const [targetRect, setTargetRect] = useState<Rect | null>(null)
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({})
@@ -158,7 +160,7 @@ export function TourSpotlight() {
     tour.stopTour()
   }, [tour])
 
-  if (!tour.isTourActive || !step) return null
+  if (!tour.isTourActive || !visible || !step) return null
 
   return (
     <>
