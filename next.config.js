@@ -45,6 +45,9 @@ const nextConfig = {
   // This prevents `npm run build` from corrupting a running `next dev` session.
   distDir:
     process.env.NEXT_DIST_DIR || (process.env.NODE_ENV === 'development' ? '.next-dev' : '.next'),
+  // /chefs directory page hits the database during static generation; give it
+  // enough time on resource-constrained build environments (default 60s).
+  staticPageGenerationTimeout: 180,
   experimental: {
     // Large shared icon/chart barrels otherwise dominate the module graph during production builds.
     optimizePackageImports: ['@phosphor-icons/react', 'recharts'],
