@@ -1295,33 +1295,6 @@ async function findOrCreateIngredient(
   return newIngredient.id
 }
 
-// ─── Bulk price update (from Grocery Quote) ───────────────────────────────────
-// Called by the "Save to Recipe Book" action after a grocery price quote run.
-// Updates last_price_cents on each ingredient with the averaged market price.
-// Per-unit cents = average total for quantity ÷ recipe quantity.
-
-export async function bulkUpdateIngredientPrices(
-  updates: Array<{ ingredientId: string; pricePerUnitCents: number }>
-): Promise<void> {
-  const user = await requireChef()
-  const supabase: any = createServerClient()
-
-  if (updates.length === 0) return
-
-  await Promise.all(
-    updates.map(({ ingredientId, pricePerUnitCents }) =>
-      supabase
-        .from('ingredients')
-        .update({
-          last_price_cents: pricePerUnitCents,
-          last_price_date: new Date().toISOString().split('T')[0],
-        })
-        .eq('id', ingredientId)
-        .eq('tenant_id', user.tenantId!)
-    )
-  )
-}
-
 // ============================================
 // SUB-RECIPE CRUD
 // ============================================

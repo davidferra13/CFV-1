@@ -6,7 +6,7 @@
 import { NextResponse } from 'next/server'
 import { validateProspectingAuth } from '@/lib/prospecting/api-auth'
 import { createServerClient } from '@/lib/supabase/server'
-import { computeLeadScore } from '@/lib/prospecting/lead-scoring'
+import { computeProspectScore } from '@/lib/prospecting/lead-scoring'
 import { isSimilarName } from '@/lib/prospecting/fuzzy-match'
 
 interface ProspectImport {
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     }
 
     // Compute lead score
-    const score = computeLeadScore({
+    const score = computeProspectScore({
       avgEventBudget: p.avg_event_budget ?? '',
       annualEventsEstimate: p.annual_events_estimate ?? '',
       luxuryIndicators: p.luxury_indicators ?? [],

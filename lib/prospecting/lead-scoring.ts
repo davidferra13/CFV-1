@@ -38,7 +38,7 @@ interface ProspectScoreInput {
  * - Seasonal timing:      0-8 pts  (peak booking season approaching)
  * - Event signals:        0-7 pts  (upcoming events detected on their site)
  */
-export function computeLeadScore(input: ProspectScoreInput): number {
+export function computeProspectScore(input: ProspectScoreInput): number {
   let score = 0
 
   // 1. Budget tier (0-25)
