@@ -18,6 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { InquiryQuickActions } from '@/components/inquiries/inquiry-quick-actions'
 import { formatDistanceToNow, format, differenceInHours } from 'date-fns'
 import type { BookingScore } from '@/lib/analytics/booking-score'
 import { isDemoInquiry } from '@/lib/onboarding/demo-data-utils'
@@ -162,11 +163,15 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                 <p className="text-xs text-stone-400 mt-1">
                   {formatDistanceToNow(new Date(inquiry.updated_at), { addSuffix: true })}
                 </p>
-                {/* Quick action hints on hover */}
+                {/* Quick actions - visible on hover for inquiries needing chef action */}
                 {needsChefAction && (
-                  <p className="text-xs text-brand-600 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Click to respond →
-                  </p>
+                  <div className="mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <InquiryQuickActions
+                      inquiryId={inquiry.id}
+                      status={inquiry.status}
+                      clientName={name}
+                    />
+                  </div>
                 )}
               </div>
             </div>
