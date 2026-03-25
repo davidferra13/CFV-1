@@ -229,7 +229,7 @@ export async function getScheduleCBreakdown(year: number): Promise<ScheduleCBrea
 /**
  * Manually categorize an expense into a Schedule C line.
  */
-export async function categorizeExpense(input: z.infer<typeof CategorizeExpenseSchema>) {
+export async function assignExpenseToTaxLine(input: z.infer<typeof CategorizeExpenseSchema>) {
   const user = await requireChef()
   const parsed = CategorizeExpenseSchema.parse(input)
   const supabase: any = createServerClient()
