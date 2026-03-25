@@ -25,7 +25,7 @@ export async function getRevisionHistory(menuId: string, eventId: string): Promi
     .select('*')
     .eq('menu_id', menuId)
     .eq('event_id', eventId)
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .order('version', { ascending: false })
 
   if (error) {
@@ -47,7 +47,7 @@ export async function compareRevisions(
     .from('menu_revisions')
     .select('*')
     .in('id', [revisionAId, revisionBId])
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
 
   if (!revisions || revisions.length !== 2) return null
 

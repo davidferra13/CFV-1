@@ -587,6 +587,31 @@ export async function mergeDishes(keepId: string, mergeId: string) {
     .eq('id', keepId)
     .eq('tenant_id', tenantId)
 
+  // Transfer linked_recipe_id if the kept dish has none and the merged dish does
+  const { data: keptDish } = await supabase
+    .from('dish_index')
+    .select('linked_recipe_id')
+    .eq('id', keepId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!keptDish?.linked_recipe_id) {
+    const { data: mergedDish } = await supabase
+      .from('dish_index')
+      .select('linked_recipe_id')
+      .eq('id', mergeId)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (mergedDish?.linked_recipe_id) {
+      await supabase
+        .from('dish_index')
+        .update({ linked_recipe_id: mergedDish.linked_recipe_id })
+        .eq('id', keepId)
+        .eq('tenant_id', tenantId)
+    }
+  }
+
   // Archive the merged dish
   await supabase
     .from('dish_index')

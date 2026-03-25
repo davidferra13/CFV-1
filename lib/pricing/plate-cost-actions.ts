@@ -80,32 +80,24 @@ export async function getTruePlateCost(input: {
       return { success: false, error: 'No menu linked. Link a menu to calculate plate cost.' }
     }
 
-    // 2. Fetch menu items with linked recipes
+    // 2. Fetch dishes with linked recipes
     const { data: menuItems, error: itemsError } = await supabase
-      .from('menu_items')
+      .from('dishes')
       .select(
         `
-        id,
-        food_cost_cents,
-        recipe_id,
-        recipes (
-          total_cost_cents,
-          prep_time_minutes,
-          cook_time_minutes,
-          servings
-        )
+        id, name, course_name,
+        linked_recipe_id
       `
       )
       .eq('menu_id', menuId)
-      .eq('chef_id', tenantId)
-      .eq('is_active', true)
+      .eq('tenant_id', tenantId)
 
     if (itemsError) {
-      return { success: false, error: `Failed to load menu items: ${itemsError.message}` }
+      return { success: false, error: `Failed to load dishes: ${itemsError.message}` }
     }
 
     if (!menuItems || menuItems.length === 0) {
-      return { success: false, error: 'Menu has no active items' }
+      return { success: false, error: 'Menu has no dishes' }
     }
 
     // 3. Sum ingredient costs and estimate labor from recipe times
@@ -113,16 +105,29 @@ export async function getTruePlateCost(input: {
     let totalPrepMinutes = 0
     let totalCookMinutes = 0
 
+    const recipeIds = menuItems
+      .map((item: any) => item.linked_recipe_id)
+      .filter(Boolean) as string[]
+
+    let recipeMap = new Map<string, any>()
+    if (recipeIds.length > 0) {
+      const { data: recipes } = await supabase
+        .from('recipes')
+        .select('id, total_cost_cents, prep_time_minutes, cook_time_minutes, servings')
+        .in('id', recipeIds)
+        .eq('tenant_id', tenantId)
+
+      for (const r of recipes ?? []) {
+        recipeMap.set(r.id, r)
+      }
+    }
+
     for (const item of menuItems) {
-      const recipe = item.recipes as any
+      const recipe = item.linked_recipe_id ? recipeMap.get(item.linked_recipe_id) : null
       if (recipe) {
-        // Use recipe total_cost_cents if available, fall back to menu item food_cost_cents
-        totalIngredientCostCents += recipe.total_cost_cents || item.food_cost_cents || 0
+        totalIngredientCostCents += recipe.total_cost_cents || 0
         totalPrepMinutes += recipe.prep_time_minutes || 0
         totalCookMinutes += recipe.cook_time_minutes || 0
-      } else {
-        // No recipe linked, use menu item's food_cost_cents
-        totalIngredientCostCents += item.food_cost_cents || 0
       }
     }
 

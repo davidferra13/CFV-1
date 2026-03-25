@@ -686,12 +686,12 @@ export async function getMenuSimulatorData(menuId: string): Promise<MenuSimulato
     }
   }
 
-  // 3. Get current dishes (menu_items) with components, recipes, and ingredients
+  // 3. Get current dishes with components, recipes, and ingredients
   const { data: dishes } = await supabase
-    .from('menu_items')
-    .select('id, name, category')
+    .from('dishes')
+    .select('id, name, course_name, course_number')
     .eq('menu_id', menuId)
-    .eq('chef_id', tenantId)
+    .eq('tenant_id', tenantId)
 
   const currentDishes: SimulatorDish[] = []
 

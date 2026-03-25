@@ -1,7 +1,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/get-user'
+import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { checkDishAgainstAllergens, type AllergenConflict } from './allergen-check'
@@ -29,7 +29,7 @@ export async function sendMenuProposal(
       'id, client_id, tenant_id, menu_revision_count, confirmed_occasion:occasion, event_date'
     )
     .eq('id', eventId)
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event) return { success: false, error: 'Event not found.' }
@@ -47,7 +47,7 @@ export async function sendMenuProposal(
     `
     )
     .eq('id', menuId)
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!menu) return { success: false, error: 'Menu not found.' }
@@ -88,7 +88,7 @@ export async function sendMenuProposal(
       .from('client_allergy_records')
       .select('allergen, severity, confirmed_by_chef')
       .eq('client_id', event.client_id)
-      .eq('tenant_id', user.entityId)
+      .eq('tenant_id', user.tenantId!)
 
     if (allergyRecords?.length) {
       for (const dish of dishesWithIngredients) {
@@ -110,7 +110,7 @@ export async function sendMenuProposal(
     .insert({
       menu_id: menuId,
       event_id: eventId,
-      tenant_id: user.entityId,
+      tenant_id: user.tenantId!,
       version: newVersion,
       revision_type: 'initial',
       snapshot: {
@@ -147,6 +147,7 @@ export async function sendMenuProposal(
       menu_revision_count: newVersion,
     })
     .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
 
   // Send notification to client (non-blocking)
   try {
@@ -158,7 +159,7 @@ export async function sendMenuProposal(
 
     if (client) {
       await supabase.from('notifications').insert({
-        tenant_id: user.entityId,
+        tenant_id: user.tenantId!,
         recipient_id: client.id,
         recipient_role: 'client',
         client_id: client.id,
@@ -197,6 +198,7 @@ const DishFeedbackSchema = z.object({
 export async function submitDishFeedback(
   input: z.infer<typeof DishFeedbackSchema>
 ): Promise<{ success: boolean; error?: string }> {
+  await requireClient()
   const parsed = DishFeedbackSchema.safeParse(input)
   if (!parsed.success) return { success: false, error: 'Invalid feedback data.' }
 
@@ -211,11 +213,12 @@ export async function submitDishFeedback(
 
   if (!revision) return { success: false, error: 'Menu revision not found.' }
 
-  // Get client ID from event
+  // Get client ID from event (scoped by tenant from revision)
   const { data: event } = await supabase
     .from('events')
     .select('client_id')
     .eq('id', parsed.data.eventId)
+    .eq('tenant_id', revision.tenant_id)
     .single()
 
   if (!event?.client_id) return { success: false, error: 'Event not found.' }
@@ -248,6 +251,7 @@ export async function submitDishFeedback(
       menu_last_client_feedback_at: new Date().toISOString(),
     })
     .eq('id', parsed.data.eventId)
+    .eq('tenant_id', revision.tenant_id)
 
   // Create feedback revision
   await supabase.from('menu_revisions').insert({
@@ -288,6 +292,7 @@ export async function submitDishFeedback(
     .from('events')
     .update({ menu_revision_count: revision.version + 1 })
     .eq('id', parsed.data.eventId)
+    .eq('tenant_id', revision.tenant_id)
 
   revalidatePath(`/events/${parsed.data.eventId}`)
   revalidatePath(`/proposals/${parsed.data.eventId}`)
@@ -301,6 +306,7 @@ export async function submitDishFeedback(
 export async function approveEntireMenu(
   eventId: string
 ): Promise<{ success: boolean; error?: string }> {
+  await requireClient()
   const supabase: any = createServerClient()
 
   const { data: event } = await supabase
@@ -319,6 +325,7 @@ export async function approveEntireMenu(
       menu_last_client_feedback_at: new Date().toISOString(),
     })
     .eq('id', eventId)
+    .eq('tenant_id', event.tenant_id)
 
   // Notify chef (non-blocking)
   try {
@@ -354,7 +361,7 @@ export async function getMenuRevisions(eventId: string) {
     .from('menu_revisions')
     .select('*')
     .eq('event_id', eventId)
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .order('version', { ascending: false })
 
   if (error) {

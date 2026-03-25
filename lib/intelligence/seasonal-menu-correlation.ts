@@ -91,9 +91,10 @@ export async function getSeasonalMenuCorrelation(): Promise<SeasonalMenuResult |
   // Fetch menu dishes
   const menuIds = [...new Set(events.map((e: any) => e.menu_id))]
   const { data: dishes } = await supabase
-    .from('menu_items')
-    .select('id, menu_id, name, recipe_id')
+    .from('dishes')
+    .select('id, menu_id, name, linked_recipe_id')
     .in('menu_id', menuIds)
+    .eq('tenant_id', tenantId)
 
   if (!dishes || dishes.length === 0) return null
 
@@ -101,7 +102,7 @@ export async function getSeasonalMenuCorrelation(): Promise<SeasonalMenuResult |
   const menuDishMap = new Map<string, { name: string; recipeId: string | null }[]>()
   for (const dish of dishes) {
     if (!menuDishMap.has(dish.menu_id)) menuDishMap.set(dish.menu_id, [])
-    menuDishMap.get(dish.menu_id)!.push({ name: dish.name, recipeId: dish.recipe_id })
+    menuDishMap.get(dish.menu_id)!.push({ name: dish.name, recipeId: dish.linked_recipe_id })
   }
 
   // ─── Seasonal Patterns ───

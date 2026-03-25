@@ -56,18 +56,17 @@ export async function computeMenuEngineering(
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  // Get menu items with their recipes and cost data
-  // TODO: menu_items table does not exist yet - using dishes as proxy
+  // Get dishes with their linked recipes and cost data
   let query = (supabase as any)
-    .from('menu_items')
+    .from('dishes')
     .select(
       `
-      id, name, price,
+      id, name, course_name, course_number,
       menu_id,
-      recipe:recipes(id, name, cost_per_serving)
+      linked_recipe_id
     `
     )
-    .eq('menus.chef_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
 
   if (menuId) {
     query = query.eq('menu_id', menuId)
@@ -87,19 +86,36 @@ export async function computeMenuEngineering(
     }
   }
 
+  // Batch-fetch recipe costs for linked recipes
+  const recipeIds = menuItems.map((mi: any) => mi.linked_recipe_id).filter(Boolean) as string[]
+
+  let recipeCostMap = new Map<string, number>()
+  if (recipeIds.length > 0) {
+    const { data: costData } = await (supabase as any)
+      .from('recipe_cost_summary')
+      .select('recipe_id, cost_per_portion_cents')
+      .in('recipe_id', recipeIds)
+      .eq('tenant_id', chef.tenantId!)
+
+    for (const c of costData ?? []) {
+      if (c.recipe_id && c.cost_per_portion_cents) {
+        recipeCostMap.set(c.recipe_id, c.cost_per_portion_cents)
+      }
+    }
+  }
+
   // Build items with sales data (using event history as proxy)
   const rawItems = menuItems.map((mi: any) => {
-    const price = mi.price || 0
-    const cost = (mi.recipe as any)?.cost_per_serving || 0
-    const salesCount = 1 // placeholder - would come from event_menu_items join
+    const cost = mi.linked_recipe_id ? (recipeCostMap.get(mi.linked_recipe_id) ?? 0) : 0
+    const salesCount = 1 // placeholder - would come from event history
     return {
       id: mi.id,
       name: mi.name,
       salesCount,
-      sellingPrice: price,
+      sellingPrice: 0, // dishes don't store price; price lives on the event/quote
       foodCost: cost,
-      contribution: price - cost,
-      foodCostPct: price > 0 ? Math.round((cost / price) * 1000) / 10 : 0,
+      contribution: -cost, // without selling price, contribution is negative cost
+      foodCostPct: 0,
     }
   })
 
