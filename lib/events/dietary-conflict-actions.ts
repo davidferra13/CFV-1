@@ -67,7 +67,7 @@ function classifySeverity(allergy: string): DietaryConflictSeverity {
  * then cross-references dish names and ingredients for potential conflicts.
  * Inserts found conflicts into dietary_conflict_alerts and returns the list.
  */
-export async function checkDietaryConflicts(eventId: string): Promise<DietaryConflict[]> {
+export async function generateAndPersistDietaryAlerts(eventId: string): Promise<DietaryConflict[]> {
   const user = await requireChef()
   const supabase: any = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
@@ -200,7 +200,7 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
     .select()
 
   if (insertError) {
-    console.error('[checkDietaryConflicts] Error:', insertError)
+    console.error('[generateAndPersistDietaryAlerts] Error:', insertError)
     throw new Error('Failed to save dietary conflict alerts')
   }
 

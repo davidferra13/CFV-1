@@ -11,7 +11,7 @@ import {
   type ScheduleCLineItem,
   type QuarterlyEstimateRow,
   updateQuarterlyPayment,
-  categorizeExpense,
+  assignExpenseToTaxLine,
 } from '@/lib/finance/tax-prep-actions'
 import { SCHEDULE_C_LINES } from '@/lib/finance/tax-prep-constants'
 
@@ -90,7 +90,7 @@ export function TaxPrepDashboard({ summary, onYearChange }: Props) {
     }
     startTransition(async () => {
       try {
-        await categorizeExpense({
+        await assignExpenseToTaxLine({
           expenseDescription: newExpense.description,
           scheduleCLine: newExpense.line,
           amountCents: cents,

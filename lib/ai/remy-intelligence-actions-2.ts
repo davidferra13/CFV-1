@@ -86,8 +86,8 @@ export async function executeEventDietaryConflicts(inputs: Record<string, unknow
   if (!eventId) return { error: 'Please specify an event name or ID.' }
   const resolved = await resolveEventId(eventId)
   if (!resolved) return { error: `Could not find event "${eventId}".` }
-  const { checkDietaryConflicts } = await import('@/lib/events/dietary-conflict-actions')
-  return await checkDietaryConflicts(resolved)
+  const { generateAndPersistDietaryAlerts } = await import('@/lib/events/dietary-conflict-actions')
+  return await generateAndPersistDietaryAlerts(resolved)
 }
 
 export async function executeEventDebrief(inputs: Record<string, unknown>) {
