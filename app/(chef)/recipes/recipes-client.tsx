@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { RecipeImportDialog } from '@/components/recipes/recipe-import-dialog'
+import { RecipeBatchImport } from '@/components/recipes/recipe-batch-import'
 import type { RecipeListItem } from '@/lib/recipes/actions'
 import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { RecipeCoverFlow } from '@/components/recipes/recipe-cover-flow'
@@ -77,6 +78,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
   const [search, setSearch] = useState(searchParams.get('search') || '')
   const [viewMode, setViewMode] = useState<'grid' | 'coverflow'>('grid')
   const [importOpen, setImportOpen] = useState(false)
+  const [batchImportOpen, setBatchImportOpen] = useState(false)
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false)
 
   // Taxonomy-driven filter options
@@ -167,6 +169,16 @@ export function RecipeLibraryClient({ recipes }: Props) {
               >
                 Import Link
               </Button>
+              <Button
+                variant="secondary"
+                className="w-full justify-start"
+                onClick={() => {
+                  setMobileActionsOpen(false)
+                  setBatchImportOpen(true)
+                }}
+              >
+                Batch Import
+              </Button>
             </div>
           )}
         </div>
@@ -179,6 +191,9 @@ export function RecipeLibraryClient({ recipes }: Props) {
           </Link>
           <Button variant="secondary" onClick={() => setImportOpen(true)}>
             Import Link
+          </Button>
+          <Button variant="secondary" onClick={() => setBatchImportOpen(true)}>
+            Batch Import
           </Button>
           <Link href="/recipes/new" data-tour="add-recipe">
             <Button>New Recipe</Button>
@@ -456,6 +471,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
 
       {/* Recipe Import Dialog */}
       <RecipeImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
+      <RecipeBatchImport open={batchImportOpen} onClose={() => setBatchImportOpen(false)} />
     </div>
   )
 }
