@@ -25,8 +25,7 @@ interface FormData {
   serve_time: string
   guest_count: string
   occasion: string
-  budget_range: string
-  budget_exact_amount: string
+  budget: string
   allergy_flag: string
   allergies_food_restrictions: string
   favorite_ingredients_dislikes: string
@@ -53,15 +52,6 @@ const MONTH_OPTIONS = [
   { value: '12', label: 'December' },
 ]
 
-const BUDGET_OPTIONS = [
-  { value: 'under_500', label: 'Under $500' },
-  { value: '500_1500', label: '$500 - $1,500' },
-  { value: '1500_3000', label: '$1,500 - $3,000' },
-  { value: '3000_5000', label: '$3,000 - $5,000' },
-  { value: 'over_5000', label: '$5,000+' },
-  { value: 'not_sure', label: 'Not sure yet' },
-]
-
 const GUEST_OPTIONS = [
   { value: '1', label: '1' },
   { value: '2', label: '2' },
@@ -84,14 +74,11 @@ const ALLERGY_OPTIONS = [
   { value: 'unknown', label: 'Not sure yet' },
 ]
 
-function getBudgetMode(
-  budgetRange: string,
-  budgetExactAmount: string
-): 'exact' | 'range' | 'not_sure' | 'unset' {
-  if (budgetExactAmount.trim()) return 'exact'
-  if (budgetRange === 'not_sure') return 'not_sure'
-  if (budgetRange) return 'range'
-  return 'unset'
+function parseBudgetCents(text: string): number | null {
+  const cleaned = text.replace(/[,$\s]/g, '')
+  const num = Number(cleaned)
+  if (Number.isFinite(num) && num > 0) return Math.round(num * 100)
+  return null
 }
 
 // Determine the API origin - works in both dev and production
@@ -151,8 +138,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
     serve_time: '',
     guest_count: '',
     occasion: '',
-    budget_range: '',
-    budget_exact_amount: '',
+    budget: '',
     allergy_flag: '',
     allergies_food_restrictions: '',
     favorite_ingredients_dislikes: '',
@@ -213,12 +199,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
 
     if (!formData.guest_count) errs.guest_count = 'Required'
     if (!formData.occasion.trim()) errs.occasion = 'Required'
-    if (!formData.budget_range) errs.budget_range = 'Required'
-    if (formData.budget_exact_amount.trim()) {
-      const parsedBudget = Number(formData.budget_exact_amount)
-      if (!Number.isFinite(parsedBudget) || parsedBudget < 0)
-        errs.budget_exact_amount = 'Enter a valid amount'
-    }
+    if (!formData.budget.trim()) errs.budget = 'Required'
     if (!formData.allergy_flag) errs.allergy_flag = 'Required'
     if (formData.allergy_flag === 'yes' && !formData.allergies_food_restrictions.trim())
       errs.allergies_food_restrictions = 'Please describe your allergies'
@@ -239,10 +220,9 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
       const day = Number(formData.day)
       const year = Number(formData.year)
       const eventDate = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-      const budgetCents = formData.budget_exact_amount.trim()
-        ? Math.round(Number(formData.budget_exact_amount) * 100)
-        : null
-      const budgetMode = getBudgetMode(formData.budget_range, formData.budget_exact_amount)
+      const budgetText = formData.budget.trim()
+      const budgetCents = parseBudgetCents(budgetText)
+      const budgetMode = budgetCents != null ? 'exact' : budgetText ? 'range' : 'unset'
 
       const apiOrigin = getApiOrigin()
       const res = await fetch(`${apiOrigin}/api/embed/inquiry`, {
@@ -259,7 +239,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
           guest_count: parseInt(formData.guest_count, 10),
           occasion: formData.occasion.trim(),
           budget_cents: budgetCents,
-          budget_range: formData.budget_range || undefined,
+          budget_range: budgetText || undefined,
           allergy_flag: formData.allergy_flag || undefined,
           allergies_food_restrictions: formData.allergies_food_restrictions.trim(),
           favorite_ingredients_dislikes: formData.favorite_ingredients_dislikes.trim(),
@@ -285,7 +265,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
       trackEvent(ANALYTICS_EVENTS.INQUIRY_SUBMITTED, {
         source: 'embed_widget',
         budget_mode: budgetMode,
-        budget_range: formData.budget_range || null,
+        budget_range: budgetText || null,
         budget_exact_entered: budgetCents != null,
         guest_count: parseInt(formData.guest_count, 10),
       })
@@ -415,8 +395,7 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
                 serve_time: '',
                 guest_count: '',
                 occasion: '',
-                budget_range: '',
-                budget_exact_amount: '',
+                budget: '',
                 allergy_flag: '',
                 allergies_food_restrictions: '',
                 favorite_ingredients_dislikes: '',
@@ -678,37 +657,16 @@ export function EmbedInquiryForm({ chefId, chefName, profileImageUrl, accentColo
 
           {/* Budget */}
           <div>
-            <label style={labelStyle}>Target Investment (Estimate) *</label>
-            <select
+            <label style={labelStyle}>Estimated Budget *</label>
+            <input
               style={inputStyle}
-              name="budget_range"
-              value={formData.budget_range}
+              name="budget"
+              value={formData.budget}
               onChange={handleChange}
-              aria-label="Budget range"
-            >
-              <option value="">Select range</option>
-              {BUDGET_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-            {errors.budget_range && <p style={errorStyle}>{errors.budget_range}</p>}
-            <div style={{ marginTop: '8px' }}>
-              <label style={labelStyle}>Exact Budget (optional)</label>
-              <input
-                style={inputStyle}
-                name="budget_exact_amount"
-                type="number"
-                min="0"
-                step="0.01"
-                value={formData.budget_exact_amount}
-                onChange={handleChange}
-                aria-label="Exact budget amount"
-                placeholder="e.g. 1800"
-              />
-              {errors.budget_exact_amount && <p style={errorStyle}>{errors.budget_exact_amount}</p>}
-            </div>
+              aria-label="Estimated budget"
+              placeholder="e.g. $1,500 or 'flexible'"
+            />
+            {errors.budget && <p style={errorStyle}>{errors.budget}</p>}
           </div>
 
           {/* Favorites/Dislikes */}

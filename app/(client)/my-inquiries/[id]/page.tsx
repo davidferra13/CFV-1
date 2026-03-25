@@ -22,7 +22,8 @@ export const metadata: Metadata = {
 
 function getBudgetRangeLabel(rawValue: unknown): string | null {
   if (typeof rawValue !== 'string' || !rawValue) return null
-  const labels: Record<string, string> = {
+  // Legacy enum values from before free-text migration
+  const legacyLabels: Record<string, string> = {
     under_500: 'Under $500',
     '500_1500': '$500-$1,500',
     '1500_3000': '$1,500-$3,000',
@@ -30,7 +31,7 @@ function getBudgetRangeLabel(rawValue: unknown): string | null {
     over_5000: '$5,000+',
     not_sure: 'Not sure yet',
   }
-  return labels[rawValue] ?? null
+  return legacyLabels[rawValue] ?? rawValue
 }
 
 export default async function ClientInquiryDetailPage({ params }: { params: { id: string } }) {

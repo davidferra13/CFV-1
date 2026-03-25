@@ -26,8 +26,7 @@ interface FormData {
   phone: string
   guest_count: string
   occasion: string
-  budget_range: string
-  budget_exact_amount: string
+  budget: string
   allergy_flag: string
   favorite_ingredients_dislikes: string
   allergies_food_restrictions: string
@@ -46,8 +45,7 @@ interface FormErrors {
   phone?: string
   guest_count?: string
   occasion?: string
-  budget_range?: string
-  budget_exact_amount?: string
+  budget?: string
   allergy_flag?: string
   allergies_food_restrictions?: string
 }
@@ -65,15 +63,6 @@ const MONTH_OPTIONS = [
   { value: '10', label: 'October' },
   { value: '11', label: 'November' },
   { value: '12', label: 'December' },
-]
-
-const BUDGET_RANGE_OPTIONS = [
-  { value: 'under_500', label: 'Under $500' },
-  { value: '500_1500', label: '$500 – $1,500' },
-  { value: '1500_3000', label: '$1,500 – $3,000' },
-  { value: '3000_5000', label: '$3,000 – $5,000' },
-  { value: 'over_5000', label: '$5,000+' },
-  { value: 'not_sure', label: 'Not sure yet' },
 ]
 
 const ALLERGY_FLAG_OPTIONS = [
@@ -98,14 +87,11 @@ const GUEST_COUNT_OPTIONS = [
   { value: '20', label: '20+ Guests' },
 ]
 
-function getBudgetMode(
-  budgetRange: string,
-  budgetExactAmount: string
-): 'exact' | 'range' | 'not_sure' | 'unset' {
-  if (budgetExactAmount.trim()) return 'exact'
-  if (budgetRange === 'not_sure') return 'not_sure'
-  if (budgetRange) return 'range'
-  return 'unset'
+function parseBudgetCents(text: string): number | null {
+  const cleaned = text.replace(/[,$\s]/g, '')
+  const num = Number(cleaned)
+  if (Number.isFinite(num) && num > 0) return Math.round(num * 100)
+  return null
 }
 
 export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
@@ -120,8 +106,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
     phone: '',
     guest_count: '',
     occasion: '',
-    budget_range: '',
-    budget_exact_amount: '',
+    budget: '',
     allergy_flag: '',
     favorite_ingredients_dislikes: '',
     allergies_food_restrictions: '',
@@ -228,15 +213,8 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       newErrors.occasion = 'Occasion is required'
     }
 
-    if (!formData.budget_range) {
-      newErrors.budget_range = 'Budget range is required'
-    }
-
-    if (formData.budget_exact_amount.trim()) {
-      const parsedBudget = Number(formData.budget_exact_amount)
-      if (!Number.isFinite(parsedBudget) || parsedBudget < 0) {
-        newErrors.budget_exact_amount = 'Enter a valid amount'
-      }
+    if (!formData.budget.trim()) {
+      newErrors.budget = 'Budget is required'
     }
 
     if (!formData.allergy_flag) {
@@ -265,10 +243,9 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       const year = Number(formData.year)
       const eventDate = `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
       const guestCount = parseInt(formData.guest_count, 10)
-      const budgetCents = formData.budget_exact_amount.trim()
-        ? Math.round(Number(formData.budget_exact_amount) * 100)
-        : null
-      const budgetMode = getBudgetMode(formData.budget_range, formData.budget_exact_amount)
+      const budgetText = formData.budget.trim()
+      const budgetCents = parseBudgetCents(budgetText)
+      const budgetMode = budgetCents != null ? 'exact' : budgetText ? 'range' : 'unset'
 
       await submitPublicInquiry({
         chef_slug: chefSlug,
@@ -281,15 +258,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         guest_count: guestCount,
         occasion: formData.occasion.trim(),
         budget_cents: budgetCents,
-        budget_range:
-          (formData.budget_range as
-            | 'under_500'
-            | '500_1500'
-            | '1500_3000'
-            | '3000_5000'
-            | 'over_5000'
-            | 'not_sure'
-            | undefined) || undefined,
+        budget_range: budgetText || undefined,
         allergy_flag:
           (formData.allergy_flag as 'none' | 'yes' | 'unknown' | undefined) || undefined,
         favorite_ingredients_dislikes: formData.favorite_ingredients_dislikes.trim(),
@@ -301,7 +270,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       trackEvent(ANALYTICS_EVENTS.INQUIRY_SUBMITTED, {
         source: 'public_profile',
         budget_mode: budgetMode,
-        budget_range: formData.budget_range || null,
+        budget_range: budgetText || null,
         budget_exact_entered: budgetCents != null,
         guest_count: guestCount,
       })
@@ -318,8 +287,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         phone: '',
         guest_count: '',
         occasion: '',
-        budget_range: '',
-        budget_exact_amount: '',
+        budget: '',
         allergy_flag: '',
         favorite_ingredients_dislikes: '',
         allergies_food_restrictions: '',
@@ -525,25 +493,14 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             placeholder="e.g. Birthday, Anniversary, Date Night"
           />
 
-          <Select
-            label="Target investment (estimate) *"
-            name="budget_range"
-            value={formData.budget_range}
-            onChange={handleChange}
-            error={errors.budget_range}
-            options={BUDGET_RANGE_OPTIONS}
-          />
           <Input
-            label="Exact budget (optional)"
-            name="budget_exact_amount"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.budget_exact_amount}
+            label="Estimated Budget *"
+            name="budget"
+            type="text"
+            value={formData.budget}
             onChange={handleChange}
-            error={errors.budget_exact_amount}
-            placeholder="e.g. 1800"
-            helperText="If known, enter an exact total budget."
+            error={errors.budget}
+            placeholder="e.g. $1,500 or 'flexible'"
           />
 
           <Textarea

@@ -32,9 +32,7 @@ const PublicInquirySchema = z.object({
   // Optional
   phone: z.string().optional().or(z.literal('')),
   budget_cents: z.number().int().nonnegative().nullable().optional(),
-  budget_range: z
-    .enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000', 'not_sure'])
-    .optional(),
+  budget_range: z.string().max(200).optional().or(z.literal('')),
   allergy_flag: z.enum(['none', 'yes', 'unknown']).optional(),
   favorite_ingredients_dislikes: z.string().optional().or(z.literal('')),
   allergies_food_restrictions: z.string().optional().or(z.literal('')),
