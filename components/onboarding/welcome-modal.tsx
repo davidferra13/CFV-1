@@ -3,6 +3,7 @@
 // WelcomeModal - Role-specific first-login welcome screen
 // Shows once per user, then never again. Introduces the app and offers
 // to start the guided tour or skip to exploring on their own.
+// Priority 0 in the overlay queue (highest importance).
 
 import { useCallback } from 'react'
 import { useTour } from './tour-provider'

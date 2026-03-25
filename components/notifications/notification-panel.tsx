@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/icons'
 import { getNotifications } from '@/lib/notifications/actions'
 import { useNotifications } from './notification-provider'
+import { usePushSubscription } from './use-push-subscription'
 import type {
   Notification,
   NotificationAction,
@@ -146,6 +147,70 @@ const PANEL_FILTER_CATEGORIES: Array<{ key: NotificationCategory | 'all'; label:
   { key: 'system', label: 'System' },
 ]
 
+// ─── Inline push subscribe prompt ────────────────────────────────────────────
+
+const PUSH_PANEL_DISMISSED_KEY = 'chefflow:push-panel-dismissed'
+
+function PushSubscribeBanner() {
+  const { state, isLoading, subscribe } = usePushSubscription()
+  const [dismissed, setDismissed] = useState(true) // start hidden
+
+  useEffect(() => {
+    try {
+      setDismissed(localStorage.getItem(PUSH_PANEL_DISMISSED_KEY) === '1')
+    } catch {
+      setDismissed(false)
+    }
+  }, [])
+
+  if (state !== 'default' || dismissed) return null
+
+  const handleDismiss = () => {
+    setDismissed(true)
+    try {
+      localStorage.setItem(PUSH_PANEL_DISMISSED_KEY, '1')
+    } catch {
+      /* ok */
+    }
+  }
+
+  const handleEnable = async () => {
+    await subscribe()
+  }
+
+  return (
+    <div className="px-4 py-3 border-b border-stone-800 bg-stone-850">
+      <div className="flex items-start gap-2.5">
+        <Bell className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-stone-200">
+            Get alerts even when the app is closed
+          </p>
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleEnable}
+              disabled={isLoading}
+              className="px-2.5 py-1 text-xs font-medium rounded-md bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 transition-colors"
+            >
+              {isLoading ? 'Enabling...' : 'Enable'}
+            </button>
+            <button
+              type="button"
+              onClick={handleDismiss}
+              className="text-xs text-stone-500 hover:text-stone-300 transition-colors"
+            >
+              Not now
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Main panel ─────────────────────────────────────────────────────────────
+
 export function NotificationPanel({ onClose }: { onClose: () => void }) {
   const router = useRouter()
   const { markAsRead, markAllAsRead, unreadCount } = useNotifications()
@@ -251,6 +316,9 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
           </button>
         </div>
       </div>
+
+      {/* Push subscribe prompt - contextual, shown inside the bell panel */}
+      <PushSubscribeBanner />
 
       {/* List */}
       <div className="max-h-[420px] overflow-y-auto custom-scrollbar divide-y divide-stone-800">

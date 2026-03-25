@@ -3,6 +3,7 @@
 // TourShell - Assembles all onboarding tour components.
 // Drop this into a layout to enable the full onboarding experience:
 // welcome modal + floating checklist + spotlight tour.
+// Wrapped in OverlayQueueProvider so only one overlay shows at a time.
 
 import { OnboardingTourProvider } from './tour-provider'
 import { WelcomeModal } from './welcome-modal'

@@ -34,13 +34,8 @@ import { BetaSurveyBannerWrapper } from '@/components/beta-survey/beta-survey-ba
 import { ChefTourWrapper } from '@/components/onboarding/chef-tour-wrapper'
 import { CommandPalette } from '@/components/search/command-palette'
 
-const PushPermissionPrompt = dynamic(
-  () =>
-    import('@/components/notifications/push-permission-prompt').then((m) => m.PushPermissionPrompt),
-  { ssr: false }
-)
-const FeedbackNudgeModal = dynamic(
-  () => import('@/components/feedback/feedback-nudge-modal').then((m) => m.FeedbackNudgeModal),
+const FeedbackNudgeCard = dynamic(
+  () => import('@/components/feedback/feedback-nudge-card').then((m) => m.FeedbackNudgeCard),
   { ssr: false }
 )
 const OfflineStatusBar = dynamic(
@@ -145,7 +140,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const daysSinceCreation = layoutData.created_at
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
-  const showFeedbackNudge = daysSinceCreation >= 7
   const shouldRenderRemy = true
 
   return (
@@ -221,10 +215,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 <ChefTourWrapper>{children}</ChefTourWrapper>
               </ChefMainContent>
 
-              {/* Push notification permission prompt - appears after 5s if not subscribed */}
-              <PushPermissionPrompt />
-
-              {showFeedbackNudge && <FeedbackNudgeModal />}
+              {/* Feedback nudge - slide-in card, idle-detected, queued behind onboarding */}
+              <FeedbackNudgeCard daysSinceCreation={daysSinceCreation} />
 
               {/* Offline connectivity bar - shows status, queue count, sync progress */}
               <OfflineStatusBar />
