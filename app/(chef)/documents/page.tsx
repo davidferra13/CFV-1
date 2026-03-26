@@ -26,6 +26,7 @@ import {
 } from '@/lib/documents/event-workspace'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button'
 
 type EventListItem = {
   id: string
@@ -389,7 +390,7 @@ export default async function DocumentsIndexPage({
             <Button type="submit" variant="secondary" size="sm">
               Search
             </Button>
-            {(rawQuery || phaseFilter !== 'all') && (
+            {(rawQuery || phaseFilter !== 'all' || snapshotDocFilter !== 'any' || snapshotFromDate || snapshotToDate || snapshotOrder !== 'newest' || snapshotSearch || snapshotPage > 1) && (
               <Link href="/documents">
                 <Button variant="ghost" size="sm">
                   Reset
@@ -743,6 +744,8 @@ export default async function DocumentsIndexPage({
           </div>
         )}
       </Card>
+
+      <ScrollToTopButton />
     </div>
   )
 }

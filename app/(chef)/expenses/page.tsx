@@ -173,20 +173,22 @@ export default async function ExpensesPage({
           </Link>
         </div>
         {EXPENSE_CATEGORY_GROUPS.map((group) => (
-          <div key={group.label} className="flex flex-wrap gap-2 items-center">
-            <span className="text-xs font-medium text-stone-400 uppercase tracking-wider w-32 shrink-0">
+          <div key={group.label} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+            <span className="text-xs font-medium text-stone-400 uppercase tracking-wider sm:w-32 shrink-0">
               {group.label}
             </span>
-            {group.categories.map((cat) => (
-              <Link key={cat.value} href={`/expenses?category=${cat.value}`}>
-                <Button
-                  variant={searchParams.category === cat.value ? 'primary' : 'secondary'}
-                  size="sm"
-                >
-                  {cat.label}
-                </Button>
-              </Link>
-            ))}
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              {group.categories.map((cat) => (
+                <Link key={cat.value} href={`/expenses?category=${cat.value}`}>
+                  <Button
+                    variant={searchParams.category === cat.value ? 'primary' : 'secondary'}
+                    size="sm"
+                  >
+                    {cat.label}
+                  </Button>
+                </Link>
+              ))}
+            </div>
           </div>
         ))}
       </div>
