@@ -405,7 +405,7 @@ export async function getRecipeById(recipeId: string) {
     return null
   }
 
-  // Get ingredients for this recipe
+  // Get ingredients for this recipe (includes computed cost and yield data)
   const { data: recipeIngredients } = await db
     .from('recipe_ingredients')
     .select(
@@ -417,7 +417,9 @@ export async function getRecipeById(recipeId: string) {
       is_optional,
       preparation_notes,
       substitution_notes,
-      ingredient:ingredients(id, name, category, default_unit, average_price_cents)
+      computed_cost_cents,
+      yield_pct,
+      ingredient:ingredients(id, name, category, default_unit, average_price_cents, cost_per_unit_cents, last_price_cents, last_price_date, price_unit, weight_to_volume_ratio)
     `
     )
     .eq('recipe_id', recipeId)
@@ -538,9 +540,35 @@ export async function getRecipeById(recipeId: string) {
     if (parentRecipe) usedInRecipes.push(parentRecipe)
   }
 
-  return {
-    ...recipe,
-    ingredients: (recipeIngredients || []).map((ri: any) => ({
+  // Compute per-ingredient cost status for UI indicators
+  const { canConvert, lookupDensity } = await import('@/lib/units/conversion-engine')
+  const ingredientsMapped = (recipeIngredients || []).map((ri: any) => {
+    const ing = ri.ingredient
+    const costPerUnit = ing?.cost_per_unit_cents ?? ing?.last_price_cents ?? null
+    const costUnit = ing?.price_unit || ing?.default_unit || 'each'
+    const density = ing?.weight_to_volume_ratio ?? (ing?.name ? lookupDensity(ing.name) : null)
+
+    // Determine cost status
+    let costStatus: 'accurate' | 'estimated' | 'no_price' | 'stale' = 'accurate'
+    let costNote: string | null = null
+
+    if (!costPerUnit) {
+      costStatus = 'no_price'
+      costNote = 'No price data for this ingredient'
+    } else if (!canConvert(ri.unit, costUnit, density)) {
+      costStatus = 'estimated'
+      costNote = `Uses ${ri.unit}, priced per ${costUnit} (no conversion available)`
+    } else if (ing?.last_price_date) {
+      const daysSinceUpdate = Math.floor(
+        (Date.now() - new Date(ing.last_price_date).getTime()) / (1000 * 60 * 60 * 24)
+      )
+      if (daysSinceUpdate > 90) {
+        costStatus = 'stale'
+        costNote = `Price last updated ${daysSinceUpdate} days ago`
+      }
+    }
+
+    return {
       id: ri.id,
       quantity: ri.quantity,
       unit: ri.unit,
@@ -548,14 +576,29 @@ export async function getRecipeById(recipeId: string) {
       is_optional: ri.is_optional,
       preparation_notes: ri.preparation_notes,
       substitution_notes: ri.substitution_notes,
-      ingredient: ri.ingredient as {
-        id: string
-        name: string
-        category: IngredientCategory
-        default_unit: string
-        average_price_cents: number | null
+      computedCostCents: ri.computed_cost_cents as number | null,
+      costStatus,
+      costNote,
+      ingredient: {
+        id: ing?.id,
+        name: ing?.name,
+        category: ing?.category as IngredientCategory,
+        default_unit: ing?.default_unit,
+        average_price_cents: ing?.average_price_cents,
       },
-    })),
+    }
+  })
+
+  // Summarize cost issues
+  const costIssues = {
+    missingPrices: ingredientsMapped.filter((i) => i.costStatus === 'no_price').length,
+    unitMismatches: ingredientsMapped.filter((i) => i.costStatus === 'estimated').length,
+    stalePrices: ingredientsMapped.filter((i) => i.costStatus === 'stale').length,
+  }
+
+  return {
+    ...recipe,
+    ingredients: ingredientsMapped,
     subRecipes,
     usedInRecipes,
     costSummary: costSummary
@@ -566,6 +609,7 @@ export async function getRecipeById(recipeId: string) {
           hasAllPrices: costSummary.has_all_prices,
         }
       : null,
+    costIssues,
     eventHistory: uniqueEvents,
   }
 }

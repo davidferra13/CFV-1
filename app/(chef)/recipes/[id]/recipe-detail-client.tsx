@@ -373,6 +373,19 @@ export function RecipeDetailClient({ recipe }: Props) {
                   className="flex justify-between items-center py-1 border-b border-stone-50 last:border-0"
                 >
                   <div className="flex items-center gap-2">
+                    {/* Cost status indicator */}
+                    <span
+                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                        ri.costStatus === 'accurate'
+                          ? 'bg-emerald-500'
+                          : ri.costStatus === 'estimated'
+                            ? 'bg-amber-500'
+                            : ri.costStatus === 'stale'
+                              ? 'bg-amber-400'
+                              : 'bg-stone-600'
+                      }`}
+                      title={ri.costNote || 'Cost verified'}
+                    />
                     <span className="text-stone-100">
                       {ri.quantity} {ri.unit} {ri.ingredient.name}
                     </span>
@@ -385,12 +398,18 @@ export function RecipeDetailClient({ recipe }: Props) {
                       </span>
                     )}
                   </div>
-                  {ri.ingredient.average_price_cents != null && (
-                    <span className="text-sm text-stone-500">
-                      ${(ri.ingredient.average_price_cents / 100).toFixed(2)}/
-                      {ri.ingredient.default_unit}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {ri.computedCostCents != null && (
+                      <span
+                        className={`text-sm ${ri.costStatus === 'accurate' ? 'text-stone-400' : 'text-amber-500'}`}
+                      >
+                        ${(ri.computedCostCents / 100).toFixed(2)}
+                      </span>
+                    )}
+                    {ri.costStatus === 'no_price' && (
+                      <span className="text-xs text-stone-600">no price</span>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -723,19 +742,54 @@ export function RecipeDetailClient({ recipe }: Props) {
               <div>
                 <dt className="text-sm font-medium text-stone-500">Price Data</dt>
                 <dd className="mt-1">
-                  {recipe.costSummary.hasAllPrices ? (
-                    <Badge variant="success">Complete</Badge>
+                  {recipe.costSummary.hasAllPrices &&
+                  (!recipe.costIssues ||
+                    (recipe.costIssues.unitMismatches === 0 &&
+                      recipe.costIssues.stalePrices === 0)) ? (
+                    <Badge variant="success">Verified</Badge>
+                  ) : recipe.costIssues?.missingPrices === recipe.costSummary.ingredientCount ? (
+                    <Badge variant="default">No Data</Badge>
                   ) : (
-                    <Badge variant="warning">Estimated</Badge>
+                    <Badge variant="warning">
+                      {recipe.costIssues?.unitMismatches ? 'Approximate' : 'Partial'}
+                    </Badge>
                   )}
                 </dd>
               </div>
             </div>
-            {!recipe.costSummary.hasAllPrices && (
-              <p className="text-sm text-stone-500 mt-3">
-                Cost data improves as you log more receipts and update ingredient prices.
-              </p>
-            )}
+            {/* Cost issue breakdown */}
+            {recipe.costIssues &&
+              (recipe.costIssues.missingPrices > 0 ||
+                recipe.costIssues.unitMismatches > 0 ||
+                recipe.costIssues.stalePrices > 0) && (
+                <div className="mt-3 pt-3 border-t border-stone-800 space-y-1">
+                  {recipe.costIssues.missingPrices > 0 && (
+                    <p className="text-sm text-stone-500 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-stone-600 flex-shrink-0" />
+                      {recipe.costIssues.missingPrices} ingredient
+                      {recipe.costIssues.missingPrices > 1 ? 's' : ''} missing price data
+                    </p>
+                  )}
+                  {recipe.costIssues.unitMismatches > 0 && (
+                    <p className="text-sm text-amber-500 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
+                      {recipe.costIssues.unitMismatches} ingredient
+                      {recipe.costIssues.unitMismatches > 1 ? 's' : ''} with unit mismatch (cost
+                      approximate)
+                    </p>
+                  )}
+                  {recipe.costIssues.stalePrices > 0 && (
+                    <p className="text-sm text-amber-400 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+                      {recipe.costIssues.stalePrices} ingredient
+                      {recipe.costIssues.stalePrices > 1 ? 's' : ''} with stale pricing (90+ days)
+                    </p>
+                  )}
+                  <p className="text-xs text-stone-600 mt-1">
+                    Upload receipts to automatically update ingredient prices.
+                  </p>
+                </div>
+              )}
           </CardContent>
         </Card>
       )}
