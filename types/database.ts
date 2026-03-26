@@ -29714,6 +29714,7 @@ export type Database = {
       menus: {
         Row: {
           archived_at: string | null
+          client_id: string | null
           created_at: string
           created_by: string | null
           cuisine_type: string | null
@@ -29728,6 +29729,7 @@ export type Database = {
           name: string
           notes: string | null
           price_per_person_cents: number | null
+          season: string | null
           service_style:
             | Database["public"]["Enums"]["event_service_style"]
             | null
@@ -29735,6 +29737,7 @@ export type Database = {
           simple_mode: boolean
           simple_mode_content: string | null
           status: Database["public"]["Enums"]["menu_status"]
+          target_date: string | null
           target_guest_count: number | null
           tenant_id: string
           times_used: number
@@ -29743,6 +29746,7 @@ export type Database = {
         }
         Insert: {
           archived_at?: string | null
+          client_id?: string | null
           created_at?: string
           created_by?: string | null
           cuisine_type?: string | null
@@ -29757,6 +29761,7 @@ export type Database = {
           name: string
           notes?: string | null
           price_per_person_cents?: number | null
+          season?: string | null
           service_style?:
             | Database["public"]["Enums"]["event_service_style"]
             | null
@@ -29764,6 +29769,7 @@ export type Database = {
           simple_mode?: boolean
           simple_mode_content?: string | null
           status?: Database["public"]["Enums"]["menu_status"]
+          target_date?: string | null
           target_guest_count?: number | null
           tenant_id: string
           times_used?: number
@@ -29772,6 +29778,7 @@ export type Database = {
         }
         Update: {
           archived_at?: string | null
+          client_id?: string | null
           created_at?: string
           created_by?: string | null
           cuisine_type?: string | null
@@ -29786,6 +29793,7 @@ export type Database = {
           name?: string
           notes?: string | null
           price_per_person_cents?: number | null
+          season?: string | null
           service_style?:
             | Database["public"]["Enums"]["event_service_style"]
             | null
@@ -29793,6 +29801,7 @@ export type Database = {
           simple_mode?: boolean
           simple_mode_content?: string | null
           status?: Database["public"]["Enums"]["menu_status"]
+          target_date?: string | null
           target_guest_count?: number | null
           tenant_id?: string
           times_used?: number
