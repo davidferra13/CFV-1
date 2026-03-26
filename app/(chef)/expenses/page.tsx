@@ -173,7 +173,10 @@ export default async function ExpensesPage({
           </Link>
         </div>
         {EXPENSE_CATEGORY_GROUPS.map((group) => (
-          <div key={group.label} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <div
+            key={group.label}
+            className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2"
+          >
             <span className="text-xs font-medium text-stone-400 uppercase tracking-wider sm:w-32 shrink-0">
               {group.label}
             </span>
