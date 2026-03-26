@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 
 export const metadata: Metadata = { title: 'Smart Import - ChefFlow' }
@@ -23,6 +24,7 @@ const SmartImportHub = dynamic(
 )
 import { getClientsForHistoricalImport } from '@/lib/events/historical-import-actions'
 import { Alert } from '@/components/ui/alert'
+import { ArrowLeft } from '@/components/ui/icons'
 import { getTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-settings'
 
 const IMPORT_MODES: ImportMode[] = [
@@ -66,6 +68,13 @@ export default async function ImportPage({ searchParams }: { searchParams: { mod
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-300 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to Dashboard
+      </Link>
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Smart Import</h1>
         <p className="text-stone-400 mt-1">
