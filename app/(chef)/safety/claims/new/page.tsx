@@ -76,20 +76,17 @@ export default async function NewInsuranceClaimPage() {
           />
         </div>
 
+        <div className="bg-amber-900/20 border border-amber-700/40 rounded-lg p-3 text-sm text-amber-300">
+          Claim persistence is not yet available. This form is for reference only and will not save
+          data.
+        </div>
+
         <div className="flex justify-end gap-3 pt-2">
           <Link href="/safety/claims">
-            <Button variant="secondary">Cancel</Button>
-          </Link>
-          <Link href="/safety/claims">
-            <Button variant="primary">Save Claim</Button>
+            <Button variant="secondary">Back to Claims</Button>
           </Link>
         </div>
       </div>
-
-      <p className="text-xs text-stone-600 text-center">
-        Full claim management with server actions coming soon. For now, use this form to document
-        your claim details and keep a record.
-      </p>
     </div>
   )
 }

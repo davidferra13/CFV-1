@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { pgClient } from '@/lib/db'
 import {
   SNAPSHOT_DOCUMENT_TYPES,
   type SnapshotDocumentType,
@@ -150,38 +151,47 @@ export async function getEventDocumentSnapshots(
 
 export async function getRecentDocumentSnapshots(limit = 80): Promise<RecentDocumentSnapshot[]> {
   const user = await requireChef()
-  const db: any = createServerClient()
+  const sql = pgClient
 
-  const { data, error } = await db
-    .from('event_document_snapshots')
-    .select(
-      `
-      id,
-      event_id,
-      document_type,
-      version_number,
-      filename,
-      size_bytes,
-      generated_at,
-      generated_by,
-      event:events!inner(
-        occasion,
-        event_date,
-        status,
-        client:clients(full_name)
-      )
+  try {
+    const rows = await sql`
+      SELECT
+        eds.id,
+        eds.event_id,
+        eds.document_type,
+        eds.version_number,
+        eds.filename,
+        eds.size_bytes,
+        eds.generated_at,
+        eds.generated_by,
+        e.occasion AS event_occasion,
+        e.event_date AS event_date,
+        e.status AS event_status,
+        c.full_name AS client_name
+      FROM event_document_snapshots eds
+      INNER JOIN events e ON e.id = eds.event_id
+      LEFT JOIN clients c ON c.id = e.client_id
+      WHERE eds.tenant_id = ${user.tenantId!}
+      ORDER BY eds.generated_at DESC
+      LIMIT ${limit}
     `
-    )
-    .eq('tenant_id', user.tenantId!)
-    .order('generated_at', { ascending: false })
-    .limit(limit)
-
-  if (error) {
-    console.error('[getRecentDocumentSnapshots] Error:', error)
+    return rows.map((row: any) => ({
+      id: row.id,
+      eventId: row.event_id,
+      documentType: row.document_type as SnapshotDocumentType,
+      versionNumber: row.version_number,
+      filename: row.filename,
+      sizeBytes: row.size_bytes,
+      generatedAt: row.generated_at,
+      generatedBy: row.generated_by ?? null,
+      eventOccasion: row.event_occasion ?? null,
+      eventDate: row.event_date ?? null,
+      clientName: row.client_name ?? null,
+    }))
+  } catch (err: any) {
+    console.error('[getRecentDocumentSnapshots] Error:', err?.message)
     return []
   }
-
-  return (data ?? []).map(mapRecentDocumentSnapshot)
 }
 
 export async function getEventDocumentSnapshotDrilldown(
@@ -423,32 +433,76 @@ export async function getTenantDocumentSnapshotDrilldown(
       .join(' ')
       .toLowerCase()
 
-  const baseSelect = `
-    id,
-    event_id,
-    document_type,
-    version_number,
-    filename,
-    size_bytes,
-    generated_at,
-    generated_by,
-    event:events!inner(
-      occasion,
-      event_date,
-      status,
-      client:clients(full_name)
-    )
-  `
+  // Raw SQL helper for joined snapshot queries (compat shim can't do nested joins)
+  const sql = pgClient
+
+  function mapJoinedRow(r: any): TenantDocumentSnapshot {
+    return {
+      id: r.id,
+      eventId: r.event_id,
+      documentType: r.document_type as SnapshotDocumentType,
+      versionNumber: r.version_number,
+      filename: r.filename,
+      sizeBytes: r.size_bytes,
+      generatedAt: r.generated_at,
+      generatedBy: r.generated_by ?? null,
+      eventOccasion: r.event_occasion ?? null,
+      eventDate: r.event_date ?? null,
+      clientName: r.client_name ?? null,
+      eventStatus: r.event_status ?? null,
+    }
+  }
+
+  async function fetchJoinedSnapshots(opts: {
+    tenantId: string
+    eventId?: string | null
+    docType?: string | null
+    versionNumber?: number | null
+    fromDate?: string | null
+    toDate?: string | null
+    ascending?: boolean
+    limit?: number
+    offset?: number
+  }): Promise<TenantDocumentSnapshot[]> {
+    const lim = opts.limit ?? 2000
+    const off = opts.offset ?? 0
+
+    const rows = await sql`
+      SELECT
+        eds.id, eds.event_id, eds.document_type, eds.version_number,
+        eds.filename, eds.size_bytes, eds.generated_at, eds.generated_by,
+        e.occasion AS event_occasion, e.event_date, e.status AS event_status,
+        c.full_name AS client_name
+      FROM event_document_snapshots eds
+      INNER JOIN events e ON e.id = eds.event_id
+      LEFT JOIN clients c ON c.id = e.client_id
+      WHERE eds.tenant_id = ${opts.tenantId}
+        ${opts.eventId ? sql`AND eds.event_id = ${opts.eventId}` : sql``}
+        ${opts.docType ? sql`AND eds.document_type = ${opts.docType}` : sql``}
+        ${opts.versionNumber ? sql`AND eds.version_number = ${opts.versionNumber}` : sql``}
+        ${opts.fromDate ? sql`AND eds.generated_at >= ${opts.fromDate + 'T00:00:00.000'}` : sql``}
+        ${opts.toDate ? sql`AND eds.generated_at <= ${opts.toDate + 'T23:59:59.999'}` : sql``}
+      ORDER BY eds.generated_at ${opts.ascending ? sql`ASC` : sql`DESC`}
+      LIMIT ${lim} OFFSET ${off}
+    `
+    return rows.map(mapJoinedRow)
+  }
 
   const queryPath = async (): Promise<TenantSnapshotDrilldownResult> => {
-    const { data: allRows, error } = await applyCoreFilters(
-      db.from('event_document_snapshots').select(baseSelect)
-    )
-      .order('generated_at', { ascending: order === 'oldest' })
-      .limit(SEARCH_MAX_ROWS)
-
-    if (error) {
-      console.error('[getTenantDocumentSnapshotDrilldown] Search query error:', error)
+    let allRows: TenantDocumentSnapshot[]
+    try {
+      allRows = await fetchJoinedSnapshots({
+        tenantId: user.tenantId!,
+        eventId,
+        docType,
+        versionNumber,
+        fromDate,
+        toDate,
+        ascending: order === 'oldest',
+        limit: SEARCH_MAX_ROWS,
+      })
+    } catch (err: any) {
+      console.error('[getTenantDocumentSnapshotDrilldown] Search query error:', err?.message)
       return {
         items: [],
         total: 0,
@@ -465,7 +519,7 @@ export async function getTenantDocumentSnapshotDrilldown(
       }
     }
 
-    const typedRows = (allRows ?? []).map(mapTenantDocumentSnapshot)
+    const typedRows = allRows
     const filtered = typedRows.filter((row: TenantDocumentSnapshot) =>
       buildSearchHaystack(row).includes(searchQuery)
     )
@@ -517,16 +571,22 @@ export async function getTenantDocumentSnapshotDrilldown(
     return queryPath()
   }
 
-  const listQuery = applyCoreFilters(
-    db
-      .from('event_document_snapshots')
-      .select(baseSelect, { count: 'exact' })
-      .order('generated_at', { ascending: order === 'oldest' })
-      .range(rangeFrom, rangeTo)
-  )
-
-  const [{ data: rows, error: rowsError, count }, typeStats] = await Promise.all([
-    listQuery,
+  // Fetch joined rows via raw SQL and type stats via compat shim in parallel
+  const [joinedRows, typeStats] = await Promise.all([
+    fetchJoinedSnapshots({
+      tenantId: user.tenantId!,
+      eventId,
+      docType,
+      versionNumber,
+      fromDate,
+      toDate,
+      ascending: order === 'oldest',
+      limit: pageSize + 1,
+      offset: rangeFrom,
+    }).catch((err) => {
+      console.error('[getTenantDocumentSnapshotDrilldown] List query error:', err?.message)
+      return [] as TenantDocumentSnapshot[]
+    }),
     Promise.all(
       SNAPSHOT_DOCUMENT_TYPES.map(async (type) => {
         const countQuery = applyCoreFilters(
@@ -560,41 +620,39 @@ export async function getTenantDocumentSnapshotDrilldown(
     ),
   ])
 
-  if (rowsError) {
-    console.error('[getTenantDocumentSnapshotDrilldown] List query error:', rowsError)
-    return {
-      items: [],
-      total: 0,
-      page,
-      pageSize,
-      totalPages: 1,
-      hasNextPage: false,
-      hasPreviousPage: page > 1,
-      typeStats,
-    }
-  }
-
-  const total = count ?? 0
+  // Get total count for pagination
+  const totalCountResult = await sql`
+    SELECT count(*)::int AS total
+    FROM event_document_snapshots eds
+    INNER JOIN events e ON e.id = eds.event_id
+    WHERE eds.tenant_id = ${user.tenantId!}
+    ${eventId ? sql`AND eds.event_id = ${eventId}` : sql``}
+    ${docType ? sql`AND eds.document_type = ${docType}` : sql``}
+    ${versionNumber ? sql`AND eds.version_number = ${versionNumber}` : sql``}
+    ${fromDate ? sql`AND eds.generated_at >= ${fromDate + 'T00:00:00.000'}` : sql``}
+    ${toDate ? sql`AND eds.generated_at <= ${toDate + 'T23:59:59.999'}` : sql``}
+  `
+  const total = totalCountResult[0]?.total ?? 0
   const totalPages = Math.max(1, Math.ceil(total / pageSize))
   const safePage = Math.min(page, totalPages)
 
-  let items = (rows ?? []).map(mapTenantDocumentSnapshot)
+  let items = joinedRows.slice(0, pageSize)
   if (total > 0 && page > totalPages) {
     const fallbackFrom = (safePage - 1) * pageSize
-    const fallbackTo = fallbackFrom + pageSize - 1
-    const { data: fallbackRows, error: fallbackError } = await applyCoreFilters(
-      db.from('event_document_snapshots').select(baseSelect)
-    )
-      .order('generated_at', { ascending: order === 'oldest' })
-      .range(fallbackFrom, fallbackTo)
-
-    if (fallbackError) {
-      console.error(
-        '[getTenantDocumentSnapshotDrilldown] Fallback page query error:',
-        fallbackError
-      )
-    } else {
-      items = (fallbackRows ?? []).map(mapTenantDocumentSnapshot)
+    try {
+      items = await fetchJoinedSnapshots({
+        tenantId: user.tenantId!,
+        eventId,
+        docType,
+        versionNumber,
+        fromDate,
+        toDate,
+        ascending: order === 'oldest',
+        limit: pageSize,
+        offset: fallbackFrom,
+      })
+    } catch (err: any) {
+      console.error('[getTenantDocumentSnapshotDrilldown] Fallback page query error:', err?.message)
     }
   }
 

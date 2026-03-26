@@ -1119,7 +1119,7 @@ export const navGroups: NavGroup[] = [
         icon: ShieldAlert,
         children: [
           { href: '/safety/claims/documents', label: 'Claim Documents' },
-          { href: '/safety/claims/new', label: 'New Claim' },
+          { href: '/safety/claims/new', label: 'New Claim', hidden: true },
         ],
       },
     ],

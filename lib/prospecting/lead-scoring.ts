@@ -38,6 +38,8 @@ interface ProspectScoreInput {
  * - Seasonal timing:      0-8 pts  (peak booking season approaching)
  * - Event signals:        0-7 pts  (upcoming events detected on their site)
  */
+export { computeProspectScore as computeLeadScore }
+
 export function computeProspectScore(input: ProspectScoreInput): number {
   let score = 0
 
