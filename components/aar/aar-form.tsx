@@ -12,6 +12,8 @@ import { createAAR, updateAAR } from '@/lib/aar/actions'
 import type { CreateAARInput, UpdateAARInput } from '@/lib/aar/actions'
 import type { ChecklistItem } from '@/lib/checklist/actions'
 import { trackAction, setActiveForm, trackError } from '@/lib/ai/remy-activity-tracker'
+import { RecipeFeedbackSection } from './recipe-feedback-section'
+import type { RecipeFeedbackEntry } from './recipe-feedback-section'
 
 type AARFormProps = {
   eventId: string
@@ -31,6 +33,7 @@ type AARFormProps = {
     general_notes: string | null
     would_do_differently: string | null
   } | null
+  existingRecipeFeedback?: RecipeFeedbackEntry[]
 }
 
 const RATING_LABELS: Record<number, string> = {
@@ -101,7 +104,12 @@ function RatingSelector({
   )
 }
 
-export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) {
+export function AARForm({
+  eventId,
+  checklistItems,
+  existingAAR,
+  existingRecipeFeedback,
+}: AARFormProps) {
   const router = useRouter()
   const isEditing = !!existingAAR
 
@@ -119,6 +127,10 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
   const [menuNotes, setMenuNotes] = useState(existingAAR?.menu_performance_notes ?? '')
   const [clientNotes, setClientNotes] = useState(existingAAR?.client_behavior_notes ?? '')
   const [siteNotes, setSiteNotes] = useState(existingAAR?.site_notes ?? '')
+
+  const [recipeFeedback, setRecipeFeedback] = useState<RecipeFeedbackEntry[]>(
+    existingRecipeFeedback ?? []
+  )
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -162,6 +174,8 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
     }
 
     try {
+      let aarId: string | null = null
+
       if (isEditing && existingAAR) {
         const updateData: UpdateAARInput = {
           calm_rating: calmRating,
@@ -175,6 +189,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
           site_notes: siteNotes || null,
         }
         await updateAAR(existingAAR.id, updateData)
+        aarId = existingAAR.id
         trackAction('Updated after-action review', `Calm: ${calmRating}/5, Prep: ${prepRating}/5`)
       } else {
         const createData: CreateAARInput = {
@@ -189,8 +204,28 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
           client_behavior_notes: clientNotes || undefined,
           site_notes: siteNotes || undefined,
         }
-        await createAAR(createData)
+        const result = await createAAR(createData)
+        aarId = result.aar?.id ?? null
         trackAction('Created after-action review', `Calm: ${calmRating}/5, Prep: ${prepRating}/5`)
+      }
+
+      // Save recipe feedback (non-blocking - don't fail the whole AAR if this errors)
+      if (aarId && recipeFeedback.length > 0) {
+        try {
+          const { saveAllRecipeFeedback } = await import('@/lib/aar/feedback-actions')
+          await saveAllRecipeFeedback(
+            aarId,
+            recipeFeedback.map((rf) => ({
+              recipeId: rf.recipeId,
+              timingAccuracy: rf.timingAccuracy,
+              wouldUseAgain: rf.wouldUseAgain,
+              notes: rf.notes,
+            }))
+          )
+        } catch (fbErr) {
+          console.error('[AARForm] Recipe feedback save failed:', fbErr)
+          // Don't block AAR submission
+        }
       }
 
       router.push(`/events/${eventId}`)
@@ -278,7 +313,14 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
         />
       </Card>
 
-      {/* Section 3: Text Notes (optional, fill in what you can) */}
+      {/* Section 3: Recipe Feedback (loaded from event menu) */}
+      <RecipeFeedbackSection
+        eventId={eventId}
+        value={recipeFeedback}
+        onChange={setRecipeFeedback}
+      />
+
+      {/* Section 4: Text Notes (optional, fill in what you can) */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold text-stone-100 mb-2">Notes</h2>
         <p className="text-sm text-stone-500 mb-4">

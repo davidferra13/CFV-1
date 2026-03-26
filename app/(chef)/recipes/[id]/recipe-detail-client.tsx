@@ -24,6 +24,7 @@ import { AllergenBadgePanel } from '@/components/recipes/allergen-badge-panel'
 import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-modal'
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
 import { RecipeUsagePanel } from '@/components/recipes/recipe-usage-panel'
+import { RecipeTrackRecordPanel } from '@/components/recipes/recipe-track-record'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import { useDeferredAction } from '@/hooks/use-deferred-action'
 import { toast } from 'sonner'
@@ -507,6 +508,9 @@ export function RecipeDetailClient({ recipe }: Props) {
 
       {/* Used in Menus (bidirectional cross-reference) */}
       <RecipeUsagePanel recipeId={recipe.id} />
+
+      {/* Track Record (AAR feedback across events) */}
+      <RecipeTrackRecordPanel recipeId={recipe.id} />
 
       {/* Scaling Calculator */}
       <RecipeScalingCalculator recipe={recipe} />
