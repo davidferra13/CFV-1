@@ -1,35 +1,33 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated - last run: 2026-03-26T15:36:19.678Z_
-_Run ID: 349520a8-a397-4f61-9471-67093bad192a_
+_Auto-generated - last run: 2026-03-26T18:43:09.417Z_
+_Run ID: 2c0100be-8ad9-4d78-ac1e-a7a2df518ee2_
 
 ---
 
 ## Summary
 
-The system is currently at 83% pass rate, with `inquiry_parse` failing at 0% and all other modules passing. The `inquiry_parse` module has been consistently failing across multiple runs and needs immediate attention. The `client_parse` module has shown improvement, moving from 0% to 100% pass rate in recent runs.
+The system is currently failing on the inquiry_parse module, which is critical for processing client inquiries. All other modules are passing. The inquiry_parse module has been consistently failing across multiple runs and shows no recent improvement.
 
 ## Failures & Root Causes
 
 ### inquiry_parse
 
-The module is failing because it's not correctly extracting client name and guest count from inquiry text. Instead of parsing the expected values, it's returning "undefined" for both fields. This suggests the prompt doesn't properly guide the model to extract these specific fields from natural language input, or the examples provided are insufficient for training the extraction logic.
+The module is failing to extract client name and guest count from inquiry text. It's returning undefined values instead of parsing the expected information. This suggests the prompt lacks clear instructions for extracting structured data from natural language input, or the model is not properly understanding the inquiry format.
 
 ## Prompt Fix Recommendations
 
-### inquiry_parse
+The inquiry_parse module prompt needs to explicitly instruct the model to extract specific fields from the inquiry text. Add clear extraction instructions:
 
-Update the prompt to explicitly define the expected output format and provide clear examples of how to extract client name and guest count from inquiry text. Include specific instructions like:
-
-- "Extract the client name as a string"
-- "Extract the guest count as a number"
-- "If no guest count is mentioned, return null"
-- "If no client name is mentioned, return null"
-- Provide multiple examples showing various inquiry formats and expected outputs
+1. Explicitly list required fields: "Extract and return the client name and guest count from the inquiry text"
+2. Provide clear format: "Return a JSON object with 'client_name' and 'guest_count' fields"
+3. Add examples: Include sample inquiries with expected outputs to guide extraction
+4. Specify handling of missing data: "If a field cannot be determined, return null or undefined explicitly"
+5. Add validation: "Ensure the guest_count is a number, not a string"
 
 ## What's Working Well
 
-The `client_parse`, `allergen_risk`, `correspondence`, `menu_suggestions`, and `quote_draft` modules are all passing at 100% with no failures. Notably, `client_parse` has improved significantly, moving from 0% to 100% pass rate in recent runs. The `allergen_risk` module has also maintained consistent performance, passing in all recent runs.
+All modules except inquiry_parse are passing consistently. The client_parse, allergen_risk, correspondence, menu_suggestions, and quote_draft modules have shown stable performance. Notably, the allergen_risk module has been passing in recent runs after previously failing, indicating the fix for that module was effective. The system demonstrates good overall stability when inquiry_parse is functioning correctly.
 
 ---
 

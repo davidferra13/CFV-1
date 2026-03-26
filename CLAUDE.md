@@ -790,6 +790,11 @@ There are no beta/staging/prod directories. There is one copy of the app.
 
 ## DATABASE
 
-- No local database (no Docker) - use remote with `--linked` flag
-- Project ID: `luefkpakzvxcsqroxyhz`
+- **Local PostgreSQL** via Docker container (`chefflow_postgres` on port 54322)
+- **Connection:** `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+- **Start:** `docker compose up -d`
+- **Init (first time):** `bash scripts/init-local-db.sh` (creates stubs, applies migrations, seeds demo accounts)
+- **Full docs:** `docs/local-database-setup.md`
 - Cross-layer columns added via `ALTER TABLE` (e.g., Layer 3 adds columns to `clients`)
+- Supabase compatibility stubs (auth schema, roles, storage schema) allow original migrations to run on vanilla PostgreSQL
+- **No cloud database dependency.** Everything runs locally.

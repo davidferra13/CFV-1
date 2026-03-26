@@ -2,8 +2,6 @@
 # Usage: docker compose up -d
 # Connection: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
-version: "3.8"
-
 services:
   postgres:
     image: postgres:15-alpine
