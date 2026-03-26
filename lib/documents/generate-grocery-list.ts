@@ -22,6 +22,8 @@ type GroceryItem = {
   isOptional: boolean
   onHandQty: number | null // current inventory, null if not tracked
   needToBuyQty: number // max(0, quantity - onHandQty)
+  // Pre-shopping substitution suggestions from historical data
+  substitutions: { ingredient: string; count: number }[] | null
 }
 
 type StoreSection = {
@@ -284,7 +286,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
 
   // ── Aggregate ingredients ──────────────────────────────────────────────────
   // Key: ingredient_id + "::" + unit (same ingredient in same unit → sum quantities)
-  type AggEntry = Omit<GroceryItem, 'onHandQty' | 'needToBuyQty'> & {
+  type AggEntry = Omit<GroceryItem, 'onHandQty' | 'needToBuyQty' | 'substitutions'> & {
     ingredientId: string
     category: string
   }
@@ -362,6 +364,50 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     }
   }
 
+  // ── Query substitution history for pre-shopping suggestions ──────────────
+  // "Last 3 times mint was unavailable, you used basil" - surfaced on the grocery list
+  const substitutionMap = new Map<string, { ingredient: string; count: number }[]>()
+
+  try {
+    const ingredientNames = [
+      ...new Set(Array.from(aggregated.values()).map((e) => e.ingredientName)),
+    ]
+    if (ingredientNames.length > 0) {
+      const { data: subRows } = await db
+        .from('shopping_substitutions')
+        .select('planned_ingredient, actual_ingredient')
+        .eq('tenant_id', user.tenantId!)
+
+      if (subRows && subRows.length > 0) {
+        // Build planned -> actual counts
+        const pairCounts = new Map<string, Map<string, number>>()
+        for (const row of subRows as any[]) {
+          const planned = (row.planned_ingredient || '').toLowerCase().trim()
+          const actual = row.actual_ingredient || ''
+          if (!planned || !actual) continue
+          if (!pairCounts.has(planned)) pairCounts.set(planned, new Map())
+          const counts = pairCounts.get(planned)!
+          counts.set(actual, (counts.get(actual) || 0) + 1)
+        }
+
+        // Match against grocery list ingredients
+        for (const entry of aggregated.values()) {
+          const key = entry.ingredientName.toLowerCase().trim()
+          const counts = pairCounts.get(key)
+          if (counts && counts.size > 0) {
+            const subs = Array.from(counts.entries())
+              .map(([ingredient, count]) => ({ ingredient, count }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 2) // Top 2 substitutes
+            substitutionMap.set(entry.ingredientId, subs)
+          }
+        }
+      }
+    }
+  } catch {
+    // Substitution query is non-blocking
+  }
+
   // ── Sort and bin into stops/sections ──────────────────────────────────────
   const stop1Map = new Map<string, GroceryItem[]>() // sectionName → items
   const stop2Items: GroceryItem[] = []
@@ -403,6 +449,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
       isOptional: entry.isOptional,
       onHandQty,
       needToBuyQty: needToBuyQty > 0 ? needToBuyQty : entry.quantity,
+      substitutions: substitutionMap.get(entry.ingredientId) ?? null,
     }
 
     // Accumulate projected cost (only for what we need to buy, not what's on hand)
@@ -562,7 +609,12 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
           item.onHandQty != null
             ? ` (have ${formatQuantity(item.onHandQty, item.unit)} on hand)`
             : ''
-        const label = `${item.ingredientName} - ${qtyStr}${onHandNote}${optSuffix}`
+        // Substitution hint from shopping history
+        const subNote =
+          item.substitutions && item.substitutions.length > 0
+            ? ` | or: ${item.substitutions.map((s) => `${s.ingredient} (${s.count}x)`).join(', ')}`
+            : ''
+        const label = `${item.ingredientName} - ${qtyStr}${onHandNote}${optSuffix}${subNote}`
         pdf.checkbox(label, 8, item.courseLabel)
       }
       pdf.space(1)

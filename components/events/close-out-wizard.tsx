@@ -21,8 +21,14 @@ import {
 import { logActualGroceryCost } from '@/lib/grocery/pricing-actions'
 import { createAAR } from '@/lib/aar/actions'
 import { markFollowUpSent } from '@/lib/events/actions'
+import {
+  addWasteEntry,
+  type WasteCategory,
+  type WasteReason,
+  type WasteEntryInput,
+} from '@/lib/events/waste-tracking-actions'
 
-const STEPS = ['Tip', 'Receipts', 'Mileage', 'Reflection', 'Close Out']
+const STEPS = ['Tip', 'Receipts', 'Mileage', 'Reflection', 'Leftovers', 'Close Out']
 const TOTAL_STEPS = STEPS.length
 
 // ─── Progress Bar ─────────────────────────────────────────────────────────────
@@ -38,17 +44,8 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
       </div>
       <div className="w-full bg-stone-800 rounded-full h-2">
         <div
-          className={`bg-brand-500 h-2 rounded-full transition-all duration-300 ${
-            current === 0
-              ? 'w-1/5'
-              : current === 1
-                ? 'w-2/5'
-                : current === 2
-                  ? 'w-3/5'
-                  : current === 3
-                    ? 'w-4/5'
-                    : 'w-full'
-          }`}
+          className="bg-brand-500 h-2 rounded-full transition-all duration-300"
+          style={{ width: `${Math.round(((current + 1) / total) * 100)}%` }}
         />
       </div>
     </div>
@@ -579,6 +576,214 @@ function AARStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
   )
 }
 
+// ─── Step 4: Leftovers / Waste ────────────────────────────────────────────────
+
+const WASTE_CATEGORIES: { value: WasteCategory; label: string }[] = [
+  { value: 'protein', label: 'Protein' },
+  { value: 'produce', label: 'Produce' },
+  { value: 'dairy', label: 'Dairy' },
+  { value: 'grain', label: 'Grain' },
+  { value: 'prepared_dish', label: 'Prepared dish' },
+  { value: 'other', label: 'Other' },
+]
+
+const WASTE_REASONS: { value: WasteReason; label: string }[] = [
+  { value: 'overproduction', label: 'Made too much' },
+  { value: 'spoilage', label: 'Spoiled' },
+  { value: 'guest_no_show', label: 'Guest no-show' },
+  { value: 'dietary_change', label: 'Dietary change' },
+  { value: 'quality_issue', label: 'Quality issue' },
+  { value: 'other', label: 'Other' },
+]
+
+type WasteRow = {
+  item_name: string
+  category: WasteCategory
+  reason: WasteReason
+  cost: string // dollars input
+  saved: boolean
+}
+
+function WasteStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
+  const [rows, setRows] = useState<WasteRow[]>([])
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const addRow = () => {
+    setRows((prev) => [
+      ...prev,
+      {
+        item_name: '',
+        category: 'prepared_dish',
+        reason: 'overproduction',
+        cost: '',
+        saved: false,
+      },
+    ])
+  }
+
+  const updateRow = (index: number, field: keyof WasteRow, value: string) => {
+    setRows((prev) =>
+      prev.map((r, i) => (i === index ? { ...r, [field]: value, saved: false } : r))
+    )
+  }
+
+  const removeRow = (index: number) => {
+    setRows((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSaveAndContinue = async () => {
+    const unsaved = rows.filter((r) => !r.saved && r.item_name.trim())
+    if (unsaved.length === 0) {
+      onNext()
+      return
+    }
+
+    setSaving(true)
+    setError(null)
+    try {
+      for (const row of unsaved) {
+        const costCents = row.cost ? Math.round(parseFloat(row.cost) * 100) : undefined
+        await addWasteEntry(data.event.id, {
+          item_name: row.item_name.trim(),
+          category: row.category,
+          reason: row.reason,
+          estimated_cost_cents: costCents && costCents > 0 ? costCents : undefined,
+        })
+      }
+      setRows((prev) => prev.map((r) => ({ ...r, saved: true })))
+      onNext()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save waste entries')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold text-stone-100 mb-2">Any leftovers or waste?</h2>
+      <p className="text-stone-500 text-sm mb-6">
+        Quick log of what didn't get used. Helps you prep smarter next time. Skip if nothing was
+        wasted.
+      </p>
+
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
+
+      {rows.length > 0 && (
+        <div className="space-y-4 mb-6">
+          {rows.map((row, i) => (
+            <div
+              key={i}
+              className={`rounded-lg border p-4 ${
+                row.saved ? 'border-emerald-800 bg-emerald-950' : 'border-stone-700 bg-stone-800'
+              }`}
+            >
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <input
+                  type="text"
+                  placeholder="What was wasted? (e.g. salmon, risotto)"
+                  value={row.item_name}
+                  onChange={(e) => updateRow(i, 'item_name', e.target.value)}
+                  disabled={row.saved}
+                  className="flex-1 border border-stone-600 bg-stone-900 rounded-md px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-500/20 focus:border-stone-500 disabled:opacity-50"
+                />
+                {!row.saved && (
+                  <button
+                    type="button"
+                    onClick={() => removeRow(i)}
+                    className="text-stone-500 hover:text-stone-300 p-1"
+                    aria-label="Remove item"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <select
+                  value={row.category}
+                  onChange={(e) => updateRow(i, 'category', e.target.value)}
+                  disabled={row.saved}
+                  aria-label="Waste category"
+                  className="border border-stone-600 bg-stone-900 rounded-md px-2 py-1.5 text-sm text-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-500/20 disabled:opacity-50"
+                >
+                  {WASTE_CATEGORIES.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={row.reason}
+                  onChange={(e) => updateRow(i, 'reason', e.target.value)}
+                  disabled={row.saved}
+                  aria-label="Waste reason"
+                  className="border border-stone-600 bg-stone-900 rounded-md px-2 py-1.5 text-sm text-stone-200 focus:outline-none focus:ring-2 focus:ring-stone-500/20 disabled:opacity-50"
+                >
+                  {WASTE_REASONS.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="relative w-24">
+                  <span className="absolute left-2 top-2 text-stone-400 text-xs">$</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={row.cost}
+                    onChange={(e) => updateRow(i, 'cost', e.target.value)}
+                    disabled={row.saved}
+                    className="pl-5 pr-2 py-1.5 w-full border border-stone-600 bg-stone-900 rounded-md text-sm text-stone-200 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-500/20 disabled:opacity-50"
+                  />
+                </div>
+              </div>
+              {row.saved && <p className="text-xs text-emerald-600 mt-2">Saved</p>}
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={addRow}
+        className="flex items-center gap-2 text-sm text-stone-400 hover:text-stone-200 mb-6"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+        Add a waste item
+      </button>
+
+      <div className="flex gap-3">
+        <Button onClick={handleSaveAndContinue} loading={saving} disabled={saving}>
+          {rows.filter((r) => r.item_name.trim() && !r.saved).length > 0
+            ? 'Save & Continue'
+            : 'Continue'}
+        </Button>
+        {rows.length === 0 && (
+          <Button variant="secondary" onClick={onNext}>
+            Nothing wasted - skip
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Celebration Screen ────────────────────────────────────────────────────────
 // Shown after financial close is confirmed. CSS-only confetti, auto-advances to
 // dashboard after 3 seconds or chef clicks Done.
@@ -896,7 +1101,8 @@ export function CloseOutWizard({ data }: { data: CloseOutData }) {
         {step === 1 && <ReceiptsStep data={data} onNext={next} />}
         {step === 2 && <MileageStep data={data} onNext={next} />}
         {step === 3 && <AARStep data={data} onNext={next} />}
-        {step === 4 && <CloseStep data={data} />}
+        {step === 4 && <WasteStep data={data} onNext={next} />}
+        {step === 5 && <CloseStep data={data} />}
       </div>
 
       {/* Do this later link - visible on all steps except the final */}
