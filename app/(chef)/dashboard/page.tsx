@@ -13,7 +13,7 @@ import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
 import Link from 'next/link'
 import { Plus } from '@/components/ui/icons'
 import type { PriorityQueue } from '@/lib/queue/types'
-import { ShortcutStrip } from '@/components/dashboard/shortcut-strip'
+import { CommandCenterSection } from './_sections/command-center-data'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-card-shell'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
@@ -110,6 +110,26 @@ function BusinessCardsSkeleton() {
 
 function IntelligenceCardsSkeleton() {
   return <WidgetCardSkeleton size="md" />
+}
+
+function CommandCenterSkeleton() {
+  return (
+    <section>
+      <div className="section-label mb-4">Command Center</div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div key={i} className="rounded-xl border border-stone-800 bg-stone-900/50 p-3.5">
+            <div className="flex items-start justify-between mb-2">
+              <div className="w-8 h-8 rounded-lg loading-bone loading-bone-muted" />
+              <div className="h-6 w-8 loading-bone loading-bone-muted rounded" />
+            </div>
+            <div className="h-4 w-20 loading-bone loading-bone-muted rounded mt-1" />
+            <div className="h-3 w-32 loading-bone loading-bone-muted rounded mt-1.5" />
+          </div>
+        ))}
+      </div>
+    </section>
+  )
 }
 
 // Streamed priority queue section (deferred behind Suspense so it doesn't block TTFB)
@@ -327,8 +347,12 @@ export default async function ChefDashboard() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      {/* Quick navigation strip */}
-      <ShortcutStrip />
+      {/* Command Center - every feature area, one click away */}
+      <WidgetErrorBoundary name="Command Center" compact>
+        <Suspense fallback={<CommandCenterSkeleton />}>
+          <CommandCenterSection />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* ============================================ */}
       {/* FOCUS: What needs attention now              */}

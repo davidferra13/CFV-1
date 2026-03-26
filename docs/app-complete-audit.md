@@ -112,6 +112,17 @@
 | **Pending Follow-Ups**     | Stale inquiries (3+ days quiet)         | Card listing inquiries where client hasn't responded in 3+ days. Shows client name, occasion, "Xd quiet" badge. Links to inquiry detail. Max 5 shown.                                                            |
 | **Holiday Outreach Panel** | `holidayOutreachSuggestions.length > 0` | Per holiday: expandable row with AI outreach text + "Copy" button, promo code creation form (code/discount%/expiry inputs + "Create code" button), client rows with "Send" button opening email/SMS compose form |
 
+### Command Center (always visible, below hero metrics)
+
+- **Component:** `CommandCenter` (`components/dashboard/command-center.tsx`)
+- **Data:** `CommandCenterSection` (`app/(chef)/dashboard/_sections/command-center-data.tsx`)
+- **Layout:** Responsive grid (2 cols mobile, 3 cols tablet, 4 cols desktop)
+- **Collapse/Expand toggle:** Collapses to compact tag strip, expands to full card grid
+- **20 feature area cards**, each showing: colored icon, label, description, live count from DB, hover-revealed quick links
+- Feature areas: Events, Inquiries, Clients, Quotes, Culinary, Finance, Operations, Staff, Inventory, Vendors, Commerce, Contracts, Marketing, Leads, Analytics, Goals, Loyalty, Safety, Reviews, Remy AI
+- Replaces the former 8-item ShortcutStrip
+- Wrapped in Suspense + WidgetErrorBoundary (non-blocking, shows skeleton on load)
+
 ### Widgets (configurable show/hide/reorder via Layout settings)
 
 #### Onboarding Checklist

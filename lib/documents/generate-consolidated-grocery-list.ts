@@ -387,7 +387,10 @@ function formatCents(cents: number): string {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 
-export function renderConsolidatedGroceryList(pdf: PDFLayout, data: ConsolidatedGroceryListData) {
+export async function renderConsolidatedGroceryList(
+  pdf: PDFLayout,
+  data: ConsolidatedGroceryListData
+) {
   const { events, stop1Sections, stop2Items, budget, totalBuyItems, hasStop2 } = data
 
   // Estimate density for font scaling
