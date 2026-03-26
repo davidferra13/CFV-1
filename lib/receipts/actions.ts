@@ -319,26 +319,86 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
       unknown: 'groceries',
     }
 
+    // Import line item and matching functions for the cost loop
+    const { createExpenseLineItems, suggestIngredientMatches } =
+      await import('@/lib/finance/expense-line-item-actions')
+
+    // Collect created expense IDs to create line items after
+    const createdExpenseLineItemInputs: Array<{
+      expenseId: string
+      receiptLineItemId: string
+      description: string
+      amountCents: number
+    }> = []
+
     for (const item of businessItems) {
       const category = categoryMap[item.ingredientCategory ?? 'unknown'] ?? 'groceries'
-      const { error } = await db.from('expenses').insert({
-        event_id: photo.event_id ?? null, // null for standalone receipts - expenses.event_id allows NULL
-        tenant_id: user.tenantId!,
-        amount_cents: item.priceCents!,
-        category,
-        payment_method: 'card',
-        description: item.description,
-        expense_date: expenseDate,
-        vendor_name: vendorName,
-        is_business: true,
-        receipt_photo_url: photo.photo_url,
-        receipt_uploaded: true,
-        notes: `From receipt ${receiptPhotoId} - line item ${item.id}`,
-        created_by: user.id,
-      })
+      const { data: expenseData, error } = await db
+        .from('expenses')
+        .insert({
+          event_id: photo.event_id ?? null,
+          tenant_id: user.tenantId!,
+          amount_cents: item.priceCents!,
+          category,
+          payment_method: 'card',
+          description: item.description,
+          expense_date: expenseDate,
+          vendor_name: vendorName,
+          is_business: true,
+          receipt_photo_url: photo.photo_url,
+          receipt_uploaded: true,
+          notes: `From receipt ${receiptPhotoId} - line item ${item.id}`,
+          created_by: user.id,
+        })
+        .select('id')
+        .single()
 
-      if (!error) expensesCreated++
-      else console.error('[approveReceiptSummary] Expense insert error:', error)
+      if (!error && expenseData) {
+        expensesCreated++
+        createdExpenseLineItemInputs.push({
+          expenseId: expenseData.id,
+          receiptLineItemId: item.id,
+          description: item.description,
+          amountCents: item.priceCents!,
+        })
+      } else if (error) {
+        console.error('[approveReceiptSummary] Expense insert error:', error)
+      }
+    }
+
+    // Create expense line items with auto-matched ingredients (non-blocking)
+    // This closes the cost loop: receipt → expense → line items → ingredients
+    try {
+      const lineItemInputs = await Promise.all(
+        createdExpenseLineItemInputs.map(async (input) => {
+          // Try to auto-match to an ingredient
+          let ingredientId: string | null = null
+          let matchConfidence: number | null = null
+          try {
+            const matches = await suggestIngredientMatches(input.description, 1)
+            if (matches.length > 0 && matches[0].confidence >= 0.7) {
+              ingredientId = matches[0].ingredientId
+              matchConfidence = matches[0].confidence
+            }
+          } catch {
+            // Match failure is non-blocking
+          }
+          return {
+            expenseId: input.expenseId,
+            receiptLineItemId: input.receiptLineItemId,
+            description: input.description,
+            amountCents: input.amountCents,
+            ingredientId,
+            matchedBy: ingredientId ? ('receipt_ocr' as const) : ('manual' as const),
+            matchConfidence,
+          }
+        })
+      )
+      if (lineItemInputs.length > 0) {
+        await createExpenseLineItems(lineItemInputs)
+      }
+    } catch (err) {
+      console.error('[approveReceiptSummary] Expense line items error (non-blocking):', err)
     }
   }
 

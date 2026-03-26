@@ -7,6 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getReceiptSummaryForEvent } from '@/lib/receipts/actions'
 import { getEventById } from '@/lib/events/actions'
 import { ReceiptSummaryClient } from '@/components/events/receipt-summary-client'
+import { CostVarianceCard } from '@/components/finance/cost-variance-card'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { format } from 'date-fns'
@@ -49,6 +50,9 @@ export default async function ReceiptsPage({ params }: { params: { id: string } 
           <em>personal</em>. Approving a receipt adds all business items to your event expenses.
         </p>
       </Card>
+
+      {/* Estimated vs Actual Cost Variance */}
+      <CostVarianceCard eventId={params.id} />
 
       {/* Receipt list */}
       <ReceiptSummaryClient receipts={receipts} eventId={params.id} />

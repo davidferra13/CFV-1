@@ -98,6 +98,18 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
 
   const actualSpendCents = groceryEntries.reduce((sum, e) => sum + e.amountCents, 0)
 
+  // Also check for expense line items (from receipt → ingredient matching)
+  let lineItemActualCents = 0
+  try {
+    const { getEventExpenseLineItems } = await import('@/lib/finance/expense-line-item-actions')
+    const lineItems = await getEventExpenseLineItems(eventId)
+    if (lineItems.length > 0) {
+      lineItemActualCents = lineItems.reduce((sum, li) => sum + li.amountCents, 0)
+    }
+  } catch {
+    // Non-blocking: expense line items table may not exist yet
+  }
+
   // 2. Build the dish breakdown from menu -> dishes -> components -> recipe -> ingredients
   const breakdown: DishBreakdown[] = []
   let estimatedCostCents = 0
@@ -201,8 +213,9 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
   }
 
   // 3. Calculate percentages
-  // Use actual spend if available, otherwise use estimated
-  const effectiveFoodCost = actualSpendCents > 0 ? actualSpendCents : estimatedCostCents
+  // Priority: line item actuals > grocery spend > recipe estimate
+  const bestActual = lineItemActualCents > 0 ? lineItemActualCents : actualSpendCents
+  const effectiveFoodCost = bestActual > 0 ? bestActual : estimatedCostCents
   const foodCostPercentage = calculateFoodCostPercentage(effectiveFoodCost, revenueCents)
   const foodCostRating = getFoodCostRating(foodCostPercentage)
 

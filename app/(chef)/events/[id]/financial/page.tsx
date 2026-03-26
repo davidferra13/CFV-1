@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventFinancialSummaryFull } from '@/lib/events/financial-summary-actions'
 import { FinancialSummaryView } from '@/components/events/financial-summary-view'
+import { CostVarianceCard } from '@/components/finance/cost-variance-card'
 import { Button } from '@/components/ui/button'
 
 export default async function EventFinancialPage({ params }: { params: { id: string } }) {
@@ -38,6 +39,9 @@ export default async function EventFinancialPage({ params }: { params: { id: str
       </div>
 
       <FinancialSummaryView data={data} />
+
+      {/* Estimated vs Actual Cost Variance (from expense line items) */}
+      <CostVarianceCard eventId={params.id} />
     </div>
   )
 }
