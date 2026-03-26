@@ -368,11 +368,12 @@ export async function applyLineItemPrices(
     const qty = item.quantity ? Number(item.quantity) : 1
     const unitPriceCents = Math.round(item.amount_cents / qty)
 
-    // Update ingredient.last_price_cents and last_price_date
+    // Update ingredient prices: both last_price (tracking) and cost_per_unit (costing engine)
     const { error: updateError } = await db
       .from('ingredients')
       .update({
         last_price_cents: unitPriceCents,
+        cost_per_unit_cents: unitPriceCents,
         last_price_date: new Date().toISOString().split('T')[0],
         last_purchased_at: new Date().toISOString(),
       } as any)

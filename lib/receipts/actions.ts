@@ -367,8 +367,11 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
     }
 
     // Create expense line items with auto-matched ingredients (non-blocking)
-    // This closes the cost loop: receipt → expense → line items → ingredients
+    // This closes the cost loop: receipt → expense → line items → ingredients → price updates
     try {
+      const { applyLineItemPrices } = await import('@/lib/finance/expense-line-item-actions')
+      const { logIngredientPrice } = await import('@/lib/ingredients/pricing')
+
       const lineItemInputs = await Promise.all(
         createdExpenseLineItemInputs.map(async (input) => {
           // Try to auto-match to an ingredient
@@ -396,6 +399,38 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
       )
       if (lineItemInputs.length > 0) {
         await createExpenseLineItems(lineItemInputs)
+
+        // Auto-apply prices: update ingredient.last_price_cents from matched line items
+        // and log to ingredient_price_history for trend tracking.
+        // This is the critical wiring that closes the cost feedback loop.
+        const matchedExpenseIds = [
+          ...new Set(lineItemInputs.filter((li) => li.ingredientId).map((li) => li.expenseId)),
+        ]
+
+        for (const eid of matchedExpenseIds) {
+          try {
+            await applyLineItemPrices(eid)
+          } catch (err) {
+            console.error('[approveReceiptSummary] Price apply error (non-blocking):', err)
+          }
+        }
+
+        // Log to price history for trend tracking (cheapest store, averages, alerts)
+        for (const li of lineItemInputs) {
+          if (!li.ingredientId) continue
+          try {
+            await logIngredientPrice({
+              ingredient_id: li.ingredientId,
+              expense_id: li.expenseId,
+              store_name: vendorName ?? null,
+              price_cents: li.amountCents,
+              quantity: 1,
+              purchase_date: expenseDate,
+            })
+          } catch {
+            // Price logging is non-blocking
+          }
+        }
       }
     } catch (err) {
       console.error('[approveReceiptSummary] Expense line items error (non-blocking):', err)
