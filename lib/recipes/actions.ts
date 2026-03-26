@@ -698,7 +698,16 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
     validated.ingredient_default_unit
   )
 
-  // Insert recipe_ingredient
+  // Compute unit-aware cost before inserting
+  const costResult = await computeRecipeIngredientCost(
+    db,
+    user.tenantId!,
+    ingredientId,
+    validated.quantity,
+    validated.unit
+  )
+
+  // Insert recipe_ingredient with computed cost
   const { data: recipeIngredient, error } = await db
     .from('recipe_ingredients')
     .insert({
@@ -709,6 +718,7 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
       preparation_notes: validated.preparation_notes || null,
       is_optional: validated.is_optional || false,
       sort_order: validated.sort_order ?? 0,
+      computed_cost_cents: costResult.costCents,
     })
     .select()
     .single()
@@ -718,8 +728,19 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
     throw new Error('Failed to add ingredient')
   }
 
+  // Update recipe total cost (non-blocking)
+  try {
+    await refreshRecipeTotalCost(db, user.tenantId!, recipeId)
+  } catch {
+    // Cost refresh is non-blocking
+  }
+
   revalidatePath(`/recipes/${recipeId}`)
-  return { success: true, recipeIngredient }
+  return {
+    success: true,
+    recipeIngredient,
+    costWarning: costResult.warning,
+  }
 }
 
 // ============================================
@@ -734,10 +755,10 @@ export async function updateRecipeIngredient(
   const db: any = createServerClient()
   const validated = UpdateRecipeIngredientSchema.parse(input)
 
-  // Verify tenant access through the recipe
+  // Verify tenant access through the recipe and get current data for cost recompute
   const { data: ri } = await db
     .from('recipe_ingredients')
-    .select('recipe_id, recipe:recipes(tenant_id)')
+    .select('recipe_id, ingredient_id, quantity, unit, recipe:recipes(tenant_id)')
     .eq('id', recipeIngredientId)
     .single()
 
@@ -753,6 +774,22 @@ export async function updateRecipeIngredient(
   if (validated.is_optional !== undefined) updateData.is_optional = validated.is_optional
   if (validated.sort_order !== undefined) updateData.sort_order = validated.sort_order
 
+  // Recompute cost if quantity or unit changed
+  let costWarning: string | null = null
+  if (validated.quantity !== undefined || validated.unit !== undefined) {
+    const newQty = validated.quantity ?? Number(ri.quantity)
+    const newUnit = validated.unit ?? ri.unit
+    const costResult = await computeRecipeIngredientCost(
+      db,
+      user.tenantId!,
+      ri.ingredient_id,
+      newQty,
+      newUnit
+    )
+    updateData.computed_cost_cents = costResult.costCents
+    costWarning = costResult.warning
+  }
+
   const { error } = await db
     .from('recipe_ingredients')
     .update(updateData)
@@ -763,8 +800,15 @@ export async function updateRecipeIngredient(
     throw new Error('Failed to update ingredient')
   }
 
+  // Refresh recipe total cost (non-blocking)
+  try {
+    await refreshRecipeTotalCost(db, user.tenantId!, ri.recipe_id)
+  } catch {
+    // Cost refresh is non-blocking
+  }
+
   revalidatePath(`/recipes/${ri.recipe_id}`)
-  return { success: true }
+  return { success: true, costWarning }
 }
 
 // ============================================
@@ -1693,4 +1737,187 @@ export async function createRecipeInFamily(
   }
 
   return result
+}
+
+// ============================================
+// UNIT-AWARE COST COMPUTATION (internal helpers)
+// ============================================
+
+type CostResult = {
+  costCents: number | null
+  warning: string | null
+}
+
+/**
+ * Compute the cost of a specific quantity of an ingredient using unit-aware conversion.
+ * Uses the conversion engine with density lookups for cross-type conversions (cups to lbs).
+ * Returns null cost + warning when conversion is not possible.
+ */
+async function computeRecipeIngredientCost(
+  db: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  ingredientId: string,
+  quantity: number,
+  recipeUnit: string
+): Promise<CostResult> {
+  const { computeIngredientCost, canConvert, lookupDensity } =
+    await import('@/lib/units/conversion-engine')
+
+  // Fetch ingredient pricing data
+  const { data: ingredient } = await db
+    .from('ingredients')
+    .select(
+      'name, cost_per_unit_cents, last_price_cents, price_unit, default_unit, weight_to_volume_ratio, default_yield_pct'
+    )
+    .eq('id', ingredientId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!ingredient) return { costCents: null, warning: null }
+
+  // Determine the cost and its unit
+  const costPerUnit = ingredient.cost_per_unit_cents ?? ingredient.last_price_cents
+  if (!costPerUnit) {
+    return { costCents: null, warning: 'no_price' }
+  }
+
+  const costUnit = ingredient.price_unit || ingredient.default_unit || 'each'
+
+  // Get density: prefer ingredient record, fall back to common densities
+  const density = ingredient.weight_to_volume_ratio ?? lookupDensity(ingredient.name)
+
+  // Check if conversion is possible before computing
+  if (!canConvert(recipeUnit, costUnit, density)) {
+    // Can't convert: return naive fallback but flag it
+    const naiveCost = Math.round(quantity * costPerUnit)
+    const yieldPct = ingredient.default_yield_pct ?? 100
+    const yieldAdjusted = yieldPct < 100 ? Math.round((naiveCost * 100) / yieldPct) : naiveCost
+    return {
+      costCents: yieldAdjusted,
+      warning: `unit_mismatch:${recipeUnit}:${costUnit}`,
+    }
+  }
+
+  // Compute with full unit conversion
+  const rawCost = computeIngredientCost(quantity, recipeUnit, costPerUnit, costUnit, density)
+  if (rawCost === null) {
+    return {
+      costCents: Math.round(quantity * costPerUnit),
+      warning: `conversion_failed:${recipeUnit}:${costUnit}`,
+    }
+  }
+
+  // Apply yield percentage
+  const yieldPct = ingredient.default_yield_pct ?? 100
+  const yieldAdjusted = yieldPct < 100 ? Math.round((rawCost * 100) / yieldPct) : rawCost
+
+  return { costCents: yieldAdjusted, warning: null }
+}
+
+/**
+ * Refresh a recipe's total_cost_cents and cost_per_serving_cents
+ * by summing all recipe_ingredients.computed_cost_cents.
+ */
+async function refreshRecipeTotalCost(
+  db: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  recipeId: string
+) {
+  // Sum computed costs from all ingredients
+  const { data: ingredients } = await db
+    .from('recipe_ingredients')
+    .select('computed_cost_cents')
+    .eq('recipe_id', recipeId)
+
+  const totalCents = (ingredients ?? []).reduce(
+    (sum: number, ri: { computed_cost_cents: number | null }) =>
+      sum + (ri.computed_cost_cents ?? 0),
+    0
+  )
+
+  // Get yield quantity for per-serving calc
+  const { data: recipe } = await db
+    .from('recipes')
+    .select('yield_quantity')
+    .eq('id', recipeId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  const yieldQty = recipe?.yield_quantity ? Number(recipe.yield_quantity) : null
+  const costPerServing = yieldQty && yieldQty > 0 ? Math.round(totalCents / yieldQty) : null
+
+  await db
+    .from('recipes')
+    .update({
+      total_cost_cents: totalCents > 0 ? totalCents : null,
+      cost_per_serving_cents: costPerServing,
+    } as any)
+    .eq('id', recipeId)
+    .eq('tenant_id', tenantId)
+}
+
+// ============================================
+// RECOMPUTE ALL RECIPE COSTS (bulk refresh)
+// ============================================
+
+/**
+ * Recompute computed_cost_cents for every ingredient in a recipe,
+ * then update the recipe's total_cost_cents and cost_per_serving_cents.
+ *
+ * Call this after ingredient prices change or to fix stale costs.
+ * Returns per-ingredient warnings for unit mismatches.
+ */
+export async function recomputeRecipeCosts(recipeId: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Verify recipe belongs to tenant
+  const { data: recipe } = await db
+    .from('recipes')
+    .select('id')
+    .eq('id', recipeId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!recipe) throw new Error('Recipe not found')
+
+  // Get all recipe ingredients
+  const { data: ingredients } = await db
+    .from('recipe_ingredients')
+    .select('id, ingredient_id, quantity, unit')
+    .eq('recipe_id', recipeId)
+
+  if (!ingredients || ingredients.length === 0) {
+    return { success: true, updated: 0, warnings: [] }
+  }
+
+  const warnings: Array<{ ingredientId: string; warning: string }> = []
+  let updated = 0
+
+  for (const ri of ingredients as any[]) {
+    const costResult = await computeRecipeIngredientCost(
+      db,
+      user.tenantId!,
+      ri.ingredient_id,
+      Number(ri.quantity),
+      ri.unit
+    )
+
+    await db
+      .from('recipe_ingredients')
+      .update({ computed_cost_cents: costResult.costCents })
+      .eq('id', ri.id)
+
+    updated++
+
+    if (costResult.warning) {
+      warnings.push({ ingredientId: ri.ingredient_id, warning: costResult.warning })
+    }
+  }
+
+  // Refresh recipe totals
+  await refreshRecipeTotalCost(db, user.tenantId!, recipeId)
+
+  revalidatePath(`/recipes/${recipeId}`)
+  return { success: true, updated, warnings }
 }
