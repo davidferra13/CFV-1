@@ -31,6 +31,8 @@ const IMPORT_MODES: ImportMode[] = [
   'brain-dump',
   'csv',
   'past-events',
+  'past-expenses',
+  'past-payments',
   'take-a-chef',
   'inquiries',
   'clients',

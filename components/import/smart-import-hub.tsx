@@ -29,6 +29,8 @@ import { PastEventsImport } from './past-events-import'
 import { TakeAChefImport } from './take-a-chef-import'
 import { InquiryImport } from './inquiry-import'
 import { RecipePhotoImport } from './recipe-photo-import'
+import { ExpenseImport } from './expense-import'
+import { PaymentImport } from './payment-import'
 
 export type ImportMode =
   | 'brain-dump'
@@ -40,6 +42,8 @@ export type ImportMode =
   | 'file-upload'
   | 'csv'
   | 'past-events'
+  | 'past-expenses'
+  | 'past-payments'
   | 'take-a-chef'
   | 'inquiries'
 type ImportPhase = 'input' | 'parsing' | 'review' | 'saving' | 'done'
@@ -74,6 +78,18 @@ const TABS: TabConfig[] = [
   {
     mode: 'past-events',
     label: 'Past Events',
+    placeholder: '',
+    isCustomComponent: true,
+  },
+  {
+    mode: 'past-expenses',
+    label: 'Past Expenses',
+    placeholder: '',
+    isCustomComponent: true,
+  },
+  {
+    mode: 'past-payments',
+    label: 'Past Payments',
     placeholder: '',
     isCustomComponent: true,
   },
@@ -436,6 +452,10 @@ export function SmartImportHub({
       {isCustomMode && mode === 'csv' && <CsvImport />}
       {isCustomMode && mode === 'past-events' && (
         <PastEventsImport existingClients={existingClients} />
+      )}
+      {isCustomMode && mode === 'past-expenses' && <ExpenseImport />}
+      {isCustomMode && mode === 'past-payments' && (
+        <PaymentImport existingClients={existingClients} />
       )}
       {isCustomMode && mode === 'take-a-chef' && <TakeAChefImport aiConfigured={aiConfigured} />}
       {isCustomMode && mode === 'inquiries' && <InquiryImport aiConfigured={aiConfigured} />}
