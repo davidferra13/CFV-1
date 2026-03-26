@@ -28,6 +28,8 @@ export async function CommandCenterSection() {
     .toISOString()
     .split('T')[0]
 
+  const today = new Date().toISOString().split('T')[0]
+
   // Fetch all counts in parallel for speed
   const [
     events,
@@ -45,6 +47,8 @@ export async function CommandCenterSection() {
     leads,
     goals,
     campaigns,
+    unreadMessages,
+    calls,
   ] = await Promise.all([
     // Events: active (not completed, not cancelled)
     safeCount(db, 'events', 'tenant_id', tid, (q: any) =>
@@ -68,7 +72,7 @@ export async function CommandCenterSection() {
     safeCount(db, 'events', 'tenant_id', tid, (q: any) =>
       q.in('status', ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'])
     ),
-    // Staff: active (status column, not is_active boolean)
+    // Staff: active
     safeCount(db, 'staff_members', 'chef_id', tid, (q: any) => q.eq('status', 'active')),
     // Tasks: open (not completed)
     safeCount(db, 'chef_todos', 'chef_id', tid, (q: any) => q.eq('completed', false)),
@@ -82,6 +86,12 @@ export async function CommandCenterSection() {
     safeCount(db, 'chef_goals', 'tenant_id', tid, (q: any) => q.eq('status', 'active')),
     // Campaigns: marketing_campaigns, chef_id scoped
     safeCount(db, 'marketing_campaigns', 'chef_id', tid),
+    // Unread conversations
+    safeCount(db, 'conversations', 'tenant_id', tid, (q: any) => q.gt('unread_count', 0)),
+    // Upcoming calls (scheduled, not completed)
+    safeCount(db, 'scheduled_calls', 'tenant_id', tid, (q: any) =>
+      q.eq('status', 'scheduled').gte('scheduled_at', today)
+    ),
   ])
 
   return (
@@ -103,6 +113,8 @@ export async function CommandCenterSection() {
         inventoryAlerts: 0,
         goals,
         campaigns,
+        unreadMessages,
+        calls,
       }}
     />
   )

@@ -3,29 +3,32 @@
 import Link from 'next/link'
 import type { LucideIcon } from '@/components/ui/icons'
 import {
+  Activity,
+  BarChart3,
+  Bot,
   CalendarDays,
   ChatTeardropText,
-  Users,
   ChefHat,
+  Compass,
   DollarSign,
-  Activity,
-  Store,
+  FlagBanner,
+  Gift,
+  Handshake,
+  Inbox,
   Megaphone,
-  BarChart3,
-  Funnel,
   Package,
-  Truck,
+  Phone,
   ScrollText,
-  Target,
+  Settings,
   ShieldCheck,
   Star,
-  Toolbox,
+  Store,
+  Target,
+  TrendingUp,
+  Truck,
+  Upload,
+  Users,
   Wallet,
-  Bot,
-  ListChecks,
-  Warehouse,
-  Gift,
-  Wrench,
 } from '@/components/ui/icons'
 import { useState } from 'react'
 
@@ -59,6 +62,8 @@ type CommandCenterProps = {
     inventoryAlerts: number
     goals: number
     campaigns: number
+    unreadMessages: number
+    calls: number
   }
 }
 
@@ -66,6 +71,19 @@ type CommandCenterProps = {
 function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
   return [
     // ─── ROW 1: Core daily workflow ───
+    {
+      label: 'Inbox',
+      href: '/inbox',
+      icon: Inbox,
+      color: '#6366f1',
+      description: 'Messages, emails, and communication hub',
+      count: counts.unreadMessages,
+      countLabel: 'unread',
+      quickLinks: [
+        { label: 'All Messages', href: '/inbox' },
+        { label: 'Notifications', href: '/notifications' },
+      ],
+    },
     {
       label: 'Events',
       href: '/events',
@@ -78,6 +96,7 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'New Event', href: '/events/new' },
         { label: 'Calendar', href: '/calendar' },
         { label: 'Kanban Board', href: '/events/board' },
+        { label: 'Feedback', href: '/feedback' },
       ],
     },
     {
@@ -99,15 +118,20 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
       href: '/clients',
       icon: Users,
       color: '#a855f7',
-      description: 'Client directory, insights, and loyalty',
+      description: 'Directory, insights, guests, and partners',
       count: counts.clients,
       countLabel: 'total',
       quickLinks: [
         { label: 'Add Client', href: '/clients/new' },
         { label: 'Follow-Ups', href: '/clients/communication/follow-ups' },
         { label: 'Top Clients', href: '/clients/insights/top-clients' },
+        { label: 'Guests', href: '/guests' },
+        { label: 'Partners', href: '/partners' },
+        { label: 'Circles', href: '/circles' },
       ],
     },
+
+    // ─── ROW 2: Pipeline and deals ───
     {
       label: 'Quotes',
       href: '/quotes',
@@ -122,8 +146,45 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Rate Card', href: '/rate-card' },
       ],
     },
+    {
+      label: 'Leads',
+      href: '/leads',
+      icon: Target,
+      color: '#d946ef',
+      description: 'Lead pipeline and qualification',
+      count: counts.leads,
+      countLabel: 'new',
+      quickLinks: [
+        { label: 'Qualified', href: '/leads/qualified' },
+        { label: 'Marketplace', href: '/marketplace' },
+        { label: 'Availability', href: '/availability' },
+      ],
+    },
+    {
+      label: 'Calls',
+      href: '/calls',
+      icon: Phone,
+      color: '#0d9488',
+      description: 'Calls, meetings, and consulting',
+      count: counts.calls,
+      countLabel: 'upcoming',
+      quickLinks: [
+        { label: 'Schedule Call', href: '/calls/new' },
+        { label: 'Consulting', href: '/consulting' },
+      ],
+    },
+    {
+      label: 'Contracts',
+      href: '/contracts',
+      icon: ScrollText,
+      color: '#6366f1',
+      description: 'Generate, send, and track contracts',
+      count: counts.contracts,
+      countLabel: 'active',
+      quickLinks: [{ label: 'Templates', href: '/settings/contracts' }],
+    },
 
-    // ─── ROW 2: Kitchen and creative ───
+    // ─── ROW 3: Kitchen and creative ───
     {
       label: 'Culinary',
       href: '/culinary',
@@ -137,6 +198,8 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Menus', href: '/menus' },
         { label: 'Costing', href: '/culinary/costing' },
         { label: 'Prep', href: '/culinary/prep' },
+        { label: 'Ingredients', href: '/culinary/ingredients' },
+        { label: 'Dish Index', href: '/culinary/dish-index' },
       ],
     },
     {
@@ -144,7 +207,7 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
       href: '/finance',
       icon: DollarSign,
       color: '#22c55e',
-      description: 'Invoices, expenses, P&L, and tax',
+      description: 'Invoices, expenses, P&L, payroll, and tax',
       count: counts.invoices,
       countLabel: 'invoices',
       quickLinks: [
@@ -152,6 +215,8 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Invoices', href: '/finance/invoices' },
         { label: 'P&L', href: '/finance/reporting/profit-loss' },
         { label: 'Tax Center', href: '/finance/tax' },
+        { label: 'Payroll', href: '/finance/payroll' },
+        { label: 'Ledger', href: '/finance/ledger' },
       ],
     },
     {
@@ -166,6 +231,8 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Tasks', href: '/tasks' },
         { label: 'Scheduling', href: '/scheduling' },
         { label: 'Equipment', href: '/operations/equipment' },
+        { label: 'Travel', href: '/travel' },
+        { label: 'Kitchen Rentals', href: '/operations/kitchen-rentals' },
       ],
     },
     {
@@ -180,10 +247,11 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Schedule', href: '/staff/schedule' },
         { label: 'Time Clock', href: '/staff/clock' },
         { label: 'Performance', href: '/staff/performance' },
+        { label: 'Live Activity', href: '/staff/live' },
       ],
     },
 
-    // ─── ROW 3: Supply chain and commerce ───
+    // ─── ROW 4: Supply chain and commerce ───
     {
       label: 'Inventory',
       href: '/inventory',
@@ -197,6 +265,8 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Expiry Alerts', href: '/inventory/expiry' },
         { label: 'Purchase Orders', href: '/inventory/purchase-orders' },
         { label: 'Waste Tracking', href: '/inventory/waste' },
+        { label: 'Demand Forecast', href: '/inventory/demand' },
+        { label: 'Procurement', href: '/inventory/procurement' },
       ],
     },
     {
@@ -222,45 +292,37 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Register', href: '/commerce/register' },
         { label: 'Products', href: '/commerce/products' },
         { label: 'Sales', href: '/commerce/sales' },
+        { label: 'Table Service', href: '/commerce/table-service' },
+        { label: 'Reports', href: '/commerce/reports' },
       ],
     },
-    {
-      label: 'Contracts',
-      href: '/contracts',
-      icon: ScrollText,
-      color: '#6366f1',
-      description: 'Generate, send, and track contracts',
-      count: counts.contracts,
-      countLabel: 'active',
-      quickLinks: [{ label: 'Templates', href: '/settings/contracts' }],
-    },
 
-    // ─── ROW 4: Growth, marketing, analytics ───
+    // ─── ROW 5: Growth, marketing, analytics ───
     {
       label: 'Marketing',
       href: '/marketing',
       icon: Megaphone,
       color: '#e11d48',
-      description: 'Campaigns, email sequences, and content',
+      description: 'Campaigns, sequences, content, and social',
       count: counts.campaigns,
       countLabel: 'campaigns',
       quickLinks: [
         { label: 'Push Dinners', href: '/marketing/push-dinners' },
         { label: 'Templates', href: '/marketing/templates' },
         { label: 'Sequences', href: '/marketing/sequences' },
+        { label: 'Content Pipeline', href: '/marketing/content-pipeline' },
       ],
     },
     {
-      label: 'Leads',
-      href: '/leads',
-      icon: Target,
-      color: '#d946ef',
-      description: 'Lead pipeline and qualification',
-      count: counts.leads,
-      countLabel: 'new',
+      label: 'Growth',
+      href: '/growth',
+      icon: TrendingUp,
+      color: '#f43f5e',
+      description: 'Business development and expansion',
       quickLinks: [
-        { label: 'Qualified', href: '/leads/qualified' },
-        { label: 'Marketplace', href: '/marketplace' },
+        { label: 'Testimonials', href: '/testimonials' },
+        { label: 'Reviews', href: '/reviews' },
+        { label: 'Referrals', href: '/clients/loyalty/referrals' },
       ],
     },
     {
@@ -274,6 +336,7 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Pipeline', href: '/analytics/pipeline' },
         { label: 'Funnel', href: '/analytics/funnel' },
         { label: 'Insights', href: '/insights' },
+        { label: 'Benchmarks', href: '/analytics/benchmarks' },
       ],
     },
     {
@@ -287,7 +350,7 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
       quickLinks: [{ label: 'Revenue Path', href: '/goals/revenue-path' }],
     },
 
-    // ─── ROW 5: Support systems ───
+    // ─── ROW 6: Support systems ───
     {
       label: 'Loyalty',
       href: '/loyalty',
@@ -304,19 +367,13 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
       href: '/safety/incidents',
       icon: ShieldCheck,
       color: '#ef4444',
-      description: 'Incidents, claims, and compliance',
+      description: 'Incidents, claims, insurance, and compliance',
       quickLinks: [
         { label: 'Report Incident', href: '/safety/incidents/new' },
         { label: 'Insurance', href: '/settings/protection/insurance' },
+        { label: 'Business Health', href: '/settings/protection' },
+        { label: 'Backup Chef', href: '/safety/backup-chef' },
       ],
-    },
-    {
-      label: 'Reviews',
-      href: '/reviews',
-      icon: Star,
-      color: '#fbbf24',
-      description: 'Testimonials and client feedback',
-      quickLinks: [{ label: 'Testimonials', href: '/testimonials' }],
     },
     {
       label: 'Remy AI',
@@ -329,11 +386,23 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Remy History', href: '/remy-history' },
       ],
     },
+    {
+      label: 'Settings',
+      href: '/settings',
+      icon: Settings,
+      color: '#78716c',
+      description: 'Profile, billing, modules, and preferences',
+      quickLinks: [
+        { label: 'Profile', href: '/settings/profile' },
+        { label: 'Modules', href: '/settings/modules' },
+        { label: 'Notifications', href: '/settings/notifications' },
+        { label: 'Import Data', href: '/import' },
+        { label: 'Help', href: '/help' },
+        { label: 'Activity Log', href: '/activity' },
+      ],
+    },
   ]
 }
-
-// FlagBanner import
-import { FlagBanner } from '@/components/ui/icons'
 
 // ─── Component ─────────────────────────────────────────────
 export function CommandCenter({ counts }: CommandCenterProps) {

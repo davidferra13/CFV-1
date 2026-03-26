@@ -118,8 +118,9 @@
 - **Data:** `CommandCenterSection` (`app/(chef)/dashboard/_sections/command-center-data.tsx`)
 - **Layout:** Responsive grid (2 cols mobile, 3 cols tablet, 4 cols desktop)
 - **Collapse/Expand toggle:** Collapses to compact tag strip, expands to full card grid
-- **20 feature area cards**, each showing: colored icon, label, description, live count from DB, hover-revealed quick links
-- Feature areas: Events, Inquiries, Clients, Quotes, Culinary, Finance, Operations, Staff, Inventory, Vendors, Commerce, Contracts, Marketing, Leads, Analytics, Goals, Loyalty, Safety, Reviews, Remy AI
+- **24 feature area cards**, each showing: colored icon, label, description, live count from DB, hover-revealed quick links
+- Feature areas: Inbox, Events, Inquiries, Clients, Quotes, Leads, Calls, Contracts, Culinary, Finance, Operations, Staff, Inventory, Vendors, Commerce, Marketing, Growth, Analytics, Goals, Loyalty, Safety, Remy AI, Settings
+- 103 unique URLs reachable from cards + quick links (covers Guests, Partners, Circles, Consulting, Marketplace, Travel, Payroll, Import, Help, Activity Log, and more)
 - Replaces the former 8-item ShortcutStrip
 - Wrapped in Suspense + WidgetErrorBoundary (non-blocking, shows skeleton on load)
 

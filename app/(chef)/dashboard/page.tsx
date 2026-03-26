@@ -117,7 +117,7 @@ function CommandCenterSkeleton() {
     <section>
       <div className="section-label mb-4">Command Center</div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {Array.from({ length: 20 }).map((_, i) => (
+        {Array.from({ length: 24 }).map((_, i) => (
           <div key={i} className="rounded-xl border border-stone-800 bg-stone-900/50 p-3.5">
             <div className="flex items-start justify-between mb-2">
               <div className="w-8 h-8 rounded-lg loading-bone loading-bone-muted" />
