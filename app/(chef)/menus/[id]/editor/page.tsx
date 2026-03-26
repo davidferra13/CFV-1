@@ -47,6 +47,7 @@ export default async function MenuEditorPage({ params }: Props) {
       event={context.event}
       previousMenus={context.previousMenus}
       chefId={user.entityId}
+      directClient={context.directClient ?? null}
     />
   )
 }

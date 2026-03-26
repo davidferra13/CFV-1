@@ -95,6 +95,8 @@ type DraftData = {
   service_style: string
   guest_count: string
   notes: string
+  season: string
+  target_date: string
   courses: CourseRow[]
 }
 
@@ -127,6 +129,8 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
   const [serviceStyle, setServiceStyle] = useState('')
   const [guestCount, setGuestCount] = useState('')
   const [notes, setNotes] = useState('')
+  const [season, setSeason] = useState('')
+  const [targetDate, setTargetDate] = useState('')
 
   // Courses - use stable initial value to avoid hydration mismatch
   const [courses, setCourses] = useState<CourseRow[]>([INITIAL_COURSE])
@@ -144,9 +148,22 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
       service_style: serviceStyle,
       guest_count: guestCount,
       notes,
+      season,
+      target_date: targetDate,
       courses,
     }),
-    [name, description, cuisineType, sceneType, serviceStyle, guestCount, notes, courses]
+    [
+      name,
+      description,
+      cuisineType,
+      sceneType,
+      serviceStyle,
+      guestCount,
+      notes,
+      season,
+      targetDate,
+      courses,
+    ]
   )
 
   const initialFormData = useMemo<DraftData>(
@@ -158,6 +175,8 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
       service_style: '',
       guest_count: '',
       notes: '',
+      season: '',
+      target_date: '',
       courses: [INITIAL_COURSE],
     }),
     []
@@ -204,6 +223,8 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
     setServiceStyle(data.service_style)
     setGuestCount(data.guest_count ?? '')
     setNotes(data.notes ?? '')
+    setSeason((data as any).season ?? '')
+    setTargetDate((data as any).target_date ?? '')
     setCourses(
       Array.isArray(data.courses) && data.courses.length > 0 ? data.courses : [makeCourse()]
     )
@@ -260,6 +281,8 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
             service_style: serviceStyle ? (serviceStyle as any) : undefined,
             target_guest_count: guestCount ? parseInt(guestCount, 10) : undefined,
             notes: notes || undefined,
+            season: season ? (season as any) : undefined,
+            target_date: targetDate || undefined,
           },
           courses: courses.map((c) => ({
             course_label: c.label || 'Course',
@@ -460,6 +483,34 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
                   value={guestCount}
                   onChange={(e) => setGuestCount(e.target.value)}
                   placeholder="e.g., 12"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Season</label>
+                <select
+                  className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-md text-sm text-stone-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  value={season}
+                  onChange={(e) => setSeason(e.target.value)}
+                  aria-label="Season"
+                >
+                  <option value="">Select season (optional)</option>
+                  <option value="spring">Spring</option>
+                  <option value="summer">Summer</option>
+                  <option value="fall">Fall</option>
+                  <option value="winter">Winter</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Target Date</label>
+                <Input
+                  type="date"
+                  value={targetDate}
+                  onChange={(e) => setTargetDate(e.target.value)}
+                  title="Target date for this menu"
                 />
               </div>
             </div>

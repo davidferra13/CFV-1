@@ -19,11 +19,15 @@ import {
   reorderEditorCourse,
   unlinkRecipeFromEditorDish,
   getEditorMenuCost,
+  getEditorClientList,
   type EditorMenu,
   type EditorDish,
   type EditorEvent,
   type PreviousMenu,
+  type DirectClient,
+  type ClientPickerOption,
 } from '@/lib/menus/editor-actions'
+import { toast } from 'sonner'
 import { sendMenuForApproval } from '@/lib/events/menu-approval-actions'
 import {
   checkMenuBudgetCompliance,
@@ -1058,6 +1062,259 @@ type MenuCostData = {
   componentCount: number | null
 } | null
 
+// ─── Season data helpers ──────────────────────────────────────────────────────
+
+const SEASON_OPTIONS = [
+  {
+    value: 'spring',
+    label: 'Spring',
+    emoji: '🌿',
+    ingredients: 'Asparagus, Peas, Ramps, Morels, Artichokes, Mint, Radishes',
+  },
+  {
+    value: 'summer',
+    label: 'Summer',
+    emoji: '☀️',
+    ingredients: 'Heirloom Tomatoes, Corn, Zucchini, Peaches, Basil, Blueberries, Lobster',
+  },
+  {
+    value: 'fall',
+    label: 'Fall',
+    emoji: '🍂',
+    ingredients: 'Butternut Squash, Porcini, Apples, Pears, Beets, Brussels Sprouts, Chestnuts',
+  },
+  {
+    value: 'winter',
+    label: 'Winter',
+    emoji: '❄️',
+    ingredients: 'Citrus, Root Vegetables, Cabbage, Blood Oranges, Truffles, Clams, Celeriac',
+  },
+] as const
+
+function getSeasonData(season: string | null) {
+  if (!season) return null
+  return SEASON_OPTIONS.find((s) => s.value === season) ?? null
+}
+
+// ─── Context Dock (toggleable asset panel) ──────────────────────────────────
+
+function ContextDock({
+  menuId,
+  season,
+  onSeasonChange,
+  clientId,
+  onClientChange,
+  targetDate,
+  onTargetDateChange,
+  directClient,
+  locked,
+}: {
+  menuId: string
+  season: string | null
+  onSeasonChange: (v: string | null) => void
+  clientId: string | null
+  onClientChange: (id: string | null, client: DirectClient | null) => void
+  targetDate: string | null
+  onTargetDateChange: (v: string | null) => void
+  directClient: DirectClient | null
+  locked: boolean
+}) {
+  const [showClientPicker, setShowClientPicker] = useState(false)
+  const [clients, setClients] = useState<ClientPickerOption[]>([])
+  const [clientsLoaded, setClientsLoaded] = useState(false)
+  const [clientSearch, setClientSearch] = useState('')
+
+  const loadClients = useCallback(async () => {
+    if (clientsLoaded) return
+    try {
+      const list = await getEditorClientList()
+      setClients(list)
+      setClientsLoaded(true)
+    } catch {
+      toast.error('Failed to load clients')
+    }
+  }, [clientsLoaded])
+
+  const filteredClients = clientSearch
+    ? clients.filter((c) => (c.full_name ?? '').toLowerCase().includes(clientSearch.toLowerCase()))
+    : clients
+
+  const seasonData = getSeasonData(season)
+
+  return (
+    <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm space-y-4">
+      <p className="text-xs font-bold uppercase tracking-widest text-stone-400">Context Dock</p>
+
+      {/* Season selector */}
+      <div>
+        <p className="text-xs font-medium text-stone-500 mb-1.5">Season</p>
+        {!locked ? (
+          <div className="flex flex-wrap gap-1.5">
+            {SEASON_OPTIONS.map((s) => (
+              <button
+                key={s.value}
+                type="button"
+                onClick={() => onSeasonChange(season === s.value ? null : s.value)}
+                className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                  season === s.value
+                    ? 'border-brand-400 bg-brand-950 text-brand-400 font-medium'
+                    : 'border-stone-700 text-stone-500 hover:border-stone-500 hover:text-stone-300'
+                }`}
+              >
+                {s.emoji} {s.label}
+              </button>
+            ))}
+          </div>
+        ) : season ? (
+          <p className="text-sm text-stone-200">
+            {seasonData?.emoji} {seasonData?.label}
+          </p>
+        ) : (
+          <p className="text-xs text-stone-500 italic">Not set</p>
+        )}
+        {seasonData && (
+          <p className="text-xs text-stone-500 leading-relaxed mt-1.5">{seasonData.ingredients}</p>
+        )}
+      </div>
+
+      {/* Target date */}
+      <div>
+        <p className="text-xs font-medium text-stone-500 mb-1.5">Target Date</p>
+        {!locked ? (
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              title="Target date for this menu"
+              value={targetDate ?? ''}
+              onChange={(e) => onTargetDateChange(e.target.value || null)}
+              className="text-sm text-stone-200 bg-stone-800 border border-stone-600 rounded-lg px-2 py-1.5 focus:outline-none focus:border-brand-600 flex-1"
+            />
+            {targetDate && (
+              <button
+                type="button"
+                onClick={() => onTargetDateChange(null)}
+                className="text-xs text-stone-500 hover:text-stone-300"
+                title="Clear date"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        ) : targetDate ? (
+          <p className="text-sm text-stone-200">
+            {format(new Date(targetDate), 'EEE, MMM d yyyy')}
+          </p>
+        ) : (
+          <p className="text-xs text-stone-500 italic">Not set</p>
+        )}
+      </div>
+
+      {/* Client picker */}
+      <div>
+        <p className="text-xs font-medium text-stone-500 mb-1.5">Client</p>
+        {directClient ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-stone-100">
+                {directClient.full_name || 'Client'}
+              </p>
+              {!locked && (
+                <button
+                  type="button"
+                  onClick={() => onClientChange(null, null)}
+                  className="text-xs text-stone-500 hover:text-stone-300"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+            {(directClient.dietary_restrictions || directClient.allergies) && (
+              <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2">
+                <p className="text-xs font-semibold text-amber-800 mb-0.5">Dietary needs</p>
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  {[directClient.dietary_restrictions, directClient.allergies]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : !locked ? (
+          <div>
+            {showClientPicker ? (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={clientSearch}
+                  onChange={(e) => setClientSearch(e.target.value)}
+                  placeholder="Search clients..."
+                  autoFocus
+                  className="w-full text-sm text-stone-200 bg-stone-800 border border-stone-600 rounded-lg px-2 py-1.5 focus:outline-none focus:border-brand-600"
+                />
+                <div className="max-h-40 overflow-y-auto space-y-0.5">
+                  {filteredClients.length === 0 ? (
+                    <p className="text-xs text-stone-500 text-center py-2">
+                      {clientsLoaded ? 'No clients found' : 'Loading...'}
+                    </p>
+                  ) : (
+                    filteredClients.map((c) => (
+                      <button
+                        key={c.id}
+                        type="button"
+                        onClick={() => {
+                          onClientChange(c.id, {
+                            id: c.id,
+                            full_name: c.full_name,
+                            dietary_restrictions: c.dietary_restrictions,
+                            allergies: c.allergies,
+                          })
+                          setShowClientPicker(false)
+                          setClientSearch('')
+                        }}
+                        className="w-full text-left px-2 py-1.5 text-sm text-stone-300 hover:bg-stone-800 rounded-lg transition-colors"
+                      >
+                        {c.full_name || 'Unnamed'}
+                        {(c.dietary_restrictions || c.allergies) && (
+                          <span className="text-xs text-amber-600 ml-1">(dietary)</span>
+                        )}
+                      </button>
+                    ))
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowClientPicker(false)
+                    setClientSearch('')
+                  }}
+                  className="text-xs text-stone-500 hover:text-stone-300 w-full text-center"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowClientPicker(true)
+                  loadClients()
+                }}
+                className="w-full text-xs py-1.5 px-3 rounded-lg border border-dashed border-stone-600 text-stone-400 hover:border-stone-400 hover:text-stone-300 transition-colors"
+              >
+                + Link a client
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="text-xs text-stone-500 italic">Not set</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── ContextSidebar ───────────────────────────────────────────────────────────
+
 function ContextSidebar({
   menuId,
   event,
@@ -1069,6 +1326,13 @@ function ContextSidebar({
   guestCount,
   onGuestScaled,
   onCocktailSelect,
+  season,
+  onSeasonChange,
+  clientId,
+  onClientChange,
+  targetDate,
+  onTargetDateChange,
+  directClient,
 }: {
   menuId: string
   event: EditorEvent | null
@@ -1087,14 +1351,24 @@ function ContextSidebar({
     thumbnail: string
     alcoholic: boolean
   }) => void
+  season: string | null
+  onSeasonChange: (v: string | null) => void
+  clientId: string | null
+  onClientChange: (id: string | null, client: DirectClient | null) => void
+  targetDate: string | null
+  onTargetDateChange: (v: string | null) => void
+  directClient: DirectClient | null
 }) {
-  const season = event ? getSeason(event.event_date) : null
+  // Derive season from: 1) explicit menu season, 2) event date, 3) target date
+  const derivedSeason = season ? getSeasonData(season) : event ? getSeason(event.event_date) : null
   const [sending, startSend] = useTransition()
   const [sendResult, setSendResult] = useState<'sent' | 'error' | null>(null)
 
-  const allergyText = [event?.client?.dietary_restrictions, event?.client?.allergies]
-    .filter(Boolean)
-    .join(' · ')
+  // Client info: from event or from direct link
+  const clientInfo = event?.client ?? directClient
+  const allergyText = clientInfo
+    ? [clientInfo.dietary_restrictions, clientInfo.allergies].filter(Boolean).join(' · ')
+    : ''
 
   const handleSendForApproval = () => {
     if (!event) return
@@ -1110,6 +1384,19 @@ function ContextSidebar({
 
   return (
     <div className="sticky top-16 space-y-3 text-sm">
+      {/* Context Dock - always visible, toggleable assets */}
+      <ContextDock
+        menuId={menuId}
+        season={season}
+        onSeasonChange={onSeasonChange}
+        clientId={clientId}
+        onClientChange={onClientChange}
+        targetDate={targetDate}
+        onTargetDateChange={onTargetDateChange}
+        directClient={directClient}
+        locked={locked}
+      />
+
       {/* Food Cost Summary */}
       <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
         <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Food Cost</p>
@@ -1195,23 +1482,16 @@ function ContextSidebar({
                   disabled={sending}
                   className="w-full text-xs py-1.5 px-3 rounded-lg border border-brand-700 text-brand-400 bg-brand-950 hover:bg-brand-900 hover:border-brand-600 transition-colors disabled:opacity-50 font-medium"
                 >
-                  {sending ? 'Sending…' : 'Send menu for approval'}
+                  {sending ? 'Sending...' : 'Send menu for approval'}
                 </button>
               )}
             </div>
           )}
         </div>
-      ) : (
-        <div className="bg-stone-800 rounded-xl border border-dashed border-stone-700 p-4 text-center">
-          <p className="text-xs text-stone-400 font-medium">No event linked</p>
-          <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">
-            Attach this menu to an event for full context
-          </p>
-        </div>
-      )}
+      ) : null}
 
-      {/* Client panel */}
-      {event?.client && (
+      {/* Client panel (from event) - only show if event has a client and no direct client in dock */}
+      {event?.client && !clientId && (
         <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Client</p>
           <p className="font-semibold text-stone-100">{event.client.full_name || 'Client'}</p>
@@ -1244,14 +1524,16 @@ function ContextSidebar({
         />
       )}
 
-      {/* Season panel */}
-      {season && (
+      {/* Season panel - show ingredient suggestions if season is set (from dock or event) */}
+      {!season && derivedSeason && (
         <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Season</p>
-          <p className="font-semibold text-stone-100 mb-1">
-            {season.emoji} {season.label}
+          <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">
+            Season (from event)
           </p>
-          <p className="text-xs text-stone-500 leading-relaxed">{season.ingredients}</p>
+          <p className="font-semibold text-stone-100 mb-1">
+            {derivedSeason.emoji} {derivedSeason.label}
+          </p>
+          <p className="text-xs text-stone-500 leading-relaxed">{derivedSeason.ingredients}</p>
         </div>
       )}
 
@@ -1329,11 +1611,13 @@ export function MenuDocEditor({
   event,
   previousMenus,
   chefId,
+  directClient: initialDirectClient,
 }: {
   menu: EditorMenu
   event: EditorEvent | null
   previousMenus: PreviousMenu[]
   chefId: string
+  directClient: DirectClient | null
 }) {
   const router = useRouter()
   const { saveState, scheduleSave } = useAutoSave()
@@ -1365,6 +1649,14 @@ export function MenuDocEditor({
     [...initialMenu.dishes].sort((a, b) => a.sort_order - b.sort_order)
   )
   const [showCuisineSuggestions, setShowCuisineSuggestions] = useState(false)
+
+  // Context dock state
+  const [menuSeason, setMenuSeason] = useState<string | null>(initialMenu.season)
+  const [menuClientId, setMenuClientId] = useState<string | null>(initialMenu.client_id)
+  const [menuTargetDate, setMenuTargetDate] = useState<string | null>(initialMenu.target_date)
+  const [currentDirectClient, setCurrentDirectClient] = useState<DirectClient | null>(
+    initialDirectClient
+  )
 
   // ─── Form protection (draft persistence + unsaved changes guard) ────────────
   const defaultData = useMemo(
@@ -1457,6 +1749,23 @@ export function MenuDocEditor({
   const handleSimpleContent = (v: string) => {
     setSimpleContent(v)
     saveMenuMeta({ simple_mode_content: v || null })
+  }
+
+  // Context dock handlers
+  const handleSeasonChange = (v: string | null) => {
+    setMenuSeason(v)
+    saveMenuMeta({ season: v })
+  }
+
+  const handleClientChange = (id: string | null, client: DirectClient | null) => {
+    setMenuClientId(id)
+    setCurrentDirectClient(client)
+    saveMenuMeta({ client_id: id })
+  }
+
+  const handleTargetDateChange = (v: string | null) => {
+    setMenuTargetDate(v)
+    saveMenuMeta({ target_date: v })
   }
 
   const handleDishUpdate = (id: string, data: Partial<EditorDish>) => {
@@ -1844,6 +2153,13 @@ export function MenuDocEditor({
               guestCount={guestCount ? parseInt(guestCount, 10) || null : null}
               onGuestScaled={handleGuestScaled}
               onCocktailSelect={handleCocktailSelect}
+              season={menuSeason}
+              onSeasonChange={handleSeasonChange}
+              clientId={menuClientId}
+              onClientChange={handleClientChange}
+              targetDate={menuTargetDate}
+              onTargetDateChange={handleTargetDateChange}
+              directClient={currentDirectClient}
             />
           </div>
         </div>

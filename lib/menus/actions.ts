@@ -37,6 +37,9 @@ const CreateMenuSchema = z.object({
   notes: z.string().optional(),
   is_template: z.boolean().optional(),
   event_id: z.string().uuid().optional(),
+  season: z.enum(['spring', 'summer', 'fall', 'winter']).optional(),
+  client_id: z.string().uuid().optional(),
+  target_date: z.string().optional(),
   idempotency_key: z.string().optional(),
 })
 
@@ -51,6 +54,9 @@ const UpdateMenuSchema = z.object({
   target_guest_count: z.number().int().positive().optional(),
   notes: z.string().optional(),
   is_template: z.boolean().optional(),
+  season: z.enum(['spring', 'summer', 'fall', 'winter']).nullable().optional(),
+  client_id: z.string().uuid().nullable().optional(),
+  target_date: z.string().nullable().optional(),
   expected_updated_at: z.string().optional(),
   idempotency_key: z.string().optional(),
 })

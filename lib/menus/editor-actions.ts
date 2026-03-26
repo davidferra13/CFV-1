@@ -41,6 +41,9 @@ export type EditorMenu = {
   status: string
   is_template: boolean
   event_id: string | null
+  season: string | null
+  client_id: string | null
+  target_date: string | null
   dishes: EditorDish[]
 }
 
@@ -71,10 +74,18 @@ export type PreviousMenu = {
   event_date: string | null
 }
 
+export type DirectClient = {
+  id: string
+  full_name: string | null
+  dietary_restrictions: string | null
+  allergies: string | null
+}
+
 export type EditorContext = {
   menu: EditorMenu
   event: EditorEvent | null
   previousMenus: PreviousMenu[]
+  directClient?: DirectClient | null
 }
 
 // ─── getEditorContext ─────────────────────────────────────────────────────────
@@ -141,6 +152,9 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
     status: menu.status,
     is_template: menu.is_template ?? false,
     event_id: menu.event_id ?? null,
+    season: (menu as any).season ?? null,
+    client_id: (menu as any).client_id ?? null,
+    target_date: (menu as any).target_date ?? null,
     dishes: ((dishes ?? []) as any[]).map((d: any) => ({
       id: d.id,
       course_number: d.course_number,
@@ -160,7 +174,88 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
   }
 
   if (!menu.event_id) {
-    return { menu: editorMenu, event: null, previousMenus: [] }
+    // Load client directly from menu.client_id for standalone menus
+    let directClient: EditorContext['directClient'] = null
+    const menuClientId = (menu as any).client_id
+    if (menuClientId) {
+      const { data: client } = await db
+        .from('clients')
+        .select('id, full_name, dietary_restrictions, allergies')
+        .eq('id', menuClientId)
+        .eq('tenant_id', user.tenantId!)
+        .single()
+
+      if (client) {
+        directClient = {
+          id: client.id,
+          full_name: client.full_name ?? null,
+          dietary_restrictions: (client as any).dietary_restrictions ?? null,
+          allergies: (client as any).allergies ?? null,
+        }
+      }
+    }
+
+    // Load previous menus for the direct client
+    let previousMenus: PreviousMenu[] = []
+    if (menuClientId) {
+      const { data: clientEvents } = await db
+        .from('events')
+        .select('id, event_date')
+        .eq('client_id', menuClientId)
+        .eq('tenant_id', user.tenantId!)
+
+      if (clientEvents && clientEvents.length > 0) {
+        const eventIds = clientEvents.map((e: any) => e.id)
+        const eventDateMap = Object.fromEntries(clientEvents.map((e: any) => [e.id, e.event_date]))
+
+        const { data: prevMenus } = await db
+          .from('menus')
+          .select('id, name, cuisine_type, created_at, event_id')
+          .in('event_id', eventIds)
+          .eq('tenant_id', user.tenantId!)
+          .neq('id', menuId)
+          .order('created_at', { ascending: false })
+          .limit(3)
+
+        previousMenus = (prevMenus ?? []).map((m: any) => ({
+          id: m.id,
+          name: m.name,
+          cuisine_type: m.cuisine_type,
+          created_at: m.created_at,
+          event_date: m.event_id ? (eventDateMap[m.event_id] ?? null) : null,
+        }))
+      }
+
+      // Also check for standalone menus linked to same client
+      const { data: clientMenus } = await db
+        .from('menus')
+        .select('id, name, cuisine_type, created_at')
+        .eq('client_id', menuClientId)
+        .eq('tenant_id', user.tenantId!)
+        .neq('id', menuId)
+        .order('created_at', { ascending: false })
+        .limit(3)
+
+      if (clientMenus) {
+        for (const m of clientMenus) {
+          if (!previousMenus.find((p: any) => p.id === m.id)) {
+            previousMenus.push({
+              id: m.id,
+              name: m.name,
+              cuisine_type: m.cuisine_type,
+              created_at: m.created_at,
+              event_date: null,
+            })
+          }
+        }
+        previousMenus.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        )
+        previousMenus = previousMenus.slice(0, 5)
+      }
+    }
+
+    return { menu: editorMenu, event: null, previousMenus, directClient }
   }
 
   // Load event with client
@@ -246,7 +341,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
     }
   }
 
-  return { menu: editorMenu, event: editorEvent, previousMenus }
+  return { menu: editorMenu, event: editorEvent, previousMenus, directClient: null }
 }
 
 // ─── updateMenuMeta ───────────────────────────────────────────────────────────
@@ -262,6 +357,9 @@ export async function updateMenuMeta(
     price_per_person_cents?: number | null
     simple_mode?: boolean
     simple_mode_content?: string | null
+    season?: string | null
+    client_id?: string | null
+    target_date?: string | null
   }
 ) {
   const user = await requireChef()
@@ -536,6 +634,36 @@ export async function unlinkRecipeFromEditorDish(dishId: string, recipeId: strin
   }
 
   return { success: true }
+}
+
+// ─── getEditorClientList ─────────────────────────────────────────────────────
+// Lightweight client list for the context dock client picker
+
+export type ClientPickerOption = {
+  id: string
+  full_name: string | null
+  dietary_restrictions: string | null
+  allergies: string | null
+}
+
+export async function getEditorClientList(): Promise<ClientPickerOption[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: clients } = await db
+    .from('clients')
+    .select('id, full_name, dietary_restrictions, allergies')
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+    .order('full_name', { ascending: true })
+    .limit(200)
+
+  return (clients ?? []).map((c: any) => ({
+    id: c.id,
+    full_name: c.full_name ?? null,
+    dietary_restrictions: (c as any).dietary_restrictions ?? null,
+    allergies: (c as any).allergies ?? null,
+  }))
 }
 
 // ─── getEditorMenuCost ────────────────────────────────────────────────────────
