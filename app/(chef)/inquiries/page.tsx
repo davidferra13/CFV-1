@@ -165,7 +165,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                 </p>
                 {/* Quick actions - visible on hover for inquiries needing chef action */}
                 {needsChefAction && (
-                  <div className="mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="mt-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <InquiryQuickActions
                       inquiryId={inquiry.id}
                       status={inquiry.status}
