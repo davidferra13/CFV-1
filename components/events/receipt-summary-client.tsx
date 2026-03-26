@@ -171,10 +171,11 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
     setProcessing(true)
     try {
       await processReceiptOCR(receipt.id)
-      // Refresh is handled by revalidatePath - page will re-render
+      toast.success('Receipt extracted successfully')
       window.location.reload()
     } catch (err) {
-      console.error(err)
+      console.error('[receipt-summary] OCR extraction failed', err)
+      toast.error('Failed to extract receipt data. Please try again.')
       setProcessing(false)
     }
   }
@@ -184,8 +185,10 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
     try {
       await approveReceiptSummary(receipt.id)
       setApproved(true)
+      toast.success('Receipt approved and added to expenses')
     } catch (err) {
-      console.error(err)
+      console.error('[receipt-summary] Approval failed', err)
+      toast.error('Failed to approve receipt. Please try again.')
     } finally {
       setApproving(false)
     }

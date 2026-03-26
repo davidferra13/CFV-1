@@ -105,9 +105,11 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
     setProcessing(true)
     try {
       await processReceiptOCR(receipt.id)
+      toast.success('Receipt extracted successfully')
       window.location.reload()
     } catch (err) {
-      console.error(err)
+      console.error('[receipt-library] OCR extraction failed', err)
+      toast.error('Failed to extract receipt data. Please try again.')
       setProcessing(false)
     }
   }
@@ -117,8 +119,10 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
     try {
       await approveReceiptSummary(receipt.id)
       setApproved(true)
+      toast.success('Receipt approved and added to expenses')
     } catch (err) {
-      console.error(err)
+      console.error('[receipt-library] Approval failed', err)
+      toast.error('Failed to approve receipt. Please try again.')
     } finally {
       setApproving(false)
     }
