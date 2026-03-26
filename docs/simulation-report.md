@@ -1,49 +1,32 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated - last run: 2026-03-25T19:24:07.939Z_
-_Run ID: 3809616b-a5c4-486c-879e-cc964fa3bc1c_
+_Auto-generated - last run: 2026-03-26T05:59:38.812Z_
+_Run ID: a2eb8752-f008-4f31-a798-ea7e4769077b_
 
 ---
 
 ## Summary
 
-The system is currently at 80% pass rate, with two modules failing: `inquiry_parse` and `client_parse`. The `inquiry_parse` module is completely non-functional, while `client_parse` has issues with data extraction accuracy. Both modules showed no improvement since the last run.
+The system is currently failing on the `allergen_risk` module, which is critical for safety. The `inquiry_parse` module is passing, and `client_parse` recently improved from 0% to 100% pass rate. The `allergen_risk` module is not correctly flagging dishes as unsafe for guests with known allergies.
 
 ## Failures & Root Causes
 
-### inquiry_parse
+### allergen_risk
 
-The module fails completely with 0% pass rate. All test cases fail because the module does not extract any data from the input text. The prompt likely lacks clear instructions for identifying and extracting inquiry components like guest count, event type, and dietary restrictions from natural language input.
-
-### client_parse
-
-The module fails with 0% pass rate due to two main issues:
-
-1. **Incomplete data extraction**: The module misses dietary restrictions that are present in the input text but not included in the output
-2. **Inventing information**: The module adds fields like phone numbers that are not present in the original note, treating them as valid extracted data
+The module is not correctly identifying when a dish contains allergens that match a guest's known allergies. It's returning `riskLevel='contains'` instead of `riskLevel='unsafe'` for guests with matching allergies. The logic for comparing guest allergies against dish allergens is broken or missing.
 
 ## Prompt Fix Recommendations
 
-### inquiry_parse
+Update the `allergen_risk` module prompt to:
 
-Update the prompt to explicitly define the expected output structure and include clear examples of how to parse different inquiry patterns. Add instructions to:
-
-- Identify and extract guest count, event type, and dietary restrictions
-- Return empty values for missing fields rather than omitting them
-- Use a consistent format for all extracted fields
-
-### client_parse
-
-Revise the prompt to:
-
-- Require strict adherence to input data only (no invented fields)
-- Add explicit instructions to only extract dietary restrictions that are clearly stated in the text
-- Define clear rules for handling ambiguous or missing information (e.g., return null/empty for unspecified fields)
-- Include examples showing correct vs. incorrect extraction behavior
+1. Explicitly state that when a guest's known allergies match ingredients in a dish, the `riskLevel` must be set to `'unsafe'`
+2. Require the module to cross-reference `guest.allergies` with `dish.allergens` and return `riskLevel='unsafe'` if any match
+3. Add a clear instruction that `riskLevel='contains'` only applies when there are allergens but no matching guest allergies
+4. Include a step-by-step validation: "Check if any guest allergies are present in dish ingredients. If yes, return riskLevel='unsafe'. If no, check if dish has allergens and return riskLevel='contains'. If no allergens, return riskLevel='safe'."
 
 ## What's Working Well
 
-The `allergen_risk`, `correspondence`, `menu_suggestions`, and `quote_draft` modules are all passing at 100% with no regressions. The `client_parse` module showed improvement from 0% to 100% pass rate in the previous run (2026-03-25 08:20 UTC), but has regressed again in this latest run. The `inquiry_parse` module remains completely non-functional since the last run.
+The `inquiry_parse`, `client_parse`, `correspondence`, `menu_suggestions`, and `quote_draft` modules are all passing consistently. Notably, `client_parse` improved from 0% to 100% pass rate since the last run. The system's ability to parse and process client data and generate correspondence remains solid. The `allergen_risk` module was previously failing in multiple runs but has shown intermittent improvement, indicating the core logic may be partially functional but needs refinement.
 
 ---
 
