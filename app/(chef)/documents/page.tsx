@@ -26,6 +26,7 @@ import {
 } from '@/lib/documents/event-workspace'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { ScrollToTopButton } from '@/components/ui/scroll-to-top-button'
 
 type EventListItem = {
   id: string
@@ -743,6 +744,8 @@ export default async function DocumentsIndexPage({
           </div>
         )}
       </Card>
+
+      <ScrollToTopButton />
     </div>
   )
 }
