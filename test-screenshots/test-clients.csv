@@ -1,4 +1,0 @@
-Name,Email,Phone,Dietary Restrictions,Allergies,Past Events,Total Spent
-CSV Test Alpha,csvtest-alpha@example.com,555-1001,gluten-free;dairy-free,peanuts;shellfish,5,2500
-CSV Test Beta,csvtest-beta@example.com,555-1002,vegan,tree nuts,3,1500
-CSV Test Gamma,csvtest-gamma@example.com,555-1003,,none,1,500

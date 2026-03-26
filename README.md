@@ -1,112 +1,51 @@
 # ChefFlow V1
 
-Private chef business operating system.
+Ops for Artists. The operating system for chefs.
 
-## Scope Lock
-
-This project is governed by **CHEFFLOW_V1_SCOPE_LOCK.md**. All features, architecture decisions, and implementation details must strictly adhere to that document.
-
-## Tech Stack
-
-- **Framework**: Next.js 14+ (App Router)
-- **Language**: TypeScript (strict mode)
-- **Database**: PostgreSQL (PostgreSQL + Auth + RLS + Storage)
-- **Payments**: Stripe
-- **Styling**: Tailwind CSS
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 20+
-- npm
-- PostgreSQL account
-- Stripe account
-
-### Installation
-
-1. Clone the repository
-2. Install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Copy `.env.local.example` to `.env.local` and fill in your credentials:
-
-   ```bash
-   cp .env.local.example .env.local
-   ```
-
-4. Run database migrations (see `database/migrations/`)
-
-5. Start the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-6. Open [http://localhost:3100](http://localhost:3100)
-
-### Local One-Command Bootstrap
-
-For a full local environment (PostgreSQL + migrations + generated types + demo users/data):
+## Run
 
 ```bash
-npm run local:bootstrap
+npm install
+npm run dev
+# Open http://localhost:3100
 ```
 
-After bootstrap:
+## Stack
 
-- Chef login: `chef.demo@local.chefflow` / `ChefFlowLocal!123`
-- Client login: `client.demo@local.chefflow` / `ChefFlowLocal!123`
-- Public chef page: `http://localhost:3100/chef/chef-demo`
-- PostgreSQL Studio: `http://127.0.0.1:54323`
+- **Framework**: Next.js (App Router)
+- **Language**: TypeScript
+- **Database**: PostgreSQL (Drizzle ORM via postgres.js, direct TCP)
+- **Auth**: Auth.js v5 (credentials + Google OAuth)
+- **Payments**: Stripe
+- **Styling**: Tailwind CSS
+- **AI**: Ollama (local, private data) + Gemini (generic tasks)
+- **Realtime**: Server-Sent Events (SSE)
 
-More details: `docs/LOCAL_TESTING_BOOTSTRAP.md`
-
-## Project Structure
+## Structure
 
 ```
-app/
-├── (public)/          # Public portal (landing, pricing)
-├── (chef)/            # Chef portal (tenant admin)
-├── (client)/          # Client portal (customer view)
-├── auth/              # Authentication pages
-└── api/webhooks/      # Stripe webhook endpoint
-
-lib/
-├── database/          # database client utilities
-├── stripe/            # Stripe integration
-├── ledger/            # Ledger-first financial system
-├── auth/              # Auth and role resolution
-└── events/            # Event lifecycle management
-
-database/migrations/   # Database schema and RLS policies
+app/           Next.js routes (670+ pages)
+components/    React components (1,394 files)
+lib/           Business logic (1,608 modules)
+database/      SQL migrations (625 files)
+scripts/       Utility scripts
+docs/          Documentation
+tests/         Playwright test suites
+types/         TypeScript definitions
+public/        Static assets
 ```
 
-## Non-Negotiable System Laws
+## Key Commands
 
-1. **Multi-tenant isolation** enforced at DB layer (RLS)
-2. **Roles are authoritative** (no client-side inference)
-3. **Financial truth is ledger-first** (immutable ledger)
-4. **Event lifecycle** is finite and server-enforced
-5. **No feature expansion** beyond V1 scope
-6. **Defense in depth** (middleware → layout → RLS)
+- `npm run dev` - Development server (port 3100)
+- `npm run build` - Production build
+- `npm start` - Serve production build
+- `npx tsc --noEmit --skipLibCheck` - Type check
+- `npx next build --no-lint` - Build check
 
-## Development
+## Rules
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-
-## Deployment
-
-- Web beta release gate and go/no-go checklist: `docs/web-beta-go-no-go-checklist.md`
-- Web beta release architecture and timeline: `docs/web-beta-release-architecture.md`
-- Beta host operations: `docs/beta-server-setup.md`
-- Uptime and readiness monitoring: `docs/uptime-monitoring-setup.md`
+See `CLAUDE.md` for all project rules and conventions.
 
 ## License
 

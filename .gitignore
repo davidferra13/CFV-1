@@ -96,9 +96,14 @@ tsc-output.txt
 # Stray system/home files
 HOME-*.xml
 
-# Pages Router generated output only (source .tsx files are tracked — build requires them)
-/pages/*.js
-/pages/*.js.map
+# Legacy (deleted scaffolds, kept for safety)
+/pages/
+/src-tauri/
+/android/
+/ios/
+/worker/
+/messages/
+/i18n/
 
 # Temp type exports
 db-types-temp.ts

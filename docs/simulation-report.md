@@ -1,32 +1,35 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated - last run: 2026-03-26T05:59:38.812Z_
-_Run ID: a2eb8752-f008-4f31-a798-ea7e4769077b_
+_Auto-generated - last run: 2026-03-26T15:36:19.678Z_
+_Run ID: 349520a8-a397-4f61-9471-67093bad192a_
 
 ---
 
 ## Summary
 
-The system is currently failing on the `allergen_risk` module, which is critical for safety. The `inquiry_parse` module is passing, and `client_parse` recently improved from 0% to 100% pass rate. The `allergen_risk` module is not correctly flagging dishes as unsafe for guests with known allergies.
+The system is currently at 83% pass rate, with `inquiry_parse` failing at 0% and all other modules passing. The `inquiry_parse` module has been consistently failing across multiple runs and needs immediate attention. The `client_parse` module has shown improvement, moving from 0% to 100% pass rate in recent runs.
 
 ## Failures & Root Causes
 
-### allergen_risk
+### inquiry_parse
 
-The module is not correctly identifying when a dish contains allergens that match a guest's known allergies. It's returning `riskLevel='contains'` instead of `riskLevel='unsafe'` for guests with matching allergies. The logic for comparing guest allergies against dish allergens is broken or missing.
+The module is failing because it's not correctly extracting client name and guest count from inquiry text. Instead of parsing the expected values, it's returning "undefined" for both fields. This suggests the prompt doesn't properly guide the model to extract these specific fields from natural language input, or the examples provided are insufficient for training the extraction logic.
 
 ## Prompt Fix Recommendations
 
-Update the `allergen_risk` module prompt to:
+### inquiry_parse
 
-1. Explicitly state that when a guest's known allergies match ingredients in a dish, the `riskLevel` must be set to `'unsafe'`
-2. Require the module to cross-reference `guest.allergies` with `dish.allergens` and return `riskLevel='unsafe'` if any match
-3. Add a clear instruction that `riskLevel='contains'` only applies when there are allergens but no matching guest allergies
-4. Include a step-by-step validation: "Check if any guest allergies are present in dish ingredients. If yes, return riskLevel='unsafe'. If no, check if dish has allergens and return riskLevel='contains'. If no allergens, return riskLevel='safe'."
+Update the prompt to explicitly define the expected output format and provide clear examples of how to extract client name and guest count from inquiry text. Include specific instructions like:
+
+- "Extract the client name as a string"
+- "Extract the guest count as a number"
+- "If no guest count is mentioned, return null"
+- "If no client name is mentioned, return null"
+- Provide multiple examples showing various inquiry formats and expected outputs
 
 ## What's Working Well
 
-The `inquiry_parse`, `client_parse`, `correspondence`, `menu_suggestions`, and `quote_draft` modules are all passing consistently. Notably, `client_parse` improved from 0% to 100% pass rate since the last run. The system's ability to parse and process client data and generate correspondence remains solid. The `allergen_risk` module was previously failing in multiple runs but has shown intermittent improvement, indicating the core logic may be partially functional but needs refinement.
+The `client_parse`, `allergen_risk`, `correspondence`, `menu_suggestions`, and `quote_draft` modules are all passing at 100% with no failures. Notably, `client_parse` has improved significantly, moving from 0% to 100% pass rate in recent runs. The `allergen_risk` module has also maintained consistent performance, passing in all recent runs.
 
 ---
 

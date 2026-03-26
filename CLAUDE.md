@@ -1,22 +1,22 @@
-                                                                000000Flow V1 — Project Rules
+# ChefFlow V1 - Project Rules
 
 This file is read by Claude Code at the start of every conversation. These rules are mandatory.
 
 ---
 
-> **🚨 STOP — READ THESE TWO BLOCKS BEFORE DOING ANYTHING 🚨**
+> **🚨 STOP - READ THESE TWO BLOCKS BEFORE DOING ANYTHING 🚨**
 
-> **BLOCK 1 — DO YOUR OWN WORK, TEST YOUR OWN WORK, FIX YOUR OWN BUGS**
+> **BLOCK 1 - DO YOUR OWN WORK, TEST YOUR OWN WORK, FIX YOUR OWN BUGS**
 >
-> **NEVER** tell the developer to "check the website," "verify this works," "let me know if it looks right," or "you may want to test." You have a Playwright browser. You have an agent test account (`.auth/agent.json`). You have screenshots. **USE THEM.** After writing code: sign in, navigate, screenshot, verify. If it's broken: fix it yourself, verify the fix, then report it's done. The developer is NOT your QA team. If you CAN test it, you MUST test it. If you find a bug, you MUST fix it — don't report it back.
+> **NEVER** tell the developer to "check the website," "verify this works," "let me know if it looks right," or "you may want to test." You have a Playwright browser. You have an agent test account (`.auth/agent.json`). You have screenshots. **USE THEM.** After writing code: sign in, navigate, screenshot, verify. If it's broken: fix it yourself, verify the fix, then report it's done. The developer is NOT your QA team. If you CAN test it, you MUST test it. If you find a bug, you MUST fix it - don't report it back.
 >
-> **NEVER** wait for the developer to tell you the obvious next step. If you know what comes next, DO IT. If a task has a clear continuation, CONTINUE. Don't pause, don't ask "what would you like me to do next?" — just do the work. The developer is paying per token. Every unnecessary back-and-forth is their money wasted on nothing.
+> **NEVER** wait for the developer to tell you the obvious next step. If you know what comes next, DO IT. If a task has a clear continuation, CONTINUE. Don't pause, don't ask "what would you like me to do next?" - just do the work. The developer is paying per token. Every unnecessary back-and-forth is their money wasted on nothing.
 >
-> **NEVER** generate padded, hedging, verbose responses when a short one works. Don't add caveats. Don't restate what you're about to do — just do it. Don't offer multiple options when one is clearly correct. Be direct. Be brief. Do the work.
+> **NEVER** generate padded, hedging, verbose responses when a short one works. Don't add caveats. Don't restate what you're about to do - just do it. Don't offer multiple options when one is clearly correct. Be direct. Be brief. Do the work.
 >
 > **NEVER** tell the developer to restart something. You have Bash. If the dev server needs restarting, kill the process and start it. If Ollama needs restarting, run `ollama serve`. If a service is down, check why and fix it. The ONLY exception is if you literally cannot do it (e.g., a physical power cycle, or a process owned by a different user). "Please restart the dev server" when you have `bash` access is laziness. Just run the command.
 
-> **BLOCK 2 — READ THIS ENTIRE FILE BEFORE STARTING WORK**
+> **BLOCK 2 - READ THIS ENTIRE FILE BEFORE STARTING WORK**
 >
 > This document contains rules that will prevent you from making expensive mistakes. Every section exists because an agent already made that mistake and it cost real money. Skimming or skipping sections = repeating those mistakes. Read it all. Follow it all.
 
@@ -29,7 +29,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 - **Stack:** Next.js · PostgreSQL (Drizzle ORM via postgres.js) · Auth.js v5 · Stripe · Local FS storage · SSE realtime
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
 - **End every session:** commit everything → push the feature branch → update this file if new rules were found
-- **Private AI:** client data stays local via Ollama only — never Gemini, never cloud LLMs
+- **Private AI:** client data stays local via Ollama only - never Gemini, never cloud LLMs
 - **Never:** run `drizzle-kit push` without explicit user approval
 
 ---
@@ -40,7 +40,7 @@ The developer sends prompts through a refinement pipeline before they reach Clau
 
 ### NO EM DASHES (ABSOLUTE RULE - ZERO TOLERANCE)
 
-**Never use em dashes (—) anywhere. Not in code, not in UI text, not in emails, not in AI responses, not in comments, not in docs that users see. NOWHERE.**
+**Never use em dashes ( -) anywhere. Not in code, not in UI text, not in emails, not in AI responses, not in comments, not in docs that users see. NOWHERE.**
 
 Em dashes are the #1 tell that text was written by AI. Using them destroys credibility instantly. Real people don't write with em dashes. AI does. We are not going to look like AI.
 
@@ -60,9 +60,9 @@ Em dashes are the #1 tell that text was written by AI. Using them destroys credi
 
 **This is not a style preference. This is a hard rule. Em dashes = instant credibility loss.**
 
-### Brand Names — What Things Are Currently Called
+### Brand Names - What Things Are Currently Called
 
-Different names are used in different places. This is intentional — don't "fix" one to match another.
+Different names are used in different places. This is intentional - don't "fix" one to match another.
 
 | Where                  | Name Used           |
 | ---------------------- | ------------------- |
@@ -77,7 +77,7 @@ Different names are used in different places. This is intentional — don't "fix
 
 ---
 
-## ANTI-LOOP RULE (MANDATORY — READ THIS)
+## ANTI-LOOP RULE (MANDATORY - READ THIS)
 
 **Agents looping for an hour costs real money and produces nothing. These rules are hard stops.**
 
@@ -111,7 +111,7 @@ This applies to ALL repeated actions, not just builds:
 - Reading multiple files to understand a problem = not looping, that's research
 - Making 10 edits across 10 files for one feature = not looping, that's implementation
 
-**The test: "Am I making forward progress or am I going in circles?"** If you're seeing the same errors come back, undoing your own fixes, or re-trying commands you know failed — you're looping. If each attempt moves you closer to the goal or reveals new information — you're working.
+**The test: "Am I making forward progress or am I going in circles?"** If you're seeing the same errors come back, undoing your own fixes, or re-trying commands you know failed - you're looping. If each attempt moves you closer to the goal or reveals new information - you're working.
 
 ### What "STOP" Means
 
@@ -119,7 +119,7 @@ This applies to ALL repeated actions, not just builds:
 2. **Commit whatever work you've done so far** (partial progress is better than lost progress)
 3. **Report clearly:** what you were trying to do, what failed, what you tried, and what the error was
 4. **Let the user decide** the next step
-5. **Continue working on OTHER tasks** if you have them — stopping on one problem doesn't mean stopping everything
+5. **Continue working on OTHER tasks** if you have them - stopping on one problem doesn't mean stopping everything
 
 ---
 
@@ -134,7 +134,7 @@ These rules exist because this is a **live production app with real client data*
   2. Explaining exactly what data would be lost
   3. Getting explicit approval before writing the file
 - **NEVER** modify an existing column's type or rename a column without explaining the risk first and getting approval.
-- All migrations must be **additive by default** — add tables, add columns, add indexes, add constraints. Removing or altering existing structures requires explicit approval.
+- All migrations must be **additive by default** - add tables, add columns, add indexes, add constraints. Removing or altering existing structures requires explicit approval.
 - Before creating any migration file, **explain in plain English** what it will do to the database.
 - **Show the user the full SQL** before writing the migration file.
 - Remind the user to **back up their database** before applying migrations with real data.
@@ -145,7 +145,7 @@ These rules exist because this is a **live production app with real client data*
   database db dump --linked > backup-$(date +%Y%m%d).sql
   ```
 
-### Migration Timestamp Collisions (CRITICAL — Multi-Agent Safety)
+### Migration Timestamp Collisions (CRITICAL - Multi-Agent Safety)
 
 - **Before creating ANY migration file**, you MUST run `glob database/migrations/*.sql` to see all existing migration files.
 - Pick a timestamp that is **strictly higher** than the highest existing one. For example, if the highest is `20260221000002`, your new file must be `20260221000003` or later.
@@ -155,13 +155,13 @@ These rules exist because this is a **live production app with real client data*
 ### Server Actions & Queries
 
 - Never write a `.delete()` query on production tables without explicit approval.
-- Respect existing immutability triggers — never attempt to circumvent the immutability on `ledger_entries`, `event_transitions`, or `quote_state_transitions`.
+- Respect existing immutability triggers - never attempt to circumvent the immutability on `ledger_entries`, `event_transitions`, or `quote_state_transitions`.
 
 ---
 
-## ZERO HALLUCINATION RULE (MANDATORY — READ THIS)
+## ZERO HALLUCINATION RULE (MANDATORY - READ THIS)
 
-**The app must never display information that isn't true.** Every piece of data a user sees must be real, current, and verified — or explicitly marked as unavailable. Silent lies are worse than visible errors.
+**The app must never display information that isn't true.** Every piece of data a user sees must be real, current, and verified - or explicitly marked as unavailable. Silent lies are worse than visible errors.
 
 This rule exists because a February 2026 audit found 25+ places where the app displayed fake, stale, or unverified information to users as if it were real. **This must never happen again.**
 
@@ -172,7 +172,7 @@ This rule exists because a February 2026 audit found 25+ places where the app di
 Every UI update that assumes a server action succeeded MUST have error handling and rollback. No exceptions.
 
 ```tsx
-// CORRECT — rollback on failure
+// CORRECT  - rollback on failure
 const previous = items
 setItems(optimisticUpdate)
 startTransition(async () => {
@@ -184,7 +184,7 @@ startTransition(async () => {
   }
 })
 
-// WRONG — assumes success, never checks
+// WRONG  - assumes success, never checks
 setItems(optimisticUpdate)
 startTransition(async () => {
   await serverAction(...) // no try/catch, no rollback
@@ -195,13 +195,13 @@ startTransition(async () => {
 
 **Law 2: Never hide failure as zero.**
 
-If data fails to load, show an error state — never substitute zeros, empty arrays, or default values that look like real data.
+If data fails to load, show an error state - never substitute zeros, empty arrays, or default values that look like real data.
 
 ```tsx
-// CORRECT — user sees that data failed to load
+// CORRECT  - user sees that data failed to load
 if (fetchFailed) return <DataError message="Could not load revenue data" />
 
-// WRONG — user sees $0.00 and thinks they have no revenue
+// WRONG  - user sees $0.00 and thinks they have no revenue
 if (fetchFailed) return { totalRevenueCents: 0, totalExpenseCents: 0 }
 ```
 
@@ -209,7 +209,7 @@ A chef seeing "$0.00 revenue" when the database is unreachable will make wrong b
 
 **Law 3: Never render a non-functional feature as functional.**
 
-If a button doesn't work, a route isn't implemented, or a feature isn't finished — it must be visibly gated, not silently broken.
+If a button doesn't work, a route isn't implemented, or a feature isn't finished - it must be visibly gated, not silently broken.
 
 | Situation                   | Correct                                        | Wrong                                       |
 | --------------------------- | ---------------------------------------------- | ------------------------------------------- |
@@ -223,10 +223,10 @@ If a button doesn't work, a route isn't implemented, or a feature isn't finished
 **When writing new code:**
 
 1. Every `startTransition` or optimistic update MUST have a `try/catch` with rollback and user-visible error feedback (toast, inline error, etc.)
-2. Every data fetch MUST distinguish between "no data exists" (show empty state) and "fetch failed" (show error state) — these are NOT the same thing
+2. Every data fetch MUST distinguish between "no data exists" (show empty state) and "fetch failed" (show error state) - these are NOT the same thing
 3. Every button MUST do what it says. If the backend isn't ready, don't render the button. If you must render it, disable it with a tooltip explaining why
 4. Every displayed number MUST come from a real data source. Never hardcode financial figures, counts, or metrics. Extract prices/rates to a single shared constant at minimum
-5. Demo/sample data MUST be visually distinguished from real data everywhere it appears — badges, labels, or filtered out of production views entirely
+5. Demo/sample data MUST be visually distinguished from real data everywhere it appears - badges, labels, or filtered out of production views entirely
 
 **When reviewing existing code:**
 
@@ -239,21 +239,21 @@ If you encounter any of these patterns during normal work, **flag them to the de
 - A hardcoded number displayed as if it came from the database
 - Demo/sample records with no visual distinction from real data
 
-### Placeholders vs. Hallucinations — Both Require Action
+### Placeholders vs. Hallucinations - Both Require Action
 
-**Hallucination:** The app displays something that is **actively false** — fake success, wrong numbers, fabricated data shown as real. **These must be fixed immediately.**
+**Hallucination:** The app displays something that is **actively false** - fake success, wrong numbers, fabricated data shown as real. **These must be fixed immediately.**
 
 **Placeholder:** A feature stub, "coming soon" text, a no-op button, or a hardcoded value awaiting real data. **These are not lies, but they must be reported to the developer** so they can decide to ship, hide, or finish them. Never leave a placeholder in the app without the developer knowing it's there.
 
 When you find either during normal work, add it to your session report. Don't wait to be asked.
 
-### Cache Invalidation — Write It, Bust It
+### Cache Invalidation - Write It, Bust It
 
 **When you mutate data, you MUST invalidate every cache that reads that data.** Stale cache = stale UI = hallucination.
 
 - If a server action writes to the `chefs` table and the layout uses `unstable_cache` with tag `chef-layout-{chefId}`, the action MUST call `revalidateTag('chef-layout-{chefId}')`.
 - `revalidatePath` does NOT bust `unstable_cache` tags. You must use `revalidateTag` for tagged caches.
-- When adding a new `unstable_cache`, document which mutations should bust it — don't leave it for "later."
+- When adding a new `unstable_cache`, document which mutations should bust it - don't leave it for "later."
 - When adding a new mutation on cached data, search for `unstable_cache` and `revalidateTag` in the codebase to find all caches that read the data you're writing. Bust every one.
 
 ### Server Action Quality Checklist (Apply to All New Server Actions)
@@ -275,19 +275,19 @@ Files with `// @ts-nocheck` reference nonexistent tables, use wrong column names
 
 - If you encounter a `@ts-nocheck` file that exports server actions: either fix the types and remove `@ts-nocheck`, or remove the exports and add a comment explaining why the file is deferred.
 - Never create a new file with `@ts-nocheck`. Fix the types or don't write the file.
-- When reviewing code, flag any `@ts-nocheck` file that has `export async function` — it's a crash waiting to happen.
+- When reviewing code, flag any `@ts-nocheck` file that has `export async function` - it's a crash waiting to happen.
 
-### Hallucination Scan — On-Demand Audit
+### Hallucination Scan - On-Demand Audit
 
 When the developer says **"run hallucination scan"**, **"audit for hallucinations"**, **"check for lies"**, or any variation, run the full Zero Hallucination audit:
 
-1. **Optimistic updates** — search all `startTransition` and `useTransition` calls for missing `try/catch` + rollback
-2. **Silent failures** — search for catch blocks that return zero/default/empty without UI feedback
-3. **No-op handlers** — search for `onClick` with empty bodies, `// placeholder`, `// TODO`, `return { success: true }` on functions that don't persist
-4. **Hardcoded display values** — search for dollar amounts, counts, or metrics that aren't from a query or constant
-5. **Stale cache** — check that every `unstable_cache` tag has matching `revalidateTag` calls in all relevant mutations
-6. **`@ts-nocheck` exports** — find files with both `@ts-nocheck` and `export` that could crash on call
-7. **Demo/sample data visibility** — check that `is_demo` or equivalent flags are consumed by the UI
+1. **Optimistic updates** - search all `startTransition` and `useTransition` calls for missing `try/catch` + rollback
+2. **Silent failures** - search for catch blocks that return zero/default/empty without UI feedback
+3. **No-op handlers** - search for `onClick` with empty bodies, `// placeholder`, `// TODO`, `return { success: true }` on functions that don't persist
+4. **Hardcoded display values** - search for dollar amounts, counts, or metrics that aren't from a query or constant
+5. **Stale cache** - check that every `unstable_cache` tag has matching `revalidateTag` calls in all relevant mutations
+6. **`@ts-nocheck` exports** - find files with both `@ts-nocheck` and `export` that could crash on call
+7. **Demo/sample data visibility** - check that `is_demo` or equivalent flags are consumed by the UI
 
 Report findings in the same format as `docs/zero-hallucination-audit.md`. Update that file with any new findings.
 
@@ -319,14 +319,14 @@ If the system can quietly lie, drift, or mark progress complete without proof, i
 
 ## SELF-MAINTAINING DOCUMENT
 
-This document must stay current. Claude is responsible for keeping it updated — the developer should never have to ask.
+This document must stay current. Claude is responsible for keeping it updated - the developer should never have to ask.
 
 ### When to update this file
 
 Update `CLAUDE.md` immediately whenever any of the following happen:
 
 - A pattern or rule gets established during a session (e.g. "always use X", "never do Y")
-- The developer has to ask Claude for the same thing more than once — that's a missing rule
+- The developer has to ask Claude for the same thing more than once - that's a missing rule
 - A new architectural decision is made that affects how future agents should behave
 - A bug or mistake is traced back to a missing or unclear rule
 - A new file location, migration, or system component is added that agents need to know about
@@ -338,38 +338,31 @@ Update `CLAUDE.md` immediately whenever any of the following happen:
 1. Edit `CLAUDE.md` directly with the new rule in the appropriate section
 2. Also update `memory/MEMORY.md` if the rule belongs in persistent memory
 3. Commit both files with a clear message like `docs(rules): add X rule`
-4. Push — this is part of the standard session close-out
+4. Push - this is part of the standard session close-out
 
 ---
 
 ## "SHIP IT" - THE ONE COMMAND (READ THIS)
 
-When the developer says **"ship it"** (or any variation: "ship", "send it", "push everything", "make it live"), do ALL of the following — no confirmation needed, no questions asked:
+When the developer says **"ship it"** (or any variation: "ship", "send it", "push everything", "make it live"), do ALL of the following - no confirmation needed, no questions asked:
 
 1. **`git add`** all modified and created files
 2. **`git commit`** with a clear, descriptive message
-3. **`git push origin <current-branch>`** — push the feature branch to GitHub ($0)
-4. **`bash scripts/deploy-beta.sh`** — deploy to beta (local PC, port 3200) so `beta.cheflowhq.com` is updated
-5. **Report** what was committed, pushed, and deployed
-
-**This updates localhost (already has the code), GitHub (backup), AND beta (live preview). It does NOT touch production. It costs $0.**
+3. **`git push origin <current-branch>`** to GitHub ($0)
+4. **Report** what was committed and pushed
 
 The developer should never have to ask for these steps separately. "Ship it" = the full chain, every time.
 
-**What "ship it" does NOT mean:**
-
-- Deploy to production (requires explicit "deploy" or "push to production")
-
 ---
 
-## "RUN SOAK" — SOFTWARE AGING PIPELINE
+## "RUN SOAK" - SOFTWARE AGING PIPELINE
 
 When the developer says **"run soak"** (or any variation: "soak test", "soak it", "run the soak tests", "check for leaks"), do ALL of the following:
 
-1. **useEffect cleanup audit** — scan all components for missing cleanup returns, leaked event listeners, unclosed PostgreSQL subscriptions, intervals/timeouts without `clearTimeout`/`clearInterval`
+1. **useEffect cleanup audit** - scan all components for missing cleanup returns, leaked event listeners, unclosed PostgreSQL subscriptions, intervals/timeouts without `clearTimeout`/`clearInterval`
 2. **Fix every issue** the audit finds
-3. **Run `npm run test:soak:quick`** (dev server must be on port 3100 — ask user to start it if needed)
-4. **If any test fails** — read the report, diagnose the root cause, fix it, and re-run until all 3 soak tests pass
+3. **Run `npm run test:soak:quick`** (dev server must be on port 3100 - ask user to start it if needed)
+4. **If any test fails** - read the report, diagnose the root cause, fix it, and re-run until all 3 soak tests pass
 5. **Commit everything** when done
 
 **What the soak tests measure:** JS heap memory, DOM node count, console errors, and cycle time across 100+ repeated navigation loops. Uses Chrome DevTools Protocol (CDP) for precise measurements. Fails if memory > 3× baseline, DOM nodes > 2× baseline, any console errors, or cycle time > 2× baseline.
@@ -382,14 +375,13 @@ When the developer says **"run soak"** (or any variation: "soak test", "soak it"
 
 These steps run automatically at the end of every session, whether or not the developer asks. No exceptions.
 
-1. **Stage all changes** — `git add` every file that was modified or created
-2. **Commit** — clear, descriptive commit message
-3. **Push the current branch** — `git push origin <current-branch>` → GitHub backup, costs $0
-4. **Deploy to beta** — `bash scripts/deploy-beta.sh` — builds locally and restarts beta on port 3200
-5. **Update this file** — if any new patterns, rules, or decisions were made this session, add them now
-6. **Report** — tell the developer what was committed, pushed, and deployed
+1. **Stage all changes** - `git add` every file that was modified or created
+2. **Commit** - clear, descriptive commit message
+3. **Push the current branch** - `git push origin <current-branch>` (GitHub backup, $0)
+4. **Update this file** - if any new patterns, rules, or decisions were made this session, add them now
+5. **Report** - tell the developer what was committed and pushed
 
-**What this prevents:** Work existing only on the local machine. If the machine is wiped, stolen, or corrupted, everything on GitHub is safe. The database is already off-machine (PostgreSQL). Code must be too. Beta must always reflect the latest work.
+**What this prevents:** Work existing only on the local machine. If the machine is wiped, stolen, or corrupted, everything on GitHub is safe.
 
 ---
 
@@ -398,13 +390,13 @@ These steps run automatically at the end of every session, whether or not the de
 ### Before Making Changes
 
 - **Explain what you're about to do in plain terms** before making changes, especially for anything touching the database, authentication, or financial logic.
-- When in doubt, **ask — don't assume**.
+- When in doubt, **ask - don't assume**.
 
 ### Documentation
 
 - **Always create a follow-up `.md` document for every code change.** Every implementation should have a reflecting document that explains what changed, why, and how it connects to the system. No code-only changes.
 
-### Living App Audit — `docs/app-complete-audit.md` (MANDATORY)
+### Living App Audit - `docs/app-complete-audit.md` (MANDATORY)
 
 This file is the **master registry of every page, button, tab, form, modal, overlay, and navigation path** in ChefFlow. It must always reflect the current state of the app.
 
@@ -419,13 +411,13 @@ This file is the **master registry of every page, button, tab, form, modal, over
 **How to update it:**
 
 - Find the relevant section by page name
-- Add/edit/remove the specific element — keep the same format as surrounding entries
+- Add/edit/remove the specific element - keep the same format as surrounding entries
 - If adding a whole new page, add it under the correct section heading with the same structure (route, what's displayed, buttons, forms, tabs, modals, navigation)
 
 **When NOT to update it:**
 
-- Pure backend changes (new server action, migration, refactored logic) that don't change what the user sees or clicks — skip it
-- Styling-only changes (color, font, spacing) — skip it
+- Pure backend changes (new server action, migration, refactored logic) that don't change what the user sees or clicks - skip it
+- Styling-only changes (color, font, spacing) - skip it
 
 **This rule exists because:** a full re-audit of ~265 pages takes an entire session and costs real money. Keeping this file current incrementally is free. The developer relies on this as their "ultimate manual" for understanding what the app does.
 
@@ -436,13 +428,13 @@ This file is the **master registry of every page, button, tab, form, modal, over
 
 ### Feature Close-Out (run when user asks to close out a feature)
 
-Run these in order — stop and report any failure before continuing:
+Run these in order - stop and report any failure before continuing:
 
 1. `npx tsc --noEmit --skipLibCheck` → must exit 0
 2. `npx next build --no-lint` → must exit 0
 3. `git add` relevant files + `git commit` with a clear message
-4. `git push origin <current-branch>` — push the feature branch to GitHub (backup, $0 cost)
-5. Confirm branch is clean and ready — do **NOT** merge to `main` or deploy to production
+4. `git push origin <current-branch>` - push the feature branch to GitHub (backup, $0 cost)
+5. Confirm branch is clean and ready - do **NOT** merge to `main` or deploy to production
 
 ### Health Checks (run before merging to main)
 
@@ -461,79 +453,45 @@ Run these in order — stop and report any failure before continuing:
 - `types/database.ts` current with remote schema
 - Only after all of the above: merge to `main` with explicit user approval
 
-### Agent Testing Account — Details (see BLOCK 2 above for the mandate)
+### Agent Testing Account - Details (see BLOCK 2 above for the mandate)
 
 There are **two admin accounts**:
 
-1. **Developer's account** — theirs, for their own use. Don't touch it.
-2. **Agent account** — YOURS. Use it every time you need to see, test, or verify anything in the app.
+1. **Developer's account** - theirs, for their own use. Don't touch it.
+2. **Agent account** - YOURS. Use it every time you need to see, test, or verify anything in the app.
 
 - **Credentials:** Read from `.auth/agent.json` (or `.env.local`: `AGENT_EMAIL` / `AGENT_PASSWORD`)
 - **Sign in:** `POST http://localhost:3100/api/e2e/auth` with `{ "email", "password" }` from the credentials
 - **Access:** Chef role + admin access (full app)
 - **Setup:** If `.auth/agent.json` doesn't exist, run `npm run agent:setup` first
 
-**The full loop — test AND fix:**
+**The full loop - test AND fix:**
 
 1. Ensure dev server is running on port 3100 (ask the user to start it if needed)
 2. Launch Playwright, sign in with your agent credentials
 3. Navigate to the relevant page, interact, take screenshots
-4. If something is broken — **fix it right now.** You have the code and the browser. Close the loop.
+4. If something is broken - **fix it right now.** You have the code and the browser. Close the loop.
 5. After fixing, sign in again and verify the fix actually works
 6. Only report back when it's DONE and WORKING
 
 **Never say any of these:**
 
-- "Please verify X on the website" — YOU verify it
-- "Can you check if this looks correct?" — YOU check it
-- "Let me know if the fix works" — YOU test if it works
-- "You may want to test..." — YOU test it
+- "Please verify X on the website" - YOU verify it
+- "Can you check if this looks correct?" - YOU check it
+- "Let me know if the fix works" - YOU test if it works
+- "You may want to test..." - YOU test it
 
-**The only exception:** Playwright literally cannot do it (OAuth popups, mobile-specific gestures, native device features). Everything else — you handle it end to end.
+**The only exception:** Playwright literally cannot do it (OAuth popups, mobile-specific gestures, native device features). Everything else - you handle it end to end.
 
 ### Full Workflow Reference
 
-**`docs/AGENT-WORKFLOW.md`** — complete step-by-step playbook: health checks, migration safety, parallel agent rules, merge procedure. Covers what to do before, during, and after every session. Read it before starting significant work.
+**`docs/AGENT-WORKFLOW.md`** - complete step-by-step playbook: health checks, migration safety, parallel agent rules, merge procedure. Covers what to do before, during, and after every session. Read it before starting significant work.
 
-**`docs/AI_POLICY.md`** — governs all AI feature work. AI assists drafting only, never owns canonical state. Hard restrictions: no lifecycle transitions, no ledger writes, no silent automation. All AI output requires chef confirmation before becoming canonical.
+**`docs/AI_POLICY.md`** - governs all AI feature work. AI assists drafting only, never owns canonical state. Hard restrictions: no lifecycle transitions, no ledger writes, no silent automation. All AI output requires chef confirmation before becoming canonical.
 
-**`memory/action-inventory.md`** — 467-action lifecycle across 18 stages from first contact to post-service. Critical for understanding what the system must handle. Chef's irreducible core: creative decisions, physical cooking, relationship moments, final approval on all client-facing comms.
+**Chef's irreducible core:** creative decisions, physical cooking, relationship moments, final approval on all client-facing comms.
 
 ---
-
-## MULTI-AGENT MODE (READ THIS — SAVES REAL MONEY)
-
-This project frequently runs **10+ agents in parallel**. When you are one of many concurrent agents, the following rules are **mandatory and override the Feature Close-Out steps above**.
-
-### How to know you're in multi-agent mode
-
-You are in multi-agent mode if:
-
-- The user's prompt mentions multiple agents, parallel work, or asks you to focus on a specific area/feature only
-- You were spawned as a sub-task by another agent
-- The prompt does not explicitly ask YOU to run the build
-
-### What to do
-
-1. **Do your assigned work fully** — implement, fix, write the code.
-2. **Create the follow-up `.md` doc** as required by project rules.
-3. **`git add` and `git commit`** your changes with a clear message.
-4. **Report what you changed and stop.**
-
-### What NOT to do — EVER in multi-agent mode
-
-- **DO NOT run `npx tsc --noEmit`** — 10 agents running this simultaneously will fight over the TypeScript compiler and produce false errors.
-- **DO NOT run `npx next build`** — concurrent agents corrupt `.next/`, compete for the same port, and every build fails. You will loop forever.
-- **DO NOT interact with localhost or the dev server** — another agent may be using it.
-- **DO NOT retry a failed build.** If something fails, report it once and stop. Do not loop.
-- **DO NOT wait for the build to pass before committing.** Commit your code changes and let the developer run a single clean build after all agents finish.
-
-### The only time you should run a build
-
-Only run `npx tsc --noEmit --skipLibCheck` or `npx next build --no-lint` if:
-
-- The user explicitly tells YOU (this specific agent) to run the build
-- You are the only agent running (single-agent session, user confirmed)
 
 ---
 
@@ -541,7 +499,7 @@ Only run `npx tsc --noEmit --skipLibCheck` or `npx next build --no-lint` if:
 
 These are the patterns Claude will get wrong without explicit rules.
 
-### 0. AI Must NEVER Generate Recipes (ABSOLUTE — NO EXCEPTIONS)
+### 0. AI Must NEVER Generate Recipes (ABSOLUTE - NO EXCEPTIONS)
 
 **AI (Remy, Ollama, any LLM) must never create, generate, fabricate, hallucinate, draft, suggest, or pull recipes from anywhere.** Not from the internet, not from its training data, not as a suggestion, not as a draft, not with chef approval, not in any tier, not ever.
 
@@ -549,7 +507,7 @@ AI has **zero role** in telling a chef what to cook or how to cook it. Recipes a
 
 **The ONLY thing AI can do with recipes:**
 
-- **Search the chef's own recipe book** (`recipe.search`) — read-only lookup of recipes the chef already entered manually. That's it.
+- **Search the chef's own recipe book** (`recipe.search`) - read-only lookup of recipes the chef already entered manually. That's it.
 
 **Everything else is banned:**
 
@@ -565,7 +523,7 @@ AI has **zero role** in telling a chef what to cook or how to cook it. Recipes a
 
 **Recipes are entered manually on the recipe form. Period.**
 
-### 0b. Formula > AI — Always (HIGHEST PRIORITY PATTERN)
+### 0b. Formula > AI - Always (HIGHEST PRIORITY PATTERN)
 
 **If deterministic code (math, logic, database queries, conditional checks) can produce the correct result, ALWAYS use it over AI.** AI (Remy/Ollama) is the fallback, never the default.
 
@@ -583,16 +541,16 @@ A formula returns the same correct answer every single time, instantly, for free
 
 ### 0c. Prospecting Is Admin-Only (PERMANENT)
 
-**Prospecting is exclusively an admin feature. It must NEVER appear in a non-admin user's portal — no nav links, no sidebar items, no dashboard widgets, no shortcuts. Ever.**
+**Prospecting is exclusively an admin feature. It must NEVER appear in a non-admin user's portal - no nav links, no sidebar items, no dashboard widgets, no shortcuts. Ever.**
 
 - **Nav config:** All prospecting nav items in `nav-config.tsx` have `adminOnly: true`. The sidebar (`chef-nav.tsx`) filters these out for non-admin users.
 - **Dashboard:** The `ProspectingWidget` on the dashboard is gated behind `isAdmin()`.
-- **Pages:** All `/prospecting/*` pages already have `requireAdmin()` — if a non-admin somehow navigates there, they get redirected.
+- **Pages:** All `/prospecting/*` pages already have `requireAdmin()` - if a non-admin somehow navigates there, they get redirected.
 - **If you add any new prospecting-related UI** (link, button, widget, shortcut), it MUST be gated behind `isAdmin` / `adminOnly`. No exceptions.
 
 ### 1. Non-Blocking Side Effects
 
-Notifications, emails, activity logs, calendar syncs, and automations are **non-blocking** — if they fail, the main operation still succeeds.
+Notifications, emails, activity logs, calendar syncs, and automations are **non-blocking** - if they fail, the main operation still succeeds.
 
 - Always wrap side effects in `try/catch`
 - Log failures as warnings, never throw
@@ -606,11 +564,11 @@ try {
   console.error('[non-blocking] Notification failed', err)
 }
 
-// WRONG — this would roll back the whole operation on notification failure
+// WRONG  - this would roll back the whole operation on notification failure
 await sendNotification(...)
 ```
 
-### 2. Tenant ID Comes From Session — Never From Request Body
+### 2. Tenant ID Comes From Session - Never From Request Body
 
 Always derive `tenant_id` from the authenticated session, never trust input from the client.
 
@@ -619,7 +577,7 @@ Always derive `tenant_id` from the authenticated session, never trust input from
 const user = await requireChef()
 const tenantId = user.tenantId! // from session
 
-// WRONG — attacker can forge this
+// WRONG  - attacker can forge this
 const tenantId = input.tenantId
 ```
 
@@ -635,15 +593,15 @@ Do NOT rename existing columns. Just use the correct name for whichever table yo
 
 ### 3. Financial State Is Derived, Never Stored
 
-Balances, profit, payment status, and food cost % are **computed from ledger entries** via database views — never written directly to a column.
+Balances, profit, payment status, and food cost % are **computed from ledger entries** via database views - never written directly to a column.
 
 - Use `event_financial_summary` view for per-event financials
 - Use `getTenantFinancialSummary()` for overall totals
-- If a number looks wrong, fix the ledger entry — never patch a balance column directly
+- If a number looks wrong, fix the ledger entry - never patch a balance column directly
 
 ### 4. UI Component Variants
 
-Only use variants that actually exist — wrong variants fail silently or throw.
+Only use variants that actually exist - wrong variants fail silently or throw.
 
 | Component  | Allowed variants                                 |
 | ---------- | ------------------------------------------------ |
@@ -652,7 +610,7 @@ Only use variants that actually exist — wrong variants fail silently or throw.
 
 `outline`, `default` (Button), `warning` (Button), `success` (Button) do **not** exist.
 
-### 5. Remy Chat Widget — Drag/Resize Corners Are Sacred
+### 5. Remy Chat Widget - Drag/Resize Corners Are Sacred
 
 **The Remy concierge widget (`components/public/remy-concierge-widget.tsx`) MUST always have working drag-to-resize on all edges AND all four corners.** This is a permanent, non-negotiable rule.
 
@@ -687,17 +645,17 @@ Revenue comes from **voluntary supporter contributions** (Stripe checkout, cance
 
 ## ARCHITECTURE REMINDERS
 
-These are the established patterns. Follow them — don't reinvent.
+These are the established patterns. Follow them - don't reinvent.
 
-### Private AI — Local Only (NO Exceptions)
+### Private AI - Local Only (NO Exceptions)
 
-**Private data must never leave the local machine.** Any function that handles client PII, financials, allergies, messages, or internal business data uses `parseWithOllama` — not `parseWithAI`.
+**Private data must never leave the local machine.** Any function that handles client PII, financials, allergies, messages, or internal business data uses `parseWithOllama` - not `parseWithAI`.
 
 - `parseWithOllama` now throws `OllamaOfflineError` if Ollama is not running. It **never** falls back to Gemini.
 - **Never** add `parseWithAI` as a fallback in any file that calls `parseWithOllama`.
 - If Ollama is offline, the feature hard-fails with a clear error. The user sees "Start Ollama to use this feature." Data is not leaked.
-- The `OllamaOfflineError` class lives in `lib/ai/ollama-errors.ts` (no `'use server'` — class exports are not allowed in server action files). Import it from there: `import { OllamaOfflineError } from '@/lib/ai/ollama-errors'`. Callers that catch errors **must** re-throw it: `if (err instanceof OllamaOfflineError) throw err`.
-- Heuristic/regex fallbacks (no LLM call) are acceptable — they don't send data externally.
+- The `OllamaOfflineError` class lives in `lib/ai/ollama-errors.ts` (no `'use server'` - class exports are not allowed in server action files). Import it from there: `import { OllamaOfflineError } from '@/lib/ai/ollama-errors'`. Callers that catch errors **must** re-throw it: `if (err instanceof OllamaOfflineError) throw err`.
+- Heuristic/regex fallbacks (no LLM call) are acceptable - they don't send data externally.
 
 Private data categories that must stay local:
 
@@ -800,15 +758,6 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 | AI routing audit       | `scripts/audit-model-routing.ts` (detects direct provider imports)                 |
 | App audit (living)     | `docs/app-complete-audit.md` **(update when UI changes)**                          |
 | Remy reference         | `docs/remy-complete-reference.md` **(read this instead of re-scanning Remy)**      |
-| Beta server docs       | `docs/beta-server-setup.md`                                                        |
-| Beta env config        | `.env.local.beta`                                                                  |
-| Beta start script      | `scripts/start-beta.ps1`                                                           |
-| Deploy to beta         | `scripts/deploy-beta.sh`                                                           |
-| Rollback beta          | `scripts/rollback-beta.sh`                                                         |
-| Prod env config        | `.env.local.prod`                                                                  |
-| Prod start script      | `scripts/start-prod.ps1`                                                           |
-| Deploy to prod         | `scripts/deploy-prod.sh`                                                           |
-| Rollback prod          | `scripts/rollback-prod.sh`                                                         |
 | MC Manual panel        | `scripts/launcher/index.html` (panel-manual, live codebase scanner)                |
 | MC Codebase scanner    | `scripts/launcher/server.mjs` (`scanCodebase()`, `GET /api/manual/scan`)           |
 | MC File watcher        | `scripts/launcher/server.mjs` (`initFileWatcher()`, `GET /api/activity/summary`)   |
@@ -819,63 +768,28 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 
 ---
 
-## 3-ENVIRONMENT ARCHITECTURE
+## SINGLE ENVIRONMENT
 
-ChefFlow runs across three environments, all on the developer's PC. **Never confuse them.**
+One directory. One command. One deployment path.
 
 ```text
-PC localhost:3100           → Development (next dev, hot reload)
-PC localhost:3200           → Beta (next start, Cloudflare Tunnel → beta.cheflowhq.com)
-PC localhost:3300           → Production (next start, Cloudflare Tunnel → app.cheflowhq.com)
+C:\Users\david\Documents\CFv1\    (THE app, the only copy)
+localhost:3100                     (development: npm run dev)
+app.cheflowhq.com                 (Cloudflare Tunnel to localhost:3100)
 ```
 
-All three environments are self-hosted on the developer's PC. Zero paid hosting services.
+- **Run:** `npm run dev` (port 3100, hot reload)
+- **Build:** `npm run build && npm start` (production build, same directory)
+- **Deploy:** `git push` to GitHub, rebuild in place
+- **Ollama:** `localhost:11434` (local AI, all private data processing)
+- **Database:** Remote PostgreSQL via postgres.js (direct TCP)
 
-### Beta Server (Local PC, port 3200)
-
-- **Directory:** `C:\Users\david\Documents\CFv1-beta\` (separate from dev)
-- **Process:** `next start -p 3200` (auto-starts via Windows Task Scheduler)
-- **Tunnel:** Cloudflare Tunnel (Windows service) → `beta.cheflowhq.com`
-- **Env config:** `.env.local.beta` → copied to CFv1-beta as `.env.local` during deploy
-- **Ollama:** Shared with dev on `localhost:11434` (full model, all AI features work on beta)
-- **Auto-start script:** `scripts/start-beta.ps1`
-
-### Deploy to Beta
-
-```bash
-bash scripts/deploy-beta.sh    # Sync + build + restart (~2 min)
-bash scripts/rollback-beta.sh  # Redeploy previous commit
-```
-
-The deploy script: pushes to GitHub, syncs code to CFv1-beta, builds locally with 12GB heap, swaps builds atomically, restarts beta server on port 3200, runs health check with auto-rollback on failure.
-
-### Production Server (Local PC, port 3300)
-
-- **Directory:** `C:\Users\david\Documents\CFv1-prod\` (separate from dev and beta)
-- **Process:** `next start -p 3300` (auto-starts via Windows Task Scheduler)
-- **Tunnel:** Cloudflare Tunnel (Windows service) → `app.cheflowhq.com`
-- **Env config:** `.env.local.prod` → copied to CFv1-prod as `.env.local` during deploy
-- **Ollama:** Shared with dev/beta on `localhost:11434`
-- **Auto-start script:** `scripts/start-prod.ps1`
-
-### Deploy to Production
-
-```bash
-bash scripts/deploy-prod.sh    # Sync + build + restart (~2 min)
-bash scripts/rollback-prod.sh  # Redeploy previous commit
-```
-
-### Rules
-
-- **Never deploy during active development** — test locally first
-- **All three environments share the same PostgreSQL database** — be careful with destructive data operations
-- **Dev (3100), beta (3200), and production (3300) use different ports** — no conflicts
-- **All share Ollama** on port 11434 — concurrent requests handled fine
+There are no beta/staging/prod directories. There is one copy of the app.
 
 ---
 
 ## DATABASE
 
-- No local database (no Docker) — use remote with `--linked` flag
+- No local database (no Docker) - use remote with `--linked` flag
 - Project ID: `luefkpakzvxcsqroxyhz`
 - Cross-layer columns added via `ALTER TABLE` (e.g., Layer 3 adds columns to `clients`)
