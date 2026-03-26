@@ -676,6 +676,11 @@ export const navGroups: NavGroup[] = [
         icon: Zap,
       },
       {
+        href: '/recipes/import',
+        label: 'Recipe Import Hub',
+        icon: Upload,
+      },
+      {
         href: '/culinary/substitutions',
         label: 'Substitutions',
         icon: RefreshCw,

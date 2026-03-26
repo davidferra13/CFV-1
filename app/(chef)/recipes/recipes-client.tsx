@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { RecipeImportDialog } from '@/components/recipes/recipe-import-dialog'
 import { RecipeBatchImport } from '@/components/recipes/recipe-batch-import'
+import { RecipePhotoBatchImport } from '@/components/recipes/recipe-photo-batch-import'
 import type { RecipeListItem } from '@/lib/recipes/actions'
 import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { RecipeCoverFlow } from '@/components/recipes/recipe-cover-flow'
@@ -79,6 +80,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
   const [viewMode, setViewMode] = useState<'grid' | 'coverflow'>('grid')
   const [importOpen, setImportOpen] = useState(false)
   const [batchImportOpen, setBatchImportOpen] = useState(false)
+  const [photoImportOpen, setPhotoImportOpen] = useState(false)
   const [mobileActionsOpen, setMobileActionsOpen] = useState(false)
 
   // Taxonomy-driven filter options
@@ -159,15 +161,18 @@ export function RecipeLibraryClient({ recipes }: Props) {
               >
                 Ingredients
               </Button>
+              <Button href="/recipes/import" variant="secondary" className="w-full justify-start">
+                Import Hub
+              </Button>
               <Button
                 variant="secondary"
                 className="w-full justify-start"
                 onClick={() => {
                   setMobileActionsOpen(false)
-                  setImportOpen(true)
+                  setPhotoImportOpen(true)
                 }}
               >
-                Import Link
+                Photo Import
               </Button>
               <Button
                 variant="secondary"
@@ -177,10 +182,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
                   setBatchImportOpen(true)
                 }}
               >
-                Batch Import
-              </Button>
-              <Button href="/recipes/dump" variant="secondary" className="w-full justify-start">
-                Recipe Dump
+                URL Import
               </Button>
             </div>
           )}
@@ -192,15 +194,15 @@ export function RecipeLibraryClient({ recipes }: Props) {
           <Link href="/recipes/ingredients">
             <Button variant="secondary">Ingredients</Button>
           </Link>
-          <Button variant="secondary" onClick={() => setImportOpen(true)}>
-            Import Link
+          <Link href="/recipes/import">
+            <Button variant="secondary">Import Hub</Button>
+          </Link>
+          <Button variant="secondary" onClick={() => setPhotoImportOpen(true)}>
+            Photo Import
           </Button>
           <Button variant="secondary" onClick={() => setBatchImportOpen(true)}>
-            Batch Import
+            URL Import
           </Button>
-          <Link href="/recipes/dump">
-            <Button variant="secondary">Recipe Dump</Button>
-          </Link>
           <Link href="/recipes/new" data-tour="add-recipe">
             <Button>New Recipe</Button>
           </Link>
@@ -488,9 +490,10 @@ export function RecipeLibraryClient({ recipes }: Props) {
         </div>
       ) : null}
 
-      {/* Recipe Import Dialog */}
+      {/* Recipe Import Dialogs */}
       <RecipeImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
       <RecipeBatchImport open={batchImportOpen} onClose={() => setBatchImportOpen(false)} />
+      <RecipePhotoBatchImport open={photoImportOpen} onClose={() => setPhotoImportOpen(false)} />
     </div>
   )
 }
