@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { PDFLayout } from './pdf-layout'
 import { format, parseISO } from 'date-fns'
+import { convertQuantity } from '@/lib/units/conversion-engine'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,6 +20,8 @@ type GroceryItem = {
   courseLabel: string // e.g. "Course 2" or "Courses 2 + 3"
   lastPriceCents: number | null
   isOptional: boolean
+  onHandQty: number | null // current inventory, null if not tracked
+  needToBuyQty: number // max(0, quantity - onHandQty)
 }
 
 type StoreSection = {
@@ -281,7 +284,10 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
 
   // ── Aggregate ingredients ──────────────────────────────────────────────────
   // Key: ingredient_id + "::" + unit (same ingredient in same unit → sum quantities)
-  type AggEntry = GroceryItem & { ingredientId: string; category: string }
+  type AggEntry = Omit<GroceryItem, 'onHandQty' | 'needToBuyQty'> & {
+    ingredientId: string
+    category: string
+  }
   const aggregated = new Map<string, AggEntry>()
 
   let projectedCents = 0
@@ -331,12 +337,61 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     }
   }
 
+  // ── Query current inventory to subtract on-hand quantities ────────────────
+  const ingredientIds = [...new Set(Array.from(aggregated.values()).map((e) => e.ingredientId))]
+  const onHandMap = new Map<string, { qty: number; unit: string }>()
+
+  if (ingredientIds.length > 0) {
+    try {
+      const { data: stockData } = await db
+        .from('inventory_current_stock')
+        .select('ingredient_id, current_qty, unit')
+        .eq('chef_id', user.tenantId!)
+        .in('ingredient_id', ingredientIds)
+
+      for (const row of (stockData ?? []) as any[]) {
+        if (row.ingredient_id && Number(row.current_qty) > 0) {
+          onHandMap.set(row.ingredient_id, {
+            qty: Number(row.current_qty),
+            unit: row.unit ?? 'each',
+          })
+        }
+      }
+    } catch {
+      // Inventory query failure is non-blocking; proceed without on-hand data
+    }
+  }
+
   // ── Sort and bin into stops/sections ──────────────────────────────────────
   const stop1Map = new Map<string, GroceryItem[]>() // sectionName → items
   const stop2Items: GroceryItem[] = []
 
   for (const entry of aggregated.values()) {
     const category = entry.category
+
+    // Calculate on-hand and need-to-buy quantities
+    let onHandQty: number | null = null
+    let needToBuyQty = entry.quantity
+    const stock = onHandMap.get(entry.ingredientId)
+    if (stock && stock.qty > 0) {
+      // Try to convert stock unit to recipe unit for accurate subtraction
+      let stockInRecipeUnit = stock.qty
+      if (stock.unit !== entry.unit) {
+        const converted = convertQuantity(stock.qty, stock.unit, entry.unit)
+        if (converted !== null) {
+          stockInRecipeUnit = converted
+        }
+        // If conversion fails, skip subtraction (units incompatible without density)
+        else {
+          stockInRecipeUnit = 0
+        }
+      }
+      onHandQty = stockInRecipeUnit > 0 ? stockInRecipeUnit : null
+      needToBuyQty = Math.max(0, entry.quantity - stockInRecipeUnit)
+    }
+
+    // Skip items fully covered by inventory (unless optional - always show those)
+    if (needToBuyQty <= 0 && !entry.isOptional) continue
 
     const item: GroceryItem = {
       ingredientName: entry.ingredientName,
@@ -346,11 +401,13 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
       courseLabel: entry.courseLabel,
       lastPriceCents: entry.lastPriceCents,
       isOptional: entry.isOptional,
+      onHandQty,
+      needToBuyQty: needToBuyQty > 0 ? needToBuyQty : entry.quantity,
     }
 
-    // Accumulate projected cost
+    // Accumulate projected cost (only for what we need to buy, not what's on hand)
     if (entry.lastPriceCents != null) {
-      projectedCents += entry.quantity * entry.lastPriceCents
+      projectedCents += item.needToBuyQty * entry.lastPriceCents
       priceCount++
     }
 
@@ -498,9 +555,14 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
     for (const section of stop1Sections) {
       pdf.courseHeader(section.sectionName, 9)
       for (const item of section.items) {
-        const qtyStr = formatQuantity(item.quantity, item.unit)
+        const buyQty = item.needToBuyQty
+        const qtyStr = formatQuantity(buyQty, item.unit)
         const optSuffix = item.isOptional ? ' (optional)' : ''
-        const label = `${item.ingredientName} \u2014 ${qtyStr}${optSuffix}`
+        const onHandNote =
+          item.onHandQty != null
+            ? ` (have ${formatQuantity(item.onHandQty, item.unit)} on hand)`
+            : ''
+        const label = `${item.ingredientName} - ${qtyStr}${onHandNote}${optSuffix}`
         pdf.checkbox(label, 8, item.courseLabel)
       }
       pdf.space(1)
@@ -515,8 +577,11 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   if (hasStop2) {
     pdf.sectionHeader(`STOP 2: ${liquorStoreName}`, 10, true)
     for (const item of stop2Items) {
-      const qtyStr = formatQuantity(item.quantity, item.unit)
-      const label = `${item.ingredientName} \u2014 ${qtyStr}`
+      const buyQty = item.needToBuyQty
+      const qtyStr = formatQuantity(buyQty, item.unit)
+      const onHandNote =
+        item.onHandQty != null ? ` (have ${formatQuantity(item.onHandQty, item.unit)} on hand)` : ''
+      const label = `${item.ingredientName} - ${qtyStr}${onHandNote}`
       pdf.checkbox(label, 8, item.courseLabel)
     }
     pdf.space(1)
@@ -528,7 +593,7 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
     for (const item of presourcedItems) {
       const qtyStr = item.quantity != null ? `${item.quantity} ${item.unit ?? ''}`.trim() : ''
       const storeStr = item.storeName ? ` @ ${item.storeName}` : ''
-      const label = `${item.ingredientName}${qtyStr ? ` \u2014 ${qtyStr}` : ''}${storeStr}`
+      const label = `${item.ingredientName}${qtyStr ? ` - ${qtyStr}` : ''}${storeStr}`
       pdf.checkbox(label, 8, undefined, true) // pre-checked: already sourced
     }
     pdf.space(1)
@@ -538,11 +603,7 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   if (unrecipedComponents.length > 0) {
     pdf.sectionHeader('\u26A0  VERIFY MANUALLY (no recipe linked)', 9, true)
     for (const comp of unrecipedComponents) {
-      pdf.bullet(
-        `${comp.componentName} \u2014 Course ${comp.courseNumber} (${comp.courseName})`,
-        8,
-        4
-      )
+      pdf.bullet(`${comp.componentName} - Course ${comp.courseNumber} (${comp.courseName})`, 8, 4)
     }
     pdf.space(1)
   }
@@ -552,7 +613,7 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
   const footerParts = [`${totalBuyItems} items`, `${stops} stop${stops > 1 ? 's' : ''}`]
   if (budget.ceilingCents != null) footerParts.push(`Budget: ${formatCents(budget.ceilingCents)}`)
   footerParts.push(
-    'Quantities based on recorded recipes \u00D7 scale factor \u2014 verify for your guest count'
+    'Quantities based on recorded recipes \u00D7 scale factor - verify for your guest count'
   )
   pdf.footer(footerParts.join('  \u00B7  '))
 }

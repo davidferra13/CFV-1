@@ -665,6 +665,15 @@ export async function transitionEvent({
     } catch (varianceErr) {
       log.events.warn('Variance alert check failed (non-blocking)', { error: varianceErr })
     }
+
+    // Auto-deduct inventory for ingredients used in this event (non-blocking)
+    // Walks the full recipe chain: event -> menus -> dishes -> components -> recipes -> ingredients
+    try {
+      const { executeEventDeduction } = await import('@/lib/inventory/event-deduction-actions')
+      await executeEventDeduction(eventId)
+    } catch (deductErr) {
+      log.events.warn('Inventory auto-deduction failed (non-blocking)', { error: deductErr })
+    }
   }
 
   // Log chef activity (non-blocking)

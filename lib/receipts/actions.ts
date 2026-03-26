@@ -431,6 +431,53 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
             // Price logging is non-blocking
           }
         }
+
+        // Auto-receive into inventory: you bought it, now you have it (non-blocking)
+        // Creates positive 'receive' transactions in the inventory ledger
+        try {
+          const matchedItems = lineItemInputs.filter((li) => li.ingredientId)
+          if (matchedItems.length > 0) {
+            // Look up default_unit for matched ingredients so we record in the right unit
+            const ingredientIds = [...new Set(matchedItems.map((li) => li.ingredientId!))]
+            const { data: ingredientRows } = await db
+              .from('ingredients')
+              .select('id, name, default_unit')
+              .in('id', ingredientIds)
+              .eq('tenant_id', user.tenantId!)
+
+            const ingredientMap = new Map<string, { name: string; unit: string }>()
+            for (const row of (ingredientRows ?? []) as any[]) {
+              ingredientMap.set(row.id, {
+                name: row.name,
+                unit: row.default_unit || 'each',
+              })
+            }
+
+            const receiveRows = matchedItems
+              .filter((li) => ingredientMap.has(li.ingredientId!))
+              .map((li) => {
+                const ing = ingredientMap.get(li.ingredientId!)!
+                return {
+                  chef_id: user.tenantId!,
+                  ingredient_id: li.ingredientId,
+                  ingredient_name: ing.name,
+                  transaction_type: 'receive',
+                  quantity: 1, // Default to 1 unit; chef can adjust via inventory UI
+                  unit: ing.unit,
+                  cost_cents: li.amountCents,
+                  event_id: photo.event_id ?? null,
+                  notes: `Auto-received from receipt at ${vendorName ?? 'unknown store'}`,
+                  created_by: user.id,
+                }
+              })
+
+            if (receiveRows.length > 0) {
+              await db.from('inventory_transactions').insert(receiveRows)
+            }
+          }
+        } catch (invErr) {
+          console.error('[approveReceiptSummary] Inventory receive error (non-blocking):', invErr)
+        }
       }
     } catch (err) {
       console.error('[approveReceiptSummary] Expense line items error (non-blocking):', err)
