@@ -78,10 +78,14 @@ export function LocationAutocomplete({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
+  // Only load the Google Maps script when we have an API key.
+  // Calling useJsApiLoader with an empty key triggers an infinite retry loop.
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: apiKey,
+    googleMapsApiKey: apiKey || 'SKIP',
     libraries: LIBRARIES,
+    preventGoogleFontsLoading: true,
   })
+  const ready = isLoaded && !!apiKey
 
   const onLoad = useCallback((autocomplete: google.maps.places.Autocomplete) => {
     autocompleteRef.current = autocomplete
@@ -104,7 +108,7 @@ export function LocationAutocomplete({
   const inputClass = className || defaultInputClass
 
   // Plain input fallback (no API key or still loading)
-  if (!isLoaded || !apiKey) {
+  if (!ready) {
     return (
       <input
         type="text"

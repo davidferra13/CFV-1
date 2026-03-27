@@ -29,10 +29,14 @@ export function StoreAutocomplete({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
+  // Only load Google Maps script when we have an API key.
+  // Empty key triggers an infinite retry loop in the loader.
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: apiKey,
+    googleMapsApiKey: apiKey || 'SKIP',
     libraries: LIBRARIES,
+    preventGoogleFontsLoading: true,
   })
+  const ready = isLoaded && !!apiKey
 
   const onLoad = useCallback((autocomplete: google.maps.places.Autocomplete) => {
     autocompleteRef.current = autocomplete
@@ -53,7 +57,7 @@ export function StoreAutocomplete({
     })
   }, [onPlaceSelect, value])
 
-  if (!apiKey || !isLoaded) {
+  if (!ready) {
     return (
       <Input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} />
     )
