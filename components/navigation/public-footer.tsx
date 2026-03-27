@@ -10,7 +10,8 @@ import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const FOOTER_LINKS = {
   discover: [
-    { href: '/chefs', label: 'Find a Chef' },
+    { href: '/book', label: 'Book a Chef' },
+    { href: '/chefs', label: 'Browse Chefs' },
     { href: '/discover', label: 'Food Directory' },
     { href: '/gift-cards', label: 'Gift Cards' },
     { href: '/contact', label: 'Contact' },

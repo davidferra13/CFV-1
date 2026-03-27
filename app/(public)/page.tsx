@@ -192,8 +192,21 @@ export default async function Home() {
             dinners, catering, meal prep, and more.
           </p>
 
-          {/* Search bar */}
-          <div className="mt-10 w-full max-w-2xl">
+          {/* Dual CTAs */}
+          <div className="mt-10 w-full max-w-2xl space-y-4">
+            <Link
+              href="/book"
+              className="flex h-14 w-full items-center justify-center rounded-2xl gradient-accent text-base font-semibold text-white glow-hover shadow-lg transition-transform active:scale-[0.97] touch-manipulation"
+            >
+              Book a Private Chef
+            </Link>
+            <div className="relative flex items-center gap-4">
+              <div className="flex-1 border-t border-stone-700/60" />
+              <span className="text-xs text-stone-500 uppercase tracking-wider">
+                or browse chefs
+              </span>
+              <div className="flex-1 border-t border-stone-700/60" />
+            </div>
             <HomepageSearch />
           </div>
 

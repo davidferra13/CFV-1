@@ -9,10 +9,10 @@ import { AppLogo } from '@/components/branding/app-logo'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const NAV_ITEMS = [
-  { href: '/chefs', label: 'Find a Chef' },
+  { href: '/book', label: 'Book a Chef' },
+  { href: '/chefs', label: 'Browse Chefs' },
   { href: '/discover', label: 'Discover' },
   { href: '/for-operators', label: 'For Operators' },
-  { href: '/contact', label: 'Contact' },
 ]
 
 export function PublicHeader() {
