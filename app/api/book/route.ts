@@ -8,6 +8,7 @@ import { createAdminClient } from '@/lib/db/admin'
 import { validateEmailLocal, suggestEmailCorrection } from '@/lib/email/email-validator'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { matchChefsForBooking } from '@/lib/booking/match-chefs'
+import { resolveOwnerChefId } from '@/lib/platform/owner-account'
 
 const BookingSchema = z.object({
   // Client info
@@ -117,6 +118,21 @@ export async function POST(request: NextRequest) {
 
     // Cap at 10 chefs to avoid spam
     const chefsToNotify = matchedChefs.slice(0, 10)
+
+    // Founder first-dibs: always include the founder if they're within radius
+    // but were excluded by the 10-chef cap. Founder slot doesn't count against cap.
+    try {
+      const founderChefId = await resolveOwnerChefId(createAdminClient())
+      if (founderChefId && !chefsToNotify.some((c) => c.id === founderChefId)) {
+        // Check if founder was in the full matched list (within radius)
+        const founderMatch = matchedChefs.find((c) => c.id === founderChefId)
+        if (founderMatch) {
+          chefsToNotify.push(founderMatch)
+        }
+      }
+    } catch (founderErr) {
+      console.error('[open-booking] Founder first-dibs check failed (non-blocking):', founderErr)
+    }
 
     if (chefsToNotify.length === 0) {
       return NextResponse.json({

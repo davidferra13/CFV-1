@@ -18,6 +18,7 @@ import {
   TrendingUp,
   TrendingDown,
   Globe,
+  Inbox,
 } from '@/components/ui/icons'
 
 function StatCard({
@@ -158,6 +159,18 @@ export default async function AdminOverviewPage() {
           Quick Access
         </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <QuickTile
+            href="/admin/pulse"
+            icon={Activity}
+            label="Platform Pulse"
+            description="Live activity feed across all chefs"
+          />
+          <QuickTile
+            href="/admin/inquiries"
+            icon={Inbox}
+            label="All Inquiries"
+            description="Cross-tenant inquiry browser with claim"
+          />
           <QuickTile
             href="/admin/command-center"
             icon={Activity}

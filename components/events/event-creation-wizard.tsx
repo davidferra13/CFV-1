@@ -15,6 +15,7 @@ import { createEvent, type CreateEventInput } from '@/lib/events/actions'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
 import { toast } from 'sonner'
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
 
 type Client = {
   id: string
@@ -403,12 +404,18 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
               />
             </div>
 
-            <Input
+            <AddressAutocomplete
               label="Address"
               required
               placeholder="e.g., 123 Main St"
               value={locationAddress}
-              onChange={(e) => setLocationAddress(e.target.value)}
+              onChange={(val) => setLocationAddress(val)}
+              onPlaceSelect={(data) => {
+                setLocationAddress(data.address)
+                setLocationCity(data.city)
+                setLocationState(data.state)
+                setLocationZip(data.zip)
+              }}
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

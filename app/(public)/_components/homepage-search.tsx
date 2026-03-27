@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'Any service' },
@@ -18,13 +19,26 @@ const SERVICE_OPTIONS = [
 export function HomepageSearch() {
   const router = useRouter()
   const [location, setLocation] = useState('')
+  const [locationGeo, setLocationGeo] = useState<{ lat: number; lng: number } | null>(null)
   const [serviceType, setServiceType] = useState('')
+
+  function handleLocationSelect(data: LocationData) {
+    setLocation(data.displayText)
+    if (data.lat && data.lng) {
+      setLocationGeo({ lat: data.lat, lng: data.lng })
+    }
+  }
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
     const params = new URLSearchParams()
     if (location.trim()) params.set('location', location.trim())
     if (serviceType) params.set('serviceType', serviceType)
+    // Pass pre-geocoded coordinates when available (skips server-side geocoding)
+    if (locationGeo) {
+      params.set('lat', String(locationGeo.lat))
+      params.set('lng', String(locationGeo.lng))
+    }
     const qs = params.toString()
     router.push(`/chefs${qs ? `?${qs}` : ''}`)
   }
@@ -52,11 +66,14 @@ export function HomepageSearch() {
               d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
             />
           </svg>
-          <input
-            type="text"
-            placeholder="City, state, or ZIP"
+          <LocationAutocomplete
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            onSelect={handleLocationSelect}
+            onChange={(text) => {
+              setLocation(text)
+              setLocationGeo(null) // Clear geo when user types manually
+            }}
+            placeholder="City, state, or ZIP"
             className="w-full bg-transparent px-3 py-4 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none"
           />
         </div>

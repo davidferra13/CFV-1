@@ -212,6 +212,14 @@ export const standaloneTop: NavItem[] = [
     ],
   },
   { href: '/admin', label: 'Admin', icon: ShieldAlert, adminOnly: true, tier: 'secondary' },
+  { href: '/admin/pulse', label: 'Pulse', icon: ShieldAlert, adminOnly: true, tier: 'secondary' },
+  {
+    href: '/admin/inquiries',
+    label: 'All Inquiries',
+    icon: ShieldAlert,
+    adminOnly: true,
+    tier: 'secondary',
+  },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────

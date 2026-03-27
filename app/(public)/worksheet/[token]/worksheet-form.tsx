@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { submitClientWorksheet } from '@/lib/marketplace/worksheet-actions'
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
 
 type Props = {
   token: string
@@ -150,12 +151,11 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
           </div>
           <div>
             <label className="block text-sm font-medium text-stone-700 mb-1">Address</label>
-            <input
-              type="text"
+            <AddressAutocomplete
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={(val) => setAddress(val)}
+              onPlaceSelect={(data) => setAddress(data.formattedAddress)}
               placeholder="Event address"
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500"
             />
           </div>
         </div>

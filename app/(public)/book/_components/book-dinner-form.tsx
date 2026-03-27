@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'What type of service?' },
@@ -262,13 +263,13 @@ export function BookDinnerForm() {
             <label htmlFor="book-location" className={labelClass}>
               Event location *
             </label>
-            <input
+            <LocationAutocomplete
               id="book-location"
-              type="text"
               required
-              placeholder="City, state or ZIP code"
               value={form.location}
-              onChange={(e) => updateField('location', e.target.value)}
+              onSelect={(data: LocationData) => updateField('location', data.displayText)}
+              onChange={(text) => updateField('location', text)}
+              placeholder="City, state or ZIP code"
               className={inputClass}
             />
           </div>

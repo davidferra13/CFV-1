@@ -14,6 +14,7 @@ import {
 } from '@/lib/finance/mileage-actions'
 import { MILEAGE_PURPOSE_LABELS, type MileagePurpose } from '@/lib/finance/mileage-constants'
 import { Car, Plus, Trash2, Edit2, Save, MapPin, ChevronDown } from '@/components/ui/icons'
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
 
 interface Props {
   initialEntries: MileageEntry[]
@@ -275,22 +276,20 @@ export function MileageTracker({ initialEntries, initialSummary, events = [] }: 
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-stone-400 block mb-1">From</label>
-              <input
-                type="text"
+              <AddressAutocomplete
                 value={fromLocation}
-                onChange={(e) => setFromLocation(e.target.value)}
+                onChange={(val) => setFromLocation(val)}
+                onPlaceSelect={(data) => setFromLocation(data.formattedAddress)}
                 placeholder="Starting location"
-                className="w-full text-sm border border-stone-700 bg-stone-800 text-stone-100 rounded-lg px-3 py-2"
               />
             </div>
             <div>
               <label className="text-xs text-stone-400 block mb-1">To</label>
-              <input
-                type="text"
+              <AddressAutocomplete
                 value={toLocation}
-                onChange={(e) => setToLocation(e.target.value)}
+                onChange={(val) => setToLocation(val)}
+                onPlaceSelect={(data) => setToLocation(data.formattedAddress)}
                 placeholder="Destination"
-                className="w-full text-sm border border-stone-700 bg-stone-800 text-stone-100 rounded-lg px-3 py-2"
               />
             </div>
           </div>

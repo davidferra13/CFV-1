@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
 import { submitPublicInquiry } from '@/lib/inquiries/public-actions'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 
@@ -390,14 +391,20 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             placeholder="Full Name"
           />
 
-          <Input
+          <AddressAutocomplete
             label="Address"
-            name="address"
-            type="text"
+            required
             value={formData.address}
-            onChange={handleChange}
-            error={errors.address}
+            onChange={(val) => {
+              setFormData((prev) => ({ ...prev, address: val }))
+              if (errors.address) setErrors((prev) => ({ ...prev, address: undefined }))
+            }}
+            onPlaceSelect={(data) => {
+              setFormData((prev) => ({ ...prev, address: data.formattedAddress }))
+              if (errors.address) setErrors((prev) => ({ ...prev, address: undefined }))
+            }}
             placeholder="Street, City, State, ZIP"
+            error={errors.address}
           />
 
           <div className="space-y-2">

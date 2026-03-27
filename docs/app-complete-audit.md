@@ -1692,11 +1692,34 @@ Pricing page (`/pricing`) feature checklist now includes "Remy AI concierge — 
 | Status dropdown | Select per row    | Changes status (pending/invited/onboarded/declined). Updates timestamps (invited_at, onboarded_at). Optimistic with rollback. |
 | Notes           | Inline edit       | Click to edit, Enter to save. Admin private notes per signup.                                                                 |
 
+### Admin: Platform Pulse (`/admin/pulse`)
+
+| Element           | Type  | Description                                                                                     |
+| ----------------- | ----- | ----------------------------------------------------------------------------------------------- |
+| Activity feed     | List  | Reverse-chronological feed of all platform activity (bookings, inquiries, events, recipes, etc) |
+| Type filters      | Links | Toggle activity types on/off                                                                    |
+| Local Only toggle | Link  | Show only activity within founder's service area                                                |
+| Vitals sidebar    | Panel | Today's counts, chef leaderboard (30 days), quiet chefs (14+ days inactive)                     |
+| Pagination        | Links | Previous/Next for feed                                                                          |
+
+### Admin: All Inquiries (`/admin/inquiries`)
+
+| Element           | Type      | Description                                                                   |
+| ----------------- | --------- | ----------------------------------------------------------------------------- |
+| Inquiry table     | Table     | All inquiries across all chefs: date, client, location, occasion, guests, etc |
+| Status filter     | Links     | Filter by inquiry status                                                      |
+| Local Only toggle | Link      | Show only inquiries in founder's service area                                 |
+| Search            | Input+btn | Search by client name, email, or location                                     |
+| Claim button      | Button    | Duplicate inquiry under founder's tenant (creates client + inquiry + event)   |
+| Pagination        | Links     | Previous/Next for table                                                       |
+
 ### Admin Sidebar
 
-| Nav item     | Icon   | Route         |
-| ------------ | ------ | ------------- |
-| Beta Signups | Rocket | `/admin/beta` |
+| Nav item      | Icon        | Route              |
+| ------------- | ----------- | ------------------ |
+| Pulse         | ShieldAlert | `/admin/pulse`     |
+| All Inquiries | ShieldAlert | `/admin/inquiries` |
+| Beta Signups  | Rocket      | `/admin/beta`      |
 
 ---
 
@@ -1807,14 +1830,14 @@ Public-facing consumer marketplace pages. No auth required. These form the clien
 
 Client-first marketplace landing. Hero with "Find a private chef near you." tagline.
 
-| Element            | Description                                                                                                                                   |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hero section       | Gradient background, headline, subtitle, "Book a Private Chef" CTA button                                                                     |
-| Search bar         | `HomepageSearch` component: location input + service type dropdown + search button. Navigates to `/chefs?location=X&serviceType=Y`            |
-| Service categories | 6 cards (Private Dining, Meal Prep, Cooking Classes, Corporate Events, Wedding Catering, Special Diets). Each links to `/chefs?serviceType=X` |
-| Featured chefs     | Grid of discoverable chefs from `getDiscoverableChefs()`, sorted by `sortDirectoryChefs()`. Chef cards with avatar, name, tagline, rating     |
-| How it works       | 3-step: Describe Your Event, Get Matched, Enjoy. Icons + descriptions                                                                         |
-| Operator CTA       | Bottom section targeting chef operators with link to `/for-operators`                                                                         |
+| Element            | Description                                                                                                                                                                                                     |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero section       | Gradient background, headline, subtitle, "Book a Private Chef" CTA button                                                                                                                                       |
+| Search bar         | `HomepageSearch` component: `LocationAutocomplete` for location + service type dropdown + search button. Passes pre-geocoded lat/lng when available. Navigates to `/chefs?location=X&serviceType=Y&lat=N&lng=N` |
+| Service categories | 6 cards (Private Dining, Meal Prep, Cooking Classes, Corporate Events, Wedding Catering, Special Diets). Each links to `/chefs?serviceType=X`                                                                   |
+| Featured chefs     | Grid of discoverable chefs from `getDiscoverableChefs()`, sorted by `sortDirectoryChefs()`. Chef cards with avatar, name, tagline, rating                                                                       |
+| How it works       | 3-step: Describe Your Event, Get Matched, Enjoy. Icons + descriptions                                                                                                                                           |
+| Operator CTA       | Bottom section targeting chef operators with link to `/for-operators`                                                                                                                                           |
 
 ### Book a Private Chef (`/book`)
 

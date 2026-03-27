@@ -13,6 +13,7 @@ import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
 import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
 
 // ─── Collapsible Section ──────────────────────────────────────────────────────
 
@@ -672,11 +673,12 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
-            <Textarea
+            <AddressAutocomplete
               label="Address"
               placeholder="Full address"
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={(val) => setAddress(val)}
+              onPlaceSelect={(data) => setAddress(data.formattedAddress)}
             />
             <Select
               label="How did they find you?"

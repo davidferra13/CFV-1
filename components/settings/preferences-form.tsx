@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { StoreAutocomplete } from '@/components/ui/store-autocomplete'
+import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
 import { detectMyLocation } from '@/lib/geo/geo-actions'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 
@@ -192,10 +193,16 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-stone-300 mb-1">City</label>
-              <Input
+              <LocationAutocomplete
                 value={homeCity}
-                onChange={(e) => setHomeCity(e.target.value)}
+                onChange={(text) => setHomeCity(text)}
+                onSelect={(data: LocationData) => {
+                  setHomeCity(data.city)
+                  setHomeState(data.state)
+                  setHomeZip(data.zip)
+                }}
                 placeholder="City"
+                className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               />
             </div>
             <div>

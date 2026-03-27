@@ -98,6 +98,7 @@ type ParsedJoin = {
   table: string // e.g. 'clients'
   columns: string[] // e.g. ['full_name']
   allColumns: boolean // true if columns is ['*']
+  inner: boolean // true if !inner hint was used
 }
 
 function parseSelectString(select: string): ParsedSelect {

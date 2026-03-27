@@ -6,6 +6,7 @@ import { createSocialPost, uploadPostMedia } from '@/lib/social/chef-social-acti
 import type { PostVisibility, SocialChannel } from '@/lib/social/chef-social-actions'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
 
 type Visibility = PostVisibility
 
@@ -151,12 +152,11 @@ export function SocialPostComposer({
       {showLocation && (
         <div className="flex items-center gap-2 ml-13">
           <MapPin className="h-4 w-4 text-stone-400 flex-shrink-0" />
-          <input
-            type="text"
+          <LocationAutocomplete
             value={locationTag}
-            onChange={(e) => setLocationTag(e.target.value)}
+            onChange={(text) => setLocationTag(text)}
+            onSelect={(data: LocationData) => setLocationTag(data.displayText)}
             placeholder="Add location..."
-            maxLength={100}
             className="text-sm border border-stone-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 flex-1"
           />
         </div>

@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
 import { updateClientPersonalInfo } from '@/lib/clients/milestones'
 
 type AdditionalAddress = {
@@ -140,10 +141,19 @@ export function AddressManager({
             </div>
             <div>
               <label className="text-xs font-medium text-stone-400">Address</label>
-              <Input
+              <AddressAutocomplete
                 placeholder="Street address"
                 value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                onChange={(val) => setForm({ ...form, address: val })}
+                onPlaceSelect={(data) =>
+                  setForm({
+                    ...form,
+                    address: data.address,
+                    city: data.city,
+                    state: data.state,
+                    zip: data.zip,
+                  })
+                }
               />
             </div>
             <div className="grid grid-cols-3 gap-3">

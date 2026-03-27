@@ -9,6 +9,7 @@ import {
   resolveCurrentDirectoryLocation,
 } from '@/lib/directory/location-actions'
 import type { DirectoryFacetOption, DirectorySortMode } from '@/lib/directory/utils'
+import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
 
 type DirectoryLocationSource = 'manual' | 'current' | 'approximate'
 
@@ -233,18 +234,20 @@ export function DirectoryFiltersForm({
           Location
         </span>
         <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-          <input
-            type="text"
+          <LocationAutocomplete
             name="location"
             value={locationValue}
-            onChange={(event) => {
-              setLocationValue(event.currentTarget.value)
+            onSelect={(data: LocationData) => {
+              setLocationValue(data.displayText)
+              setLocationSourceValue('manual')
+              setLocationFeedback(null)
+            }}
+            onChange={(text) => {
+              setLocationValue(text)
               setLocationSourceValue('manual')
               setLocationFeedback(null)
             }}
             placeholder="ZIP code or city, state"
-            maxLength={maxQueryLength}
-            inputMode="search"
             className="block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
           <button
