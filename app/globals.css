@@ -1270,11 +1270,13 @@ html {
 }
 
 /* ── Gradient text for hero headlines ── */
+/* Uses deeper brand tones (600/500) so the gradient reads clearly
+   against the warm peach hero background instead of blending in. */
 .text-gradient {
   background: linear-gradient(
     135deg,
-    rgb(var(--brand-300)),
-    rgb(var(--brand-400)),
+    rgb(var(--brand-600)),
+    rgb(var(--brand-500)),
     var(--text-primary)
   );
   -webkit-background-clip: text;

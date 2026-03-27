@@ -71,7 +71,7 @@ export default function Home() {
           <h1 className="max-w-4xl fluid-display-xl font-display tracking-tight text-gradient">
             The operating system for private chefs.
           </h1>
-          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-stone-400 md:text-xl">
+          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-stone-300 md:text-xl">
             Clients, events, menus, recipes, finances, and staff.
             <br className="hidden sm:inline" />
             One platform that respects your craft and your privacy.
