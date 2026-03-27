@@ -10,13 +10,14 @@ import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
 const FOOTER_LINKS = {
   discover: [
-    { href: '/', label: 'Home' },
-    { href: '/chefs', label: 'Search chefs' },
+    { href: '/chefs', label: 'Find a Chef' },
+    { href: '/discover', label: 'Food Directory' },
+    { href: '/gift-cards', label: 'Gift Cards' },
     { href: '/contact', label: 'Contact' },
   ],
   forOperators: [
-    { href: '/marketplace-chefs', label: 'For chefs' },
-    { href: '/compare', label: 'Compare Plans' },
+    { href: '/for-operators', label: 'Why ChefFlow' },
+    { href: '/marketplace-chefs', label: 'Marketplace Chefs' },
     { href: '/partner-signup', label: 'Become a Partner' },
   ],
   resources: [

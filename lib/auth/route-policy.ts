@@ -147,6 +147,8 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/g',
   '/availability',
   '/discover',
+  '/for-operators',
+  '/gift-cards',
 ] as const
 
 export const PUBLIC_ASSET_PATHS = [
