@@ -29,6 +29,7 @@ export async function selectArchetype(archetypeId: ArchetypeId) {
     archetype: archetypeId,
     enabled_modules: archetype.enabledModules,
     primary_nav_hrefs: archetype.primaryNavHrefs,
+    updated_at: new Date().toISOString(),
   }
 
   // Upsert into chef_preferences
