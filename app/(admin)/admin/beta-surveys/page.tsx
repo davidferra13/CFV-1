@@ -70,7 +70,7 @@ export default async function AdminBetaSurveysPage() {
                     <strong className="text-slate-200">{survey.questions.length}</strong> questions
                   </span>
                   <span>
-                    Slug: <code className="text-slate-300">{survey.slug}</code>
+                    ID: <code className="text-slate-300">{survey.slug}</code>
                   </span>
                 </div>
               </div>

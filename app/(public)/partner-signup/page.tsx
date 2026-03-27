@@ -20,7 +20,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
           <div className="max-w-xl mx-auto text-center space-y-6">
             <h1 className="text-3xl font-bold text-stone-100">Partner Sign Up</h1>
             <p className="text-stone-300">
-              Use your chef&apos;s partner link, or enter their profile slug to continue.
+              Use your chef&apos;s partner link, or enter their profile name to continue.
             </p>
 
             <form
@@ -29,12 +29,12 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
               className="bg-stone-900 border border-stone-700 rounded-lg p-5 text-left space-y-4"
             >
               <label className="block">
-                <span className="text-sm font-medium text-stone-300">Chef Slug</span>
+                <span className="text-sm font-medium text-stone-300">Chef profile name</span>
                 <input
                   type="text"
                   name="chef"
                   required
-                  placeholder="chef-slug"
+                  placeholder="chef-name"
                   className="mt-1 block w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </label>
@@ -45,12 +45,13 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
 
             {chefSlug && !data && (
               <p className="text-sm text-red-600">
-                No chef profile found for slug <span className="font-mono">{chefSlug}</span>.
+                No chef profile found for <span className="font-mono">{chefSlug}</span>. Check the
+                link your chef shared with you.
               </p>
             )}
 
             <p className="text-sm text-stone-500">
-              Preferred format: <span className="font-mono">/chef/your-slug/partner-signup</span>
+              Ask your chef for their partner signup link if you don&apos;t have it.
             </p>
           </div>
         </section>

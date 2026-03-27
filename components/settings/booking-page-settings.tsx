@@ -118,13 +118,13 @@ export function BookingPageSettings({ initialSettings }: Props) {
       {enabled && (
         <div className="space-y-4 pl-7">
           <Input
-            label="Booking URL slug"
+            label="Custom link name"
             required
             placeholder="your-name"
             value={slug}
             onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
             helperText={
-              bookingUrl ? `Your link: ${bookingUrl}` : 'Set a slug to generate your link'
+              bookingUrl ? `Your link: ${bookingUrl}` : 'Choose a short name for your booking link'
             }
           />
 

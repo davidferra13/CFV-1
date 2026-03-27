@@ -183,7 +183,7 @@ export function MenuTemplateSettings({ templates }: Props) {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <input
               className="rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm"
-              placeholder="Slug (example: birthday-modern)"
+              placeholder="Short name (e.g. birthday-modern)"
               value={form.slug}
               onChange={(e) => setForm((value) => ({ ...value, slug: e.target.value }))}
             />
