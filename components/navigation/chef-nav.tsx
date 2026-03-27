@@ -352,7 +352,7 @@ const RailFlyout = memo(function RailFlyout({
                       })}
                       {advanced.length > 0 && (
                         <details className="pt-1">
-                          <summary className="cursor-pointer px-2 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
+                          <summary className="cursor-pointer px-2 py-1 text-xs font-semibold uppercase tracking-wider text-stone-300 hover:text-stone-200">
                             Advanced
                           </summary>
                           <div className="space-y-0.5">
@@ -437,14 +437,14 @@ const NavGroupSection = memo(function NavGroupSection({
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+        className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
           active && !isOpen
             ? 'text-brand-400'
-            : 'text-stone-400 hover:bg-stone-800/40 hover:text-stone-200'
+            : 'text-stone-300 hover:bg-stone-800/40 hover:text-stone-100'
         }`}
       >
         <GroupIcon
-          className={`w-4 h-4 flex-shrink-0 ${active ? 'text-brand-500' : 'text-stone-600'}`}
+          className={`w-4.5 h-4.5 flex-shrink-0 ${active ? 'text-brand-500' : 'text-stone-600'}`}
         />
         <span
           className={`flex-1 text-left tracking-tight transition-opacity ${active ? 'opacity-100' : 'opacity-80'}`}
@@ -468,7 +468,7 @@ const NavGroupSection = memo(function NavGroupSection({
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="ml-3 pl-3 border-l border-stone-800/60 mt-0.5 space-y-0.5">
+        <div className="ml-3 pl-3 border-l border-stone-800/60 mt-1 space-y-0.5">
           {group.items.map((item) => {
             const Icon = item.icon
             const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
@@ -513,7 +513,7 @@ const NavGroupSection = memo(function NavGroupSection({
                             className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
                               childActive
                                 ? 'bg-brand-950 text-brand-400'
-                                : 'text-stone-400 hover:bg-stone-800 hover:text-brand-400'
+                                : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
                             }`}
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
@@ -523,7 +523,7 @@ const NavGroupSection = memo(function NavGroupSection({
                       })}
                       {advanced.length > 0 && (
                         <details className="pt-1">
-                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
+                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-300 hover:text-stone-200">
                             Advanced
                           </summary>
                           <div className="space-y-0.5">
@@ -536,7 +536,7 @@ const NavGroupSection = memo(function NavGroupSection({
                                   className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
                                     childActive
                                       ? 'bg-brand-950 text-brand-400'
-                                      : 'text-stone-400 hover:bg-stone-800 hover:text-brand-400'
+                                      : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
                                   }`}
                                 >
                                   <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />

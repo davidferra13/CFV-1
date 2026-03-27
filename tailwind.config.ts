@@ -49,11 +49,17 @@ const config: Config = {
         },
       },
       fontSize: {
-        '4xs': '7px',
-        '3xs': '8px',
-        '2xs': '9px',
-        xxs: '10px',
-        'xs-tight': '11px',
+        '4xs': '8px',
+        '3xs': '9px',
+        '2xs': '10px',
+        xxs: '11px',
+        'xs-tight': '12px',
+        /* Tailwind defaults overridden for better readability:
+           xs: 0.75rem (12px) -> 0.8125rem (13px)
+           sm: 0.875rem (14px) -> 0.9375rem (15px)
+           base: 1rem (16px) stays the same */
+        xs: ['0.8125rem', { lineHeight: '1.25rem' }],
+        sm: ['0.9375rem', { lineHeight: '1.375rem' }],
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],

@@ -18,13 +18,15 @@
   --brand-900: 116 64 33;
   --brand-950: 62 32 15;
 
-  /* Light theme flips the stone scale so dark-first utility usage renders as light. */
-  --stone-50: 26 20 15;
-  --stone-100: 38 31 25;
-  --stone-200: 63 53 44;
-  --stone-300: 91 78 66;
-  --stone-400: 121 106 91;
-  --stone-500: 159 144 128;
+  /* Light theme flips the stone scale so dark-first utility usage renders as light.
+     Scale darkened for readability (March 2026): 300-500 shifted ~15-25 points darker
+     so secondary/muted text stands out against light card and page backgrounds. */
+  --stone-50: 22 16 12;
+  --stone-100: 34 27 21;
+  --stone-200: 55 46 38;
+  --stone-300: 78 66 55;
+  --stone-400: 100 86 72;
+  --stone-500: 135 120 105;
   --stone-600: 201 190 178;
   --stone-700: 226 217 206;
   --stone-800: 241 235 227;
@@ -43,11 +45,11 @@
   --surface-3: rgb(var(--surface-3-rgb));
   --surface-4: rgb(var(--surface-4-rgb));
 
-  --text-primary: rgb(var(--stone-100));
-  --text-secondary: rgb(var(--stone-200));
-  --text-muted: rgb(var(--stone-300));
-  --text-muted-soft: rgb(106 92 78);
-  --text-placeholder: rgb(var(--stone-500));
+  --text-primary: rgb(var(--stone-50));
+  --text-secondary: rgb(var(--stone-100));
+  --text-muted: rgb(var(--stone-200));
+  --text-muted-soft: rgb(var(--stone-300));
+  --text-placeholder: rgb(var(--stone-400));
   --text-inverse: rgb(var(--stone-950));
 
   --border-subtle: rgb(var(--stone-700) / 0.9);
@@ -172,7 +174,7 @@ html {
   }
 
   body {
-    @apply bg-stone-950 text-stone-200 antialiased;
+    @apply bg-stone-950 text-stone-100 antialiased;
     background-color: var(--surface-0);
     color: var(--text-primary);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
@@ -200,12 +202,12 @@ html {
   input[type='url'],
   textarea,
   select {
-    @apply rounded-lg border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-100
+    @apply rounded-lg border border-stone-600 bg-stone-800 px-3.5 py-2.5 text-stone-100
       placeholder:text-stone-400
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-stone-800/80
       disabled:cursor-not-allowed disabled:bg-stone-900 disabled:text-stone-500;
-    /* Prevent iOS auto-zoom on focus - requires font-size >= 16px */
-    font-size: max(16px, 0.875rem);
+    /* 16px minimum prevents iOS auto-zoom; 15px is our new text-sm */
+    font-size: max(16px, 0.9375rem);
   }
 
   /* Eliminate 300ms tap delay on interactive elements */
@@ -344,9 +346,9 @@ html {
 
   /* Architectural section labels - small uppercase headers used throughout the app */
   .label-section {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-muted);
   }
@@ -357,9 +359,9 @@ html {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-muted-soft);
     padding-bottom: 0.5rem;
@@ -394,8 +396,8 @@ html {
   .flat-row {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.625rem 0;
+    gap: 0.875rem;
+    padding: 0.75rem 0;
     border-bottom: 1px solid rgb(var(--stone-800) / 0.5);
     transition: background-color var(--duration-fast);
   }

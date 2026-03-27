@@ -43,7 +43,7 @@ interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
 export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
   ({ className = '', as: Tag = 'h2', children, ...props }, ref) => {
     return (
-      <Tag ref={ref} className={`text-lg font-semibold text-stone-100 ${className}`} {...props}>
+      <Tag ref={ref} className={`text-lg font-semibold text-stone-50 ${className}`} {...props}>
         {children}
       </Tag>
     )
@@ -57,7 +57,7 @@ export const CardDescription = forwardRef<
   HTMLAttributes<HTMLParagraphElement>
 >(({ className = '', children, ...props }, ref) => {
   return (
-    <p ref={ref} className={`text-sm text-stone-400 ${className}`} {...props}>
+    <p ref={ref} className={`text-sm text-stone-300 ${className}`} {...props}>
       {children}
     </p>
   )

@@ -58,9 +58,9 @@ export const Button = forwardRef<any, ButtonProps>(
     }
 
     const sizes = {
-      sm: 'min-h-[44px] px-3 text-sm rounded-lg gap-1.5 touch-manipulation',
-      md: 'min-h-[44px] px-4 py-2 text-sm rounded-lg gap-2 touch-manipulation',
-      lg: 'h-12 px-6 text-base rounded-lg gap-2 touch-manipulation',
+      sm: 'min-h-[44px] px-3.5 text-sm rounded-lg gap-1.5 touch-manipulation',
+      md: 'min-h-[44px] px-5 py-2.5 text-sm rounded-lg gap-2 touch-manipulation',
+      lg: 'h-12 px-6 py-3 text-base rounded-lg gap-2 touch-manipulation',
     }
 
     const classes = `${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`
