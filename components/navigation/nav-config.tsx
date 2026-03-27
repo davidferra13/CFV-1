@@ -1115,11 +1115,14 @@ export const navGroups: NavGroup[] = [
   },
 
   // ─── CANNABIS (infused events, compliance, control packets) ───
+  // Hidden from all non-cannabis members. Only visible to chefs who have unlocked the cannabis tier.
+  // Pages exist at /cannabis/* but are gated by membership. Nav group kept here for completeness
+  // but uses module: 'cannabis' which is not in any default archetype's enabledModules.
   {
     id: 'cannabis',
     label: 'Cannabis',
     icon: SealCheck,
-    module: 'more',
+    module: 'cannabis',
     items: [
       {
         href: '/cannabis',
