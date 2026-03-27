@@ -3,40 +3,32 @@
 import { useState } from 'react'
 
 const SERVICE_OPTIONS = [
-  { value: '', label: 'Select a service type' },
-  { value: 'private_dinner', label: 'Private dinner' },
-  { value: 'catering', label: 'Catering' },
-  { value: 'meal_prep', label: 'Meal prep' },
+  { value: '', label: 'What type of service?' },
+  { value: 'dinner_party', label: 'Dinner party (private dining for your guests)' },
+  { value: 'meal_prep', label: 'Meal prep (weekly meals in your kitchen)' },
+  { value: 'catering', label: 'Catering (buffet or stations for groups)' },
   { value: 'wedding', label: 'Wedding or celebration' },
-  { value: 'corporate', label: 'Corporate dining' },
-  { value: 'cooking_class', label: 'Cooking class' },
-  { value: 'event_chef', label: 'Event chef' },
-  { value: 'personal_chef', label: 'Personal chef' },
-  { value: 'retreat', label: 'Retreat or multi-day' },
-  { value: 'popup', label: 'Pop-up' },
+  { value: 'cooking_class', label: 'Cooking class (learn from a pro)' },
+  { value: 'other', label: 'Something else (tell us in the notes)' },
 ]
 
 const GUEST_OPTIONS = [
-  { value: 2, label: '2 guests' },
-  { value: 4, label: '4 guests' },
-  { value: 6, label: '6 guests' },
-  { value: 8, label: '8 guests' },
-  { value: 10, label: '10 guests' },
-  { value: 15, label: '15 guests' },
-  { value: 20, label: '20 guests' },
-  { value: 30, label: '30 guests' },
-  { value: 50, label: '50 guests' },
-  { value: 75, label: '75+' },
+  { value: 0, label: 'How many guests?' },
+  { value: 1, label: '1-2 (intimate)' },
+  { value: 4, label: '3-6 (small gathering)' },
+  { value: 8, label: '7-12 (dinner party)' },
+  { value: 18, label: '13-25 (large party)' },
+  { value: 35, label: '26-50 (event)' },
+  { value: 75, label: '50+ (large event)' },
 ]
 
 const BUDGET_OPTIONS = [
-  { value: '', label: 'Select your budget' },
-  { value: 'flexible', label: 'Flexible (open to suggestions)' },
-  { value: 'under-500', label: 'Under $500' },
-  { value: '500-1000', label: '$500 - $1,000' },
-  { value: '1000-2000', label: '$1,000 - $2,000' },
-  { value: '2000-5000', label: '$2,000 - $5,000' },
-  { value: '5000-plus', label: '$5,000+' },
+  { value: '', label: 'What experience level?' },
+  { value: 'not-sure', label: 'Not sure yet (help me figure it out)' },
+  { value: 'casual', label: 'Casual dining ($40-$75 / person)' },
+  { value: 'elevated', label: 'Elevated experience ($75-$150 / person)' },
+  { value: 'fine-dining', label: 'Fine dining ($150-$300 / person)' },
+  { value: 'luxury', label: 'Luxury / custom ($300+ / person)' },
 ]
 
 type FormState = {
@@ -63,6 +55,8 @@ type SubmitResult = {
   error?: string
 }
 
+const todayStr = new Date().toISOString().split('T')[0]
+
 const inputClass =
   'w-full rounded-xl border border-stone-600/80 bg-stone-900/80 px-4 py-3 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 transition-colors'
 const labelClass = 'block text-sm font-medium text-stone-200 mb-1.5'
@@ -77,7 +71,7 @@ export function BookDinnerForm() {
     location: '',
     event_date: '',
     serve_time: '',
-    guest_count: 6,
+    guest_count: 0,
     occasion: '',
     service_type: '',
     budget_range: '',
@@ -88,6 +82,7 @@ export function BookDinnerForm() {
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<SubmitResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null)
 
   function updateField(field: keyof FormState, value: string | number) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -97,7 +92,22 @@ export function BookDinnerForm() {
     e.preventDefault()
     setSubmitting(true)
     setError(null)
+    setEmailSuggestion(null)
     setResult(null)
+
+    // Client-side: prevent past dates
+    if (form.event_date && form.event_date < todayStr) {
+      setError('Please select a future date for your event.')
+      setSubmitting(false)
+      return
+    }
+
+    // Client-side: require guest count selection
+    if (!form.guest_count) {
+      setError('Please select the number of guests.')
+      setSubmitting(false)
+      return
+    }
 
     try {
       const res = await fetch('/api/book', {
@@ -110,6 +120,9 @@ export function BookDinnerForm() {
 
       if (!res.ok) {
         setError(data.error || 'Something went wrong. Please try again.')
+        if (data.emailSuggestion) {
+          setEmailSuggestion(data.emailSuggestion)
+        }
         return
       }
 
@@ -223,6 +236,7 @@ export function BookDinnerForm() {
               id="book-date"
               type="date"
               required
+              min={todayStr}
               value={form.event_date}
               onChange={(e) => updateField('event_date', e.target.value)}
               className={inputClass}
@@ -281,7 +295,7 @@ export function BookDinnerForm() {
 
         <div>
           <label htmlFor="book-budget" className={labelClass}>
-            Budget
+            Budget per person
           </label>
           <select
             id="book-budget"
@@ -295,6 +309,10 @@ export function BookDinnerForm() {
               </option>
             ))}
           </select>
+          <p className="mt-1.5 text-xs text-stone-500">
+            Per-person estimate to help chefs tailor their proposal. Final pricing is set by your
+            chef.
+          </p>
         </div>
       </div>
 
@@ -386,6 +404,19 @@ export function BookDinnerForm() {
       {error && (
         <div className="rounded-xl border border-red-700/40 bg-red-950/30 px-4 py-3 text-sm text-red-200">
           {error}
+          {emailSuggestion && (
+            <button
+              type="button"
+              className="mt-2 block text-brand-400 hover:text-brand-300 underline"
+              onClick={() => {
+                updateField('email', emailSuggestion)
+                setError(null)
+                setEmailSuggestion(null)
+              }}
+            >
+              Did you mean {emailSuggestion}?
+            </button>
+          )}
         </div>
       )}
 
@@ -419,6 +450,9 @@ export function BookDinnerForm() {
         )}
       </button>
 
+      <p className="text-center text-xs text-stone-400">
+        Matched chefs typically respond within 24 hours. Free to submit, no obligation.
+      </p>
       <p className="text-center text-xs text-stone-500">
         Your information is shared only with matched chefs. We never sell your data.
       </p>

@@ -16,7 +16,16 @@ const BookingSchema = z.object({
   phone: z.string().max(50).optional().or(z.literal('')),
   // Event details
   location: z.string().min(1, 'Location is required').max(300),
-  event_date: z.string().min(1, 'Event date is required'),
+  event_date: z
+    .string()
+    .min(1, 'Event date is required')
+    .refine(
+      (val) => {
+        const today = new Date().toISOString().split('T')[0]
+        return val >= today
+      },
+      { message: 'Event date must be in the future' }
+    ),
   serve_time: z.string().max(20).optional().or(z.literal('')),
   guest_count: z.number().int().positive().max(500),
   occasion: z.string().min(1, 'Occasion is required').max(500),
