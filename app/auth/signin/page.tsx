@@ -97,8 +97,9 @@ function SignInForm() {
       flushSync(() => {
         setStage('redirecting')
       })
-      router.push(redirectPath)
-      router.refresh()
+      // Hard navigation: sign-in crosses layout boundaries (auth -> chef/client)
+      // and router.push() can't swap layout trees, leaving a blank page.
+      window.location.href = redirectPath
     } catch (err) {
       const error = err as Error
       setError(normalizeAuthErrorMessage(error.message))

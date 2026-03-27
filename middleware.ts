@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 import {
   isApiSkipAuthPath,
@@ -27,6 +28,19 @@ function getHomePathForRole(role: string | null | undefined): string {
     default:
       return '/dashboard'
   }
+}
+
+/**
+ * Build a redirect URL that preserves the client-facing origin.
+ * Behind Cloudflare Tunnel, request.url is http://localhost:3100 but
+ * the user's browser is on https://app.cheflowhq.com. We use the
+ * Host header (which the tunnel preserves) to construct the correct URL.
+ */
+function buildRedirectUrl(request: NextRequest, path: string): URL {
+  const proto =
+    request.headers.get('x-forwarded-proto') || (request.url.startsWith('https') ? 'https' : 'http')
+  const host = request.headers.get('host') || new URL(request.url).host
+  return new URL(path, `${proto}://${host}`)
 }
 
 /**
@@ -67,7 +81,7 @@ export default auth(async (request) => {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const redirectUrl = new URL('/auth/signin', request.url)
+    const redirectUrl = buildRedirectUrl(request, '/auth/signin')
     redirectUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(redirectUrl)
   }
@@ -80,7 +94,7 @@ export default auth(async (request) => {
   if (!role || !entityId) {
     // Authenticated but no role (new OAuth user) - send to role selection
     if (pathname !== '/auth/role-selection' && !pathname.startsWith('/api/auth')) {
-      return NextResponse.redirect(new URL('/auth/role-selection', request.url))
+      return NextResponse.redirect(buildRedirectUrl(request, '/auth/role-selection'))
     }
     return NextResponse.next({ request: { headers: requestHeaders } })
   }
@@ -111,19 +125,19 @@ export default auth(async (request) => {
 
   // Route-level access control
   if (pathname === '/') {
-    return NextResponse.redirect(new URL(getHomePathForRole(role), request.url))
+    return NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role)))
   }
 
   if (isChefRoutePath(pathname) && role !== 'chef') {
-    return NextResponse.redirect(new URL(getHomePathForRole(role), request.url))
+    return NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role)))
   }
 
   if (isClientRoutePath(pathname) && role !== 'client') {
-    return NextResponse.redirect(new URL(getHomePathForRole(role), request.url))
+    return NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role)))
   }
 
   if (isStaffRoutePath(pathname) && role !== 'staff') {
-    return NextResponse.redirect(new URL(getHomePathForRole(role), request.url))
+    return NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role)))
   }
 
   return response
