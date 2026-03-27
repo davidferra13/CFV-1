@@ -138,6 +138,7 @@ function parseSelectString(select: string): ParsedSelect {
         table,
         columns,
         allColumns: columns.length === 1 && columns[0] === '*',
+        inner: joinHint === 'inner',
       })
     } else {
       mainColumns.push(token.trim())
@@ -593,14 +594,22 @@ class QueryBuilder<T = any> {
 
     for (const join of parsed.joins) {
       const tbl = assertIdent(join.table)
+      const joinType = join.inner ? 'INNER JOIN' : 'LEFT JOIN'
       const fkCol = resolveFkColumn(this._table, tbl)
 
       if (fkCol) {
-        sql += ` LEFT JOIN ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(fkCol)} = ${quoteIdent(tbl)}."id"`
+        // Forward FK: main table has a column referencing joined table's id
+        sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(fkCol)} = ${quoteIdent(tbl)}."id"`
       } else {
-        // Fallback: try common convention (singular form + _id)
-        const singularGuess = tbl.replace(/s$/, '') + '_id'
-        sql += ` LEFT JOIN ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(singularGuess)} = ${quoteIdent(tbl)}."id"`
+        // Try reverse FK: joined table has a column referencing main table's id
+        const reverseFkCol = resolveFkColumn(tbl, this._table)
+        if (reverseFkCol) {
+          sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(tbl)}.${quoteIdent(reverseFkCol)} = ${quoteIdent(this._table)}."id"`
+        } else {
+          // Fallback: try common convention (singular form + _id)
+          const singularGuess = tbl.replace(/s$/, '') + '_id'
+          sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(singularGuess)} = ${quoteIdent(tbl)}."id"`
+        }
       }
     }
 
@@ -1059,7 +1068,9 @@ class QueryBuilder<T = any> {
 
   private serializeValue(val: unknown): unknown {
     if (val === null || val === undefined) return null
-    if (Array.isArray(val)) return JSON.stringify(val)
+    // Let postgres.js handle arrays natively (text[], int[], etc.)
+    // Only JSON-stringify plain objects (for JSONB columns)
+    if (Array.isArray(val)) return val
     if (typeof val === 'object' && !(val instanceof Date)) return JSON.stringify(val)
     return val
   }

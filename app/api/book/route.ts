@@ -156,7 +156,7 @@ export async function POST(request: NextRequest) {
         const { data: existingClient } = await db
           .from('clients')
           .select('id')
-          .eq('chef_id', tenantId)
+          .eq('tenant_id', tenantId)
           .ilike('email', clientEmail)
           .single()
 
@@ -168,11 +168,11 @@ export async function POST(request: NextRequest) {
           const { data: newClient, error: clientErr } = await db
             .from('clients')
             .insert({
-              chef_id: tenantId,
+              tenant_id: tenantId,
               full_name: clientName,
               email: clientEmail,
               phone: data.phone?.trim() || null,
-              referral_source: 'chefflow_booking',
+              referral_source: 'website',
             })
             .select('id')
             .single()
@@ -269,10 +269,10 @@ export async function POST(request: NextRequest) {
           // Look up the chef's email from their auth record
           const { data: chefRecord } = await db
             .from('chefs')
-            .select('contact_email')
+            .select('email')
             .eq('id', tenantId)
             .single()
-          const chefEmail = chefRecord?.contact_email
+          const chefEmail = chefRecord?.email
           if (chefEmail) {
             await sendNewInquiryChefEmail({
               chefEmail,
