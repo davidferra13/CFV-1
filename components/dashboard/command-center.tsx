@@ -158,6 +158,7 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Qualified', href: '/leads/qualified' },
         { label: 'Marketplace', href: '/marketplace' },
         { label: 'Availability', href: '/availability' },
+        { label: 'Wix Submissions', href: '/wix-submissions' },
       ],
     },
     {
@@ -311,6 +312,7 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Templates', href: '/marketing/templates' },
         { label: 'Sequences', href: '/marketing/sequences' },
         { label: 'Content Pipeline', href: '/marketing/content-pipeline' },
+        { label: 'Social Planner', href: '/social/planner' },
       ],
     },
     {
@@ -323,6 +325,9 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Testimonials', href: '/testimonials' },
         { label: 'Reviews', href: '/reviews' },
         { label: 'Referrals', href: '/clients/loyalty/referrals' },
+        { label: 'Community', href: '/network' },
+        { label: 'Community Templates', href: '/community/templates' },
+        { label: 'Charity Hours', href: '/charity' },
       ],
     },
     {
