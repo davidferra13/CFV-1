@@ -909,6 +909,18 @@ export function ChefSidebar({
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
+            {/* Nav Groups - rail flyouts */}
+            {filteredGroupEntries.map(({ group }) => (
+              <RailFlyout
+                key={group.id}
+                group={group}
+                pathname={pathname}
+                searchParams={searchParams}
+              />
+            ))}
+
+            <div className="w-6 border-t border-stone-800 my-1.5" />
+
             {/* Community - rail icon */}
             <Link
               href="/network"
@@ -1113,6 +1125,28 @@ export function ChefSidebar({
                   )
                 })}
             </div>
+
+            {/* ─── Nav Groups (full application depth: 13 groups, 167+ pages) ─── */}
+            {filteredGroupEntries.length > 0 && (
+              <>
+                <div className="h-px bg-stone-800/60 mx-2 my-2" />
+                <div className="space-y-0.5">
+                  {filteredGroupEntries.map(({ group, isLocked }) => (
+                    <NavGroupSection
+                      key={group.id}
+                      group={group}
+                      pathname={pathname}
+                      searchParams={searchParams}
+                      isOpen={openGroups.has(group.id)}
+                      onToggle={() => toggleGroup(group.id)}
+                      openItems={openItems}
+                      onToggleItem={toggleItem}
+                      isLocked={isLocked}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
 
             <button
               type="button"
