@@ -300,6 +300,9 @@ export const navGroups: NavGroup[] = [
           { href: '/prospecting/scrub', label: 'AI Scrub' },
           { href: '/prospecting/queue', label: 'Call Queue' },
           { href: '/prospecting/scripts', label: 'Call Scripts' },
+          { href: '/prospecting/clusters', label: 'Clusters' },
+          { href: '/prospecting/import', label: 'Import Leads' },
+          { href: '/prospecting/pipeline', label: 'Pipeline' },
         ],
       },
       {
@@ -401,9 +404,11 @@ export const navGroups: NavGroup[] = [
         icon: Gift,
         children: [
           { href: '/loyalty/rewards/new', label: 'Create Reward' },
+          { href: '/loyalty/learn', label: 'Learn About Loyalty' },
           { href: '/clients/loyalty', label: 'Loyalty Overview' },
           { href: '/clients/loyalty/points', label: 'Points' },
           { href: '/loyalty/settings', label: 'Program Settings' },
+          { href: '/loyalty/raffle', label: 'Raffle' },
           { href: '/clients/loyalty/referrals', label: 'Referrals' },
           { href: '/clients/loyalty/rewards', label: 'Rewards' },
         ],
@@ -662,6 +667,7 @@ export const navGroups: NavGroup[] = [
         label: 'Menus',
         icon: UtensilsCrossed,
         children: [
+          { href: '/culinary/menus', label: 'All Menus' },
           { href: '/culinary/menus/approved', label: 'Approved' },
           { href: '/culinary/dish-index', label: 'Dish Index' },
           { href: '/culinary/dish-index/insights', label: 'Dish Insights' },
@@ -948,8 +954,15 @@ export const navGroups: NavGroup[] = [
         children: [
           { href: '/expenses/new', label: 'Add Expense' },
           { href: '/finance/expenses', label: 'By Category' },
+          { href: '/finance/expenses/food-ingredients', label: 'Food & Ingredients' },
+          { href: '/finance/expenses/labor', label: 'Labor' },
+          { href: '/finance/expenses/marketing', label: 'Marketing' },
+          { href: '/finance/expenses/miscellaneous', label: 'Miscellaneous' },
           { href: '/finance/plate-costs', label: 'Plate Costs' },
           { href: '/receipts', label: 'Receipt Library' },
+          { href: '/finance/expenses/rentals-equipment', label: 'Rentals & Equipment' },
+          { href: '/finance/expenses/software', label: 'Software' },
+          { href: '/finance/expenses/travel', label: 'Travel' },
         ],
       },
       {
@@ -1004,6 +1017,7 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/payments/installments', label: 'Installments' },
           { href: '/finance/payments/refunds', label: 'Refunds' },
           { href: '/finance/retainers', label: 'Retainers' },
+          { href: '/finance/retainers/new', label: 'New Retainer' },
         ],
       },
       {
@@ -1072,6 +1086,16 @@ export const navGroups: NavGroup[] = [
         icon: Target,
       },
       {
+        href: '/finance/goals',
+        label: 'Financial Goals',
+        icon: Target,
+      },
+      {
+        href: '/payments/splitting',
+        label: 'Payment Splitting',
+        icon: CurrencyCircleDollar,
+      },
+      {
         href: '/finance/year-end',
         label: 'Year-End Close',
         icon: CalendarCheck,
@@ -1086,6 +1110,12 @@ export const navGroups: NavGroup[] = [
     icon: Users,
     module: 'more',
     items: [
+      {
+        href: '/charity',
+        label: 'Charity Hub',
+        icon: HeartHandshake,
+        children: [{ href: '/charity/hours', label: 'Volunteer Hours' }],
+      },
       {
         href: '/circles',
         label: 'Dinner Circles',
@@ -1133,6 +1163,7 @@ export const navGroups: NavGroup[] = [
           { href: '/cannabis/agreement', label: 'Agreement' },
           { href: '/cannabis/compliance', label: 'Compliance' },
           { href: '/cannabis/handbook', label: 'Handbook' },
+          { href: '/cannabis/hub', label: 'Member Hub' },
           { href: '/cannabis/invite', label: 'Invite Guests' },
         ],
       },
@@ -1204,6 +1235,7 @@ export const navGroups: NavGroup[] = [
         icon: Mail,
         children: [
           { href: '/marketing/push-dinners', label: 'Push Dinners' },
+          { href: '/marketing/push-dinners/new', label: 'New Push Dinner' },
           { href: '/marketing/sequences', label: 'Sequences' },
           { href: '/marketing/templates', label: 'Templates' },
         ],
@@ -1304,11 +1336,13 @@ export const navGroups: NavGroup[] = [
         label: 'Business Health',
         icon: ShieldCheck,
         children: [
+          { href: '/settings/protection/business-health', label: 'Business Health' },
           { href: '/settings/protection/continuity', label: 'Business Continuity' },
           { href: '/settings/protection/certifications', label: 'Certifications' },
           { href: '/settings/protection/crisis', label: 'Crisis Response' },
           { href: '/settings/protection/insurance', label: 'Insurance' },
           { href: '/settings/protection/nda', label: 'NDA & Permissions' },
+          { href: '/settings/protection/portfolio-removal', label: 'Portfolio Removal' },
         ],
       },
       {

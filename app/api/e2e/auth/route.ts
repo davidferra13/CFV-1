@@ -66,10 +66,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Auth secret not configured' }, { status: 500 })
     }
 
-    const cookieName =
-      (process.env.NODE_ENV as string) === 'production'
-        ? '__Secure-authjs.session-token'
-        : 'authjs.session-token'
+    // Auth.js uses __Secure- prefix when NEXTAUTH_URL starts with https://
+    // (regardless of NODE_ENV). Match that logic so the cookie is recognized.
+    const useSecure =
+      (process.env.NODE_ENV as string) === 'production' ||
+      process.env.NEXTAUTH_URL?.startsWith('https') ||
+      process.env.AUTH_URL?.startsWith('https')
+    const cookieName = useSecure ? '__Secure-authjs.session-token' : 'authjs.session-token'
 
     // Resolve role and tenant for the user
     let role = ''
@@ -116,7 +119,7 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       sameSite: 'lax',
       path: '/',
-      secure: (process.env.NODE_ENV as string) === 'production',
+      secure: useSecure,
       maxAge: 30 * 24 * 60 * 60, // 30 days
     })
 

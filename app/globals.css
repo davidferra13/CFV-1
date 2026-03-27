@@ -46,7 +46,7 @@
   --text-primary: rgb(var(--stone-100));
   --text-secondary: rgb(var(--stone-200));
   --text-muted: rgb(var(--stone-300));
-  --text-muted-soft: rgb(var(--stone-400));
+  --text-muted-soft: rgb(106 92 78);
   --text-placeholder: rgb(var(--stone-500));
   --text-inverse: rgb(var(--stone-950));
 
@@ -201,7 +201,7 @@ html {
   textarea,
   select {
     @apply rounded-lg border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-100
-      placeholder:text-stone-500
+      placeholder:text-stone-400
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:bg-stone-800/80
       disabled:cursor-not-allowed disabled:bg-stone-900 disabled:text-stone-500;
     /* Prevent iOS auto-zoom on focus - requires font-size >= 16px */
@@ -344,7 +344,7 @@ html {
 
   /* Architectural section labels - small uppercase headers used throughout the app */
   .label-section {
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
