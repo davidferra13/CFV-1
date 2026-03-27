@@ -113,7 +113,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 const NavFilterInput = memo(function NavFilterInput({
   value,
   onChange,
-  placeholder = 'Filter menu...',
+  placeholder = 'Search or \u2318K to jump...',
 }: {
   value: string
   onChange: (value: string) => void
@@ -437,17 +437,17 @@ const NavGroupSection = memo(function NavGroupSection({
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+        className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
           active && !isOpen
             ? 'text-brand-400'
-            : 'text-stone-300 hover:bg-stone-800/60 hover:text-brand-400'
+            : 'text-stone-400 hover:bg-stone-800/40 hover:text-stone-200'
         }`}
       >
         <GroupIcon
-          className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-500' : 'text-stone-500'}`}
+          className={`w-4 h-4 flex-shrink-0 ${active ? 'text-brand-500' : 'text-stone-600'}`}
         />
         <span
-          className={`flex-1 text-left tracking-tight transition-opacity ${active ? 'opacity-100' : 'opacity-70'}`}
+          className={`flex-1 text-left tracking-tight transition-opacity ${active ? 'opacity-100' : 'opacity-80'}`}
         >
           {group.label}
         </span>
@@ -747,10 +747,13 @@ export function ChefSidebar({
 
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
+      // Accordion: opening a group closes all others for a cleaner view
+      if (prev.has(id)) {
+        const next = new Set(prev)
+        next.delete(id)
+        return next
+      }
+      return new Set([id])
     })
   }
 
@@ -1129,7 +1132,13 @@ export function ChefSidebar({
             {/* ─── Nav Groups (full application depth: 13 groups, 167+ pages) ─── */}
             {filteredGroupEntries.length > 0 && (
               <>
-                <div className="h-px bg-stone-800/60 mx-2 my-2" />
+                <div className="mx-3 my-3 flex items-center gap-2">
+                  <div className="flex-1 h-px bg-stone-800/50" />
+                  <span className="text-2xs font-semibold uppercase tracking-widest text-stone-600">
+                    All Features
+                  </span>
+                  <div className="flex-1 h-px bg-stone-800/50" />
+                </div>
                 <div className="space-y-0.5">
                   {filteredGroupEntries.map(({ group, isLocked }) => (
                     <NavGroupSection
