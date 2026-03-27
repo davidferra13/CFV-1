@@ -88,7 +88,13 @@ async function getDrivingTime(
  * Check travel feasibility for back-to-back events within the next 7 days.
  * Returns estimates for each consecutive pair of events on the same day.
  */
-export async function getTravelEstimates(tenantId: string): Promise<TravelEstimate[]> {
+export type TravelEstimateResult = {
+  estimates: TravelEstimate[]
+  checkedCount: number
+  failedCount: number
+}
+
+export async function getTravelEstimates(tenantId: string): Promise<TravelEstimateResult> {
   const { createAdminClient } = await import('@/lib/db/admin')
   const db = createAdminClient()
 
@@ -106,7 +112,7 @@ export async function getTravelEstimates(tenantId: string): Promise<TravelEstima
     .order('event_date', { ascending: true })
     .limit(20)
 
-  if (!events || events.length < 2) return []
+  if (!events || events.length < 2) return { estimates: [], checkedCount: 0, failedCount: 0 }
 
   // Group events by date (YYYY-MM-DD)
   const byDate = new Map<string, typeof events>()
@@ -117,6 +123,8 @@ export async function getTravelEstimates(tenantId: string): Promise<TravelEstima
   }
 
   const estimates: TravelEstimate[] = []
+  let checkedCount = 0
+  let failedCount = 0
   const geoCache = new Map<string, GeoResult | null>()
 
   for (const [, dayEvents] of byDate) {
@@ -139,7 +147,10 @@ export async function getTravelEstimates(tenantId: string): Promise<TravelEstima
 
       const fromGeo = geoCache.get(fromKey)
       const toGeo = geoCache.get(toKey)
-      if (!fromGeo || !toGeo) continue
+      if (!fromGeo || !toGeo) {
+        failedCount++
+        continue
+      }
 
       // Get driving time
       const route = await getDrivingTime(
@@ -148,7 +159,11 @@ export async function getTravelEstimates(tenantId: string): Promise<TravelEstima
         toGeo.latitude,
         toGeo.longitude
       )
-      if (!route) continue
+      if (!route) {
+        failedCount++
+        continue
+      }
+      checkedCount++
 
       // Calculate gap between events
       const fromTime = new Date(from.event_date).getTime()
@@ -181,15 +196,23 @@ export async function getTravelEstimates(tenantId: string): Promise<TravelEstima
     }
   }
 
-  return estimates
+  return { estimates, checkedCount, failedCount }
 }
 
 /**
  * Format travel estimates as a Remy response.
  */
-export async function formatTravelEstimates(estimates: TravelEstimate[]): Promise<string> {
+export async function formatTravelEstimates(result: TravelEstimateResult): Promise<string> {
+  const { estimates, checkedCount, failedCount } = result
+
   if (estimates.length === 0) {
-    return "No back-to-back events this week that need travel time planning. You're good!"
+    if (checkedCount === 0 && failedCount > 0) {
+      return 'Could not check travel times (geocoding or routing service unavailable). Try again later.'
+    }
+    if (failedCount > 0) {
+      return `No travel conflicts for the pairs I could check, but ${failedCount} pair${failedCount !== 1 ? 's' : ''} could not be checked (geocoding or routing unavailable).`
+    }
+    return 'No back-to-back events this week that need travel time planning.'
   }
 
   const lines: string[] = ['**Travel time between back-to-back events:**\n']
@@ -216,6 +239,12 @@ export async function formatTravelEstimates(estimates: TravelEstimate[]): Promis
   if (infeasible.length > 0) {
     lines.push(
       `**${infeasible.length} scheduling conflict${infeasible.length > 1 ? 's' : ''} detected.** Consider adjusting event times or locations.`
+    )
+  }
+
+  if (failedCount > 0) {
+    lines.push(
+      `\n*Note: ${failedCount} event pair${failedCount !== 1 ? 's' : ''} could not be checked (geocoding or routing unavailable).*`
     )
   }
 

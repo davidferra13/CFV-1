@@ -22,7 +22,8 @@ export async function matchChefsForBooking(options: {
   const { location, serviceType, guestCount } = options
 
   // Resolve the client's location to coordinates
-  const resolvedLocation = await resolvePublicLocationQuery(location)
+  const locationResult = await resolvePublicLocationQuery(location)
+  const resolvedLocation = locationResult.data
   if (!resolvedLocation) {
     return { chefs: [], resolvedLocation: null }
   }

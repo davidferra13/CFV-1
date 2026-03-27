@@ -134,6 +134,9 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           meal_type: null,
           season: [],
           occasion_tags: [],
+          family_id: null,
+          variation_label: null,
+          family_name: null,
         }
         setRecipes((prev) => [newEntry, ...prev])
         setForm(EMPTY_FORM)

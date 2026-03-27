@@ -31,7 +31,8 @@ async function fetchEventWeather(eventId: string, tenantId: string): Promise<Eve
 
     if (!data?.location_lat || !data?.location_lng || !data?.event_date) return null
 
-    return await getEventWeather(data.location_lat, data.location_lng, data.event_date)
+    const result = await getEventWeather(data.location_lat, data.location_lng, data.event_date)
+    return result.data
   } catch {
     return null
   }

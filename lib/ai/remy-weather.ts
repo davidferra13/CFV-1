@@ -198,7 +198,13 @@ function evaluateWeather(forecast: WeatherForecast): {
  * Queries events within the next 7 days, geocodes their locations,
  * fetches forecasts, and returns alerts for concerning weather.
  */
-export async function getWeatherAlerts(tenantId: string): Promise<EventWeatherAlert[]> {
+export type WeatherAlertResult = {
+  alerts: EventWeatherAlert[]
+  checkedCount: number
+  failedCount: number
+}
+
+export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertResult> {
   // Import dynamically to avoid circular deps in server actions
   const { createAdminClient } = await import('@/lib/db/admin')
   const db = createAdminClient()
@@ -217,9 +223,11 @@ export async function getWeatherAlerts(tenantId: string): Promise<EventWeatherAl
     .order('event_date', { ascending: true })
     .limit(10)
 
-  if (!events || events.length === 0) return []
+  if (!events || events.length === 0) return { alerts: [], checkedCount: 0, failedCount: 0 }
 
   const alerts: EventWeatherAlert[] = []
+  let checkedCount = 0
+  let failedCount = 0
 
   // Geocode cache to avoid re-geocoding the same location
   const geoCache = new Map<string, GeoResult | null>()
@@ -234,11 +242,18 @@ export async function getWeatherAlerts(tenantId: string): Promise<EventWeatherAl
       geoCache.set(locKey, await geocodeLocation(event.location))
     }
     const geo = geoCache.get(locKey)
-    if (!geo) continue
+    if (!geo) {
+      failedCount++
+      continue
+    }
 
     // Fetch forecast
     const forecast = await fetchForecast(geo.latitude, geo.longitude, eventDate)
-    if (!forecast) continue
+    if (!forecast) {
+      failedCount++
+      continue
+    }
+    checkedCount++
 
     // Evaluate
     const evaluation = evaluateWeather(forecast)
@@ -256,15 +271,26 @@ export async function getWeatherAlerts(tenantId: string): Promise<EventWeatherAl
     })
   }
 
-  return alerts
+  return { alerts, checkedCount, failedCount }
 }
 
 /**
  * Format weather alerts as a Remy response.
  */
-export async function formatWeatherAlerts(alerts: EventWeatherAlert[]): Promise<string> {
+export async function formatWeatherAlerts(result: WeatherAlertResult): Promise<string> {
+  const { alerts, checkedCount, failedCount } = result
+
   if (alerts.length === 0) {
-    return 'No weather concerns for your upcoming events this week. Clear skies ahead!'
+    if (checkedCount === 0 && failedCount > 0) {
+      return 'Could not check weather for your upcoming events (weather service unavailable). Try again later.'
+    }
+    if (failedCount > 0) {
+      return `No weather concerns for the ${checkedCount} event${checkedCount !== 1 ? 's' : ''} I could check, but ${failedCount} event${failedCount !== 1 ? 's' : ''} could not be checked (geocoding or forecast unavailable).`
+    }
+    if (checkedCount === 0) {
+      return 'No upcoming events with locations to check weather for this week.'
+    }
+    return 'No weather concerns for your upcoming events this week.'
   }
 
   const lines: string[] = ['**Weather alerts for upcoming events:**\n']
@@ -289,6 +315,12 @@ export async function formatWeatherAlerts(alerts: EventWeatherAlert[]): Promise<
 
   if (alerts.some((a) => a.alertLevel === 'severe')) {
     lines.push('**Consider having a backup plan for severe weather events.**')
+  }
+
+  if (failedCount > 0) {
+    lines.push(
+      `\n*Note: ${failedCount} event${failedCount !== 1 ? 's' : ''} could not be checked (geocoding or forecast unavailable).*`
+    )
   }
 
   return lines.join('\n').trim()

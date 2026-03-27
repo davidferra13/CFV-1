@@ -2,7 +2,7 @@
 // Drop-in replacement for text inputs - returns structured address + lat/lng
 'use client'
 
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useState } from 'react'
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api'
 
 const LIBRARIES: ['places'] = ['places']
@@ -69,16 +69,24 @@ export function AddressAutocomplete({
   error,
 }: AddressAutocompleteProps) {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
   // Only load Google Maps script when we have an API key.
   // Empty key triggers an infinite retry loop in the loader.
-  const { isLoaded } = useJsApiLoader({
+  const { isLoaded, loadError: sdkError } = useJsApiLoader({
     googleMapsApiKey: apiKey || 'SKIP',
     libraries: LIBRARIES,
     preventGoogleFontsLoading: true,
   })
-  const ready = isLoaded && !!apiKey
+
+  // Detect SDK load failures (wrong key, network, referrer restriction)
+  if (sdkError && !loadError) {
+    console.warn('[address-autocomplete] Google Maps SDK failed to load:', sdkError)
+    setLoadError('Address autocomplete unavailable')
+  }
+
+  const ready = isLoaded && !!apiKey && !loadError
 
   const onLoad = useCallback((autocomplete: google.maps.places.Autocomplete) => {
     autocompleteRef.current = autocomplete

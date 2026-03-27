@@ -49,12 +49,16 @@ function weatherCodeToCondition(code: number): string {
   return WEATHER_CODE_CONDITIONS[code] ?? 'Variable'
 }
 
+export type ForecastResult = {
+  forecasts: DailyForecast[]
+  error: string | null
+}
+
 /**
  * Fetch a 7-day daily forecast from Open-Meteo.
- * Returns Fahrenheit temps and mph wind speeds directly from the API.
- * On any failure, returns an empty array (never throws).
+ * Returns { forecasts, error } so callers can distinguish "clear week" from "API down."
  */
-export async function fetchForecast(lat: number, lng: number): Promise<DailyForecast[]> {
+export async function fetchForecast(lat: number, lng: number): Promise<ForecastResult> {
   try {
     const params = new URLSearchParams({
       latitude: String(lat),
@@ -71,11 +75,14 @@ export async function fetchForecast(lat: number, lng: number): Promise<DailyFore
       next: { revalidate: 3600 },
     })
 
-    if (!res.ok) return []
+    if (!res.ok) {
+      console.error(`[open-meteo] Forecast HTTP ${res.status}`)
+      return { forecasts: [], error: `Weather API returned ${res.status}` }
+    }
 
     const data = await res.json()
     const daily = data.daily
-    if (!daily?.time?.length) return []
+    if (!daily?.time?.length) return { forecasts: [], error: null }
 
     const forecasts: DailyForecast[] = []
     for (let i = 0; i < daily.time.length; i++) {
@@ -91,9 +98,10 @@ export async function fetchForecast(lat: number, lng: number): Promise<DailyFore
       })
     }
 
-    return forecasts
-  } catch {
-    return []
+    return { forecasts, error: null }
+  } catch (err) {
+    console.error('[open-meteo] Forecast error:', err)
+    return { forecasts: [], error: 'Weather service unreachable' }
   }
 }
 
@@ -169,14 +177,14 @@ export async function getWeatherForEvents(
 
   const promises = events.map(async (ev) => {
     try {
-      const weather = await getEventWeather(ev.lat, ev.lng, ev.eventDate)
-      if (weather) {
+      const result = await getEventWeather(ev.lat, ev.lng, ev.eventDate)
+      if (result.data) {
         results[ev.id] = {
-          emoji: weather.emoji,
-          tempMinF: weather.tempMinF,
-          tempMaxF: weather.tempMaxF,
-          precipitationMm: weather.precipitationMm,
-          description: weather.description,
+          emoji: result.data.emoji,
+          tempMinF: result.data.tempMinF,
+          tempMaxF: result.data.tempMaxF,
+          precipitationMm: result.data.precipitationMm,
+          description: result.data.description,
         }
       }
     } catch {
@@ -188,11 +196,16 @@ export async function getWeatherForEvents(
   return results
 }
 
+export type EventWeatherResult = {
+  data: EventWeather | null
+  error: string | null
+}
+
 export async function getEventWeather(
   lat: number,
   lng: number,
   eventDate: string | Date
-): Promise<EventWeather | null> {
+): Promise<EventWeatherResult> {
   try {
     const date = typeof eventDate === 'string' ? new Date(eventDate) : eventDate
     const dateStr = toDateStr(date)
@@ -201,7 +214,7 @@ export async function getEventWeather(
     const diffDays = Math.ceil((date.getTime() - today.getTime()) / 86_400_000)
 
     // Too far in the future for any API
-    if (diffDays > 16) return null
+    if (diffDays > 16) return { data: null, error: null }
 
     const isHistorical = diffDays < -1
     const baseUrl = isHistorical
@@ -221,31 +234,38 @@ export async function getEventWeather(
     const res = await fetch(`${baseUrl}?${params}`, {
       next: { revalidate: 3600 },
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      console.error(`[open-meteo] EventWeather HTTP ${res.status}`)
+      return { data: null, error: `Weather API returned ${res.status}` }
+    }
 
     const data = await res.json()
     const daily = data.daily
 
-    if (!daily?.weathercode?.length) return null
+    if (!daily?.weathercode?.length) return { data: null, error: null }
 
     // For forecast, pick the last entry (which is the target date)
     const idx = daily.time.indexOf(dateStr)
-    if (idx === -1) return null
+    if (idx === -1) return { data: null, error: null }
 
     const code = daily.weathercode[idx]
     const { text, emoji } = wmoLookup(code)
 
     return {
-      date: dateStr,
-      tempMaxF: Math.round(daily.temperature_2m_max[idx]),
-      tempMinF: Math.round(daily.temperature_2m_min[idx]),
-      precipitationMm: daily.precipitation_sum[idx] ?? 0,
-      weatherCode: code,
-      description: text,
-      emoji,
-      isHistorical,
+      data: {
+        date: dateStr,
+        tempMaxF: Math.round(daily.temperature_2m_max[idx]),
+        tempMinF: Math.round(daily.temperature_2m_min[idx]),
+        precipitationMm: daily.precipitation_sum[idx] ?? 0,
+        weatherCode: code,
+        description: text,
+        emoji,
+        isHistorical,
+      },
+      error: null,
     }
-  } catch {
-    return null
+  } catch (err) {
+    console.error('[open-meteo] EventWeather error:', err)
+    return { data: null, error: 'Weather service unreachable' }
   }
 }

@@ -4,7 +4,13 @@
 // Batch-fetches weather data for multiple events using the Open-Meteo API.
 // Used by calendar views and event list to show compact weather indicators.
 
-import { getEventWeather, fetchForecast, type EventWeather, type DailyForecast } from './open-meteo'
+import {
+  getEventWeather,
+  fetchForecast,
+  type EventWeather,
+  type DailyForecast,
+  type ForecastResult,
+} from './open-meteo'
 import { assessWeatherRisk, type WeatherRiskResult } from '@/lib/formulas/weather-risk'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
@@ -43,8 +49,8 @@ export async function getWeatherBatch(
   // Fetch all in parallel - each call has its own try/catch inside getEventWeather
   const settled = await Promise.allSettled(
     unique.map(async (req) => {
-      const weather = await getEventWeather(req.lat, req.lng, req.date)
-      return { date: req.date, weather }
+      const result = await getEventWeather(req.lat, req.lng, req.date)
+      return { date: req.date, weather: result.data }
     })
   )
 
@@ -72,7 +78,8 @@ export async function getWeatherForDate(
   date: string
 ): Promise<EventWeather | null> {
   try {
-    return await getEventWeather(lat, lng, date)
+    const result = await getEventWeather(lat, lng, date)
+    return result.data
   } catch {
     return null
   }
@@ -211,7 +218,8 @@ export async function getEventWeatherForecast(
     if (diffDays > 7) return null
 
     // Fetch the 7-day forecast
-    const forecasts = await fetchForecast(event.location_lat, event.location_lng)
+    const forecastResult = await fetchForecast(event.location_lat, event.location_lng)
+    const forecasts = forecastResult.forecasts
     if (forecasts.length === 0) return null
 
     // Find the day matching the event date

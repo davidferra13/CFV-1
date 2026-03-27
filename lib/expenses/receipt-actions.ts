@@ -78,7 +78,11 @@ export async function scanAndParseReceipt(formData: FormData): Promise<{
   // Send to OCR.space for text extraction
   let rawText: string | null
   try {
-    rawText = await scanReceiptFromBuffer(buffer, file.name)
+    const ocrResult = await scanReceiptFromBuffer(buffer, file.name)
+    if (ocrResult.error) {
+      return { success: false, error: `OCR service unavailable: ${ocrResult.error}` }
+    }
+    rawText = ocrResult.text
   } catch (err) {
     console.error('[scanAndParseReceipt] OCR.space error:', err)
     return { success: false, error: 'OCR service error. Please try again.' }

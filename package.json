@@ -29,6 +29,7 @@
     "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
+    "api:health": "npx tsx scripts/api-health-check.ts",
     "verify:secrets": "node scripts/secret-scan.mjs",
     "verify:payments": "node scripts/payments-readiness-check.mjs",
     "verify:clover-parity": "node scripts/verify-clover-parity-acceptance.mjs",

@@ -55,27 +55,30 @@ const CAUTION_LABELS: Record<string, string> = {
   FODMAP: 'FODMAPs',
 }
 
+// ── Structured result type ───────────────────────────────────────────────────
+
+export type EdamamResult = {
+  data: EdamamNutritionResult | null
+  error: string | null
+}
+
 // ── API Call ──────────────────────────────────────────────────────────────────
 
 /**
  * Analyze a list of ingredient lines via Edamam Nutrition Analysis API.
- * Returns nutrition data + allergen/health labels.
- *
- * Returns null if API keys are not configured (graceful degradation).
- * Returns null if the API call fails (non-blocking).
+ * Returns { data, error } so callers can distinguish "no allergens" from "API failed."
+ * SAFETY: returning null used to hide allergens when API was down.
  */
-export async function analyzeRecipe(
-  ingredientLines: string[]
-): Promise<EdamamNutritionResult | null> {
+export async function analyzeRecipe(ingredientLines: string[]): Promise<EdamamResult> {
   const appId = process.env.EDAMAM_APP_ID
   const appKey = process.env.EDAMAM_APP_KEY
 
   if (!appId || !appKey) {
-    return null
+    return { data: null, error: 'Edamam API keys not configured' }
   }
 
   if (ingredientLines.length === 0) {
-    return null
+    return { data: null, error: null }
   }
 
   // Build a deterministic cache key from sorted ingredients
@@ -85,7 +88,7 @@ export async function analyzeRecipe(
   try {
     const cached = await cacheGet<EdamamNutritionResult>(cacheKey)
     if (cached) {
-      return cached
+      return { data: cached, error: null }
     }
   } catch {
     // Cache miss is fine - proceed to API call
@@ -102,8 +105,8 @@ export async function analyzeRecipe(
     })
 
     if (!response.ok) {
-      console.warn(`[edamam] API returned ${response.status}: ${response.statusText}`)
-      return null
+      console.error(`[edamam] HTTP ${response.status}: ${response.statusText}`)
+      return { data: null, error: `Edamam API returned ${response.status}` }
     }
 
     const data = await response.json()
@@ -148,10 +151,10 @@ export async function analyzeRecipe(
       // Cache write failed - result still returned
     }
 
-    return result
+    return { data: result, error: null }
   } catch (err) {
     console.error('[edamam] API call failed:', err)
-    return null
+    return { data: null, error: 'Edamam service unreachable' }
   }
 }
 

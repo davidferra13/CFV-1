@@ -155,7 +155,11 @@ export function RecipeDumpClient({ existingFamilies }: Props) {
 
         // If we're in variation mode, assign to existing family
         if (variationMode && savedRecipe?.familyId) {
-          await assignRecipeToFamily(recipeId, savedRecipe.familyId, variationLabel.trim() || null)
+          await assignRecipeToFamily(
+            recipeId,
+            savedRecipe.familyId,
+            variationLabel.trim() || undefined
+          )
         }
 
         const saved: SavedRecipe = {

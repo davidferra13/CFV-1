@@ -21,6 +21,7 @@ export type AllergenResult = {
   carbs: number | null
   fiber: number | null
   configured: boolean
+  error: string | null
 }
 
 // ── Main Action ──────────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ export async function detectAllergens(recipeId: string): Promise<AllergenResult>
   const user = await requireChef()
   const db: any = createServerClient()
 
+  const configured = !!(process.env.EDAMAM_APP_ID && process.env.EDAMAM_APP_KEY)
   const emptyResult: AllergenResult = {
     allergens: [],
     cautions: [],
@@ -45,7 +47,8 @@ export async function detectAllergens(recipeId: string): Promise<AllergenResult>
     fat: null,
     carbs: null,
     fiber: null,
-    configured: !!(process.env.EDAMAM_APP_ID && process.env.EDAMAM_APP_KEY),
+    configured,
+    error: null,
   }
 
   // 1. Fetch recipe ingredients
@@ -92,23 +95,28 @@ export async function detectAllergens(recipeId: string): Promise<AllergenResult>
   try {
     const result = await analyzeRecipe(ingredientLines)
 
-    if (!result) {
+    if (result.error) {
+      return { ...emptyResult, error: result.error }
+    }
+
+    if (!result.data) {
       return emptyResult
     }
 
     return {
-      allergens: result.allergens,
-      cautions: result.cautions,
-      healthLabels: result.healthLabels,
-      calories: result.calories,
-      protein: result.protein,
-      fat: result.fat,
-      carbs: result.carbs,
-      fiber: result.fiber,
+      allergens: result.data.allergens,
+      cautions: result.data.cautions,
+      healthLabels: result.data.healthLabels,
+      calories: result.data.calories,
+      protein: result.data.protein,
+      fat: result.data.fat,
+      carbs: result.data.carbs,
+      fiber: result.data.fiber,
       configured: true,
+      error: null,
     }
   } catch (err) {
     console.error('[detectAllergens] Edamam call failed:', err)
-    return emptyResult
+    return { ...emptyResult, error: 'Allergen check failed unexpectedly' }
   }
 }

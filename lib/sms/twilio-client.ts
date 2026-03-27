@@ -7,7 +7,8 @@
 
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
-const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER
+// Support both env var names (TWILIO_FROM_NUMBER is canonical, TWILIO_PHONE_NUMBER is legacy alias)
+const TWILIO_PHONE_NUMBER = process.env.TWILIO_FROM_NUMBER || process.env.TWILIO_PHONE_NUMBER
 const TWILIO_WHATSAPP_NUMBER = process.env.TWILIO_WHATSAPP_NUMBER
 
 export function isTwilioConfigured(): boolean {

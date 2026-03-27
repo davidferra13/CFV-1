@@ -47,11 +47,17 @@ function OsmMap({ lat, lng, className = '' }: { lat: number; lng: number; classN
 // ─── Google Maps (requires NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) ───────────────
 
 function GoogleMapEmbed({ lat, lng, zoom, className = '' }: LocationMapProps) {
-  const { isLoaded } = useJsApiLoader({
+  const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
   })
 
   const center = useMemo(() => ({ lat, lng }), [lat, lng])
+
+  // Fall back to OpenStreetMap if Google Maps SDK fails to load
+  if (loadError) {
+    console.warn('[location-map] Google Maps SDK failed to load, falling back to OSM:', loadError)
+    return <OsmMap lat={lat} lng={lng} className={className} />
+  }
 
   if (!isLoaded) {
     return (

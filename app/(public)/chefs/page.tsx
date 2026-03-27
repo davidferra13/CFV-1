@@ -390,11 +390,13 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
   let locationFilteredChefs = allChefs
 
   if (requestedLocation && !stateOnlyLocation) {
-    resolvedLocation = await resolvePublicLocationQuery(requestedLocation)
+    const locResult = await resolvePublicLocationQuery(requestedLocation)
+    resolvedLocation = locResult.data
     if (resolvedLocation) {
       locationFilteredChefs = await filterChefsByResolvedLocation(allChefs, resolvedLocation)
     } else {
-      locationError = 'We could not place that location. Try a ZIP code or city, state.'
+      locationError =
+        locResult.error || 'We could not place that location. Try a ZIP code or city, state.'
     }
   }
 

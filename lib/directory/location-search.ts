@@ -127,7 +127,7 @@ export async function filterChefsByResolvedLocation(
 
   const resolvedEntries = await Promise.all(
     Array.from(uniqueQueries).map(
-      async (query) => [query, await resolvePublicLocationQuery(query)] as const
+      async (query) => [query, (await resolvePublicLocationQuery(query)).data] as const
     )
   )
   const resolvedQueryMap = new Map(

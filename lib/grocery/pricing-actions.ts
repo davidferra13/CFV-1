@@ -204,7 +204,10 @@ async function getSpoonacularPrice(
     const searchRes = await fetch(
       `https://api.spoonacular.com/food/ingredients/search?query=${encodeURIComponent(name)}&number=1&apiKey=${apiKey}`
     )
-    if (!searchRes.ok) return null
+    if (!searchRes.ok) {
+      console.error(`[spoonacular] Search HTTP ${searchRes.status} for "${name}"`)
+      return null
+    }
 
     const searchData = await searchRes.json()
     const ingredientId = searchData.results?.[0]?.id
@@ -214,14 +217,18 @@ async function getSpoonacularPrice(
       `https://api.spoonacular.com/food/ingredients/${ingredientId}/information` +
         `?amount=${quantity}&unit=${encodeURIComponent(unit)}&apiKey=${apiKey}`
     )
-    if (!infoRes.ok) return null
+    if (!infoRes.ok) {
+      console.error(`[spoonacular] Info HTTP ${infoRes.status} for "${name}"`)
+      return null
+    }
 
     const infoData = await infoRes.json()
     const cost = infoData.estimatedCost
     // Spoonacular returns { value: number, unit: "cents" }
     if (!cost || cost.unit !== 'cents') return null
     return Math.round(cost.value)
-  } catch {
+  } catch (err) {
+    console.error(`[spoonacular] Network error for "${name}":`, err)
     return null
   }
 }
@@ -261,7 +268,10 @@ async function getKrogerToken(): Promise<string | null> {
       },
       body: 'grant_type=client_credentials&scope=product.compact',
     })
-    if (!res.ok) return null
+    if (!res.ok) {
+      console.error(`[kroger] OAuth token HTTP ${res.status}`)
+      return null
+    }
 
     const data = await res.json()
     krogerToken = {
@@ -269,7 +279,8 @@ async function getKrogerToken(): Promise<string | null> {
       expiresAt: Date.now() + data.expires_in * 1000,
     }
     return krogerToken.token
-  } catch {
+  } catch (err) {
+    console.error('[kroger] OAuth token error:', err)
     return null
   }
 }
@@ -288,7 +299,10 @@ async function getKrogerPrice(name: string): Promise<number | null> {
         },
       }
     )
-    if (!res.ok) return null
+    if (!res.ok) {
+      console.error(`[kroger] Search HTTP ${res.status} for "${name}"`)
+      return null
+    }
 
     const data = await res.json()
     const item = data.data?.[0]?.items?.[0]
@@ -298,7 +312,8 @@ async function getKrogerPrice(name: string): Promise<number | null> {
     if (typeof price !== 'number') return null
 
     return Math.round(price * 100)
-  } catch {
+  } catch (err) {
+    console.error(`[kroger] Network error for "${name}":`, err)
     return null
   }
 }
@@ -332,7 +347,10 @@ async function getMealMePrice(name: string, zipCode: string | null): Promise<num
       `https://api.mealme.ai/search/store/v3?store_type=grocery&fetch_quotes=false${locationParam}&maximum_miles=15`,
       { headers }
     )
-    if (!storeRes.ok) return null
+    if (!storeRes.ok) {
+      console.error(`[mealme] Store search HTTP ${storeRes.status}`)
+      return null
+    }
 
     const storeData = await storeRes.json()
     // MealMe returns stores sorted by distance - take the first grocery result
@@ -344,7 +362,10 @@ async function getMealMePrice(name: string, zipCode: string | null): Promise<num
       `https://api.mealme.ai/search/item/v3?store_id=${encodeURIComponent(store.store_id)}&q=${encodeURIComponent(name)}&limit=1`,
       { headers }
     )
-    if (!itemRes.ok) return null
+    if (!itemRes.ok) {
+      console.error(`[mealme] Item search HTTP ${itemRes.status} for "${name}"`)
+      return null
+    }
 
     const itemData = await itemRes.json()
     const item = (itemData.products ?? itemData.items ?? itemData.data ?? [])[0]
@@ -360,7 +381,8 @@ async function getMealMePrice(name: string, zipCode: string | null): Promise<num
     }
 
     return null
-  } catch {
+  } catch (err) {
+    console.error(`[mealme] Network error for "${name}":`, err)
     return null
   }
 }

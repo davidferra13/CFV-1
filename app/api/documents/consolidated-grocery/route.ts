@@ -41,10 +41,10 @@ export async function GET(req: NextRequest) {
 
     const pdf = new PDFLayout()
     renderConsolidatedGroceryList(pdf, data)
-    pdf.generatedBy(user.name || 'Chef', 'Consolidated Grocery List')
+    pdf.generatedBy((user as any).name || 'Chef', 'Consolidated Grocery List')
     const buffer = pdf.toBuffer()
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `inline; filename="consolidated-grocery-${from}-to-${to}.pdf"`,

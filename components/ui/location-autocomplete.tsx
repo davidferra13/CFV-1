@@ -3,7 +3,7 @@
 // Falls back to plain text input if Google Maps API is unavailable
 'use client'
 
-import { useRef, useCallback, useState, useEffect } from 'react'
+import { useRef, useCallback, useState } from 'react'
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api'
 
 const LIBRARIES: ['places'] = ['places']
@@ -76,16 +76,23 @@ export function LocationAutocomplete({
   name,
 }: LocationAutocompleteProps) {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
   // Only load the Google Maps script when we have an API key.
   // Calling useJsApiLoader with an empty key triggers an infinite retry loop.
-  const { isLoaded } = useJsApiLoader({
+  const { isLoaded, loadError: sdkError } = useJsApiLoader({
     googleMapsApiKey: apiKey || 'SKIP',
     libraries: LIBRARIES,
     preventGoogleFontsLoading: true,
   })
-  const ready = isLoaded && !!apiKey
+
+  if (sdkError && !loadError) {
+    console.warn('[location-autocomplete] Google Maps SDK failed to load:', sdkError)
+    setLoadError('Location autocomplete unavailable')
+  }
+
+  const ready = isLoaded && !!apiKey && !loadError
 
   const onLoad = useCallback((autocomplete: google.maps.places.Autocomplete) => {
     autocompleteRef.current = autocomplete

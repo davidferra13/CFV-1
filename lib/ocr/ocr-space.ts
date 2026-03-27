@@ -1,18 +1,23 @@
 // OCR.space Receipt Scanner - API Utility
 // Free OCR API (500 req/day, no card required)
-// Returns raw extracted text from receipt images.
+// Returns { text, error } so callers can show "OCR unavailable" instead of "no receipt found."
 //
 // Env var: OCR_SPACE_API_KEY (free tier key from https://ocr.space)
-// If not set, functions return null (graceful degradation).
+// If not set, returns { text: null, error: 'not configured' }.
+
+export type OcrResult = {
+  text: string | null
+  error: string | null
+}
 
 /**
  * Scan a receipt image via URL using OCR.space API.
- * Returns the raw extracted text, or null if the API key is not configured.
+ * Returns { text, error } for honest error reporting.
  */
-export async function scanReceipt(imageUrl: string): Promise<string | null> {
+export async function scanReceipt(imageUrl: string): Promise<OcrResult> {
   const apiKey = process.env.OCR_SPACE_API_KEY
   if (!apiKey) {
-    return null
+    return { text: null, error: 'OCR.space API key not configured' }
   }
 
   const formData = new URLSearchParams()
@@ -24,51 +29,52 @@ export async function scanReceipt(imageUrl: string): Promise<string | null> {
   formData.append('scale', 'true')
   formData.append('OCREngine', '2') // Engine 2 is better for receipts
 
-  const response = await fetch('https://api.ocr.space/parse/image', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: formData.toString(),
-  })
+  try {
+    const response = await fetch('https://api.ocr.space/parse/image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData.toString(),
+    })
 
-  if (!response.ok) {
-    console.error('[OCR.space] HTTP error:', response.status, response.statusText)
-    return null
+    if (!response.ok) {
+      console.error('[OCR.space] HTTP error:', response.status, response.statusText)
+      return { text: null, error: `OCR API returned ${response.status}` }
+    }
+
+    const result = await response.json()
+
+    if (result.IsErroredOnProcessing) {
+      const msg = result.ErrorMessage?.[0] || 'Unknown error'
+      console.error('[OCR.space] Processing error:', msg)
+      return { text: null, error: `OCR processing failed: ${msg}` }
+    }
+
+    const parsedResults = result.ParsedResults
+    if (!parsedResults || parsedResults.length === 0) {
+      return { text: null, error: null }
+    }
+
+    const text = parsedResults
+      .map((r: { ParsedText: string }) => r.ParsedText)
+      .join('\n')
+      .trim()
+
+    return { text: text || null, error: null }
+  } catch (err) {
+    console.error('[OCR.space] Network error:', err)
+    return { text: null, error: 'OCR service unreachable' }
   }
-
-  const result = await response.json()
-
-  if (result.IsErroredOnProcessing) {
-    console.error('[OCR.space] Processing error:', result.ErrorMessage?.[0] || 'Unknown error')
-    return null
-  }
-
-  const parsedResults = result.ParsedResults
-  if (!parsedResults || parsedResults.length === 0) {
-    console.error('[OCR.space] No parsed results returned')
-    return null
-  }
-
-  // Concatenate text from all parsed pages
-  const text = parsedResults
-    .map((r: { ParsedText: string }) => r.ParsedText)
-    .join('\n')
-    .trim()
-
-  return text || null
 }
 
 /**
  * Scan a receipt from a raw image buffer using OCR.space API.
  * Sends the image as a base64-encoded file.
- * Returns the raw extracted text, or null if the API key is not configured.
+ * Returns { text, error } for honest error reporting.
  */
-export async function scanReceiptFromBuffer(
-  buffer: Buffer,
-  filename: string
-): Promise<string | null> {
+export async function scanReceiptFromBuffer(buffer: Buffer, filename: string): Promise<OcrResult> {
   const apiKey = process.env.OCR_SPACE_API_KEY
   if (!apiKey) {
-    return null
+    return { text: null, error: 'OCR.space API key not configured' }
   }
 
   // Convert buffer to base64 data URI
@@ -86,35 +92,39 @@ export async function scanReceiptFromBuffer(
   formData.append('scale', 'true')
   formData.append('OCREngine', '2') // Engine 2 is better for receipts
 
-  const response = await fetch('https://api.ocr.space/parse/image', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: formData.toString(),
-  })
+  try {
+    const response = await fetch('https://api.ocr.space/parse/image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData.toString(),
+    })
 
-  if (!response.ok) {
-    console.error('[OCR.space] HTTP error:', response.status, response.statusText)
-    return null
+    if (!response.ok) {
+      console.error('[OCR.space] HTTP error:', response.status, response.statusText)
+      return { text: null, error: `OCR API returned ${response.status}` }
+    }
+
+    const result = await response.json()
+
+    if (result.IsErroredOnProcessing) {
+      const msg = result.ErrorMessage?.[0] || 'Unknown error'
+      console.error('[OCR.space] Processing error:', msg)
+      return { text: null, error: `OCR processing failed: ${msg}` }
+    }
+
+    const parsedResults = result.ParsedResults
+    if (!parsedResults || parsedResults.length === 0) {
+      return { text: null, error: null }
+    }
+
+    const text = parsedResults
+      .map((r: { ParsedText: string }) => r.ParsedText)
+      .join('\n')
+      .trim()
+
+    return { text: text || null, error: null }
+  } catch (err) {
+    console.error('[OCR.space] Network error:', err)
+    return { text: null, error: 'OCR service unreachable' }
   }
-
-  const result = await response.json()
-
-  if (result.IsErroredOnProcessing) {
-    console.error('[OCR.space] Processing error:', result.ErrorMessage?.[0] || 'Unknown error')
-    return null
-  }
-
-  const parsedResults = result.ParsedResults
-  if (!parsedResults || parsedResults.length === 0) {
-    console.error('[OCR.space] No parsed results returned')
-    return null
-  }
-
-  // Concatenate text from all parsed pages
-  const text = parsedResults
-    .map((r: { ParsedText: string }) => r.ParsedText)
-    .join('\n')
-    .trim()
-
-  return text || null
 }

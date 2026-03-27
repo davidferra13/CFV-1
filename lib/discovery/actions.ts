@@ -227,7 +227,8 @@ export async function updateMyDiscoveryProfile(input: z.input<typeof DiscoveryPr
     [payload.service_area_city, payload.service_area_state].filter(Boolean).join(', ')
 
   if (locationQuery) {
-    const resolvedLocation = await resolvePublicLocationQuery(locationQuery)
+    const locResult = await resolvePublicLocationQuery(locationQuery)
+    const resolvedLocation = locResult.data
     if (resolvedLocation) {
       payload.service_area_lat = resolvedLocation.lat
       payload.service_area_lng = resolvedLocation.lng

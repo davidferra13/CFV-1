@@ -224,9 +224,9 @@ async function checkClientBirthdays(db: any, tenantId: string): Promise<AlertCan
 async function checkWeatherForEvents(tenantId: string): Promise<AlertCandidate[]> {
   try {
     const { getWeatherAlerts } = await import('@/lib/ai/remy-weather')
-    const weatherAlerts = await getWeatherAlerts(tenantId)
+    const weatherResult = await getWeatherAlerts(tenantId)
 
-    return weatherAlerts.map((w) => {
+    return weatherResult.alerts.map((w) => {
       const eventLabel = w.occasion ?? 'Event'
       const clientLabel = w.clientName ? ` for ${w.clientName}` : ''
       const dateLabel = new Date(w.eventDate + 'T12:00:00').toLocaleDateString('en-US', {

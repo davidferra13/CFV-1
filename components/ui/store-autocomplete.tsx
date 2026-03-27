@@ -1,7 +1,7 @@
 // Google Places store autocomplete.
 'use client'
 
-import { useCallback, useRef } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
 import { Input } from '@/components/ui/input'
 
@@ -27,16 +27,23 @@ export function StoreAutocomplete({
   placeholder = 'Search store name',
 }: StoreAutocompleteProps) {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
   // Only load Google Maps script when we have an API key.
   // Empty key triggers an infinite retry loop in the loader.
-  const { isLoaded } = useJsApiLoader({
+  const { isLoaded, loadError: sdkError } = useJsApiLoader({
     googleMapsApiKey: apiKey || 'SKIP',
     libraries: LIBRARIES,
     preventGoogleFontsLoading: true,
   })
-  const ready = isLoaded && !!apiKey
+
+  if (sdkError && !loadError) {
+    console.warn('[store-autocomplete] Google Maps SDK failed to load:', sdkError)
+    setLoadError('Store search unavailable')
+  }
+
+  const ready = isLoaded && !!apiKey && !loadError
 
   const onLoad = useCallback((autocomplete: google.maps.places.Autocomplete) => {
     autocompleteRef.current = autocomplete

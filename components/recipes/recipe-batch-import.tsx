@@ -74,7 +74,9 @@ export function RecipeBatchImport({ open, onClose }: Props) {
                 ? {
                     ...r,
                     status: 'failed' as const,
-                    error: fetchResult.error || 'Could not parse recipe',
+                    error:
+                      ('error' in fetchResult ? fetchResult.error : null) ||
+                      'Could not parse recipe',
                   }
                 : r
             )

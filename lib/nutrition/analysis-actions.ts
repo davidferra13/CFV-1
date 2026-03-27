@@ -144,6 +144,7 @@ export async function analyzeMenuNutrition(menuId: string): Promise<{
   success: boolean
   analyzed: number
   failed: number
+  errors: string[]
   entries: MenuNutritionEntry[]
 }> {
   const user = await requireChef()
@@ -174,12 +175,26 @@ export async function analyzeMenuNutrition(menuId: string): Promise<{
     .order('sort_order', { ascending: true })
 
   if (!dishes || dishes.length === 0) {
-    return { success: true, analyzed: 0, failed: 0, entries: [] }
+    return { success: true, analyzed: 0, failed: 0, errors: [], entries: [] }
+  }
+
+  // Check API key before making any calls
+  if (!process.env.SPOONACULAR_API_KEY) {
+    return {
+      success: false,
+      analyzed: 0,
+      failed: dishes.length,
+      errors: [
+        'SPOONACULAR_API_KEY not configured. Add it to .env.local to use nutrition analysis.',
+      ],
+      entries: [],
+    }
   }
 
   // 3. Fetch nutrition for each dish via Spoonacular
   let analyzed = 0
   let failed = 0
+  const errors: string[] = []
   const upsertRows: Record<string, unknown>[] = []
 
   for (const dish of dishes) {
@@ -205,6 +220,9 @@ export async function analyzeMenuNutrition(menuId: string): Promise<{
       })
       analyzed++
     } else {
+      errors.push(
+        `Could not fetch nutrition for "${dishName}" (Spoonacular API failure or no match)`
+      )
       // Insert a row with nulls so the chef knows which dishes failed
       upsertRows.push({
         tenant_id: user.tenantId!,
@@ -243,7 +261,7 @@ export async function analyzeMenuNutrition(menuId: string): Promise<{
   const entries = await fetchMenuNutritionRows(db, validated, user.tenantId!)
   revalidatePath(`/nutrition/${validated}`)
 
-  return { success: true, analyzed, failed, entries }
+  return { success: true, analyzed, failed, errors, entries }
 }
 
 /**

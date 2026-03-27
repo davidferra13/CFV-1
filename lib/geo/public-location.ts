@@ -426,19 +426,38 @@ async function reverseWithFallback(lat: number, lng: number): Promise<GeocodedLo
   return reverseWithNominatim(lat, lng)
 }
 
-export async function resolvePublicLocationQuery(query: string) {
+export type LocationResult = {
+  data: ResolvedPublicLocation | null
+  error: string | null
+}
+
+export async function resolvePublicLocationQuery(query: string): Promise<LocationResult> {
   const normalizedQuery = normalizeWhitespace(query)
-  if (!normalizedQuery) return null
+  if (!normalizedQuery) return { data: null, error: null }
 
   const lookupKey = buildForwardLookupKey(normalizedQuery)
-  const cached = await getCachedLocation(lookupKey)
-  if (cached) return asResolvedLocation(cached)
+  try {
+    const cached = await getCachedLocation(lookupKey)
+    if (cached) return { data: asResolvedLocation(cached), error: null }
+  } catch (err) {
+    console.warn('[public-location] Cache lookup failed:', err)
+  }
 
-  const geocoded = await geocodeWithFallback(normalizedQuery)
-  if (!geocoded) return null
+  try {
+    const geocoded = await geocodeWithFallback(normalizedQuery)
+    if (!geocoded) {
+      console.warn(
+        `[public-location] All geocoding providers returned null for "${normalizedQuery}"`
+      )
+      return { data: null, error: 'Could not geocode location' }
+    }
 
-  await storeCachedLocation([lookupKey], geocoded)
-  return asResolvedLocation(geocoded)
+    await storeCachedLocation([lookupKey], geocoded)
+    return { data: asResolvedLocation(geocoded), error: null }
+  } catch (err) {
+    console.warn('[public-location] Geocoding failed:', err)
+    return { data: null, error: 'Geocoding service unavailable' }
+  }
 }
 
 export async function reverseResolvePublicLocation(lat: number, lng: number) {

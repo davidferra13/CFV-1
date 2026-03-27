@@ -11,7 +11,8 @@ interface WeatherPanelProps {
 }
 
 export async function WeatherPanel({ lat, lng, eventDate }: WeatherPanelProps) {
-  const weather = await getEventWeather(lat, lng, eventDate)
+  const weatherResult = await getEventWeather(lat, lng, eventDate)
+  const weather = weatherResult.data
   if (!weather) return null
 
   const precipIn = (weather.precipitationMm / 25.4).toFixed(2)
