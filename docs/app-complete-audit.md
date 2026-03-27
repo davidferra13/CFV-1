@@ -1796,3 +1796,67 @@ Quick-launch buttons that open Chrome incognito windows pre-signed-in as each te
 ### Infra Panel
 
 Quick Links, API service cards (9 services), Port Map table, Pi Health (live RAM/uptime/services via SSH).
+
+---
+
+## 25. PUBLIC MARKETPLACE PAGES (added 2026-03-27)
+
+Public-facing consumer marketplace pages. No auth required. These form the client-facing identity of ChefFlow.
+
+### Homepage (`/`)
+
+Client-first marketplace landing. Hero with "Find a private chef near you." tagline.
+
+| Element            | Description                                                                                                                                   |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero section       | Gradient background, headline, subtitle, "Book a Private Chef" CTA button                                                                     |
+| Search bar         | `HomepageSearch` component: location input + service type dropdown + search button. Navigates to `/chefs?location=X&serviceType=Y`            |
+| Service categories | 6 cards (Private Dining, Meal Prep, Cooking Classes, Corporate Events, Wedding Catering, Special Diets). Each links to `/chefs?serviceType=X` |
+| Featured chefs     | Grid of discoverable chefs from `getDiscoverableChefs()`, sorted by `sortDirectoryChefs()`. Chef cards with avatar, name, tagline, rating     |
+| How it works       | 3-step: Describe Your Event, Get Matched, Enjoy. Icons + descriptions                                                                         |
+| Operator CTA       | Bottom section targeting chef operators with link to `/for-operators`                                                                         |
+
+### Book a Private Chef (`/book`)
+
+Open booking form. Client describes event, gets matched to nearby chefs.
+
+| Element                          | Description                                                                                                                          |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Hero                             | "Book a private chef" headline, subtitle explaining the matching process                                                             |
+| Form section 1: About your event | Service type (dropdown), occasion (text), event date (date picker), serve time (text), location (text), guest count (select: 2-200+) |
+| Form section 2: Preferences      | Budget range (select), dietary restrictions (textarea), additional notes (textarea)                                                  |
+| Form section 3: Contact info     | Full name, email, phone (optional)                                                                                                   |
+| Honeypot                         | Hidden `website_url` field for bot detection                                                                                         |
+| Submit                           | Posts to `/api/book`. Shows spinner during submission                                                                                |
+| Success state                    | Shows matched count and location. If 0 matches, shows "browse directory" fallback link                                               |
+| Trust footer                     | 4 checkmarks: Free to submit, No obligation, Chefs contact you directly, Zero commission                                             |
+
+**API:** `POST /api/book` - rate limited (5/10min per IP), Turnstile CAPTCHA, email validation, honeypot. Matches chefs via `matchChefsForBooking()` (Haversine distance, service type, guest count). Creates inquiry + draft event under each matched chef (up to 10). Sends chef notification emails + client confirmation.
+
+### For Operators (`/for-operators`)
+
+Original SaaS landing page (preserved from pre-marketplace pivot). Targets chef operators.
+
+| Element            | Description                                                       |
+| ------------------ | ----------------------------------------------------------------- |
+| Hero               | "Run your food business on ChefFlow" with signup CTA              |
+| Principles section | Core platform principles (privacy-first, financial clarity, etc.) |
+| Capabilities grid  | Feature cards organized by category                               |
+| Bottom CTA         | "Get started" linking to signup                                   |
+
+### Navigation (Public Header)
+
+| Item          | Route            | Description           |
+| ------------- | ---------------- | --------------------- |
+| Book a Chef   | `/book`          | Open booking form     |
+| Browse Chefs  | `/chefs`         | Chef directory        |
+| Discover      | `/discover`      | Food directory        |
+| For Operators | `/for-operators` | Operator landing page |
+
+### Navigation (Public Footer)
+
+Discover section: Book a Chef, Browse Chefs, Food Directory, Gift Cards, Contact.
+For Operators section: Why ChefFlow (`/for-operators`), Marketplace Chefs, Become a Partner, Operator sign up.
+Resources: FAQ, Trust Center.
+Legal: Privacy Policy, Terms of Service.
+Newsletter signup + legal links at bottom.
