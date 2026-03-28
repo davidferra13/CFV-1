@@ -1942,15 +1942,19 @@ export function getPrimaryShortcutOptions() {
   return PRIMARY_SHORTCUT_OPTIONS.map(({ href, label, context }) => ({ href, label, context }))
 }
 
-// ─── Action Bar: 8 daily-driver shortcuts ───
+// ─── Action Bar: 12 daily-driver shortcuts ───
 export const actionBarItems: NavItem[] = [
   { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/notifications', label: 'Notifications', icon: BellRing },
   { href: '/calendar', label: 'Calendar', icon: Calendar },
   { href: '/events', label: 'Events', icon: CalendarDays },
+  { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
+  { href: '/recipes', label: 'Recipes', icon: BookOpen },
   { href: '/financials', label: 'Money', icon: DollarSign },
   { href: '/culinary/prep', label: 'Prep', icon: Timer },
+  { href: '/tasks', label: 'Tasks', icon: ListChecks },
   { href: '/circles', label: 'Community', icon: MessagesSquare },
 ]
 

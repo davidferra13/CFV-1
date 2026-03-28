@@ -7,6 +7,8 @@ import { CreateMenuDropdown } from './create-menu-dropdown'
 import { isItemActive } from './chef-nav-helpers'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
+import { NotificationsUnreadBadge } from '@/components/notifications/notifications-unread-badge'
+import { InquiriesUnreadBadge } from '@/components/inquiries/inquiries-unread-badge'
 import { useNavigationPending } from '@/components/navigation/navigation-pending-provider'
 
 type ActionBarProps = {
@@ -57,6 +59,16 @@ export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps)
                   <InboxUnreadBadge />
                 </span>
               )}
+              {item.href === '/notifications' && (
+                <span className="absolute -top-1 -right-1">
+                  <NotificationsUnreadBadge />
+                </span>
+              )}
+              {item.href === '/inquiries' && (
+                <span className="absolute -top-1 -right-1">
+                  <InquiriesUnreadBadge />
+                </span>
+              )}
               {item.href === '/circles' && (
                 <span className="absolute -top-1 -right-1">
                   <CirclesUnreadBadge />
@@ -74,7 +86,7 @@ export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps)
       {/* + Create button */}
       <CreateMenuDropdown />
 
-      {/* 8 primary shortcuts */}
+      {/* 12 primary shortcuts */}
       <div className="mt-1 space-y-0.5">
         {filtered.map((item) => {
           const Icon = item.icon
@@ -98,6 +110,8 @@ export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps)
               />
               <span className="truncate">{item.label}</span>
               {item.href === '/inbox' && <InboxUnreadBadge />}
+              {item.href === '/notifications' && <NotificationsUnreadBadge />}
+              {item.href === '/inquiries' && <InquiriesUnreadBadge />}
               {item.href === '/circles' && <CirclesUnreadBadge />}
             </Link>
           )
