@@ -1,6 +1,6 @@
 # Spec: Auto-Costing Engine
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** `openclaw-v2-unified-pricing.md` (built), `openclaw-price-surfacing.md` (built)
 > **Estimated complexity:** large (9+ files)

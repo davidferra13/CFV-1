@@ -1,6 +1,6 @@
 # Spec: Onboarding Dismissal Fix
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** medium (12 files)
