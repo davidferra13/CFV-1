@@ -57,14 +57,16 @@ export function OnboardingWizard() {
   const [existingData, setExistingData] = useState<ExistingData | null>(null)
 
   async function handleSkipAll() {
-    // Mark onboarding as dismissed so the layout gate stops redirecting here
+    // Mark onboarding as dismissed so the layout gate stops redirecting here.
+    // Both calls must succeed before navigating away.
     try {
-      await dismissOnboardingBanner()
-      await completeOnboardingWizard()
+      await Promise.all([dismissOnboardingBanner(), completeOnboardingWizard()])
+      router.push('/dashboard')
     } catch (err) {
       console.error('[setup] Failed to skip setup', err)
+      // Still navigate - partial state is better than being stuck
+      router.push('/dashboard')
     }
-    router.push('/dashboard')
   }
 
   useEffect(() => {
@@ -344,10 +346,54 @@ export function OnboardingWizard() {
         </div>
 
         {/* Step content */}
-        <div className="mx-auto max-w-2xl px-6 py-10">
-          {/* Mobile step indicator */}
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-8 sm:py-10">
+          {/* Mobile step indicator - compact horizontal dots with labels */}
           <div className="mb-6 lg:hidden">
-            <p className="text-xs text-muted-foreground uppercase tracking-wide">
+            <div className="flex items-center justify-center gap-1.5 mb-2">
+              {WIZARD_STEPS.map((step, i) => {
+                const entry = progress.find((p) => p.step_key === step.key)
+                const isDone = !!entry?.completed_at
+                const isSkipped = !!entry?.skipped
+                const isCurrent = i === currentIndex
+
+                return (
+                  <button
+                    key={step.key}
+                    type="button"
+                    onClick={() => goToStep(i)}
+                    className={`flex items-center justify-center h-7 w-7 rounded-full text-xs font-medium transition-colors ${
+                      isCurrent
+                        ? 'bg-orange-600 text-white'
+                        : isDone
+                          ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400'
+                          : isSkipped
+                            ? 'bg-muted text-muted-foreground'
+                            : 'bg-muted text-muted-foreground'
+                    }`}
+                    aria-label={`${step.title}${isDone ? ' (done)' : isSkipped ? ' (skipped)' : ''}`}
+                  >
+                    {isDone ? (
+                      <svg
+                        className="h-3.5 w-3.5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    ) : (
+                      i + 1
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground text-center uppercase tracking-wide">
               {currentStep.title}
             </p>
           </div>

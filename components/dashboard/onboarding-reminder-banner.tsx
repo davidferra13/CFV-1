@@ -45,6 +45,7 @@ export function OnboardingReminderBanner() {
     href: string
   } | null>(null)
   const [visible, setVisible] = useState(false)
+  const [dismissing, setDismissing] = useState(false)
 
   useEffect(() => {
     loadReminder()
@@ -85,6 +86,8 @@ export function OnboardingReminderBanner() {
   }
 
   async function handleDismiss() {
+    if (dismissing) return
+    setDismissing(true)
     setVisible(false)
     try {
       await dismissOnboardingReminder()
@@ -96,20 +99,12 @@ export function OnboardingReminderBanner() {
   if (!visible || !reminder) return null
 
   return (
-    <div className="relative flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-sm">
-      <div className="flex-1">
-        <p className="text-sm text-muted-foreground">{reminder.text}</p>
-      </div>
-      <a
-        href={reminder.href}
-        className="shrink-0 rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-orange-500"
-      >
-        {reminder.cta}
-      </a>
+    <div className="relative rounded-lg border border-border bg-card p-3 shadow-sm">
+      {/* Dismiss button (top-right) */}
       <button
         type="button"
         onClick={handleDismiss}
-        className="shrink-0 text-muted-foreground hover:text-foreground"
+        className="absolute top-2 right-2 shrink-0 text-muted-foreground hover:text-foreground"
         aria-label="Dismiss reminder"
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -121,6 +116,14 @@ export function OnboardingReminderBanner() {
           />
         </svg>
       </button>
+
+      <p className="text-sm text-muted-foreground pr-6">{reminder.text}</p>
+      <a
+        href={reminder.href}
+        className="mt-2 inline-block rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-orange-500"
+      >
+        {reminder.cta}
+      </a>
     </div>
   )
 }
