@@ -1,7 +1,5 @@
 'use client'
 
-'use client'
-
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -41,8 +39,7 @@ function TakeAChefCommissionDefaults({ initialPercent }: { initialPercent: numbe
         <div>
           <p className="text-sm font-semibold text-stone-200">Default commission rate</p>
           <p className="text-xs text-stone-500">
-            ChefFlow defaults to the current Take a Chef base commission unless you override it per
-            booking.
+            Set the default platform commission rate. You can override it per booking.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -86,7 +83,7 @@ export function TakeAChefSetup({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>TakeAChef Integration</CardTitle>
+            <CardTitle>Email Lead Capture</CardTitle>
             <Badge variant="success">Connected</Badge>
           </div>
         </CardHeader>
@@ -122,7 +119,7 @@ export function TakeAChefSetup({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>TakeAChef Integration</CardTitle>
+            <CardTitle>Email Lead Capture</CardTitle>
             <Badge variant="info">Scanning</Badge>
           </div>
         </CardHeader>
@@ -138,8 +135,8 @@ export function TakeAChefSetup({
               </svg>
             </div>
             <p className="text-sm text-stone-400 leading-relaxed">
-              We&apos;re scanning your inbox for TakeAChef emails. New leads will appear on your
-              dashboard within 5 minutes.
+              We&apos;re scanning your inbox for booking platform emails. New leads will appear on
+              your dashboard within 5 minutes.
             </p>
           </div>
           <TakeAChefCommissionDefaults initialPercent={defaultCommissionPercent} />
@@ -152,9 +149,9 @@ export function TakeAChefSetup({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>TakeAChef Integration</CardTitle>
+        <CardTitle>Email Lead Capture</CardTitle>
         <p className="mt-1 text-sm text-stone-500">
-          Automatically capture leads from TakeAChef notification emails.
+          Automatically capture leads from booking platform notification emails.
         </p>
       </CardHeader>
       <CardContent>
@@ -167,12 +164,12 @@ export function TakeAChefSetup({
             <div className="flex-1 space-y-2">
               <h4 className="text-sm font-semibold text-stone-100">Connect your Gmail</h4>
               <p className="text-sm text-stone-500 leading-relaxed">
-                ChefFlow will scan for TakeAChef notification emails so we can turn them into leads
-                automatically.
+                ChefFlow scans your inbox for booking platform notification emails and turns them
+                into leads automatically.
               </p>
               <p className="text-xs text-stone-400 italic">
-                ChefFlow only reads emails from TakeAChef &mdash; we never access your personal
-                messages.
+                ChefFlow only reads emails from recognized booking platforms. We never access your
+                personal messages.
               </p>
               <div className="pt-1">
                 <Link href="/api/auth/google/connect">
@@ -192,13 +189,13 @@ export function TakeAChefSetup({
             <div className="flex-1 space-y-2">
               <h4 className="text-sm font-semibold text-stone-100">We do the rest</h4>
               <p className="text-sm text-stone-500 leading-relaxed">
-                ChefFlow automatically detects new TakeAChef emails, deduplicates contacts, and
+                ChefFlow automatically detects new booking emails, deduplicates contacts, and
                 creates leads in your pipeline. No manual entry needed.
               </p>
             </div>
           </li>
 
-          {/* Step 3: Commission rate - not yet persisted to server */}
+          {/* Step 3: Commission rate */}
           <li className="flex gap-4">
             <div className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-stone-700 text-stone-400 text-xs font-bold">
               3
@@ -206,8 +203,8 @@ export function TakeAChefSetup({
             <div className="flex-1 space-y-2">
               <h4 className="text-sm font-semibold text-stone-100">Commission rate</h4>
               <p className="text-sm text-stone-500 leading-relaxed">
-                Set the default TakeAChef commission rate ChefFlow should use when logging booking
-                margin and platform expenses.
+                Set the default commission rate ChefFlow should use when logging booking margin and
+                platform expenses.
               </p>
               <TakeAChefCommissionDefaults initialPercent={defaultCommissionPercent} />
             </div>

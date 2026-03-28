@@ -30,7 +30,7 @@ export const ONBOARDING_STEPS = [
   {
     key: 'connect_gmail',
     title: 'Import Leads',
-    description: 'Auto-import inquiries from Take a Chef, Bark, Thumbtack and more',
+    description: 'Auto-import inquiries from your email inbox',
     icon: 'mail',
     optional: false,
   },

@@ -25,7 +25,7 @@ const REMINDER_MESSAGES: Record<string, { text: string; cta: string; href: strin
     href: '/onboarding',
   },
   connect_gmail: {
-    text: 'Connect your email to auto-import leads from Take a Chef, Bark, and more.',
+    text: 'Connect your email to auto-import leads from your inbox.',
     cta: 'Import leads',
     href: '/onboarding',
   },

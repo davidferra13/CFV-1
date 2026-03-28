@@ -74,7 +74,7 @@ export default async function IntegrationsSettingsPage() {
         </p>
       </div>
 
-      {/* TakeAChef Integration - featured prominently since 80% of business flows through it */}
+      {/* Email lead capture - parses booking platform notification emails via Gmail sync */}
       <TakeAChefSetup
         gmailConnected={gmailConn?.gmail_connected ?? false}
         lastSyncAt={gmailConn?.gmail_last_sync_at ?? null}

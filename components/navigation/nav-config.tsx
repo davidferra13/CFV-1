@@ -226,8 +226,8 @@ export const standaloneTop: NavItem[] = [
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
-// Groups ordered by chef workflow: Pipeline → Clients → Events → Commerce → Culinary → Operations → Supply Chain → Finance → Marketing → Analytics → Protection → Tools → Admin
-// Within each group: items sorted A-Z. Within each item: children sorted A-Z.
+// Groups are sorted alphabetically at runtime (see sort block after array).
+// Admin stays last. Items and children within each group are also sorted A-Z at runtime.
 export const navGroups: NavGroup[] = [
   // ─── PIPELINE (active deal flow + outreach) ───
   {
@@ -1539,6 +1539,24 @@ export const navGroups: NavGroup[] = [
     ],
   },
 ]
+
+// Sort groups alphabetically so chefs can find features predictably.
+// Admin stays last since it's a special admin-only section.
+navGroups.sort((a, b) => {
+  if (a.id === 'admin') return 1
+  if (b.id === 'admin') return -1
+  return a.label.localeCompare(b.label)
+})
+
+// Sort items within each group alphabetically, and children within each item
+for (const group of navGroups) {
+  group.items.sort((a, b) => a.label.localeCompare(b.label))
+  for (const item of group.items) {
+    if (item.children) {
+      item.children.sort((a, b) => a.label.localeCompare(b.label))
+    }
+  }
+}
 
 export const standaloneBottom: NavItem[] = [
   { href: '/settings', label: 'Settings', icon: Settings },
