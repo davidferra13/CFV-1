@@ -6,7 +6,8 @@
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-27
 > **Built by:** Claude Code (2026-03-27)
-> **Completed:** Claude Code (2026-03-27) - profile photo/logo upload, portfolio upload wired end-to-end, pricing input fix
+> **Round 1:** profile photo/logo upload, portfolio upload wired end-to-end, pricing input fix
+> **Round 2:** existing data pre-fill, slug auto-generation, service radius, completeness meter, pricing column fix
 
 ---
 
