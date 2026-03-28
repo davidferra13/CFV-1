@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { uploadPortfolioPhotos } from '@/lib/onboarding/onboarding-actions'
 
 const MAX_PHOTOS = 5
 const MAX_SIZE_MB = 5
@@ -63,14 +64,22 @@ export function PortfolioStep({ onComplete, onSkip }: PortfolioStepProps) {
     }
 
     setUploading(true)
+    setError('')
+
     try {
       const formData = new FormData()
       for (const p of photos) {
         formData.append('photos', p.file)
       }
-      onComplete({ portfolioPhotos: photos.map((p) => p.file.name), formData })
+
+      const result = await uploadPortfolioPhotos(formData)
+      if (result.success) {
+        onComplete({ portfolioPhotos: result.urls })
+      } else {
+        setError(result.error || 'Upload failed. You can add photos later from your profile.')
+      }
     } catch {
-      setError('Failed to prepare photos. You can add them later from your profile.')
+      setError('Failed to upload photos. You can add them later from your profile.')
     } finally {
       setUploading(false)
     }
@@ -140,6 +149,7 @@ export function PortfolioStep({ onComplete, onSkip }: PortfolioStepProps) {
         accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
         multiple
         className="hidden"
+        aria-label="Select portfolio photos"
         onChange={(e) => handleFiles(e.target.files)}
       />
 

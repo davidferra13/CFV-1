@@ -1,11 +1,12 @@
 # Spec: Onboarding Overhaul
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-27
 > **Built by:** Claude Code (2026-03-27)
+> **Completed:** Claude Code (2026-03-27) - profile photo/logo upload, portfolio upload wired end-to-end, pricing input fix
 
 ---
 

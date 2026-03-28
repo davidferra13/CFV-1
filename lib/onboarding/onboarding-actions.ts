@@ -250,6 +250,96 @@ export async function getOnboardingDismissalState() {
 }
 
 // ============================================
+// PORTFOLIO PHOTO UPLOAD
+// ============================================
+
+export async function uploadPortfolioPhotos(
+  formData: FormData
+): Promise<{ success: true; urls: string[] } | { success: false; error: string }> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient()
+
+  const files = formData.getAll('photos') as File[]
+  if (!files || files.length === 0) {
+    return { success: false, error: 'No photos provided' }
+  }
+  if (files.length > 5) {
+    return { success: false, error: 'Maximum 5 photos allowed' }
+  }
+
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+  const maxSize = 5 * 1024 * 1024
+
+  const uploadedUrls: string[] = []
+
+  for (const file of files) {
+    if (!allowedTypes.includes(file.type)) continue
+    if (file.size > maxSize) continue
+
+    const ext = file.type.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg'
+    const storagePath = `${tenantId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
+
+    const uploadFn = async () =>
+      db.storage.from('portfolio-photos').upload(storagePath, file, {
+        contentType: file.type,
+        upsert: false,
+      })
+
+    let { error: uploadError } = await uploadFn()
+
+    // Auto-create bucket if missing
+    if (
+      uploadError &&
+      String(uploadError?.message || '')
+        .toLowerCase()
+        .includes('bucket')
+    ) {
+      await db.storage.createBucket('portfolio-photos', { public: true })
+      const retry = await uploadFn()
+      uploadError = retry.error
+    }
+
+    if (uploadError) {
+      console.error('[onboarding] Portfolio photo upload error', uploadError)
+      continue
+    }
+
+    const { data: urlData } = db.storage.from('portfolio-photos').getPublicUrl(storagePath)
+    if (urlData?.publicUrl) {
+      uploadedUrls.push(urlData.publicUrl)
+    }
+  }
+
+  if (uploadedUrls.length === 0) {
+    return { success: false, error: 'No photos could be uploaded' }
+  }
+
+  // Save URLs to chef_directory_listings.portfolio_urls
+  try {
+    // Get existing portfolio URLs
+    const { data: existing } = await db
+      .from('chef_directory_listings')
+      .select('portfolio_urls')
+      .eq('chef_id', tenantId)
+      .maybeSingle()
+
+    const existingUrls: string[] = (existing?.portfolio_urls as string[]) || []
+    const mergedUrls = [...existingUrls, ...uploadedUrls].slice(0, 5)
+
+    await db
+      .from('chef_directory_listings')
+      .upsert({ chef_id: tenantId, portfolio_urls: mergedUrls }, { onConflict: 'chef_id' })
+  } catch (err) {
+    console.error('[onboarding] Failed to save portfolio URLs to directory listing', err)
+  }
+
+  revalidatePath('/onboarding')
+  revalidatePath('/settings/my-profile')
+  return { success: true, urls: uploadedUrls }
+}
+
+// ============================================
 // PROFILE TRIPLE-WRITE (internal helper)
 // ============================================
 
@@ -265,6 +355,8 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
     phone,
     socialLinks,
     isPublic,
+    profileImageUrl,
+    logoUrl,
   } = data as {
     businessName?: string
     cuisines?: string[]
@@ -276,6 +368,8 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
     phone?: string
     socialLinks?: Record<string, string>
     isPublic?: boolean
+    profileImageUrl?: string
+    logoUrl?: string
   }
 
   // 1. Update chefs table
@@ -304,6 +398,7 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
   if (city) directoryData.city = city
   if (state) directoryData.state = state
   if (websiteUrl) directoryData.website_url = websiteUrl
+  if (profileImageUrl) directoryData.profile_photo_url = profileImageUrl
 
   if (Object.keys(directoryData).length > 1) {
     const { error } = await db
@@ -317,6 +412,7 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
   if (cuisines && cuisines.length > 0) marketplaceData.cuisine_types = cuisines
   if (city) marketplaceData.service_area_city = city
   if (state) marketplaceData.service_area_state = state
+  if (profileImageUrl) marketplaceData.hero_image_url = profileImageUrl
 
   if (Object.keys(marketplaceData).length > 1) {
     const { error } = await db

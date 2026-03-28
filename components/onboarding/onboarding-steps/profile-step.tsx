@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useTransition } from 'react'
 import { US_STATES } from '@/lib/onboarding/onboarding-constants'
+import { uploadChefProfileImage } from '@/lib/network/actions'
+import { uploadChefLogo } from '@/lib/chef/profile-actions'
 
 const CUISINE_OPTIONS = [
   'American',
@@ -25,6 +27,11 @@ const CUISINE_OPTIONS = [
   'Other',
 ]
 
+const MAX_PROFILE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_LOGO_SIZE = 2 * 1024 * 1024 // 2MB
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
+
 type ProfileStepProps = {
   onComplete: (data: Record<string, unknown>) => void
   onSkip: () => void
@@ -46,6 +53,75 @@ export function ProfileStep({ onComplete, onSkip }: ProfileStepProps) {
   const [isPublic, setIsPublic] = useState(true)
   const [showSocial, setShowSocial] = useState(false)
   const [validationError, setValidationError] = useState('')
+
+  // Photo uploads
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null)
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [photoError, setPhotoError] = useState('')
+  const [logoError, setLogoError] = useState('')
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const profileInputRef = useRef<HTMLInputElement>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const [, startUploadTransition] = useTransition()
+
+  async function handleProfilePhoto(file: File) {
+    setPhotoError('')
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setPhotoError('Use JPEG, PNG, WebP, or HEIC')
+      return
+    }
+    if (file.size > MAX_PROFILE_SIZE) {
+      setPhotoError('Photo must be under 5MB')
+      return
+    }
+    setProfilePhotoPreview(URL.createObjectURL(file))
+    setUploadingPhoto(true)
+
+    startUploadTransition(async () => {
+      try {
+        const formData = new FormData()
+        formData.append('image', file)
+        const result = await uploadChefProfileImage(formData)
+        setProfilePhotoUrl(result.url)
+      } catch (err) {
+        setPhotoError('Upload failed. You can add this later from Settings.')
+        setProfilePhotoPreview(null)
+      } finally {
+        setUploadingPhoto(false)
+      }
+    })
+  }
+
+  async function handleLogoFile(file: File) {
+    setLogoError('')
+    if (!ALLOWED_LOGO_TYPES.includes(file.type)) {
+      setLogoError('Use JPEG, PNG, WebP, or SVG')
+      return
+    }
+    if (file.size > MAX_LOGO_SIZE) {
+      setLogoError('Logo must be under 2MB')
+      return
+    }
+    setLogoPreview(URL.createObjectURL(file))
+    setUploadingLogo(true)
+
+    startUploadTransition(async () => {
+      try {
+        const formData = new FormData()
+        formData.append('logo', file)
+        const result = await uploadChefLogo(formData)
+        setLogoUrl(result.url)
+      } catch (err) {
+        setLogoError('Upload failed. You can add this later from Settings.')
+        setLogoPreview(null)
+      } finally {
+        setUploadingLogo(false)
+      }
+    })
+  }
 
   function toggleCuisine(c: string) {
     setCuisines((prev) => (prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]))
@@ -85,6 +161,8 @@ export function ProfileStep({ onComplete, onSkip }: ProfileStepProps) {
       socialLinks,
       bio: bio.trim(),
       isPublic,
+      profileImageUrl: profilePhotoUrl,
+      logoUrl: logoUrl,
     })
   }
 
@@ -95,6 +173,112 @@ export function ProfileStep({ onComplete, onSkip }: ProfileStepProps) {
         <p className="mt-1 text-sm text-muted-foreground">
           This helps clients find you and understand what you offer.
         </p>
+      </div>
+
+      {/* Profile Photo + Logo */}
+      <div className="flex items-start gap-6">
+        {/* Profile Photo */}
+        <div className="flex flex-col items-center gap-2">
+          <button
+            type="button"
+            onClick={() => profileInputRef.current?.click()}
+            disabled={uploadingPhoto}
+            className="relative h-24 w-24 rounded-full border-2 border-dashed border-border hover:border-orange-400 overflow-hidden flex items-center justify-center bg-muted transition-colors group"
+          >
+            {profilePhotoPreview ? (
+              <>
+                <img
+                  src={profilePhotoPreview}
+                  alt="Profile"
+                  className="h-full w-full object-cover"
+                />
+                {uploadingPhoto && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center text-muted-foreground group-hover:text-orange-600 transition-colors">
+                <svg
+                  className="h-8 w-8 mx-auto"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
+              </div>
+            )}
+          </button>
+          <span className="text-xs text-muted-foreground">Your photo</span>
+          <input
+            ref={profileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+            className="hidden"
+            aria-label="Upload profile photo"
+            onChange={(e) => e.target.files?.[0] && handleProfilePhoto(e.target.files[0])}
+          />
+          {photoError && (
+            <p className="text-xs text-red-500 max-w-[120px] text-center">{photoError}</p>
+          )}
+        </div>
+
+        {/* Logo */}
+        <div className="flex flex-col items-center gap-2">
+          <button
+            type="button"
+            onClick={() => logoInputRef.current?.click()}
+            disabled={uploadingLogo}
+            className="relative h-24 w-32 rounded-lg border-2 border-dashed border-border hover:border-orange-400 overflow-hidden flex items-center justify-center bg-muted transition-colors group"
+          >
+            {logoPreview ? (
+              <>
+                <img src={logoPreview} alt="Logo" className="h-full w-full object-contain p-2" />
+                {uploadingLogo && (
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center text-muted-foreground group-hover:text-orange-600 transition-colors">
+                <svg
+                  className="h-6 w-6 mx-auto"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <span className="text-[10px] mt-1 block">Logo</span>
+              </div>
+            )}
+          </button>
+          <span className="text-xs text-muted-foreground">No logo? No problem.</span>
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/svg+xml"
+            className="hidden"
+            aria-label="Upload business logo"
+            onChange={(e) => e.target.files?.[0] && handleLogoFile(e.target.files[0])}
+          />
+          {logoError && (
+            <p className="text-xs text-red-500 max-w-[140px] text-center">{logoError}</p>
+          )}
+        </div>
       </div>
 
       {/* Business Name (required) */}
@@ -294,7 +478,7 @@ export function ProfileStep({ onComplete, onSkip }: ProfileStepProps) {
         <button
           type="button"
           role="switch"
-          aria-checked={isPublic ? 'true' : 'false'}
+          aria-checked={isPublic}
           aria-label="Make profile public"
           onClick={() => setIsPublic(!isPublic)}
           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${

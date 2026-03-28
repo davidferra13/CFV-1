@@ -12,6 +12,10 @@ type PackageDeal = {
   priceDollars: string
 }
 
+// Shared input class for currency fields - extra left padding for $ sign, hides number spinners
+const currencyInputClass =
+  'block w-full rounded-md border border-border bg-background pl-8 pr-3 py-2 text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+
 export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps) {
   const [hourlyRate, setHourlyRate] = useState('')
   const [perGuestRate, setPerGuestRate] = useState('')
@@ -75,7 +79,7 @@ export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps
             Hourly Rate
           </label>
           <div className="relative mt-1">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground font-medium">
               $
             </span>
             <input
@@ -86,7 +90,7 @@ export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps
               value={hourlyRate}
               onChange={(e) => setHourlyRate(e.target.value)}
               placeholder="0.00"
-              className="block w-full rounded-md border border-border bg-background pl-7 pr-3 py-2 text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className={currencyInputClass}
             />
           </div>
         </div>
@@ -97,7 +101,7 @@ export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps
             Per-Guest Rate
           </label>
           <div className="relative mt-1">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground font-medium">
               $
             </span>
             <input
@@ -108,7 +112,7 @@ export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps
               value={perGuestRate}
               onChange={(e) => setPerGuestRate(e.target.value)}
               placeholder="0.00"
-              className="block w-full rounded-md border border-border bg-background pl-7 pr-3 py-2 text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className={currencyInputClass}
             />
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -122,7 +126,7 @@ export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps
             Minimum Booking Amount
           </label>
           <div className="relative mt-1">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground font-medium">
               $
             </span>
             <input
@@ -133,7 +137,7 @@ export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps
               value={minimumBooking}
               onChange={(e) => setMinimumBooking(e.target.value)}
               placeholder="0.00"
-              className="block w-full rounded-md border border-border bg-background pl-7 pr-3 py-2 text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className={currencyInputClass}
             />
           </div>
         </div>
@@ -167,7 +171,7 @@ export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps
                 className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
               />
               <div className="relative w-28">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground text-sm">
+                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground text-sm font-medium">
                   $
                 </span>
                 <input
@@ -177,7 +181,7 @@ export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps
                   value={pkg.priceDollars}
                   onChange={(e) => updatePackage(i, 'priceDollars', e.target.value)}
                   placeholder="0.00"
-                  className="w-full rounded-md border border-border bg-background pl-7 pr-3 py-2 text-sm text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+                  className="w-full rounded-md border border-border bg-background pl-8 pr-3 py-2 text-sm text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
               <button
