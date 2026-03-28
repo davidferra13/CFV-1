@@ -27,8 +27,23 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_iph_openclaw_dedup
   ON ingredient_price_history(ingredient_id, tenant_id, source, purchase_date)
   WHERE source LIKE 'openclaw_%';
 
--- Backfill: mark existing prices as legacy (no source attribution)
-UPDATE ingredients
-  SET last_price_source = 'openclaw_legacy'
-  WHERE last_price_cents IS NOT NULL
-    AND last_price_source IS NULL;
+-- Backfill: set last_price_source from most recent price history row.
+-- If an ingredient has receipt history, mark it 'manual'. Otherwise 'openclaw_legacy'.
+UPDATE ingredients i
+  SET last_price_source = COALESCE(
+    (SELECT CASE
+       WHEN iph.source IN ('manual', 'grocery_entry', 'po_receipt', 'vendor_invoice')
+         THEN iph.source
+       WHEN iph.source LIKE 'openclaw_%'
+         THEN iph.source
+       ELSE 'openclaw_legacy'
+     END
+     FROM ingredient_price_history iph
+     WHERE iph.ingredient_id = i.id
+       AND iph.tenant_id = i.tenant_id
+     ORDER BY iph.purchase_date DESC
+     LIMIT 1),
+    'openclaw_legacy'
+  )
+  WHERE i.last_price_cents IS NOT NULL
+    AND i.last_price_source IS NULL;
