@@ -26,6 +26,7 @@ export function getDb() {
   _db.pragma('foreign_keys = ON');
 
   initSchema(_db);
+  migrateSchema(_db);
   return _db;
 }
 
@@ -99,6 +100,7 @@ function initSchema(db) {
       confidence TEXT NOT NULL DEFAULT 'government_baseline',
       instacart_markup_applied_pct REAL,
       source_url TEXT,
+      in_stock INTEGER NOT NULL DEFAULT 1,
       last_confirmed_at TEXT NOT NULL DEFAULT (datetime('now')),
       last_changed_at TEXT NOT NULL DEFAULT (datetime('now')),
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -143,13 +145,26 @@ function initSchema(db) {
 }
 
 /**
+ * Additive migrations for existing databases.
+ * Each migration checks before applying (safe to re-run).
+ */
+function migrateSchema(db) {
+  // Add in_stock column if it doesn't exist yet
+  const cols = db.prepare("PRAGMA table_info(current_prices)").all();
+  if (!cols.find(c => c.name === 'in_stock')) {
+    db.exec("ALTER TABLE current_prices ADD COLUMN in_stock INTEGER NOT NULL DEFAULT 1");
+    db.exec("CREATE INDEX IF NOT EXISTS idx_cp_stock ON current_prices(in_stock)");
+  }
+}
+
+/**
  * Upsert a price into current_prices. Returns 'new', 'changed', or 'unchanged'.
  */
 export function upsertPrice(db, {
   sourceId, canonicalIngredientId, variantId, rawProductName,
   priceCents, priceUnit, pricePerStandardUnitCents, standardUnit,
   packageSize, priceType, pricingTier, confidence,
-  instacartMarkupPct, sourceUrl, saleDates
+  instacartMarkupPct, sourceUrl, saleDates, inStock
 }) {
   const id = `${sourceId}:${canonicalIngredientId}:${variantId || 'default'}`;
   const now = new Date().toISOString();
@@ -163,15 +178,15 @@ export function upsertPrice(db, {
         id, source_id, canonical_ingredient_id, variant_id, raw_product_name,
         price_cents, price_unit, price_per_standard_unit_cents, standard_unit,
         package_size, price_type, pricing_tier, confidence,
-        instacart_markup_applied_pct, source_url,
+        instacart_markup_applied_pct, source_url, in_stock,
         sale_start_date, sale_end_date,
         last_confirmed_at, last_changed_at, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id, sourceId, canonicalIngredientId, variantId, rawProductName,
       priceCents, priceUnit, pricePerStandardUnitCents, standardUnit,
       packageSize, priceType || 'regular', pricingTier || 'retail', confidence,
-      instacartMarkupPct, sourceUrl,
+      instacartMarkupPct, sourceUrl, inStock !== undefined ? (inStock ? 1 : 0) : 1,
       saleDates?.start || null, saleDates?.end || null,
       now, now, now
     );
@@ -197,6 +212,7 @@ export function upsertPrice(db, {
         price_per_standard_unit_cents = ?, package_size = ?,
         price_type = ?, confidence = ?,
         instacart_markup_applied_pct = ?, source_url = ?,
+        in_stock = ?,
         sale_start_date = ?, sale_end_date = ?,
         last_confirmed_at = ?, last_changed_at = ?
       WHERE id = ?
@@ -205,6 +221,7 @@ export function upsertPrice(db, {
       pricePerStandardUnitCents, packageSize,
       priceType || 'regular', confidence,
       instacartMarkupPct, sourceUrl,
+      inStock !== undefined ? (inStock ? 1 : 0) : 1,
       saleDates?.start || null, saleDates?.end || null,
       now, now, id
     );
@@ -218,8 +235,10 @@ export function upsertPrice(db, {
     return 'changed';
   }
 
-  // Price unchanged - just update confirmation timestamp
-  db.prepare('UPDATE current_prices SET last_confirmed_at = ? WHERE id = ?').run(now, id);
+  // Price unchanged - update confirmation timestamp and stock status
+  db.prepare('UPDATE current_prices SET last_confirmed_at = ?, in_stock = ? WHERE id = ?').run(
+    now, inStock !== undefined ? (inStock ? 1 : 0) : 1, id
+  );
   return 'unchanged';
 }
 
@@ -229,11 +248,21 @@ export function getStats(db) {
   const prices = db.prepare('SELECT COUNT(*) as count FROM current_prices').get();
   const changes = db.prepare('SELECT COUNT(*) as count FROM price_changes').get();
   const normMaps = db.prepare('SELECT COUNT(*) as count FROM normalization_map').get();
+  let inStockCount = prices.count;
+  let outOfStockCount = 0;
+  try {
+    const inStock = db.prepare('SELECT COUNT(*) as count FROM current_prices WHERE in_stock = 1').get();
+    const outOfStock = db.prepare('SELECT COUNT(*) as count FROM current_prices WHERE in_stock = 0').get();
+    inStockCount = inStock.count;
+    outOfStockCount = outOfStock.count;
+  } catch { /* in_stock column may not exist yet */ }
 
   return {
     sources: sources.count,
     canonicalIngredients: ingredients.count,
     currentPrices: prices.count,
+    inStock: inStockCount,
+    outOfStock: outOfStockCount,
     priceChanges: changes.count,
     normalizationMappings: normMaps.count
   };

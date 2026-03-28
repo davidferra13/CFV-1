@@ -711,7 +711,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 ### 6.3 Ingredients
 
-- **`/culinary/ingredients`** — Full library with add form (name, category, unit, price, staple checkbox). Price column uses `PriceAttribution` component showing store name, confidence dot, and trend arrow when OpenClaw enrichment data is available.
+- **`/culinary/ingredients`** — Full library with add form (name, category, unit, price, staple checkbox). Price column uses `PriceAttribution` component showing store name, confidence dot, and trend arrow when OpenClaw enrichment data is available. **Price Watch List** section at bottom: add ingredients with target prices, get alerted when prices drop below threshold. CRUD via `price_watch_list` table.
 - **`/culinary/ingredients/seasonal-availability`** — 4 season cards + year-round section.
 - **`/culinary/ingredients/vendor-notes`** — Grouped by vendor.
 
@@ -722,7 +722,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 ### 6.5 Costing
 
-- **`/culinary/costing`** — Recipe + menu cost tables. Includes "Freshness" column showing how recently prices were updated per recipe (color-coded: green for recent, amber for stale).
+- **`/culinary/costing`** — Recipe + menu cost tables. Includes "Freshness" column showing how recently prices were updated per recipe (color-coded: green for recent, amber for stale). **New sections:** Event Shopping Planner (aggregate ingredients from upcoming events, optimize across stores with days-ahead selector), Cost Impact panel (ingredients with recent price changes, direction arrows, percentage), Store Scorecard (personalized store rankings with coverage bars, win counts, avg prices).
 - **`/culinary/costing/food-cost`** — Large food cost % KPI with threshold colors.
 - **`/culinary/costing/menu`** — Per-menu cost analysis.
 - **`/culinary/costing/recipe`** — Per-recipe cost with relative cost bars.

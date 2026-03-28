@@ -218,6 +218,9 @@ function extractProductsFromAPI(data) {
     const priceCents = Math.round(parseFloat(priceValue.replace('$', '')) * 100);
     if (isNaN(priceCents) || priceCents <= 0 || priceCents > 100000) return;
 
+    // Stock/availability detection from Instacart API response fields
+    const inStock = detectStockStatus(item);
+
     products.push({
       name: item.name,
       priceCents,
@@ -227,7 +230,34 @@ function extractProductsFromAPI(data) {
       productId: item.productId || '',
       brandName: item.brandName || '',
       onSale: priceSection.trackingProperties?.on_sale_ind?.loyalty === true,
+      inStock,
     });
+  }
+
+  /**
+   * Detect stock status from Instacart's various API response shapes.
+   * Items showing in results are generally available, but Instacart includes
+   * several fields that indicate out-of-stock or limited availability.
+   */
+  function detectStockStatus(item) {
+    // Explicit availability fields
+    if (item.availabilityStatus === 'out_of_stock') return false;
+    if (item.availabilityStatus === 'unavailable') return false;
+    if (item.isAvailable === false) return false;
+    if (item.outOfStock === true) return false;
+    if (item.inventoryStatus === 'out_of_stock') return false;
+
+    // Some responses nest availability under tracking or viewSection
+    const tracking = item.price?.viewSection?.trackingProperties;
+    if (tracking?.out_of_stock === true) return false;
+    if (tracking?.availability === 'out_of_stock') return false;
+
+    // Check for "unavailable" in the item's badge/label
+    if (item.badge?.text?.toLowerCase?.()?.includes('unavailable')) return false;
+    if (item.label?.toLowerCase?.()?.includes('out of stock')) return false;
+
+    // If the item appears in search results with a price, it's in stock
+    return true;
   }
 
   function findItems(obj, depth = 0) {
@@ -594,6 +624,7 @@ async function main() {
         pricingTier: store.tier,
         confidence: 'instacart_catalog',
         instacartMarkupPct: store.markupPct,
+        inStock: p.inStock !== undefined ? p.inStock : true,
       }));
 
       const count = await pushToPi(prices, store.name);

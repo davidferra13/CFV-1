@@ -15,6 +15,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { PriceAttribution } from '@/components/pricing/price-attribution'
 import { AddIngredientForm } from '@/components/culinary/add-ingredient-form'
+import { PriceWatchList } from '@/components/pricing/price-watch-list'
 
 export const metadata: Metadata = { title: 'Ingredients - ChefFlow' }
 
@@ -168,6 +169,9 @@ export default async function IngredientsPage() {
           </Table>
         </Card>
       )}
+
+      {/* Price Watch List */}
+      <PriceWatchList />
     </div>
   )
 }

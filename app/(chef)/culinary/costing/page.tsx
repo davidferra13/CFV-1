@@ -4,6 +4,9 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes, getIngredients } from '@/lib/recipes/actions'
 import { getMenuCostSummaries } from '@/lib/menus/actions'
 import { ShoppingOptimizer } from '@/components/pricing/shopping-optimizer'
+import { EventShoppingPlanner } from '@/components/pricing/event-shopping-planner'
+import { StoreScorecard } from '@/components/pricing/store-scorecard'
+import { CostImpact } from '@/components/pricing/cost-impact'
 import { Card } from '@/components/ui/card'
 import {
   Table,
@@ -152,6 +155,26 @@ export default async function CostingPage() {
           </Card>
         )}
       </div>
+
+      {/* Event Shopping Planner - optimized shopping for upcoming events */}
+      <div>
+        <h2 className="text-lg font-semibold text-stone-100 mb-3">Event Shopping Planner</h2>
+        <EventShoppingPlanner />
+      </div>
+
+      {/* Price Intelligence row: Cost Impact + Store Scorecard */}
+      {allIngredients.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-stone-100 mb-3">Price Changes</h2>
+            <CostImpact ingredientNames={allIngredients.map((i: any) => i.name)} />
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-stone-100 mb-3">Store Rankings</h2>
+            <StoreScorecard ingredientNames={allIngredients.map((i: any) => i.name)} />
+          </div>
+        </div>
+      )}
 
       {/* Shopping Optimizer - find cheapest stores for your ingredients */}
       {allIngredients.length > 0 && (

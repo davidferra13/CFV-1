@@ -65,6 +65,7 @@ interface EnrichedPrice {
   store: string
   tier: string
   confirmed_at: string
+  in_stock?: boolean
 }
 
 interface EnrichedTrend {

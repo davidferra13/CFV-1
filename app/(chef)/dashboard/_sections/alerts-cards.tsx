@@ -11,7 +11,11 @@ import { getStuckEvents } from '@/lib/pipeline/stuck-events'
 import { getCoolingClients } from '@/lib/clients/cooling-actions'
 import { getUpcomingPaymentsDue, getExpiringQuotes } from '@/lib/dashboard/widget-actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
-import { getPriceDropAlerts, getPriceFreshness } from '@/lib/openclaw/price-intelligence-actions'
+import {
+  getPriceDropAlerts,
+  getPriceFreshness,
+  getStockSummary,
+} from '@/lib/openclaw/price-intelligence-actions'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -56,6 +60,7 @@ export async function AlertCards() {
     onboardingProgress,
     priceDrops,
     priceFreshness,
+    stockSummary,
   ] = await Promise.all([
     safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
     safe('pendingFollowUps', () => getStaleInquiries(5), []),
@@ -72,6 +77,13 @@ export async function AlertCards() {
       stale: 0,
       expired: 0,
       currentPct: 0,
+    }),
+    safe('stockSummary', getStockSummary, {
+      total: 0,
+      inStock: 0,
+      outOfStock: 0,
+      availabilityPct: 100,
+      outOfStockItems: [],
     }),
   ])
 
@@ -250,6 +262,23 @@ export async function AlertCards() {
           }
           trend={priceFreshness.stale > 0 ? `${priceFreshness.stale} stale` : 'All fresh'}
           href="/admin/price-catalog"
+        />
+      )}
+
+      {/* Stock Availability - stat card (from OpenClaw Pi) */}
+      {stockSummary.outOfStock > 0 && (
+        <StatCard
+          widgetId="stock_availability"
+          title="Stock Alerts"
+          value={String(stockSummary.outOfStock)}
+          subtitle={`items out of stock (${stockSummary.availabilityPct}% available)`}
+          trendDirection={stockSummary.outOfStock > 10 ? 'down' : 'flat'}
+          trend={
+            stockSummary.outOfStockItems[0]
+              ? `${stockSummary.outOfStockItems[0].name} at ${stockSummary.outOfStockItems[0].storeName}`
+              : 'Check availability'
+          }
+          href="/culinary/ingredients"
         />
       )}
     </>

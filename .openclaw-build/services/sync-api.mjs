@@ -249,7 +249,7 @@ const server = createServer((req, res) => {
             const allPrices = db.prepare(`
               SELECT cp.price_cents, cp.price_unit, cp.raw_product_name,
                      sr.name as source_name, sr.pricing_tier,
-                     cp.last_confirmed_at, cp.source_id
+                     cp.last_confirmed_at, cp.source_id, cp.in_stock
               FROM current_prices cp
               JOIN source_registry sr ON cp.source_id = sr.source_id
               WHERE cp.canonical_ingredient_id = ?
@@ -265,6 +265,7 @@ const server = createServer((req, res) => {
               store: p.source_name,
               tier: p.pricing_tier || 'retail',
               confirmed_at: p.last_confirmed_at || new Date().toISOString(),
+              in_stock: p.in_stock === 1,
             }));
 
             // Best price = lowest normalized cents
@@ -373,15 +374,18 @@ const server = createServer((req, res) => {
             }
 
             const prices = db.prepare(`
-              SELECT cp.price_cents, cp.price_unit, sr.name as store_name
+              SELECT cp.price_cents, cp.price_unit, cp.in_stock, sr.name as store_name
               FROM current_prices cp
               JOIN source_registry sr ON cp.source_id = sr.source_id
               WHERE cp.canonical_ingredient_id = ?
               ORDER BY cp.price_cents ASC
             `).all(result.ingredient_id);
 
+            // Only include in-stock items for optimization
+            const inStockPrices = prices.filter(p => p.in_stock === 1);
+
             const byStore = {};
-            for (const p of prices) {
+            for (const p of inStockPrices) {
               allStores.add(p.store_name);
               if (!byStore[p.store_name] || p.price_cents < byStore[p.store_name]) {
                 byStore[p.store_name] = p.price_cents;
@@ -392,9 +396,10 @@ const server = createServer((req, res) => {
               name,
               canonicalName: result.name,
               found: true,
-              bestPrice: prices[0]?.price_cents || null,
-              bestStore: prices[0]?.store_name || null,
+              bestPrice: inStockPrices[0]?.price_cents || null,
+              bestStore: inStockPrices[0]?.store_name || null,
               prices: byStore,
+              outOfStockStores: prices.filter(p => p.in_stock === 0).map(p => p.store_name),
             });
           }
 
@@ -658,6 +663,8 @@ const server = createServer((req, res) => {
   <div class="stat"><div class="num">${stats.sources}</div><div class="label">Sources</div></div>
   <div class="stat"><div class="num">${stats.canonicalIngredients}</div><div class="label">Ingredients</div></div>
   <div class="stat"><div class="num">${stats.currentPrices}</div><div class="label">Current Prices</div></div>
+  <div class="stat"><div class="num">${stats.inStock || stats.currentPrices}</div><div class="label">In Stock</div></div>
+  <div class="stat"><div class="num">${stats.outOfStock || 0}</div><div class="label">Out of Stock</div></div>
   <div class="stat"><div class="num">${stats.priceChanges}</div><div class="label">Changes Logged</div></div>
 </div>
 <h2>Recent Prices</h2>
@@ -838,6 +845,7 @@ ${priceRows}
                 confidence: p.confidence || 'instacart_catalog',
                 instacartMarkupPct: p.instacartMarkupPct || null,
                 sourceUrl: null,
+                inStock: p.inStock !== undefined ? p.inStock : true,
               });
 
               imported++;
@@ -866,6 +874,249 @@ ${priceRows}
           return jsonResponse(res, { status: 'use /api/prices/batch with { prices: [...] }' }, 200);
         } catch (err) {
           return jsonResponse(res, { error: err.message }, 400);
+        }
+      });
+      return;
+    }
+
+    // Stock status summary - overall availability stats
+    if (path === '/api/stock/summary') {
+      const summary = db.prepare(`
+        SELECT
+          COUNT(*) as total,
+          SUM(CASE WHEN in_stock = 1 THEN 1 ELSE 0 END) as in_stock,
+          SUM(CASE WHEN in_stock = 0 THEN 1 ELSE 0 END) as out_of_stock
+        FROM current_prices
+      `).get();
+
+      const outOfStockItems = db.prepare(`
+        SELECT ci.name, ci.ingredient_id, sr.name as store_name, cp.last_confirmed_at
+        FROM current_prices cp
+        JOIN canonical_ingredients ci ON cp.canonical_ingredient_id = ci.ingredient_id
+        JOIN source_registry sr ON cp.source_id = sr.source_id
+        WHERE cp.in_stock = 0
+        ORDER BY cp.last_confirmed_at DESC
+        LIMIT 50
+      `).all();
+
+      return jsonResponse(res, {
+        total: summary.total,
+        inStock: summary.in_stock,
+        outOfStock: summary.out_of_stock,
+        availabilityPct: summary.total > 0 ? Math.round(summary.in_stock * 100 / summary.total) : 100,
+        outOfStockItems,
+      });
+    }
+
+    // Stock status for a specific ingredient across all stores
+    if (path.startsWith('/api/stock/ingredient/')) {
+      const ingredientId = path.split('/').pop();
+      const rows = db.prepare(`
+        SELECT cp.in_stock, cp.price_cents, cp.price_unit, cp.last_confirmed_at,
+               sr.name as store_name, sr.source_id
+        FROM current_prices cp
+        JOIN source_registry sr ON cp.source_id = sr.source_id
+        WHERE cp.canonical_ingredient_id = ?
+        ORDER BY cp.in_stock DESC, cp.price_cents ASC
+      `).all(ingredientId);
+
+      const ingredient = db.prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?').get(ingredientId);
+
+      return jsonResponse(res, {
+        ingredient: ingredient ? { id: ingredient.ingredient_id, name: ingredient.name, category: ingredient.category } : null,
+        stores: rows.map(r => ({
+          store: r.store_name,
+          inStock: r.in_stock === 1,
+          priceCents: r.price_cents,
+          priceUnit: r.price_unit,
+          lastConfirmed: r.last_confirmed_at,
+        })),
+        availableAt: rows.filter(r => r.in_stock === 1).length,
+        unavailableAt: rows.filter(r => r.in_stock === 0).length,
+      });
+    }
+
+    // Store scorecards - which stores are cheapest for YOUR ingredients
+    if (path === '/api/stores/scorecard' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const { items } = JSON.parse(body);
+          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+
+          const storeStats = {};  // storeName -> { totalCents, itemCount, wins }
+
+          for (const item of items.slice(0, 200)) {
+            const name = typeof item === 'string' ? item : item.name;
+            if (!name) continue;
+
+            const result = smartLookup(db, name);
+            if (!result) continue;
+
+            const prices = db.prepare(`
+              SELECT cp.price_cents, cp.in_stock, sr.name as store_name
+              FROM current_prices cp
+              JOIN source_registry sr ON cp.source_id = sr.source_id
+              WHERE cp.canonical_ingredient_id = ? AND cp.in_stock = 1
+              ORDER BY cp.price_cents ASC
+            `).all(result.ingredient_id);
+
+            if (prices.length === 0) continue;
+
+            const cheapest = prices[0].store_name;
+            for (const p of prices) {
+              if (!storeStats[p.store_name]) {
+                storeStats[p.store_name] = { totalCents: 0, itemCount: 0, wins: 0, items: [] };
+              }
+              storeStats[p.store_name].totalCents += p.price_cents;
+              storeStats[p.store_name].itemCount++;
+              if (p.store_name === cheapest) storeStats[p.store_name].wins++;
+            }
+          }
+
+          const ranked = Object.entries(storeStats)
+            .map(([store, stats]) => ({
+              store,
+              avgCents: Math.round(stats.totalCents / stats.itemCount),
+              itemCount: stats.itemCount,
+              wins: stats.wins,
+              coveragePct: items.length > 0 ? Math.round(stats.itemCount * 100 / items.length) : 0,
+              score: stats.itemCount > 0 ? Math.round(stats.totalCents / stats.itemCount) : 999999,
+            }))
+            .sort((a, b) => a.score - b.score);
+
+          return jsonResponse(res, {
+            ingredientCount: items.length,
+            storeCount: ranked.length,
+            stores: ranked,
+          });
+        } catch (err) {
+          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400);
+        }
+      });
+      return;
+    }
+
+    // Price history for one ingredient (for sparklines/charts)
+    // Accepts canonical_ingredient_id OR ingredient name (resolved via smart lookup)
+    if (path.startsWith('/api/prices/history/')) {
+      const rawId = decodeURIComponent(path.replace('/api/prices/history/', ''));
+      const days = parseInt(url.searchParams.get('days') || '90');
+
+      // Try as canonical ID first; if not found, resolve name via smart lookup
+      let resolvedId = rawId;
+      const directCheck = db.prepare('SELECT 1 FROM canonical_ingredients WHERE ingredient_id = ?').get(rawId);
+      if (!directCheck) {
+        const lookup = smartLookup(db, rawId);
+        if (lookup && lookup.ingredient_id) {
+          resolvedId = lookup.ingredient_id;
+        }
+      }
+
+      const history = db.prepare(`
+        SELECT pc.new_price_cents, pc.old_price_cents, pc.change_pct,
+               pc.observed_at, sr.name as store_name
+        FROM price_changes pc
+        JOIN source_registry sr ON pc.source_id = sr.source_id
+        WHERE pc.canonical_ingredient_id = ?
+          AND pc.observed_at >= datetime('now', '-' || ? || ' days')
+        ORDER BY pc.observed_at ASC
+      `).all(resolvedId, days);
+
+      // Also get current best price
+      const current = db.prepare(`
+        SELECT MIN(cp.price_cents) as best_cents, cp.price_unit
+        FROM current_prices cp
+        WHERE cp.canonical_ingredient_id = ? AND cp.in_stock = 1
+      `).get(resolvedId);
+
+      // Condensed daily minimums for sparkline
+      const dailyMap = {};
+      for (const h of history) {
+        const day = h.observed_at.split('T')[0];
+        if (!dailyMap[day] || h.new_price_cents < dailyMap[day]) {
+          dailyMap[day] = h.new_price_cents;
+        }
+      }
+      const daily = Object.entries(dailyMap)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, cents]) => ({ date, cents }));
+
+      return jsonResponse(res, {
+        ingredientId: resolvedId,
+        query: rawId,
+        days,
+        currentBestCents: current?.best_cents || null,
+        priceUnit: current?.price_unit || null,
+        history: history.map(h => ({
+          cents: h.new_price_cents,
+          previousCents: h.old_price_cents,
+          changePct: h.change_pct ? Math.round(h.change_pct * 10) / 10 : null,
+          store: h.store_name,
+          date: h.observed_at,
+        })),
+        daily,
+      });
+    }
+
+    // Cost impact - which of YOUR ingredients changed price recently
+    if (path === '/api/prices/cost-impact' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const { items, days } = JSON.parse(body);
+          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+          const lookbackDays = days || 7;
+
+          const impacts = [];
+
+          for (const item of items.slice(0, 200)) {
+            const name = typeof item === 'string' ? item : item.name;
+            if (!name) continue;
+
+            const result = smartLookup(db, name);
+            if (!result) continue;
+
+            const recentChange = db.prepare(`
+              SELECT pc.old_price_cents, pc.new_price_cents, pc.change_pct, pc.observed_at,
+                     sr.name as store_name
+              FROM price_changes pc
+              JOIN source_registry sr ON pc.source_id = sr.source_id
+              WHERE pc.canonical_ingredient_id = ?
+                AND pc.observed_at >= datetime('now', '-' || ? || ' days')
+                AND pc.old_price_cents IS NOT NULL
+              ORDER BY ABS(pc.change_pct) DESC
+              LIMIT 1
+            `).get(result.ingredient_id, lookbackDays);
+
+            if (recentChange && recentChange.change_pct && Math.abs(recentChange.change_pct) >= 3) {
+              impacts.push({
+                name: result.name,
+                ingredientId: result.ingredient_id,
+                oldCents: recentChange.old_price_cents,
+                newCents: recentChange.new_price_cents,
+                changePct: Math.round(recentChange.change_pct * 10) / 10,
+                direction: recentChange.change_pct > 0 ? 'up' : 'down',
+                store: recentChange.store_name,
+                date: recentChange.observed_at,
+              });
+            }
+          }
+
+          impacts.sort((a, b) => Math.abs(b.changePct) - Math.abs(a.changePct));
+
+          return jsonResponse(res, {
+            lookbackDays,
+            totalChecked: items.length,
+            impactCount: impacts.length,
+            impacts,
+            totalIncreaseCents: impacts.filter(i => i.direction === 'up').reduce((s, i) => s + (i.newCents - i.oldCents), 0),
+            totalDecreaseCents: impacts.filter(i => i.direction === 'down').reduce((s, i) => s + (i.oldCents - i.newCents), 0),
+          });
+        } catch (err) {
+          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400);
         }
       });
       return;

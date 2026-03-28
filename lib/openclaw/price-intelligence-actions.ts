@@ -2,7 +2,8 @@
 
 /**
  * OpenClaw Price Intelligence Actions
- * Server actions for price drop alerts and shopping optimizer.
+ * Server actions for price drop alerts, shopping optimizer,
+ * store scorecards, cost impact analysis, and price history.
  * These call the Pi API directly.
  */
 
@@ -27,6 +28,59 @@ export type PriceFreshness = {
   stale: number
   expired: number
   currentPct: number
+}
+
+export type StockSummary = {
+  total: number
+  inStock: number
+  outOfStock: number
+  availabilityPct: number
+  outOfStockItems: {
+    name: string
+    ingredientId: string
+    storeName: string
+    lastConfirmed: string
+  }[]
+}
+
+export type StoreScorecard = {
+  store: string
+  avgCents: number
+  itemCount: number
+  wins: number
+  coveragePct: number
+  score: number
+}
+
+export type CostImpact = {
+  name: string
+  ingredientId: string
+  oldCents: number
+  newCents: number
+  changePct: number
+  direction: 'up' | 'down'
+  store: string
+  date: string
+}
+
+export type CostImpactResult = {
+  lookbackDays: number
+  impactCount: number
+  impacts: CostImpact[]
+  totalIncreaseCents: number
+  totalDecreaseCents: number
+}
+
+export type PriceHistoryPoint = {
+  date: string
+  cents: number
+}
+
+export type PriceHistory = {
+  ingredientId: string
+  currentBestCents: number | null
+  priceUnit: string | null
+  daily: PriceHistoryPoint[]
 }
 
 export type ShoppingOptResult = {
@@ -98,6 +152,35 @@ export async function getPriceFreshness(): Promise<PriceFreshness> {
   }
 }
 
+export async function getStockSummary(): Promise<StockSummary> {
+  await requireChef()
+
+  try {
+    const res = await fetch(`${OPENCLAW_API}/api/stock/summary`, {
+      signal: AbortSignal.timeout(10000),
+      cache: 'no-store',
+    })
+    if (!res.ok)
+      return { total: 0, inStock: 0, outOfStock: 0, availabilityPct: 100, outOfStockItems: [] }
+
+    const data = await res.json()
+    return {
+      total: data.total || 0,
+      inStock: data.inStock || 0,
+      outOfStock: data.outOfStock || 0,
+      availabilityPct: data.availabilityPct ?? 100,
+      outOfStockItems: (data.outOfStockItems || []).map((item: any) => ({
+        name: item.name || '',
+        ingredientId: item.ingredient_id || '',
+        storeName: item.store_name || '',
+        lastConfirmed: item.last_confirmed_at || '',
+      })),
+    }
+  } catch {
+    return { total: 0, inStock: 0, outOfStock: 0, availabilityPct: 100, outOfStockItems: [] }
+  }
+}
+
 export async function getShoppingOptimization(
   ingredientNames: string[]
 ): Promise<ShoppingOptResult> {
@@ -143,5 +226,123 @@ export async function getShoppingOptimization(
     return { singleStore, multiStore }
   } catch {
     return { singleStore: null, multiStore: null }
+  }
+}
+
+/**
+ * Store scorecards: which stores are cheapest for a specific set of ingredients.
+ */
+export async function getStoreScorecard(ingredientNames: string[]): Promise<StoreScorecard[]> {
+  await requireChef()
+
+  if (ingredientNames.length === 0) return []
+
+  try {
+    const res = await fetch(`${OPENCLAW_API}/api/stores/scorecard`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: ingredientNames }),
+      signal: AbortSignal.timeout(15000),
+      cache: 'no-store',
+    })
+    if (!res.ok) return []
+
+    const data = await res.json()
+    return (data.stores || []).map((s: any) => ({
+      store: s.store || '',
+      avgCents: s.avgCents || 0,
+      itemCount: s.itemCount || 0,
+      wins: s.wins || 0,
+      coveragePct: s.coveragePct || 0,
+      score: s.score || 0,
+    }))
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Cost impact: which of the chef's ingredients had recent price changes.
+ */
+export async function getCostImpact(
+  ingredientNames: string[],
+  days = 7
+): Promise<CostImpactResult> {
+  await requireChef()
+
+  const empty: CostImpactResult = {
+    lookbackDays: days,
+    impactCount: 0,
+    impacts: [],
+    totalIncreaseCents: 0,
+    totalDecreaseCents: 0,
+  }
+
+  if (ingredientNames.length === 0) return empty
+
+  try {
+    const res = await fetch(`${OPENCLAW_API}/api/prices/cost-impact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: ingredientNames, days }),
+      signal: AbortSignal.timeout(15000),
+      cache: 'no-store',
+    })
+    if (!res.ok) return empty
+
+    const data = await res.json()
+    return {
+      lookbackDays: data.lookbackDays || days,
+      impactCount: data.impactCount || 0,
+      impacts: (data.impacts || []).map((i: any) => ({
+        name: i.name || '',
+        ingredientId: i.ingredientId || '',
+        oldCents: i.oldCents || 0,
+        newCents: i.newCents || 0,
+        changePct: i.changePct || 0,
+        direction: i.direction || 'up',
+        store: i.store || '',
+        date: i.date || '',
+      })),
+      totalIncreaseCents: data.totalIncreaseCents || 0,
+      totalDecreaseCents: data.totalDecreaseCents || 0,
+    }
+  } catch {
+    return empty
+  }
+}
+
+/**
+ * Price history: daily min prices for sparkline rendering.
+ */
+export async function getPriceHistory(ingredientId: string, days = 90): Promise<PriceHistory> {
+  await requireChef()
+
+  const empty: PriceHistory = {
+    ingredientId,
+    currentBestCents: null,
+    priceUnit: null,
+    daily: [],
+  }
+
+  try {
+    const res = await fetch(
+      `${OPENCLAW_API}/api/prices/history/${encodeURIComponent(ingredientId)}?days=${days}`,
+      { signal: AbortSignal.timeout(10000), cache: 'no-store' }
+    )
+    if (!res.ok) return empty
+
+    const data = await res.json()
+    return {
+      ingredientId,
+      currentBestCents: data.currentBestCents || null,
+      priceUnit: data.priceUnit || null,
+      daily: (data.daily || []).map((d: any) => ({
+        date: d.date || '',
+        cents: d.cents || 0,
+      })),
+    }
+  } catch {
+    return empty
   }
 }
