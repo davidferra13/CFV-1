@@ -215,7 +215,7 @@ export async function resetOnboarding() {
   return { success: true }
 }
 
-export async function getOnboardingStatus() {
+export async function getOnboardingProgressSummary() {
   const progress = await getOnboardingProgress()
 
   // Count only against the 5 required wizard steps for banner/status purposes

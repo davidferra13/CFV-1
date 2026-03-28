@@ -9,6 +9,7 @@ import {
   completeOnboardingWizard,
   dismissOnboardingBanner,
 } from '@/lib/onboarding/onboarding-actions'
+import { getGoogleConnection } from '@/lib/google/auth'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { WIZARD_STEPS } from '@/lib/onboarding/onboarding-constants'
 import { ProfileStep } from './onboarding-steps/profile-step'
@@ -57,24 +58,46 @@ export function OnboardingWizard() {
   const [isPending, startTransition] = useTransition()
   const [existingData, setExistingData] = useState<ExistingData | null>(null)
   const [gmailOAuthError, setGmailOAuthError] = useState<string | null>(null)
+  const [gmailConnected, setGmailConnected] = useState(false)
   const handledGmailCallbackRef = useRef(false)
 
   async function handleSkipAll() {
     // Mark onboarding as dismissed so the layout gate stops redirecting here.
-    // Both calls must succeed before navigating away.
+    // Try both in parallel first; if that fails, try each individually.
     try {
-      await Promise.all([dismissOnboardingBanner(), completeOnboardingWizard()])
-      router.push('/dashboard')
+      const [bannerResult, wizardResult] = await Promise.all([
+        dismissOnboardingBanner(),
+        completeOnboardingWizard(),
+      ])
+      // If parallel succeeded but returned errors, try individually
+      if (!bannerResult?.success || !wizardResult?.success) {
+        if (!bannerResult?.success) {
+          await dismissOnboardingBanner().catch(() => {})
+        }
+        if (!wizardResult?.success) {
+          await completeOnboardingWizard().catch(() => {})
+        }
+      }
     } catch (err) {
-      console.error('[setup] Failed to skip setup', err)
-      // Still navigate - partial state is better than being stuck
-      router.push('/dashboard')
+      console.error('[setup] Parallel skip failed, trying individually', err)
+      // Try each one separately (one may succeed even if the other fails)
+      await dismissOnboardingBanner().catch(() => {})
+      await completeOnboardingWizard().catch(() => {})
     }
+    // Always navigate regardless of outcome. The fail-open getOnboardingStatus()
+    // and /settings exemption prevent the user from being permanently trapped.
+    router.push('/dashboard')
   }
 
   useEffect(() => {
     loadProgress()
     loadExistingData()
+    // Fire-and-forget: check if Gmail is already connected
+    getGoogleConnection()
+      .then((status) => setGmailConnected(status.gmail.connected))
+      .catch(() => {
+        /* Non-blocking: default to false */
+      })
   }, [])
 
   useEffect(() => {
@@ -214,12 +237,26 @@ export function OnboardingWizard() {
     }
   }
 
-  function finishWizard() {
+  async function finishWizard() {
+    // Await the DB write before showing the completion screen.
+    // If it fails, retry once. If retry fails, show completion anyway
+    // (the fail-open getOnboardingStatus + /settings exemption prevent trapping).
+    let saved = false
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const result = await completeOnboardingWizard()
+        if (result?.success) {
+          saved = true
+          break
+        }
+      } catch (err) {
+        console.error(`[setup] Failed to mark wizard complete (attempt ${attempt + 1})`, err)
+      }
+    }
+    if (!saved) {
+      console.error('[setup] Could not persist wizard completion after 2 attempts')
+    }
     setIsComplete(true)
-    // Set onboarding_completed_at in the background
-    completeOnboardingWizard().catch((err) => {
-      console.error('[setup] Failed to mark wizard complete', err)
-    })
   }
 
   function goBack() {
@@ -359,6 +396,13 @@ export function OnboardingWizard() {
 
       {/* Main content */}
       <div className="flex-1">
+        {/* Redirect reason banner - shown when layout gate redirected user here */}
+        {searchParams?.get('reason') === 'setup_required' && (
+          <div className="bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800 px-6 py-3 text-sm text-blue-800 dark:text-blue-300">
+            Complete your profile setup (or skip it) to access ChefFlow.
+          </div>
+        )}
+
         {/* Progress bar */}
         <div className="border-b border-border bg-card/60 backdrop-blur-sm px-6 py-3">
           <div className="flex items-center justify-between text-sm text-muted-foreground mb-1.5">
@@ -483,6 +527,7 @@ export function OnboardingWizard() {
               onComplete={handleComplete}
               onSkip={handleSkip}
               oauthError={gmailOAuthError}
+              gmailAlreadyConnected={gmailConnected}
             />
           )}
           {currentStep.key === 'first_event' && (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-  getOnboardingStatus,
+  getOnboardingProgressSummary,
   getOnboardingDismissalState,
   dismissOnboardingBanner,
 } from '@/lib/onboarding/onboarding-actions'
@@ -26,7 +26,7 @@ export function OnboardingBanner() {
   async function loadStatus() {
     try {
       const [s, dismissalState] = await Promise.all([
-        getOnboardingStatus(),
+        getOnboardingProgressSummary(),
         getOnboardingDismissalState(),
       ])
 

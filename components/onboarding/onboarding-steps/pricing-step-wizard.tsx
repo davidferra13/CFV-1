@@ -20,9 +20,9 @@ type PricingStepWizardProps = {
   existingData?: ExistingPricingData
 }
 
-// Shared input class for currency fields with a fixed gutter for the $ prefix.
+// Shared input class for currency fields (no left padding needed; $ is a sibling element).
 const currencyInputClass =
-  'block w-full rounded-md border border-border bg-background py-2 pl-12 pr-3 text-foreground shadow-sm tabular-nums focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500'
+  'block w-full bg-transparent py-2 pr-3 text-foreground tabular-nums outline-none placeholder:text-muted-foreground'
 
 function sanitizeCurrencyInput(value: string): string {
   const cleaned = value.replace(/[^\d.]/g, '')
@@ -52,10 +52,8 @@ function CurrencyInput({
   className = currencyInputClass,
 }: CurrencyInputProps) {
   return (
-    <div className="relative mt-1">
-      <span className="pointer-events-none absolute left-3.5 top-1/2 flex h-5 w-6 -translate-y-1/2 items-center justify-center text-sm font-medium text-muted-foreground">
-        $
-      </span>
+    <div className="mt-1 flex items-center rounded-md border border-border bg-background px-3 shadow-sm focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500">
+      <span className="shrink-0 select-none pr-3 text-sm font-medium text-muted-foreground">$</span>
       <input
         id={id}
         type="text"

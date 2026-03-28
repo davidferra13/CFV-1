@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import {
-  getOnboardingStatus,
+  getOnboardingProgressSummary,
   getOnboardingDismissalState,
   dismissOnboardingReminder,
 } from '@/lib/onboarding/onboarding-actions'
@@ -54,7 +54,7 @@ export function OnboardingReminderBanner() {
   async function loadReminder() {
     try {
       const [status, dismissalState] = await Promise.all([
-        getOnboardingStatus(),
+        getOnboardingProgressSummary(),
         getOnboardingDismissalState(),
       ])
 

@@ -290,6 +290,9 @@ export async function getOnboardingStatus(): Promise<boolean> {
     .eq('id', user.entityId)
     .single()
 
+  // Fail open: if we can't find the chef row, don't trap the user in a redirect loop
+  if (!data) return true
+
   // Onboarding is "done" if the wizard was completed OR the user dismissed the banner
   // (dismissing = user explicitly opted out of onboarding)
   return !!(data as any)?.onboarding_completed_at || !!(data as any)?.onboarding_banner_dismissed_at

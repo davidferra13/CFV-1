@@ -79,10 +79,10 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   // x-pathname is set by middleware so we can check the current path server-side
   // without an additional round-trip or breaking the App Router server component model.
   const pathname = headers().get('x-pathname') ?? ''
-  if (!pathname.startsWith('/onboarding')) {
+  if (!pathname.startsWith('/onboarding') && !pathname.startsWith('/settings')) {
     const onboardingComplete = await getOnboardingStatus().catch(() => true) // fail open
     if (!onboardingComplete) {
-      redirect('/onboarding')
+      redirect('/onboarding?reason=setup_required')
     }
   }
   // Parallelized - all calls are independent. All 6 use unstable_cache (60s TTL)
