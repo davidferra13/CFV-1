@@ -16,6 +16,7 @@ import { TakeAChefPayoutPanel } from '@/components/events/take-a-chef-payout-pan
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
+import type { CostForecast } from '@/lib/openclaw/cost-forecast-actions'
 
 type EventDetailMoneyTabProps = {
   activeTab: EventDetailTab
@@ -35,6 +36,7 @@ type EventDetailMoneyTabProps = {
   profitSummary: any
   eventLoyaltyPoints: number
   takeAChefFinance: any
+  costForecast?: CostForecast | null
 }
 
 export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
@@ -56,6 +58,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
     profitSummary,
     eventLoyaltyPoints,
     takeAChefFinance,
+    costForecast,
   } = props
 
   return (
@@ -90,6 +93,39 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
             revisionNotes={(menuApprovalData as any).event?.menu_revision_notes ?? null}
           />
         </Card>
+      )}
+
+      {/* Cost Forecast (future events with menu only) */}
+      {costForecast && (
+        <div className="rounded-lg border border-stone-700 bg-stone-800/50 px-4 py-3 flex items-center gap-3">
+          <div className="flex-1">
+            <span className="text-sm text-stone-400">Menu Cost: </span>
+            <span className="text-sm font-medium">
+              {formatCurrency(costForecast.currentCostCents)} today
+            </span>
+            <span className="text-sm text-stone-400">
+              {' '}
+              · Forecast for {format(new Date(event.event_date), 'MMM d')}:{' '}
+            </span>
+            <span
+              className={`text-sm font-medium ${costForecast.changePct > 0 ? 'text-red-400' : costForecast.changePct < 0 ? 'text-green-400' : ''}`}
+            >
+              ~{formatCurrency(costForecast.forecastCostCents)} (
+              {costForecast.changePct > 0 ? '+' : ''}
+              {costForecast.changePct}%)
+            </span>
+          </div>
+          <div className="group relative">
+            <span className="text-xs text-stone-500 cursor-help border-b border-dotted border-stone-600">
+              {costForecast.confidence} confidence
+            </span>
+            {costForecast.caveat && (
+              <div className="hidden group-hover:block absolute bottom-full right-0 mb-2 w-64 p-2 rounded bg-stone-900 border border-stone-700 text-xs text-stone-400 z-10">
+                {costForecast.caveat}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Financial Summary */}

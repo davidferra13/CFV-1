@@ -124,6 +124,7 @@ import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
 import { getEventHubGroupToken } from '@/lib/hub/integration-actions'
 import { EventDetailOverviewTab } from './_components/event-detail-overview-tab'
 import { EventDetailMoneyTab } from './_components/event-detail-money-tab'
+import { forecastMenuCost, type CostForecast } from '@/lib/openclaw/cost-forecast-actions'
 import { EventDetailOpsTab } from './_components/event-detail-ops-tab'
 import { EventDetailWrapTab } from './_components/event-detail-wrap-tab'
 import { Suspense } from 'react'
@@ -431,6 +432,15 @@ export default async function EventDetailPage({
     })(),
     getRevenueSplitCollaborators(params.id).catch(() => []),
   ])
+
+  // Cost forecast for future events with menus
+  let costForecast: CostForecast | null = null
+  if (eventMenus && typeof eventMenus === 'string' && event.event_date) {
+    const eventDay = new Date(event.event_date)
+    if (eventDay > new Date()) {
+      costForecast = await forecastMenuCost(eventMenus, event.event_date).catch(() => null)
+    }
+  }
 
   // Compute dietary complexity from guest data
   const guestProfiles = (guestList as any[]).map((g: any) => ({
@@ -750,6 +760,7 @@ export default async function EventDetailPage({
         profitSummary={profitSummary}
         eventLoyaltyPoints={eventLoyaltyPoints}
         takeAChefFinance={takeAChefFinance}
+        costForecast={costForecast}
       />
 
       {/* ============================================ */}

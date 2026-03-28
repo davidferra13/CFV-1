@@ -346,3 +346,149 @@ export async function getPriceHistory(ingredientId: string, days = 90): Promise<
     return empty
   }
 }
+
+// --- Types for Price Intelligence Summary ---
+
+export type PriceSpike = {
+  ingredientName: string
+  currentPriceCents: number
+  previousPriceCents: number
+  spikePct: number
+  store: string
+  unit: string
+}
+
+export type FreshnessBreakdown = {
+  total: number
+  current: number
+  stale: number
+  expired: number
+  currentPct: number
+}
+
+export type PriceIntelligenceSummary = {
+  drops: PriceDrop[]
+  spikes: PriceSpike[]
+  freshness: FreshnessBreakdown
+  topSavingsStore: string | null
+  stockAlerts: number
+  error: string | null
+}
+
+/**
+ * Unified price intelligence summary for the dashboard.
+ * Consolidates price drops, spikes, freshness, and stock data into one call.
+ */
+export async function getPriceIntelligenceSummary(): Promise<PriceIntelligenceSummary> {
+  await requireChef()
+
+  const empty: PriceIntelligenceSummary = {
+    drops: [],
+    spikes: [],
+    freshness: { total: 0, current: 0, stale: 0, expired: 0, currentPct: 0 },
+    topSavingsStore: null,
+    stockAlerts: 0,
+    error: null,
+  }
+
+  try {
+    const [dropsRes, freshnessRes, costRes, stockRes] = await Promise.all([
+      fetch(`${OPENCLAW_API}/api/alerts/price-drops?limit=5`, {
+        signal: AbortSignal.timeout(5000),
+        cache: 'no-store',
+      }).catch(() => null),
+      fetch(`${OPENCLAW_API}/api/freshness`, {
+        signal: AbortSignal.timeout(5000),
+        cache: 'no-store',
+      }).catch(() => null),
+      fetch(`${OPENCLAW_API}/api/prices/cost-impact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: [], days: 7 }),
+        signal: AbortSignal.timeout(5000),
+        cache: 'no-store',
+      }).catch(() => null),
+      fetch(`${OPENCLAW_API}/api/stock/summary`, {
+        signal: AbortSignal.timeout(5000),
+        cache: 'no-store',
+      }).catch(() => null),
+    ])
+
+    // Parse drops
+    const drops: PriceDrop[] = []
+    if (dropsRes?.ok) {
+      const dropsData = await dropsRes.json()
+      for (const a of (dropsData.alerts || dropsData.drops || []).slice(0, 5)) {
+        drops.push({
+          ingredientName: a.ingredient_name || a.name || '',
+          currentPriceCents: a.current_price_cents || a.best_price_cents || 0,
+          previousPriceCents: a.avg_price_cents || a.previous_price_cents || 0,
+          dropPct: a.drop_pct || a.percent_drop || 0,
+          store: a.store || a.best_store || '',
+          unit: a.unit || a.price_unit || 'lb',
+        })
+      }
+    }
+
+    // Parse freshness
+    let freshness: FreshnessBreakdown = empty.freshness
+    if (freshnessRes?.ok) {
+      const fData = await freshnessRes.json()
+      const breakdown = fData.breakdown || []
+      const current = breakdown.find((b: any) => b.freshness === 'current')?.count || 0
+      const stale = breakdown.find((b: any) => b.freshness === 'stale')?.count || 0
+      const expired = breakdown.find((b: any) => b.freshness === 'expired')?.count || 0
+      const total = fData.total || current + stale + expired
+      freshness = {
+        total,
+        current,
+        stale,
+        expired,
+        currentPct: total > 0 ? Math.round((current / total) * 100) : 0,
+      }
+    }
+
+    // Parse spikes from cost impact
+    const spikes: PriceSpike[] = []
+    if (costRes?.ok) {
+      const costData = await costRes.json()
+      for (const i of (costData.impacts || [])
+        .filter((x: any) => x.direction === 'up')
+        .slice(0, 5)) {
+        spikes.push({
+          ingredientName: i.name || '',
+          currentPriceCents: i.newCents || 0,
+          previousPriceCents: i.oldCents || 0,
+          spikePct: Math.abs(i.changePct || 0),
+          store: i.store || '',
+          unit: 'lb',
+        })
+      }
+    }
+
+    // Parse stock alerts
+    let stockAlerts = 0
+    if (stockRes?.ok) {
+      const stockData = await stockRes.json()
+      stockAlerts = stockData.outOfStock || 0
+    }
+
+    // Top savings store from drops
+    const storeSavings = new Map<string, number>()
+    for (const drop of drops) {
+      if (drop.store) storeSavings.set(drop.store, (storeSavings.get(drop.store) || 0) + 1)
+    }
+    let topSavingsStore: string | null = null
+    let topCount = 0
+    for (const [store, count] of storeSavings) {
+      if (count > topCount) {
+        topSavingsStore = store
+        topCount = count
+      }
+    }
+
+    return { drops, spikes, freshness, topSavingsStore, stockAlerts, error: null }
+  } catch {
+    return { ...empty, error: 'Price data temporarily unavailable' }
+  }
+}

@@ -12,8 +12,9 @@ import {
   type SyncResult,
 } from '@/lib/openclaw/sync'
 import { CatalogTab } from './catalog-tab'
+import { VendorImportTab } from './vendor-import-tab'
 
-type Tab = 'overview' | 'prices' | 'sources' | 'changes' | 'sync' | 'catalog'
+type Tab = 'overview' | 'prices' | 'sources' | 'changes' | 'sync' | 'catalog' | 'vendor-import'
 
 export function PriceCatalogClient() {
   const [tab, setTab] = useState<Tab>('overview')
@@ -90,6 +91,7 @@ export function PriceCatalogClient() {
     { key: 'changes', label: 'Changes' },
     { key: 'sync', label: 'Sync to ChefFlow' },
     { key: 'catalog', label: 'Catalog' },
+    { key: 'vendor-import', label: 'Vendor Import' },
   ]
 
   return (
@@ -450,6 +452,9 @@ export function PriceCatalogClient() {
           <CatalogTab />
         </Suspense>
       )}
+
+      {/* Vendor Import Tab */}
+      {tab === 'vendor-import' && <VendorImportTab />}
     </div>
   )
 }

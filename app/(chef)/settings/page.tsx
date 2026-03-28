@@ -153,6 +153,15 @@ export default async function SettingsPage() {
               </p>
             </Link>
             <Link
+              href="/settings/store-preferences"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Store Preferences</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Select your preferred stores for personalized pricing throughout ChefFlow.
+              </p>
+            </Link>
+            <Link
               href="/settings/menu-engine"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >

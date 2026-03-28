@@ -112,8 +112,9 @@ function sourceDisplayStore(source: PriceSource, storeName: string | null): stri
 export async function resolvePrice(
   ingredientId: string,
   tenantId: string,
-  _options?: { preferredStore?: string }
+  options?: { preferredStore?: string }
 ): Promise<ResolvedPrice> {
+  const preferredStore = options?.preferredStore || null
   const noPrice: ResolvedPrice = {
     cents: null,
     unit: 'each',
@@ -200,6 +201,7 @@ export async function resolvePrice(
   }
 
   // Tier 3: DIRECT SCRAPE (openclaw_scrape) within 14 days
+  // When preferredStore is set, prefer rows from that store (same tier, same freshness rules)
   const scrape = (await db.execute(sql`
     SELECT price_per_unit_cents, unit, store_name, purchase_date
     FROM ingredient_price_history
@@ -207,7 +209,9 @@ export async function resolvePrice(
       AND tenant_id = ${tenantId}
       AND source = 'openclaw_scrape'
       AND purchase_date > CURRENT_DATE - INTERVAL '14 days'
-    ORDER BY purchase_date DESC
+    ORDER BY
+      CASE WHEN ${preferredStore} IS NOT NULL AND LOWER(store_name) = LOWER(${preferredStore}) THEN 0 ELSE 1 END,
+      purchase_date DESC
     LIMIT 1
   `)) as unknown as PriceRow[]
 
@@ -236,7 +240,9 @@ export async function resolvePrice(
       AND tenant_id = ${tenantId}
       AND source = 'openclaw_flyer'
       AND purchase_date > CURRENT_DATE - INTERVAL '14 days'
-    ORDER BY purchase_date DESC
+    ORDER BY
+      CASE WHEN ${preferredStore} IS NOT NULL AND LOWER(store_name) = LOWER(${preferredStore}) THEN 0 ELSE 1 END,
+      purchase_date DESC
     LIMIT 1
   `)) as unknown as PriceRow[]
 
@@ -265,7 +271,9 @@ export async function resolvePrice(
       AND tenant_id = ${tenantId}
       AND source = 'openclaw_instacart'
       AND purchase_date > CURRENT_DATE - INTERVAL '30 days'
-    ORDER BY purchase_date DESC
+    ORDER BY
+      CASE WHEN ${preferredStore} IS NOT NULL AND LOWER(store_name) = LOWER(${preferredStore}) THEN 0 ELSE 1 END,
+      purchase_date DESC
     LIMIT 1
   `)) as unknown as PriceRow[]
 
@@ -362,8 +370,10 @@ export async function resolvePrice(
  */
 export async function resolvePricesBatch(
   ingredientIds: string[],
-  tenantId: string
+  tenantId: string,
+  options?: { preferredStore?: string }
 ): Promise<Map<string, ResolvedPrice>> {
+  const preferredStore = options?.preferredStore || null
   const result = new Map<string, ResolvedPrice>()
 
   if (ingredientIds.length === 0) return result
@@ -480,13 +490,26 @@ export async function resolvePricesBatch(
       continue
     }
 
+    // Helper: find best row for a source, preferring the chef's store
+    const findBestRow = (rows: BatchRow[], source: string, maxDays: number | null) => {
+      const eligible = rows.filter(
+        (r) =>
+          r.source === source &&
+          r.price_per_unit_cents !== null &&
+          (maxDays === null || daysAgo(r.purchase_date) <= maxDays)
+      )
+      if (eligible.length === 0) return undefined
+      if (preferredStore) {
+        const storeMatch = eligible.find(
+          (r) => r.store_name?.toLowerCase() === preferredStore.toLowerCase()
+        )
+        if (storeMatch) return storeMatch
+      }
+      return eligible[0] // already ordered by purchase_date DESC
+    }
+
     // Tier 3: Direct scrape (within 14 days)
-    const scrapeRow = openclaw.find(
-      (r) =>
-        r.source === 'openclaw_scrape' &&
-        r.price_per_unit_cents !== null &&
-        daysAgo(r.purchase_date) <= 14
-    )
+    const scrapeRow = findBestRow(openclaw, 'openclaw_scrape', 14)
     if (scrapeRow && scrapeRow.price_per_unit_cents !== null) {
       result.set(id, {
         cents: scrapeRow.price_per_unit_cents,
@@ -503,12 +526,7 @@ export async function resolvePricesBatch(
     }
 
     // Tier 4: Flyer (within 14 days)
-    const flyerRow = openclaw.find(
-      (r) =>
-        r.source === 'openclaw_flyer' &&
-        r.price_per_unit_cents !== null &&
-        daysAgo(r.purchase_date) <= 14
-    )
+    const flyerRow = findBestRow(openclaw, 'openclaw_flyer', 14)
     if (flyerRow && flyerRow.price_per_unit_cents !== null) {
       result.set(id, {
         cents: flyerRow.price_per_unit_cents,
@@ -525,12 +543,7 @@ export async function resolvePricesBatch(
     }
 
     // Tier 5: Instacart (within 30 days)
-    const instacartRow = openclaw.find(
-      (r) =>
-        r.source === 'openclaw_instacart' &&
-        r.price_per_unit_cents !== null &&
-        daysAgo(r.purchase_date) <= 30
-    )
+    const instacartRow = findBestRow(openclaw, 'openclaw_instacart', 30)
     if (instacartRow && instacartRow.price_per_unit_cents !== null) {
       result.set(id, {
         cents: instacartRow.price_per_unit_cents,
@@ -547,9 +560,7 @@ export async function resolvePricesBatch(
     }
 
     // Tier 6: Government (no age limit)
-    const govRow = openclaw.find(
-      (r) => r.source === 'openclaw_government' && r.price_per_unit_cents !== null
-    )
+    const govRow = findBestRow(openclaw, 'openclaw_government', null)
     if (govRow && govRow.price_per_unit_cents !== null) {
       result.set(id, {
         cents: govRow.price_per_unit_cents,

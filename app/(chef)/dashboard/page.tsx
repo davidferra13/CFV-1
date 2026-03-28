@@ -27,6 +27,8 @@ import { AlertCards } from './_sections/alerts-cards'
 import { BusinessCards } from './_sections/business-cards'
 import { IntelligenceCards } from './_sections/intelligence-cards'
 import { HeroMetrics } from './_sections/hero-metrics'
+import { getWeeklyPriceBriefing } from '@/lib/openclaw/weekly-briefing-actions'
+import { WeeklyBriefingCard } from '@/components/pricing/weekly-briefing-card'
 
 export const metadata: Metadata = { title: 'Dashboard - ChefFlow' }
 
@@ -262,6 +264,12 @@ function PriorityQueueSkeleton() {
   )
 }
 
+async function WeeklyBriefingSection() {
+  const briefing = await safe('weeklyBriefing', getWeeklyPriceBriefing, null)
+  if (!briefing) return null
+  return <WeeklyBriefingCard briefing={briefing} />
+}
+
 export default async function ChefDashboard() {
   const user = await requireChef()
 
@@ -378,6 +386,17 @@ export default async function ChefDashboard() {
             </Suspense>
           </WidgetErrorBoundary>
         </div>
+      </section>
+
+      {/* ============================================ */}
+      {/* WEEKLY PRICE BRIEFING                        */}
+      {/* ============================================ */}
+      <section>
+        <WidgetErrorBoundary name="WeeklyBriefing" compact>
+          <Suspense fallback={null}>
+            <WeeklyBriefingSection />
+          </Suspense>
+        </WidgetErrorBoundary>
       </section>
 
       {/* ============================================ */}

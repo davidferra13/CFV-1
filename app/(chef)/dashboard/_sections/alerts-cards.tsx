@@ -11,11 +11,7 @@ import { getStuckEvents } from '@/lib/pipeline/stuck-events'
 import { getCoolingClients } from '@/lib/clients/cooling-actions'
 import { getUpcomingPaymentsDue, getExpiringQuotes } from '@/lib/dashboard/widget-actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
-import {
-  getPriceDropAlerts,
-  getPriceFreshness,
-  getStockSummary,
-} from '@/lib/openclaw/price-intelligence-actions'
+import { getPriceIntelligenceSummary } from '@/lib/openclaw/price-intelligence-actions'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -58,9 +54,7 @@ export async function AlertCards() {
     expiringQuotes,
     schedulingGaps,
     onboardingProgress,
-    priceDrops,
-    priceFreshness,
-    stockSummary,
+    priceIntelligence,
   ] = await Promise.all([
     safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
     safe('pendingFollowUps', () => getStaleInquiries(5), []),
@@ -70,20 +64,13 @@ export async function AlertCards() {
     safe('expiringQuotes', () => getExpiringQuotes(7), []),
     safe('schedulingGaps', getSchedulingGaps, []),
     safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
-    safe('priceDrops', () => getPriceDropAlerts(5), []),
-    safe('priceFreshness', getPriceFreshness, {
-      total: 0,
-      current: 0,
-      stale: 0,
-      expired: 0,
-      currentPct: 0,
-    }),
-    safe('stockSummary', getStockSummary, {
-      total: 0,
-      inStock: 0,
-      outOfStock: 0,
-      availabilityPct: 100,
-      outOfStockItems: [],
+    safe('priceIntelligence', getPriceIntelligenceSummary, {
+      drops: [],
+      spikes: [],
+      freshness: { total: 0, current: 0, stale: 0, expired: 0, currentPct: 0 },
+      topSavingsStore: null,
+      stockAlerts: 0,
+      error: null,
     }),
   ])
 
@@ -233,52 +220,44 @@ export async function AlertCards() {
         />
       )}
 
-      {/* Price Drop Alerts - stat card (from OpenClaw Pi) */}
-      {priceDrops.length > 0 && (
+      {/* Price Intelligence - unified card (from OpenClaw Pi) */}
+      {(priceIntelligence.drops.length > 0 ||
+        priceIntelligence.spikes.length > 0 ||
+        priceIntelligence.freshness.total > 0) && (
         <StatCard
-          widgetId="price_drops"
-          title="Price Drops"
-          value={String(priceDrops.length)}
-          subtitle={`${priceDrops[0].ingredientName} down ${priceDrops[0].dropPct.toFixed(0)}%`}
-          trendDirection="up"
-          trend={`${formatCurrency(priceDrops[0].currentPriceCents)}/${priceDrops[0].unit} at ${priceDrops[0].store}`}
-          href="/culinary/ingredients"
-        />
-      )}
-
-      {/* Price Freshness - stat card (from OpenClaw Pi) */}
-      {priceFreshness.total > 0 && (
-        <StatCard
-          widgetId="price_freshness"
-          title="Price Data"
-          value={`${priceFreshness.currentPct}%`}
-          subtitle={`${priceFreshness.current.toLocaleString()} of ${priceFreshness.total.toLocaleString()} prices current`}
+          widgetId="price_intelligence"
+          title="Price Intelligence"
+          value={
+            priceIntelligence.drops.length > 0
+              ? `${priceIntelligence.drops.length} drops`
+              : priceIntelligence.spikes.length > 0
+                ? `${priceIntelligence.spikes.length} spikes`
+                : `${priceIntelligence.freshness.currentPct}% current`
+          }
+          subtitle={
+            priceIntelligence.drops.length > 0
+              ? `${priceIntelligence.drops[0].ingredientName} down ${priceIntelligence.drops[0].dropPct.toFixed(0)}%`
+              : priceIntelligence.spikes.length > 0
+                ? `${priceIntelligence.spikes[0].ingredientName} up ${priceIntelligence.spikes[0].spikePct.toFixed(0)}%`
+                : `${priceIntelligence.freshness.current} of ${priceIntelligence.freshness.total} prices current`
+          }
           trendDirection={
-            priceFreshness.currentPct >= 80
+            priceIntelligence.drops.length > 0
               ? 'up'
-              : priceFreshness.currentPct >= 50
-                ? 'flat'
-                : 'down'
+              : priceIntelligence.spikes.length > 0
+                ? 'down'
+                : priceIntelligence.freshness.currentPct >= 80
+                  ? 'up'
+                  : 'flat'
           }
-          trend={priceFreshness.stale > 0 ? `${priceFreshness.stale} stale` : 'All fresh'}
-          href="/admin/price-catalog"
-        />
-      )}
-
-      {/* Stock Availability - stat card (from OpenClaw Pi) */}
-      {stockSummary.outOfStock > 0 && (
-        <StatCard
-          widgetId="stock_availability"
-          title="Stock Alerts"
-          value={String(stockSummary.outOfStock)}
-          subtitle={`items out of stock (${stockSummary.availabilityPct}% available)`}
-          trendDirection={stockSummary.outOfStock > 10 ? 'down' : 'flat'}
           trend={
-            stockSummary.outOfStockItems[0]
-              ? `${stockSummary.outOfStockItems[0].name} at ${stockSummary.outOfStockItems[0].storeName}`
-              : 'Check availability'
+            priceIntelligence.drops.length > 0 && priceIntelligence.drops[0].store
+              ? `${formatCurrency(priceIntelligence.drops[0].currentPriceCents)}/${priceIntelligence.drops[0].unit} at ${priceIntelligence.drops[0].store}`
+              : priceIntelligence.stockAlerts > 0
+                ? `${priceIntelligence.stockAlerts} out of stock`
+                : 'Prices tracked'
           }
-          href="/culinary/ingredients"
+          href="/culinary/costing"
         />
       )}
     </>
