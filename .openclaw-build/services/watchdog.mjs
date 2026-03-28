@@ -237,6 +237,44 @@ function trimLog() {
   }
 }
 
+/**
+ * Kill any scraper process that has been running longer than maxMinutes.
+ * Pi has limited RAM (1GB); only one Puppeteer scraper at a time.
+ * If a scraper hangs, it blocks all others.
+ */
+function killHungScrapers(maxMinutes = 30) {
+  try {
+    // Find node processes running scraper-*.mjs
+    const ps = execSync(
+      "ps -eo pid,etimes,args | grep 'scraper-.*\\.mjs' | grep -v grep",
+      { encoding: 'utf8' }
+    ).trim();
+
+    if (!ps) return;
+
+    for (const line of ps.split('\n')) {
+      const match = line.trim().match(/^(\d+)\s+(\d+)\s+(.+)$/);
+      if (!match) continue;
+
+      const pid = parseInt(match[1]);
+      const elapsedSec = parseInt(match[2]);
+      const cmd = match[3];
+
+      if (elapsedSec > maxMinutes * 60) {
+        log('WARN', `Killing hung scraper (${Math.round(elapsedSec / 60)}min): PID ${pid} - ${cmd}`);
+        try {
+          execSync(`kill ${pid}`);
+          log('OK', `Killed PID ${pid}`);
+        } catch (err) {
+          log('ERROR', `Failed to kill PID ${pid}: ${err.message}`);
+        }
+      }
+    }
+  } catch {
+    // No scraper processes running, or ps failed
+  }
+}
+
 async function main() {
   log('INFO', '=== Watchdog check started ===');
 
@@ -251,6 +289,9 @@ async function main() {
 
   // Database checks
   checkDatabase();
+
+  // Kill hung scrapers (Pi memory guard)
+  killHungScrapers(30);
 
   // Service management (only if systemd services are configured)
   tryRestartService('openclaw-sync-api');

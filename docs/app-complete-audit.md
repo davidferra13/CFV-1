@@ -1715,11 +1715,33 @@ Pricing page (`/pricing`) feature checklist now includes "Remy AI concierge — 
 
 ### Admin Sidebar
 
-| Nav item      | Icon        | Route              |
-| ------------- | ----------- | ------------------ |
-| Pulse         | ShieldAlert | `/admin/pulse`     |
-| All Inquiries | ShieldAlert | `/admin/inquiries` |
-| Beta Signups  | Rocket      | `/admin/beta`      |
+| Nav item      | Icon        | Route                  |
+| ------------- | ----------- | ---------------------- |
+| Pulse         | ShieldAlert | `/admin/pulse`         |
+| All Inquiries | ShieldAlert | `/admin/inquiries`     |
+| Beta Signups  | Rocket      | `/admin/beta`          |
+| Price Catalog | Tags        | `/admin/price-catalog` |
+
+### Admin: Price Catalog (`/admin/price-catalog`)
+
+OpenClaw Price Intelligence dashboard. Admin-only. Connects to Raspberry Pi (10.0.0.177:8081).
+
+| Element      | Type         | Details                                                                                                                                                   |
+| ------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Overview tab | Dashboard    | Shows Pi connection status, source count, ingredient count, price count, change count, last scrape timestamp                                              |
+| Prices tab   | Data table   | Filterable by tier (retail/wholesale/farm), searchable by ingredient. Shows price, source, confidence badge, update date                                  |
+| Sources tab  | Card list    | All registered price sources with status (active/stale), type, last scraped timestamp, notes                                                              |
+| Changes tab  | Data table   | Recent price changes with old/new price, % change (green for drops, red for spikes), source, timestamp                                                    |
+| Sync tab     | Action panel | Tier selector, "Dry Run" button (preview), "Sync Now" button (push prices to ChefFlow ingredients). Shows results: matched, updated, unchanged, not found |
+
+#### Shared Pricing Components
+
+| Component              | File                                 | Purpose                                                                                                                                 |
+| ---------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `PriceBadge`           | `components/pricing/price-badge.tsx` | Unified price display: price/unit, store name, freshness (relative date), confidence dots. Supports `compact` mode for inline use.      |
+| `NoPriceBadge`         | `components/pricing/price-badge.tsx` | Explicit empty state ("No price data - Log a receipt to set price")                                                                     |
+| `resolvePrice()`       | `lib/pricing/resolve-price.ts`       | 7-tier price resolution chain (receipt > scrape > flyer > instacart > government > historical > none). Local DB only, no network calls. |
+| `resolvePricesBatch()` | `lib/pricing/resolve-price.ts`       | Batch version of resolvePrice, 2 queries total regardless of ingredient count                                                           |
 
 ---
 

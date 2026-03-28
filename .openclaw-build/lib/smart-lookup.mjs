@@ -349,4 +349,106 @@ export function batchLookup(db, queries) {
   return results;
 }
 
+/**
+ * Enriched lookup - returns full context for the sync: all prices, trends, normalized units.
+ * Used by POST /api/prices/enriched endpoint.
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {string} query - ingredient name to look up
+ * @returns {Object|null} enriched result with best_price, all_prices, trend data
+ */
+export function smartLookupEnriched(db, query) {
+  const base = smartLookup(db, query);
+  if (!base) return null;
+
+  // Get ALL prices for this ingredient across all stores
+  const allPrices = db.prepare(`
+    SELECT cp.price_cents, cp.normalized_price_cents, cp.normalized_unit,
+           cp.price_unit, cp.raw_product_name,
+           sr.name as store, sr.pricing_tier,
+           cp.confidence as tier, cp.last_confirmed_at
+    FROM current_prices cp
+    JOIN source_registry sr ON cp.source_id = sr.source_id
+    WHERE cp.canonical_ingredient_id = ?
+    ORDER BY COALESCE(cp.normalized_price_cents, cp.price_cents) ASC
+  `).all(base.ingredient_id);
+
+  if (allPrices.length === 0) {
+    return {
+      canonical_id: base.ingredient_id,
+      name: base.name,
+      category: base.category,
+      best_price: null,
+      all_prices: [],
+      trend: null,
+      price_count: 0,
+    };
+  }
+
+  // Build best_price from lowest normalized price
+  const best = allPrices[0];
+  const bestPrice = {
+    cents: best.price_cents,
+    normalized_cents: best.normalized_price_cents || best.price_cents,
+    normalized_unit: best.normalized_unit || best.price_unit,
+    original_unit: best.price_unit,
+    store: best.store,
+    tier: best.tier || 'flyer_scrape',
+    confirmed_at: best.last_confirmed_at,
+  };
+
+  // Build all_prices array
+  const formattedPrices = allPrices.map(p => ({
+    cents: p.price_cents,
+    normalized_cents: p.normalized_price_cents || p.price_cents,
+    normalized_unit: p.normalized_unit || p.price_unit,
+    store: p.store,
+    tier: p.tier || 'flyer_scrape',
+    confirmed_at: p.last_confirmed_at,
+  }));
+
+  // Get trend data from price_changes table
+  let trend = null;
+  try {
+    const changes7d = db.prepare(`
+      SELECT AVG(change_pct) as avg_change
+      FROM price_changes
+      WHERE canonical_ingredient_id = ?
+        AND observed_at > datetime('now', '-7 days')
+        AND change_pct IS NOT NULL
+    `).get(base.ingredient_id);
+
+    const changes30d = db.prepare(`
+      SELECT AVG(change_pct) as avg_change
+      FROM price_changes
+      WHERE canonical_ingredient_id = ?
+        AND observed_at > datetime('now', '-30 days')
+        AND change_pct IS NOT NULL
+    `).get(base.ingredient_id);
+
+    if (changes7d?.avg_change !== null || changes30d?.avg_change !== null) {
+      const change7d = changes7d?.avg_change ? Math.round(changes7d.avg_change * 10) / 10 : null;
+      const change30d = changes30d?.avg_change ? Math.round(changes30d.avg_change * 10) / 10 : null;
+
+      trend = {
+        direction: change7d !== null ? (change7d > 0 ? 'up' : change7d < 0 ? 'down' : 'flat') : null,
+        change_7d_pct: change7d,
+        change_30d_pct: change30d,
+      };
+    }
+  } catch {
+    // Trend data is optional; don't fail the whole lookup
+  }
+
+  return {
+    canonical_id: base.ingredient_id,
+    name: base.name,
+    category: base.category,
+    best_price: bestPrice,
+    all_prices: formattedPrices,
+    trend,
+    price_count: allPrices.length,
+  };
+}
+
 export { COMMON_ALIASES };

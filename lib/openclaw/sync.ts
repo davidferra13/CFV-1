@@ -1,10 +1,16 @@
 /**
- * OpenClaw Price Sync Service
- * Pulls price data from the Raspberry Pi's OpenClaw database
- * and updates ChefFlow's ingredient prices.
+ * OpenClaw Price Sync Service (V2 - Enriched)
+ * Pulls enriched price data from the Raspberry Pi's OpenClaw database
+ * and writes to both ingredient_price_history and ingredients tables.
+ *
+ * V2 changes:
+ *   - Uses POST /api/prices/enriched (normalized units, all stores, trends)
+ *   - Writes to ingredient_price_history with granular source values
+ *   - Updates ingredients with source, store, confidence, trend
+ *   - Deduplicates via partial unique index (idx_iph_openclaw_dedup)
+ *   - Feeds unmatched names back to Pi for catalog growth
  *
  * Runs on-demand from the admin price catalog page or via cron.
- * Only updates ingredients that already exist in ChefFlow's database.
  */
 
 'use server'
@@ -12,10 +18,12 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { db } from '@/lib/db'
 import { ingredients } from '@/lib/db/schema/schema'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { revalidatePath, revalidateTag } from 'next/cache'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+
+// --- Types ---
 
 export interface OpenClawPrice {
   canonical_ingredient_id: string
@@ -46,10 +54,39 @@ export interface SyncResult {
   updated: number
   skipped: number
   notFound: number
+  notFoundNames?: string[]
 }
 
+interface EnrichedPrice {
+  cents: number
+  normalized_cents: number
+  normalized_unit: string
+  original_unit: string
+  store: string
+  tier: string
+  confirmed_at: string
+}
+
+interface EnrichedTrend {
+  direction: 'up' | 'down' | 'flat' | null
+  change_7d_pct: number | null
+  change_30d_pct: number | null
+}
+
+interface EnrichedResult {
+  canonical_id: string
+  name: string
+  category: string
+  best_price: EnrichedPrice | null
+  all_prices: EnrichedPrice[]
+  trend: EnrichedTrend | null
+  price_count: number
+}
+
+// --- Pi Communication ---
+
 /**
- * Internal: fetch stats without auth check (for cron routes that already verified auth).
+ * Internal: fetch stats without auth check (for cron routes).
  */
 export async function getOpenClawStatsInternal(): Promise<OpenClawStats | null> {
   try {
@@ -67,29 +104,11 @@ export async function getOpenClawStatsInternal(): Promise<OpenClawStats | null> 
   }
 }
 
-/**
- * Fetch current stats from the OpenClaw Pi.
- */
 export async function getOpenClawStats(): Promise<OpenClawStats | null> {
   await requireAdmin()
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 10000)
-    const res = await fetch(`${OPENCLAW_API}/api/stats`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-    if (!res.ok) return null
-    return await res.json()
-  } catch {
-    return null
-  }
+  return getOpenClawStatsInternal()
 }
 
-/**
- * Fetch all prices from OpenClaw, optionally filtered.
- */
 export async function getOpenClawPrices(params?: {
   tier?: string
   ingredient?: string
@@ -117,9 +136,6 @@ export async function getOpenClawPrices(params?: {
   }
 }
 
-/**
- * Fetch price sources from OpenClaw.
- */
 export async function getOpenClawSources(): Promise<any[]> {
   await requireAdmin()
   try {
@@ -138,9 +154,6 @@ export async function getOpenClawSources(): Promise<any[]> {
   }
 }
 
-/**
- * Fetch recent price changes from OpenClaw.
- */
 export async function getOpenClawChanges(limit = 50): Promise<any[]> {
   await requireAdmin()
   try {
@@ -160,66 +173,16 @@ export async function getOpenClawChanges(limit = 50): Promise<any[]> {
 }
 
 /**
- * Sync prices from OpenClaw into ChefFlow's ingredients table.
- *
- * Strategy:
- *   1. Fetch all retail prices from OpenClaw
- *   2. For each OpenClaw ingredient, try to find a matching ChefFlow ingredient
- *   3. If found and price differs, update last_price_cents + last_price_date
- *   4. Only updates existing ingredients (never creates new ones)
- *
- * Matching logic: name-based fuzzy match using the canonical ingredient name.
- * OpenClaw ingredient IDs like "chicken-breast" match ChefFlow ingredients
- * by comparing against the ingredient name (case-insensitive, hyphen-to-space).
+ * Fetch enriched prices from Pi (V2 endpoint).
+ * Falls back to null if the enriched endpoint doesn't exist yet (Pi not updated).
  */
-/**
- * Internal price fetch (no auth check). Used by cron routes.
- */
-async function fetchPricesInternal(params?: {
-  tier?: string
-  ingredient?: string
-  limit?: number
-}): Promise<OpenClawPrice[]> {
-  try {
-    const searchParams = new URLSearchParams()
-    if (params?.tier) searchParams.set('tier', params.tier)
-    if (params?.ingredient) searchParams.set('ingredient', params.ingredient)
-    if (params?.limit) searchParams.set('limit', String(params.limit))
-
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
-    const res = await fetch(`${OPENCLAW_API}/api/prices?${searchParams}`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-    if (!res.ok) return []
-    const data = await res.json()
-    return data.prices || []
-  } catch {
-    return []
-  }
-}
-
-/**
- * Smart lookup batch - sends ChefFlow ingredient names to OpenClaw's
- * alias-aware, price-prioritized lookup endpoint.
- */
-interface SmartLookupResult {
-  id: string
-  name: string
-  category: string
-  bestPrice: { cents: number; display: string; unit: string; store: string } | null
-  priceCount: number
-}
-
-async function smartLookupBatch(
+async function fetchEnriched(
   names: string[]
-): Promise<Record<string, SmartLookupResult | null>> {
+): Promise<{ results: Record<string, EnrichedResult | null> } | null> {
   try {
     const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
-    const res = await fetch(`${OPENCLAW_API}/api/lookup/batch`, {
+    const timeout = setTimeout(() => controller.abort(), 60000)
+    const res = await fetch(`${OPENCLAW_API}/api/prices/enriched`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ items: names }),
@@ -227,24 +190,92 @@ async function smartLookupBatch(
       cache: 'no-store',
     })
     clearTimeout(timeout)
-    if (!res.ok) return {}
-    const data = await res.json()
-    return data.results || {}
-  } catch {
-    return {}
+    if (!res.ok) {
+      console.warn(`[sync] Enriched endpoint returned ${res.status}`)
+      return null
+    }
+    return await res.json()
+  } catch (err) {
+    console.warn(
+      `[sync] Enriched endpoint unreachable: ${err instanceof Error ? err.message : 'unknown'}`
+    )
+    return null
   }
 }
 
 /**
- * Core sync logic shared between admin-triggered and cron-triggered syncs.
+ * Feed unmatched ingredient names back to Pi for catalog growth.
+ * Non-blocking: failures are logged but don't affect the sync.
+ */
+async function suggestCatalogItems(names: string[]): Promise<void> {
+  if (names.length === 0) return
+  try {
+    await fetch(`${OPENCLAW_API}/api/catalog/suggest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: names.slice(0, 500) }),
+      signal: AbortSignal.timeout(10000),
+    })
+  } catch {
+    // Non-blocking. If Pi is down, we just skip catalog suggestions.
+  }
+}
+
+// --- Source mapping helpers ---
+
+/** Map OpenClaw tier -> granular source value for ingredient_price_history */
+function tierToSource(tier: string): string {
+  switch (tier) {
+    case 'flyer_scrape':
+      return 'openclaw_flyer'
+    case 'direct_scrape':
+      return 'openclaw_scrape'
+    case 'instacart_adjusted':
+      return 'openclaw_instacart'
+    case 'instacart_catalog':
+      return 'openclaw_instacart'
+    case 'government_baseline':
+      return 'openclaw_government'
+    case 'exact_receipt':
+      return 'openclaw_receipt'
+    default:
+      return 'openclaw_flyer'
+  }
+}
+
+/** Map OpenClaw tier -> confidence score (0.0 - 1.0) */
+function tierToConfidence(tier: string): number {
+  switch (tier) {
+    case 'exact_receipt':
+      return 0.95
+    case 'direct_scrape':
+      return 0.85
+    case 'flyer_scrape':
+      return 0.7
+    case 'instacart_adjusted':
+      return 0.6
+    case 'instacart_catalog':
+      return 0.6
+    case 'government_baseline':
+      return 0.4
+    default:
+      return 0.5
+  }
+}
+
+// --- Core Sync ---
+
+/**
+ * Core sync logic (V2 - enriched).
  *
- * Strategy (v2 - smart lookup):
- *   1. Load all ChefFlow ingredients
- *   2. Send their names to OpenClaw's smart lookup batch endpoint
- *   3. Smart lookup uses 250+ aliases + price priority to find the best match
- *   4. Update last_price_cents + last_price_date for each match
- *
- * This replaces the old naive name-matching approach that missed most items.
+ * Strategy:
+ *   1. Load ALL ingredients with their tenant_id
+ *   2. Deduplicate names for Pi lookup (one lookup per unique name)
+ *   3. Send to Pi's enriched endpoint (batches of 200)
+ *   4. For each enriched result, update ALL tenant-specific ingredients
+ *   5. Write to ingredient_price_history (upsert via partial unique index)
+ *   6. Update ingredients table with source, store, confidence, trend
+ *   7. Feed unmatched names back to Pi for catalog growth
  */
 async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
   try {
@@ -259,84 +290,173 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
       })
       .from(ingredients)
 
-    const ingredientNames = cfIngredients
-      .filter((i) => i.name && i.name.trim().length > 0)
-      .map((i) => i.name!.trim())
+    // Step 2: Deduplicate names
+    const uniqueNames = [
+      ...new Set(cfIngredients.filter((i) => i.name?.trim()).map((i) => i.name!.trim())),
+    ]
 
-    if (ingredientNames.length === 0) {
+    if (uniqueNames.length === 0) {
       return { success: true, matched: 0, updated: 0, skipped: 0, notFound: 0 }
     }
 
-    // Step 2: Send to OpenClaw smart lookup (batches of 200)
-    const allResults: Record<string, SmartLookupResult | null> = {}
-    for (let i = 0; i < ingredientNames.length; i += 200) {
-      const batch = ingredientNames.slice(i, i + 200)
-      const batchResults = await smartLookupBatch(batch)
-      Object.assign(allResults, batchResults)
+    // Step 3: Send to Pi's enriched endpoint (batches of 200)
+    const enrichedResults: Record<string, EnrichedResult | null> = {}
+    for (let i = 0; i < uniqueNames.length; i += 200) {
+      const batch = uniqueNames.slice(i, i + 200)
+      const response = await fetchEnriched(batch)
+      if (!response) {
+        console.warn('[sync] Pi enriched endpoint not available. Aborting sync.')
+        return {
+          success: false,
+          error: 'Pi enriched endpoint unreachable',
+          matched: 0,
+          updated: 0,
+          skipped: 0,
+          notFound: 0,
+        }
+      }
+      Object.assign(enrichedResults, response.results)
     }
 
-    // Step 3: Build name-to-ingredient map for ChefFlow
-    const cfByName = new Map<string, (typeof cfIngredients)[0]>()
+    // Step 4: Build name -> [ingredients] map (one name maps to MANY tenant-specific rows)
+    const byName = new Map<string, typeof cfIngredients>()
     for (const ing of cfIngredients) {
-      if (!ing.name) continue
-      cfByName.set(ing.name.trim(), ing)
+      if (!ing.name?.trim()) continue
+      const key = ing.name.trim()
+      if (!byName.has(key)) byName.set(key, [])
+      byName.get(key)!.push(ing)
     }
 
-    // Step 4: Update prices
+    // Step 5: For each enriched result, update ALL tenant-specific ingredients
+    const today = new Date().toISOString().split('T')[0]
     let matched = 0
     let updated = 0
     let skipped = 0
     let notFound = 0
+    const notFoundNames: string[] = []
 
-    for (const [name, result] of Object.entries(allResults)) {
-      const cfIng = cfByName.get(name)
-      if (!cfIng) continue
+    for (const [name, result] of Object.entries(enrichedResults)) {
+      const tenantIngredients = byName.get(name)
+      if (!tenantIngredients) continue
 
-      if (!result || !result.bestPrice) {
-        notFound++
+      if (!result || !result.best_price) {
+        notFound += tenantIngredients.length
+        notFoundNames.push(name)
         continue
       }
 
-      matched++
+      matched += tenantIngredients.length
+      const price = result.best_price
 
-      // Filter: skip wholesale bulk prices (over $50/each is likely a case, not a unit)
-      const price = result.bestPrice
-      if (price.unit === 'each' && price.cents > 5000) {
-        skipped++
+      // Skip wholesale bulk prices
+      if (price.original_unit === 'each' && price.cents > 5000) {
+        skipped += tenantIngredients.length
         continue
       }
 
-      if (cfIng.lastPriceCents === price.cents) {
-        skipped++
-        continue
-      }
+      for (const ing of tenantIngredients) {
+        // Dedup: skip if already synced today with same price
+        if (ing.lastPriceCents === price.normalized_cents) {
+          skipped++
+          continue
+        }
 
-      if (!dryRun) {
-        await db
-          .update(ingredients)
-          .set({
-            lastPriceCents: price.cents,
-            lastPriceDate: new Date().toISOString().split('T')[0],
-          })
-          .where(eq(ingredients.id, cfIng.id))
-        updated++
-      } else {
-        updated++
+        if (!dryRun) {
+          const granularSource = tierToSource(price.tier)
+          const confidence = tierToConfidence(price.tier)
+
+          // 5a. Upsert to ingredient_price_history
+          // Dedup via partial unique index idx_iph_openclaw_dedup
+          try {
+            await db.execute(sql`
+              INSERT INTO ingredient_price_history
+                (id, ingredient_id, tenant_id, price_cents, price_per_unit_cents,
+                 quantity, unit, purchase_date, store_name, source, notes)
+              VALUES (
+                gen_random_uuid(), ${ing.id}, ${ing.tenantId},
+                ${price.normalized_cents}, ${price.normalized_cents},
+                1, ${price.normalized_unit}, ${today},
+                ${price.store}, ${granularSource},
+                ${`Synced from OpenClaw - ${price.store}`}
+              )
+              ON CONFLICT (ingredient_id, tenant_id, source, purchase_date)
+                WHERE source LIKE 'openclaw_%'
+              DO UPDATE SET
+                price_cents = EXCLUDED.price_cents,
+                price_per_unit_cents = EXCLUDED.price_per_unit_cents,
+                unit = EXCLUDED.unit,
+                store_name = EXCLUDED.store_name,
+                notes = EXCLUDED.notes
+            `)
+          } catch (err) {
+            console.warn(
+              `[sync] Failed to upsert price history for ${ing.id}: ${err instanceof Error ? err.message : 'unknown'}`
+            )
+          }
+
+          // 5b. Update the ingredient row (including new enrichment columns)
+          try {
+            await db.execute(sql`
+              UPDATE ingredients SET
+                last_price_cents = ${price.normalized_cents},
+                last_price_date = ${today},
+                price_unit = ${price.normalized_unit},
+                last_price_source = ${granularSource},
+                last_price_store = ${price.store},
+                last_price_confidence = ${confidence},
+                price_trend_direction = ${result.trend?.direction ?? null},
+                price_trend_pct = ${result.trend?.change_7d_pct ?? null}
+              WHERE id = ${ing.id}
+            `)
+          } catch (err) {
+            // If new columns don't exist yet (migration not applied), fall back to basic update
+            await db
+              .update(ingredients)
+              .set({
+                lastPriceCents: price.normalized_cents,
+                lastPriceDate: today,
+                priceUnit: price.normalized_unit,
+              })
+              .where(eq(ingredients.id, ing.id))
+          }
+
+          updated++
+        } else {
+          updated++
+        }
       }
     }
 
+    // Step 6: Bulk cache invalidation (once, not per ingredient)
     if (updated > 0 && !dryRun) {
       revalidatePath('/recipes')
       revalidatePath('/events')
+      revalidatePath('/ingredients')
       revalidateTag('recipe-costs')
+      revalidateTag('ingredient-prices')
     }
 
-    return { success: true, matched, updated, skipped, notFound }
+    // Step 7: Feed unmatched names back to Pi for catalog growth (Phase 3.5)
+    if (!dryRun) {
+      await suggestCatalogItems(notFoundNames)
+    }
+
+    return {
+      success: true,
+      matched,
+      updated,
+      skipped,
+      notFound,
+      notFoundNames: dryRun ? notFoundNames : undefined,
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown error'
+    console.error('[sync] Fatal error:', msg)
     return { success: false, error: msg, matched: 0, updated: 0, skipped: 0, notFound: 0 }
   }
 }
+
+// --- Public API ---
 
 /**
  * Internal sync (no auth). Called by cron routes that already verified auth.

@@ -7,8 +7,9 @@ import { createServer } from 'http';
 import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { getDb, getStats, DB_PATH } from '../lib/db.mjs';
-import { smartLookup, batchLookup, COMMON_ALIASES } from '../lib/smart-lookup.mjs';
+import { getDb, getStats, DB_PATH, upsertPrice } from '../lib/db.mjs';
+import { smartLookup, smartLookupEnriched, batchLookup, COMMON_ALIASES } from '../lib/smart-lookup.mjs';
+import { normalizeByRules, isFoodItem, loadCachedMappings, saveMapping } from '../lib/normalize-rules.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = 8081;
@@ -270,6 +271,197 @@ ${priceRows}
 </body></html>`;
       res.writeHead(200, { 'Content-Type': 'text/html' });
       return res.end(html);
+    }
+
+    // Enriched price lookup - full context for ChefFlow sync (Phase 3)
+    if (path === '/api/prices/enriched' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const start = Date.now();
+          const { items } = JSON.parse(body);
+          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+
+          const results = {};
+          for (const item of items.slice(0, 500)) {
+            results[item] = smartLookupEnriched(db, item);
+          }
+
+          return jsonResponse(res, {
+            results,
+            lookup_ms: Date.now() - start,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (err) {
+          return jsonResponse(res, { error: 'Invalid JSON body: ' + err.message }, 400);
+        }
+      });
+      return;
+    }
+
+    // Catalog suggest - add unmatched ingredient names for catalog growth (Phase 3.5)
+    if (path === '/api/catalog/suggest' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const { items } = JSON.parse(body);
+          if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+
+          let added = 0;
+          let skipped = 0;
+
+          for (const name of items.slice(0, 500)) {
+            if (!name || typeof name !== 'string' || name.trim().length < 2) {
+              skipped++;
+              continue;
+            }
+
+            const slug = name.toLowerCase().trim()
+              .replace(/[^a-z0-9\s-]/g, '')
+              .replace(/\s+/g, '-')
+              .replace(/-+/g, '-')
+              .substring(0, 80);
+
+            if (!slug) { skipped++; continue; }
+
+            // Check if already exists
+            const existing = db.prepare('SELECT 1 FROM canonical_ingredients WHERE ingredient_id = ?').get(slug);
+            if (existing) {
+              skipped++;
+              continue;
+            }
+
+            // Insert as unpriced, uncategorized entry
+            try {
+              db.prepare(`
+                INSERT INTO canonical_ingredients (ingredient_id, name, category, standard_unit)
+                VALUES (?, ?, 'uncategorized', 'each')
+              `).run(slug, name.trim().substring(0, 100));
+              added++;
+            } catch {
+              skipped++; // duplicate or constraint violation
+            }
+          }
+
+          const totalCatalog = db.prepare('SELECT COUNT(*) as count FROM canonical_ingredients').get();
+          return jsonResponse(res, {
+            added,
+            skipped,
+            total_catalog: totalCatalog.count,
+          });
+        } catch (err) {
+          return jsonResponse(res, { error: 'Invalid JSON body: ' + err.message }, 400);
+        }
+      });
+      return;
+    }
+
+    // Batch import prices (from Windows scraper)
+    if (path === '/api/prices/batch' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const { prices } = JSON.parse(body);
+          if (!Array.isArray(prices)) return jsonResponse(res, { error: 'prices must be an array' }, 400);
+
+          const cachedMappings = loadCachedMappings(db);
+
+          let imported = 0, skipped = 0, errors = 0;
+
+          // Ensure source exists
+          const ensureSource = db.prepare(`
+            INSERT OR IGNORE INTO source_registry (source_id, name, type, chain_id, state, scrape_method, has_online_pricing, pricing_tier, status, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `);
+
+          const seenSources = new Set();
+
+          for (const p of prices) {
+            try {
+              if (!p.rawProductName || !p.priceCents) { skipped++; continue; }
+
+              // Ensure source
+              if (!seenSources.has(p.sourceId)) {
+                ensureSource.run(
+                  p.sourceId, p.sourceId, 'instacart_api', p.sourceId.replace('-instacart', ''),
+                  'MA', 'instacart_catalog', 1, p.pricingTier || 'retail', 'active',
+                  `Imported from Windows Playwright scraper. Markup adjustment: ${p.instacartMarkupPct || 0}%`
+                );
+                seenSources.add(p.sourceId);
+              }
+
+              // Normalize product name to canonical ingredient
+              const normalized = normalizeByRules(p.rawProductName, cachedMappings);
+              let ingredientId;
+
+              if (normalized) {
+                ingredientId = normalized.ingredientId;
+                saveMapping(db, p.rawProductName, normalized.ingredientId, normalized.variantId, normalized.method, normalized.confidence);
+              } else {
+                // Create a raw ingredient entry
+                ingredientId = p.rawProductName.toLowerCase().trim()
+                  .replace(/[^a-z0-9\s-]/g, '')
+                  .replace(/\s+/g, '-')
+                  .replace(/-+/g, '-')
+                  .substring(0, 80);
+
+                if (!ingredientId) { skipped++; continue; }
+
+                db.prepare(`
+                  INSERT OR IGNORE INTO canonical_ingredients (ingredient_id, name, category, standard_unit)
+                  VALUES (?, ?, ?, ?)
+                `).run(ingredientId, p.rawProductName.substring(0, 100), 'uncategorized', p.priceUnit || 'each');
+              }
+
+              const result = upsertPrice(db, {
+                sourceId: p.sourceId,
+                canonicalIngredientId: ingredientId,
+                variantId: null,
+                rawProductName: p.rawProductName,
+                priceCents: p.priceCents,
+                priceUnit: p.priceUnit || 'each',
+                pricePerStandardUnitCents: p.priceCents,
+                standardUnit: p.priceUnit || 'each',
+                packageSize: p.packageSize || null,
+                priceType: p.priceType || 'regular',
+                pricingTier: p.pricingTier || 'retail',
+                confidence: p.confidence || 'instacart_catalog',
+                instacartMarkupPct: p.instacartMarkupPct || null,
+                sourceUrl: null,
+              });
+
+              imported++;
+            } catch (err) {
+              errors++;
+            }
+          }
+
+          return jsonResponse(res, { imported, skipped, errors, total: prices.length });
+        } catch (err) {
+          return jsonResponse(res, { error: 'Invalid JSON: ' + err.message }, 400);
+        }
+      });
+      return;
+    }
+
+    // Single price import
+    if (path === '/api/price' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const price = JSON.parse(body);
+          // Redirect to batch with single item
+          const batchReq = { ...req, url: '/api/prices/batch', method: 'POST' };
+          return jsonResponse(res, { status: 'use /api/prices/batch with { prices: [...] }' }, 200);
+        } catch (err) {
+          return jsonResponse(res, { error: err.message }, 400);
+        }
+      });
+      return;
     }
 
     // 404

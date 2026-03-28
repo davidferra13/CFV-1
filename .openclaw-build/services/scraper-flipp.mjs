@@ -12,6 +12,7 @@
 import { getDb, upsertPrice } from '../lib/db.mjs';
 import { httpFetch } from '../lib/scrape-utils.mjs';
 import { normalizeByRules, isFoodItem, loadCachedMappings, saveMapping } from '../lib/normalize-rules.mjs';
+import { normalizePrice } from '../lib/unit-normalization.mjs';
 
 const POSTAL_CODE = '01835'; // Haverhill, MA
 const FLIPP_API_BASE = 'https://backflipp.wishabi.com/flipp';
@@ -330,6 +331,20 @@ async function main() {
         stats.unmatched++;
       }
 
+      // Get the category for unit normalization
+      const catRow = db.prepare('SELECT category FROM canonical_ingredients WHERE ingredient_id = ?').get(ingredientId);
+      const category = catRow?.category || 'uncategorized';
+
+      // Run category-aware unit normalization
+      const unitNorm = normalizePrice({
+        priceCents: perUnitCents,
+        rawUnit: standardUnit,
+        quantity: 1,
+        packageSize: pkgLabel,
+        category,
+        rawProductName: item.name,
+      });
+
       const result = upsertPrice(db, {
         sourceId: item.sourceId,
         canonicalIngredientId: ingredientId,
@@ -337,8 +352,8 @@ async function main() {
         rawProductName: item.name,
         priceCents: perUnitCents,
         priceUnit: standardUnit,
-        pricePerStandardUnitCents: perUnitCents,
-        standardUnit: standardUnit,
+        pricePerStandardUnitCents: unitNorm.normalized_cents,
+        standardUnit: unitNorm.normalized_unit,
         packageSize: pkgLabel,
         priceType: item.priceType,
         saleDates: { start: item.validFrom, end: item.validTo },
@@ -346,6 +361,13 @@ async function main() {
         confidence: item.confidence,
         sourceUrl: `https://flipp.com/search?q=${encodeURIComponent(item.name)}&merchant_id=${item.merchantId}`,
       });
+
+      // Write normalized columns (Phase 2)
+      const priceId = `${item.sourceId}:${ingredientId}:${normalized?.variantId || 'default'}`;
+      try {
+        db.prepare('UPDATE current_prices SET normalized_price_cents = ?, normalized_unit = ? WHERE id = ?')
+          .run(unitNorm.normalized_cents, unitNorm.normalized_unit, priceId);
+      } catch { /* columns may not exist yet on older DBs */ }
 
       if (result === 'new') stats.new++;
       else if (result === 'changed') stats.changed++;
