@@ -39,6 +39,35 @@ export async function register() {
 
     const { scheduleSimulation } = await import('./lib/simulation/auto-schedule')
     scheduleSimulation()
+
+    // Warm up critical pages so the first real user doesn't hit cold-start latency.
+    // Each dynamic page requires loading its server-side module graph on first hit.
+    // This takes 5-15s cold but <0.5s warm. We pay the cost once at startup.
+    if (process.env.NODE_ENV === 'production') {
+      setTimeout(async () => {
+        const port = process.env.PORT || '3100'
+        const base = `http://127.0.0.1:${port}`
+        const routes = [
+          '/auth/signin',
+          '/privacy',
+          '/terms',
+          '/chefs',
+          '/trust',
+          '/dashboard',
+          '/api/health',
+        ]
+        console.log('[warmup] Pre-warming critical pages...')
+        // Warm sequentially to avoid stampeding the server on startup
+        for (const route of routes) {
+          try {
+            await fetch(`${base}${route}`, { signal: AbortSignal.timeout(60000) })
+          } catch {
+            // Best-effort warmup
+          }
+        }
+        console.log('[warmup] Done - all critical pages warmed')
+      }, 3000)
+    }
   }
 
   if (process.env.NEXT_RUNTIME === 'edge' && sentryEnabled) {

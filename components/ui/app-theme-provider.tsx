@@ -10,7 +10,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider
       attribute="class"
-      defaultTheme="light"
+      defaultTheme="dark"
       enableSystem={false}
       storageKey="chefflow-theme"
       forcedTheme={forceLightTheme ? 'light' : undefined}

@@ -154,46 +154,17 @@ function parseSelectString(select: string): ParsedSelect {
 }
 
 // ─── FK resolution cache ─────────────────────────────────────────────────────
-// Maps (source_table, target_table) -> fk_column on source_table
+// Static FK map generated from the schema. No runtime information_schema queries.
+// Regenerate with: npm run db:fk-cache
 
-const fkCache = new Map<string, string>()
-let fkCacheLoaded = false
+import { FK_MAP } from '@/lib/db/fk-map'
 
 async function loadFkCache(): Promise<void> {
-  if (fkCacheLoaded) return
-  try {
-    const rows = await pgClient`
-      SELECT
-        tc.table_name AS source_table,
-        kcu.column_name AS fk_column,
-        ccu.table_name AS target_table
-      FROM information_schema.table_constraints tc
-      JOIN information_schema.key_column_usage kcu
-        ON tc.constraint_name = kcu.constraint_name
-        AND tc.table_schema = kcu.table_schema
-      JOIN information_schema.constraint_column_usage ccu
-        ON ccu.constraint_name = tc.constraint_name
-        AND ccu.table_schema = tc.table_schema
-      WHERE tc.constraint_type = 'FOREIGN KEY'
-        AND tc.table_schema = 'public'
-    `
-    for (const row of rows) {
-      const key = `${row.source_table}::${row.target_table}`
-      // Only cache the first FK per pair (PostgREST disambiguation not needed for most cases)
-      if (!fkCache.has(key)) {
-        fkCache.set(key, row.fk_column as string)
-      }
-    }
-    fkCacheLoaded = true
-  } catch (err) {
-    console.error('[compat] Failed to load FK cache:', err)
-    // Don't block - FK cache is best-effort
-    fkCacheLoaded = true
-  }
+  // No-op: FK map is now static. Kept for call-site compatibility.
 }
 
 function resolveFkColumn(sourceTable: string, targetTable: string): string | null {
-  return fkCache.get(`${sourceTable}::${targetTable}`) ?? null
+  return FK_MAP[`${sourceTable}::${targetTable}`] ?? null
 }
 
 // ─── Filter types ────────────────────────────────────────────────────────────
