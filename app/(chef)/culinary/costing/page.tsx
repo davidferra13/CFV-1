@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getRecipes } from '@/lib/recipes/actions'
+import { getRecipes, getIngredients } from '@/lib/recipes/actions'
 import { getMenuCostSummaries } from '@/lib/menus/actions'
+import { ShoppingOptimizer } from '@/components/pricing/shopping-optimizer'
 import { Card } from '@/components/ui/card'
 import {
   Table,
@@ -29,7 +30,11 @@ function priceFreshness(dateStr: string | null): { text: string; color: string }
 
 export default async function CostingPage() {
   await requireChef()
-  const [recipes, menuCosts] = await Promise.all([getRecipes(), getMenuCostSummaries()])
+  const [recipes, menuCosts, allIngredients] = await Promise.all([
+    getRecipes(),
+    getMenuCostSummaries(),
+    getIngredients().catch(() => []),
+  ])
 
   const costedRecipes = recipes.filter((r) => r.total_cost_cents !== null)
   const uncostedRecipes = recipes.length - costedRecipes.length
@@ -147,6 +152,14 @@ export default async function CostingPage() {
           </Card>
         )}
       </div>
+
+      {/* Shopping Optimizer - find cheapest stores for your ingredients */}
+      {allIngredients.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-stone-100 mb-3">Shopping Optimizer</h2>
+          <ShoppingOptimizer ingredientNames={allIngredients.map((i: any) => i.name)} />
+        </div>
+      )}
 
       {/* Menu costs */}
       {menuCosts.length > 0 && (

@@ -11,6 +11,7 @@ import { getStuckEvents } from '@/lib/pipeline/stuck-events'
 import { getCoolingClients } from '@/lib/clients/cooling-actions'
 import { getUpcomingPaymentsDue, getExpiringQuotes } from '@/lib/dashboard/widget-actions'
 import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
+import { getPriceDropAlerts, getPriceFreshness } from '@/lib/openclaw/price-intelligence-actions'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -53,6 +54,8 @@ export async function AlertCards() {
     expiringQuotes,
     schedulingGaps,
     onboardingProgress,
+    priceDrops,
+    priceFreshness,
   ] = await Promise.all([
     safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
     safe('pendingFollowUps', () => getStaleInquiries(5), []),
@@ -62,6 +65,14 @@ export async function AlertCards() {
     safe('expiringQuotes', () => getExpiringQuotes(7), []),
     safe('schedulingGaps', getSchedulingGaps, []),
     safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
+    safe('priceDrops', () => getPriceDropAlerts(5), []),
+    safe('priceFreshness', getPriceFreshness, {
+      total: 0,
+      current: 0,
+      stale: 0,
+      expired: 0,
+      currentPct: 0,
+    }),
   ])
 
   // Response Time stat card
@@ -207,6 +218,38 @@ export async function AlertCards() {
           trendDirection={onboardingProgress.completedPhases > 0 ? 'up' : 'flat'}
           trend={`${Math.round((onboardingProgress.completedPhases / onboardingProgress.totalPhases) * 100)}% done`}
           href="/settings"
+        />
+      )}
+
+      {/* Price Drop Alerts - stat card (from OpenClaw Pi) */}
+      {priceDrops.length > 0 && (
+        <StatCard
+          widgetId="price_drops"
+          title="Price Drops"
+          value={String(priceDrops.length)}
+          subtitle={`${priceDrops[0].ingredientName} down ${priceDrops[0].dropPct.toFixed(0)}%`}
+          trendDirection="up"
+          trend={`${formatCurrency(priceDrops[0].currentPriceCents)}/${priceDrops[0].unit} at ${priceDrops[0].store}`}
+          href="/culinary/ingredients"
+        />
+      )}
+
+      {/* Price Freshness - stat card (from OpenClaw Pi) */}
+      {priceFreshness.total > 0 && (
+        <StatCard
+          widgetId="price_freshness"
+          title="Price Data"
+          value={`${priceFreshness.currentPct}%`}
+          subtitle={`${priceFreshness.current.toLocaleString()} of ${priceFreshness.total.toLocaleString()} prices current`}
+          trendDirection={
+            priceFreshness.currentPct >= 80
+              ? 'up'
+              : priceFreshness.currentPct >= 50
+                ? 'flat'
+                : 'down'
+          }
+          trend={priceFreshness.stale > 0 ? `${priceFreshness.stale} stale` : 'All fresh'}
+          href="/admin/price-catalog"
         />
       )}
     </>
