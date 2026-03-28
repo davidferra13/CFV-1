@@ -17,7 +17,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="absolute top-[75%] -right-20 h-[250px] w-[250px] rounded-full bg-brand-800/20 blur-[60px]" />
       </div>
       <PublicHeader />
-      <main id="main-content" className="flex-1">
+      <main id="main-content" className="flex-1 animate-fade-slide-up">
         {children}
       </main>
       <PublicFooter />

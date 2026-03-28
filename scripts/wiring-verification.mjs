@@ -58,6 +58,7 @@ async function run() {
   console.log('Signing in...')
   const authResp = await page.request.post(`${BASE}/api/e2e/auth`, {
     data: { email: CREDS.email, password: CREDS.password },
+    timeout: 60000,
   })
   if (!authResp.ok()) {
     console.error('Auth failed:', authResp.status(), await authResp.text())
@@ -87,7 +88,7 @@ async function run() {
       const icon = result.status === 'PASS' ? '  PASS' : result.status === 'PARTIAL' ? '  PARTIAL' : '  FAIL'
       console.log(`${icon}  ${route.name} (${route.path})${result.note ? ' - ' + result.note : ''}`)
       // Brief cooldown so the dev server doesn't choke
-      await new Promise(r => setTimeout(r, 1500))
+      await new Promise(r => setTimeout(r, 2000))
     }
     console.log()
   }
@@ -108,17 +109,23 @@ async function testRoute(page, route) {
   const result = { name: route.name, path: route.path, status: 'FAIL', note: '' }
 
   try {
-    const response = await page.goto(`${BASE}${route.path}`, {
-      waitUntil: 'load',
-      timeout: 45000,
-    })
+    // Fire-and-forget navigation. SSE connections prevent domcontentloaded/load from
+    // ever resolving in this codebase, so we navigate without awaiting, then manually
+    // poll for content to appear.
+    page.goto(`${BASE}${route.path}`).catch(() => {})
 
-    if (!response) {
-      result.note = 'No response'
-      return result
+    // Poll for meaningful content (every 500ms, max 12s)
+    let bodyText = ''
+    for (let i = 0; i < 24; i++) {
+      await page.waitForTimeout(500)
+      try {
+        bodyText = await page.evaluate(() => document.body?.innerText?.trim() || '')
+        if (bodyText.length > 20) break
+      } catch {
+        // page not ready yet
+      }
     }
 
-    const status = response.status()
     const url = page.url()
 
     // Check for redirects to auth (not authenticated)
@@ -127,49 +134,29 @@ async function testRoute(page, route) {
       return result
     }
 
-    // Check HTTP status
-    if (status >= 400) {
-      result.note = `HTTP ${status}`
-      return result
-    }
-
-    // Wait a moment for client-side rendering
-    await page.waitForTimeout(3000)
-
-    // Check for blank page (no meaningful content)
-    const bodyText = await page.evaluate(() => document.body?.innerText?.trim() || '')
+    // Check for blank page
     if (bodyText.length < 10) {
       result.note = 'Blank/near-empty page'
       return result
     }
 
     // Check for error states
-    const hasError = await page.evaluate(() => {
-      const text = document.body.innerText.toLowerCase()
-      return (
-        text.includes('application error') ||
-        text.includes('server error') ||
-        text.includes('unhandled runtime error') ||
-        text.includes('500 internal') ||
-        text.includes('404 not found')
-      )
-    })
-
-    if (hasError) {
+    const lowerText = bodyText.toLowerCase()
+    if (
+      lowerText.includes('application error') ||
+      lowerText.includes('server error') ||
+      lowerText.includes('unhandled runtime error') ||
+      lowerText.includes('500 internal') ||
+      lowerText.includes('404 not found')
+    ) {
       result.note = 'Error displayed on page'
       return result
     }
 
-    // Check for console errors
-    const consoleErrors = []
-    page.on('console', msg => {
-      if (msg.type() === 'error') consoleErrors.push(msg.text())
-    })
-
     // Check page has meaningful content related to the feature
-    const hasContent = bodyText.toLowerCase().includes(route.expect)
-    if (!hasContent) {
-      // Might still be valid - check for common UI elements
+    if (lowerText.includes(route.expect)) {
+      result.status = 'PASS'
+    } else {
       const hasUI = await page.evaluate(() => {
         return document.querySelectorAll('button, table, form, [role="grid"], [role="tablist"]').length > 0
       })
@@ -180,8 +167,6 @@ async function testRoute(page, route) {
         result.status = 'PARTIAL'
         result.note = 'Page loaded but feature content unclear'
       }
-    } else {
-      result.status = 'PASS'
     }
   } catch (err) {
     result.note = err.message?.substring(0, 100) || 'Unknown error'

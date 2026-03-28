@@ -13,7 +13,7 @@ const FOOTER_LINKS = {
     { href: '/book', label: 'Book a Chef' },
     { href: '/chefs', label: 'Browse Chefs' },
     { href: '/discover', label: 'Food Directory' },
-    { href: '/gift-cards', label: 'Gift Cards' },
+    // Gift cards page planned but not yet built - omitted to avoid dead link
     { href: '/contact', label: 'Contact' },
   ],
   forOperators: [

@@ -396,6 +396,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
 
 export function ClientMainContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useClientSidebar()
+  const pathname = usePathname()
 
   return (
     <main
@@ -404,7 +405,12 @@ export function ClientMainContent({ children }: { children: React.ReactNode }) {
         collapsed ? 'lg:pl-16' : 'lg:pl-60'
       }`}
     >
-      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">{children}</div>
+      <div
+        key={pathname}
+        className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 animate-fade-slide-up"
+      >
+        {children}
+      </div>
     </main>
   )
 }

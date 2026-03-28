@@ -48,7 +48,7 @@ export function EmptyState({
   const remyMood: RemyMood = typeof remy === 'string' ? remy : 'pondering'
 
   return (
-    <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+    <div className="flex flex-col items-center justify-center py-20 px-6 text-center animate-fade-slide-up">
       {illustration ? (
         <div className="relative mb-6">
           <div className="absolute inset-0 -m-4 rounded-full bg-brand-500/5 blur-xl" />
@@ -73,7 +73,7 @@ export function EmptyState({
         </div>
       ) : null}
       <h3 className="text-lg font-semibold text-stone-100 mb-2">{title}</h3>
-      <p className="text-sm text-stone-400 max-w-sm mb-8 leading-relaxed">{description}</p>
+      <p className="text-sm text-stone-300 max-w-sm mb-8 leading-relaxed">{description}</p>
       {(action || secondaryAction) && (
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {action && (
