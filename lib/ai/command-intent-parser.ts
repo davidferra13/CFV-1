@@ -1359,6 +1359,38 @@ const DETERMINISTIC_PATTERNS: DeterministicPattern[] = [
     pattern: /^(vendor|supplier)\s+(payment\s+)?aging/i,
     build: makeSimpleBuild('vendor.payment_aging'),
   },
+  {
+    pattern:
+      /^(how much (is|does|are)|what does .+ cost|price of|check price|current price|price check|ingredient price)/i,
+    build: (match: RegExpMatchArray, input: string): CommandPlan => {
+      // Extract ingredient names from the input
+      const cleaned = input
+        .replace(
+          /^(how much (is|does|are)|what does|price of|check price|current price|price check|ingredient price)\s*/i,
+          ''
+        )
+        .replace(/\s*(cost|right now|currently|today)\s*/gi, '')
+        .trim()
+      const ingredients = cleaned
+        .split(/,\s*|\s+and\s+/i)
+        .map((s) => s.trim())
+        .filter(Boolean)
+      return {
+        rawInput: input,
+        overallConfidence: 0.9,
+        tasks: [
+          {
+            id: 't1',
+            taskType: 'price.check',
+            tier: 1 as const,
+            confidence: 0.9,
+            inputs: { ingredients },
+            dependsOn: [],
+          },
+        ],
+      }
+    },
+  },
 
   // Equipment Intelligence
   {

@@ -9,6 +9,12 @@ import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { randomBytes } from 'crypto'
 import type { GoogleConnectionStatus } from './types'
+import {
+  buildGoogleConnectAuthorizeUrl,
+  buildGoogleConnectCallbackUrl,
+  GOOGLE_OAUTH_CSRF_COOKIE,
+  resolveGoogleConnectOrigin,
+} from './connect-server'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
@@ -27,8 +33,12 @@ export async function checkGoogleOAuthHealth(): Promise<{
   redirectUri: string
   siteUrl: string
 }> {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.cheflowhq.com'
-  const redirectUri = `${siteUrl}/api/auth/google/connect/callback`
+  const siteUrl = resolveGoogleConnectOrigin({
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+    requestOrigin: process.env.NODE_ENV !== 'production' ? 'http://localhost:3100' : undefined,
+    nodeEnv: process.env.NODE_ENV,
+  })
+  const redirectUri = buildGoogleConnectCallbackUrl({ callbackOrigin: siteUrl })
   return {
     configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
     clientIdSet: !!process.env.GOOGLE_CLIENT_ID,
@@ -40,7 +50,10 @@ export async function checkGoogleOAuthHealth(): Promise<{
 
 // ─── Initiate Google Connect ────────────────────────────────────────────────
 
-export async function initiateGoogleConnect(scopes: string[]): Promise<{ redirectUrl: string }> {
+export async function initiateGoogleConnect(
+  scopes: string[],
+  options?: { returnTo?: string | null; requestOrigin?: string | null }
+): Promise<{ redirectUrl: string }> {
   const user = await requireChef()
 
   const clientId = process.env.GOOGLE_CLIENT_ID
@@ -49,7 +62,7 @@ export async function initiateGoogleConnect(scopes: string[]): Promise<{ redirec
   // CSRF token stored in cookie, included in state param
   const csrfToken = randomBytes(32).toString('hex')
   const cookieStore = cookies()
-  cookieStore.set('google-oauth-csrf', csrfToken, {
+  cookieStore.set(GOOGLE_OAUTH_CSRF_COOKIE, csrfToken, {
     path: '/',
     httpOnly: true,
     sameSite: 'lax',
@@ -57,35 +70,21 @@ export async function initiateGoogleConnect(scopes: string[]): Promise<{ redirec
     maxAge: 600, // 10 minutes
   })
 
-  const state = JSON.stringify({
-    chefId: user.entityId,
-    csrf: csrfToken,
-  })
-
-  const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/google/connect/callback`
-
-  // Always include email+profile so the callback can fetch the connected account's email
-  const allScopes = Array.from(
-    new Set([
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/userinfo.profile',
-      ...scopes,
-    ])
-  )
-
-  const params = new URLSearchParams({
-    client_id: clientId,
-    redirect_uri: redirectUri,
-    response_type: 'code',
-    scope: allScopes.join(' '),
-    access_type: 'offline',
-    include_granted_scopes: 'true',
-    prompt: 'consent',
-    state: Buffer.from(state).toString('base64'),
+  const callbackOrigin = resolveGoogleConnectOrigin({
+    siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+    requestOrigin: options?.requestOrigin,
+    nodeEnv: process.env.NODE_ENV,
   })
 
   return {
-    redirectUrl: `https://accounts.google.com/o/oauth2/v2/auth?${params}`,
+    redirectUrl: buildGoogleConnectAuthorizeUrl({
+      callbackOrigin,
+      chefId: user.entityId,
+      clientId,
+      csrfToken,
+      returnTo: options?.returnTo,
+      scopes,
+    }),
   }
 }
 

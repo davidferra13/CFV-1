@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useRef, useTransition } from 'react'
 import {
   getOnboardingProgress,
   getExistingProfileData,
@@ -57,6 +57,7 @@ export function OnboardingWizard() {
   const [isPending, startTransition] = useTransition()
   const [existingData, setExistingData] = useState<ExistingData | null>(null)
   const [gmailOAuthError, setGmailOAuthError] = useState<string | null>(null)
+  const handledGmailCallbackRef = useRef(false)
 
   async function handleSkipAll() {
     // Mark onboarding as dismissed so the layout gate stops redirecting here.
@@ -86,7 +87,12 @@ export function OnboardingWizard() {
       setGmailOAuthError(oauthError)
     }
 
-    if (connected !== 'gmail') return
+    if (connected !== 'gmail') {
+      handledGmailCallbackRef.current = false
+      return
+    }
+    if (handledGmailCallbackRef.current) return
+    handledGmailCallbackRef.current = true
 
     let active = true
 

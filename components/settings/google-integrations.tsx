@@ -8,7 +8,8 @@ import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { initiateGoogleConnect, disconnectGoogle, checkGoogleOAuthHealth } from '@/lib/google/auth'
+import { disconnectGoogle, checkGoogleOAuthHealth } from '@/lib/google/auth'
+import { buildGoogleConnectEntryUrl } from '@/lib/google/connect-entry'
 import { triggerGmailSync } from '@/lib/gmail/actions'
 import type {
   GoogleConnectionStatus,
@@ -219,24 +220,24 @@ export function GoogleIntegrations({
     errors: string[]
   } | null>(null)
 
-  const handleConnect = async (service: 'gmail' | 'calendar') => {
+  const handleConnect = (service: 'gmail' | 'calendar') => {
     setError(null)
-    try {
-      const scopes =
-        service === 'gmail'
-          ? [
-              'https://www.googleapis.com/auth/gmail.readonly',
-              'https://www.googleapis.com/auth/gmail.send',
-            ]
-          : [
-              'https://www.googleapis.com/auth/calendar.events',
-              'https://www.googleapis.com/auth/calendar.readonly',
-            ]
-      const { redirectUrl } = await initiateGoogleConnect(scopes)
-      window.location.href = redirectUrl
-    } catch (err) {
-      setError((err as Error).message)
-    }
+    const scopes =
+      service === 'gmail'
+        ? [
+            'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/gmail.send',
+          ]
+        : [
+            'https://www.googleapis.com/auth/calendar.events',
+            'https://www.googleapis.com/auth/calendar.readonly',
+          ]
+
+    window.location.assign(
+      buildGoogleConnectEntryUrl(scopes, {
+        returnTo: '/settings',
+      })
+    )
   }
 
   const handleDisconnect = async (service: 'gmail' | 'calendar') => {

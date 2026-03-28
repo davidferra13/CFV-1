@@ -8,7 +8,8 @@ import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { initiateGoogleConnect, disconnectGoogle } from '@/lib/google/auth'
+import { disconnectGoogle } from '@/lib/google/auth'
+import { buildGoogleConnectEntryUrl } from '@/lib/google/connect-entry'
 import { triggerGmailSync } from '@/lib/gmail/actions'
 import type { GoogleConnectionStatus, GmailSyncLogEntry } from '@/lib/google/types'
 import { HistoricalScanSection } from '@/components/gmail/historical-scan-section'
@@ -42,11 +43,18 @@ export function ConnectedAccounts({
     setConnecting(true)
     setError(null)
     try {
-      const { redirectUrl } = await initiateGoogleConnect([
-        'https://www.googleapis.com/auth/gmail.readonly',
-        'https://www.googleapis.com/auth/gmail.send',
-      ])
-      window.location.href = redirectUrl
+      window.location.assign(
+        buildGoogleConnectEntryUrl(
+          [
+            'https://www.googleapis.com/auth/gmail.readonly',
+            'https://www.googleapis.com/auth/gmail.send',
+          ],
+          {
+            returnTo:
+              typeof window === 'undefined' ? '/settings' : window.location.pathname || '/settings',
+          }
+        )
+      )
     } catch (err) {
       const e = err as Error
       setError(e.message)

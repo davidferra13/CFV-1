@@ -41,6 +41,11 @@ const devConnectSrc = isDev
 const devEval = isDev ? " 'unsafe-eval'" : ''
 
 const nextConfig = {
+  // Allow large FormData payloads for photo uploads (default is 1MB).
+  // Applies globally to all server actions.
+  serverActions: {
+    bodySizeLimit: '50mb',
+  },
   // Keep dev artifacts separate from production build output.
   // This prevents `npm run build` from corrupting a running `next dev` session.
   distDir:

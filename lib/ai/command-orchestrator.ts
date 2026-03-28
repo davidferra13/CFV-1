@@ -1653,6 +1653,69 @@ async function executeSingleTask(
       case 'vendor.payment_aging':
         data = await executeVendorPaymentAging()
         break
+      case 'price.check': {
+        const ingredientNames = (task.inputs.ingredients as string[]) || []
+        if (ingredientNames.length === 0) {
+          data = { message: 'Please specify which ingredients to check prices for.' }
+          break
+        }
+        const pcDb: any = createServerClient()
+        const { data: priceRows } = await pcDb
+          .from('ingredients')
+          .select('id, name')
+          .eq('tenant_id', tenantId)
+          .in(
+            'name',
+            ingredientNames.map((n: string) => n.toLowerCase())
+          )
+
+        // Also try case-insensitive match via ilike for each name
+        let matchedRows: { id: string; name: string }[] = priceRows ?? []
+        if (matchedRows.length === 0) {
+          // Fallback: search with ILIKE for partial matches
+          const { data: fuzzyRows } = await pcDb
+            .from('ingredients')
+            .select('id, name')
+            .eq('tenant_id', tenantId)
+          matchedRows = ((fuzzyRows ?? []) as { id: string; name: string }[]).filter(
+            (r: { id: string; name: string }) =>
+              ingredientNames.some((n: string) => r.name.toLowerCase().includes(n.toLowerCase()))
+          )
+        }
+
+        if (matchedRows.length === 0) {
+          data = { message: 'No matching ingredients found in your library.' }
+          break
+        }
+
+        const pcIds = matchedRows.map((r: { id: string }) => r.id)
+        const { resolvePricesBatch } = await import('@/lib/pricing/resolve-price')
+        const resolved = await resolvePricesBatch(pcIds, tenantId)
+
+        const priceResults = matchedRows.map((row: { id: string; name: string }) => {
+          const price = resolved.get(row.id)
+          if (!price || price.cents === null) {
+            return `${row.name}: No price data available`
+          }
+          return `${row.name}: $${(price.cents / 100).toFixed(2)}/${price.unit} at ${price.store || 'unknown'} (${price.freshness}, ${Math.round(price.confidence * 100)}% confidence)`
+        })
+
+        data = {
+          message: `Current prices:\n${priceResults.join('\n')}`,
+          prices: matchedRows.map((row: { id: string; name: string }) => {
+            const price = resolved.get(row.id)
+            return {
+              ingredient: row.name,
+              cents: price?.cents || null,
+              unit: price?.unit || 'each',
+              store: price?.store || null,
+              source: price?.source || 'none',
+              confidence: price?.confidence || 0,
+            }
+          }),
+        }
+        break
+      }
 
       // Equipment Intelligence
       case 'equipment.rentals':

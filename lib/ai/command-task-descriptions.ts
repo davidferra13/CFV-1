@@ -955,6 +955,24 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     description: 'Show outstanding vendor payments by age - current, 30, 60, 90+ days.',
     inputSchema: '{}',
   },
+  {
+    type: 'price.check',
+    tier: 1,
+    name: 'Check Current Price',
+    description:
+      'Look up the current price of one or more ingredients across tracked stores. Returns real-time pricing with store attribution.',
+    inputSchema: JSON.stringify({
+      type: 'object',
+      properties: {
+        ingredients: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'List of ingredient names to look up prices for',
+        },
+      },
+      required: ['ingredients'],
+    }),
+  },
 
   // Equipment Intelligence
   {

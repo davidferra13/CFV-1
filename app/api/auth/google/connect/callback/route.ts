@@ -6,6 +6,15 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/db/server'
 import { getCurrentUser } from '@/lib/auth/get-user'
+import {
+  buildGoogleConnectCallbackUrl,
+  GOOGLE_OAUTH_CSRF_COOKIE,
+  resolveGoogleConnectOrigin,
+} from '@/lib/google/connect-server'
+import {
+  buildGoogleConnectResultPath,
+  sanitizeGoogleConnectReturnTo,
+} from '@/lib/google/connect-shared'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
@@ -15,37 +24,76 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   const stateParam = searchParams.get('state')
   const errorParam = searchParams.get('error')
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin
+
+  let returnToFromState: string | null = null
+  if (stateParam) {
+    try {
+      const decodedState = JSON.parse(Buffer.from(stateParam, 'base64').toString()) as {
+        returnTo?: string | null
+      }
+      returnToFromState = sanitizeGoogleConnectReturnTo(decodedState.returnTo)
+    } catch {
+      returnToFromState = null
+    }
+  }
 
   // Google may redirect with an error (user denied consent, etc.)
   if (errorParam) {
     return NextResponse.redirect(
-      `${origin}/settings?error=${encodeURIComponent('Google authorization was denied')}`
+      new URL(
+        buildGoogleConnectResultPath({
+          returnTo: returnToFromState,
+          key: 'error',
+          value: 'Google authorization was denied',
+        }),
+        request.nextUrl.origin
+      )
     )
   }
 
   if (!code || !stateParam) {
     return NextResponse.redirect(
-      `${origin}/settings?error=${encodeURIComponent('Missing authorization code')}`
+      new URL(
+        buildGoogleConnectResultPath({
+          key: 'error',
+          value: 'Missing authorization code',
+        }),
+        request.nextUrl.origin
+      )
     )
   }
 
   // Decode and validate state
-  let state: { chefId: string; csrf: string }
+  let state: { chefId: string; csrf: string; returnTo?: string | null }
   try {
     state = JSON.parse(Buffer.from(stateParam, 'base64').toString())
   } catch {
     return NextResponse.redirect(
-      `${origin}/settings?error=${encodeURIComponent('Invalid state parameter')}`
+      new URL(
+        buildGoogleConnectResultPath({
+          key: 'error',
+          value: 'Invalid state parameter',
+        }),
+        request.nextUrl.origin
+      )
     )
   }
 
+  const returnTo = sanitizeGoogleConnectReturnTo(state.returnTo)
+
   // CSRF validation
   const cookieStore = cookies()
-  const storedCsrf = cookieStore.get('google-oauth-csrf')?.value
+  const storedCsrf = cookieStore.get(GOOGLE_OAUTH_CSRF_COOKIE)?.value
   if (!storedCsrf || storedCsrf !== state.csrf) {
     return NextResponse.redirect(
-      `${origin}/settings?error=${encodeURIComponent('CSRF validation failed')}`
+      new URL(
+        buildGoogleConnectResultPath({
+          returnTo,
+          key: 'error',
+          value: 'CSRF validation failed',
+        }),
+        request.nextUrl.origin
+      )
     )
   }
 
@@ -53,13 +101,26 @@ export async function GET(request: NextRequest) {
   const currentUser = await getCurrentUser()
   if (!currentUser || currentUser.role !== 'chef' || currentUser.entityId !== state.chefId) {
     return NextResponse.redirect(
-      `${origin}/settings?error=${encodeURIComponent('Unauthorized: Chef account mismatch')}`
+      new URL(
+        buildGoogleConnectResultPath({
+          returnTo,
+          key: 'error',
+          value: 'Unauthorized: Chef account mismatch',
+        }),
+        request.nextUrl.origin
+      )
     )
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID!
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET!
-  const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/google/connect/callback`
+  const redirectUri = buildGoogleConnectCallbackUrl({
+    callbackOrigin: resolveGoogleConnectOrigin({
+      siteUrl: process.env.NEXT_PUBLIC_SITE_URL,
+      requestOrigin: request.nextUrl.origin,
+      nodeEnv: process.env.NODE_ENV,
+    }),
+  })
 
   // Exchange code for tokens
   const tokenResponse = await fetch(GOOGLE_TOKEN_URL, {
@@ -98,7 +159,16 @@ export async function GET(request: NextRequest) {
       if (errText.length < 200) userMessage = errText
     }
 
-    return NextResponse.redirect(`${origin}/settings?error=${encodeURIComponent(userMessage)}`)
+    return NextResponse.redirect(
+      new URL(
+        buildGoogleConnectResultPath({
+          returnTo,
+          key: 'error',
+          value: userMessage,
+        }),
+        request.nextUrl.origin
+      )
+    )
   }
 
   const tokens = await tokenResponse.json()
@@ -133,7 +203,7 @@ export async function GET(request: NextRequest) {
     .eq('chef_id', state.chefId)
     .single()
 
-  const mergedGmail = gmailConnected
+  const mergedGmail = gmailConnected || (existing?.gmail_connected ?? false)
   const mergedCalendar = calendarConnected || (existing?.calendar_connected ?? false)
   const mergedScopes = Array.from(new Set([...(existing?.scopes ?? []), ...grantedScopes]))
   // Google only returns refresh_token on first consent; preserve the existing one
@@ -158,13 +228,29 @@ export async function GET(request: NextRequest) {
   if (upsertError) {
     console.error('[Google OAuth] Failed to save connection:', upsertError)
     return NextResponse.redirect(
-      `${origin}/settings?error=${encodeURIComponent('Failed to save Google connection')}`
+      new URL(
+        buildGoogleConnectResultPath({
+          returnTo,
+          key: 'error',
+          value: 'Failed to save Google connection',
+        }),
+        request.nextUrl.origin
+      )
     )
   }
 
   const service = gmailConnected ? 'gmail' : calendarConnected ? 'calendar' : 'google'
-  const response = NextResponse.redirect(`${origin}/settings?connected=${service}`)
+  const response = NextResponse.redirect(
+    new URL(
+      buildGoogleConnectResultPath({
+        returnTo,
+        key: 'connected',
+        value: service,
+      }),
+      request.nextUrl.origin
+    )
+  )
   // Clear the CSRF cookie now that OAuth is complete
-  response.cookies.delete('google-oauth-csrf')
+  response.cookies.delete(GOOGLE_OAUTH_CSRF_COOKIE)
   return response
 }

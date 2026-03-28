@@ -11,8 +11,8 @@ import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import { buildGoogleConnectEntryUrl } from '@/lib/google/connect-entry'
 import {
-  initiateGoogleCalendarConnect,
   disconnectGoogleCalendar,
   type CalendarConnection,
 } from '@/lib/scheduling/calendar-sync-actions'
@@ -43,8 +43,18 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
     setConnecting(true)
     setError(null)
     try {
-      const { redirectUrl } = await initiateGoogleCalendarConnect()
-      window.location.href = redirectUrl
+      window.location.assign(
+        buildGoogleConnectEntryUrl(
+          [
+            'https://www.googleapis.com/auth/calendar.events',
+            'https://www.googleapis.com/auth/calendar.readonly',
+          ],
+          {
+            returnTo:
+              typeof window === 'undefined' ? '/settings' : window.location.pathname || '/settings',
+          }
+        )
+      )
     } catch (err) {
       setError((err as Error).message)
       setConnecting(false)
