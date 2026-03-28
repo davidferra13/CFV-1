@@ -163,6 +163,7 @@ export function EquipmentRedundancyChecklist({ eventId, items: initialItems }: P
         <Button
           variant="primary"
           size="sm"
+          loading={isPending}
           disabled={isPending || items.filter((i) => i.name.trim()).length === 0}
           onClick={handleSave}
         >

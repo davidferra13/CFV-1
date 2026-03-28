@@ -359,7 +359,7 @@ function InviteChefForm({
           </div>
 
           <div className="flex gap-2">
-            <Button variant="primary" size="sm" onClick={handleInvite} disabled={isPending}>
+            <Button variant="primary" size="sm" onClick={handleInvite} loading={isPending}>
               {isPending ? 'Sending...' : 'Send Invitation'}
             </Button>
             <Button variant="ghost" size="sm" onClick={onCancel}>
@@ -602,7 +602,7 @@ export function CollaborationInvitationCard({
         <span className="text-xs text-stone-500">role on this event</span>
       </div>
       <div className="flex gap-2">
-        <Button variant="primary" size="sm" onClick={() => handle(true)} disabled={isPending}>
+        <Button variant="primary" size="sm" onClick={() => handle(true)} loading={isPending}>
           Accept
         </Button>
         <Button variant="ghost" size="sm" onClick={() => handle(false)} disabled={isPending}>
@@ -659,7 +659,7 @@ export function PendingRecipeShareCard({
         Accepting creates an independent editable copy in your recipe library.
       </p>
       <div className="flex gap-2">
-        <Button variant="primary" size="sm" onClick={() => handle(true)} disabled={isPending}>
+        <Button variant="primary" size="sm" onClick={() => handle(true)} loading={isPending}>
           {isPending ? 'Copying...' : 'Accept & Copy'}
         </Button>
         <Button variant="ghost" size="sm" onClick={() => handle(false)} disabled={isPending}>

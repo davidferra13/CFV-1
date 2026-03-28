@@ -73,7 +73,7 @@ export function AvailabilityShareSettings({ tokens }: { tokens: Token[] }) {
               placeholder="Label (e.g., Website embed)"
               className="flex-1 border border-stone-600 rounded px-3 py-2 text-sm"
             />
-            <Button onClick={handleGenerate} disabled={isPending}>
+            <Button onClick={handleGenerate} loading={isPending}>
               {isPending ? 'Generating...' : 'Generate'}
             </Button>
           </div>

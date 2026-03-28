@@ -89,7 +89,7 @@ export function ScaleForEventButton({ recipeId, eventName, guestCount }: Props) 
         variant={isOpen ? 'secondary' : 'primary'}
         size="sm"
         onClick={handleScale}
-        disabled={isPending}
+        loading={isPending}
       >
         {isPending
           ? 'Scaling...'

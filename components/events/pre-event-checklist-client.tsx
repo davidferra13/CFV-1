@@ -335,7 +335,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
         <Button
           variant="primary"
           onClick={handleConfirm}
-          disabled={isPending}
+          loading={isPending}
           className="w-full sm:w-auto px-8"
         >
           {isPending ? 'Confirming...' : 'Everything Looks Good - Confirm Details'}

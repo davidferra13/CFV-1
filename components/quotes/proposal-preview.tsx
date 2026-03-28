@@ -404,6 +404,7 @@ Example:
         <Button
           variant="primary"
           onClick={handleCreateQuote}
+          loading={isPending}
           disabled={isPending || proposal.hasExistingQuote || totalCents <= 0}
           className="flex-1"
         >

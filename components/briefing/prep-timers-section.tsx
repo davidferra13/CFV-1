@@ -115,7 +115,7 @@ function TimerCard({ timer }: { timer: Timer }) {
         </div>
       </div>
       {ready && (
-        <Button size="sm" variant="ghost" onClick={handleComplete} disabled={isPending}>
+        <Button size="sm" variant="ghost" onClick={handleComplete} loading={isPending}>
           {isPending ? '...' : 'Done'}
         </Button>
       )}

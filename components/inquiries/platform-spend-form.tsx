@@ -135,7 +135,7 @@ export function PlatformSpendForm() {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="primary" size="sm" onClick={handleSubmit} disabled={isPending}>
+        <Button variant="primary" size="sm" onClick={handleSubmit} loading={isPending}>
           {isPending ? 'Saving...' : 'Save'}
         </Button>
         <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isPending}>

@@ -1,7 +1,14 @@
 'use client'
 
 import { useState, useEffect, useTransition, useMemo } from 'react'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,7 +31,10 @@ const CATEGORY_LABELS: Record<ExpenseCategory, string> = {
   other: 'Other',
 }
 
-const CATEGORY_VARIANTS: Record<ExpenseCategory, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
+const CATEGORY_VARIANTS: Record<
+  ExpenseCategory,
+  'default' | 'success' | 'warning' | 'error' | 'info'
+> = {
   food: 'success',
   equipment: 'info',
   supplies: 'default',
@@ -104,7 +114,9 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
     }
 
     load()
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [categoryFilter, dateFrom, dateTo])
 
   // Filter + sort in memory
@@ -284,7 +296,7 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(expense.id)}
-                        disabled={isPending}
+                        loading={isPending}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         Delete

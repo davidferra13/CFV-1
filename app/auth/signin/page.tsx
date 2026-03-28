@@ -174,7 +174,7 @@ function SignInForm() {
             <CardFooter className="flex flex-col space-y-4">
               <Button type="submit" variant="primary" className="w-full" loading={isWorking}>
                 {stage === 'redirecting'
-                  ? 'Opening Workspace'
+                  ? 'Signed in successfully'
                   : isWorking
                     ? 'Signing In'
                     : 'Sign In'}

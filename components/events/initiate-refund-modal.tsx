@@ -241,7 +241,12 @@ export function InitiateRefundModal({
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={isPending || maxRefundCents === 0}>
+            <Button
+              type="submit"
+              className="flex-1"
+              loading={isPending}
+              disabled={isPending || maxRefundCents === 0}
+            >
               {isPending ? 'Processing...' : 'Issue Refund'}
             </Button>
           </div>

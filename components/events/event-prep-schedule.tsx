@@ -203,6 +203,7 @@ function SuggestionPanel({
           variant="primary"
           size="sm"
           onClick={handleConfirm}
+          loading={isPending}
           disabled={isPending || includedCount === 0}
         >
           {isPending

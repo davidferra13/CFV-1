@@ -164,7 +164,7 @@ export function ReferralPanel({ clientId, clientName }: { clientId: string; clie
               rows={2}
               className="bg-stone-900"
             />
-            <Button variant="primary" onClick={handleAdd} disabled={isPending} className="w-full">
+            <Button variant="primary" onClick={handleAdd} loading={isPending} className="w-full">
               {isPending ? 'Saving...' : 'Add Referral'}
             </Button>
           </div>

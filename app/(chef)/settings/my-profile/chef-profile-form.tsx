@@ -372,7 +372,7 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
         </Card>
 
         <div className="flex justify-end">
-          <Button variant="primary" size="lg" onClick={handleSave} disabled={isPending}>
+          <Button variant="primary" size="lg" onClick={handleSave} loading={isPending}>
             {isPending ? 'Saving...' : 'Save Profile'}
           </Button>
         </div>

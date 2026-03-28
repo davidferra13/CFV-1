@@ -106,7 +106,7 @@ export function AllergenBadgePanel({ recipeId, ingredientCount }: Props) {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Allergen Detection</CardTitle>
-            <Button size="sm" variant="secondary" onClick={handleCheck} disabled={isPending}>
+            <Button size="sm" variant="secondary" onClick={handleCheck} loading={isPending}>
               {isPending ? 'Retrying...' : 'Retry'}
             </Button>
           </div>
@@ -154,7 +154,7 @@ export function AllergenBadgePanel({ recipeId, ingredientCount }: Props) {
               </Badge>
             )}
           </div>
-          <Button size="sm" variant="secondary" onClick={handleCheck} disabled={isPending}>
+          <Button size="sm" variant="secondary" onClick={handleCheck} loading={isPending}>
             {isPending ? 'Refreshing...' : 'Refresh'}
           </Button>
         </div>

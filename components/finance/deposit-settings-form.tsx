@@ -202,7 +202,7 @@ export function DepositSettingsForm({ initialSettings }: Props) {
 
         {/* Save button */}
         <div className="flex justify-end">
-          <Button variant="primary" onClick={handleSave} disabled={isPending}>
+          <Button variant="primary" onClick={handleSave} loading={isPending}>
             {isPending ? 'Saving...' : 'Save Settings'}
           </Button>
         </div>

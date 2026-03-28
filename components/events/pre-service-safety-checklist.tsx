@@ -105,7 +105,7 @@ export function PreServiceSafetyChecklist({ eventId, checklist }: Props) {
       </ul>
 
       {allComplete && !isChecklistComplete && (
-        <Button variant="primary" size="sm" disabled={isPending} onClick={handleComplete}>
+        <Button variant="primary" size="sm" loading={isPending} onClick={handleComplete}>
           Mark Checklist Complete
         </Button>
       )}

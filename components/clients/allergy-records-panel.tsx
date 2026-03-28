@@ -165,7 +165,7 @@ function AddAllergyForm({ clientId, onAdded }: { clientId: string; onAdded: () =
       </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div className="flex gap-2">
-        <Button variant="primary" size="sm" onClick={handleSubmit} disabled={isPending}>
+        <Button variant="primary" size="sm" onClick={handleSubmit} loading={isPending}>
           {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : 'Save Allergen'}
         </Button>
         <Button

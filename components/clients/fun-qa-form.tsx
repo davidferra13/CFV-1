@@ -89,7 +89,7 @@ export function FunQAForm({ initialAnswers }: FunQAFormProps) {
         )}
 
         <div className="flex justify-end">
-          <Button onClick={handleSave} disabled={isPending}>
+          <Button onClick={handleSave} loading={isPending}>
             {isPending ? 'Saving…' : 'Save Answers'}
           </Button>
         </div>

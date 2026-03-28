@@ -114,7 +114,7 @@ export function CashFlowChart({ initialForecast }: Props) {
             size="sm"
             variant={days === d ? 'primary' : 'secondary'}
             onClick={() => handleChangeDays(d)}
-            disabled={isPending}
+            loading={isPending}
           >
             {d} Days
           </Button>

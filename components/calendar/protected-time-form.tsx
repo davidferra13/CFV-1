@@ -114,7 +114,7 @@ export function ProtectedTimeForm({ onClose }: Props) {
         <Button variant="ghost" size="sm" onClick={onClose} disabled={isPending}>
           Cancel
         </Button>
-        <Button variant="primary" size="sm" onClick={handleSubmit} disabled={isPending}>
+        <Button variant="primary" size="sm" onClick={handleSubmit} loading={isPending}>
           {isPending ? 'Saving...' : 'Block Time'}
         </Button>
       </div>

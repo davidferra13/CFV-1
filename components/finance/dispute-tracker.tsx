@@ -195,7 +195,7 @@ export function DisputeTracker({ initialDisputes }: Props) {
                       size="sm"
                       variant="secondary"
                       onClick={() => handleResolve(d.id, 'won')}
-                      disabled={isPending}
+                      loading={isPending}
                     >
                       Won
                     </Button>
@@ -203,7 +203,7 @@ export function DisputeTracker({ initialDisputes }: Props) {
                       size="sm"
                       variant="danger"
                       onClick={() => handleResolve(d.id, 'lost')}
-                      disabled={isPending}
+                      loading={isPending}
                     >
                       Lost
                     </Button>

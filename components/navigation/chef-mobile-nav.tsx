@@ -42,6 +42,7 @@ import {
   Search,
 } from '@/components/ui/icons'
 import { QUICK_CREATE_ITEMS, cannabisSectionItems, communitySectionItems } from './chef-nav-config'
+import { useNavigationPending } from './navigation-pending-provider'
 import type { SearchParamsLike } from './chef-nav-helpers'
 import {
   isItemActive,
@@ -412,6 +413,55 @@ const MobileBottomTabBar = memo(function MobileBottomTabBar({
   )
 })
 
+// ---- MobileActionBarLinks (with pending nav feedback) ----
+const MobileActionBarLinks = memo(function MobileActionBarLinks({
+  pathname,
+  searchParams,
+  navFilter,
+  onNavigate,
+}: {
+  pathname: string
+  searchParams?: SearchParamsLike | null
+  navFilter: string
+  onNavigate: () => void
+}) {
+  const { pendingHref, setPendingHref } = useNavigationPending()
+
+  return (
+    <div className="space-y-0.5">
+      {actionBarItems
+        .filter((item) => !navFilter || item.label.toLowerCase().includes(navFilter.toLowerCase()))
+        .map((item) => {
+          const Icon = item.icon
+          const active = isItemActive(pathname, item.href, searchParams)
+          const isPending = pendingHref === item.href && !active
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => {
+                setPendingHref(item.href)
+                onNavigate()
+              }}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors border-l-2 ${
+                active
+                  ? 'bg-brand-950 text-brand-400 border-brand-500'
+                  : isPending
+                    ? 'bg-brand-950/50 text-brand-400/70 border-brand-500/50 animate-pulse'
+                    : 'text-stone-300 hover:bg-stone-800 hover:text-stone-100 border-transparent'
+              }`}
+            >
+              <Icon
+                className={`w-[18px] h-[18px] ${active || isPending ? 'text-brand-600' : 'text-stone-400'}`}
+              />
+              {item.label}
+            </Link>
+          )
+        })}
+    </div>
+  )
+})
+
 // ---- ChefMobileNav (main export) ----
 export function ChefMobileNav({
   primaryNavHrefs,
@@ -738,34 +788,12 @@ export function ChefMobileNav({
               </div>
 
               {/* Action Bar items (unified with desktop) */}
-              <div className="space-y-0.5">
-                {actionBarItems
-                  .filter(
-                    (item) =>
-                      !navFilter || item.label.toLowerCase().includes(navFilter.toLowerCase())
-                  )
-                  .map((item) => {
-                    const Icon = item.icon
-                    const active = isItemActive(pathname, item.href, searchParams)
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={closeMenu}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors border-l-2 ${
-                          active
-                            ? 'bg-brand-950 text-brand-400 border-brand-500'
-                            : 'text-stone-300 hover:bg-stone-800 hover:text-stone-100 border-transparent'
-                        }`}
-                      >
-                        <Icon
-                          className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                        />
-                        {item.label}
-                      </Link>
-                    )
-                  })}
-              </div>
+              <MobileActionBarLinks
+                pathname={pathname}
+                searchParams={searchParams}
+                navFilter={navFilter}
+                onNavigate={closeMenu}
+              />
 
               <div className="border-t border-stone-800 my-2" />
 

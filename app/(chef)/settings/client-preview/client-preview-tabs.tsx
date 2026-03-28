@@ -5,7 +5,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { Monitor, Smartphone, ExternalLink, Eye } from '@/components/ui/icons'
+import { Monitor, Smartphone, ExternalLink, Eye, Loader2 } from '@/components/ui/icons'
 import { PublicProfilePreview } from './public-profile-preview'
 import { ClientPortalPreview } from './client-portal-preview'
 import {
@@ -124,6 +124,9 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
               isPending && activeTab !== 'portal' ? 'opacity-50 cursor-wait' : '',
             ].join(' ')}
           >
+            {isPending && activeTab === 'portal' && (
+              <Loader2 className="w-3.5 h-3.5 animate-spin inline mr-1" />
+            )}
             Client Portal
           </button>
         </div>

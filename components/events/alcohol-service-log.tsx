@@ -110,7 +110,7 @@ export function AlcoholServiceLog({ eventId, log }: Props) {
               })}
             </Badge>
           ) : (
-            <Button variant="secondary" size="sm" disabled={isPending} onClick={handleSetLastCall}>
+            <Button variant="secondary" size="sm" loading={isPending} onClick={handleSetLastCall}>
               <Bell className="mr-1.5 h-4 w-4" />
               Set Last Call
             </Button>
@@ -202,6 +202,7 @@ export function AlcoholServiceLog({ eventId, log }: Props) {
         <Button
           variant="secondary"
           size="sm"
+          loading={isPending}
           disabled={isPending || !guestsServed}
           onClick={handleAddEntry}
         >
@@ -220,7 +221,7 @@ export function AlcoholServiceLog({ eventId, log }: Props) {
           onChange={(e) => setGeneralNotes(e.target.value)}
           disabled={isPending}
         />
-        <Button variant="secondary" size="sm" disabled={isPending} onClick={handleSaveNotes}>
+        <Button variant="secondary" size="sm" loading={isPending} onClick={handleSaveNotes}>
           {notesSaved ? 'Saved!' : 'Save Notes'}
         </Button>
       </div>

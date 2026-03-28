@@ -43,7 +43,7 @@ export function InquiryQuickActions({ inquiryId, status, clientName }: Props) {
         <Button
           size="sm"
           variant="primary"
-          disabled={isPending}
+          loading={isPending}
           onClick={(e) =>
             handleTransition(e, 'awaiting_client', `Marked "${clientName}" as responded`)
           }

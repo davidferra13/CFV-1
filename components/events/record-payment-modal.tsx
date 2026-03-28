@@ -186,7 +186,7 @@ export function RecordPaymentModal({
             >
               Cancel
             </Button>
-            <Button type="submit" className="flex-1" disabled={isPending}>
+            <Button type="submit" className="flex-1" loading={isPending}>
               {isPending ? 'Recording...' : 'Record Payment'}
             </Button>
           </div>

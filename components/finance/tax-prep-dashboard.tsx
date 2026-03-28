@@ -231,7 +231,7 @@ export function TaxPrepDashboard({ summary, onYearChange }: Props) {
                   </select>
                 </div>
               </div>
-              <Button size="sm" onClick={handleAddExpense} disabled={isPending}>
+              <Button size="sm" onClick={handleAddExpense} loading={isPending}>
                 {isPending ? 'Saving...' : 'Save Expense'}
               </Button>
             </div>
@@ -355,7 +355,7 @@ export function TaxPrepDashboard({ summary, onYearChange }: Props) {
                           <Button
                             size="sm"
                             onClick={() => handleRecordPayment(est.id)}
-                            disabled={isPending}
+                            loading={isPending}
                           >
                             Save
                           </Button>

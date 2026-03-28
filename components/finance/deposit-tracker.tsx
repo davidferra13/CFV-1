@@ -332,7 +332,7 @@ function PaymentForm({
         </div>
       </div>
       <div className="flex gap-2">
-        <Button variant="primary" onClick={onSubmit} disabled={isPending}>
+        <Button variant="primary" onClick={onSubmit} loading={isPending}>
           {isPending ? 'Saving...' : 'Save'}
         </Button>
         <Button variant="ghost" onClick={onCancel} disabled={isPending}>

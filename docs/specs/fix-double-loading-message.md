@@ -1,6 +1,6 @@
 # Spec: Fix Double "Loading Your Workspace" Message on Login
 
-> **Status:** built (absorbed into global-loading-feedback.md Phase 3)
+> **Status:** verified (absorbed into global-loading-feedback.md Phase 3)
 > **Priority:** P1 (next up)
 > **Depends on:** absorbed into `global-loading-feedback.md` Phase 3 (build that spec instead, this one is redundant)
 > **Estimated complexity:** small (2-3 files)

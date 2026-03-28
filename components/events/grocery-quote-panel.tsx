@@ -170,12 +170,12 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
             </div>
             <div className="flex items-center gap-2">
               {hasQuote && (
-                <Button variant="ghost" onClick={handleRunQuote} disabled={isPending}>
+                <Button variant="ghost" onClick={handleRunQuote} loading={isPending}>
                   {isPending ? 'Refreshing...' : 'Refresh Prices'}
                 </Button>
               )}
               {!hasQuote && (
-                <Button onClick={handleRunQuote} disabled={isPending}>
+                <Button onClick={handleRunQuote} loading={isPending}>
                   {isPending ? 'Fetching prices...' : 'Get Grocery Quote'}
                 </Button>
               )}

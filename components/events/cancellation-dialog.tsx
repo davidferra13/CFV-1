@@ -85,6 +85,7 @@ export function CancellationDialog({ eventId, open, onClose, onConfirm }: Cancel
       <Button
         variant="danger"
         onClick={handleConfirm}
+        loading={isPending}
         disabled={!confirmed || isPending || isLoading || !!loadError}
       >
         {isPending ? 'Cancelling...' : 'Cancel Event'}

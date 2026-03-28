@@ -106,7 +106,7 @@ export function PotentialDuplicatesCard({
                       variant="danger"
                       size="sm"
                       onClick={() => handleMerge(match.clientId)}
-                      disabled={isPending}
+                      loading={isPending}
                     >
                       {isPending ? 'Merging...' : 'Confirm Merge'}
                     </Button>

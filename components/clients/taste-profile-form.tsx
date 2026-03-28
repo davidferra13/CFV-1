@@ -21,19 +21,53 @@ type TasteProfileFormProps = {
 }
 
 const CUISINE_SUGGESTIONS = [
-  'Italian', 'French', 'Japanese', 'Mexican', 'Thai', 'Indian',
-  'Mediterranean', 'Chinese', 'Korean', 'Vietnamese', 'Greek',
-  'Spanish', 'Middle Eastern', 'American', 'Brazilian',
+  'Italian',
+  'French',
+  'Japanese',
+  'Mexican',
+  'Thai',
+  'Indian',
+  'Mediterranean',
+  'Chinese',
+  'Korean',
+  'Vietnamese',
+  'Greek',
+  'Spanish',
+  'Middle Eastern',
+  'American',
+  'Brazilian',
 ]
 
 const PROTEIN_SUGGESTIONS = [
-  'Chicken', 'Beef', 'Pork', 'Lamb', 'Fish', 'Shrimp', 'Scallops',
-  'Lobster', 'Crab', 'Duck', 'Venison', 'Tofu', 'Tempeh', 'Turkey',
+  'Chicken',
+  'Beef',
+  'Pork',
+  'Lamb',
+  'Fish',
+  'Shrimp',
+  'Scallops',
+  'Lobster',
+  'Crab',
+  'Duck',
+  'Venison',
+  'Tofu',
+  'Tempeh',
+  'Turkey',
 ]
 
 const TEXTURE_SUGGESTIONS = [
-  'Crispy', 'Creamy', 'Crunchy', 'Tender', 'Silky', 'Al dente',
-  'Flaky', 'Chewy', 'Smooth', 'Light', 'Rich', 'Fluffy',
+  'Crispy',
+  'Creamy',
+  'Crunchy',
+  'Tender',
+  'Silky',
+  'Al dente',
+  'Flaky',
+  'Chewy',
+  'Smooth',
+  'Light',
+  'Rich',
+  'Fluffy',
 ]
 
 const SPICE_LABELS: Record<number, string> = {
@@ -141,9 +175,7 @@ export function TasteProfileForm({ clientId, initial }: TasteProfileFormProps) {
 
       {/* Spice Tolerance */}
       <div>
-        <label className="block text-sm font-medium text-zinc-300 mb-2">
-          Spice Tolerance
-        </label>
+        <label className="block text-sm font-medium text-zinc-300 mb-2">Spice Tolerance</label>
         <div className="flex gap-2">
           {[1, 2, 3, 4, 5].map((level) => (
             <button
@@ -165,10 +197,7 @@ export function TasteProfileForm({ clientId, initial }: TasteProfileFormProps) {
 
       {/* Flavor Notes */}
       <div>
-        <label
-          htmlFor="flavor-notes"
-          className="block text-sm font-medium text-zinc-300 mb-1"
-        >
+        <label htmlFor="flavor-notes" className="block text-sm font-medium text-zinc-300 mb-1">
           Flavor Notes
         </label>
         <Textarea
@@ -182,10 +211,7 @@ export function TasteProfileForm({ clientId, initial }: TasteProfileFormProps) {
 
       {/* Special Occasions Notes */}
       <div>
-        <label
-          htmlFor="occasions-notes"
-          className="block text-sm font-medium text-zinc-300 mb-1"
-        >
+        <label htmlFor="occasions-notes" className="block text-sm font-medium text-zinc-300 mb-1">
           Special Occasions Notes
         </label>
         <Textarea
@@ -199,7 +225,7 @@ export function TasteProfileForm({ clientId, initial }: TasteProfileFormProps) {
 
       {/* Save */}
       <div className="flex justify-end">
-        <Button variant="primary" onClick={handleSave} disabled={isPending}>
+        <Button variant="primary" onClick={handleSave} loading={isPending}>
           {isPending ? 'Saving...' : 'Save Taste Profile'}
         </Button>
       </div>

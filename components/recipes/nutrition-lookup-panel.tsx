@@ -122,7 +122,7 @@ function OffTab({ defaultQuery }: { defaultQuery: string }) {
           placeholder="Search packaged food or dish…"
           className="flex-1 rounded-md border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
-        <Button variant="primary" onClick={handleSearch} disabled={isPending}>
+        <Button variant="primary" onClick={handleSearch} loading={isPending}>
           {isPending ? 'Searching…' : 'Search'}
         </Button>
       </div>
@@ -208,7 +208,7 @@ function UsdaTab({ defaultQuery }: { defaultQuery: string }) {
           placeholder="Search whole ingredient (e.g. chicken breast)…"
           className="flex-1 rounded-md border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
-        <Button variant="primary" onClick={handleSearch} disabled={isPending}>
+        <Button variant="primary" onClick={handleSearch} loading={isPending}>
           {isPending ? 'Searching…' : 'Search'}
         </Button>
       </div>

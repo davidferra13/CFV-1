@@ -54,7 +54,7 @@ export function ProfitAndLossReport({ initialData }: Props) {
             onChange={(e) => setEndDate(e.target.value)}
             className="rounded-md border border-stone-600 bg-stone-900 px-2 py-2 text-sm"
           />
-          <Button onClick={refresh} disabled={isPending}>
+          <Button onClick={refresh} loading={isPending}>
             Run Report
           </Button>
         </div>

@@ -864,7 +864,7 @@ export function TravelLegForm({
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" loading={isPending}>
           {isPending ? 'Saving…' : isEdit ? 'Update trip' : 'Add trip'}
         </Button>
         <Button type="button" variant="ghost" onClick={onCancel} disabled={isPending}>

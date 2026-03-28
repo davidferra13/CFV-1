@@ -128,7 +128,7 @@ function GateRow({
                 variant="secondary"
                 size="sm"
                 onClick={handleMarkPassed}
-                disabled={isPending}
+                loading={isPending}
                 className="text-xs h-7 px-2"
               >
                 Mark Done
@@ -169,7 +169,7 @@ function GateRow({
               variant="secondary"
               size="sm"
               onClick={handleOverride}
-              disabled={isPending}
+              loading={isPending}
               className="text-xs h-7 px-2"
             >
               Confirm Skip

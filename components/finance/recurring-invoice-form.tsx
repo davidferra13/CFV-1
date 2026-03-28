@@ -259,7 +259,7 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
                     size="sm"
                     variant="ghost"
                     onClick={() => handlePause(inv.id)}
-                    disabled={isPending}
+                    loading={isPending}
                   >
                     <Pause className="h-3.5 w-3.5" />
                     Pause

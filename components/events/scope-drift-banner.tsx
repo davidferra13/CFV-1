@@ -57,7 +57,7 @@ export function ScopeDriftBanner({ eventId, driftResult, acknowledged }: Props) 
           </ul>
 
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Button variant="secondary" size="sm" disabled={isPending} onClick={handleAcknowledge}>
+            <Button variant="secondary" size="sm" loading={isPending} onClick={handleAcknowledge}>
               Acknowledge &amp; Continue
             </Button>
             <Link

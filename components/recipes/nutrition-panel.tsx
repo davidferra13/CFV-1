@@ -84,7 +84,7 @@ export function NutritionPanel({ recipeId, ingredientCount }: Props) {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Nutrition</CardTitle>
-            <Button size="sm" variant="secondary" onClick={handleFetch} disabled={isPending}>
+            <Button size="sm" variant="secondary" onClick={handleFetch} loading={isPending}>
               {isPending ? 'Retrying...' : 'Retry'}
             </Button>
           </div>
@@ -112,7 +112,7 @@ export function NutritionPanel({ recipeId, ingredientCount }: Props) {
               </Badge>
             )}
           </div>
-          <Button size="sm" variant="secondary" onClick={handleFetch} disabled={isPending}>
+          <Button size="sm" variant="secondary" onClick={handleFetch} loading={isPending}>
             {isPending ? 'Refreshing...' : 'Refresh'}
           </Button>
         </div>

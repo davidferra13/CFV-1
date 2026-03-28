@@ -149,7 +149,7 @@ export function DietaryDashboard({ clientId, profile, matrixData }: DietaryDashb
               <Button variant="ghost" onClick={handleCancelEdit}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleSave} disabled={isPending}>
+              <Button variant="primary" onClick={handleSave} loading={isPending}>
                 {isPending ? (
                   <Loader2 size={16} className="mr-1.5 animate-spin" />
                 ) : (

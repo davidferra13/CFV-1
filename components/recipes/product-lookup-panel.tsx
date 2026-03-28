@@ -237,7 +237,7 @@ export function ProductLookupPanel({
           placeholder={mode === 'barcode' ? 'Enter barcode...' : 'Search product name...'}
           className="flex-1 rounded-md border border-stone-600 px-3 py-2 text-sm bg-stone-900 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
-        <Button variant="secondary" onClick={handleSearch} disabled={isPending}>
+        <Button variant="secondary" onClick={handleSearch} loading={isPending}>
           {isPending ? 'Searching...' : 'Search'}
         </Button>
       </div>

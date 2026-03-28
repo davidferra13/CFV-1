@@ -198,7 +198,7 @@ export function BankFeedPanel({ connections, initialTransactions, summary }: Pro
                               size="sm"
                               variant="ghost"
                               onClick={() => handleIgnore(tx.id)}
-                              disabled={isPending}
+                              loading={isPending}
                             >
                               <X className="h-3.5 w-3.5" />
                             </Button>

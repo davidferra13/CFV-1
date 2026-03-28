@@ -130,7 +130,7 @@ export function PricingInsightsPanel(props: PricingInsightsPanelProps) {
                 variant="ghost"
                 className="mt-2 text-xs"
                 onClick={fetchInsights}
-                disabled={isPending}
+                loading={isPending}
               >
                 Try again
               </Button>
@@ -197,7 +197,7 @@ export function PricingInsightsPanel(props: PricingInsightsPanelProps) {
                 variant="ghost"
                 className="text-xs"
                 onClick={fetchInsights}
-                disabled={isPending}
+                loading={isPending}
               >
                 {isPending ? 'Refreshing...' : 'Refresh'}
               </Button>

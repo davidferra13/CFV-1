@@ -279,7 +279,7 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
             </div>
             {dishes.length < total && (
               <div className="flex justify-center pt-2">
-                <Button variant="secondary" onClick={loadMore} disabled={isPending}>
+                <Button variant="secondary" onClick={loadMore} loading={isPending}>
                   {isPending ? 'Loading...' : `Load More (${dishes.length} of ${total})`}
                 </Button>
               </div>

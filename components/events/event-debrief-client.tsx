@@ -737,7 +737,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
             &#10003; Debrief marked complete. You can still edit any section above.
           </p>
         ) : (
-          <Button onClick={handleComplete} disabled={isPending} className="w-full sm:w-auto">
+          <Button onClick={handleComplete} loading={isPending} className="w-full sm:w-auto">
             {isPending ? 'Saving...' : 'Complete Debrief'}
           </Button>
         )}

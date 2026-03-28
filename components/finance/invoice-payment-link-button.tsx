@@ -32,7 +32,7 @@ export function InvoicePaymentLinkButton({ eventId }: Props) {
 
   return (
     <div className="flex items-center gap-2">
-      <Button variant="ghost" size="sm" onClick={handleGenerate} disabled={isPending}>
+      <Button variant="ghost" size="sm" onClick={handleGenerate} loading={isPending}>
         {isPending ? 'Generating...' : 'Payment Link'}
       </Button>
       {lastLink && (

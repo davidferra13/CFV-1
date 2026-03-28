@@ -108,12 +108,12 @@ export function DietaryAlertPanel({ initialAlerts }: Props) {
         </div>
         <div className="flex items-center gap-2">
           {unacknowledgedCount > 0 && (
-            <Button variant="ghost" onClick={handleAcknowledgeAll} disabled={isPending}>
+            <Button variant="ghost" onClick={handleAcknowledgeAll} loading={isPending}>
               <CheckCheck className="h-4 w-4 mr-1" />
               Acknowledge all
             </Button>
           )}
-          <Button variant="ghost" onClick={handleRefresh} disabled={isPending}>
+          <Button variant="ghost" onClick={handleRefresh} loading={isPending}>
             Refresh
           </Button>
         </div>
