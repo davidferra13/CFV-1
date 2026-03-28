@@ -36,7 +36,7 @@ const REMINDER_MESSAGES: Record<string, { text: string; cta: string; href: strin
   },
 }
 
-const MAX_DISMISSALS = 3
+const MAX_DISMISSALS = 1
 
 export function OnboardingReminderBanner() {
   const [reminder, setReminder] = useState<{

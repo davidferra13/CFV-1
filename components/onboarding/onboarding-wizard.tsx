@@ -7,7 +7,9 @@ import {
   completeStep,
   skipStep,
   completeOnboardingWizard,
+  dismissOnboardingBanner,
 } from '@/lib/onboarding/onboarding-actions'
+import { useRouter } from 'next/navigation'
 import { WIZARD_STEPS } from '@/lib/onboarding/onboarding-constants'
 import { ProfileStep } from './onboarding-steps/profile-step'
 import { PortfolioStep } from './onboarding-steps/portfolio-step'
@@ -47,11 +49,23 @@ type ExistingData = {
 }
 
 export function OnboardingWizard() {
+  const router = useRouter()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [progress, setProgress] = useState<ProgressEntry[]>([])
   const [isComplete, setIsComplete] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [existingData, setExistingData] = useState<ExistingData | null>(null)
+
+  async function handleSkipAll() {
+    // Mark onboarding as dismissed so the layout gate stops redirecting here
+    try {
+      await dismissOnboardingBanner()
+      await completeOnboardingWizard()
+    } catch (err) {
+      console.error('[setup] Failed to skip setup', err)
+    }
+    router.push('/dashboard')
+  }
 
   useEffect(() => {
     loadProgress()
@@ -310,7 +324,16 @@ export function OnboardingWizard() {
             <span>
               Step {currentIndex + 1} of {WIZARD_STEPS.length}
             </span>
-            <span>{percentComplete}% complete</span>
+            <div className="flex items-center gap-4">
+              <span>{percentComplete}% complete</span>
+              <button
+                type="button"
+                onClick={handleSkipAll}
+                className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-2"
+              >
+                Skip setup
+              </button>
+            </div>
           </div>
           <div className="h-2 rounded-full bg-muted">
             <div

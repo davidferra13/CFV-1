@@ -160,12 +160,22 @@ export function TourSpotlight() {
     tour.stopTour()
   }, [tour])
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!tour.isTourActive || !visible) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleSkip()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [tour.isTourActive, visible, handleSkip])
+
   if (!tour.isTourActive || !visible || !step) return null
 
   return (
     <>
-      {/* Backdrop overlay */}
-      <div className="fixed inset-0 z-[90]" aria-hidden="true">
+      {/* Backdrop overlay - click to dismiss */}
+      <div className="fixed inset-0 z-[90] cursor-pointer" aria-hidden="true" onClick={handleSkip}>
         {/* Semi-transparent overlay with cutout for target */}
         <svg
           className="absolute inset-0 w-full h-full"

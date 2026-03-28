@@ -60,24 +60,22 @@ export function OnboardingBanner() {
 
   return (
     <div className="relative rounded-lg border border-orange-200 dark:border-orange-800/50 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 p-4 shadow-sm">
-      {/* Dismiss button (only if some progress made) */}
-      {status.completed > 0 && (
-        <button
-          type="button"
-          onClick={handleDismiss}
-          className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
-          aria-label="Dismiss"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      )}
+      {/* Dismiss button - always visible */}
+      <button
+        type="button"
+        onClick={handleDismiss}
+        className="absolute top-2 right-2 text-muted-foreground hover:text-foreground"
+        aria-label="Dismiss"
+      >
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
 
       <div className="flex items-center gap-4">
         <div className="flex-1">

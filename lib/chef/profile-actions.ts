@@ -286,9 +286,11 @@ export async function getOnboardingStatus(): Promise<boolean> {
 
   const { data } = await db
     .from('chefs')
-    .select('onboarding_completed_at')
+    .select('onboarding_completed_at, onboarding_banner_dismissed_at')
     .eq('id', user.entityId)
     .single()
 
-  return !!(data as any)?.onboarding_completed_at
+  // Onboarding is "done" if the wizard was completed OR the user dismissed the banner
+  // (dismissing = user explicitly opted out of onboarding)
+  return !!(data as any)?.onboarding_completed_at || !!(data as any)?.onboarding_banner_dismissed_at
 }

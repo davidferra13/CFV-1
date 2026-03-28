@@ -5,7 +5,7 @@
 // to start the guided tour or skip to exploring on their own.
 // Priority 0 in the overlay queue (highest importance).
 
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useTour } from './tour-provider'
 import { useOverlaySlot } from '@/lib/overlay/overlay-queue'
 import { Button } from '@/components/ui/button'
@@ -24,16 +24,48 @@ export function WelcomeModal() {
     tour.markWelcomeSeen()
   }, [tour])
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!tour.showWelcome || !visible) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleSkip()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [tour.showWelcome, visible, handleSkip])
+
   if (!tour.showWelcome || !visible) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) handleSkip()
+      }}
+    >
       <div
-        className="w-full max-w-lg bg-stone-900 border border-stone-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300"
+        className="relative w-full max-w-lg bg-stone-900 border border-stone-700 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300"
         role="dialog"
         aria-modal="true"
         aria-labelledby="welcome-title"
       >
+        {/* Close button */}
+        <button
+          onClick={handleSkip}
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+          aria-label="Close"
+        >
+          <svg
+            className="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
         {/* Header gradient */}
         <div className="bg-gradient-to-br from-brand-600 to-brand-800 px-8 py-10 text-center">
           <h2 id="welcome-title" className="text-2xl font-bold text-white">

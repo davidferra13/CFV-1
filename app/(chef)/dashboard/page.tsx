@@ -3,11 +3,9 @@
 // Section headers replace uniform card grid. Content breathes.
 
 import { Suspense } from 'react'
-import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
-import { createServerClient } from '@/lib/db/server'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
 import Link from 'next/link'
@@ -267,26 +265,8 @@ function PriorityQueueSkeleton() {
 export default async function ChefDashboard() {
   const user = await requireChef()
 
-  // Redirect brand-new chefs to onboarding on first login
-  try {
-    const db: any = createServerClient()
-    const { count } = await db
-      .from('onboarding_progress')
-      .select('*', { count: 'exact', head: true })
-      .eq('chef_id', user.tenantId!)
-    if (count === 0) {
-      redirect('/onboarding')
-    }
-  } catch (err) {
-    // Next.js redirect() throws internally - re-throw it so the redirect works
-    if (
-      err instanceof Error &&
-      (err.message === 'NEXT_REDIRECT' || err.message.startsWith('NEXT_'))
-    ) {
-      throw err
-    }
-    // Real DB failure: just show the dashboard rather than crashing
-  }
+  // Onboarding redirect is handled by the chef layout gate (layout.tsx)
+  // so no duplicate redirect needed here.
 
   const hour = new Date().getHours()
   const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
