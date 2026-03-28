@@ -318,7 +318,7 @@ export async function getMenuBreakdown(menuId: string): Promise<MenuCostBreakdow
 
       const { data: ingredients } = await db
         .from('ingredients')
-        .select('id, name, last_price_cents, price_unit, category')
+        .select('id, name, price_unit, category')
         .in('id', ingredientIds)
 
       const ingredientMap = new Map<string, any>()
@@ -328,16 +328,21 @@ export async function getMenuBreakdown(menuId: string): Promise<MenuCostBreakdow
         }
       }
 
+      // Resolve prices via unified 8-tier chain (batch: 3 queries total, not N+1)
+      const { resolvePricesBatch } = await import('@/lib/pricing/resolve-price')
+      const resolvedPrices = await resolvePricesBatch(ingredientIds, user.tenantId!)
+
       // Group ingredients by recipe
       for (const ri of recipeIngredients) {
         const existing = ingredientsByRecipe.get(ri.recipe_id) || []
         const ingData = ingredientMap.get(ri.ingredient_id)
+        const resolved = resolvedPrices.get(ri.ingredient_id)
         existing.push({
           ingredientId: ri.ingredient_id,
           name: ingData?.name || 'Unknown',
           quantity: ri.quantity || 0,
           unit: ri.unit || '',
-          priceCents: ingData?.last_price_cents ?? null,
+          priceCents: resolved?.cents ?? null,
           category: ingData?.category || 'other',
         })
         ingredientsByRecipe.set(ri.recipe_id, existing)
@@ -2086,14 +2091,17 @@ export async function getMenuVendorHints(menuId: string): Promise<MenuVendorHint
 
   const ingredientIds = [...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id))]
 
-  // Get current ingredient prices
+  // Get ingredient names
   const { data: ingredients } = await db
     .from('ingredients')
-    .select('id, name, last_price_cents')
+    .select('id, name')
     .in('id', ingredientIds)
-    .not('last_price_cents', 'is', null)
 
   if (!ingredients?.length) return []
+
+  // Resolve prices via unified 8-tier chain
+  const { resolvePricesBatch } = await import('@/lib/pricing/resolve-price')
+  const resolvedPrices = await resolvePricesBatch(ingredientIds, user.tenantId!)
 
   // Get vendor price points for these ingredients
   const { data: vendorPrices } = await db
@@ -2108,7 +2116,10 @@ export async function getMenuVendorHints(menuId: string): Promise<MenuVendorHint
 
   const hints: MenuVendorHint[] = []
   const ingredientMap = new Map<string, { name: string; price: number | null }>(
-    ingredients.map((i: any) => [i.id, { name: i.name, price: i.last_price_cents }])
+    ingredients.map((i: any) => [
+      i.id,
+      { name: i.name, price: resolvedPrices.get(i.id)?.cents ?? null },
+    ])
   )
 
   // Group vendor prices by ingredient

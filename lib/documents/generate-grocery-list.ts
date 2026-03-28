@@ -275,13 +275,26 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     .select(
       `
       recipe_id, ingredient_id, quantity, unit, is_optional,
-      ingredient:ingredients(id, name, category, is_staple, last_price_cents)
+      ingredient:ingredients(id, name, category, is_staple)
     `
     )
     .in('recipe_id', recipeIds)
 
   if (!recipeIngredients) {
     return null
+  }
+
+  // Resolve prices via unified 8-tier chain (batch: 3 queries, not N+1)
+  const allIngredientIds = [
+    ...new Set(recipeIngredients.map((ri: any) => (ri.ingredient as any)?.id).filter(Boolean)),
+  ]
+  let resolvedPriceMap = new Map<string, number | null>()
+  if (allIngredientIds.length > 0) {
+    const { resolvePricesBatch } = await import('@/lib/pricing/resolve-price')
+    const resolved = await resolvePricesBatch(allIngredientIds, user.tenantId!)
+    for (const [id, price] of resolved) {
+      resolvedPriceMap.set(id, price.cents)
+    }
   }
 
   // ── Aggregate ingredients ──────────────────────────────────────────────────
@@ -302,7 +315,6 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
       name: string
       category: string
       is_staple: boolean
-      last_price_cents: number | null
     } | null
 
     if (!ingredient) continue
@@ -332,7 +344,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
           unit: ri.unit,
           courseNumbers: [comp.courseNumber],
           courseLabel: `Course ${comp.courseNumber}`,
-          lastPriceCents: ingredient.last_price_cents,
+          lastPriceCents: resolvedPriceMap.get(ingredient.id) ?? null,
           isOptional: ri.is_optional,
         })
       }
