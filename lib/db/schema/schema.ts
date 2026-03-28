@@ -15490,6 +15490,11 @@ export const ingredients = pgTable("ingredients", {
 	unitType: text("unit_type").default('weight'),
 	weightToVolumeRatio: numeric("weight_to_volume_ratio", { precision: 8, scale:  4 }),
 	defaultYieldPct: integer("default_yield_pct").default(100),
+	lastPriceSource: text("last_price_source"),
+	lastPriceStore: text("last_price_store"),
+	lastPriceConfidence: numeric("last_price_confidence", { precision: 3, scale:  2 }),
+	priceTrendDirection: text("price_trend_direction"),
+	priceTrendPct: numeric("price_trend_pct", { precision: 5, scale:  2 }),
 }, (table) => [
 	index("idx_ingredients_archived").using("btree", table.archived.asc().nullsLast().op("bool_ops")),
 	index("idx_ingredients_category").using("btree", table.category.asc().nullsLast().op("enum_ops")),

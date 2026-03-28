@@ -1,11 +1,12 @@
 # Spec: OpenClaw Price Surfacing
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none (all prerequisites are included as Phase 0)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-28
-> **Built by:** not started
+> **Built by:** Claude Code (2026-03-28)
+> **SPEC IS BUILT**
 
 ---
 

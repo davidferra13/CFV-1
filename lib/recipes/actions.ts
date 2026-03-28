@@ -276,6 +276,7 @@ export type RecipeListItem = {
   ingredient_count: number | null
   total_cost_cents: number | null
   has_all_prices: boolean | null
+  last_price_updated_at: string | null
   cuisine: string | null
   meal_type: string | null
   season: string[]
@@ -335,7 +336,9 @@ export async function getRecipes(filters?: {
   // Get cost data from the view
   const { data: costData } = await db
     .from('recipe_cost_summary')
-    .select('recipe_id, ingredient_count, total_ingredient_cost_cents, has_all_prices')
+    .select(
+      'recipe_id, ingredient_count, total_ingredient_cost_cents, has_all_prices, last_price_updated_at'
+    )
     .eq('tenant_id', user.tenantId!)
 
   const costMap = new Map<string, any>((costData || []).map((c: any) => [c.recipe_id, c]))
@@ -371,6 +374,7 @@ export async function getRecipes(filters?: {
       ingredient_count: cost?.ingredient_count ?? null,
       total_cost_cents: cost?.total_ingredient_cost_cents ?? null,
       has_all_prices: cost?.has_all_prices ?? null,
+      last_price_updated_at: cost?.last_price_updated_at ?? null,
       cuisine: r.cuisine ?? null,
       meal_type: r.meal_type ?? null,
       season: r.season || [],
@@ -419,7 +423,7 @@ export async function getRecipeById(recipeId: string) {
       substitution_notes,
       computed_cost_cents,
       yield_pct,
-      ingredient:ingredients(id, name, category, default_unit, average_price_cents, cost_per_unit_cents, last_price_cents, last_price_date, price_unit, weight_to_volume_ratio)
+      ingredient:ingredients(id, name, category, default_unit, average_price_cents, cost_per_unit_cents, last_price_cents, last_price_date, price_unit, weight_to_volume_ratio, last_price_source, last_price_store, last_price_confidence, price_trend_direction, price_trend_pct)
     `
     )
     .eq('recipe_id', recipeId)

@@ -346,63 +346,65 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
       }
 
       matched += tenantIngredients.length
-      const price = result.best_price
+      const bestPrice = result.best_price
 
-      // Skip wholesale bulk prices
-      if (price.original_unit === 'each' && price.cents > 5000) {
+      // Skip wholesale bulk prices (check against best price)
+      if (bestPrice.original_unit === 'each' && bestPrice.cents > 5000) {
         skipped += tenantIngredients.length
         continue
       }
 
       for (const ing of tenantIngredients) {
-        // Dedup: skip if already synced today with same price
-        if (ing.lastPriceCents === price.normalized_cents) {
-          skipped++
-          continue
-        }
-
         if (!dryRun) {
-          const granularSource = tierToSource(price.tier)
-          const confidence = tierToConfidence(price.tier)
-
-          // 5a. Upsert to ingredient_price_history
-          // Dedup via partial unique index idx_iph_openclaw_dedup
-          try {
-            await db.execute(sql`
-              INSERT INTO ingredient_price_history
-                (id, ingredient_id, tenant_id, price_cents, price_per_unit_cents,
-                 quantity, unit, purchase_date, store_name, source, notes)
-              VALUES (
-                gen_random_uuid(), ${ing.id}, ${ing.tenantId},
-                ${price.normalized_cents}, ${price.normalized_cents},
-                1, ${price.normalized_unit}, ${today},
-                ${price.store}, ${granularSource},
-                ${`Synced from OpenClaw - ${price.store}`}
+          // 5a. Upsert ALL store prices to ingredient_price_history
+          // Each store price gets its own row, deduped by the partial unique index
+          for (const storePrice of result.all_prices) {
+            const granularSource = tierToSource(storePrice.tier)
+            try {
+              await db.execute(sql`
+                INSERT INTO ingredient_price_history
+                  (id, ingredient_id, tenant_id, price_cents, price_per_unit_cents,
+                   quantity, unit, purchase_date, store_name, source, notes)
+                VALUES (
+                  gen_random_uuid(), ${ing.id}, ${ing.tenantId},
+                  ${storePrice.normalized_cents}, ${storePrice.normalized_cents},
+                  1, ${storePrice.normalized_unit}, ${today},
+                  ${storePrice.store}, ${granularSource},
+                  ${`Synced from OpenClaw - ${storePrice.store}`}
+                )
+                ON CONFLICT (ingredient_id, tenant_id, source, store_name, purchase_date)
+                  WHERE source LIKE 'openclaw_%'
+                DO UPDATE SET
+                  price_cents = EXCLUDED.price_cents,
+                  price_per_unit_cents = EXCLUDED.price_per_unit_cents,
+                  unit = EXCLUDED.unit,
+                  notes = EXCLUDED.notes
+              `)
+            } catch (err) {
+              console.warn(
+                `[sync] Failed to upsert price history for ${ing.id} (${storePrice.store}): ${err instanceof Error ? err.message : 'unknown'}`
               )
-              ON CONFLICT (ingredient_id, tenant_id, source, purchase_date)
-                WHERE source LIKE 'openclaw_%'
-              DO UPDATE SET
-                price_cents = EXCLUDED.price_cents,
-                price_per_unit_cents = EXCLUDED.price_per_unit_cents,
-                unit = EXCLUDED.unit,
-                store_name = EXCLUDED.store_name,
-                notes = EXCLUDED.notes
-            `)
-          } catch (err) {
-            console.warn(
-              `[sync] Failed to upsert price history for ${ing.id}: ${err instanceof Error ? err.message : 'unknown'}`
-            )
+            }
           }
 
-          // 5b. Update the ingredient row (including new enrichment columns)
+          // 5b. Update the ingredient row with BEST price only
+          // Dedup: skip if already synced today with same best price
+          if (ing.lastPriceCents === bestPrice.normalized_cents) {
+            skipped++
+            continue
+          }
+
+          const granularSource = tierToSource(bestPrice.tier)
+          const confidence = tierToConfidence(bestPrice.tier)
+
           try {
             await db.execute(sql`
               UPDATE ingredients SET
-                last_price_cents = ${price.normalized_cents},
+                last_price_cents = ${bestPrice.normalized_cents},
                 last_price_date = ${today},
-                price_unit = ${price.normalized_unit},
+                price_unit = ${bestPrice.normalized_unit},
                 last_price_source = ${granularSource},
-                last_price_store = ${price.store},
+                last_price_store = ${bestPrice.store},
                 last_price_confidence = ${confidence},
                 price_trend_direction = ${result.trend?.direction ?? null},
                 price_trend_pct = ${result.trend?.change_7d_pct ?? null}
@@ -413,9 +415,9 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
             await db
               .update(ingredients)
               .set({
-                lastPriceCents: price.normalized_cents,
+                lastPriceCents: bestPrice.normalized_cents,
                 lastPriceDate: today,
-                priceUnit: price.normalized_unit,
+                priceUnit: bestPrice.normalized_unit,
               })
               .where(eq(ingredients.id, ing.id))
           }

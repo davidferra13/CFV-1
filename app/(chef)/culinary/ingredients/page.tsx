@@ -13,6 +13,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
+import { PriceAttribution } from '@/components/pricing/price-attribution'
 import { AddIngredientForm } from '@/components/culinary/add-ingredient-form'
 
 export const metadata: Metadata = { title: 'Ingredients - ChefFlow' }
@@ -132,10 +133,21 @@ export default async function IngredientsPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">
-                    {ing.average_price_cents != null ? (
-                      `${formatCurrency(ing.average_price_cents)} / ${ing.default_unit}`
+                    {ing.average_price_cents != null || ing.last_price_cents != null ? (
+                      <PriceAttribution
+                        priceCents={ing.average_price_cents ?? ing.last_price_cents}
+                        priceUnit={ing.price_unit ?? ing.default_unit}
+                        store={ing.last_price_store}
+                        confidence={
+                          ing.last_price_confidence ? Number(ing.last_price_confidence) : null
+                        }
+                        trendDirection={ing.price_trend_direction}
+                        trendPct={ing.price_trend_pct ? Number(ing.price_trend_pct) : null}
+                        lastPriceDate={ing.last_price_date}
+                        compact
+                      />
                     ) : (
-                      <span className="text-stone-400">Not set</span>
+                      <span className="text-stone-500">Not set</span>
                     )}
                   </TableCell>
                   <TableCell className="text-stone-400 text-sm">

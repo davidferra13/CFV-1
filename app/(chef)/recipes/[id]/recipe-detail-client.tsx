@@ -407,6 +407,11 @@ export function RecipeDetailClient({ recipe }: Props) {
                         ${(ri.computedCostCents / 100).toFixed(2)}
                       </span>
                     )}
+                    {ri.ingredient?.last_price_store && ri.computedCostCents != null && (
+                      <span className="text-xs text-stone-500">
+                        at {ri.ingredient.last_price_store}
+                      </span>
+                    )}
                     {ri.costStatus === 'no_price' && (
                       <span className="text-xs text-stone-600">no price</span>
                     )}

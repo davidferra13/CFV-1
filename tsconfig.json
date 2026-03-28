@@ -75,6 +75,7 @@
     "tmp",
     "types/database.generated.d.ts",
     "types/types",
+    "lib/db/migrations",
     "worker"
   ]
 }

@@ -223,6 +223,13 @@ export const standaloneTop: NavItem[] = [
     adminOnly: true,
     tier: 'secondary',
   },
+  {
+    href: '/admin/price-catalog',
+    label: 'Price Catalog',
+    icon: Store,
+    adminOnly: true,
+    tier: 'secondary',
+  },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────

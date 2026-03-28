@@ -160,11 +160,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               )}
               {!hasQuote && (
                 <p className="text-sm text-stone-500 mt-1">
-                  Uses USDA Northeast prices + Spoonacular, Kroger
-                  {mealMeConfigured
-                    ? ', and MealMe (your local stores)'
-                    : ', and MealMe when configured'}{' '}
-                  - NE-calibrated average of all sources.
+                  Uses local OpenClaw store prices first (free, instant), then USDA Northeast
+                  averages. External APIs (Spoonacular, Kroger
+                  {mealMeConfigured ? ', MealMe' : ''}) only called for uncovered ingredients.
                 </p>
               )}
             </div>
@@ -194,8 +192,8 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               <div className="h-4 loading-bone loading-bone-muted w-4/5" />
               <div className="h-4 loading-bone loading-bone-muted w-3/5" />
               <p className="text-xs text-stone-300 mt-3">
-                Checking USDA NE data, Spoonacular, and Kroger for each ingredient - this may take
-                10–30s...
+                Checking local OpenClaw prices first, then USDA NE data. External APIs only for
+                uncovered items...
               </p>
             </div>
           )}
@@ -339,26 +337,21 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               {/* Source legend */}
               <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-300 border-t border-stone-800 pt-4">
                 <span>
+                  <span className="font-medium text-emerald-400">OpenClaw</span> - Local store
+                  prices from 18+ NE stores (synced nightly, free). Checked first for every
+                  ingredient.
+                </span>
+                <span>
                   <span className="font-medium text-brand-700">USDA (NE)</span> - USDA Northeast
-                  Urban average retail prices. Already NE-regional, no API key needed.
+                  Urban average retail prices. Always checked as a baseline.
                 </span>
                 <span>
-                  <span className="font-medium text-stone-300">Spoonacular / Kroger</span> - US
-                  national averages. A Northeast regional multiplier is applied before averaging.
+                  <span className="font-medium text-stone-300">Spoonacular / Kroger / MealMe</span>{' '}
+                  - External APIs. Only called for ingredients without OpenClaw coverage.
                 </span>
                 <span>
-                  <span
-                    className={`font-medium ${mealMeConfigured ? 'text-emerald-700' : 'text-stone-300'}`}
-                  >
-                    Local Stores (MealMe)
-                  </span>{' '}
-                  {mealMeConfigured
-                    ? "- real-time prices from your nearest stores (Market Basket, Hannaford, Shaw's, Stop & Shop, Whole Foods, Walmart, +1M more)"
-                    : '- not configured. Add MEALME_API_KEY to see prices from your actual NE stores.'}
-                </span>
-                <span>
-                  <span className="font-medium text-stone-300">Avg Estimate</span> - NE-calibrated
-                  average of all sources. Falls back to Recipe Book if no data found.
+                  <span className="font-medium text-stone-300">Avg Estimate</span> - Average of all
+                  available sources. Falls back to Recipe Book if no data found.
                 </span>
               </div>
             </Card>

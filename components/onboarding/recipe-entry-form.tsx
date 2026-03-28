@@ -128,6 +128,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           ingredient_count: null,
           total_cost_cents: null,
           has_all_prices: null,
+          last_price_updated_at: null,
           servings: null,
           calories_per_serving: null,
           cuisine: null,

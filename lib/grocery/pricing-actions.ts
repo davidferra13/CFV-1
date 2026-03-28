@@ -437,6 +437,73 @@ function usdaUnitMatches(usdaUnit: string, recipeUnit: string): boolean {
   return USDA_UNIT_FAMILIES.some((fam) => fam.includes(u1) && fam.includes(u2))
 }
 
+// ─── Local OpenClaw Price Lookup ──────────────────────────────────────────────
+// Checks ingredient_price_history for local OpenClaw data before calling external APIs.
+// Returns all store prices for each ingredient (from recent syncs).
+
+export type StorePrice = {
+  store: string
+  priceCents: number
+  unit: string
+  source: string
+  date: string
+}
+
+export type LocalPriceResult = {
+  prices: StorePrice[]
+  bestPrice: StorePrice | null
+}
+
+export async function getLocalPriceComparison(
+  ingredientIds: string[]
+): Promise<Record<string, LocalPriceResult>> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  if (ingredientIds.length === 0) return {}
+
+  // Query recent OpenClaw prices (last 30 days)
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  const { data: rows } = await db
+    .from('ingredient_price_history')
+    .select('ingredient_id, store_name, price_cents, unit, source, purchase_date')
+    .in('ingredient_id', ingredientIds)
+    .eq('tenant_id', user.tenantId!)
+    .like('source', 'openclaw_%')
+    .gte('purchase_date', thirtyDaysAgo)
+    .order('price_cents', { ascending: true })
+
+  const result: Record<string, LocalPriceResult> = {}
+
+  for (const ingredientId of ingredientIds) {
+    result[ingredientId] = { prices: [], bestPrice: null }
+  }
+
+  for (const row of rows || []) {
+    const entry: StorePrice = {
+      store: row.store_name ?? 'Unknown',
+      priceCents: row.price_cents,
+      unit: row.unit ?? 'lb',
+      source: row.source,
+      date: row.purchase_date,
+    }
+
+    if (!result[row.ingredient_id]) {
+      result[row.ingredient_id] = { prices: [], bestPrice: null }
+    }
+    result[row.ingredient_id].prices.push(entry)
+  }
+
+  // Set best price (cheapest) for each ingredient
+  for (const [id, data] of Object.entries(result)) {
+    if (data.prices.length > 0) {
+      data.bestPrice = data.prices[0] // already sorted by price_cents ascending
+    }
+  }
+
+  return result
+}
+
 // ─── Main: run a quote ────────────────────────────────────────────────────────
 
 export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuoteResult | null> {
@@ -488,41 +555,61 @@ export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuot
 
   if (quoteErr || !quote) return null
 
-  // Query all ingredients concurrently
+  // Step 1: Check local OpenClaw data first (free, instant)
+  const ingredientIds = ingredients.map((ing) => ing.ingredientId)
+  const localPrices = await getLocalPriceComparison(ingredientIds)
+
+  // Step 2: For ingredients WITHOUT OpenClaw coverage, call external APIs
   const results: IngredientPriceResult[] = await Promise.all(
     ingredients.map(async (ing) => {
-      const [spoonacularCents, krogerCents, mealMeCents] = await Promise.all([
-        getSpoonacularPrice(ing.name, ing.quantity, ing.unit),
-        getKrogerPrice(ing.name),
-        getMealMePrice(ing.name, chefZip),
-      ])
+      const localData = localPrices[ing.ingredientId]
+      const hasOpenClaw = localData && localData.bestPrice !== null
 
-      // USDA NE lookup - free, no API call, already Northeast-regional.
-      // Only applied when the recipe unit matches the USDA unit family to avoid
-      // nonsensical math (e.g. USDA price/pint × recipe quantity in cups).
+      // USDA NE lookup - free, no API call, always checked
       const usdaEntry = lookupUsdaPrice(ing.name)
       const usdaCents =
         usdaEntry && usdaUnitMatches(usdaEntry.unit, ing.unit)
           ? Math.round(usdaEntry.cents * ing.quantity)
           : null
 
+      let spoonacularCents: number | null = null
+      let krogerCents: number | null = null
+      let mealMeCents: number | null = null
+
+      // Only call external APIs if no OpenClaw data
+      if (!hasOpenClaw) {
+        const apiResults = await Promise.all([
+          getSpoonacularPrice(ing.name, ing.quantity, ing.unit),
+          getKrogerPrice(ing.name),
+          getMealMePrice(ing.name, chefZip),
+        ])
+        spoonacularCents = apiResults[0]
+        krogerCents = apiResults[1]
+        mealMeCents = apiResults[2]
+        console.log(`[grocery-quote] API fallback for "${ing.name}" (no OpenClaw coverage)`)
+      }
+
       // Apply NE multiplier to national API prices before averaging
       const multiplier = getNeMultiplier(ing.category)
       const adjSpoonacular = spoonacularCents ? Math.round(spoonacularCents * multiplier) : null
       const adjKroger = krogerCents ? Math.round(krogerCents * multiplier) : null
 
-      // Average all NE-calibrated sources (USDA is already NE - no multiplier)
-      const apiPrices = [adjSpoonacular, adjKroger, usdaCents, mealMeCents].filter(
-        (p): p is number => p !== null
-      )
+      // Build price array: OpenClaw best price first, then API sources, USDA baseline
+      const allPrices: number[] = []
+      if (hasOpenClaw && localData.bestPrice) {
+        allPrices.push(Math.round(localData.bestPrice.priceCents * ing.quantity))
+      }
+      if (adjSpoonacular) allPrices.push(adjSpoonacular)
+      if (adjKroger) allPrices.push(adjKroger)
+      if (usdaCents) allPrices.push(usdaCents)
+      if (mealMeCents) allPrices.push(mealMeCents)
 
-      const hasNoApiData = apiPrices.length === 0
+      const hasNoApiData = allPrices.length === 0
 
       let averageCents: number | null = null
-      if (apiPrices.length > 0) {
-        averageCents = Math.round(apiPrices.reduce((sum, p) => sum + p, 0) / apiPrices.length)
+      if (allPrices.length > 0) {
+        averageCents = Math.round(allPrices.reduce((sum, p) => sum + p, 0) / allPrices.length)
       } else if (ing.lastPriceCents !== null) {
-        // Fall back to recipe book price × quantity
         averageCents = Math.round(ing.lastPriceCents * ing.quantity)
       }
 

@@ -8215,10 +8215,10 @@ export const ingredientPriceHistory = pgTable("ingredient_price_history", {
 }, (table) => [
 	index("idx_ingredient_price_history_ingredient").using("btree", table.ingredientId.asc().nullsLast().op("uuid_ops")),
 	index("idx_ingredient_price_history_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	index("idx_iph_ingredient_date").using("btree", table.tenantId.asc().nullsLast().op("date_ops"), table.ingredientId.asc().nullsLast().op("date_ops"), table.purchaseDate.desc().nullsFirst().op("uuid_ops")),
-	uniqueIndex("idx_iph_openclaw_dedup").using("btree", table.ingredientId.asc().nullsLast().op("text_ops"), table.tenantId.asc().nullsLast().op("date_ops"), table.source.asc().nullsLast().op("uuid_ops"), table.purchaseDate.asc().nullsLast().op("text_ops")).where(sql`(source ~~ 'openclaw_%'::text)`),
+	index("idx_iph_ingredient_date").using("btree", table.tenantId.asc().nullsLast().op("date_ops"), table.ingredientId.asc().nullsLast().op("uuid_ops"), table.purchaseDate.desc().nullsFirst().op("date_ops")),
+	uniqueIndex("idx_iph_openclaw_dedup").using("btree", table.ingredientId.asc().nullsLast().op("text_ops"), table.tenantId.asc().nullsLast().op("uuid_ops"), table.source.asc().nullsLast().op("date_ops"), table.storeName.asc().nullsLast().op("uuid_ops"), table.purchaseDate.asc().nullsLast().op("date_ops")).where(sql`(source ~~ 'openclaw_%'::text)`),
 	index("idx_iph_seasonal").using("btree", sql`tenant_id`, sql`ingredient_id`, sql`EXTRACT(month FROM purchase_date)`),
-	index("idx_iph_source_lookup").using("btree", table.ingredientId.asc().nullsLast().op("uuid_ops"), table.tenantId.asc().nullsLast().op("uuid_ops"), table.source.asc().nullsLast().op("uuid_ops"), table.purchaseDate.desc().nullsFirst().op("text_ops")).where(sql`(source IS NOT NULL)`),
+	index("idx_iph_source_lookup").using("btree", table.ingredientId.asc().nullsLast().op("text_ops"), table.tenantId.asc().nullsLast().op("text_ops"), table.source.asc().nullsLast().op("uuid_ops"), table.purchaseDate.desc().nullsFirst().op("uuid_ops")).where(sql`(source IS NOT NULL)`),
 	index("idx_iph_vendor_date").using("btree", table.vendorId.asc().nullsLast().op("uuid_ops"), table.purchaseDate.desc().nullsFirst().op("uuid_ops")).where(sql`(vendor_id IS NOT NULL)`),
 	foreignKey({
 			columns: [table.expenseId],

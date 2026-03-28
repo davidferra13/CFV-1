@@ -16,6 +16,17 @@ import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = { title: 'Costing - ChefFlow' }
 
+function priceFreshness(dateStr: string | null): { text: string; color: string } {
+  if (!dateStr) return { text: 'No data', color: 'text-stone-600' }
+  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
+  if (days === 0) return { text: 'Updated today', color: 'text-emerald-400' }
+  if (days === 1) return { text: '1d ago', color: 'text-emerald-400' }
+  if (days <= 7) return { text: `${days}d ago`, color: 'text-stone-400' }
+  if (days <= 14) return { text: `${days}d ago`, color: 'text-stone-400' }
+  if (days <= 30) return { text: `${days}d ago`, color: 'text-amber-400' }
+  return { text: `${days}d ago`, color: 'text-amber-400' }
+}
+
 export default async function CostingPage() {
   await requireChef()
   const [recipes, menuCosts] = await Promise.all([getRecipes(), getMenuCostSummaries()])
@@ -79,6 +90,7 @@ export default async function CostingPage() {
                   <TableHead>Ingredients</TableHead>
                   <TableHead>Total Cost</TableHead>
                   <TableHead>Cost / Portion</TableHead>
+                  <TableHead>Freshness</TableHead>
                   <TableHead>Complete Pricing</TableHead>
                 </TableRow>
               </TableHeader>
@@ -110,6 +122,12 @@ export default async function CostingPage() {
                               Math.round(recipe.total_cost_cents / recipe.yield_quantity)
                             )
                           : '-'}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {(() => {
+                          const fresh = priceFreshness(recipe.last_price_updated_at)
+                          return <span className={fresh.color}>{fresh.text}</span>
+                        })()}
                       </TableCell>
                       <TableCell>
                         {recipe.has_all_prices ? (
