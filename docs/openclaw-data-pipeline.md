@@ -7,7 +7,7 @@ It maintains a comprehensive food catalog of ~9,270 items with live retail price
 
 ## Architecture
 
-```
+```text
 Raspberry Pi (10.0.0.177)
   ├── SQLite database (WAL mode)
   │   ├── canonical_ingredients (9,270 items)
@@ -83,11 +83,19 @@ comprehensive catalog. These are canonical food items (not branded products). Th
 ensures we have entries for virtually every food ingredient. Prices fill in over time as
 Flipp flyers cycle through items.
 
-### ChefFlow Sync
+### ChefFlow Sync (Smart Lookup v2)
 
 At 11 PM nightly (after scraping), `sync-to-chefflow.mjs` calls the ChefFlow
-`/api/cron/price-sync` endpoint with a Bearer token. ChefFlow pulls prices and
-updates ingredient costs in its database.
+`/api/cron/price-sync` endpoint with a Bearer token. ChefFlow then:
+
+1. Loads all its ingredient names from the database
+2. Sends them in batches to OpenClaw's `POST /api/lookup/batch` endpoint
+3. Smart lookup resolves each name using 250+ aliases and price priority
+4. Updates `ingredients.last_price_cents` for each match
+5. Filters out wholesale bulk prices (over $50/each) to avoid distortion
+
+This replaced the old naive name-matching sync that missed most items due to
+naming differences between ChefFlow ingredient names and OpenClaw canonical IDs.
 
 ## Price Coverage
 
@@ -130,7 +138,7 @@ index data provides broad category averages for items without specific retail pr
 
 ## Files on Pi
 
-```
+```text
 ~/openclaw-prices/
   ├── config/.env (CHEFFLOW_URL, CRON_SECRET)
   ├── data/prices.db (SQLite, WAL mode)
@@ -157,8 +165,13 @@ index data provides broad category averages for items without specific retail pr
 
 ## Cron Schedule (Pi)
 
-```
-0 22 * * * cd ~/openclaw-prices && node services/scraper-flipp.mjs >> logs/flipp.log 2>&1
-30 22 * * * cd ~/openclaw-prices && node services/scraper-government.mjs >> logs/government.log 2>&1
-0 23 * * * cd ~/openclaw-prices && node services/sync-to-chefflow.mjs >> logs/sync.log 2>&1
+```text
+0 2  * * 1  scraper-government.mjs    (BLS/FRED - Monday 2 AM)
+0 3  * * *  scraper-flipp.mjs         (Flipp VACUUM - daily 3 AM)
+0 4  * * *  cross-match.mjs           (link new items to catalog - daily 4 AM)
+0 9  * * 3  scraper-wholesale.mjs     (wholesale index - Wednesday 9 AM)
+0 10 * * *  aggregator.mjs            (trends/anomalies - daily 10 AM)
+*/15 * * *  watchdog.mjs              (health checks - every 15 min)
+*/30 * * *  receipt-processor.mjs     (pending receipts - every 30 min)
+0 23 * * *  sync-to-chefflow.mjs      (ChefFlow price sync - daily 11 PM)
 ```

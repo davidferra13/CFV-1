@@ -202,15 +202,53 @@ async function fetchPricesInternal(params?: {
 }
 
 /**
+ * Smart lookup batch - sends ChefFlow ingredient names to OpenClaw's
+ * alias-aware, price-prioritized lookup endpoint.
+ */
+interface SmartLookupResult {
+  id: string
+  name: string
+  category: string
+  bestPrice: { cents: number; display: string; unit: string; store: string } | null
+  priceCount: number
+}
+
+async function smartLookupBatch(
+  names: string[]
+): Promise<Record<string, SmartLookupResult | null>> {
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 30000)
+    const res = await fetch(`${OPENCLAW_API}/api/lookup/batch`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: names }),
+      signal: controller.signal,
+      cache: 'no-store',
+    })
+    clearTimeout(timeout)
+    if (!res.ok) return {}
+    const data = await res.json()
+    return data.results || {}
+  } catch {
+    return {}
+  }
+}
+
+/**
  * Core sync logic shared between admin-triggered and cron-triggered syncs.
+ *
+ * Strategy (v2 - smart lookup):
+ *   1. Load all ChefFlow ingredients
+ *   2. Send their names to OpenClaw's smart lookup batch endpoint
+ *   3. Smart lookup uses 250+ aliases + price priority to find the best match
+ *   4. Update last_price_cents + last_price_date for each match
+ *
+ * This replaces the old naive name-matching approach that missed most items.
  */
 async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
   try {
-    const prices = await fetchPricesInternal({ tier, limit: 2000 })
-    if (prices.length === 0) {
-      return { success: true, matched: 0, updated: 0, skipped: 0, notFound: 0 }
-    }
-
+    // Step 1: Load all ChefFlow ingredients
     const cfIngredients = await db
       .select({
         id: ingredients.id,
@@ -221,48 +259,54 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
       })
       .from(ingredients)
 
-    const cfLookup = new Map<string, (typeof cfIngredients)[0]>()
-    for (const ing of cfIngredients) {
-      if (!ing.name) continue
-      const normalized = ing.name.toLowerCase().trim().replace(/\s+/g, '-')
-      cfLookup.set(normalized, ing)
-      const simple = normalized
-        .replace(
-          /-?(fresh|frozen|organic|conventional|large|medium|small|whole|boneless|skinless)$/g,
-          ''
-        )
-        .replace(/-+$/, '')
-      if (simple !== normalized) cfLookup.set(simple, ing)
+    const ingredientNames = cfIngredients
+      .filter((i) => i.name && i.name.trim().length > 0)
+      .map((i) => i.name!.trim())
+
+    if (ingredientNames.length === 0) {
+      return { success: true, matched: 0, updated: 0, skipped: 0, notFound: 0 }
     }
 
+    // Step 2: Send to OpenClaw smart lookup (batches of 200)
+    const allResults: Record<string, SmartLookupResult | null> = {}
+    for (let i = 0; i < ingredientNames.length; i += 200) {
+      const batch = ingredientNames.slice(i, i + 200)
+      const batchResults = await smartLookupBatch(batch)
+      Object.assign(allResults, batchResults)
+    }
+
+    // Step 3: Build name-to-ingredient map for ChefFlow
+    const cfByName = new Map<string, (typeof cfIngredients)[0]>()
+    for (const ing of cfIngredients) {
+      if (!ing.name) continue
+      cfByName.set(ing.name.trim(), ing)
+    }
+
+    // Step 4: Update prices
     let matched = 0
     let updated = 0
     let skipped = 0
     let notFound = 0
 
-    const bestPrices = new Map<string, OpenClawPrice>()
-    for (const price of prices) {
-      const existing = bestPrices.get(price.canonical_ingredient_id)
-      if (!existing || price.price_cents < existing.price_cents) {
-        bestPrices.set(price.canonical_ingredient_id, price)
-      }
-    }
+    for (const [name, result] of Object.entries(allResults)) {
+      const cfIng = cfByName.get(name)
+      if (!cfIng) continue
 
-    for (const [ocIngId, price] of Array.from(bestPrices.entries())) {
-      let cfIng = cfLookup.get(ocIngId)
-      if (!cfIng && price.ingredient_name) {
-        const altKey = price.ingredient_name.toLowerCase().trim().replace(/\s+/g, '-')
-        cfIng = cfLookup.get(altKey)
-      }
-
-      if (!cfIng) {
+      if (!result || !result.bestPrice) {
         notFound++
         continue
       }
 
       matched++
 
-      if (cfIng.lastPriceCents === price.price_cents) {
+      // Filter: skip wholesale bulk prices (over $50/each is likely a case, not a unit)
+      const price = result.bestPrice
+      if (price.unit === 'each' && price.cents > 5000) {
+        skipped++
+        continue
+      }
+
+      if (cfIng.lastPriceCents === price.cents) {
         skipped++
         continue
       }
@@ -271,7 +315,7 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
         await db
           .update(ingredients)
           .set({
-            lastPriceCents: price.price_cents,
+            lastPriceCents: price.cents,
             lastPriceDate: new Date().toISOString().split('T')[0],
           })
           .where(eq(ingredients.id, cfIng.id))
