@@ -5,7 +5,7 @@
 > **Depends on:** `openclaw-v2-unified-pricing.md` (built), `openclaw-price-surfacing.md` (built)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-28
-> **Revised:** 2026-03-28 (spec review: 8 refinements, 8 blind spots addressed)
+> **Revised:** 2026-03-28 (post-build review: 6 corrections, 5 known gaps documented)
 > **Built by:** Claude Code (2026-03-28). SPEC IS BUILT.
 
 ---
@@ -758,7 +758,7 @@ However, `computeRecipeIngredientCost()` and `refreshRecipeTotalCost()` in `lib/
 ### Critical patterns to follow:
 
 - All new files in this spec are `'use server'` files because they all do DB writes. There are no non-server library files in this spec.
-- All DB access uses Drizzle ORM (`import { db } from '@/lib/db'`), NOT the compat shim.
+- All DB access uses the compat shim (`import { createServerClient } from '@/lib/db/server'`). This provides a `.from().select().eq()` API backed by raw SQL via postgres.js. For raw SQL (pg_trgm queries, advisory locks), use `db.rpc('raw_sql', { query, params })`. Do NOT use `import { db } from '@/lib/db'` (that's the Drizzle ORM instance, used elsewhere but not in these files).
 - `resolvePricesBatch()` already exists in `lib/pricing/resolve-price.ts` (NOT a `'use server'` file, just internal logic) and does 3 queries total for N ingredients. Use it. Do NOT call `resolvePrice()` in a loop. It is safe to import from a non-server file into a server file.
 - The TypeScript functions `computeRecipeIngredientCost()` and `refreshRecipeTotalCost()` in `lib/recipes/actions.ts` are the cost computation authority. Use them instead of the SQL functions `recompute_and_store_recipe_cost()` and `recompute_recipe_ingredient_costs()`. The SQL functions exist but lack unit conversion.
 - `system_ingredients` has a trigram index (`idx_system_ingredients_name_trgm`) using `extensions.gin_trgm_ops`. The `pg_trgm` extension lives in the `extensions` schema (migration `20260331000001`). When using `similarity()` in raw SQL via Drizzle, use `extensions.similarity()` or ensure `extensions` is in the search_path. Test this before assuming it works without the schema prefix.
@@ -789,3 +789,30 @@ However, `computeRecipeIngredientCost()` and `refreshRecipeTotalCost()` in `lib/
 8. `app/(chef)/culinary/costing/page.tsx` - understand the existing UI
 9. `docs/specs/openclaw-v2-unified-pricing.md` - understand architecture decisions (especially Decision 1: no Pi calls in resolvePrice)
 10. `docs/specs/openclaw-price-surfacing.md` - understand what's already surfaced in the UI
+
+---
+
+## Post-Build Assessment (2026-03-28)
+
+### What was built (all 4 phases shipped)
+
+All core functionality delivered: cascade chain fixed, 563 system ingredients seeded, name normalization with `pluralize`, batch cost refresh with advisory lock, pg_trgm ingredient matching with confirm/dismiss/batch workflows, costing confidence badges, stale cost banner on events, all UI integrated into existing pages.
+
+### Known deviations from spec
+
+| Spec item                                 | What happened                                                                                                                  | Impact                                                                                          | Follow-up needed                                                      |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| DB access pattern                         | Spec said Drizzle ORM (`import { db } from '@/lib/db'`). Build used compat shim (`createServerClient` from `@/lib/db/server`). | None (both work, compat shim is the established pattern in server actions)                      | Spec corrected above                                                  |
+| Sub-recipe topological sort (Decision 11) | Not implemented. Recipes refresh in arbitrary order.                                                                           | Parent recipes may sum stale sub-recipe costs on first refresh pass. A second refresh fixes it. | Low priority. Only matters for deeply nested sub-recipe hierarchies.  |
+| Unit tests (Phase 1 + Phase 2)            | Not written. `normalizeIngredientName()` tests and integration tests for cost refresh were specified but not created.          | No regression safety net for normalization edge cases                                           | Should be written before modifying normalization logic                |
+| Menu detail page confidence badge         | Spec calls for badge on `app/(chef)/menus/[id]/page.tsx`. Not built.                                                           | Menus show cost but no coverage indicator on detail view                                        | Minor UX gap. Badge exists on costing page list view.                 |
+| Recipe detail page enhancements           | Spec calls for confidence badge + "X ingredients need matching" link on recipe detail. Not built.                              | Chef must go to costing page to see matching status                                             | Minor UX gap                                                          |
+| Prerequisite 0 verification               | OpenClaw package-price-to-unit-price conversion was not spot-checked against real data                                         | If sync writes package prices as unit prices, all auto-costed menus are 10-20x too high         | **HIGH PRIORITY.** Must verify before relying on auto-costed numbers. |
+
+### Known risks to monitor
+
+1. **Bad price refresh has no rollback.** A corrupt OpenClaw sync propagates wrong prices to every downstream recipe and event. Currently logging to `console.info` only. Consider building `cost_refresh_log` table if a bad sync causes real damage.
+2. **`pg_trgm` schema qualification.** All matching queries use `extensions.similarity()`. If DB search_path changes or extensions schema moves, queries return empty (not errors). Silent failure.
+3. **Batch confirm is sequential.** `handleBatchConfirm()` sends one `confirmMatchAction()` per item. For 50+ matches, this takes 30+ seconds. Consider a dedicated `batchConfirmMatchesAction()` with a single transaction.
+4. **Unmatched query is O(N).** `getUnmatchedIngredientsAction()` runs a pg_trgm query for each of the first 50 unmatched ingredients sequentially. Slow for large ingredient lists.
+5. **No client-side debounce on refresh button.** Multiple rapid clicks each hit the DB for the advisory lock check. The lock prevents duplicate work, but each check is still a round trip.
