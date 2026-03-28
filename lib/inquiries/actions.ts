@@ -2099,7 +2099,9 @@ export type ReadinessScore = {
   level: 'ready' | 'almost' | 'partial' | 'minimal'
 }
 
-export function computeReadinessScore(inquiry: Record<string, unknown>): ReadinessScore {
+export async function computeReadinessScore(
+  inquiry: Record<string, unknown>
+): Promise<ReadinessScore> {
   const filled: string[] = []
   const missing: string[] = []
 
@@ -2156,7 +2158,7 @@ export async function computeReadinessScoresForInquiries(): Promise<Map<string, 
   if (!data) return map
 
   for (const row of data) {
-    map.set(row.id, computeReadinessScore(row))
+    map.set(row.id, await computeReadinessScore(row))
   }
   return map
 }
@@ -2192,8 +2194,9 @@ export async function getResponseQueue(limit = 10): Promise<ResponseQueueItem[]>
   if (error || !data) return []
 
   const now = new Date()
-  const items: ResponseQueueItem[] = data.map((row: any) => {
-    const readiness = computeReadinessScore(row)
+  const items: ResponseQueueItem[] = []
+  for (const row of data) {
+    const readiness = await computeReadinessScore(row)
     const waitingHours = Math.round(
       (now.getTime() - new Date(row.updated_at).getTime()) / (1000 * 60 * 60)
     )
@@ -2203,7 +2206,7 @@ export async function getResponseQueue(limit = 10): Promise<ResponseQueueItem[]>
       row.contact_name ||
       'Unknown Lead'
 
-    return {
+    items.push({
       id: row.id,
       clientName,
       occasion: row.confirmed_occasion,
@@ -2212,8 +2215,8 @@ export async function getResponseQueue(limit = 10): Promise<ResponseQueueItem[]>
       waitingHours,
       readiness,
       status: row.status,
-    }
-  })
+    })
+  }
 
   // Sort by: waiting time (desc), then date proximity (asc), then readiness (desc)
   items.sort((a, b) => {

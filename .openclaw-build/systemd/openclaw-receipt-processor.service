@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenClaw Price Intelligence - Receipt Processor
+After=network.target
+
+[Service]
+Type=simple
+User=davidferra
+WorkingDirectory=/home/davidferra/openclaw-prices
+ExecStart=/usr/bin/node services/receipt-processor.mjs server
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openclaw-receipt-processor
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

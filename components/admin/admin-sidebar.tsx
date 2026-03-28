@@ -26,6 +26,7 @@ import {
   Rocket,
   ClipboardList,
   ShieldAlert,
+  Tags,
 } from 'lucide-react'
 import { signOut } from '@/lib/auth/actions'
 
@@ -48,6 +49,7 @@ const navItems = [
   { href: '/admin/beta', label: 'Early Signups', icon: Rocket },
   { href: '/admin/beta-surveys', label: 'Surveys', icon: ClipboardList },
   { href: '/admin/silent-failures', label: 'Silent Failures', icon: ShieldAlert },
+  { href: '/admin/price-catalog', label: 'Price Catalog', icon: Tags },
 ]
 
 function NavLink({

@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenClaw Price Intelligence - Sync API
+After=network.target
+
+[Service]
+Type=simple
+User=davidferra
+WorkingDirectory=/home/davidferra/openclaw-prices
+ExecStart=/usr/bin/node services/sync-api.mjs
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=openclaw-sync-api
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
