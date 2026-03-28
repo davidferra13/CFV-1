@@ -21,48 +21,46 @@ function getModulePrompts(scenario: SimScenario): { system: string; user: string
   switch (scenario.module) {
     case 'inquiry_parse':
       return {
-        system: `You are a private chef's assistant. Extract structured information from an inquiry message.
+        system: `You are a data extraction assistant for a private chef's inquiry management system. Extract structured information from an inquiry message.
 Return valid JSON only - no markdown, no prose.
 
 CRITICAL RULES:
-1. If the client's name is NOT clearly stated (as "My name is X", "I'm X", "- X" signature, or "This is X"), return name: null. Do NOT guess from email address, greeting, or context.
-2. If a specific number of guests is NOT stated, return guestCount: null. Vague phrases ("a few friends", "some colleagues", "small group") are NOT guest counts.
+1. If the client's name is NOT clearly stated (as "My name is X", "I'm X", "- X" signature, or "This is X"), return client_name: null. Do NOT guess from email address, greeting, or context.
+2. If a specific number of guests is NOT stated, return confirmed_guest_count: null. Vague phrases ("a few friends", "some colleagues", "small group") are NOT guest counts.
 3. NEVER fabricate data that isn't in the email.
 4. Only extract information explicitly written in the message. Never infer or guess.
 5. A greeting like "Hi there" or "Hello" is NOT a client name - return null.
-6. If no email address is written, return null for clientEmail.
-7. If no phone number is written, return null for clientPhone.
-8. If no date is explicitly stated, return null for eventDate.
-9. budgetCents must be a number in cents (e.g. $500 = 50000) or null if not stated.
-10. dietaryRestrictions must be an empty array [] if none are mentioned.
+6. If no email address is written, return null for client_email.
+7. If no phone number is written, return null for client_phone.
+8. If no date is explicitly stated, return null for confirmed_date.
+9. confirmed_budget_cents must be a number in cents (e.g. $500 = 50000) or null if not stated.
+10. confirmed_dietary_restrictions must be an empty array [] if none are mentioned.
 
 EXAMPLES:
-Input: "Hi, I'm Sarah Chen. Planning a birthday dinner for 12 guests on March 15th."
-Output: { "clientName": "Sarah Chen", "guestCount": 12, "occasion": "birthday dinner", "eventDate": "2026-03-15", "clientEmail": null, "clientPhone": null, "eventTime": null, "location": null, "dietaryRestrictions": [], "budgetCents": null, "notes": null }
+
+Input: "hey! saw your page on IG. my husband and I are celebrating our anniversary june 14, would love a nice dinner at home for just the two of us. I'm gluten free and he's allergic to shellfish. Budget around $800. - Jessica"
+Output: { "client_name": "Jessica", "client_email": null, "client_phone": null, "confirmed_date": "2026-06-14", "event_time": null, "confirmed_guest_count": 2, "confirmed_occasion": "Anniversary dinner", "confirmed_location": null, "confirmed_dietary_restrictions": ["gluten-free", "shellfish allergy"], "confirmed_budget_cents": 80000, "notes": null }
+
+Input: "From: mark.chen@email.com\nSubject: Dinner party inquiry\n\nHi Chef,\nI'm hosting a dinner party for 12 people on August 23rd at my place in Brookline. Let me know if you're available!\nBest, Mark Chen\n617-555-0199"
+Output: { "client_name": "Mark Chen", "client_email": "mark.chen@email.com", "client_phone": "617-555-0199", "confirmed_date": "2026-08-23", "event_time": null, "confirmed_guest_count": 12, "confirmed_occasion": "Dinner party", "confirmed_location": "Brookline", "confirmed_dietary_restrictions": [], "confirmed_budget_cents": null, "notes": null }
 
 Input: "Looking for a private chef for our anniversary next month."
-Output: { "clientName": null, "guestCount": null, "occasion": "anniversary", "eventDate": null, "clientEmail": null, "clientPhone": null, "eventTime": null, "location": null, "dietaryRestrictions": [], "budgetCents": null, "notes": null }
-
-Input: "Hey, what are your rates?"
-Output: { "clientName": null, "guestCount": null, "occasion": null, "eventDate": null, "clientEmail": null, "clientPhone": null, "eventTime": null, "location": null, "dietaryRestrictions": [], "budgetCents": null, "notes": null }
-
-Input: "We're a group of friends looking to do something fun. - Rachel"
-Output: { "clientName": "Rachel", "guestCount": null, "occasion": null, "eventDate": null, "clientEmail": null, "clientPhone": null, "eventTime": null, "location": null, "dietaryRestrictions": [], "budgetCents": null, "notes": null }`,
+Output: { "client_name": null, "client_email": null, "client_phone": null, "confirmed_date": null, "event_time": null, "confirmed_guest_count": null, "confirmed_occasion": "anniversary", "confirmed_location": null, "confirmed_dietary_restrictions": [], "confirmed_budget_cents": null, "notes": null }`,
         user: `Extract inquiry details from this message. Return null for any field not explicitly present.
 
 ${scenario.inputText}
 
 Return JSON: {
-  "clientName": null or "exact name as written",
-  "clientEmail": null or "exact email as written",
-  "clientPhone": null or "exact phone as written",
-  "eventDate": null or "YYYY-MM-DD",
-  "eventTime": null or "time as written",
-  "guestCount": null or exact number,
-  "occasion": null or "occasion type",
-  "location": null or "location as written",
-  "dietaryRestrictions": [],
-  "budgetCents": null or number in cents,
+  "client_name": null or "exact name as written",
+  "client_email": null or "exact email as written",
+  "client_phone": null or "exact phone as written",
+  "confirmed_date": null or "YYYY-MM-DD",
+  "event_time": null or "time as written",
+  "confirmed_guest_count": null or exact number,
+  "confirmed_occasion": null or "occasion type",
+  "confirmed_location": null or "location as written",
+  "confirmed_dietary_restrictions": [],
+  "confirmed_budget_cents": null or number in cents,
   "notes": null or "any other details"
 }`,
       }

@@ -17,10 +17,10 @@ function buildGeneratorPrompt(module: SimModule): { system: string; user: string
       return {
         system: `You are generating realistic private chef inquiry emails for testing an AI parser.
 Each scenario should feel like a real email from a potential client.
-Return a JSON array of inquiry email strings - no other text.
-Vary: event occasions (birthday, anniversary, corporate, date night, holiday), guest counts (4–80),
+Return a JSON array - no other text.
+Vary: event occasions (birthday, anniversary, corporate, date night, holiday), guest counts (4-80),
 dietary restrictions (vegan, gluten-free, nut allergy, kosher, halal, shellfish allergy, none),
-budgets ($300–$5000), event dates (near future), and writing styles (formal, casual, brief, detailed).
+budgets ($300-$5000), event dates (near future), and writing styles (formal, casual, brief, detailed).
 
 CRITICAL RULES for generating emails - the parser has strict null extraction rules:
 - When expectedName is a non-null value, the email MUST contain the name in an EXPLICIT format:
@@ -31,8 +31,20 @@ CRITICAL RULES for generating emails - the parser has strict null extraction rul
 - If you want to test null handling (parser correctly returns null), set the expected value to null
   AND make the email genuinely ambiguous - omit the name entirely, or use only vague language for guest count.
 - At least 1 of the 5 scenarios should test null handling for name (no name in email, expectedName: null).
-- At least 1 of the 5 scenarios should test null handling for guest count (no specific number, expectedGuestCount: null).`,
-        user: `Generate 5 realistic private chef inquiry emails. Each email should contain:
+- At least 1 of the 5 scenarios should test null handling for guest count (no specific number, expectedGuestCount: null).
+
+VALIDATION (do this before returning):
+- For each scenario, re-read the email text you wrote.
+- If expectedName is non-null, search the email for that exact name in a signature ("- Name", "Best, Name") or introduction ("I'm Name", "My name is Name"). If it does not appear verbatim, change expectedName to null.
+- If expectedGuestCount is non-null, search the email for a specific number. If no explicit number appears, change expectedGuestCount to null.
+- This self-check prevents impossible test cases where the ground truth claims data exists but the email doesn't contain it.`,
+        user: `Generate 5 realistic private chef inquiry emails.
+
+IMPORTANT: Each email must be self-consistent with its ground truth.
+Do NOT set expectedName to a value unless that exact name string appears in the email as a signature ("- Name", "Best, Name") or introduction ("I'm Name", "My name is Name"). If unsure, set to null.
+Do NOT set expectedGuestCount to a number unless that exact number appears in the email ("12 guests", "party of 20"). If the email only says "a few friends" or "some people", set to null.
+
+Each email should contain:
 - Client name in an explicit format ("My name is X", "I'm X", or as a signature) - or omit entirely if testing null
 - Event date (specific, within 6 months from now)
 - Guest count as a specific number - or omit/use vague language if testing null

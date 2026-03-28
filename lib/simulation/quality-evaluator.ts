@@ -80,8 +80,8 @@ function evaluateInquiryParseDeterministic(
     }
   }
 
-  // Check dietaryRestrictions is array (not missing)
-  const dietary = out.dietaryRestrictions
+  // Check dietaryRestrictions is array (not missing) - handle both camelCase and snake_case
+  const dietary = out.dietaryRestrictions ?? out.confirmed_dietary_restrictions
   if (!Array.isArray(dietary)) {
     score -= 10
     failures.push('dietaryRestrictions field is missing or not an array')
