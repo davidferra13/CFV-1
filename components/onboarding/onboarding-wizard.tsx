@@ -13,6 +13,8 @@ import { ProfileStep } from './onboarding-steps/profile-step'
 import { PortfolioStep } from './onboarding-steps/portfolio-step'
 import { PricingStepWizard } from './onboarding-steps/pricing-step-wizard'
 import { ConnectGmailStep } from './onboarding-steps/connect-gmail-step'
+import { FirstMenuStep } from './onboarding-steps/first-menu-step'
+import { FirstBookingStep } from './onboarding-steps/first-booking-step'
 
 type ProgressEntry = {
   step_key: string
@@ -55,7 +57,7 @@ export function OnboardingWizard() {
     loadProgress()
     loadExistingData()
 
-    // If returning from Gmail OAuth during onboarding, auto-complete the gmail step
+    // If returning from Gmail OAuth during setup, auto-complete the gmail step
     const gmailFlag = sessionStorage.getItem('onboarding_gmail_step')
     if (gmailFlag) {
       sessionStorage.removeItem('onboarding_gmail_step')
@@ -68,7 +70,7 @@ export function OnboardingWizard() {
       const data = await getExistingProfileData()
       setExistingData(data as ExistingData)
     } catch (err) {
-      console.error('[onboarding] Failed to load existing profile data', err)
+      console.error('[setup] Failed to load existing profile data', err)
     }
   }
 
@@ -85,7 +87,7 @@ export function OnboardingWizard() {
         setCurrentIndex(firstIncomplete)
       }
     } catch (err) {
-      console.error('[onboarding] Failed to load progress', err)
+      console.error('[setup] Failed to load progress', err)
     }
   }
 
@@ -115,7 +117,7 @@ export function OnboardingWizard() {
         }
         advanceStep()
       } catch (err) {
-        console.error('[onboarding] Failed to complete step', err)
+        console.error('[setup] Failed to complete step', err)
         setProgress(previousProgress)
       }
     })
@@ -144,7 +146,7 @@ export function OnboardingWizard() {
       try {
         await skipStep(stepKey)
       } catch (err) {
-        console.error('[onboarding] Failed to persist skip for step', stepKey, err)
+        console.error('[setup] Failed to persist skip for step', stepKey, err)
       }
     })
   }
@@ -161,7 +163,7 @@ export function OnboardingWizard() {
     setIsComplete(true)
     // Set onboarding_completed_at in the background
     completeOnboardingWizard().catch((err) => {
-      console.error('[onboarding] Failed to mark wizard complete', err)
+      console.error('[setup] Failed to mark wizard complete', err)
     })
   }
 
@@ -196,13 +198,9 @@ export function OnboardingWizard() {
               />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-foreground">You're all set!</h1>
+          <h1 className="text-3xl font-bold text-foreground">You&apos;re all set!</h1>
           <p className="mt-3 text-muted-foreground">
-            Your ChefFlow account is ready to go. You just replaced 8 apps in 10 minutes.
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Coming soon: upload menus, create custom menus, and send them to clients from your
-            dashboard.
+            Your ChefFlow account is ready. Head to your dashboard to start managing your business.
           </p>
           <div className="mt-8 flex gap-3 justify-center">
             <a
@@ -223,7 +221,7 @@ export function OnboardingWizard() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center p-8">
-          <p className="text-foreground">Something went wrong loading the wizard.</p>
+          <p className="text-foreground">Something went wrong loading setup.</p>
           <a
             href="/dashboard"
             className="mt-4 inline-block rounded-md bg-orange-600 px-6 py-2 text-sm font-medium text-white"
@@ -241,7 +239,7 @@ export function OnboardingWizard() {
       <div className="hidden w-72 border-r border-border bg-card p-6 lg:block">
         <div className="mb-6">
           <h1 className="text-lg font-bold text-foreground">ChefFlow Setup</h1>
-          <p className="text-xs text-muted-foreground mt-1">Replace 8 apps in 10 minutes</p>
+          <p className="text-xs text-muted-foreground mt-1">Get your account ready in minutes</p>
         </div>
 
         <nav className="space-y-1">
@@ -362,6 +360,9 @@ export function OnboardingWizard() {
           {currentStep.key === 'portfolio' && (
             <PortfolioStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
+          {currentStep.key === 'first_menu' && (
+            <FirstMenuStep onComplete={handleComplete} onSkip={handleSkip} />
+          )}
           {currentStep.key === 'pricing' && (
             <PricingStepWizard
               onComplete={handleComplete}
@@ -373,61 +374,9 @@ export function OnboardingWizard() {
             <ConnectGmailStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
           {currentStep.key === 'first_event' && (
-            <RedirectStep
-              title="Create your first event"
-              description="Set up an upcoming event, dinner, or booking to see how ChefFlow manages your workflow."
-              href="/events"
-              buttonLabel="Go to Events"
-              onSkip={handleSkip}
-            />
+            <FirstBookingStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
         </div>
-      </div>
-    </div>
-  )
-}
-
-// Redirect step: sends user to the actual page to complete the task
-function RedirectStep({
-  title,
-  description,
-  href,
-  buttonLabel,
-  onSkip,
-}: {
-  title: string
-  description: string
-  href: string
-  buttonLabel: string
-  onSkip: () => void
-}) {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold text-foreground">{title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      </div>
-
-      <div className="rounded-lg border border-border bg-muted/50 p-8 text-center space-y-3">
-        <p className="text-sm text-muted-foreground">
-          Complete this step from the main app. You can return to onboarding anytime.
-        </p>
-        <a
-          href={href}
-          className="inline-block rounded-md bg-orange-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-        >
-          {buttonLabel}
-        </a>
-      </div>
-
-      <div className="flex items-center justify-end pt-4">
-        <button
-          type="button"
-          onClick={onSkip}
-          className="text-sm text-muted-foreground hover:text-foreground underline"
-        >
-          Skip for now
-        </button>
       </div>
     </div>
   )

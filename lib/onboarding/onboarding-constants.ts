@@ -1,8 +1,8 @@
-// Shared constants for onboarding steps.
+// Shared constants for setup steps (formerly "onboarding").
 // Extracted from onboarding-actions.ts because 'use server' files cannot export
 // non-async values (Next.js restriction).
 //
-// WIZARD_STEPS = the 5 steps shown in the first-run wizard (all skippable).
+// WIZARD_STEPS = the 6 steps shown in the first-run setup wizard (all skippable).
 // ONBOARDING_STEPS = all steps including post-wizard hub items.
 
 export const ONBOARDING_STEPS = [
@@ -21,6 +21,13 @@ export const ONBOARDING_STEPS = [
     optional: false,
   },
   {
+    key: 'first_menu',
+    title: 'Your First Menu',
+    description: 'Create a menu with a few dishes to get started',
+    icon: 'utensils',
+    optional: false,
+  },
+  {
     key: 'pricing',
     title: 'Your Pricing',
     description: 'Set base rates so clients know what to expect',
@@ -29,14 +36,14 @@ export const ONBOARDING_STEPS = [
   },
   {
     key: 'connect_gmail',
-    title: 'Import Leads',
+    title: 'Connect Your Inbox',
     description: 'Auto-import inquiries from your email inbox',
     icon: 'mail',
     optional: false,
   },
   {
     key: 'first_event',
-    title: 'First Event',
+    title: 'Your First Booking',
     description: 'Create your first event or booking',
     icon: 'calendar',
     optional: false,

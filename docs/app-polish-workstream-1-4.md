@@ -1,4 +1,4 @@
-# App Polish: Workstreams 1 & 4 - Completed
+# App Polish: Workstreams 1, 3 & 4 - Completed
 
 ## Workstream 4: Platform Liability Cleanup
 
@@ -64,3 +64,43 @@ Removed all false claims about third-party platform integrations from user-facin
 ### Design Decision
 
 Kept the accordion behavior (one group open at a time) rather than expanding all groups by default. With 17 groups and 200+ items, showing everything expanded would be overwhelming. The alphabetical sort solves the "where is it?" problem without creating information overload.
+
+---
+
+## Workstream 3: Onboarding Overhaul
+
+### What Changed
+
+Expanded the setup wizard from 5 to 6 steps, replaced redirect-based steps with inline forms, and removed all platform-specific claims from the Gmail connection step.
+
+**Files created:**
+
+1. **`components/onboarding/onboarding-steps/first-menu-step.tsx`**
+   - New inline wizard step: create a menu with 1-10 dishes
+   - Uses `createMenuWithCourses()` server action
+   - Skippable with onComplete/onSkip interface
+
+2. **`components/onboarding/onboarding-steps/first-booking-step.tsx`**
+   - New inline wizard step: create first event with date, time, guest count, occasion, location
+   - Uses `createEvent()` server action
+   - Handles missing client_id gracefully
+
+**Files modified:**
+
+3. **`lib/onboarding/onboarding-constants.ts`**
+   - Added `first_menu` step (between portfolio and pricing)
+   - Renamed `connect_gmail` title: "Import Leads" to "Connect Your Inbox"
+   - Renamed `first_event` title: "First Event" to "Your First Booking"
+   - Updated comment: "5 wizard steps" to "6 wizard steps"
+
+4. **`components/onboarding/onboarding-wizard.tsx`**
+   - Added imports for FirstMenuStep and FirstBookingStep
+   - Removed RedirectStep component
+   - Updated completion screen (removed "Coming soon: upload menus..." copy)
+   - Changed sidebar subtitle to "Get your account ready in minutes"
+
+5. **`components/onboarding/onboarding-steps/connect-gmail-step.tsx`**
+   - Removed PLATFORMS array (Take a Chef, Bark, Thumbtack, etc.)
+   - Replaced "Supported platforms" badges with "What you get" benefits list
+   - Updated copy to generic inbox language throughout
+   - Fixed "already connected" copy ("Platform leads" to "New inquiries")

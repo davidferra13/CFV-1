@@ -12,15 +12,11 @@ const GMAIL_SCOPES = [
   'https://www.googleapis.com/auth/gmail.send',
 ]
 
-const PLATFORMS = [
-  'Take a Chef',
-  'Private Chef Manager',
-  'Bark',
-  'Thumbtack',
-  'Yhangry',
-  'GigSalad',
-  'The Knot',
-  'Cozymeal',
+const BENEFITS = [
+  'Auto-import booking inquiries',
+  'Parse guest count, date, and budget',
+  'Track response times',
+  'Never miss a lead',
 ]
 
 interface ConnectGmailStepProps {
@@ -43,7 +39,7 @@ export function ConnectGmailStep({
         <div>
           <h2 className="text-xl font-semibold text-foreground">Gmail is connected</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Your Gmail is already linked. Platform leads will flow in automatically.
+            Your Gmail is already linked. New inquiries will flow in automatically.
           </p>
         </div>
         <div className="flex gap-3">
@@ -77,34 +73,32 @@ export function ConnectGmailStep({
       <div>
         <h2 className="text-xl font-semibold text-foreground">Import leads automatically</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          If you use platforms like Take a Chef, Bark, or Thumbtack, ChefFlow can pull in new
-          inquiries for you automatically.
+          ChefFlow scans your inbox for booking inquiries from any platform and imports them
+          automatically. No manual copy-pasting.
         </p>
       </div>
 
-      {/* Platform list */}
+      {/* Benefits */}
       <div className="rounded-lg border border-border bg-muted/50 p-4">
         <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">
-          Supported platforms
+          What you get
         </p>
-        <div className="flex flex-wrap gap-2">
-          {PLATFORMS.map((p) => (
-            <span
-              key={p}
-              className="rounded-full bg-background border border-border px-3 py-1 text-xs font-medium text-foreground shadow-sm"
-            >
-              {p}
-            </span>
+        <ul className="space-y-2">
+          {BENEFITS.map((b) => (
+            <li key={b} className="flex items-center gap-2 text-sm text-foreground">
+              <span className="h-1.5 w-1.5 rounded-full bg-orange-500 shrink-0" />
+              {b}
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
 
       {/* How it works */}
       <div className="space-y-2">
         <p className="text-sm font-medium text-foreground">How it works</p>
         <p className="text-sm text-muted-foreground">
-          With your permission, ChefFlow checks for booking notification emails from these
-          platforms. Only platform notifications are read. Your personal emails are never accessed.
+          With your permission, ChefFlow checks for booking notification emails in your inbox. Only
+          booking-related emails are read. Your personal emails are never accessed.
         </p>
       </div>
 
