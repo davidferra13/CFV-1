@@ -46,24 +46,35 @@ export type CatalogSearchResult = {
   categories: { name: string; count: number }[]
 }
 
+export type CatalogStore = {
+  id: string
+  name: string
+  tier: string
+  status: string
+}
+
 // --- Actions ---
 
 export async function searchCatalog(params: {
   search?: string
   category?: string
+  store?: string
   pricedOnly?: boolean
+  sort?: 'name' | 'price' | 'stores' | 'updated'
   page?: number
   limit?: number
 }): Promise<CatalogSearchResult> {
   await requireAdmin()
 
-  const { search, category, pricedOnly, page = 1, limit = 50 } = params
+  const { search, category, store, pricedOnly, sort, page = 1, limit = 50 } = params
 
   try {
     const searchParams = new URLSearchParams()
     if (search) searchParams.set('search', search)
     if (category) searchParams.set('category', category)
+    if (store) searchParams.set('store', store)
     if (pricedOnly) searchParams.set('priced_only', '1')
+    if (sort) searchParams.set('sort', sort)
     searchParams.set('page', String(page))
     searchParams.set('limit', String(limit))
 
@@ -85,7 +96,7 @@ export async function searchCatalog(params: {
 
     // Map Pi response to our types
     const items: CatalogItem[] = (data.ingredients || data.items || []).map((item: any) => ({
-      id: String(item.id),
+      id: String(item.ingredient_id || item.id),
       name: item.name || '',
       category: item.category || 'uncategorized',
       bestPriceCents: item.best_price_cents ?? item.price_cents ?? null,
@@ -107,6 +118,33 @@ export async function searchCatalog(params: {
       console.warn(`[catalog] Search error: ${err instanceof Error ? err.message : 'unknown'}`)
     }
     return { items: [], total: 0, categories: [] }
+  }
+}
+
+export async function getCatalogStores(): Promise<CatalogStore[]> {
+  await requireAdmin()
+
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000)
+
+    const res = await fetch(`${OPENCLAW_API}/api/sources`, {
+      signal: controller.signal,
+      cache: 'no-store',
+    })
+    clearTimeout(timeout)
+
+    if (!res.ok) return []
+
+    const data = await res.json()
+    return (data.sources || []).map((s: any) => ({
+      id: s.source_id,
+      name: s.name,
+      tier: s.pricing_tier || 'retail',
+      status: s.status || 'active',
+    }))
+  } catch {
+    return []
   }
 }
 

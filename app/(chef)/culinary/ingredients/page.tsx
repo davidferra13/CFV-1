@@ -57,7 +57,14 @@ export default async function IngredientsPage() {
               {ingredients.length}
             </span>
           </div>
-          <AddIngredientForm />
+          <div className="flex gap-2">
+            <Link href="/culinary/ingredients/receipt-scan">
+              <Button variant="secondary" size="sm">
+                Scan Receipt
+              </Button>
+            </Link>
+            <AddIngredientForm />
+          </div>
         </div>
         <p className="text-stone-500 mt-1">Your pantry and ingredient price library</p>
       </div>

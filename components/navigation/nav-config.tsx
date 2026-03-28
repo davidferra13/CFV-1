@@ -671,6 +671,7 @@ export const navGroups: NavGroup[] = [
         icon: Package,
         children: [
           { href: '/culinary/ingredients', label: 'Ingredients Database' },
+          { href: '/culinary/ingredients/receipt-scan', label: 'Receipt Scanner' },
           { href: '/culinary/ingredients/seasonal-availability', label: 'Seasonal Availability' },
           { href: '/culinary/ingredients/vendor-notes', label: 'Vendor Notes' },
         ],
