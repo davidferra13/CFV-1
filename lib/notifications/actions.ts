@@ -216,7 +216,13 @@ export async function getUnreadCount(): Promise<number> {
     return 0
   }
 
-  return data ?? 0
+  // RPC returns rows like [{get_unread_notification_count: N}] via compat shim
+  if (Array.isArray(data) && data.length > 0) {
+    const row = data[0]
+    const val = typeof row === 'object' ? Object.values(row)[0] : row
+    return typeof val === 'number' ? val : Number(val) || 0
+  }
+  return typeof data === 'number' ? data : 0
 }
 
 // ─── Update ─────────────────────────────────────────────────────────────
