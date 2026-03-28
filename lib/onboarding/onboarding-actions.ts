@@ -337,7 +337,10 @@ export async function getOnboardingDismissalState() {
 
 export async function uploadPortfolioPhotos(
   formData: FormData
-): Promise<{ success: true; urls: string[] } | { success: false; error: string }> {
+): Promise<
+  | { success: true; urls: string[]; skipped?: { name: string; reason: string }[] }
+  | { success: false; error: string }
+> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -346,18 +349,25 @@ export async function uploadPortfolioPhotos(
   if (!files || files.length === 0) {
     return { success: false, error: 'No photos provided' }
   }
-  if (files.length > 5) {
-    return { success: false, error: 'Maximum 5 photos allowed' }
+  if (files.length > 50) {
+    return { success: false, error: 'Maximum 50 photos per upload batch' }
   }
 
   const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
   const maxSize = 5 * 1024 * 1024
 
   const uploadedUrls: string[] = []
+  const skipped: { name: string; reason: string }[] = []
 
   for (const file of files) {
-    if (!allowedTypes.includes(file.type)) continue
-    if (file.size > maxSize) continue
+    if (!allowedTypes.includes(file.type)) {
+      skipped.push({ name: file.name, reason: 'Unsupported format' })
+      continue
+    }
+    if (file.size > maxSize) {
+      skipped.push({ name: file.name, reason: 'Exceeds 5MB limit' })
+      continue
+    }
 
     const ext = file.type.split('/')[1]?.replace('jpeg', 'jpg') || 'jpg'
     const storagePath = `${tenantId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
@@ -384,6 +394,7 @@ export async function uploadPortfolioPhotos(
 
     if (uploadError) {
       console.error('[onboarding] Portfolio photo upload error', uploadError)
+      skipped.push({ name: file.name, reason: 'Storage error' })
       continue
     }
 
@@ -397,9 +408,8 @@ export async function uploadPortfolioPhotos(
     return { success: false, error: 'No photos could be uploaded' }
   }
 
-  // Save URLs to chef_directory_listings.portfolio_urls
+  // Save URLs to chef_directory_listings.portfolio_urls (no cap, append all)
   try {
-    // Get existing portfolio URLs
     const { data: existing } = await db
       .from('chef_directory_listings')
       .select('portfolio_urls')
@@ -407,7 +417,7 @@ export async function uploadPortfolioPhotos(
       .maybeSingle()
 
     const existingUrls: string[] = (existing?.portfolio_urls as string[]) || []
-    const mergedUrls = [...existingUrls, ...uploadedUrls].slice(0, 5)
+    const mergedUrls = [...existingUrls, ...uploadedUrls]
 
     await db
       .from('chef_directory_listings')
@@ -418,7 +428,7 @@ export async function uploadPortfolioPhotos(
 
   revalidatePath('/onboarding')
   revalidatePath('/settings/my-profile')
-  return { success: true, urls: uploadedUrls }
+  return { success: true, urls: uploadedUrls, skipped: skipped.length > 0 ? skipped : undefined }
 }
 
 // ============================================

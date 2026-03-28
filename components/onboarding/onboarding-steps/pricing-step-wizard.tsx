@@ -20,9 +20,55 @@ type PricingStepWizardProps = {
   existingData?: ExistingPricingData
 }
 
-// Shared input class for currency fields - extra left padding for $ sign, hides number spinners
+// Shared input class for currency fields with a fixed gutter for the $ prefix.
 const currencyInputClass =
-  'block w-full rounded-md border border-border bg-background pl-8 pr-3 py-2 text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
+  'block w-full rounded-md border border-border bg-background py-2 pl-12 pr-3 text-foreground shadow-sm tabular-nums focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500'
+
+function sanitizeCurrencyInput(value: string): string {
+  const cleaned = value.replace(/[^\d.]/g, '')
+  if (!cleaned) return ''
+
+  const hasDecimal = cleaned.includes('.')
+  const [wholePart = '', ...decimalParts] = cleaned.split('.')
+  const decimalPart = decimalParts.join('').slice(0, 2)
+  const normalizedWhole = wholePart === '' && hasDecimal ? '0' : wholePart
+
+  return hasDecimal ? `${normalizedWhole}.${decimalPart}` : normalizedWhole
+}
+
+type CurrencyInputProps = {
+  id?: string
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  className?: string
+}
+
+function CurrencyInput({
+  id,
+  value,
+  onChange,
+  placeholder = '0.00',
+  className = currencyInputClass,
+}: CurrencyInputProps) {
+  return (
+    <div className="relative mt-1">
+      <span className="pointer-events-none absolute left-3.5 top-1/2 flex h-5 w-6 -translate-y-1/2 items-center justify-center text-sm font-medium text-muted-foreground">
+        $
+      </span>
+      <input
+        id={id}
+        type="text"
+        inputMode="decimal"
+        autoComplete="off"
+        value={value}
+        onChange={(e) => onChange(sanitizeCurrencyInput(e.target.value))}
+        placeholder={placeholder}
+        className={className}
+      />
+    </div>
+  )
+}
 
 export function PricingStepWizard({ onComplete, onSkip, existingData }: PricingStepWizardProps) {
   const [hourlyRate, setHourlyRate] = useState(existingData?.hourlyRate ?? '')
@@ -86,21 +132,7 @@ export function PricingStepWizard({ onComplete, onSkip, existingData }: PricingS
           <label htmlFor="hourlyRate" className="block text-sm font-medium text-foreground">
             Hourly Rate
           </label>
-          <div className="relative mt-1">
-            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground font-medium">
-              $
-            </span>
-            <input
-              id="hourlyRate"
-              type="number"
-              min="0"
-              step="0.01"
-              value={hourlyRate}
-              onChange={(e) => setHourlyRate(e.target.value)}
-              placeholder="0.00"
-              className={currencyInputClass}
-            />
-          </div>
+          <CurrencyInput id="hourlyRate" value={hourlyRate} onChange={setHourlyRate} />
         </div>
 
         {/* Per-Guest Rate */}
@@ -108,21 +140,7 @@ export function PricingStepWizard({ onComplete, onSkip, existingData }: PricingS
           <label htmlFor="perGuestRate" className="block text-sm font-medium text-foreground">
             Per-Guest Rate
           </label>
-          <div className="relative mt-1">
-            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground font-medium">
-              $
-            </span>
-            <input
-              id="perGuestRate"
-              type="number"
-              min="0"
-              step="0.01"
-              value={perGuestRate}
-              onChange={(e) => setPerGuestRate(e.target.value)}
-              placeholder="0.00"
-              className={currencyInputClass}
-            />
-          </div>
+          <CurrencyInput id="perGuestRate" value={perGuestRate} onChange={setPerGuestRate} />
           <p className="mt-1 text-xs text-muted-foreground">
             Price per person for a standard dinner
           </p>
@@ -133,21 +151,7 @@ export function PricingStepWizard({ onComplete, onSkip, existingData }: PricingS
           <label htmlFor="minimumBooking" className="block text-sm font-medium text-foreground">
             Minimum Booking Amount
           </label>
-          <div className="relative mt-1">
-            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground font-medium">
-              $
-            </span>
-            <input
-              id="minimumBooking"
-              type="number"
-              min="0"
-              step="0.01"
-              value={minimumBooking}
-              onChange={(e) => setMinimumBooking(e.target.value)}
-              placeholder="0.00"
-              className={currencyInputClass}
-            />
-          </div>
+          <CurrencyInput id="minimumBooking" value={minimumBooking} onChange={setMinimumBooking} />
         </div>
 
         {/* Package Deals */}
@@ -178,18 +182,11 @@ export function PricingStepWizard({ onComplete, onSkip, existingData }: PricingS
                 placeholder="Package name"
                 className="flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
               />
-              <div className="relative w-28">
-                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground text-sm font-medium">
-                  $
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
+              <div className="w-28">
+                <CurrencyInput
                   value={pkg.priceDollars}
-                  onChange={(e) => updatePackage(i, 'priceDollars', e.target.value)}
-                  placeholder="0.00"
-                  className="w-full rounded-md border border-border bg-background pl-8 pr-3 py-2 text-sm text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  onChange={(value) => updatePackage(i, 'priceDollars', value)}
+                  className={`${currencyInputClass} text-sm`}
                 />
               </div>
               <button

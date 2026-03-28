@@ -67,15 +67,15 @@ export function WelcomeModal() {
         </button>
 
         {/* Header gradient */}
-        <div className="bg-gradient-to-br from-brand-600 to-brand-800 px-8 py-10 text-center">
-          <h2 id="welcome-title" className="text-2xl font-bold text-white">
+        <div className="bg-gradient-to-br from-brand-600 to-brand-800 px-5 py-8 sm:px-8 sm:py-10 text-center">
+          <h2 id="welcome-title" className="text-xl sm:text-2xl font-bold text-white">
             {tour.config.welcomeTitle}
           </h2>
           <p className="mt-2 text-brand-100 text-sm">{tour.config.welcomeSubtitle}</p>
         </div>
 
         {/* Feature points */}
-        <div className="px-8 py-6 space-y-3">
+        <div className="px-5 py-5 sm:px-8 sm:py-6 space-y-3">
           {tour.config.welcomePoints.map((point, i) => (
             <div key={i} className="flex items-start gap-3">
               <CheckCircle2 className="h-5 w-5 text-brand-500 flex-shrink-0 mt-0.5" />
@@ -85,7 +85,7 @@ export function WelcomeModal() {
         </div>
 
         {/* Actions */}
-        <div className="px-8 pb-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <div className="px-5 pb-6 sm:px-8 sm:pb-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
           <Button variant="ghost" onClick={handleSkip} className="order-2 sm:order-1">
             Skip, I will explore on my own
           </Button>

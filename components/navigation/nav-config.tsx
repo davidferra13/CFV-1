@@ -653,6 +653,7 @@ export const navGroups: NavGroup[] = [
           { href: '/culinary/costing/food-cost', label: 'Food Cost Analysis' },
           { href: '/culinary/costing/menu', label: 'Menu Costs' },
           { href: '/culinary/costing/recipe', label: 'Recipe Costs' },
+          { href: '/culinary/costing/sales', label: 'On Sale This Week' },
         ],
       },
       {

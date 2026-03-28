@@ -4,8 +4,8 @@
 // Explains how Gmail integration works and initiates OAuth flow.
 // Skippable. Copy is permission-focused and non-invasive.
 
-import { useState } from 'react'
-import { initiateGoogleConnect } from '@/lib/google/auth'
+import { useEffect, useState } from 'react'
+import { buildGoogleConnectEntryUrl } from '@/lib/google/connect-entry'
 
 const GMAIL_SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
@@ -23,15 +23,21 @@ interface ConnectGmailStepProps {
   onComplete: (data?: Record<string, unknown>) => void
   onSkip: () => void
   gmailAlreadyConnected?: boolean
+  oauthError?: string | null
 }
 
 export function ConnectGmailStep({
   onComplete,
   onSkip,
   gmailAlreadyConnected = false,
+  oauthError = null,
 }: ConnectGmailStepProps) {
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(oauthError)
+
+  useEffect(() => {
+    setError(oauthError)
+  }, [oauthError])
 
   if (gmailAlreadyConnected) {
     return (
@@ -55,17 +61,14 @@ export function ConnectGmailStep({
     )
   }
 
-  const handleConnect = async () => {
+  const handleConnect = () => {
     setLoading(true)
     setError(null)
-    try {
-      const { redirectUrl } = await initiateGoogleConnect(GMAIL_SCOPES)
-      sessionStorage.setItem('onboarding_gmail_step', '1')
-      window.location.href = redirectUrl
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not start Gmail connection')
-      setLoading(false)
-    }
+    window.location.assign(
+      buildGoogleConnectEntryUrl(GMAIL_SCOPES, {
+        returnTo: '/onboarding',
+      })
+    )
   }
 
   return (

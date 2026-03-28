@@ -215,3 +215,9 @@ cfv1-e2e-cookies.txt
 /data/rl-screenshots/
 /data/rl-sessions/
 /data/rl-issues/
+
+# Test build artifacts
+.next-test/
+
+# Personal files (photos, local data)
+davidfood/

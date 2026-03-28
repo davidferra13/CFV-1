@@ -673,23 +673,9 @@ export function ChefMobileNav({
             <AppLogo size={28} className="rounded-md flex-shrink-0" />
             <span className="font-display text-stone-100 whitespace-nowrap">ChefFlow</span>
           </Link>
-          <div className="flex items-center flex-shrink-0 gap-0.5">
-            {isAdmin && <OllamaStatusBadge />}
+          <div className="flex items-center flex-shrink-0 gap-1">
             <OfflineNavIndicator />
-            <ActivityDot />
             <GlobalSearch userId={userId} tenantId={tenantId} />
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-                className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
-                aria-label="Open Remy"
-                title="Open Remy"
-              >
-                <Bot className="w-[18px] h-[18px]" />
-              </button>
-            )}
-            <ThemeToggle className="h-10 w-10 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0 text-stone-400 hover:bg-stone-800 hover:text-stone-100" />
             <NotificationBell />
             <button
               type="button"
@@ -720,14 +706,33 @@ export function ChefMobileNav({
           >
             <div className="flex items-center justify-between h-14 px-4 border-b border-stone-800">
               <span className="font-semibold text-stone-100">Menu</span>
-              <button
-                type="button"
-                aria-label="Close menu"
-                onClick={closeMenu}
-                className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center gap-1">
+                {isAdmin && <OllamaStatusBadge />}
+                <ActivityDot />
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.dispatchEvent(new CustomEvent('open-remy'))
+                      closeMenu()
+                    }}
+                    className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
+                    aria-label="Open Remy"
+                    title="Open Remy"
+                  >
+                    <Bot className="w-4 h-4" />
+                  </button>
+                )}
+                <ThemeToggle className="h-8 w-8 min-h-0 rounded-lg border border-stone-700 bg-stone-900/80 p-0 text-stone-400 hover:bg-stone-800 hover:text-stone-100" />
+                <button
+                  type="button"
+                  aria-label="Close menu"
+                  onClick={closeMenu}
+                  className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
             <nav className="p-3 overflow-y-auto max-h-[calc(100vh-3.5rem)]">
               <div className="sticky top-0 z-10 bg-stone-900/95 backdrop-blur-sm pb-2 space-y-2">

@@ -63,9 +63,11 @@ export function TourSpotlight() {
       return
     }
 
-    const tooltipWidth = 320
+    const edgePad = 12
+    const tooltipWidth = Math.min(320, window.innerWidth - edgePad * 2)
     const tooltipGap = 12
     const viewport = { w: window.innerWidth, h: window.innerHeight }
+    const estimatedTooltipHeight = 180
 
     let top = 0
     let left = 0
@@ -76,22 +78,38 @@ export function TourSpotlight() {
         left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2
         break
       case 'top':
-        top = targetRect.top - tooltipGap - 160 // estimated tooltip height
+        top = targetRect.top - tooltipGap - estimatedTooltipHeight
         left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2
         break
       case 'right':
-        top = targetRect.top + targetRect.height / 2 - 80
-        left = targetRect.left + targetRect.width + tooltipGap
+        // On narrow screens, fall back to bottom placement
+        if (viewport.w < 480) {
+          top = targetRect.top + targetRect.height + tooltipGap
+          left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2
+        } else {
+          top = targetRect.top + targetRect.height / 2 - 80
+          left = targetRect.left + targetRect.width + tooltipGap
+        }
         break
       case 'left':
-        top = targetRect.top + targetRect.height / 2 - 80
-        left = targetRect.left - tooltipWidth - tooltipGap
+        // On narrow screens, fall back to bottom placement
+        if (viewport.w < 480) {
+          top = targetRect.top + targetRect.height + tooltipGap
+          left = targetRect.left + targetRect.width / 2 - tooltipWidth / 2
+        } else {
+          top = targetRect.top + targetRect.height / 2 - 80
+          left = targetRect.left - tooltipWidth - tooltipGap
+        }
         break
     }
 
-    // Clamp to viewport
-    left = Math.max(16, Math.min(left, viewport.w - tooltipWidth - 16))
-    top = Math.max(16, top)
+    // Clamp to viewport (horizontal is page-absolute, vertical is scroll-aware)
+    left = Math.max(edgePad, Math.min(left, viewport.w - tooltipWidth - edgePad))
+    const scrollTop = window.scrollY
+    top = Math.max(
+      scrollTop + edgePad,
+      Math.min(top, scrollTop + viewport.h - estimatedTooltipHeight - edgePad)
+    )
 
     setTooltipStyle({
       position: 'absolute',

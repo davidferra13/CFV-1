@@ -9,7 +9,7 @@ import {
   completeOnboardingWizard,
   dismissOnboardingBanner,
 } from '@/lib/onboarding/onboarding-actions'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { WIZARD_STEPS } from '@/lib/onboarding/onboarding-constants'
 import { ProfileStep } from './onboarding-steps/profile-step'
 import { PortfolioStep } from './onboarding-steps/portfolio-step'
@@ -50,11 +50,13 @@ type ExistingData = {
 
 export function OnboardingWizard() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [currentIndex, setCurrentIndex] = useState(0)
   const [progress, setProgress] = useState<ProgressEntry[]>([])
   const [isComplete, setIsComplete] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [existingData, setExistingData] = useState<ExistingData | null>(null)
+  const [gmailOAuthError, setGmailOAuthError] = useState<string | null>(null)
 
   async function handleSkipAll() {
     // Mark onboarding as dismissed so the layout gate stops redirecting here.
@@ -72,14 +74,45 @@ export function OnboardingWizard() {
   useEffect(() => {
     loadProgress()
     loadExistingData()
-
-    // If returning from Gmail OAuth during setup, auto-complete the gmail step
-    const gmailFlag = sessionStorage.getItem('onboarding_gmail_step')
-    if (gmailFlag) {
-      sessionStorage.removeItem('onboarding_gmail_step')
-      completeStep('connect_gmail', { connected: true }).catch(() => {})
-    }
   }, [])
+
+  useEffect(() => {
+    if (!searchParams) return
+
+    const connected = searchParams.get('connected')
+    const oauthError = searchParams.get('error')
+
+    if (oauthError) {
+      setGmailOAuthError(oauthError)
+    }
+
+    if (connected !== 'gmail') return
+
+    let active = true
+
+    ;(async () => {
+      try {
+        const result = await completeStep('connect_gmail', { connected: true })
+        if (!active) return
+
+        if (!result.success) {
+          setGmailOAuthError(result.error ?? 'Failed to save Gmail connection')
+          return
+        }
+
+        await loadProgress()
+        if (!active) return
+        router.replace('/onboarding', { scroll: false })
+      } catch (err) {
+        if (!active) return
+        setGmailOAuthError(err instanceof Error ? err.message : 'Failed to finish Gmail connection')
+      }
+    })()
+
+    return () => {
+      active = false
+    }
+  }, [searchParams, router])
 
   async function loadExistingData() {
     try {
@@ -440,7 +473,11 @@ export function OnboardingWizard() {
             />
           )}
           {currentStep.key === 'connect_gmail' && (
-            <ConnectGmailStep onComplete={handleComplete} onSkip={handleSkip} />
+            <ConnectGmailStep
+              onComplete={handleComplete}
+              onSkip={handleSkip}
+              oauthError={gmailOAuthError}
+            />
           )}
           {currentStep.key === 'first_event' && (
             <FirstBookingStep onComplete={handleComplete} onSkip={handleSkip} />

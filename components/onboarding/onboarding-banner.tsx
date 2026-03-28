@@ -77,8 +77,8 @@ export function OnboardingBanner() {
         </svg>
       </button>
 
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold text-foreground">Complete your setup</h3>
             <span className="rounded-full bg-orange-100 dark:bg-orange-900/40 px-2 py-0.5 text-xs font-medium text-orange-700 dark:text-orange-300">
@@ -102,7 +102,7 @@ export function OnboardingBanner() {
 
         <a
           href="/onboarding"
-          className="shrink-0 rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-500"
+          className="shrink-0 self-start rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-500"
         >
           Continue Setup
         </a>

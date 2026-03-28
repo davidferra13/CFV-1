@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { uploadPortfolioPhotos } from '@/lib/onboarding/onboarding-actions'
 
-const MAX_PHOTOS = 5
+const BATCH_SIZE = 10
 const MAX_SIZE_MB = 5
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
@@ -22,6 +22,7 @@ export function PortfolioStep({ onComplete, onSkip }: PortfolioStepProps) {
   const [photos, setPhotos] = useState<PhotoPreview[]>([])
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
   function handleFiles(files: FileList | null) {
@@ -29,20 +30,24 @@ export function PortfolioStep({ onComplete, onSkip }: PortfolioStepProps) {
     setError('')
 
     const newPhotos: PhotoPreview[] = []
+    const warnings: string[] = []
+
     for (const file of Array.from(files)) {
-      if (photos.length + newPhotos.length >= MAX_PHOTOS) {
-        setError(`Maximum ${MAX_PHOTOS} photos allowed`)
-        break
-      }
       if (!ALLOWED_TYPES.includes(file.type)) {
-        setError('Only JPEG, PNG, WebP, and HEIC images are allowed')
+        warnings.push(`${file.name}: unsupported format`)
         continue
       }
       if (file.size > MAX_SIZE_BYTES) {
-        setError(`Each photo must be under ${MAX_SIZE_MB}MB`)
+        warnings.push(`${file.name}: exceeds ${MAX_SIZE_MB}MB`)
         continue
       }
       newPhotos.push({ file, previewUrl: URL.createObjectURL(file) })
+    }
+
+    if (warnings.length > 0) {
+      setError(
+        `Skipped ${warnings.length} file(s): ${warnings.slice(0, 3).join(', ')}${warnings.length > 3 ? '...' : ''}`
+      )
     }
 
     setPhotos((prev) => [...prev, ...newPhotos])
@@ -66,22 +71,60 @@ export function PortfolioStep({ onComplete, onSkip }: PortfolioStepProps) {
     setUploading(true)
     setError('')
 
+    const allUrls: string[] = []
+    const allSkipped: { name: string; reason: string }[] = []
+    const totalBatches = Math.ceil(photos.length / BATCH_SIZE)
+
     try {
-      const formData = new FormData()
-      for (const p of photos) {
-        formData.append('photos', p.file)
+      for (let i = 0; i < photos.length; i += BATCH_SIZE) {
+        const batch = photos.slice(i, i + BATCH_SIZE)
+        const batchNum = Math.floor(i / BATCH_SIZE) + 1
+
+        if (totalBatches > 1) {
+          setUploadProgress(`Uploading batch ${batchNum} of ${totalBatches}...`)
+        }
+
+        const formData = new FormData()
+        for (const p of batch) {
+          formData.append('photos', p.file)
+        }
+
+        const result = await uploadPortfolioPhotos(formData)
+        if (result.success) {
+          allUrls.push(...result.urls)
+          if (result.skipped && result.skipped.length > 0) {
+            allSkipped.push(...result.skipped)
+          }
+        } else {
+          // Batch failed entirely, but continue with remaining batches
+          allSkipped.push(
+            ...batch.map((p) => ({ name: p.file.name, reason: result.error || 'Upload failed' }))
+          )
+        }
       }
 
-      const result = await uploadPortfolioPhotos(formData)
-      if (result.success) {
-        onComplete({ portfolioPhotos: result.urls })
+      if (allUrls.length > 0) {
+        if (allSkipped.length > 0) {
+          setError(
+            `${allUrls.length} uploaded, ${allSkipped.length} skipped: ${allSkipped
+              .slice(0, 3)
+              .map((s) => s.reason)
+              .join(', ')}`
+          )
+        }
+        onComplete({ portfolioPhotos: allUrls })
       } else {
-        setError(result.error || 'Upload failed. You can add photos later from your profile.')
+        setError('No photos could be uploaded. You can skip this step and try again later.')
       }
     } catch {
-      setError('Failed to upload photos. You can add them later from your profile.')
+      if (allUrls.length > 0) {
+        onComplete({ portfolioPhotos: allUrls })
+      } else {
+        setError('Upload failed. You can skip this step and try again later.')
+      }
     } finally {
       setUploading(false)
+      setUploadProgress('')
     }
   }
 
@@ -124,23 +167,22 @@ export function PortfolioStep({ onComplete, onSkip }: PortfolioStepProps) {
           </div>
         ))}
 
-        {photos.length < MAX_PHOTOS && (
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="aspect-square rounded-lg border-2 border-dashed border-border hover:border-orange-400 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-orange-600 transition-colors"
-          >
-            <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            <span className="text-xs">Add photo</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="aspect-square rounded-lg border-2 border-dashed border-border hover:border-orange-400 flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-orange-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+          <span className="text-xs">Add photos</span>
+        </button>
       </div>
 
       <input
@@ -150,11 +192,16 @@ export function PortfolioStep({ onComplete, onSkip }: PortfolioStepProps) {
         multiple
         className="hidden"
         aria-label="Select portfolio photos"
-        onChange={(e) => handleFiles(e.target.files)}
+        onChange={(e) => {
+          handleFiles(e.target.files)
+          // Reset input so re-selecting the same files triggers onChange
+          if (e.target) e.target.value = ''
+        }}
       />
 
       <p className="text-xs text-muted-foreground">
-        Up to {MAX_PHOTOS} photos, {MAX_SIZE_MB}MB each. JPEG, PNG, or WebP.
+        {MAX_SIZE_MB}MB per photo. JPEG, PNG, WebP, or HEIC.
+        {photos.length > 0 && ` ${photos.length} photo${photos.length === 1 ? '' : 's'} selected.`}
       </p>
 
       {error && <p className="text-sm text-red-500">{error}</p>}
@@ -163,7 +210,8 @@ export function PortfolioStep({ onComplete, onSkip }: PortfolioStepProps) {
         <button
           type="button"
           onClick={onSkip}
-          className="text-sm text-muted-foreground hover:text-foreground underline"
+          disabled={uploading}
+          className="text-sm text-muted-foreground hover:text-foreground underline disabled:opacity-40"
         >
           I'll do this later
         </button>
@@ -173,7 +221,7 @@ export function PortfolioStep({ onComplete, onSkip }: PortfolioStepProps) {
           disabled={uploading}
           className="rounded-md bg-orange-600 px-6 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-60"
         >
-          {uploading ? 'Uploading...' : 'Continue'}
+          {uploading ? uploadProgress || 'Uploading...' : 'Continue'}
         </button>
       </div>
     </div>
