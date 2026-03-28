@@ -59,6 +59,8 @@ function sourceLabel(source: PriceSource): string {
   switch (source) {
     case 'receipt':
       return 'Receipt'
+    case 'api_quote':
+      return 'API quote'
     case 'direct_scrape':
       return 'Store site'
     case 'flyer':

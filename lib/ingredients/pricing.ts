@@ -228,9 +228,10 @@ export async function getStoreComparison(ingredientId: string) {
 async function updateIngredientPriceFields(ingredientId: string, tenantId: string) {
   const db: any = createServerClient()
 
+  // Only include chef's own purchases in averages (exclude OpenClaw-synced rows per spec Decision 6)
   const { data: history } = await db
     .from('ingredient_price_history')
-    .select('price_per_unit_cents, purchase_date')
+    .select('price_per_unit_cents, purchase_date, source, store_name')
     .eq('ingredient_id', ingredientId)
     .eq('tenant_id', tenantId)
     .not('price_per_unit_cents', 'is', null)
@@ -238,16 +239,29 @@ async function updateIngredientPriceFields(ingredientId: string, tenantId: strin
 
   if (!history || history.length === 0) return
 
-  const prices = history.map((h: any) => h.price_per_unit_cents!).filter(Boolean)
-  const avg = Math.round(prices.reduce((a: any, b: any) => a + b, 0) / prices.length)
+  // Filter to chef's own purchase sources only (not openclaw_*)
+  const chefPurchases = history.filter(
+    (h: any) => !h.source || !String(h.source).startsWith('openclaw_')
+  )
+
+  if (chefPurchases.length === 0) return
+
+  const prices = chefPurchases.map((h: any) => h.price_per_unit_cents!).filter(Boolean)
+  if (prices.length === 0) return
+
+  const avg = Math.round(prices.reduce((a: number, b: number) => a + b, 0) / prices.length)
 
   await db
     .from('ingredients')
     .update({
       last_price_cents: prices[0],
-      last_price_date: history[0].purchase_date,
+      last_price_date: chefPurchases[0].purchase_date,
       average_price_cents: avg,
       last_purchased_at: new Date().toISOString(),
+      // Set source attribution for the most recent price
+      last_price_source: chefPurchases[0].source || 'manual',
+      last_price_store: chefPurchases[0].store_name || null,
+      last_price_confidence: 1.0,
     })
     .eq('id', ingredientId)
     .eq('tenant_id', tenantId)
