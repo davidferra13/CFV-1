@@ -55,6 +55,14 @@ export async function logIngredientPrice(input: LogPriceInput) {
   // Update the ingredient's last_price and average
   await updateIngredientPriceFields(validated.ingredient_id, user.tenantId!)
 
+  // Propagate price change to recipes (non-blocking)
+  try {
+    const { propagatePriceChange } = await import('@/lib/pricing/cost-refresh-actions')
+    await propagatePriceChange([validated.ingredient_id])
+  } catch (err) {
+    console.error('[logIngredientPrice] Price cascade failed (non-blocking):', err)
+  }
+
   return { success: true, entry: data }
 }
 

@@ -51,6 +51,7 @@ import { getCancellationRefundRecommendation } from '@/lib/cancellation/refund-a
 import { RecordPaymentPanel, ProcessRefundPanel } from '@/components/events/payment-actions-panel'
 import { getEventMapUrl, geocode, getDirections } from '@/lib/maps/mapbox'
 import { getChefPreferences } from '@/lib/chef/actions'
+import { CostStaleBanner } from '@/components/pricing/cost-stale-banner'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { createServerClient } from '@/lib/db/server'
@@ -492,8 +493,15 @@ export default async function EventDetailPage({
 
   return (
     <div className="space-y-6">
-      {/* Realtime event status subscription â€” auto-refreshes when FSM state changes */}
+      {/* Realtime event status subscription - auto-refreshes when FSM state changes */}
       <EventStatusRealtimeSync eventId={params.id} />
+
+      {/* Cost stale banner - shows when ingredient prices changed since last costing */}
+      <CostStaleBanner
+        eventId={params.id}
+        costNeedsRefresh={(event as any).cost_needs_refresh === true}
+      />
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>

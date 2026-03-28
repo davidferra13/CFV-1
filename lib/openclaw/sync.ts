@@ -439,6 +439,19 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
       revalidateTag('ingredient-prices')
     }
 
+    // Step 6b: Trigger cost refresh for all synced ingredients (non-blocking)
+    if (updated > 0 && !dryRun) {
+      try {
+        const { refreshIngredientCostsAction } = await import('@/lib/pricing/cost-refresh-actions')
+        // Fire-and-forget: don't await, don't block the sync result
+        refreshIngredientCostsAction().catch((err: unknown) => {
+          console.error('[syncPrices] Post-sync cost refresh failed (non-blocking):', err)
+        })
+      } catch (err) {
+        console.error('[syncPrices] Could not trigger cost refresh (non-blocking):', err)
+      }
+    }
+
     // Step 7: Feed unmatched names back to Pi for catalog growth (Phase 3.5)
     if (!dryRun) {
       await suggestCatalogItems(notFoundNames)

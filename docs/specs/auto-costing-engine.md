@@ -1,12 +1,12 @@
 # Spec: Auto-Costing Engine
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** `openclaw-v2-unified-pricing.md` (built), `openclaw-price-surfacing.md` (built)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-28
 > **Revised:** 2026-03-28 (spec review: 8 refinements, 8 blind spots addressed)
-> **Built by:** not started
+> **Built by:** Claude Code (2026-03-28). SPEC IS BUILT.
 
 ---
 

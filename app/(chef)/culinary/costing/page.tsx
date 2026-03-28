@@ -7,6 +7,10 @@ import { ShoppingOptimizer } from '@/components/pricing/shopping-optimizer'
 import { EventShoppingPlanner } from '@/components/pricing/event-shopping-planner'
 import { StoreScorecard } from '@/components/pricing/store-scorecard'
 import { CostImpact } from '@/components/pricing/cost-impact'
+import { CostRefreshButton } from '@/components/pricing/cost-refresh-button'
+import { CostingConfidenceBadge } from '@/components/pricing/costing-confidence-badge'
+import { IngredientMatchReview } from '@/components/pricing/ingredient-match-review'
+import { getUnmatchedIngredientsAction } from '@/lib/pricing/ingredient-matching-actions'
 import { Card } from '@/components/ui/card'
 import {
   Table,
@@ -33,10 +37,11 @@ function priceFreshness(dateStr: string | null): { text: string; color: string }
 
 export default async function CostingPage() {
   await requireChef()
-  const [recipes, menuCosts, allIngredients] = await Promise.all([
+  const [recipes, menuCosts, allIngredients, unmatchedIngredients] = await Promise.all([
     getRecipes(),
     getMenuCostSummaries(),
     getIngredients().catch(() => []),
+    getUnmatchedIngredientsAction().catch(() => []),
   ])
 
   const costedRecipes = recipes.filter((r) => r.total_cost_cents !== null)
@@ -54,8 +59,13 @@ export default async function CostingPage() {
         <Link href="/culinary" className="text-sm text-stone-500 hover:text-stone-300">
           ← Culinary
         </Link>
-        <h1 className="text-3xl font-bold text-stone-100 mt-1">Food Costing</h1>
-        <p className="text-stone-500 mt-1">Recipe and menu cost breakdowns</p>
+        <div className="flex items-center justify-between mt-1">
+          <div>
+            <h1 className="text-3xl font-bold text-stone-100">Food Costing</h1>
+            <p className="text-stone-500 mt-1">Recipe and menu cost breakdowns</p>
+          </div>
+          <CostRefreshButton />
+        </div>
       </div>
 
       {/* Summary stats */}
@@ -138,15 +148,15 @@ export default async function CostingPage() {
                         })()}
                       </TableCell>
                       <TableCell>
-                        {recipe.has_all_prices ? (
-                          <span className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full">
-                            Complete
-                          </span>
-                        ) : (
-                          <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
-                            Partial
-                          </span>
-                        )}
+                        <CostingConfidenceBadge
+                          coveragePct={
+                            recipe.has_all_prices
+                              ? 100
+                              : recipe.has_all_prices === false
+                                ? 50
+                                : null
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -155,6 +165,14 @@ export default async function CostingPage() {
           </Card>
         )}
       </div>
+
+      {/* Ingredient Match Review Panel */}
+      {unmatchedIngredients.length > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold text-stone-100 mb-3">Ingredient Matching</h2>
+          <IngredientMatchReview initialUnmatched={unmatchedIngredients} />
+        </div>
+      )}
 
       {/* Event Shopping Planner - optimized shopping for upcoming events */}
       <div>
@@ -230,15 +248,15 @@ export default async function CostingPage() {
                         : '-'}
                     </TableCell>
                     <TableCell>
-                      {mc.has_all_recipe_costs ? (
-                        <span className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full">
-                          Complete
-                        </span>
-                      ) : (
-                        <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
-                          Partial
-                        </span>
-                      )}
+                      <CostingConfidenceBadge
+                        coveragePct={
+                          mc.has_all_recipe_costs
+                            ? 100
+                            : mc.has_all_recipe_costs === false
+                              ? 50
+                              : null
+                        }
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

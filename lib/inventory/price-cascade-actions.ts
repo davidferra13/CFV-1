@@ -214,6 +214,14 @@ export async function cascadeIngredientPrice(
 
   const recipesUpdated = preview.affectedRecipes.length
 
+  // Propagate price change to recipes (non-blocking)
+  try {
+    const { propagatePriceChange } = await import('@/lib/pricing/cost-refresh-actions')
+    await propagatePriceChange([ingredientId])
+  } catch (err) {
+    console.error('[cascadeIngredientPrice] Price cascade failed (non-blocking):', err)
+  }
+
   revalidatePath('/inventory')
   revalidatePath('/recipes')
   revalidatePath('/culinary/recipes')

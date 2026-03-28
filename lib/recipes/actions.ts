@@ -885,6 +885,13 @@ export async function removeIngredientFromRecipe(recipeIngredientId: string) {
     throw new Error('Failed to remove ingredient')
   }
 
+  // Refresh recipe total cost after ingredient removal (was previously missing)
+  try {
+    await refreshRecipeTotalCost(db, user.tenantId!, ri.recipe_id)
+  } catch (err) {
+    console.error('[removeIngredientFromRecipe] Cost refresh failed (non-blocking):', err)
+  }
+
   revalidatePath(`/recipes/${ri.recipe_id}`)
   return { success: true }
 }
@@ -1801,7 +1808,7 @@ type CostResult = {
  * Uses the conversion engine with density lookups for cross-type conversions (cups to lbs).
  * Returns null cost + warning when conversion is not possible.
  */
-async function computeRecipeIngredientCost(
+export async function computeRecipeIngredientCost(
   db: ReturnType<typeof createServerClient>,
   tenantId: string,
   ingredientId: string,
@@ -1866,7 +1873,7 @@ async function computeRecipeIngredientCost(
  * Refresh a recipe's total_cost_cents and cost_per_serving_cents
  * by summing all recipe_ingredients.computed_cost_cents.
  */
-async function refreshRecipeTotalCost(
+export async function refreshRecipeTotalCost(
   db: ReturnType<typeof createServerClient>,
   tenantId: string,
   recipeId: string
