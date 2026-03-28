@@ -17,6 +17,8 @@ import {
 import type { LucideIcon } from '@/components/ui/icons'
 import { navGroups, standaloneBottom, resolveStandaloneTop } from './nav-config'
 import type { NavGroup } from './nav-config'
+import { ActionBar } from './action-bar'
+import { AllFeaturesCollapse } from './all-features-collapse'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
@@ -880,35 +882,8 @@ export function ChefSidebar({
             <OfflineNavIndicator />
             <ActivityDot collapsed />
 
-            {/* Dashboard */}
-            {visiblePrimaryItems.map((item) => {
-              const Icon = item.icon
-              const active = isItemActive(pathname, item.href, searchParams)
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={item.label}
-                  className={`relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
-                    active
-                      ? 'bg-brand-950 text-brand-600'
-                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
-                  }`}
-                >
-                  <Icon className="w-[18px] h-[18px]" />
-                  {item.href === '/inbox' && (
-                    <span className="absolute -top-1 -right-1">
-                      <InboxUnreadBadge />
-                    </span>
-                  )}
-                  {item.href === '/circles' && (
-                    <span className="absolute -top-1 -right-1">
-                      <CirclesUnreadBadge />
-                    </span>
-                  )}
-                </Link>
-              )
-            })}
+            {/* Action Bar - rail mode */}
+            <ActionBar navFilter={navFilter} collapsed />
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
@@ -988,158 +963,16 @@ export function ChefSidebar({
           <div className="px-3 space-y-1">
             <NavFilterInput value={navFilter} onChange={setNavFilter} />
 
-            {/* Primary tier (Dashboard, Inbox, Events, Clients) */}
-            <div className="space-y-0.5 pb-1">
-              {filteredPrimaryItems
-                .filter((item) => item.tier !== 'secondary')
-                .map((item) => {
-                  const Icon = item.icon
-                  const active = isItemActive(pathname, item.href, searchParams)
-                  const hasSubMenu = item.subMenu && item.subMenu.length > 0
-                  const subMenuOpen = openSubMenus.has(item.href)
-                  return (
-                    <div key={item.href}>
-                      <div
-                        className={`flex items-center gap-3 pl-2 pr-1 py-2 rounded-lg text-sm font-semibold transition-colors border-l-2 ${
-                          active
-                            ? 'bg-brand-950 text-brand-400 border-brand-500 nav-active-glow'
-                            : 'text-stone-300 hover:bg-stone-800 hover:text-stone-100 border-transparent'
-                        }`}
-                      >
-                        <Link href={item.href} className="flex items-center gap-3 flex-1 min-w-0">
-                          <Icon
-                            className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                          />
-                          <span className="truncate">{item.label}</span>
-                          {item.href === '/inbox' && <InboxUnreadBadge />}
-                          {item.href === '/circles' && <CirclesUnreadBadge />}
-                        </Link>
-                        {hasSubMenu && (
-                          <button
-                            type="button"
-                            onClick={() => toggleSubMenu(item.href)}
-                            aria-expanded={subMenuOpen ? 'true' : 'false'}
-                            title={subMenuOpen ? `Collapse ${item.label}` : `Expand ${item.label}`}
-                            className="flex items-center justify-center w-6 h-6 rounded flex-shrink-0 text-stone-500 hover:text-stone-300 hover:bg-stone-700/50 transition-colors"
-                          >
-                            <ChevronDown
-                              className={`w-3.5 h-3.5 transition-transform duration-200 ${subMenuOpen ? 'rotate-0' : '-rotate-90'}`}
-                            />
-                          </button>
-                        )}
-                      </div>
-                      {hasSubMenu && (
-                        <div
-                          className={`overflow-hidden transition-all duration-200 ${subMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}
-                        >
-                          <div className="ml-7 pl-2 border-l border-stone-800 mt-0.5 mb-1 space-y-0.5">
-                            {item.subMenu!.map((sub) => {
-                              const subActive = isItemActive(pathname, sub.href, searchParams)
-                              return (
-                                <Link
-                                  key={sub.href}
-                                  href={sub.href}
-                                  className={`block px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                                    subActive
-                                      ? 'bg-brand-950 text-brand-400'
-                                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
-                                  }`}
-                                >
-                                  {sub.label}
-                                </Link>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-            </div>
+            {/* ─── Action Bar (daily-driver shortcuts + Create) ─── */}
+            <ActionBar navFilter={navFilter} />
 
-            {/* Divider between primary and secondary hubs */}
-            {filteredPrimaryItems.some((item) => item.tier === 'secondary') && (
-              <div className="h-px bg-stone-800/60 mx-2 my-1" />
-            )}
-
-            {/* Secondary tier (Culinary, Finance, Operations, Growth, Admin) */}
-            <div className="space-y-0.5 pb-1">
-              {filteredPrimaryItems
-                .filter((item) => item.tier === 'secondary')
-                .map((item) => {
-                  const Icon = item.icon
-                  const active = isItemActive(pathname, item.href, searchParams)
-                  const hasSubMenu = item.subMenu && item.subMenu.length > 0
-                  const subMenuOpen = openSubMenus.has(item.href)
-                  return (
-                    <div key={item.href}>
-                      <div
-                        className={`flex items-center gap-3 pl-2 pr-1 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                          active
-                            ? 'bg-brand-950 text-brand-400 border-brand-500 nav-active-glow'
-                            : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
-                        }`}
-                      >
-                        <Link href={item.href} className="flex items-center gap-3 flex-1 min-w-0">
-                          <Icon
-                            className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                          />
-                          <span className="truncate">{item.label}</span>
-                        </Link>
-                        {hasSubMenu && (
-                          <button
-                            type="button"
-                            onClick={() => toggleSubMenu(item.href)}
-                            aria-expanded={subMenuOpen ? 'true' : 'false'}
-                            title={subMenuOpen ? `Collapse ${item.label}` : `Expand ${item.label}`}
-                            className="flex items-center justify-center w-6 h-6 rounded flex-shrink-0 text-stone-500 hover:text-stone-300 hover:bg-stone-700/50 transition-colors"
-                          >
-                            <ChevronDown
-                              className={`w-3.5 h-3.5 transition-transform duration-200 ${subMenuOpen ? 'rotate-0' : '-rotate-90'}`}
-                            />
-                          </button>
-                        )}
-                      </div>
-                      {hasSubMenu && (
-                        <div
-                          className={`overflow-hidden transition-all duration-200 ${subMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'}`}
-                        >
-                          <div className="ml-7 pl-2 border-l border-stone-800 mt-0.5 mb-1 space-y-0.5">
-                            {item.subMenu!.map((sub) => {
-                              const subActive = isItemActive(pathname, sub.href, searchParams)
-                              return (
-                                <Link
-                                  key={sub.href}
-                                  href={sub.href}
-                                  className={`block px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                                    subActive
-                                      ? 'bg-brand-950 text-brand-400'
-                                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
-                                  }`}
-                                >
-                                  {sub.label}
-                                </Link>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-            </div>
-
-            {/* ─── Nav Groups (full application depth: 13 groups, 167+ pages) ─── */}
-            {filteredGroupEntries.length > 0 && (
-              <>
-                <div className="mx-3 my-3 flex items-center gap-2">
-                  <div className="flex-1 h-px bg-stone-800/50" />
-                  <span className="text-2xs font-semibold uppercase tracking-widest text-stone-600">
-                    All Features
-                  </span>
-                  <div className="flex-1 h-px bg-stone-800/50" />
-                </div>
-                <div className="space-y-0.5">
+            {/* ─── All Features (collapsible full directory) ─── */}
+            <AllFeaturesCollapse
+              hidden={!!focusMode}
+              groups={filteredGroupEntries.map((e) => e.group)}
+            >
+              {filteredGroupEntries.length > 0 && (
+                <div className="space-y-0.5 px-0">
                   {filteredGroupEntries.map(({ group, isLocked }) => (
                     <NavGroupSection
                       key={group.id}
@@ -1154,57 +987,9 @@ export function ChefSidebar({
                     />
                   ))}
                 </div>
-              </>
-            )}
+              )}
 
-            <button
-              type="button"
-              onClick={() => setQuickCreateOpen((prev) => !prev)}
-              aria-expanded={quickCreateOpen ? 'true' : 'false'}
-              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-            >
-              <Plus className="w-4 h-4 text-stone-400" />
-              <span className="flex-1 text-left">New</span>
-              <ChevronDown
-                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                  quickCreateOpen ? 'rotate-0' : '-rotate-90'
-                }`}
-              />
-            </button>
-            <div
-              className={`overflow-hidden transition-all duration-200 ${
-                quickCreateOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
-              }`}
-            >
-              <div className="space-y-0.5">
-                {filteredQuickCreateItems.map((item) => {
-                  const Icon = item.icon
-                  const active = isItemActive(pathname, item.href, searchParams)
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                        active
-                          ? 'bg-brand-950 text-brand-400'
-                          : 'text-brand-400/90 hover:bg-brand-950/50 hover:text-brand-300'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      New {item.label}
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-
-            <RecentPagesSection />
-
-            <div className="divider-brand h-px my-2 mx-3 opacity-40" />
-
-            {/* Cannabis section hidden - feature disabled */}
-
-            {!focusMode && (
+              {/* Community section (inside All Features) */}
               <SectionAccordion
                 title="Community"
                 items={filteredCommunityItems}
@@ -1222,7 +1007,9 @@ export function ChefSidebar({
                 iconActiveColor="#818cf8"
                 iconInactiveColor="rgba(99, 102, 241, 0.5)"
               />
-            )}
+            </AllFeaturesCollapse>
+
+            <RecentPagesSection />
 
             <div className="divider-brand h-px my-2 mx-3 opacity-40" />
 
@@ -1230,7 +1017,7 @@ export function ChefSidebar({
             <button
               type="button"
               onClick={() => setSettingsOpen((prev) => !prev)}
-              aria-expanded={settingsOpen ? 'true' : 'false'}
+              aria-expanded={settingsOpen}
               className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
             >
               <span className="flex-1 text-left">Settings</span>

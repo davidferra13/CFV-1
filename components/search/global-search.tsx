@@ -11,20 +11,19 @@ import {
   type SearchHistoryEntry,
 } from '@/lib/search/search-recents'
 import { applyStoredViewContext } from '@/lib/view-state/context-url'
+import { createDropdownItems } from '@/components/navigation/nav-config'
 
 type DisplayItem = SearchResult & {
   fromHistory?: boolean
   pinned?: boolean
 }
 
-const QUICK_CREATE_ACTIONS = [
-  { label: 'New Event', href: '/events/new', icon: '+' },
-  { label: 'New Client', href: '/clients/new', icon: '+' },
-  { label: 'New Quote', href: '/quotes/new', icon: '+' },
-  { label: 'New Inquiry', href: '/inquiries/new', icon: '+' },
-  { label: 'New Expense', href: '/expenses/new', icon: '+' },
-  { label: 'New Recipe', href: '/recipes/new', icon: '+' },
-]
+// Unified quick-create actions (single source of truth from nav-config)
+const QUICK_CREATE_ACTIONS = createDropdownItems.map((item) => ({
+  label: item.label,
+  href: item.href,
+  icon: item.icon,
+}))
 
 export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: string }) {
   const [query, setQuery] = useState('')
@@ -267,7 +266,11 @@ export function GlobalSearch({ userId, tenantId }: { userId: string; tenantId: s
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-stone-800 transition-colors text-left cursor-pointer"
                 >
                   <span className="w-6 h-6 flex items-center justify-center rounded-md bg-brand-500/20 text-brand-400 text-xs font-bold">
-                    {action.icon}
+                    {typeof action.icon === 'string' ? (
+                      action.icon
+                    ) : (
+                      <action.icon className="w-3.5 h-3.5" />
+                    )}
                   </span>
                   <span className="text-sm text-stone-200">{action.label}</span>
                 </div>

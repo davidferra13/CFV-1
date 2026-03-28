@@ -86,6 +86,9 @@ import {
   Warehouse,
   WifiHigh,
   Wrench,
+  Calendar,
+  Camera,
+  Plus,
   Zap,
 } from '@/components/ui/icons'
 
@@ -1920,5 +1923,54 @@ export function resolveStandaloneTop(preferredHrefs?: string[] | null): NavItem[
 export function getPrimaryShortcutOptions() {
   return PRIMARY_SHORTCUT_OPTIONS.map(({ href, label, context }) => ({ href, label, context }))
 }
+
+// ─── Action Bar: 8 daily-driver shortcuts ───
+export const actionBarItems: NavItem[] = [
+  { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/calendar', label: 'Calendar', icon: Calendar },
+  { href: '/events', label: 'Events', icon: CalendarDays },
+  { href: '/clients', label: 'Clients', icon: Users },
+  { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
+  { href: '/financials', label: 'Money', icon: DollarSign },
+  { href: '/culinary/prep', label: 'Prep', icon: Timer },
+  { href: '/circles', label: 'Community', icon: MessagesSquare },
+]
+
+// ─── + Create dropdown: 15 direct navigation links ───
+// Sorted by workflow chain: creative > pipeline > operational > uploads
+// Separators between groups at indices 2, 7, 11 (after Recipe, Expense, Inventory Item)
+export type CreateDropdownItem = {
+  href: string
+  label: string
+  icon: LucideIcon
+  group: 'creative' | 'pipeline' | 'operational' | 'upload'
+}
+
+export const createDropdownItems: CreateDropdownItem[] = [
+  // Creative
+  { href: '/menus/new', label: 'New Menu', icon: UtensilsCrossed, group: 'creative' },
+  { href: '/recipes/new', label: 'New Recipe', icon: BookOpen, group: 'creative' },
+  // Pipeline
+  { href: '/events/new', label: 'New Event', icon: CalendarDays, group: 'pipeline' },
+  { href: '/clients/new', label: 'New Client', icon: Users, group: 'pipeline' },
+  { href: '/quotes/new', label: 'New Quote', icon: FileText, group: 'pipeline' },
+  { href: '/inquiries/new', label: 'New Inquiry', icon: Inbox, group: 'pipeline' },
+  { href: '/expenses/new', label: 'New Expense', icon: DollarSign, group: 'pipeline' },
+  // Operational
+  { href: '/documents', label: 'Documents', icon: FileText, group: 'operational' },
+  { href: '/culinary/prep', label: 'Prep', icon: Timer, group: 'operational' },
+  { href: '/calendar', label: 'Calendar Date', icon: Calendar, group: 'operational' },
+  {
+    href: '/culinary/prep/shopping',
+    label: 'Shopping List',
+    icon: ShoppingCart,
+    group: 'operational',
+  },
+  { href: '/inventory', label: 'Inventory Item', icon: Package, group: 'operational' },
+  // Uploads
+  { href: '/receipts', label: 'Upload Receipt', icon: Receipt, group: 'upload' },
+  { href: '/recipes/photos', label: 'Photo Upload', icon: Camera, group: 'upload' },
+  { href: '/menus/upload', label: 'Upload Menu', icon: Upload, group: 'upload' },
+]
 
 export type { NavItem, NavSubItem, NavCollapsibleItem, NavGroup, PrimaryShortcutOption }

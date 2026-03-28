@@ -7,7 +7,14 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react'
 import type { LucideIcon } from '@/components/ui/icons'
-import { navGroups, standaloneBottom, resolveStandaloneTop, resolveMobileTabs } from './nav-config'
+import {
+  navGroups,
+  standaloneBottom,
+  resolveStandaloneTop,
+  resolveMobileTabs,
+  actionBarItems,
+  createDropdownItems,
+} from './nav-config'
 import type { NavGroup, NavCollapsibleItem, NavItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
@@ -686,14 +693,15 @@ export function ChefMobileNav({
             <nav className="p-3 overflow-y-auto max-h-[calc(100vh-3.5rem)]">
               <div className="sticky top-0 z-10 bg-stone-900/95 backdrop-blur-sm pb-2 space-y-2">
                 <NavFilterInput value={navFilter} onChange={setNavFilter} />
+                {/* + Create section (unified with desktop) */}
                 <button
                   type="button"
                   onClick={() => setMobileQuickCreateOpen((prev) => !prev)}
                   aria-expanded={mobileQuickCreateOpen}
-                  className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
+                  className="flex w-full items-center gap-2 rounded-md border border-brand-600/30 bg-brand-950/40 px-3 py-2 text-sm font-medium text-brand-400 hover:bg-brand-950/60 hover:text-brand-300 transition-colors"
                 >
-                  <Plus className="w-4 h-4 text-stone-400" />
-                  <span className="flex-1 text-left">New</span>
+                  <Plus className="h-4 w-4" weight="bold" />
+                  <span className="flex-1 text-left">Create</span>
                   <ChevronDown
                     className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
                       mobileQuickCreateOpen ? 'rotate-0' : '-rotate-90'
@@ -702,48 +710,41 @@ export function ChefMobileNav({
                 </button>
                 <div
                   className={`overflow-hidden transition-all duration-200 ${
-                    mobileQuickCreateOpen ? 'max-h-[240px] opacity-100' : 'max-h-0 opacity-0'
+                    mobileQuickCreateOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
                   }`}
                 >
-                  <div className="grid grid-cols-2 gap-1">
-                    {filteredQuickCreateItems.map((item) => {
-                      const Icon = item.icon
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={closeMenu}
-                          className="flex items-center gap-1.5 px-2 py-1.5 rounded-md text-xs-tight font-semibold text-brand-300 bg-brand-950/40"
-                        >
-                          <Icon className="w-3.5 h-3.5" />
-                          {item.label}
-                        </Link>
+                  <div className="space-y-0.5 mt-1">
+                    {createDropdownItems
+                      .filter(
+                        (item) =>
+                          !navFilter || item.label.toLowerCase().includes(navFilter.toLowerCase())
                       )
-                    })}
+                      .map((item) => {
+                        const Icon = item.icon
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={closeMenu}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-stone-300 hover:bg-stone-800 hover:text-stone-100"
+                          >
+                            <Icon className="w-4 h-4 shrink-0 text-stone-500" />
+                            {item.label}
+                          </Link>
+                        )
+                      })}
                   </div>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setMobileShortcutsOpen((prev) => !prev)}
-                aria-expanded={mobileShortcutsOpen}
-                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-              >
-                <span className="flex-1 text-left">Shortcuts</span>
-                <ChevronDown
-                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                    mobileShortcutsOpen ? 'rotate-0' : '-rotate-90'
-                  }`}
-                />
-              </button>
-              <div
-                className={`overflow-hidden transition-all duration-200 ${
-                  mobileShortcutsOpen ? 'max-h-[1400px] opacity-100' : 'max-h-0 opacity-0'
-                }`}
-              >
-                <div className="space-y-0.5">
-                  {filteredPrimaryItems.map((item) => {
+              {/* Action Bar items (unified with desktop) */}
+              <div className="space-y-0.5">
+                {actionBarItems
+                  .filter(
+                    (item) =>
+                      !navFilter || item.label.toLowerCase().includes(navFilter.toLowerCase())
+                  )
+                  .map((item) => {
                     const Icon = item.icon
                     const active = isItemActive(pathname, item.href, searchParams)
                     return (
@@ -751,10 +752,10 @@ export function ChefMobileNav({
                         key={item.href}
                         href={item.href}
                         onClick={closeMenu}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors border-l-2 ${
                           active
-                            ? 'bg-brand-950 text-brand-400'
-                            : 'text-stone-400 hover:bg-stone-800'
+                            ? 'bg-brand-950 text-brand-400 border-brand-500'
+                            : 'text-stone-300 hover:bg-stone-800 hover:text-stone-100 border-transparent'
                         }`}
                       >
                         <Icon
@@ -764,7 +765,6 @@ export function ChefMobileNav({
                       </Link>
                     )
                   })}
-                </div>
               </div>
 
               <div className="border-t border-stone-800 my-2" />
