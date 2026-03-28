@@ -102,22 +102,26 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
         <div className="flex rounded-lg border border-stone-700 bg-stone-900 p-1 gap-1">
           <button
             onClick={() => handleTabSwitch('public')}
+            disabled={isPending}
             className={[
               'px-4 py-1.5 text-sm font-medium rounded-md transition-colors',
               activeTab === 'public'
                 ? 'bg-stone-900 text-white'
                 : 'text-stone-400 hover:bg-stone-800',
+              isPending && activeTab !== 'public' ? 'opacity-50 cursor-wait' : '',
             ].join(' ')}
           >
             Public Profile
           </button>
           <button
             onClick={() => handleTabSwitch('portal')}
+            disabled={isPending}
             className={[
               'px-4 py-1.5 text-sm font-medium rounded-md transition-colors',
               activeTab === 'portal'
                 ? 'bg-stone-900 text-white'
                 : 'text-stone-400 hover:bg-stone-800',
+              isPending && activeTab !== 'portal' ? 'opacity-50 cursor-wait' : '',
             ].join(' ')}
           >
             Client Portal

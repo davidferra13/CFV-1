@@ -124,7 +124,7 @@ export function IntakeFormsClient({ forms: initialForms }: { forms: IntakeForm[]
           {showCreate ? 'Cancel' : '+ New Form'}
         </Button>
         {forms.length === 0 && (
-          <Button variant="secondary" onClick={handleCreateDefaults} disabled={isPending}>
+          <Button variant="secondary" onClick={handleCreateDefaults} loading={isPending}>
             {isPending ? 'Creating...' : 'Create Default Templates'}
           </Button>
         )}

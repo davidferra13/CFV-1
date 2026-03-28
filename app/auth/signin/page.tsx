@@ -54,7 +54,7 @@ function SignInProgress({ stage }: { stage: Exclude<SignInStage, 'idle'> }) {
       <div className="flex items-center justify-center gap-3">
         <LoadingSpinner size="sm" />
         <p className="text-sm font-medium text-stone-700">
-          {stage === 'authenticating' ? 'Signing you in...' : 'Opening your workspace...'}
+          {stage === 'authenticating' ? 'Signing you in...' : 'Signed in successfully'}
         </p>
       </div>
     </div>

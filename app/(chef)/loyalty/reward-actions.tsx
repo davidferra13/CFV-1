@@ -230,7 +230,7 @@ export function RewardActions({ reward }: { reward: LoyaltyReward }) {
       )}
 
       <div className="flex gap-2 pt-1">
-        <Button size="sm" onClick={handleSave} disabled={isPending}>
+        <Button size="sm" onClick={handleSave} loading={isPending}>
           {isPending ? 'Saving...' : 'Save Changes'}
         </Button>
         <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isPending}>

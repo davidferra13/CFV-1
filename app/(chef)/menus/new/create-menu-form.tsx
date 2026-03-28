@@ -750,7 +750,7 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
             Next: Add Courses
           </Button>
         ) : (
-          <Button type="button" onClick={handleSubmit} disabled={isPending}>
+          <Button type="button" onClick={handleSubmit} loading={isPending}>
             {isPending
               ? 'Creating...'
               : `Create Menu (${courses.length} course${courses.length !== 1 ? 's' : ''})`}

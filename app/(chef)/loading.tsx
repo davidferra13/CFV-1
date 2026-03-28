@@ -8,11 +8,7 @@ export default function ChefLoading() {
       {/* Reassuring loading message */}
       <ContextLoader
         contextId="nav-dashboard"
-        messages={[
-          'Loading your workspace...',
-          'Preparing your dashboard...',
-          "Pulling today's schedule...",
-        ]}
+        messages={['Setting up your workspace...', 'Loading your tools...', 'Almost ready...']}
         size="sm"
         className="py-2 items-start"
       />

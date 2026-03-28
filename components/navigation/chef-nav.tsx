@@ -24,6 +24,7 @@ import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
 import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
 import { ActivityDot } from '@/components/activity/activity-dot'
+import { useNavigationPending } from '@/components/navigation/navigation-pending-provider'
 import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
@@ -136,6 +137,45 @@ const NavFilterInput = memo(function NavFilterInput({
   )
 })
 
+// ---- PendingNavLink ----
+// Wraps Link to show optimistic active state + subtle loading pulse on click
+function PendingNavLink({
+  href,
+  onClick,
+  className,
+  activeClassName,
+  pendingClassName,
+  isActive,
+  style,
+  children,
+}: {
+  href: string
+  onClick?: () => void
+  className: string
+  activeClassName: string
+  pendingClassName: string
+  isActive: boolean
+  style?: React.CSSProperties
+  children: React.ReactNode
+}) {
+  const { pendingHref, setPendingHref } = useNavigationPending()
+  const isPending = pendingHref === href && !isActive
+
+  return (
+    <Link
+      href={href}
+      onClick={() => {
+        setPendingHref(href)
+        onClick?.()
+      }}
+      className={`${className} ${isActive ? activeClassName : ''} ${isPending ? `${pendingClassName} animate-pulse` : ''}`}
+      style={isActive ? style : undefined}
+    >
+      {children}
+    </Link>
+  )
+}
+
 // ---- SectionAccordion ----
 const SectionAccordion = memo(function SectionAccordion({
   title,
@@ -204,21 +244,24 @@ const SectionAccordion = memo(function SectionAccordion({
           {items.map((item) => {
             const itemActive = isItemActive(pathname, item.href, searchParams)
             return (
-              <Link
+              <PendingNavLink
                 key={item.href}
                 href={item.href}
                 onClick={onNavigate}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  itemActive ? itemActiveClass : itemInactiveClass
+                  !itemActive ? itemInactiveClass : ''
                 }`}
-                style={itemActive ? activeBgStyle : undefined}
+                activeClassName={itemActiveClass}
+                pendingClassName={itemActiveClass}
+                isActive={itemActive}
+                style={activeBgStyle}
               >
                 <Icon
                   className="w-[18px] h-[18px] flex-shrink-0"
                   style={{ color: itemActive ? iconActiveColor : iconInactiveColor }}
                 />
                 {item.label}
-              </Link>
+              </PendingNavLink>
             )
           })}
         </div>
@@ -556,20 +599,23 @@ const NavGroupSection = memo(function NavGroupSection({
             }
 
             return (
-              <Link
+              <PendingNavLink
                 key={item.href}
                 href={item.href}
                 className={`flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                  itemActive
-                    ? 'bg-brand-950 text-brand-400 border-brand-500'
-                    : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400 border-transparent'
+                  !itemActive
+                    ? 'text-stone-300 hover:bg-stone-800 hover:text-brand-400 border-transparent'
+                    : ''
                 }`}
+                activeClassName="bg-brand-950 text-brand-400 border-brand-500"
+                pendingClassName="bg-brand-950/50 text-brand-400/70 border-brand-500/50"
+                isActive={itemActive}
               >
                 <Icon
                   className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`}
                 />
                 {item.label}
-              </Link>
+              </PendingNavLink>
             )
           })}
         </div>

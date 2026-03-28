@@ -64,7 +64,7 @@ export function RecommendationDraftCard({
           <Button variant="secondary" size="sm" onClick={handleCopy}>
             {copied ? 'Copied' : 'Copy Draft'}
           </Button>
-          <Button variant="primary" size="sm" disabled={isPending} onClick={handleSendToClient}>
+          <Button variant="primary" size="sm" loading={isPending} onClick={handleSendToClient}>
             {isPending ? 'Sending...' : sent ? 'Sent' : 'Send to Client'}
           </Button>
         </div>

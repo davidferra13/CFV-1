@@ -281,12 +281,12 @@ export function ProspectDossierClient({
           <ReEnrichButton prospectId={prospect.id} />
           <LookalikeButton prospectId={prospect.id} prospectName={prospect.name} />
           {prospect.status !== 'converted' && (
-            <Button variant="secondary" size="sm" onClick={handleConvert} disabled={isPending}>
+            <Button variant="secondary" size="sm" onClick={handleConvert} loading={isPending}>
               <ArrowRightLeft className="h-4 w-4 mr-1" />
               Convert to Inquiry
             </Button>
           )}
-          <Button variant="danger" size="sm" onClick={handleDelete} disabled={isPending}>
+          <Button variant="danger" size="sm" onClick={handleDelete} loading={isPending}>
             <Trash2 className="h-4 w-4 mr-1" />
             Delete
           </Button>

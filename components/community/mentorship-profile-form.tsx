@@ -31,26 +31,19 @@ interface MentorshipProfileFormProps {
   onSaved?: () => void
 }
 
-export function MentorshipProfileForm({
-  profile,
-  onSaved,
-}: MentorshipProfileFormProps) {
+export function MentorshipProfileForm({ profile, onSaved }: MentorshipProfileFormProps) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
   const [role, setRole] = useState<MentorshipRole>(profile?.role || 'mentee')
-  const [expertiseAreas, setExpertiseAreas] = useState<string[]>(
-    profile?.expertise_areas || []
-  )
+  const [expertiseAreas, setExpertiseAreas] = useState<string[]>(profile?.expertise_areas || [])
   const [goals, setGoals] = useState(profile?.goals || '')
   const [availability, setAvailability] = useState(profile?.availability || '')
   const [yearsExperience, setYearsExperience] = useState(
     profile?.years_experience?.toString() || ''
   )
-  const [maxMentees, setMaxMentees] = useState(
-    profile?.max_mentees?.toString() || '3'
-  )
+  const [maxMentees, setMaxMentees] = useState(profile?.max_mentees?.toString() || '3')
   const [isActive, setIsActive] = useState(profile?.is_active ?? true)
 
   function toggleExpertise(area: string) {
@@ -71,13 +64,8 @@ export function MentorshipProfileForm({
           expertise_areas: expertiseAreas,
           goals: goals || undefined,
           availability: availability || undefined,
-          years_experience: yearsExperience
-            ? parseInt(yearsExperience, 10)
-            : undefined,
-          max_mentees:
-            role !== 'mentee' && maxMentees
-              ? parseInt(maxMentees, 10)
-              : undefined,
+          years_experience: yearsExperience ? parseInt(yearsExperience, 10) : undefined,
+          max_mentees: role !== 'mentee' && maxMentees ? parseInt(maxMentees, 10) : undefined,
           is_active: isActive,
         })
 
@@ -98,9 +86,7 @@ export function MentorshipProfileForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Role Selector */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          I want to be a...
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">I want to be a...</label>
         <div className="flex gap-2">
           {(['mentor', 'mentee', 'both'] as MentorshipRole[]).map((r) => (
             <button
@@ -121,9 +107,7 @@ export function MentorshipProfileForm({
 
       {/* Expertise Areas */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Expertise Areas
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Expertise Areas</label>
         <div className="flex flex-wrap gap-2">
           {EXPERTISE_OPTIONS.map((area) => (
             <button
@@ -144,10 +128,7 @@ export function MentorshipProfileForm({
 
       {/* Goals */}
       <div>
-        <label
-          htmlFor="goals"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+        <label htmlFor="goals" className="block text-sm font-medium text-gray-700 mb-1">
           {role === 'mentor' ? 'What can you help with?' : 'What are your goals?'}
         </label>
         <textarea
@@ -166,10 +147,7 @@ export function MentorshipProfileForm({
 
       {/* Availability */}
       <div>
-        <label
-          htmlFor="availability"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+        <label htmlFor="availability" className="block text-sm font-medium text-gray-700 mb-1">
           Availability
         </label>
         <input
@@ -184,10 +162,7 @@ export function MentorshipProfileForm({
 
       {/* Years Experience */}
       <div>
-        <label
-          htmlFor="yearsExperience"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+        <label htmlFor="yearsExperience" className="block text-sm font-medium text-gray-700 mb-1">
           Years of Experience
         </label>
         <input
@@ -205,10 +180,7 @@ export function MentorshipProfileForm({
       {/* Max Mentees (mentors only) */}
       {role !== 'mentee' && (
         <div>
-          <label
-            htmlFor="maxMentees"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+          <label htmlFor="maxMentees" className="block text-sm font-medium text-gray-700 mb-1">
             Maximum Mentees
           </label>
           <input
@@ -220,9 +192,7 @@ export function MentorshipProfileForm({
             onChange={(e) => setMaxMentees(e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
-          <p className="mt-1 text-xs text-gray-500">
-            How many mentees can you take on at once?
-          </p>
+          <p className="mt-1 text-xs text-gray-500">How many mentees can you take on at once?</p>
         </div>
       )}
 
@@ -248,11 +218,7 @@ export function MentorshipProfileForm({
       </div>
 
       {/* Error/Success */}
-      {error && (
-        <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
       {success && (
         <p className="text-sm text-green-600 bg-green-50 rounded-lg px-3 py-2">
           Profile saved successfully!
@@ -260,7 +226,7 @@ export function MentorshipProfileForm({
       )}
 
       {/* Submit */}
-      <Button type="submit" variant="primary" disabled={isPending}>
+      <Button type="submit" variant="primary" loading={isPending}>
         {isPending ? 'Saving...' : profile ? 'Update Profile' : 'Create Profile'}
       </Button>
     </form>

@@ -138,7 +138,7 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
                   if (e.key === 'Escape') handleCancel()
                 }}
               />
-              <Button size="sm" onClick={handleSave} disabled={isPending}>
+              <Button size="sm" onClick={handleSave} loading={isPending}>
                 {isPending ? 'Saving…' : 'Save'}
               </Button>
               <Button size="sm" variant="ghost" onClick={handleCancel} disabled={isPending}>

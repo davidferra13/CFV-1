@@ -1,14 +1,12 @@
 // Client component that adjusts main content padding based on sidebar collapse state
 'use client'
 
-import { usePathname } from 'next/navigation'
 import { useSidebar } from '@/components/navigation/chef-nav'
 import { BreadcrumbBar } from '@/components/navigation/breadcrumb-bar'
 import { QuickExpenseTrigger } from '@/components/expenses/quick-expense-trigger'
 
 export function ChefMainContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar()
-  const pathname = usePathname()
 
   return (
     <main
@@ -20,12 +18,7 @@ export function ChefMainContent({ children }: { children: React.ReactNode }) {
     >
       <BreadcrumbBar />
       <QuickExpenseTrigger />
-      <div
-        key={pathname}
-        className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 animate-fade-slide-up"
-      >
-        {children}
-      </div>
+      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">{children}</div>
     </main>
   )
 }

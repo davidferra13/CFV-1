@@ -7,6 +7,7 @@ import { CreateMenuDropdown } from './create-menu-dropdown'
 import { isItemActive } from './chef-nav-helpers'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
+import { useNavigationPending } from '@/components/navigation/navigation-pending-provider'
 
 type ActionBarProps = {
   /** Filter string from nav search input */
@@ -18,6 +19,7 @@ type ActionBarProps = {
 export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const { pendingHref, setPendingHref } = useNavigationPending()
 
   const query = navFilter.toLowerCase().trim()
   const filtered = query
@@ -34,15 +36,19 @@ export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps)
         {filtered.map((item) => {
           const Icon = item.icon
           const active = isItemActive(pathname, item.href, searchParams)
+          const isPending = pendingHref === item.href && !active
           return (
             <Link
               key={item.href}
               href={item.href}
               title={item.label}
+              onClick={() => setPendingHref(item.href)}
               className={`relative flex h-10 w-10 items-center justify-center rounded-md transition-colors ${
                 active
                   ? 'bg-brand-950 text-brand-600'
-                  : 'text-stone-400 hover:bg-stone-800 hover:text-stone-300'
+                  : isPending
+                    ? 'bg-brand-950/50 text-brand-600/70 animate-pulse'
+                    : 'text-stone-400 hover:bg-stone-800 hover:text-stone-300'
               }`}
             >
               <Icon className="h-[18px] w-[18px]" />
@@ -73,18 +79,22 @@ export function ActionBar({ navFilter = '', collapsed = false }: ActionBarProps)
         {filtered.map((item) => {
           const Icon = item.icon
           const active = isItemActive(pathname, item.href, searchParams)
+          const isPending = pendingHref === item.href && !active
           return (
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => setPendingHref(item.href)}
               className={`flex items-center gap-3 pl-2 pr-1 py-2 rounded-lg text-sm font-semibold transition-colors border-l-2 ${
                 active
                   ? 'bg-brand-950 text-brand-400 border-brand-500 nav-active-glow'
-                  : 'text-stone-300 hover:bg-stone-800 hover:text-stone-100 border-transparent'
+                  : isPending
+                    ? 'bg-brand-950/50 text-brand-400/70 border-brand-500/50 animate-pulse'
+                    : 'text-stone-300 hover:bg-stone-800 hover:text-stone-100 border-transparent'
               }`}
             >
               <Icon
-                className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                className={`w-[18px] h-[18px] flex-shrink-0 ${active || isPending ? 'text-brand-600' : 'text-stone-400'}`}
               />
               <span className="truncate">{item.label}</span>
               {item.href === '/inbox' && <InboxUnreadBadge />}

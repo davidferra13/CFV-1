@@ -14,7 +14,15 @@ import {
   type SubcontractAgreement,
 } from '@/lib/community/subcontract-actions'
 
-type SubcontractRole = 'sous_chef' | 'line_cook' | 'prep_cook' | 'server' | 'bartender' | 'pastry' | 'lead_chef' | 'other'
+type SubcontractRole =
+  | 'sous_chef'
+  | 'line_cook'
+  | 'prep_cook'
+  | 'server'
+  | 'bartender'
+  | 'pastry'
+  | 'lead_chef'
+  | 'other'
 type SubcontractRateType = 'hourly' | 'flat' | 'percentage'
 type SubcontractStatus = 'draft' | 'sent' | 'accepted' | 'active' | 'completed' | 'cancelled'
 
@@ -35,26 +43,27 @@ const RATE_TYPE_OPTIONS: { value: SubcontractRateType; label: string }[] = [
   { value: 'percentage', label: 'Percentage' },
 ]
 
-const STATUS_TRANSITIONS: Record<SubcontractStatus, { value: SubcontractStatus; label: string }[]> = {
-  draft: [
-    { value: 'sent', label: 'Send to Subcontractor' },
-    { value: 'cancelled', label: 'Cancel' },
-  ],
-  sent: [
-    { value: 'accepted', label: 'Mark Accepted' },
-    { value: 'cancelled', label: 'Cancel' },
-  ],
-  accepted: [
-    { value: 'active', label: 'Mark Active' },
-    { value: 'cancelled', label: 'Cancel' },
-  ],
-  active: [
-    { value: 'completed', label: 'Mark Completed' },
-    { value: 'cancelled', label: 'Cancel' },
-  ],
-  completed: [],
-  cancelled: [],
-}
+const STATUS_TRANSITIONS: Record<SubcontractStatus, { value: SubcontractStatus; label: string }[]> =
+  {
+    draft: [
+      { value: 'sent', label: 'Send to Subcontractor' },
+      { value: 'cancelled', label: 'Cancel' },
+    ],
+    sent: [
+      { value: 'accepted', label: 'Mark Accepted' },
+      { value: 'cancelled', label: 'Cancel' },
+    ],
+    accepted: [
+      { value: 'active', label: 'Mark Active' },
+      { value: 'cancelled', label: 'Cancel' },
+    ],
+    active: [
+      { value: 'completed', label: 'Mark Completed' },
+      { value: 'cancelled', label: 'Cancel' },
+    ],
+    completed: [],
+    cancelled: [],
+  }
 
 type SubcontractFormProps = {
   agreement?: SubcontractAgreement | null
@@ -64,16 +73,28 @@ type SubcontractFormProps = {
   onCancel?: () => void
 }
 
-export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel }: SubcontractFormProps) {
+export function SubcontractForm({
+  agreement,
+  eventId,
+  events,
+  onSaved,
+  onCancel,
+}: SubcontractFormProps) {
   const isEditing = !!agreement
 
   const [name, setName] = useState(agreement?.subcontractor_name ?? '')
   const [email, setEmail] = useState(agreement?.subcontractor_email ?? '')
   const [phone, setPhone] = useState(agreement?.subcontractor_phone ?? '')
   const [selectedEventId, setSelectedEventId] = useState(agreement?.event_id ?? eventId ?? '')
-  const [role, setRole] = useState<SubcontractRole>(agreement?.role as SubcontractRole ?? 'sous_chef')
-  const [rateType, setRateType] = useState<SubcontractRateType>(agreement?.rate_type as SubcontractRateType ?? 'hourly')
-  const [rateDollars, setRateDollars] = useState(agreement ? (agreement.rate_cents / 100).toFixed(2) : '')
+  const [role, setRole] = useState<SubcontractRole>(
+    (agreement?.role as SubcontractRole) ?? 'sous_chef'
+  )
+  const [rateType, setRateType] = useState<SubcontractRateType>(
+    (agreement?.rate_type as SubcontractRateType) ?? 'hourly'
+  )
+  const [rateDollars, setRateDollars] = useState(
+    agreement ? (agreement.rate_cents / 100).toFixed(2) : ''
+  )
   const [estimatedHours, setEstimatedHours] = useState(agreement?.estimated_hours?.toString() ?? '')
   const [insuranceRequired, setInsuranceRequired] = useState(agreement?.insurance_required ?? true)
   const [notes, setNotes] = useState(agreement?.notes ?? '')
@@ -175,7 +196,8 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
     })
   }
 
-  const inputClass = 'w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500'
+  const inputClass =
+    'w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none focus:ring-1 focus:ring-stone-500'
   const labelClass = 'block text-sm font-medium text-stone-700 mb-1'
 
   return (
@@ -195,16 +217,34 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
         <legend className="text-sm font-semibold text-stone-800">Subcontractor Details</legend>
         <div>
           <label className={labelClass}>Name *</label>
-          <input type="text" value={name} onChange={e => setName(e.target.value)} className={inputClass} placeholder="Full name" />
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={inputClass}
+            placeholder="Full name"
+          />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className={inputClass} placeholder="email@example.com" />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={inputClass}
+              placeholder="email@example.com"
+            />
           </div>
           <div>
             <label className={labelClass}>Phone</label>
-            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} className={inputClass} placeholder="(555) 123-4567" />
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className={inputClass}
+              placeholder="(555) 123-4567"
+            />
           </div>
         </div>
       </fieldset>
@@ -215,19 +255,31 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
         {events && events.length > 0 && (
           <div>
             <label className={labelClass}>Event</label>
-            <select value={selectedEventId} onChange={e => setSelectedEventId(e.target.value)} className={inputClass}>
+            <select
+              value={selectedEventId}
+              onChange={(e) => setSelectedEventId(e.target.value)}
+              className={inputClass}
+            >
               <option value="">No event linked</option>
-              {events.map(ev => (
-                <option key={ev.id} value={ev.id}>{ev.title}</option>
+              {events.map((ev) => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.title}
+                </option>
               ))}
             </select>
           </div>
         )}
         <div>
           <label className={labelClass}>Role</label>
-          <select value={role} onChange={e => setRole(e.target.value as SubcontractRole)} className={inputClass}>
-            {ROLE_OPTIONS.map(r => (
-              <option key={r.value} value={r.value}>{r.label}</option>
+          <select
+            value={role}
+            onChange={(e) => setRole(e.target.value as SubcontractRole)}
+            className={inputClass}
+          >
+            {ROLE_OPTIONS.map((r) => (
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
             ))}
           </select>
         </div>
@@ -239,9 +291,15 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Rate Type</label>
-            <select value={rateType} onChange={e => setRateType(e.target.value as SubcontractRateType)} className={inputClass}>
-              {RATE_TYPE_OPTIONS.map(r => (
-                <option key={r.value} value={r.value}>{r.label}</option>
+            <select
+              value={rateType}
+              onChange={(e) => setRateType(e.target.value as SubcontractRateType)}
+              className={inputClass}
+            >
+              {RATE_TYPE_OPTIONS.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
               ))}
             </select>
           </div>
@@ -254,7 +312,7 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
               step="0.01"
               min="0"
               value={rateDollars}
-              onChange={e => setRateDollars(e.target.value)}
+              onChange={(e) => setRateDollars(e.target.value)}
               className={inputClass}
               placeholder={rateType === 'percentage' ? '10' : '0.00'}
             />
@@ -268,7 +326,7 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
               step="0.5"
               min="0"
               value={estimatedHours}
-              onChange={e => setEstimatedHours(e.target.value)}
+              onChange={(e) => setEstimatedHours(e.target.value)}
               className={inputClass}
               placeholder="8"
             />
@@ -283,7 +341,7 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
           <input
             type="checkbox"
             checked={insuranceRequired}
-            onChange={e => setInsuranceRequired(e.target.checked)}
+            onChange={(e) => setInsuranceRequired(e.target.checked)}
             className="rounded border-stone-300"
           />
           <span className="text-sm text-stone-700">Insurance required</span>
@@ -296,7 +354,7 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
               <input
                 type="url"
                 value={coiUrl}
-                onChange={e => setCoiUrl(e.target.value)}
+                onChange={(e) => setCoiUrl(e.target.value)}
                 className={inputClass}
                 placeholder="https://..."
               />
@@ -306,7 +364,7 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
               <input
                 type="date"
                 value={coiExpiry}
-                onChange={e => setCoiExpiry(e.target.value)}
+                onChange={(e) => setCoiExpiry(e.target.value)}
                 className={inputClass}
               />
             </div>
@@ -328,7 +386,7 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
         <label className={labelClass}>Notes</label>
         <textarea
           value={notes}
-          onChange={e => setNotes(e.target.value)}
+          onChange={(e) => setNotes(e.target.value)}
           className={inputClass}
           rows={3}
           placeholder="Any additional notes about this agreement..."
@@ -340,7 +398,7 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
         <fieldset className="space-y-2">
           <legend className="text-sm font-semibold text-stone-800">Status Actions</legend>
           <div className="flex gap-2">
-            {STATUS_TRANSITIONS[agreement.status as SubcontractStatus].map(t => (
+            {STATUS_TRANSITIONS[agreement.status as SubcontractStatus].map((t) => (
               <Button
                 key={t.value}
                 variant={t.value === 'cancelled' ? 'danger' : 'secondary'}
@@ -356,7 +414,7 @@ export function SubcontractForm({ agreement, eventId, events, onSaved, onCancel 
 
       {/* Actions */}
       <div className="flex items-center gap-3 border-t border-stone-200 pt-4">
-        <Button variant="primary" onClick={handleSave} disabled={isPending}>
+        <Button variant="primary" onClick={handleSave} loading={isPending}>
           {isPending ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Agreement'}
         </Button>
         {onCancel && (

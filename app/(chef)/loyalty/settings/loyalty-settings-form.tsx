@@ -638,7 +638,7 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
 
         {/* ── Save ─────────────────────────────────────────────────────────── */}
         <div className="flex items-center gap-4">
-          <Button onClick={handleSave} disabled={isPending}>
+          <Button onClick={handleSave} loading={isPending}>
             {isPending ? 'Saving...' : 'Save Settings'}
           </Button>
           <Button variant="ghost" onClick={() => router.push('/loyalty')}>

@@ -1270,7 +1270,7 @@ function RecipeShareModal({
             className="w-full rounded-md border border-stone-600 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
           <div className="flex gap-2">
-            <Button variant="primary" size="sm" onClick={handleSend} disabled={isPending}>
+            <Button variant="primary" size="sm" onClick={handleSend} loading={isPending}>
               {isPending ? 'Sending...' : 'Send Share'}
             </Button>
             <Button variant="ghost" size="sm" onClick={onCancel}>
