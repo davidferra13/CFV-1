@@ -711,7 +711,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 ### 6.3 Ingredients
 
-- **`/culinary/ingredients`** — Full library with add form (name, category, unit, price, staple checkbox).
+- **`/culinary/ingredients`** — Full library with add form (name, category, unit, price, staple checkbox). Price column uses `PriceAttribution` component showing store name, confidence dot, and trend arrow when OpenClaw enrichment data is available.
 - **`/culinary/ingredients/seasonal-availability`** — 4 season cards + year-round section.
 - **`/culinary/ingredients/vendor-notes`** — Grouped by vendor.
 
@@ -722,7 +722,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 ### 6.5 Costing
 
-- **`/culinary/costing`** — Recipe + menu cost tables.
+- **`/culinary/costing`** — Recipe + menu cost tables. Includes "Freshness" column showing how recently prices were updated per recipe (color-coded: green for recent, amber for stale).
 - **`/culinary/costing/food-cost`** — Large food cost % KPI with threshold colors.
 - **`/culinary/costing/menu`** — Per-menu cost analysis.
 - **`/culinary/costing/recipe`** — Per-recipe cost with relative cost bars.
@@ -1726,22 +1726,24 @@ Pricing page (`/pricing`) feature checklist now includes "Remy AI concierge — 
 
 OpenClaw Price Intelligence dashboard. Admin-only. Connects to Raspberry Pi (10.0.0.177:8081).
 
-| Element      | Type         | Details                                                                                                                                                   |
-| ------------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Overview tab | Dashboard    | Shows Pi connection status, source count, ingredient count, price count, change count, last scrape timestamp                                              |
-| Prices tab   | Data table   | Filterable by tier (retail/wholesale/farm), searchable by ingredient. Shows price, source, confidence badge, update date                                  |
-| Sources tab  | Card list    | All registered price sources with status (active/stale), type, last scraped timestamp, notes                                                              |
-| Changes tab  | Data table   | Recent price changes with old/new price, % change (green for drops, red for spikes), source, timestamp                                                    |
-| Sync tab     | Action panel | Tier selector, "Dry Run" button (preview), "Sync Now" button (push prices to ChefFlow ingredients). Shows results: matched, updated, unchanged, not found |
+| Element      | Type         | Details                                                                                                                                                                                                                                    |
+| ------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Overview tab | Dashboard    | Shows Pi connection status, source count, ingredient count, price count, change count, last scrape timestamp                                                                                                                               |
+| Prices tab   | Data table   | Filterable by tier (retail/wholesale/farm), searchable by ingredient. Shows price, source, confidence badge, update date                                                                                                                   |
+| Sources tab  | Card list    | All registered price sources with status (active/stale), type, last scraped timestamp, notes                                                                                                                                               |
+| Changes tab  | Data table   | Recent price changes with old/new price, % change (green for drops, red for spikes), source, timestamp                                                                                                                                     |
+| Sync tab     | Action panel | Tier selector, "Dry Run" button (preview), "Sync Now" button (push prices to ChefFlow ingredients). Shows results: matched, updated, unchanged, not found                                                                                  |
+| Catalog tab  | Data table   | Browse Pi's full 9,000+ ingredient catalog. Stats bar (total/priced/categories), category filter chips, debounced search, priced-only toggle, paginated results (50/page), expandable rows showing all store prices with confidence badges |
 
 #### Shared Pricing Components
 
-| Component              | File                                 | Purpose                                                                                                                                 |
-| ---------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `PriceBadge`           | `components/pricing/price-badge.tsx` | Unified price display: price/unit, store name, freshness (relative date), confidence dots. Supports `compact` mode for inline use.      |
-| `NoPriceBadge`         | `components/pricing/price-badge.tsx` | Explicit empty state ("No price data - Log a receipt to set price")                                                                     |
-| `resolvePrice()`       | `lib/pricing/resolve-price.ts`       | 7-tier price resolution chain (receipt > scrape > flyer > instacart > government > historical > none). Local DB only, no network calls. |
-| `resolvePricesBatch()` | `lib/pricing/resolve-price.ts`       | Batch version of resolvePrice, 2 queries total regardless of ingredient count                                                           |
+| Component              | File                                       | Purpose                                                                                                                                 |
+| ---------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `PriceBadge`           | `components/pricing/price-badge.tsx`       | Unified price display: price/unit, store name, freshness (relative date), confidence dots. Supports `compact` mode for inline use.      |
+| `PriceAttribution`     | `components/pricing/price-attribution.tsx` | Price + store name + confidence dot + trend arrow + freshness indicator. Used on ingredients library and recipe detail pages.           |
+| `NoPriceBadge`         | `components/pricing/price-badge.tsx`       | Explicit empty state ("No price data - Log a receipt to set price")                                                                     |
+| `resolvePrice()`       | `lib/pricing/resolve-price.ts`             | 7-tier price resolution chain (receipt > scrape > flyer > instacart > government > historical > none). Local DB only, no network calls. |
+| `resolvePricesBatch()` | `lib/pricing/resolve-price.ts`             | Batch version of resolvePrice, 2 queries total regardless of ingredient count                                                           |
 
 ---
 
