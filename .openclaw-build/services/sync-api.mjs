@@ -8,6 +8,7 @@ import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getDb, getStats, DB_PATH } from '../lib/db.mjs';
+import { smartLookup, batchLookup, COMMON_ALIASES } from '../lib/smart-lookup.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT = 8081;
@@ -126,6 +127,79 @@ const server = createServer((req, res) => {
       return jsonResponse(res, { count: rows.length, changes: rows });
     }
 
+    // Smart lookup - find an ingredient with price priority
+    if (path === '/api/lookup') {
+      const q = url.searchParams.get('q');
+      if (!q) return jsonResponse(res, { error: 'Missing ?q= parameter' }, 400);
+
+      const result = smartLookup(db, q);
+      if (!result) return jsonResponse(res, { query: q, found: false, ingredient: null });
+
+      // Get all prices for this ingredient
+      const prices = db.prepare(`
+        SELECT cp.price_cents, cp.price_unit, cp.raw_product_name, sr.name as source_name, sr.pricing_tier
+        FROM current_prices cp
+        JOIN source_registry sr ON cp.source_id = sr.source_id
+        WHERE cp.canonical_ingredient_id = ?
+        ORDER BY cp.price_cents ASC
+      `).all(result.ingredient_id);
+
+      return jsonResponse(res, {
+        query: q,
+        found: true,
+        ingredient: {
+          id: result.ingredient_id,
+          name: result.name,
+          category: result.category,
+          bestPrice: result.best_price ? {
+            cents: result.best_price,
+            display: `$${(result.best_price / 100).toFixed(2)}`,
+            unit: result.best_unit,
+            store: result.best_store,
+          } : null,
+          priceCount: result.price_count,
+          prices,
+        }
+      });
+    }
+
+    // Batch lookup - look up multiple items at once
+    if (path === '/api/lookup/batch') {
+      if (req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+          try {
+            const { items } = JSON.parse(body);
+            if (!Array.isArray(items)) return jsonResponse(res, { error: 'items must be an array' }, 400);
+
+            const results = {};
+            for (const item of items.slice(0, 200)) {
+              const result = smartLookup(db, item);
+              results[item] = result ? {
+                id: result.ingredient_id,
+                name: result.name,
+                category: result.category,
+                bestPrice: result.best_price ? {
+                  cents: result.best_price,
+                  display: `$${(result.best_price / 100).toFixed(2)}`,
+                  unit: result.best_unit,
+                  store: result.best_store,
+                } : null,
+                priceCount: result.price_count,
+              } : null;
+            }
+
+            return jsonResponse(res, { count: items.length, results });
+          } catch (err) {
+            return jsonResponse(res, { error: 'Invalid JSON body' }, 400);
+          }
+        });
+        return; // async handler
+      }
+      return jsonResponse(res, { error: 'POST required with { items: ["chicken breast", "salmon", ...] }' }, 405);
+    }
+
     // Get canonical ingredients list
     if (path === '/api/ingredients') {
       const search = url.searchParams.get('search');
@@ -190,6 +264,7 @@ ${priceRows}
   <li><a href="/api/sources">/api/sources</a> - All sources in registry</li>
   <li><a href="/api/changes">/api/changes</a> - Recent price changes</li>
   <li><a href="/api/ingredients">/api/ingredients</a> - Canonical ingredient list (?search=chicken)</li>
+  <li><strong><a href="/api/lookup?q=chicken+breast">/api/lookup?q=</a> - Smart lookup (alias-aware, price-prioritized)</strong></li>
   <li><a href="/api/sync/database">/api/sync/database</a> - Download SQLite database file</li>
 </ul>
 </body></html>`;

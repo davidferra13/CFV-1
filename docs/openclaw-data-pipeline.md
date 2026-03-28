@@ -3,21 +3,23 @@
 ## Overview
 
 OpenClaw is ChefFlow's price intelligence system running on a Raspberry Pi (10.0.0.177).
-It maintains a comprehensive food catalog of ~10,000 items with live retail prices from local stores.
+It maintains a comprehensive food catalog of ~9,270 items with live retail prices from local stores.
 
 ## Architecture
 
 ```
 Raspberry Pi (10.0.0.177)
   ├── SQLite database (WAL mode)
-  │   ├── canonical_ingredients (9,772 items)
-  │   ├── current_prices (1,047+ prices, growing daily)
+  │   ├── canonical_ingredients (9,270 items)
+  │   ├── current_prices (1,014+ prices, growing daily)
   │   ├── price_changes (historical tracking)
   │   └── price_trends (7d/30d/90d analytics)
   ├── Scrapers (cron, nightly)
   │   ├── scraper-flipp.mjs (VACUUM mode - exhaustive retail prices)
   │   ├── scraper-government.mjs (BLS/FRED index prices)
   │   └── import-usda-csv.mjs (one-time catalog import)
+  ├── Sync API (port 8081)
+  │   └── sync-api.mjs (REST API with smart lookup)
   └── sync-to-chefflow.mjs (triggers ChefFlow price sync at 11 PM)
 ```
 
@@ -52,6 +54,27 @@ pagination up to 600 items per term, across all 18 merchants. Two-layer food fil
 
 Items matching keyword rules get canonical IDs (e.g., `chicken-breast-boneless-skinless`).
 Unmatched food items get auto-generated slug IDs (e.g., `kraft-aioli`).
+
+### Cross-Matcher
+
+The cross-matcher (`cross-match.mjs`) links Flipp-priced items stored under auto-generated slug IDs
+back to proper canonical ingredient entries. 217 matching rules cover beef, poultry, pork, lamb,
+seafood, dairy, produce, pantry, grains, frozen, beverages, snacks, deli, and baking.
+
+### Smart Lookup
+
+The smart lookup system (`lib/smart-lookup.mjs`) resolves natural-language queries like "chicken breast"
+or "butter" to the correct canonical ingredient with price priority. Features:
+
+- **Common aliases**: 250+ mappings (e.g., "butter" -> butter-unsalted, "milk" -> milk-whole, "eggs" -> eggs-large)
+- **Price priority**: priced items always rank above unpriced catalog entries
+- **Fuzzy matching**: exact match > starts-with > slug match > word boundary
+- **API endpoint**: `GET /api/lookup?q=chicken+breast` on port 8081
+- **Batch endpoint**: `POST /api/lookup/batch` with `{ items: [...] }`
+
+**Lookup accuracy**: 78% of 74 common dinner items resolve to a priced ingredient immediately.
+100% are found in the catalog. The remaining 22% are catalog entries awaiting their first Flipp
+flyer appearance. Coverage grows daily as flyers cycle.
 
 ### USDA Catalog
 
@@ -91,6 +114,20 @@ index data provides broad category averages for items without specific retail pr
 | Herbs     | 20    |
 | Eggs      | 6     |
 
+## API Endpoints (port 8081)
+
+| Endpoint                      | Method | Description                                     |
+| ----------------------------- | ------ | ----------------------------------------------- |
+| `/api/lookup?q=`              | GET    | Smart lookup with aliases and price priority    |
+| `/api/lookup/batch`           | POST   | Batch lookup with JSON body `{ items: [...] }`  |
+| `/api/prices`                 | GET    | All current prices (filter: ?ingredient, ?tier) |
+| `/api/prices/ingredient/{id}` | GET    | Price comparison across all stores              |
+| `/api/ingredients`            | GET    | Canonical ingredient catalog (?search=)         |
+| `/api/sources`                | GET    | All tracked stores                              |
+| `/api/changes`                | GET    | Recent price changes                            |
+| `/api/stats`                  | GET    | Database statistics                             |
+| `/api/sync/database`          | GET    | Download full SQLite database file              |
+
 ## Files on Pi
 
 ```
@@ -101,14 +138,21 @@ index data provides broad category averages for items without specific retail pr
   ├── lib/
   │   ├── db.mjs
   │   ├── normalize-rules.mjs (keyword rules + two-layer food filter)
+  │   ├── smart-lookup.mjs (alias-aware, price-prioritized search)
   │   └── scrape-utils.mjs
+  ├── scripts/
+  │   ├── check-stats.mjs (database stats + lookup test)
+  │   └── test-smart-lookup.mjs (74-item dinner planning test)
   └── services/
       ├── scraper-flipp.mjs (VACUUM mode - nightly)
       ├── scraper-government.mjs (BLS/FRED - nightly)
       ├── scraper-usda-bulk.mjs (comprehensive catalog - one-time)
       ├── import-usda-csv.mjs (USDA CSV import - one-time)
+      ├── cross-match.mjs (links Flipp slugs to canonical entries)
+      ├── sync-api.mjs (REST API server - always running)
       ├── sync-to-chefflow.mjs (ChefFlow sync trigger - nightly)
-      └── clean-nonfood.mjs (utility - remove non-food leaks)
+      ├── clean-nonfood.mjs (utility - remove non-food leaks)
+      └── clean-nonfood-v2.mjs (utility - pattern-based cleanup)
 ```
 
 ## Cron Schedule (Pi)
