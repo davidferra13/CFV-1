@@ -3,6 +3,7 @@
 import { useState, useEffect, useTransition } from 'react'
 import {
   getOnboardingProgress,
+  getExistingProfileData,
   completeStep,
   skipStep,
   completeOnboardingWizard,
@@ -20,14 +21,39 @@ type ProgressEntry = {
   data: Record<string, unknown>
 }
 
+type ExistingData = {
+  profile: {
+    businessName: string
+    cuisines: string[]
+    city: string
+    state: string
+    bio: string
+    websiteUrl: string
+    phone: string
+    socialLinks: Record<string, string>
+    profileImageUrl: string | null
+    logoUrl: string | null
+    isPublic: boolean
+    serviceRadius: number | null
+  } | null
+  pricing: {
+    hourlyRate: string
+    perGuestRate: string
+    minimumBooking: string
+    packages: { name: string; priceDollars: string }[]
+  } | null
+}
+
 export function OnboardingWizard() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [progress, setProgress] = useState<ProgressEntry[]>([])
   const [isComplete, setIsComplete] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [existingData, setExistingData] = useState<ExistingData | null>(null)
 
   useEffect(() => {
     loadProgress()
+    loadExistingData()
 
     // If returning from Gmail OAuth during onboarding, auto-complete the gmail step
     const gmailFlag = sessionStorage.getItem('onboarding_gmail_step')
@@ -36,6 +62,15 @@ export function OnboardingWizard() {
       completeStep('connect_gmail', { connected: true }).catch(() => {})
     }
   }, [])
+
+  async function loadExistingData() {
+    try {
+      const data = await getExistingProfileData()
+      setExistingData(data as ExistingData)
+    } catch (err) {
+      console.error('[onboarding] Failed to load existing profile data', err)
+    }
+  }
 
   async function loadProgress() {
     try {
@@ -318,13 +353,21 @@ export function OnboardingWizard() {
 
           {/* Render current step */}
           {currentStep.key === 'profile' && (
-            <ProfileStep onComplete={handleComplete} onSkip={handleSkip} />
+            <ProfileStep
+              onComplete={handleComplete}
+              onSkip={handleSkip}
+              existingData={existingData?.profile ?? undefined}
+            />
           )}
           {currentStep.key === 'portfolio' && (
             <PortfolioStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
           {currentStep.key === 'pricing' && (
-            <PricingStepWizard onComplete={handleComplete} onSkip={handleSkip} />
+            <PricingStepWizard
+              onComplete={handleComplete}
+              onSkip={handleSkip}
+              existingData={existingData?.pricing ?? undefined}
+            />
           )}
           {currentStep.key === 'connect_gmail' && (
             <ConnectGmailStep onComplete={handleComplete} onSkip={handleSkip} />

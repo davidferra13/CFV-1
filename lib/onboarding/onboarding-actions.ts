@@ -6,6 +6,88 @@ import { revalidatePath } from 'next/cache'
 import { WIZARD_STEPS, type OnboardingStepKey } from './onboarding-constants'
 
 // ============================================
+// EXISTING DATA (for pre-filling the wizard)
+// ============================================
+
+export async function getExistingProfileData() {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient()
+
+  const { data: chef } = await db
+    .from('chefs')
+    .select(
+      'business_name, display_name, cuisine_specialties, city, state, bio, website_url, phone, social_links, profile_image_url, logo_url'
+    )
+    .eq('id', tenantId)
+    .maybeSingle()
+
+  const { data: prefs } = await db
+    .from('chef_preferences')
+    .select('network_discoverable')
+    .eq('chef_id', tenantId)
+    .maybeSingle()
+
+  const { data: directory } = await db
+    .from('chef_directory_listings')
+    .select('service_radius_miles')
+    .eq('chef_id', tenantId)
+    .maybeSingle()
+
+  const { data: pricing } = await db
+    .from('chef_pricing_config')
+    .select('group_rate_3_course, minimum_booking_cents, cook_and_leave_rate, add_on_catalog')
+    .eq('chef_id', tenantId)
+    .maybeSingle()
+
+  return {
+    profile: chef
+      ? {
+          businessName: chef.business_name || '',
+          cuisines: (chef.cuisine_specialties as string[]) || [],
+          city: chef.city || '',
+          state: chef.state || '',
+          bio: chef.bio || '',
+          websiteUrl: chef.website_url || '',
+          phone: chef.phone || '',
+          socialLinks: (chef.social_links as Record<string, string>) || {},
+          profileImageUrl: chef.profile_image_url || null,
+          logoUrl: chef.logo_url || null,
+          isPublic: prefs?.network_discoverable ?? true,
+          serviceRadius: directory?.service_radius_miles || null,
+        }
+      : null,
+    pricing: pricing
+      ? {
+          hourlyRate: pricing.cook_and_leave_rate
+            ? (pricing.cook_and_leave_rate / 100).toString()
+            : '',
+          perGuestRate: pricing.group_rate_3_course
+            ? (pricing.group_rate_3_course / 100).toString()
+            : '',
+          minimumBooking: pricing.minimum_booking_cents
+            ? (pricing.minimum_booking_cents / 100).toString()
+            : '',
+          packages: Array.isArray(pricing.add_on_catalog)
+            ? (
+                pricing.add_on_catalog as Array<{
+                  name: string
+                  price_cents: number
+                  type?: string
+                }>
+              )
+                .filter((p) => p.type === 'package')
+                .map((p) => ({
+                  name: p.name,
+                  priceDollars: (p.price_cents / 100).toString(),
+                }))
+            : [],
+        }
+      : null,
+  }
+}
+
+// ============================================
 // SERVER ACTIONS
 // ============================================
 
@@ -357,12 +439,14 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
     isPublic,
     profileImageUrl,
     logoUrl,
+    serviceRadius,
   } = data as {
     businessName?: string
     cuisines?: string[]
     city?: string
     state?: string
     serviceArea?: string
+    serviceRadius?: number
     bio?: string
     websiteUrl?: string
     phone?: string
@@ -386,6 +470,46 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
   if (phone) chefUpdate.phone = phone
   if (socialLinks) chefUpdate.social_links = socialLinks
 
+  // Auto-generate slug from business name if slug is currently null
+  if (businessName) {
+    const { data: currentChef } = await db
+      .from('chefs')
+      .select('slug')
+      .eq('id', tenantId)
+      .maybeSingle()
+
+    if (!currentChef?.slug) {
+      const baseSlug = businessName
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '')
+
+      // Check uniqueness, append -2, -3 etc. on collision
+      let candidateSlug = baseSlug
+      let suffix = 1
+      let slugTaken = true
+      while (slugTaken && suffix <= 10) {
+        const { data: existing } = await db
+          .from('chefs')
+          .select('id')
+          .eq('slug', candidateSlug)
+          .neq('id', tenantId)
+          .maybeSingle()
+        if (!existing) {
+          slugTaken = false
+        } else {
+          suffix++
+          candidateSlug = `${baseSlug}-${suffix}`
+        }
+      }
+      if (!slugTaken) {
+        chefUpdate.slug = candidateSlug
+      }
+    }
+  }
+
   if (Object.keys(chefUpdate).length > 0) {
     const { error } = await db.from('chefs').update(chefUpdate).eq('id', tenantId)
     if (error) console.error('[onboarding] Failed to update chefs table', error)
@@ -399,6 +523,7 @@ async function persistProfileData(db: any, tenantId: string, data: Record<string
   if (state) directoryData.state = state
   if (websiteUrl) directoryData.website_url = websiteUrl
   if (profileImageUrl) directoryData.profile_photo_url = profileImageUrl
+  if (serviceRadius) directoryData.service_radius_miles = serviceRadius
 
   if (Object.keys(directoryData).length > 1) {
     const { error } = await db

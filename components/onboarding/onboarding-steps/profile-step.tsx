@@ -32,33 +32,63 @@ const MAX_LOGO_SIZE = 2 * 1024 * 1024 // 2MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
 const ALLOWED_LOGO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']
 
+type ExistingProfileData = {
+  businessName: string
+  cuisines: string[]
+  city: string
+  state: string
+  bio: string
+  websiteUrl: string
+  phone: string
+  socialLinks: Record<string, string>
+  profileImageUrl: string | null
+  logoUrl: string | null
+  isPublic: boolean
+  serviceRadius: number | null
+}
+
 type ProfileStepProps = {
   onComplete: (data: Record<string, unknown>) => void
   onSkip: () => void
+  existingData?: ExistingProfileData
 }
 
-export function ProfileStep({ onComplete, onSkip }: ProfileStepProps) {
-  const [businessName, setBusinessName] = useState('')
-  const [cuisines, setCuisines] = useState<string[]>([])
+export function ProfileStep({ onComplete, onSkip, existingData }: ProfileStepProps) {
+  const [businessName, setBusinessName] = useState(existingData?.businessName ?? '')
+  const [cuisines, setCuisines] = useState<string[]>(existingData?.cuisines ?? [])
   const [customCuisines, setCustomCuisines] = useState('')
-  const [city, setCity] = useState('')
-  const [state, setState] = useState('')
+  const [city, setCity] = useState(existingData?.city ?? '')
+  const [state, setState] = useState(existingData?.state ?? '')
   const [serviceArea, setServiceArea] = useState('')
-  const [websiteUrl, setWebsiteUrl] = useState('')
-  const [phone, setPhone] = useState('')
-  const [instagram, setInstagram] = useState('')
-  const [facebook, setFacebook] = useState('')
-  const [tiktok, setTiktok] = useState('')
-  const [bio, setBio] = useState('')
-  const [isPublic, setIsPublic] = useState(true)
-  const [showSocial, setShowSocial] = useState(false)
+  const [serviceRadius, setServiceRadius] = useState(
+    existingData?.serviceRadius ? String(existingData.serviceRadius) : ''
+  )
+  const [internationalLocation, setInternationalLocation] = useState('')
+  const [websiteUrl, setWebsiteUrl] = useState(existingData?.websiteUrl ?? '')
+  const [phone, setPhone] = useState(existingData?.phone ?? '')
+  const [instagram, setInstagram] = useState(existingData?.socialLinks?.instagram ?? '')
+  const [facebook, setFacebook] = useState(existingData?.socialLinks?.facebook ?? '')
+  const [tiktok, setTiktok] = useState(existingData?.socialLinks?.tiktok ?? '')
+  const [bio, setBio] = useState(existingData?.bio ?? '')
+  const [isPublic, setIsPublic] = useState(existingData?.isPublic ?? true)
+  const [showSocial, setShowSocial] = useState(
+    !!(
+      existingData?.socialLinks?.instagram ||
+      existingData?.socialLinks?.facebook ||
+      existingData?.socialLinks?.tiktok
+    )
+  )
   const [validationError, setValidationError] = useState('')
 
   // Photo uploads
-  const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null)
-  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null)
-  const [logoPreview, setLogoPreview] = useState<string | null>(null)
-  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(
+    existingData?.profileImageUrl ?? null
+  )
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(
+    existingData?.profileImageUrl ?? null
+  )
+  const [logoPreview, setLogoPreview] = useState<string | null>(existingData?.logoUrl ?? null)
+  const [logoUrl, setLogoUrl] = useState<string | null>(existingData?.logoUrl ?? null)
   const [photoError, setPhotoError] = useState('')
   const [logoError, setLogoError] = useState('')
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
@@ -154,8 +184,9 @@ export function ProfileStep({ onComplete, onSkip }: ProfileStepProps) {
       businessName: businessName.trim(),
       cuisines: allCuisines,
       city: city.trim(),
-      state,
+      state: state === 'Other (International)' ? internationalLocation.trim() : state,
       serviceArea: serviceArea.trim(),
+      serviceRadius: serviceRadius ? parseInt(serviceRadius, 10) : undefined,
       websiteUrl: websiteUrl.trim(),
       phone: phone.trim(),
       socialLinks,
@@ -335,7 +366,7 @@ export function ProfileStep({ onComplete, onSkip }: ProfileStepProps) {
       {/* Location */}
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">Location</label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <input
             type="text"
             value={city}
@@ -356,7 +387,30 @@ export function ProfileStep({ onComplete, onSkip }: ProfileStepProps) {
               </option>
             ))}
           </select>
+          <div className="relative">
+            <input
+              type="number"
+              min="0"
+              value={serviceRadius}
+              onChange={(e) => setServiceRadius(e.target.value)}
+              placeholder="Radius"
+              aria-label="Service radius in miles"
+              className="block w-full rounded-md border border-border bg-background px-3 py-2 pr-14 text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-xs text-muted-foreground">
+              miles
+            </span>
+          </div>
         </div>
+        {state === 'Other (International)' && (
+          <input
+            type="text"
+            value={internationalLocation}
+            onChange={(e) => setInternationalLocation(e.target.value)}
+            placeholder="Country or region (e.g. London, UK)"
+            className="mt-3 block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground text-sm shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+          />
+        )}
       </div>
 
       {/* Service Area (freeform) */}
@@ -369,7 +423,7 @@ export function ProfileStep({ onComplete, onSkip }: ProfileStepProps) {
           type="text"
           value={serviceArea}
           onChange={(e) => setServiceArea(e.target.value)}
-          placeholder="e.g. Greater Boston area, North Shore, 30-mile radius"
+          placeholder="e.g. Greater Boston area, North Shore"
           className="mt-1 block w-full rounded-md border border-border bg-background px-3 py-2 text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
         />
       </div>
@@ -464,33 +518,78 @@ export function ProfileStep({ onComplete, onSkip }: ProfileStepProps) {
       </div>
 
       {/* Public/Private Toggle */}
-      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/50 p-4">
-        <div>
-          <p className="text-sm font-medium text-foreground">
-            Make my profile visible to potential clients
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {isPublic
-              ? 'Public: searchable and bookable by anyone. Subject to admin review.'
-              : 'Private: invite-only, internal ops tool.'}
-          </p>
-        </div>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={isPublic}
-          aria-label="Make profile public"
-          onClick={() => setIsPublic(!isPublic)}
-          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
-            isPublic ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600'
-          }`}
-        >
-          <span
-            className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition-transform ${
-              isPublic ? 'translate-x-5' : 'translate-x-0'
+      <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-foreground">
+              Make my profile visible to potential clients
+            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {isPublic
+                ? 'Public: searchable and bookable by anyone. Subject to admin review.'
+                : 'Private: invite-only, internal ops tool.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={isPublic}
+            aria-label="Make profile public"
+            onClick={() => setIsPublic(!isPublic)}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+              isPublic ? 'bg-orange-500' : 'bg-gray-300 dark:bg-gray-600'
             }`}
-          />
-        </button>
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition-transform ${
+                isPublic ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+
+        {/* Completeness meter (shown when public is on) */}
+        {isPublic &&
+          (() => {
+            const filled = [
+              businessName.trim(),
+              cuisines.length > 0,
+              city.trim() || state,
+              profilePhotoPreview,
+              bio.trim(),
+            ].filter(Boolean).length
+            const total = 5
+            const pct = Math.round((filled / total) * 100)
+            const missing: string[] = []
+            if (!businessName.trim()) missing.push('Business name')
+            if (cuisines.length === 0) missing.push('Cuisines')
+            if (!city.trim() && !state) missing.push('Location')
+            if (!profilePhotoPreview) missing.push('Profile photo')
+            if (!bio.trim()) missing.push('Bio')
+
+            return (
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="flex-1 h-1.5 rounded-full bg-muted">
+                    <div
+                      className="h-1.5 rounded-full bg-orange-500 transition-all duration-300"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{pct}%</span>
+                </div>
+                {missing.length > 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    Add {missing.join(', ')} to strengthen your public profile.
+                  </p>
+                ) : (
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    Your profile will be submitted for review. You'll be notified when it's live.
+                  </p>
+                )}
+              </div>
+            )
+          })()}
       </div>
 
       {/* Actions */}

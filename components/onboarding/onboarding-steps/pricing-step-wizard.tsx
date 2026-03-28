@@ -2,25 +2,33 @@
 
 import { useState } from 'react'
 
-type PricingStepWizardProps = {
-  onComplete: (data: Record<string, unknown>) => void
-  onSkip: () => void
-}
-
 type PackageDeal = {
   name: string
   priceDollars: string
+}
+
+type ExistingPricingData = {
+  hourlyRate: string
+  perGuestRate: string
+  minimumBooking: string
+  packages: PackageDeal[]
+}
+
+type PricingStepWizardProps = {
+  onComplete: (data: Record<string, unknown>) => void
+  onSkip: () => void
+  existingData?: ExistingPricingData
 }
 
 // Shared input class for currency fields - extra left padding for $ sign, hides number spinners
 const currencyInputClass =
   'block w-full rounded-md border border-border bg-background pl-8 pr-3 py-2 text-foreground shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none'
 
-export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps) {
-  const [hourlyRate, setHourlyRate] = useState('')
-  const [perGuestRate, setPerGuestRate] = useState('')
-  const [minimumBooking, setMinimumBooking] = useState('')
-  const [packages, setPackages] = useState<PackageDeal[]>([])
+export function PricingStepWizard({ onComplete, onSkip, existingData }: PricingStepWizardProps) {
+  const [hourlyRate, setHourlyRate] = useState(existingData?.hourlyRate ?? '')
+  const [perGuestRate, setPerGuestRate] = useState(existingData?.perGuestRate ?? '')
+  const [minimumBooking, setMinimumBooking] = useState(existingData?.minimumBooking ?? '')
+  const [packages, setPackages] = useState<PackageDeal[]>(existingData?.packages ?? [])
 
   function addPackage() {
     setPackages((prev) => [...prev, { name: '', priceDollars: '' }])
@@ -40,13 +48,13 @@ export function PricingStepWizard({ onComplete, onSkip }: PricingStepWizardProps
     const pricingConfig: Record<string, unknown> = {}
 
     if (perGuestRate) {
-      pricingConfig.group_rate_3_course_cents = Math.round(parseFloat(perGuestRate) * 100)
+      pricingConfig.group_rate_3_course = Math.round(parseFloat(perGuestRate) * 100)
     }
     if (minimumBooking) {
       pricingConfig.minimum_booking_cents = Math.round(parseFloat(minimumBooking) * 100)
     }
     if (hourlyRate) {
-      pricingConfig.hourly_rate_cents = Math.round(parseFloat(hourlyRate) * 100)
+      pricingConfig.cook_and_leave_rate = Math.round(parseFloat(hourlyRate) * 100)
     }
 
     const validPackages = packages.filter((p) => p.name.trim() && p.priceDollars)
