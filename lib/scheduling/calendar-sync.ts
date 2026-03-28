@@ -48,8 +48,7 @@ export async function initiateGoogleCalendarConnect(): Promise<{ redirectUrl: st
   const { initiateGoogleConnect } = await import('@/lib/google/auth')
   return initiateGoogleConnect([
     'https://www.googleapis.com/auth/calendar.events',
-    'email',
-    'profile',
+    'https://www.googleapis.com/auth/calendar.readonly',
   ])
 }
 
