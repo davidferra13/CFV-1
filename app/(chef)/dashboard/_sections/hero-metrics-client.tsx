@@ -7,6 +7,8 @@ type HeroMetric = {
   label: string
   value: string
   href: string
+  trend?: string
+  trendUp?: boolean
 }
 
 export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
@@ -25,6 +27,30 @@ export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
           <p className="metric-display mt-1 group-hover:text-brand-400 transition-colors">
             <AnimatedCounter value={metric.value} />
           </p>
+          {metric.trend && (
+            <p
+              className={`text-xxs mt-0.5 font-medium ${
+                metric.trendUp ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'
+              }`}
+            >
+              {metric.trendUp && (
+                <svg
+                  className="inline h-3 w-3 mr-0.5 -mt-px"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 15l7-7 7 7"
+                  />
+                </svg>
+              )}
+              {metric.trend}
+            </p>
+          )}
           {/* Subtle bottom accent on hover */}
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-brand-500/0 via-brand-500/0 to-brand-500/0 group-hover:from-brand-500/0 group-hover:via-brand-500/40 group-hover:to-brand-500/0 transition-all duration-300" />
         </Link>

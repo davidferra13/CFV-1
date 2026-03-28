@@ -1,29 +1,28 @@
-import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
 import { OnboardingWizard } from '@/components/onboarding/onboarding-wizard'
 import { OnboardingHub } from '@/components/onboarding/onboarding-hub'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { WIZARD_STEPS } from '@/lib/onboarding/onboarding-constants'
+import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
 
 export const metadata = { title: 'Setup | ChefFlow' }
 
-async function getWizardDone(tenantId: string): Promise<boolean> {
-  const db: any = createServerClient()
-  const { data } = await db.from('onboarding_progress').select('step_key').eq('chef_id', tenantId)
-
-  if (!data || data.length === 0) return false
-  const doneKeys = new Set(data.map((r: any) => r.step_key))
-  return WIZARD_STEPS.every((s) => doneKeys.has(s.key))
-}
-
 export default async function OnboardingPage() {
   const user = await requireChef()
-  const wizardDone = await getWizardDone(user.tenantId!).catch(() => false)
+  const db: any = createServerClient()
 
-  if (!wizardDone) {
-    return <OnboardingWizard />
+  // Check if the wizard was permanently completed
+  const { data: chef } = await db
+    .from('chefs')
+    .select('onboarding_completed_at')
+    .eq('id', user.entityId)
+    .single()
+
+  if (chef?.onboarding_completed_at) {
+    // Wizard already done, show the post-wizard hub
+    const progress = await getOnboardingProgress()
+    return <OnboardingHub progress={progress} />
   }
 
-  const progress = await getOnboardingProgress()
-  return <OnboardingHub progress={progress} />
+  // Wizard not completed yet, show the wizard
+  return <OnboardingWizard />
 }

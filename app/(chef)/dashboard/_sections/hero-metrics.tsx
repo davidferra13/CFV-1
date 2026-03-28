@@ -23,51 +23,69 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
   const today = now.toISOString().split('T')[0]
   const weekEnd = new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0]
 
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 86400000).toISOString()
+
   // All queries in parallel
-  const [revenueResult, eventsResult, inquiriesResult, outstandingResult] = await Promise.all([
-    // This month's revenue from ledger
-    db
-      .from('event_financial_summary')
-      .select('total_paid_cents')
-      .eq('tenant_id', tenantId)
-      .then(({ data, error }: any) => {
-        if (error || !data) return 0
-        // Sum all payments this month by joining with events
-        return data.reduce((sum: number, row: any) => sum + (row.total_paid_cents || 0), 0)
-      }),
+  const [revenueResult, eventsResult, inquiriesResult, outstandingResult, newInquiriesThisWeek] =
+    await Promise.all([
+      // This month's revenue from ledger
+      db
+        .from('event_financial_summary')
+        .select('total_paid_cents')
+        .eq('tenant_id', tenantId)
+        .then(({ data, error }: any) => {
+          if (error || !data) return 0
+          // Sum all payments this month by joining with events
+          return data.reduce((sum: number, row: any) => sum + (row.total_paid_cents || 0), 0)
+        }),
 
-    // Events this week
-    db
-      .from('events')
-      .select('id', { count: 'exact', head: true })
-      .eq('tenant_id', tenantId)
-      .gte('event_date', today)
-      .lte('event_date', weekEnd)
-      .not('status', 'eq', 'cancelled'),
+      // Events this week
+      db
+        .from('events')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .gte('event_date', today)
+        .lte('event_date', weekEnd)
+        .not('status', 'eq', 'cancelled'),
 
-    // Open inquiries (not converted, not declined)
-    db
-      .from('inquiries')
-      .select('id', { count: 'exact', head: true })
-      .eq('tenant_id', tenantId)
-      .not('status', 'in', '("converted","declined")'),
+      // Open inquiries (not converted, not declined)
+      db
+        .from('inquiries')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .not('status', 'in', '("converted","declined")'),
 
-    // Outstanding balance
-    db
-      .from('event_financial_summary')
-      .select('outstanding_balance_cents')
-      .eq('tenant_id', tenantId)
-      .gt('outstanding_balance_cents', 0)
-      .then(({ data, error }: any) => {
-        if (error || !data) return 0
-        return data.reduce((sum: number, row: any) => sum + (row.outstanding_balance_cents || 0), 0)
-      }),
-  ])
+      // Outstanding balance
+      db
+        .from('event_financial_summary')
+        .select('outstanding_balance_cents')
+        .eq('tenant_id', tenantId)
+        .gt('outstanding_balance_cents', 0)
+        .then(({ data, error }: any) => {
+          if (error || !data) return 0
+          return data.reduce(
+            (sum: number, row: any) => sum + (row.outstanding_balance_cents || 0),
+            0
+          )
+        }),
+
+      // New inquiries in last 7 days (for surge detection)
+      db
+        .from('inquiries')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .gte('created_at', sevenDaysAgo),
+    ])
 
   const revenueCents = typeof revenueResult === 'number' ? revenueResult : 0
   const eventsCount = eventsResult?.count ?? 0
   const inquiriesCount = inquiriesResult?.count ?? 0
   const outstandingCents = typeof outstandingResult === 'number' ? outstandingResult : 0
+  const newThisWeek = newInquiriesThisWeek?.count ?? 0
+
+  // Surge detection: 5+ new inquiries in 7 days
+  const isSurge = newThisWeek >= 5
+  const inquiryTrend = newThisWeek > 0 ? `${newThisWeek} new this week` : undefined
 
   return [
     {
@@ -81,9 +99,11 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
       href: '/schedule',
     },
     {
-      label: 'Open inquiries',
+      label: isSurge ? 'Open inquiries (surge)' : 'Open inquiries',
       value: String(inquiriesCount),
       href: '/inquiries',
+      trend: inquiryTrend,
+      trendUp: newThisWeek >= 5,
     },
     {
       label: 'Outstanding',

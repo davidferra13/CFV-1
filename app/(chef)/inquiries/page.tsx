@@ -6,9 +6,15 @@ import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getInquiries } from '@/lib/inquiries/actions'
+import {
+  getInquiries,
+  computeReadinessScoresForInquiries,
+  getResponseQueue,
+} from '@/lib/inquiries/actions'
+import type { ReadinessScore, ResponseQueueItem } from '@/lib/inquiries/actions'
 import { getBookingScoresForOpenInquiries } from '@/lib/analytics/booking-score'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
+import { ReadinessScoreBadge } from '@/components/inquiries/readiness-score-badge'
 
 export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
 import {
@@ -53,6 +59,7 @@ type InquiryFilter =
   | 'quoted'
   | 'confirmed'
   | 'closed'
+  | 'respond_next'
 
 type InquiryListItem = Awaited<ReturnType<typeof getInquiries>>[number]
 
@@ -67,9 +74,10 @@ function getDisplayName(inquiry: Pick<InquiryListItem, 'client' | 'unknown_field
 async function InquiryList({ filter }: { filter: InquiryFilter }) {
   await requireChef()
 
-  const [allInquiries, bookingScores] = await Promise.all([
+  const [allInquiries, bookingScores, readinessScores] = await Promise.all([
     getInquiries(),
     getBookingScoresForOpenInquiries().catch(() => [] as BookingScore[]),
+    computeReadinessScoresForInquiries().catch(() => new Map<string, ReadinessScore>()),
   ])
 
   let inquiries: InquiryListItem[] = allInquiries
@@ -110,6 +118,9 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
         const name = getDisplayName(inquiry)
         const isNew = inquiry.status === 'new'
         const score = OPEN_STATUSES.has(inquiry.status) ? scoreMap.get(inquiry.id) : undefined
+        const readiness = OPEN_STATUSES.has(inquiry.status)
+          ? readinessScores.get(inquiry.id)
+          : undefined
         const needsChefAction = CHEF_ACTION_STATUSES.has(inquiry.status)
         const urgency = needsChefAction ? getWaitingUrgency(inquiry.updated_at) : null
 
@@ -141,6 +152,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                     </Badge>
                   )}
                   {score && <BookingScoreBadge score={score} />}
+                  {readiness && <ReadinessScoreBadge score={readiness} />}
                 </div>
                 {inquiry.confirmed_occasion && (
                   <p className="text-sm text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
@@ -193,6 +205,7 @@ export default async function InquiriesPage({
 
   const tabs: { value: InquiryFilter; label: string }[] = [
     { value: 'all', label: 'All' },
+    { value: 'respond_next', label: 'Respond Next' },
     { value: 'new', label: 'New' },
     { value: 'awaiting_client', label: 'Client Reply' },
     { value: 'awaiting_chef', label: 'Your Reply' },
@@ -240,9 +253,88 @@ export default async function InquiriesPage({
             </Card>
           }
         >
-          <InquiryList filter={filter} />
+          {filter === 'respond_next' ? <ResponseQueueList /> : <InquiryList filter={filter} />}
         </Suspense>
       </WidgetErrorBoundary>
+    </div>
+  )
+}
+
+async function ResponseQueueList() {
+  const queue = await getResponseQueue(20).catch(() => [] as ResponseQueueItem[])
+
+  if (queue.length === 0) {
+    return (
+      <Card className="p-8 text-center">
+        <p className="text-stone-500">
+          No inquiries waiting for your response. You're all caught up!
+        </p>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      {queue.map((item, index) => {
+        const isFirst = index === 0
+        const urgencyColor =
+          item.waitingHours >= 48
+            ? 'bg-red-500 animate-pulse'
+            : item.waitingHours >= 24
+              ? 'bg-amber-500'
+              : 'bg-emerald-500'
+
+        const readinessColor =
+          item.readiness.level === 'ready'
+            ? 'text-emerald-700'
+            : item.readiness.level === 'almost'
+              ? 'text-amber-700'
+              : 'text-stone-500'
+
+        return (
+          <Link
+            key={item.id}
+            href={`/inquiries/${item.id}`}
+            className={`group block rounded-lg border p-4 hover:shadow-sm transition-all ${
+              isFirst
+                ? 'border-l-4 border-l-orange-500 bg-orange-50/50 hover:bg-orange-50'
+                : 'border-stone-200 hover:bg-stone-50'
+            }`}
+          >
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span
+                    className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${urgencyColor}`}
+                    title={`Waiting ${item.waitingHours}h`}
+                  />
+                  <span className="font-medium text-stone-900">{item.clientName}</span>
+                  {isFirst && (
+                    <Badge variant="warning" className="text-xxs px-1.5 py-0">
+                      Up Next
+                    </Badge>
+                  )}
+                  <span className={`text-xs font-medium ${readinessColor}`}>
+                    {item.readiness.percent}% ready
+                  </span>
+                </div>
+                {item.occasion && <p className="text-sm text-stone-600 mt-1">{item.occasion}</p>}
+              </div>
+              <div className="text-right flex-shrink-0">
+                {item.confirmedDate && (
+                  <p className="text-sm font-medium text-stone-900">
+                    {format(new Date(item.confirmedDate), 'MMM d, yyyy')}
+                  </p>
+                )}
+                {item.guestCount && (
+                  <p className="text-xs text-stone-500">{item.guestCount} guests</p>
+                )}
+                <p className="text-xs text-amber-600 mt-1">waiting {item.waitingHours}h</p>
+              </div>
+            </div>
+          </Link>
+        )
+      })}
     </div>
   )
 }

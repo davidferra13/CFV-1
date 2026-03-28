@@ -32,6 +32,16 @@ export async function completeStep(stepKey: string, data?: Record<string, unknow
   const tenantId = user.tenantId!
   const db: any = createServerClient()
 
+  // Triple-write profile data to chefs, chef_directory_listings, chef_marketplace_profiles
+  if (stepKey === 'profile' && data) {
+    try {
+      await persistProfileData(db, tenantId, data)
+    } catch (err) {
+      console.error('[onboarding] Profile triple-write error', err)
+      // Non-blocking: profile data persistence is best-effort during onboarding
+    }
+  }
+
   // If this is the pricing step, persist the pricing config to chef_pricing_config
   if (stepKey === 'pricing' && data?.pricingConfig) {
     try {
@@ -79,6 +89,7 @@ export async function completeStep(stepKey: string, data?: Record<string, unknow
   }
 
   revalidatePath('/dashboard')
+  revalidatePath('/onboarding')
   return { success: true }
 }
 
@@ -125,7 +136,7 @@ export async function resetOnboarding() {
 export async function getOnboardingStatus() {
   const progress = await getOnboardingProgress()
 
-  // Count only against the 3 required wizard steps for banner/status purposes
+  // Count only against the 5 required wizard steps for banner/status purposes
   const totalSteps = WIZARD_STEPS.length
   const wizardKeys = new Set(WIZARD_STEPS.map((s) => s.key))
   const wizardProgress = progress.filter((p: any) => wizardKeys.has(p.step_key))
@@ -145,4 +156,185 @@ export async function getOnboardingStatus() {
     currentStep,
     progress,
   }
+}
+
+// ============================================
+// WIZARD COMPLETION
+// ============================================
+
+export async function completeOnboardingWizard() {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { error } = await db
+    .from('chefs')
+    .update({ onboarding_completed_at: new Date().toISOString() })
+    .eq('id', user.entityId)
+
+  if (error) {
+    console.error('[onboarding] Failed to mark wizard complete', error)
+    return { success: false, error: 'Failed to complete onboarding' }
+  }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/onboarding')
+  return { success: true }
+}
+
+// ============================================
+// BANNER DISMISSAL
+// ============================================
+
+export async function dismissOnboardingBanner() {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { error } = await db
+    .from('chefs')
+    .update({ onboarding_banner_dismissed_at: new Date().toISOString() })
+    .eq('id', user.entityId)
+
+  if (error) {
+    console.error('[onboarding] Failed to dismiss banner', error)
+    return { success: false, error: 'Failed to dismiss banner' }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
+export async function dismissOnboardingReminder() {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Increment the counter
+  const { data: chef } = await db
+    .from('chefs')
+    .select('onboarding_reminders_dismissed')
+    .eq('id', user.entityId)
+    .single()
+
+  const current = chef?.onboarding_reminders_dismissed ?? 0
+
+  const { error } = await db
+    .from('chefs')
+    .update({ onboarding_reminders_dismissed: current + 1 })
+    .eq('id', user.entityId)
+
+  if (error) {
+    console.error('[onboarding] Failed to dismiss reminder', error)
+    return { success: false, error: 'Failed to dismiss reminder' }
+  }
+
+  revalidatePath('/dashboard')
+  return { success: true }
+}
+
+export async function getOnboardingDismissalState() {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data } = await db
+    .from('chefs')
+    .select(
+      'onboarding_completed_at, onboarding_banner_dismissed_at, onboarding_reminders_dismissed'
+    )
+    .eq('id', user.entityId)
+    .single()
+
+  return {
+    wizardCompleted: !!data?.onboarding_completed_at,
+    bannerDismissed: !!data?.onboarding_banner_dismissed_at,
+    remindersDismissed: data?.onboarding_reminders_dismissed ?? 0,
+  }
+}
+
+// ============================================
+// PROFILE TRIPLE-WRITE (internal helper)
+// ============================================
+
+async function persistProfileData(db: any, tenantId: string, data: Record<string, unknown>) {
+  const {
+    businessName,
+    cuisines,
+    city,
+    state,
+    serviceArea,
+    bio,
+    websiteUrl,
+    phone,
+    socialLinks,
+    isPublic,
+  } = data as {
+    businessName?: string
+    cuisines?: string[]
+    city?: string
+    state?: string
+    serviceArea?: string
+    bio?: string
+    websiteUrl?: string
+    phone?: string
+    socialLinks?: Record<string, string>
+    isPublic?: boolean
+  }
+
+  // 1. Update chefs table
+  const chefUpdate: Record<string, unknown> = {}
+  if (businessName) {
+    chefUpdate.business_name = businessName
+    chefUpdate.display_name = businessName
+  }
+  if (cuisines && cuisines.length > 0) chefUpdate.cuisine_specialties = cuisines
+  if (city) chefUpdate.city = city
+  if (state) chefUpdate.state = state
+  if (bio) chefUpdate.bio = bio
+  if (websiteUrl) chefUpdate.website_url = websiteUrl
+  if (phone) chefUpdate.phone = phone
+  if (socialLinks) chefUpdate.social_links = socialLinks
+
+  if (Object.keys(chefUpdate).length > 0) {
+    const { error } = await db.from('chefs').update(chefUpdate).eq('id', tenantId)
+    if (error) console.error('[onboarding] Failed to update chefs table', error)
+  }
+
+  // 2. Upsert chef_directory_listings
+  const directoryData: Record<string, unknown> = { chef_id: tenantId }
+  if (businessName) directoryData.business_name = businessName
+  if (cuisines && cuisines.length > 0) directoryData.cuisines = cuisines
+  if (city) directoryData.city = city
+  if (state) directoryData.state = state
+  if (websiteUrl) directoryData.website_url = websiteUrl
+
+  if (Object.keys(directoryData).length > 1) {
+    const { error } = await db
+      .from('chef_directory_listings')
+      .upsert(directoryData, { onConflict: 'chef_id' })
+    if (error) console.error('[onboarding] Failed to upsert chef_directory_listings', error)
+  }
+
+  // 3. Upsert chef_marketplace_profiles
+  const marketplaceData: Record<string, unknown> = { chef_id: tenantId }
+  if (cuisines && cuisines.length > 0) marketplaceData.cuisine_types = cuisines
+  if (city) marketplaceData.service_area_city = city
+  if (state) marketplaceData.service_area_state = state
+
+  if (Object.keys(marketplaceData).length > 1) {
+    const { error } = await db
+      .from('chef_marketplace_profiles')
+      .upsert(marketplaceData, { onConflict: 'chef_id' })
+    if (error) console.error('[onboarding] Failed to upsert chef_marketplace_profiles', error)
+  }
+
+  // 4. Set network_discoverable in chef_preferences
+  if (typeof isPublic === 'boolean') {
+    const { error } = await db
+      .from('chef_preferences')
+      .upsert(
+        { chef_id: tenantId, tenant_id: tenantId, network_discoverable: isPublic },
+        { onConflict: 'chef_id' }
+      )
+    if (error) console.error('[onboarding] Failed to update network_discoverable', error)
+  }
+
+  revalidatePath('/settings/my-profile')
 }

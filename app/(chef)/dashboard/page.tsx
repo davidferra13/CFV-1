@@ -19,6 +19,7 @@ import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-c
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { AARPromptBanner } from '@/components/events/aar-prompt-banner'
 import { OnboardingBanner } from '@/components/onboarding/onboarding-banner'
+import { RespondNextCard } from '@/components/dashboard/respond-next-card'
 import UpcomingTouchpoints from '@/components/clients/upcoming-touchpoints'
 import { getUpcomingTouchpoints } from '@/lib/clients/touchpoint-actions'
 
@@ -351,6 +352,13 @@ export default async function ChefDashboard() {
       <WidgetErrorBoundary name="Command Center" compact>
         <Suspense fallback={<CommandCenterSkeleton />}>
           <CommandCenterSection />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      {/* Respond Next - highest priority inquiry needing chef action */}
+      <WidgetErrorBoundary name="Respond Next" compact>
+        <Suspense fallback={null}>
+          <RespondNextCard />
         </Suspense>
       </WidgetErrorBoundary>
 

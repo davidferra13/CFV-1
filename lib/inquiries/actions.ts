@@ -2074,3 +2074,162 @@ export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInq
 
   return results
 }
+
+// ============================================
+// READINESS SCORE (data completeness for action)
+// ============================================
+
+const READINESS_FIELDS = [
+  { key: 'confirmed_date', label: 'Event date' },
+  { key: 'confirmed_guest_count', label: 'Guest count' },
+  { key: 'confirmed_location', label: 'Location' },
+  { key: 'confirmed_occasion', label: 'Occasion' },
+  { key: 'confirmed_budget_cents', label: 'Budget' },
+  { key: 'confirmed_dietary_restrictions', label: 'Dietary restrictions' },
+  { key: 'confirmed_service_expectations', label: 'Service expectations' },
+  { key: 'has_contact', label: 'Client contact info' },
+] as const
+
+export type ReadinessScore = {
+  score: number
+  total: number
+  percent: number
+  filled: string[]
+  missing: string[]
+  level: 'ready' | 'almost' | 'partial' | 'minimal'
+}
+
+export function computeReadinessScore(inquiry: Record<string, unknown>): ReadinessScore {
+  const filled: string[] = []
+  const missing: string[] = []
+
+  for (const field of READINESS_FIELDS) {
+    if (field.key === 'has_contact') {
+      // Contact info: client_id OR contact_name/contact_email
+      const hasContact = !!(inquiry.client_id || inquiry.contact_name || inquiry.contact_email)
+      if (hasContact) filled.push(field.label)
+      else missing.push(field.label)
+      continue
+    }
+
+    if (field.key === 'confirmed_dietary_restrictions') {
+      const val = inquiry[field.key] as unknown[] | null
+      if (val && val.length > 0) filled.push(field.label)
+      else missing.push(field.label)
+      continue
+    }
+
+    const val = inquiry[field.key]
+    if (val !== null && val !== undefined && val !== '' && val !== 0) {
+      filled.push(field.label)
+    } else {
+      missing.push(field.label)
+    }
+  }
+
+  const total = READINESS_FIELDS.length
+  const score = filled.length
+  const percent = Math.round((score / total) * 100)
+
+  let level: ReadinessScore['level'] = 'minimal'
+  if (percent >= 100) level = 'ready'
+  else if (percent >= 63)
+    level = 'almost' // 5 of 8
+  else if (percent >= 38) level = 'partial' // 3 of 8
+
+  return { score, total, percent, filled, missing, level }
+}
+
+export async function computeReadinessScoresForInquiries(): Promise<Map<string, ReadinessScore>> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data } = await db
+    .from('inquiries')
+    .select(
+      'id, confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_budget_cents, confirmed_dietary_restrictions, confirmed_service_expectations, client_id, contact_name, contact_email'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .not('status', 'in', '(declined,expired)')
+
+  const map = new Map<string, ReadinessScore>()
+  if (!data) return map
+
+  for (const row of data) {
+    map.set(row.id, computeReadinessScore(row))
+  }
+  return map
+}
+
+// ============================================
+// RESPONSE QUEUE (urgency-sorted)
+// ============================================
+
+export type ResponseQueueItem = {
+  id: string
+  clientName: string
+  occasion: string | null
+  confirmedDate: string | null
+  guestCount: number | null
+  waitingHours: number
+  readiness: ReadinessScore
+  status: string
+}
+
+export async function getResponseQueue(limit = 10): Promise<ResponseQueueItem[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Only inquiries where chef needs to act
+  const { data, error } = await db
+    .from('inquiries')
+    .select(
+      'id, status, confirmed_date, confirmed_guest_count, confirmed_location, confirmed_occasion, confirmed_budget_cents, confirmed_dietary_restrictions, confirmed_service_expectations, client_id, contact_name, contact_email, updated_at, next_action_by, client:clients(full_name), unknown_fields'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .in('status', ['new', 'awaiting_chef'])
+
+  if (error || !data) return []
+
+  const now = new Date()
+  const items: ResponseQueueItem[] = data.map((row: any) => {
+    const readiness = computeReadinessScore(row)
+    const waitingHours = Math.round(
+      (now.getTime() - new Date(row.updated_at).getTime()) / (1000 * 60 * 60)
+    )
+    const clientName =
+      row.client?.full_name ||
+      (row.unknown_fields as Record<string, string> | null)?.client_name ||
+      row.contact_name ||
+      'Unknown Lead'
+
+    return {
+      id: row.id,
+      clientName,
+      occasion: row.confirmed_occasion,
+      confirmedDate: row.confirmed_date,
+      guestCount: row.confirmed_guest_count,
+      waitingHours,
+      readiness,
+      status: row.status,
+    }
+  })
+
+  // Sort by: waiting time (desc), then date proximity (asc), then readiness (desc)
+  items.sort((a, b) => {
+    // Longest wait first
+    if (a.waitingHours !== b.waitingHours) return b.waitingHours - a.waitingHours
+
+    // Closest event date first (null dates sort last)
+    if (a.confirmedDate && b.confirmedDate) {
+      return new Date(a.confirmedDate).getTime() - new Date(b.confirmedDate).getTime()
+    }
+    if (a.confirmedDate) return -1
+    if (b.confirmedDate) return 1
+
+    // Higher readiness first
+    return b.readiness.percent - a.readiness.percent
+  })
+
+  return items.slice(0, limit)
+}
