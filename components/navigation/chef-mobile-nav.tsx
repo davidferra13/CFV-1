@@ -9,7 +9,6 @@ import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react'
 import type { LucideIcon } from '@/components/ui/icons'
 import {
   navGroups,
-  standaloneBottom,
   resolveStandaloneTop,
   resolveMobileTabs,
   actionBarItems,
@@ -40,6 +39,7 @@ import {
   Lock,
   Sparkles,
   Search,
+  Settings,
 } from '@/components/ui/icons'
 import { QUICK_CREATE_ITEMS, cannabisSectionItems, communitySectionItems } from './chef-nav-config'
 import { useNavigationPending } from './navigation-pending-provider'
@@ -487,7 +487,6 @@ export function ChefMobileNav({
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
   const [mobileShortcutsOpen, setMobileShortcutsOpen] = useState(true)
   const [mobileQuickCreateOpen, setMobileQuickCreateOpen] = useState(true)
-  const [mobileSettingsOpen, setMobileSettingsOpen] = useState(true)
   const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
   const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
@@ -568,15 +567,6 @@ export function ChefMobileNav({
     if (!q) return QUICK_CREATE_ITEMS
     return QUICK_CREATE_ITEMS.filter((item) => item.label.toLowerCase().includes(q))
   }, [navFilter])
-  const visibleBottomItems = useMemo(
-    () => (isAdmin ? standaloneBottom : standaloneBottom.filter((item) => !item.adminOnly)),
-    [isAdmin]
-  )
-  const filteredSettingsItems = useMemo(() => {
-    const q = navFilter.trim().toLowerCase()
-    if (!q) return visibleBottomItems
-    return visibleBottomItems.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, visibleBottomItems])
   const filteredCannabisItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return cannabisSectionItems
@@ -623,7 +613,6 @@ export function ChefMobileNav({
     if (!navFilter.trim()) return
     setMobileShortcutsOpen(true)
     setMobileQuickCreateOpen(true)
-    setMobileSettingsOpen(true)
     if (isAdmin) setCannabisSectionOpen(true)
     setCommunitySectionOpen(true)
   }, [isAdmin, navFilter])
@@ -841,48 +830,25 @@ export function ChefMobileNav({
               <div className="border-t border-stone-800 my-2" />
 
               {/* Settings */}
-              <button
-                type="button"
-                onClick={() => setMobileSettingsOpen((prev) => !prev)}
-                aria-expanded={mobileSettingsOpen}
-                className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-              >
-                <span className="flex-1 text-left">Settings</span>
-                <ChevronDown
-                  className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                    mobileSettingsOpen ? 'rotate-0' : '-rotate-90'
-                  }`}
-                />
-              </button>
-              <div
-                className={`overflow-hidden transition-all duration-200 ${
-                  mobileSettingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
-                }`}
-              >
-                <div className="space-y-0.5">
-                  {filteredSettingsItems.map((item) => {
-                    const Icon = item.icon
-                    const active = isItemActive(pathname, item.href, searchParams)
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={closeMenu}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                          active
-                            ? 'bg-brand-950 text-brand-400'
-                            : 'text-stone-400 hover:bg-stone-800'
-                        }`}
-                      >
-                        <Icon
-                          className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                        />
-                        {item.label}
-                      </Link>
-                    )
-                  })}
-                </div>
-              </div>
+              {(() => {
+                const settingsActive = isItemActive(pathname, '/settings', searchParams)
+                return (
+                  <Link
+                    href="/settings"
+                    onClick={closeMenu}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                      settingsActive
+                        ? 'bg-brand-950 text-brand-400'
+                        : 'text-stone-300 hover:bg-stone-800'
+                    }`}
+                  >
+                    <Settings
+                      className={`w-[18px] h-[18px] flex-shrink-0 ${settingsActive ? 'text-brand-600' : 'text-stone-400'}`}
+                    />
+                    Settings
+                  </Link>
+                )
+              })()}
 
               {/* Sign Out */}
               <div className="pt-4 mt-4 border-t border-stone-800">

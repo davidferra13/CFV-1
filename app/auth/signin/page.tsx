@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import { CenteredLoadingState, LoadingSpinner } from '@/components/ui/loading-state'
+import { CenteredLoadingState } from '@/components/ui/loading-state'
 
 // Guard against open redirect: only allow same-origin paths (no external URLs)
 function safeRedirectPath(raw: string | null): string {
@@ -43,24 +43,6 @@ function normalizeAuthErrorMessage(message: string): string {
   return message
 }
 
-function SignInProgress({ stage }: { stage: Exclude<SignInStage, 'idle'> }) {
-  return (
-    <div
-      className="w-full rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-center"
-      role="status"
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      <div className="flex items-center justify-center gap-3">
-        <LoadingSpinner size="sm" />
-        <p className="text-sm font-medium text-stone-700">
-          {stage === 'authenticating' ? 'Signing you in...' : 'Signed in successfully'}
-        </p>
-      </div>
-    </div>
-  )
-}
-
 function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -83,7 +65,6 @@ function SignInForm() {
   }, [callbackError, callbackMessage])
 
   const isWorking = stage !== 'idle'
-  const progressStage = stage === 'idle' ? null : stage
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -179,8 +160,6 @@ function SignInForm() {
                     ? 'Signing In'
                     : 'Sign In'}
               </Button>
-
-              {progressStage ? <SignInProgress stage={progressStage} /> : null}
 
               <div className="text-sm text-center text-stone-400">
                 Don&apos;t have an account?{' '}

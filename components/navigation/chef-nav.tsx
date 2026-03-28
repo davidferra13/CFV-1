@@ -48,6 +48,7 @@ import {
   Plus,
   Lock,
   Sparkles,
+  Settings,
 } from '@/components/ui/icons'
 
 // Extracted config and helpers
@@ -648,7 +649,6 @@ export function ChefSidebar({
   const [openSubMenus, setOpenSubMenus] = useState<Set<string>>(new Set())
   const [shortcutsOpen, setShortcutsOpen] = useState(true)
   const [quickCreateOpen, setQuickCreateOpen] = useState(true)
-  const [settingsOpen, setSettingsOpen] = useState(true)
   const [cannabisSectionOpen, setCannabisSectionOpen] = useState(false)
   const [communitySectionOpen, setCommunitySectionOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
@@ -723,11 +723,6 @@ export function ChefSidebar({
     () => (isAdmin ? standaloneBottom : standaloneBottom.filter((item) => !item.adminOnly)),
     [isAdmin]
   )
-  const filteredSettingsItems = useMemo(() => {
-    const q = navFilter.trim().toLowerCase()
-    if (!q) return visibleBottomItems
-    return visibleBottomItems.filter((item) => item.label.toLowerCase().includes(q))
-  }, [navFilter, visibleBottomItems])
   const filteredCannabisItems = useMemo(() => {
     const q = navFilter.trim().toLowerCase()
     if (!q) return cannabisSectionItems
@@ -773,7 +768,6 @@ export function ChefSidebar({
     if (!navFilter.trim()) return
     setShortcutsOpen(true)
     setQuickCreateOpen(true)
-    setSettingsOpen(true)
     if (isAdmin) setCannabisSectionOpen(true)
     setCommunitySectionOpen(true)
   }, [isAdmin, navFilter])
@@ -1060,47 +1054,24 @@ export function ChefSidebar({
             <div className="divider-brand h-px my-2 mx-3 opacity-40" />
 
             {/* Settings */}
-            <button
-              type="button"
-              onClick={() => setSettingsOpen((prev) => !prev)}
-              aria-expanded={settingsOpen}
-              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-semibold text-stone-300 hover:bg-stone-800"
-            >
-              <span className="flex-1 text-left">Settings</span>
-              <ChevronDown
-                className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
-                  settingsOpen ? 'rotate-0' : '-rotate-90'
-                }`}
-              />
-            </button>
-            <div
-              className={`overflow-hidden transition-all duration-200 ${
-                settingsOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
-              }`}
-            >
-              <div className="space-y-0.5">
-                {filteredSettingsItems.map((item) => {
-                  const Icon = item.icon
-                  const active = isItemActive(pathname, item.href, searchParams)
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
-                        active
-                          ? 'bg-brand-950 text-brand-400 border-brand-500 nav-active-glow'
-                          : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
-                      }`}
-                    >
-                      <Icon
-                        className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
-                      />
-                      {item.label}
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
+            {(() => {
+              const settingsActive = isItemActive(pathname, '/settings', searchParams)
+              return (
+                <Link
+                  href="/settings"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                    settingsActive
+                      ? 'bg-brand-950 text-brand-400 nav-active-glow'
+                      : 'text-stone-300 hover:bg-stone-800'
+                  }`}
+                >
+                  <Settings
+                    className={`w-[18px] h-[18px] flex-shrink-0 ${settingsActive ? 'text-brand-600' : 'text-stone-400'}`}
+                  />
+                  Settings
+                </Link>
+              )
+            })()}
 
             {/* Sign Out - inside nav so it's above the Remy mascot */}
             <button
