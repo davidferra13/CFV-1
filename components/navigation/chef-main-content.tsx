@@ -4,9 +4,11 @@
 import { useSidebar } from '@/components/navigation/chef-nav'
 import { BreadcrumbBar } from '@/components/navigation/breadcrumb-bar'
 import { QuickExpenseTrigger } from '@/components/expenses/quick-expense-trigger'
+import { usePathname } from 'next/navigation'
 
 export function ChefMainContent({ children }: { children: React.ReactNode }) {
   const { collapsed } = useSidebar()
+  const pathname = usePathname()
 
   return (
     <main
@@ -18,7 +20,12 @@ export function ChefMainContent({ children }: { children: React.ReactNode }) {
     >
       <BreadcrumbBar />
       <QuickExpenseTrigger />
-      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">{children}</div>
+      <div
+        key={pathname}
+        className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 animate-fade-slide-up"
+      >
+        {children}
+      </div>
     </main>
   )
 }

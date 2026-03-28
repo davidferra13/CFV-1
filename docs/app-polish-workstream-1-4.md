@@ -1,4 +1,4 @@
-# App Polish: Workstreams 1, 3 & 4 - Completed
+# App Polish: Workstreams 1, 2, 3 & 4 - Completed
 
 ## Workstream 4: Platform Liability Cleanup
 
@@ -104,3 +104,44 @@ Expanded the setup wizard from 5 to 6 steps, replaced redirect-based steps with 
    - Replaced "Supported platforms" badges with "What you get" benefits list
    - Updated copy to generic inbox language throughout
    - Fixed "already connected" copy ("Platform leads" to "New inquiries")
+
+---
+
+## Workstream 2: Visual Personality
+
+### Assessment
+
+The design system was already very mature before this workstream. The globals.css had:
+
+- Warm brand palette (terracotta/copper tones)
+- Fractal noise body texture
+- Page background gradient with brand-50 warm tint
+- Glass morphism utilities
+- Card lift animations with brand glow
+- DM Serif Display for h1/h2 headings
+- Skeleton shimmer with brand tint
+- Toast styling with color-coded left borders
+- Nav active glow
+- Hero glow effects
+- Stagger entry animations
+- Dialog entrance animations
+- Reduced motion support
+
+### What Was Added
+
+1. **`app/globals.css`** - Success animation keyframes
+   - `success-draw`: Checkmark stroke drawing animation
+   - `success-circle`: Circle scale-in with bounce
+   - `success-fade-out`: Auto-dismiss after 1.8s
+   - `success-flash`: Subtle green background pulse for inline feedback
+   - `.success-check`, `.success-check-path`, `.success-flash` utility classes
+
+2. **`components/ui/success-check.tsx`** (CREATED)
+   - Animated SVG checkmark component
+   - Green circle + drawn checkmark that fades out
+   - Configurable size, composable
+
+3. **`components/navigation/chef-main-content.tsx`**
+   - Added `usePathname()` to key the content wrapper on the current route
+   - Content div now has `animate-fade-slide-up` class that re-triggers on every navigation
+   - Every chef portal page now gets a subtle entrance transition automatically

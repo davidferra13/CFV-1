@@ -663,6 +663,69 @@ html {
   animation: slide-in-from-top 0.2s ease-out;
 }
 
+/* ── Success Checkmark Animation ── */
+/* Brief green checkmark pulse for successful actions (save, create, send).
+   Usage: <SuccessCheck /> or apply class .success-check to a container. */
+@keyframes success-draw {
+  0% {
+    stroke-dashoffset: 24;
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+@keyframes success-circle {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes success-fade-out {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.success-check {
+  animation:
+    success-circle 400ms var(--ease-bounce) both,
+    success-fade-out 1.8s ease both;
+}
+.success-check-path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: success-draw 500ms var(--ease-spring) 150ms both;
+}
+
+/* Inline success flash - subtle green background pulse on the element */
+@keyframes success-flash {
+  0% {
+    background-color: rgb(16 185 129 / 0.15);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+.success-flash {
+  animation: success-flash 1.2s ease both;
+}
+
 /* Pointer on clickable words */
 .culinary-word-clickable {
   cursor: pointer;

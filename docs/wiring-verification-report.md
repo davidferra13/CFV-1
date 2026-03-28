@@ -2,18 +2,18 @@
 
 **Date:** 2026-03-28
 **Tested by:** Agent account (agent@local.chefflow)
-**Method:** Static analysis (all routes) + Playwright live test (partial; dev server degraded under sequential load)
+**Method:** Static analysis (all routes) + Playwright live test (partial; dev server degraded under sequential Playwright load)
 
 ---
 
 ## Summary
 
 - **Static analysis:** 24/25 route files exist with proper exports, 0 have @ts-nocheck
-- **Live test (partial):** 6 pages confirmed loading across two test runs
+- **Live test (partial):** 6 pages confirmed loading across two test runs (Inbox, Events, Clients, Calendar, Plate Costs, Prep)
 - **1 route correction:** Staff is at `/staff`, not `/operations/staff`
 - **1 route correction:** Marketing hub is at `/marketing`, not `/marketing/campaigns`
 - **Dashboard:** Triggers a redirect on Playwright load (needs investigation)
-- **Remaining timeouts:** Dev server degrades under rapid sequential Playwright navigation (not page bugs)
+- **Remaining timeouts:** Dev server degrades under rapid sequential Playwright navigation (not page bugs). Server crashed 3 times from automated test load.
 
 ---
 
@@ -92,18 +92,18 @@ All 24 existing page files:
 
 ## Action Items
 
-1. **Re-run live test** after dev server restart. Script at `scripts/wiring-verification.mjs` now uses fresh pages per route with cooldown.
-2. **Dashboard redirect:** Investigate why `/dashboard` redirects during Playwright testing. Likely onboarding check or middleware.
+1. **Re-run live test** after dev server restart. Script at `scripts/wiring-verification.mjs`.
+2. **Dashboard redirect:** Investigate why `/dashboard` redirects during Playwright testing.
 3. **Update master spec:** Fix two incorrect route references.
 
 ---
 
-## Next Steps
+## Re-run Instructions
 
-Once the dev server is back up, re-run:
+After restarting the dev server:
 
 ```bash
 node scripts/wiring-verification.mjs
 ```
 
-The script now creates a fresh browser page per route and adds 1.5s cooldown between navigations to prevent server overload.
+The script creates a fresh browser page per route with 5s cooldown between navigations.
