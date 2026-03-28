@@ -3,7 +3,7 @@
 > Spec for transforming OpenClaw from a basic price scraper into a full-featured
 > price intelligence system for professional chefs.
 
-## Status: Building
+## Status: built
 
 ## 1. Category-Specific Markup Adjustment
 

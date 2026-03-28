@@ -1,6 +1,6 @@
 # Spec: OpenClaw V2 - Unified Price Intelligence
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)

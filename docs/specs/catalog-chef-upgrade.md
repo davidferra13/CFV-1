@@ -1,6 +1,6 @@
 # Spec: Chef-Facing Price Catalog - Full Upgrade
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** openclaw-v2-intelligence.md (built), catalog-power-tools.md (built)
 > **Estimated complexity:** large (9+ files)

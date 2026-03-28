@@ -1,6 +1,6 @@
 # Spec: Catalog Power Tools - 9 Enhancements to Admin Price Catalog
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** openclaw-v2-unified-pricing.md (built)
 > **Estimated complexity:** large (9+ files)

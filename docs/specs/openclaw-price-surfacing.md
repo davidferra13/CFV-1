@@ -1,6 +1,6 @@
 # Spec: OpenClaw Price Surfacing
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none (all prerequisites are included as Phase 0)
 > **Estimated complexity:** large (9+ files)
