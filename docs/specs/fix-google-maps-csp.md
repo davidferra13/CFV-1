@@ -1,6 +1,6 @@
 # Spec: Fix Google Maps CSP Blocking
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** small (1 file)
