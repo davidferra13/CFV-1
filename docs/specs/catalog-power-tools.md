@@ -1,11 +1,11 @@
 # Spec: Catalog Power Tools - 9 Enhancements to Admin Price Catalog
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** openclaw-v2-unified-pricing.md (built)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-28
-> **Built by:** not started
+> **Built by:** Claude Code (2026-03-28). SPEC IS BUILT.
 
 ---
 

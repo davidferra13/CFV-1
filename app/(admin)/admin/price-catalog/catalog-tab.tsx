@@ -3,10 +3,21 @@
 /**
  * CatalogTab - Browse the full 9,000+ OpenClaw ingredient catalog.
  * Admin-only. Calls the Pi directly for data.
- * Supports filtering by category, store, priced-only, search, and sort.
+ *
+ * Power Tools:
+ * 1. Price comparison bars (expanded row)
+ * 2. CSV export
+ * 3. Bulk price checker
+ * 4. Freshness dots
+ * 5. Click-to-filter on category/store
+ * 6. Category coverage breakdown
+ * 7. Price trend indicators
+ * 8. Keyboard navigation
+ * 9. URL-synced filters
  */
 
-import { useCallback, useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,13 +26,30 @@ import {
   getCatalogStats,
   getCatalogStores,
   getCatalogItemPrices,
+  getCategoryCoverage,
   type CatalogItem,
   type CatalogItemDetail,
   type CatalogStats,
   type CatalogStore,
+  type CategoryCoverage,
 } from '@/lib/openclaw/catalog-actions'
 import { formatCurrency } from '@/lib/utils/currency'
-import { ChevronDown, ChevronUp, ArrowUpDown, Store, Filter, X } from 'lucide-react'
+import { FreshnessDot } from '@/components/pricing/freshness-dot'
+import { PriceComparisonBars } from '@/components/pricing/price-comparison-bars'
+import { CategoryCoverageChart } from '@/components/pricing/category-coverage-chart'
+import { BulkPriceChecker } from '@/components/pricing/bulk-price-checker'
+import {
+  ChevronDown,
+  ChevronUp,
+  ArrowUpDown,
+  Store,
+  Filter,
+  X,
+  Download,
+  ListChecks,
+  TrendingUp,
+  TrendingDown,
+} from 'lucide-react'
 
 const CATEGORIES = [
   'Beef',
@@ -49,29 +77,54 @@ const SORT_OPTIONS = [
 
 type SortOption = (typeof SORT_OPTIONS)[number]['value']
 
-const CONFIDENCE_COLORS: Record<string, string> = {
-  high: 'bg-emerald-900 text-emerald-400',
-  medium: 'bg-amber-900 text-amber-400',
-  low: 'bg-stone-800 text-stone-400',
+// --- Feature 9: URL param helpers ---
+
+function readFiltersFromURL(sp: URLSearchParams) {
+  return {
+    search: sp.get('q') || '',
+    category: sp.get('cat') || null,
+    selectedStore: sp.get('store') || null,
+    pricedOnly: sp.get('priced') === '1',
+    sort: (sp.get('sort') as SortOption) || 'name',
+    page: parseInt(sp.get('page') || '1', 10) || 1,
+  }
 }
 
-function ConfidenceBadge({ confidence }: { confidence: string }) {
-  const norm = confidence.toLowerCase()
-  const color = CONFIDENCE_COLORS[norm] || CONFIDENCE_COLORS.medium
-  return <span className={`text-xs px-1.5 py-0.5 rounded ${color}`}>{confidence}</span>
+function buildURLParams(filters: {
+  search: string
+  category: string | null
+  selectedStore: string | null
+  pricedOnly: boolean
+  sort: SortOption
+  page: number
+}): string {
+  const params = new URLSearchParams()
+  if (filters.search) params.set('q', filters.search)
+  if (filters.category) params.set('cat', filters.category)
+  if (filters.selectedStore) params.set('store', filters.selectedStore)
+  if (filters.pricedOnly) params.set('priced', '1')
+  if (filters.sort !== 'name') params.set('sort', filters.sort)
+  if (filters.page > 1) params.set('page', String(filters.page))
+  const str = params.toString()
+  return str ? `?${str}` : ''
 }
 
 export function CatalogTab() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const initFilters = readFiltersFromURL(searchParams)
+
   const [stats, setStats] = useState<CatalogStats | null>(null)
   const [stores, setStores] = useState<CatalogStore[]>([])
   const [items, setItems] = useState<CatalogItem[]>([])
   const [total, setTotal] = useState(0)
-  const [search, setSearch] = useState('')
-  const [category, setCategory] = useState<string | null>(null)
-  const [selectedStore, setSelectedStore] = useState<string | null>(null)
-  const [pricedOnly, setPricedOnly] = useState(false)
-  const [sort, setSort] = useState<SortOption>('name')
-  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState(initFilters.search)
+  const [category, setCategory] = useState<string | null>(initFilters.category)
+  const [selectedStore, setSelectedStore] = useState<string | null>(initFilters.selectedStore)
+  const [pricedOnly, setPricedOnly] = useState(initFilters.pricedOnly)
+  const [sort, setSort] = useState<SortOption>(initFilters.sort)
+  const [page, setPage] = useState(initFilters.page)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [expandedPrices, setExpandedPrices] = useState<CatalogItemDetail[]>([])
   const [isPending, startTransition] = useTransition()
@@ -79,6 +132,36 @@ export function CatalogTab() {
   const [searchTimeout, setSearchTimeout] = useState<ReturnType<typeof setTimeout> | null>(null)
   const [showStoreDropdown, setShowStoreDropdown] = useState(false)
   const [storeSearch, setStoreSearch] = useState('')
+
+  // Feature 3: Bulk checker
+  const [showBulkChecker, setShowBulkChecker] = useState(false)
+
+  // Feature 6: Category coverage
+  const [coverageData, setCoverageData] = useState<CategoryCoverage[]>([])
+  const [showCoverageBreakdown, setShowCoverageBreakdown] = useState(false)
+
+  // Feature 8: Keyboard navigation
+  const [focusedIndex, setFocusedIndex] = useState(-1)
+  const tableWrapperRef = useRef<HTMLDivElement>(null)
+
+  // Feature fix: Store dropdown outside-click close
+  const storeDropdownRef = useRef<HTMLDivElement>(null)
+
+  // --- URL sync helper ---
+  const syncURL = useCallback(
+    (filters: {
+      search: string
+      category: string | null
+      selectedStore: string | null
+      pricedOnly: boolean
+      sort: SortOption
+      page: number
+    }) => {
+      const url = pathname + buildURLParams(filters)
+      router.replace(url, { scroll: false })
+    },
+    [pathname, router]
+  )
 
   const doSearch = useCallback(
     (
@@ -111,19 +194,104 @@ export function CatalogTab() {
     []
   )
 
-  // Load stats + stores on mount
+  // Load stats + stores + coverage on mount
   useEffect(() => {
     startTransition(async () => {
       try {
-        const [s, st] = await Promise.all([getCatalogStats(), getCatalogStores()])
+        const [s, st, cov] = await Promise.all([
+          getCatalogStats(),
+          getCatalogStores(),
+          getCategoryCoverage(),
+        ])
         setStats(s)
         setStores(st)
+        setCoverageData(cov)
       } catch {
         // Non-blocking
       }
     })
-    doSearch('', null, null, false, 'name', 1)
+    doSearch(
+      initFilters.search,
+      initFilters.category,
+      initFilters.selectedStore,
+      initFilters.pricedOnly,
+      initFilters.sort,
+      initFilters.page
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doSearch])
+
+  // Fix: Close store dropdown on outside click
+  useEffect(() => {
+    function handleMouseDown(e: MouseEvent) {
+      if (storeDropdownRef.current && !storeDropdownRef.current.contains(e.target as Node)) {
+        setShowStoreDropdown(false)
+      }
+    }
+    if (showStoreDropdown) {
+      document.addEventListener('mousedown', handleMouseDown)
+      return () => document.removeEventListener('mousedown', handleMouseDown)
+    }
+  }, [showStoreDropdown])
+
+  // Feature 8: Keyboard navigation
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      // Don't capture keys when input/textarea is focused
+      const tag = (e.target as HTMLElement)?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+
+      // Only activate when table area has focus
+      if (!tableWrapperRef.current?.contains(document.activeElement)) return
+
+      if (isPending) return
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault()
+          setFocusedIndex((prev) => Math.min(prev + 1, items.length - 1))
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          setFocusedIndex((prev) => Math.max(prev - 1, 0))
+          break
+        case 'Enter':
+          e.preventDefault()
+          if (focusedIndex >= 0 && focusedIndex < items.length) {
+            handleExpand(items[focusedIndex].id)
+          }
+          break
+        case 'Escape':
+          if (expandedId) {
+            setExpandedId(null)
+            setExpandedPrices([])
+          } else if (showBulkChecker) {
+            setShowBulkChecker(false)
+          } else {
+            ;(document.activeElement as HTMLElement)?.blur()
+          }
+          break
+        case 'Home':
+          e.preventDefault()
+          setFocusedIndex(0)
+          break
+        case 'End':
+          e.preventDefault()
+          setFocusedIndex(items.length - 1)
+          break
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [items.length, focusedIndex, expandedId, showBulkChecker, isPending])
+
+  // Scroll focused row into view
+  useEffect(() => {
+    if (focusedIndex >= 0) {
+      const row = tableWrapperRef.current?.querySelector(`[data-index="${focusedIndex}"]`)
+      row?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [focusedIndex])
 
   // Debounced search
   function handleSearchChange(value: string) {
@@ -132,7 +300,9 @@ export function CatalogTab() {
     setSearchTimeout(
       setTimeout(() => {
         setPage(1)
+        setFocusedIndex(-1)
         doSearch(value, category, selectedStore, pricedOnly, sort, 1)
+        syncURL({ search: value, category, selectedStore, pricedOnly, sort, page: 1 })
       }, 500)
     )
   }
@@ -141,7 +311,9 @@ export function CatalogTab() {
     const newCat = category === cat ? null : cat
     setCategory(newCat)
     setPage(1)
+    setFocusedIndex(-1)
     doSearch(search, newCat, selectedStore, pricedOnly, sort, 1)
+    syncURL({ search, category: newCat, selectedStore, pricedOnly, sort, page: 1 })
   }
 
   function handleStoreSelect(storeId: string | null) {
@@ -149,25 +321,44 @@ export function CatalogTab() {
     setShowStoreDropdown(false)
     setStoreSearch('')
     setPage(1)
+    setFocusedIndex(-1)
     doSearch(search, category, storeId, pricedOnly, sort, 1)
+    syncURL({ search, category, selectedStore: storeId, pricedOnly, sort, page: 1 })
+  }
+
+  // Feature 5: Click store name in expanded row to filter
+  function handleStoreSelectByName(storeName: string) {
+    const match = stores.find((s) => s.name.toLowerCase() === storeName.toLowerCase())
+    if (match) {
+      handleStoreSelect(match.id)
+    } else {
+      // Fallback: set search to store name
+      handleSearchChange(storeName)
+    }
   }
 
   function handlePricedToggle() {
     const next = !pricedOnly
     setPricedOnly(next)
     setPage(1)
+    setFocusedIndex(-1)
     doSearch(search, category, selectedStore, next, sort, 1)
+    syncURL({ search, category, selectedStore, pricedOnly: next, sort, page: 1 })
   }
 
   function handleSortChange(newSort: SortOption) {
     setSort(newSort)
     setPage(1)
+    setFocusedIndex(-1)
     doSearch(search, category, selectedStore, pricedOnly, newSort, 1)
+    syncURL({ search, category, selectedStore, pricedOnly, sort: newSort, page: 1 })
   }
 
   function handlePageChange(newPage: number) {
     setPage(newPage)
+    setFocusedIndex(-1)
     doSearch(search, category, selectedStore, pricedOnly, sort, newPage)
+    syncURL({ search, category, selectedStore, pricedOnly, sort, page: newPage })
   }
 
   function clearAllFilters() {
@@ -177,7 +368,16 @@ export function CatalogTab() {
     setPricedOnly(false)
     setSort('name')
     setPage(1)
+    setFocusedIndex(-1)
     doSearch('', null, null, false, 'name', 1)
+    syncURL({
+      search: '',
+      category: null,
+      selectedStore: null,
+      pricedOnly: false,
+      sort: 'name',
+      page: 1,
+    })
   }
 
   async function handleExpand(itemId: string) {
@@ -194,6 +394,18 @@ export function CatalogTab() {
     } catch {
       setExpandedPrices([])
     }
+  }
+
+  // Feature 2: CSV export URL builder
+  function getCsvExportUrl() {
+    const params = new URLSearchParams()
+    if (search) params.set('q', search)
+    if (category) params.set('cat', category)
+    if (selectedStore) params.set('store', selectedStore)
+    if (pricedOnly) params.set('priced', '1')
+    if (sort !== 'name') params.set('sort', sort)
+    const qs = params.toString()
+    return `/admin/price-catalog/csv-export${qs ? `?${qs}` : ''}`
   }
 
   const totalPages = Math.ceil(total / 50)
@@ -222,11 +434,35 @@ export function CatalogTab() {
             <p className="text-2xl font-bold text-emerald-400">{stats.priced.toLocaleString()}</p>
             <p className="text-sm text-stone-500 mt-1">With prices</p>
           </Card>
+          {/* Feature 6: Coverage with breakdown toggle */}
           <Card className="p-4">
-            <p className="text-2xl font-bold text-stone-100">{coveragePct}%</p>
-            <p className="text-sm text-stone-500 mt-1">Coverage</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-2xl font-bold text-stone-100">{coveragePct}%</p>
+                <p className="text-sm text-stone-500 mt-1">Coverage</p>
+              </div>
+              {coverageData.length > 0 && (
+                <button
+                  onClick={() => setShowCoverageBreakdown(!showCoverageBreakdown)}
+                  className="text-xs text-stone-500 hover:text-stone-300 transition-colors"
+                >
+                  {showCoverageBreakdown ? 'Hide' : 'Show'} breakdown
+                </button>
+              )}
+            </div>
           </Card>
         </div>
+      )}
+
+      {/* Feature 6: Category coverage breakdown */}
+      {showCoverageBreakdown && coverageData.length > 0 && (
+        <Card className="p-4">
+          <p className="text-sm font-medium text-stone-300 mb-1">Coverage by category</p>
+          <CategoryCoverageChart
+            data={coverageData}
+            onCategoryClick={(cat) => handleCategoryClick(cat.toLowerCase())}
+          />
+        </Card>
       )}
 
       {/* Category chips */}
@@ -255,8 +491,8 @@ export function CatalogTab() {
           className="max-w-sm"
         />
 
-        {/* Store dropdown */}
-        <div className="relative">
+        {/* Store dropdown (with outside-click fix) */}
+        <div className="relative" ref={storeDropdownRef}>
           <button
             onClick={() => setShowStoreDropdown(!showStoreDropdown)}
             className={`flex items-center gap-2 px-3 py-1.5 text-xs rounded-md transition-colors ${
@@ -349,6 +585,29 @@ export function CatalogTab() {
 
         <span className="text-xs text-stone-500">{total.toLocaleString()} results</span>
 
+        {/* Feature 2: CSV Export */}
+        <button
+          onClick={() => window.open(getCsvExportUrl(), '_blank')}
+          disabled={isPending}
+          className="flex items-center gap-1 px-2 py-1.5 text-xs rounded-md bg-stone-800 text-stone-400 hover:bg-stone-700 transition-colors disabled:opacity-50"
+          title="Export filtered results as CSV"
+        >
+          <Download className="w-3 h-3" />
+        </button>
+
+        {/* Feature 3: Bulk checker toggle */}
+        <button
+          onClick={() => setShowBulkChecker(!showBulkChecker)}
+          className={`flex items-center gap-1 px-3 py-1.5 text-xs rounded-md transition-colors ${
+            showBulkChecker
+              ? 'bg-blue-900 text-blue-400'
+              : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+          }`}
+        >
+          <ListChecks className="w-3 h-3" />
+          Bulk Check
+        </button>
+
         {/* Clear all filters */}
         {hasActiveFilters && (
           <button
@@ -405,6 +664,11 @@ export function CatalogTab() {
         </div>
       )}
 
+      {/* Feature 3: Bulk price checker panel */}
+      {showBulkChecker && (
+        <BulkPriceChecker onFilterByIngredient={(name) => handleSearchChange(name)} />
+      )}
+
       {/* Error state */}
       {error && (
         <Card className="p-6 text-center">
@@ -422,7 +686,7 @@ export function CatalogTab() {
       {/* Results table */}
       {!error && (
         <Card>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" ref={tableWrapperRef} tabIndex={0}>
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-stone-700">
@@ -465,10 +729,13 @@ export function CatalogTab() {
                   </tr>
                 </tbody>
               )}
-              {items.map((item) => (
+              {items.map((item, idx) => (
                 <tbody key={item.id}>
                   <tr
-                    className="border-b border-stone-800 hover:bg-stone-800/50 cursor-pointer"
+                    data-index={idx}
+                    className={`border-b border-stone-800 hover:bg-stone-800/50 cursor-pointer ${
+                      focusedIndex === idx ? 'ring-1 ring-brand-500 ring-inset' : ''
+                    }`}
                     onClick={() => handleExpand(item.id)}
                   >
                     <td className="py-3 px-4 text-stone-100 font-medium">
@@ -481,14 +748,21 @@ export function CatalogTab() {
                         {item.name}
                       </div>
                     </td>
+                    {/* Feature 5: Click-to-filter on category */}
                     <td className="py-3 px-4">
-                      <span className="text-xs bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full capitalize">
+                      <span
+                        className="text-xs bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full capitalize cursor-pointer hover:ring-1 hover:ring-brand-500"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleCategoryClick(item.category)
+                        }}
+                      >
                         {item.category}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right">
                       {item.bestPriceCents != null ? (
-                        <span className="text-stone-100 font-medium">
+                        <span className="text-stone-100 font-medium inline-flex items-center gap-1 justify-end">
                           {formatCurrency(item.bestPriceCents)}
                           {item.bestPriceUnit && (
                             <span className="text-stone-500">/{item.bestPriceUnit}</span>
@@ -498,42 +772,50 @@ export function CatalogTab() {
                               at {item.bestPriceStore}
                             </span>
                           )}
+                          {/* Feature 7: Price trend indicator */}
+                          {item.trendPct != null && item.trendPct !== 0 && (
+                            <>
+                              {item.trendPct > 0 ? (
+                                <span className="inline-flex items-center gap-0.5 text-red-400">
+                                  <TrendingUp className="w-3 h-3" />
+                                  <span className="text-xs">
+                                    +{Math.abs(item.trendPct).toFixed(1)}%
+                                  </span>
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-0.5 text-emerald-400">
+                                  <TrendingDown className="w-3 h-3" />
+                                  <span className="text-xs">{item.trendPct.toFixed(1)}%</span>
+                                </span>
+                              )}
+                            </>
+                          )}
                         </span>
                       ) : (
                         <span className="text-stone-600">No price</span>
                       )}
                     </td>
                     <td className="py-3 px-4 text-right text-stone-400">{item.priceCount}</td>
+                    {/* Feature 4: Freshness dot */}
                     <td className="py-3 px-4 text-right text-stone-500 text-xs">
-                      {item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString() : '-'}
+                      <span className="inline-flex items-center gap-1.5 justify-end">
+                        <FreshnessDot date={item.lastUpdated} />
+                        {item.lastUpdated ? new Date(item.lastUpdated).toLocaleDateString() : '-'}
+                      </span>
                     </td>
                   </tr>
+                  {/* Feature 1: Price comparison bars in expanded row */}
                   {expandedId === item.id && (
                     <tr className="border-b border-stone-800">
                       <td colSpan={5} className="px-4 py-3 bg-stone-900/50">
                         {expandedPrices.length === 0 ? (
                           <p className="text-sm text-stone-500">Loading store prices...</p>
                         ) : (
-                          <div className="space-y-1">
+                          <div className="space-y-2">
                             <p className="text-xs font-medium text-stone-400 mb-2">
                               All store prices (sorted cheapest first)
                             </p>
-                            {expandedPrices.map((price, i) => (
-                              <div key={i} className="flex items-center gap-4 text-sm py-1">
-                                <span className="text-stone-100 w-48 truncate">{price.store}</span>
-                                <span className="font-medium text-stone-200">
-                                  {formatCurrency(price.priceCents)}
-                                  <span className="text-stone-500">/{price.unit}</span>
-                                </span>
-                                <ConfidenceBadge confidence={price.confidence} />
-                                <span className="text-xs text-stone-500">{price.tier}</span>
-                                <span className="text-xs text-stone-500">
-                                  {price.lastConfirmedAt
-                                    ? new Date(price.lastConfirmedAt).toLocaleDateString()
-                                    : ''}
-                                </span>
-                              </div>
-                            ))}
+                            <PriceComparisonBars prices={expandedPrices} />
                           </div>
                         )}
                       </td>
@@ -543,6 +825,12 @@ export function CatalogTab() {
               ))}
             </table>
           </div>
+          {/* Feature 8: Keyboard nav hint */}
+          {items.length > 0 && (
+            <p className="text-xs text-stone-600 px-4 py-2 border-t border-stone-800">
+              Arrow keys to navigate, Enter to expand
+            </p>
+          )}
         </Card>
       )}
 

@@ -677,6 +677,12 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/culinary/price-catalog',
+        label: 'Price Catalog',
+        icon: Store,
+        tier: 'secondary',
+      },
+      {
         href: '/settings/menu-engine',
         label: 'Menu Engine Settings',
         icon: Sliders,
@@ -1510,6 +1516,7 @@ export const navGroups: NavGroup[] = [
       { href: '/admin/financials', label: 'Financials', icon: DollarSign, adminOnly: true },
       { href: '/admin/hub', label: 'Hub Groups', icon: Users, adminOnly: true },
       { href: '/admin/presence', label: 'Live Presence', icon: WifiHigh, adminOnly: true },
+      { href: '/admin/price-catalog', label: 'Price Catalog', icon: Store, adminOnly: true },
       {
         href: '/admin/notifications',
         label: 'Notifications',
@@ -1964,6 +1971,7 @@ export const actionBarItems: NavItem[] = [
   { href: '/culinary/prep', label: 'Prep', icon: Timer },
   { href: '/tasks', label: 'Tasks', icon: ListChecks },
   { href: '/circles', label: 'Community', icon: MessagesSquare },
+  { href: '/culinary/price-catalog', label: 'Price Catalog', icon: Store },
 ]
 
 // ─── + Create dropdown: 15 direct navigation links ───

@@ -1,11 +1,11 @@
 # Spec: Chef-Facing Price Catalog - Full Upgrade
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
-> **Depends on:** openclaw-v2-intelligence.md (built), catalog-power-tools.md (can build in parallel, but coordinate Pi deploys)
+> **Depends on:** openclaw-v2-intelligence.md (built), catalog-power-tools.md (built)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-28
-> **Built by:** not started
+> **Built by:** Claude Code (2026-03-28). SPEC IS BUILT.
 
 ---
 

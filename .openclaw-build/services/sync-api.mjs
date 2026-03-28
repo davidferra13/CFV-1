@@ -114,6 +114,84 @@ const server = createServer((req, res) => {
       return jsonResponse(res, { count: rows.length, sources: rows });
     }
 
+    // Get all distinct categories
+    if (path === '/api/categories') {
+      const rows = db.prepare('SELECT DISTINCT category FROM canonical_ingredients WHERE category IS NOT NULL ORDER BY category').all();
+      return jsonResponse(res, { categories: rows.map(r => r.category) });
+    }
+
+    // Category coverage: how many ingredients in each category have at least one price
+    if (path === '/api/stats/category-coverage') {
+      const rows = db.prepare(`
+        SELECT
+          ci.category,
+          COUNT(*) as total,
+          COUNT(DISTINCT cp.canonical_ingredient_id) as priced
+        FROM canonical_ingredients ci
+        LEFT JOIN current_prices cp ON cp.canonical_ingredient_id = ci.ingredient_id
+        GROUP BY ci.category
+        ORDER BY ci.category
+      `).all();
+      return jsonResponse(res, { categories: rows });
+    }
+
+    // Detail for one ingredient across all stores
+    if (path.startsWith('/api/ingredients/detail/')) {
+      const ingredientId = decodeURIComponent(path.replace('/api/ingredients/detail/', ''));
+      const ingredient = db.prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?').get(ingredientId);
+      if (!ingredient) return jsonResponse(res, { error: 'Ingredient not found' }, 404);
+
+      const prices = db.prepare(`
+        SELECT cp.price_cents, cp.price_unit, cp.price_type, cp.pricing_tier, cp.confidence,
+               cp.in_stock, cp.source_url, cp.last_confirmed_at, cp.last_changed_at, cp.package_size,
+               sr.name as store_name, sr.city, sr.state, sr.website as store_website
+        FROM current_prices cp
+        JOIN source_registry sr ON cp.source_id = sr.source_id
+        WHERE cp.canonical_ingredient_id = ?
+        ORDER BY cp.in_stock DESC, cp.price_cents ASC
+      `).all(ingredientId);
+
+      const inStockPrices = prices.filter(p => p.in_stock === 1);
+      const cheapest = inStockPrices.length > 0 ? inStockPrices[0] : (prices[0] || null);
+      const avgCents = inStockPrices.length > 0
+        ? Math.round(inStockPrices.reduce((s, p) => s + p.price_cents, 0) / inStockPrices.length)
+        : null;
+
+      return jsonResponse(res, {
+        ingredient: {
+          id: ingredient.ingredient_id,
+          name: ingredient.name,
+          category: ingredient.category,
+          standardUnit: ingredient.standard_unit,
+        },
+        prices: prices.map(p => ({
+          store: p.store_name,
+          storeCity: p.city || null,
+          storeState: p.state || null,
+          storeWebsite: p.store_website || null,
+          priceCents: p.price_cents,
+          priceUnit: p.price_unit,
+          priceType: p.price_type,
+          pricingTier: p.pricing_tier,
+          confidence: p.confidence,
+          inStock: p.in_stock === 1,
+          sourceUrl: p.source_url || null,
+          lastConfirmedAt: p.last_confirmed_at,
+          lastChangedAt: p.last_changed_at,
+          packageSize: p.package_size || null,
+        })),
+        summary: {
+          storeCount: prices.length,
+          inStockCount: inStockPrices.length,
+          outOfStockCount: prices.length - inStockPrices.length,
+          cheapestCents: cheapest ? cheapest.price_cents : null,
+          cheapestStore: cheapest ? cheapest.store_name : null,
+          avgCents,
+          hasSourceUrls: prices.some(p => p.source_url),
+        },
+      });
+    }
+
     // Get price changes (recent)
     if (path === '/api/changes') {
       const limit = parseInt(url.searchParams.get('limit') || '50');
@@ -516,104 +594,113 @@ const server = createServer((req, res) => {
       });
     }
 
-    // Get canonical ingredients list (with full filtering)
+    // Get canonical ingredients list (with full filtering, stock counts, cursor pagination)
     if (path === '/api/ingredients') {
       const search = url.searchParams.get('search');
       const category = url.searchParams.get('category');
       const store = url.searchParams.get('store');
       const pricedOnly = url.searchParams.get('priced_only') === '1';
-      const sort = url.searchParams.get('sort') || 'name'; // name, price, stores, updated
+      const inStockOnly = url.searchParams.get('in_stock_only') === '1';
+      const tier = url.searchParams.get('tier'); // retail, wholesale
+      const sort = url.searchParams.get('sort') || 'name';
       const limit = Math.min(parseInt(url.searchParams.get('limit') || '0'), 500);
       const page = Math.max(parseInt(url.searchParams.get('page') || '1'), 1);
-      const offset = (page - 1) * (limit || 50);
+      const after = url.searchParams.get('after'); // cursor-based pagination
+      const offset = after ? 0 : (page - 1) * (limit || 50);
 
-      // Build query with optional price/store joins
-      const needsPriceJoin = pricedOnly || store || sort === 'price' || sort === 'stores' || sort === 'updated';
+      const needsPriceJoin = pricedOnly || store || tier || sort === 'price' || sort === 'stores' || sort === 'updated';
 
       let countQuery, dataQuery;
       const countParams = [];
       const dataParams = [];
 
-      if (needsPriceJoin) {
-        // Join with current_prices and source_registry for filtering
-        const baseFrom = `
-          FROM canonical_ingredients ci
-          LEFT JOIN current_prices cp ON cp.canonical_ingredient_id = ci.ingredient_id
-          LEFT JOIN source_registry sr ON cp.source_id = sr.source_id
-        `;
-        let where = ' WHERE 1=1';
+      // Always use the join variant now (we need stock counts)
+      const baseFrom = `
+        FROM canonical_ingredients ci
+        LEFT JOIN current_prices cp ON cp.canonical_ingredient_id = ci.ingredient_id
+        LEFT JOIN source_registry sr ON cp.source_id = sr.source_id
+      `;
+      let where = ' WHERE 1=1';
 
-        if (search) {
-          where += ' AND (ci.name LIKE ? OR ci.ingredient_id LIKE ?)';
-          countParams.push(`%${search}%`, `%${search}%`);
-          dataParams.push(`%${search}%`, `%${search}%`);
-        }
-        if (category) {
-          where += ' AND ci.category = ?';
-          countParams.push(category);
-          dataParams.push(category);
-        }
-        if (store) {
-          where += ' AND (sr.name LIKE ? OR cp.source_id LIKE ?)';
-          countParams.push(`%${store}%`, `%${store}%`);
-          dataParams.push(`%${store}%`, `%${store}%`);
-        }
-        if (pricedOnly) {
-          where += ' AND cp.price_cents IS NOT NULL';
-        }
-
-        countQuery = `SELECT COUNT(DISTINCT ci.ingredient_id) as total ${baseFrom} ${where}`;
-
-        let orderBy = ' ORDER BY ci.name';
-        if (sort === 'price') orderBy = ' ORDER BY MIN(cp.price_cents) ASC NULLS LAST, ci.name';
-        if (sort === 'stores') orderBy = ' ORDER BY COUNT(DISTINCT cp.source_id) DESC, ci.name';
-        if (sort === 'updated') orderBy = ' ORDER BY MAX(cp.last_confirmed_at) DESC NULLS LAST, ci.name';
-
-        dataQuery = `
-          SELECT ci.ingredient_id, ci.name, ci.category, ci.standard_unit, ci.created_at,
-                 MIN(cp.price_cents) as best_price_cents,
-                 (SELECT sr2.name FROM current_prices cp2 JOIN source_registry sr2 ON cp2.source_id = sr2.source_id
-                  WHERE cp2.canonical_ingredient_id = ci.ingredient_id ORDER BY cp2.price_cents ASC LIMIT 1) as best_price_store,
-                 ci.standard_unit as best_price_unit,
-                 COUNT(DISTINCT cp.source_id) as price_count,
-                 MAX(cp.last_confirmed_at) as last_updated
-          ${baseFrom} ${where}
-          GROUP BY ci.ingredient_id
-          ${orderBy}
-        `;
-      } else {
-        // Simple query without joins
-        let where = '';
-        if (search) {
-          where = ' WHERE (name LIKE ? OR ingredient_id LIKE ?)';
-          countParams.push(`%${search}%`, `%${search}%`);
-          dataParams.push(`%${search}%`, `%${search}%`);
-        }
-        if (category) {
-          where += (where ? ' AND' : ' WHERE') + ' category = ?';
-          countParams.push(category);
-          dataParams.push(category);
-        }
-
-        countQuery = `SELECT COUNT(*) as total FROM canonical_ingredients ${where}`;
-        dataQuery = `SELECT *, NULL as best_price_cents, NULL as best_price_store, NULL as best_price_unit, 0 as price_count, NULL as last_updated FROM canonical_ingredients ${where} ORDER BY name`;
+      if (search) {
+        where += ' AND (ci.name LIKE ? OR ci.ingredient_id LIKE ?)';
+        countParams.push(`%${search}%`, `%${search}%`);
+        dataParams.push(`%${search}%`, `%${search}%`);
       }
+      if (category) {
+        where += ' AND ci.category = ?';
+        countParams.push(category);
+        dataParams.push(category);
+      }
+      if (store) {
+        where += ' AND (sr.name LIKE ? OR cp.source_id LIKE ?)';
+        countParams.push(`%${store}%`, `%${store}%`);
+        dataParams.push(`%${store}%`, `%${store}%`);
+      }
+      if (pricedOnly) {
+        where += ' AND cp.price_cents IS NOT NULL';
+      }
+      if (tier) {
+        where += ' AND cp.pricing_tier = ?';
+        countParams.push(tier);
+        dataParams.push(tier);
+      }
+      // Cursor-based pagination for name sort
+      if (after && sort === 'name') {
+        where += ' AND ci.ingredient_id > ?';
+        dataParams.push(after);
+      }
+
+      countQuery = `SELECT COUNT(DISTINCT ci.ingredient_id) as total ${baseFrom} ${where}`;
+
+      let orderBy = ' ORDER BY ci.name';
+      if (sort === 'price') orderBy = ' ORDER BY MIN(cp.price_cents) ASC NULLS LAST, ci.name';
+      if (sort === 'stores') orderBy = ' ORDER BY COUNT(DISTINCT cp.source_id) DESC, ci.name';
+      if (sort === 'updated') orderBy = ' ORDER BY MAX(cp.last_confirmed_at) DESC NULLS LAST, ci.name';
+
+      let having = '';
+      if (inStockOnly) {
+        having = ' HAVING SUM(CASE WHEN cp.in_stock = 1 THEN 1 ELSE 0 END) > 0';
+      }
+
+      dataQuery = `
+        SELECT ci.ingredient_id, ci.name, ci.category, ci.standard_unit, ci.created_at,
+               MIN(cp.price_cents) as best_price_cents,
+               (SELECT sr2.name FROM current_prices cp2 JOIN source_registry sr2 ON cp2.source_id = sr2.source_id
+                WHERE cp2.canonical_ingredient_id = ci.ingredient_id ORDER BY cp2.price_cents ASC LIMIT 1) as best_price_store,
+               (SELECT cp2.price_unit FROM current_prices cp2
+                WHERE cp2.canonical_ingredient_id = ci.ingredient_id ORDER BY cp2.price_cents ASC LIMIT 1) as best_price_unit,
+               COUNT(DISTINCT cp.source_id) as price_count,
+               MAX(cp.last_confirmed_at) as last_updated,
+               SUM(CASE WHEN cp.in_stock = 1 THEN 1 ELSE 0 END) as in_stock_count,
+               SUM(CASE WHEN cp.in_stock = 0 THEN 1 ELSE 0 END) as out_of_stock_count,
+               MAX(CASE WHEN cp.source_url IS NOT NULL AND cp.source_url != '' THEN 1
+                        WHEN sr.website IS NOT NULL AND sr.website != '' THEN 1 ELSE 0 END) as has_source_url
+        ${baseFrom} ${where}
+        GROUP BY ci.ingredient_id
+        ${having}
+        ${orderBy}
+      `;
 
       const totalRow = db.prepare(countQuery).get(...countParams);
       const total = totalRow?.total || 0;
 
       if (limit > 0) {
         dataQuery += ' LIMIT ? OFFSET ?';
-        dataParams.push(limit, offset);
+        dataParams.push(limit, after ? 0 : offset);
       }
 
       const rows = db.prepare(dataQuery).all(...dataParams);
+      const lastItem = rows.length > 0 ? rows[rows.length - 1] : null;
+      const hasMore = limit > 0 && rows.length === limit;
 
       return jsonResponse(res, {
         count: rows.length,
         total,
         page: limit > 0 ? page : 1,
         pages: limit > 0 ? Math.ceil(total / limit) : 1,
+        hasMore,
+        nextCursor: hasMore && lastItem ? lastItem.ingredient_id : null,
         ingredients: rows.map(r => ({
           ingredient_id: r.ingredient_id,
           name: r.name,
@@ -625,7 +712,85 @@ const server = createServer((req, res) => {
           best_price_unit: r.best_price_unit || r.standard_unit,
           price_count: r.price_count || 0,
           last_updated: r.last_updated || null,
+          in_stock_count: r.in_stock_count || 0,
+          out_of_stock_count: r.out_of_stock_count || 0,
+          has_source_url: !!(r.has_source_url),
         })),
+      });
+    }
+
+    // Get full detail for one ingredient across all stores
+    if (path.startsWith('/api/ingredients/detail/')) {
+      const ingredientId = decodeURIComponent(path.replace('/api/ingredients/detail/', ''));
+      if (!ingredientId) {
+        return jsonResponse(res, { error: 'Missing ingredient ID' }, 400);
+      }
+
+      // Look up the ingredient
+      let resolvedId = ingredientId;
+      const directCheck = db.prepare('SELECT 1 FROM canonical_ingredients WHERE ingredient_id = ?').get(ingredientId);
+      if (!directCheck) {
+        // Try smart lookup by name
+        const lookup = smartLookup(db, ingredientId);
+        if (lookup && lookup.ingredient_id) {
+          resolvedId = lookup.ingredient_id;
+        } else {
+          return jsonResponse(res, { error: 'Ingredient not found' }, 404);
+        }
+      }
+
+      const ingredient = db.prepare('SELECT * FROM canonical_ingredients WHERE ingredient_id = ?').get(resolvedId);
+      if (!ingredient) {
+        return jsonResponse(res, { error: 'Ingredient not found' }, 404);
+      }
+
+      const prices = db.prepare(`
+        SELECT cp.*, sr.name as source_name, sr.city, sr.state, sr.website as store_website
+        FROM current_prices cp
+        JOIN source_registry sr ON cp.source_id = sr.source_id
+        WHERE cp.canonical_ingredient_id = ?
+        ORDER BY cp.in_stock DESC, cp.price_cents ASC
+      `).all(resolvedId);
+
+      const inStockCount = prices.filter(p => p.in_stock === 1).length;
+      const outOfStockCount = prices.filter(p => p.in_stock === 0).length;
+      const pricedPrices = prices.filter(p => p.price_cents != null);
+      const cheapest = pricedPrices.length > 0 ? pricedPrices.reduce((a, b) => a.price_cents < b.price_cents ? a : b) : null;
+      const avgCents = pricedPrices.length > 0 ? Math.round(pricedPrices.reduce((sum, p) => sum + p.price_cents, 0) / pricedPrices.length) : null;
+      const hasSourceUrls = prices.some(p => (p.source_url && p.source_url !== '') || (p.store_website && p.store_website !== ''));
+
+      return jsonResponse(res, {
+        ingredient: {
+          id: ingredient.ingredient_id,
+          name: ingredient.name,
+          category: ingredient.category,
+          standardUnit: ingredient.standard_unit,
+        },
+        prices: prices.map(p => ({
+          store: p.source_name,
+          storeCity: p.city || null,
+          storeState: p.state || null,
+          storeWebsite: p.store_website || null,
+          priceCents: p.price_cents,
+          priceUnit: p.price_unit,
+          priceType: p.price_type || 'regular',
+          pricingTier: p.pricing_tier || 'retail',
+          confidence: p.confidence || 'unknown',
+          inStock: p.in_stock === 1,
+          sourceUrl: p.source_url || null,
+          lastConfirmedAt: p.last_confirmed_at,
+          lastChangedAt: p.last_changed_at,
+          packageSize: p.package_size || null,
+        })),
+        summary: {
+          storeCount: prices.length,
+          inStockCount,
+          outOfStockCount,
+          cheapestCents: cheapest ? cheapest.price_cents : null,
+          cheapestStore: cheapest ? cheapest.source_name : null,
+          avgCents,
+          hasSourceUrls,
+        },
       });
     }
 

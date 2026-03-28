@@ -155,6 +155,12 @@ function migrateSchema(db) {
     db.exec("ALTER TABLE current_prices ADD COLUMN in_stock INTEGER NOT NULL DEFAULT 1");
     db.exec("CREATE INDEX IF NOT EXISTS idx_cp_stock ON current_prices(in_stock)");
   }
+
+  // Composite index for stock count queries (chef catalog)
+  const idxCheck = db.prepare("SELECT 1 FROM sqlite_master WHERE type='index' AND name='idx_cp_ingredient_stock'").get();
+  if (!idxCheck) {
+    db.exec("CREATE INDEX idx_cp_ingredient_stock ON current_prices(canonical_ingredient_id, in_stock)");
+  }
 }
 
 /**

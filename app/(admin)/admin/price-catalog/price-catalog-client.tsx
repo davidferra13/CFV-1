@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useTransition, Suspense } from 'react'
 import {
   getOpenClawStats,
   getOpenClawPrices,
@@ -445,7 +445,11 @@ export function PriceCatalogClient() {
       )}
 
       {/* Catalog Tab */}
-      {tab === 'catalog' && <CatalogTab />}
+      {tab === 'catalog' && (
+        <Suspense fallback={<div className="animate-pulse h-96 bg-stone-900 rounded-lg" />}>
+          <CatalogTab />
+        </Suspense>
+      )}
     </div>
   )
 }

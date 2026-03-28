@@ -53,7 +53,11 @@ function getJoinedAt(): string {
   }
 }
 
-export function PresenceBeacon() {
+interface PresenceBeaconProps {
+  role?: 'authenticated' | 'anonymous'
+}
+
+export function PresenceBeacon({ role = 'authenticated' }: PresenceBeaconProps) {
   const pathname = usePathname()
   const sessionIdRef = useRef<string>(getOrCreateSessionId())
   const joinedAtRef = useRef<string>(getJoinedAt())
@@ -69,7 +73,7 @@ export function PresenceBeacon() {
       sessionId: sessionIdRef.current,
       userId: null,
       email: null,
-      role: 'authenticated',
+      role,
       page: pathnameRef.current ?? '/',
       joinedAt: joinedAtRef.current,
       userAgent: navigator.userAgent.slice(0, 150),
@@ -87,7 +91,7 @@ export function PresenceBeacon() {
     }).catch(() => {
       // Ignore presence errors silently
     })
-  }, [])
+  }, [role])
 
   // Send initial presence and start heartbeat
   useEffect(() => {

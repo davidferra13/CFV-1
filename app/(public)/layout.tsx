@@ -1,7 +1,13 @@
 // Public Layout - No authentication required
 
+import dynamic from 'next/dynamic'
 import { PublicHeader } from '@/components/navigation/public-header'
 import { PublicFooter } from '@/components/navigation/public-footer'
+
+const PresenceBeacon = dynamic(
+  () => import('@/components/admin/presence-beacon').then((m) => m.PresenceBeacon),
+  { ssr: false }
+)
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,6 +22,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="absolute top-[50%] -left-20 h-[300px] w-[300px] rounded-full bg-brand-900/35 blur-[60px]" />
         <div className="absolute top-[75%] -right-20 h-[250px] w-[250px] rounded-full bg-brand-800/20 blur-[60px]" />
       </div>
+      <PresenceBeacon role="anonymous" />
       <PublicHeader />
       <main id="main-content" className="flex-1 animate-fade-slide-up">
         {children}
