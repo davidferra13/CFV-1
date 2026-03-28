@@ -7,13 +7,7 @@ export type ProductionSafetyReport = {
   warnings: string[]
 }
 
-const REQUIRED_PRODUCTION_ENV_VARS = [
-  'NEXT_PUBLIC_DB_URL',
-  'NEXT_PUBLIC_DB_ANON_KEY',
-  'DB_SERVICE_ROLE_KEY',
-  'RESEND_API_KEY',
-  'CRON_SECRET',
-] as const
+const REQUIRED_PRODUCTION_ENV_VARS = ['DATABASE_URL', 'RESEND_API_KEY', 'CRON_SECRET'] as const
 
 // Stripe keys are optional until payments are configured
 const OPTIONAL_PRODUCTION_ENV_VARS = [
