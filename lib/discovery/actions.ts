@@ -394,7 +394,9 @@ export async function uploadDiscoveryHeroImage(
   const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${finalExt}`
 
   // Create a File-like object from the processed buffer for the storage upload
-  const processedFile = new File([processed], `hero.${finalExt}`, { type: finalContentType })
+  const processedFile = new File([new Uint8Array(processed)], `hero.${finalExt}`, {
+    type: finalContentType,
+  })
 
   const uploadFile = async () =>
     db.storage

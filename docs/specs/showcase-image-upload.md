@@ -1,6 +1,6 @@
 # Spec: Showcase Image Upload (Hero Image for Public Directory)
 
-> **Status:** in-progress
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** small (3 files)
