@@ -39,6 +39,18 @@ export function ConnectGmailStep({
     setError(oauthError)
   }, [oauthError])
 
+  // Timeout recovery: if redirect hangs, reset after 10s
+  useEffect(() => {
+    if (!loading) return
+    const timeout = setTimeout(() => {
+      setLoading(false)
+      setError(
+        'Could not redirect to Google. Please try again, or skip and connect later from Settings.'
+      )
+    }, 10_000)
+    return () => clearTimeout(timeout)
+  }, [loading])
+
   if (gmailAlreadyConnected) {
     return (
       <div className="space-y-6">
@@ -111,10 +123,15 @@ export function ConnectGmailStep({
         Your email data is never sent to third parties.
       </div>
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && (
+        <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 px-4 py-3 text-sm text-red-800 dark:text-red-300">
+          {error}
+        </div>
+      )}
 
       <div className="flex items-center gap-4">
         <button
+          type="button"
           onClick={handleConnect}
           disabled={loading}
           className="rounded-md bg-orange-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-orange-500 disabled:opacity-60"

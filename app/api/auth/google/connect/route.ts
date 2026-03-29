@@ -71,7 +71,17 @@ export async function GET(request: NextRequest) {
       maxAge: 600,
     })
     return response
-  } catch {
-    return NextResponse.redirect(new URL('/auth/signin', redirectBase))
+  } catch (err) {
+    console.error('[Google OAuth] Connect initiation failed:', err)
+    return NextResponse.redirect(
+      new URL(
+        buildGoogleConnectResultPath({
+          returnTo,
+          key: 'error',
+          value: err instanceof Error ? err.message : 'Failed to start Google connection',
+        }),
+        redirectBase
+      )
+    )
   }
 }

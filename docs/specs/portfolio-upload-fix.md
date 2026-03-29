@@ -1,11 +1,13 @@
 # Spec: Portfolio Upload - Remove Limit + Fix Upload Failure
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (3-8 files)
 > **Created:** 2026-03-28
-> **Built by:** not started
+> **Built by:** Claude Code (2026-03-28) (already implemented in prior session)
+>
+> SPEC IS BUILT
 
 ---
 
