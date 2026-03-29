@@ -1,11 +1,12 @@
-# Spec: OpenClaw Scraper Enrichment (Images, Stock, Location Granularity)
+# Spec: OpenClaw Scraper Enrichment (Images, Stock, Location Granularity, New Sources)
 
 > **Status:** ready
-> **Priority:** P1 (next up)
+> **Priority:** P0 (blocking)
 > **Depends on:** none
-> **Estimated complexity:** medium (5-7 files on Pi)
+> **Estimated complexity:** large (12+ files on Pi)
 > **Created:** 2026-03-29
 > **Built by:** not started
+> **Research:** `docs/research/openclaw-every-backdoor-recon.md`
 
 ---
 
@@ -241,14 +242,140 @@ Split the expanded terms across the existing cron schedule. Odd/even day split a
 
 ---
 
+## Phase 5: New Data Sources (From Recon Report)
+
+Full details in `docs/research/openclaw-every-backdoor-recon.md`. Build in this order:
+
+### 5a. Open Food Facts Enrichment (FREE, images for 60%+ of catalog)
+
+New script: `enricher-openfoodfacts.mjs`
+
+- API: `https://world.openfoodfacts.org/api/v2/product/{barcode}` (no auth needed)
+- Iterate through `canonical_ingredients`, fuzzy-match by product name
+- Pull: front image URL, ingredient list, nutrition data, barcode
+- Store in new columns on `canonical_ingredients`: `off_image_url`, `off_barcode`, `off_nutrition_json`
+- Run weekly (Sunday). Rate limit: 100 req/min (be polite).
+- This is the fastest way to get images on the catalog without touching any scraper.
+
+### 5b. Instacart Expansion (add Shaw's, increase limits)
+
+Update `scraper-instacart-bulk.mjs`:
+
+- Add Shaw's (`shaws`) to the store list
+- Increase `max` from 500 to 2000 per store
+- Increase search terms from 80 to 250+ (load from `config/search-terms.json`)
+- Estimated gain: +3K-5K new items
+
+### 5c. Walmart API (official, free, no headless browser)
+
+New script: `scraper-walmart-api.mjs`
+
+- Sign up at developer.walmartlabs.com for free API key
+- Endpoints: Product Search, Product Lookup by UPC, Store Finder
+- Returns: name, price, images, availability, UPC, description, store-specific data
+- Target stores: Methuen, Plaistow NH, Salem NH
+- Run daily. Clean REST API, no Puppeteer needed.
+- Estimated gain: +2K-3K items
+
+### 5d. Target Expansion (multi-store)
+
+Update `scraper-target.mjs`:
+
+- Currently hard-coded to store #1290 (Methuen)
+- Add store IDs for: Salem NH, Tewksbury, North Andover, Nashua NH
+- Use Target's store locator API to discover IDs by zip
+- Same Redsky API, just loop through stores
+- Estimated gain: +500-1K items (mostly location-specific availability data)
+
+### 5e. Trader Joe's Scraper (NEW)
+
+New script: `scraper-traderjoes.mjs`
+
+- Reference: github.com/jackgisel/traderjoeapi, Apify scraper
+- TJ's website serves product catalog. Needs Puppeteer (403s basic requests).
+- Capture: product name, price, SKU, image URL, category, tags
+- Run weekly (TJ's inventory is stable)
+- Estimated gain: +1K-2K exclusive TJ's items
+
+### 5f. Stop & Shop Direct Scrape (NEW)
+
+New script: `scraper-stopandshop.mjs`
+
+- stopandshop.com has full e-commerce with internal JSON APIs
+- Reference: github.com/blaskovicz/go-stopandshop for endpoint patterns
+- Use Puppeteer to capture session token, then make direct API calls
+- Product search, category browsing, store-specific pricing
+- Returns: name, price, images, availability, UPC
+- Run daily
+- Estimated gain: +3K-5K items
+
+### 5g. Open Grocery Database Import (UPC cross-referencing)
+
+One-time script: `import-open-grocery-db.mjs`
+
+- Download from grocery.com/open-grocery-database-project/ (7MB XLS)
+- 100K+ UPC-to-product mappings
+- Create `upc_registry` table: `upc TEXT PRIMARY KEY, brand TEXT, product_name TEXT`
+- Cross-reference with existing products to deduplicate across stores
+
+### 5h. USDA FoodData Central Enrichment
+
+New script: `enricher-usda-fdc.mjs`
+
+- API: `https://api.nal.usda.gov/fdc/v1/` (free, API key required)
+- 400K+ branded food products with UPCs, nutrition, ingredients
+- Run monthly. Enrichment only.
+
+---
+
+## Updated Cron Schedule (After All Phases)
+
+```
+# DAILY
+0 1 * * *   scraper-government.mjs
+0 2 * * *   scraper-walmart-api.mjs
+0 3 * * *   scraper-flipp.mjs
+0 4 * * *   scraper-wholefoodsapfresh.mjs
+0 5 * * *   scraper-target.mjs
+0 6 * * *   scraper-stopandshop.mjs
+
+# INSTACART (ALTERNATING DAYS)
+30 7 1-31/2 * *  scraper-instacart-bulk.mjs --stores=market-basket,aldi,stop-and-shop,shaws --max=2000
+30 7 2-30/2 * *  scraper-instacart-bulk.mjs --stores=costco,bjs,whole-foods,hannaford --max=2000
+
+# TWICE WEEKLY
+0 8 * * 1,4   scraper-hannaford.mjs
+0 8 * * 2,5   scraper-traderjoes.mjs
+
+# WEEKLY
+30 9 * * 3   scraper-wholesale.mjs
+0 10 * * 0   enricher-openfoodfacts.mjs
+
+# PROCESSING
+0 9 * * *    cross-match.mjs
+0 10 * * *   aggregator.mjs
+*/15 * * * * watchdog.mjs
+*/30 * * * * receipt-processor.mjs batch
+
+# SYNC + MAINTENANCE
+0 23 * * *   sync-to-chefflow.mjs
+0 0 * * 0    log rotation
+```
+
+**Estimated final catalog:** 25K-35K items (up from 11K). ~70-80% of New England purchasable inventory.
+
+---
+
 ## Out of Scope
 
 - ChefFlow UI changes (separate spec: catalog-ux-overhaul)
-- Wholesale distributor APIs (requires dealer accounts, separate discussion)
-- Specialty/ethnic store scrapers (separate spec)
+- Wholesale distributor APIs (requires membership, separate discussion)
+- Specialty/ethnic store scrapers (requires physical visits, long-term)
 - Image downloading/caching (URLs only for now)
 - Receipt scanning improvements (existing system works, separate scope)
 - Anomaly backlog cleanup (separate task)
+- Costco Akamai bypass (attempt separately, high risk of failure)
+- Market Basket aisle walk (physical task, not automatable)
 
 ---
 
@@ -261,3 +388,8 @@ Split the expanded terms across the existing cron schedule. Odd/even day split a
 - `db.mjs` is the single source of truth for schema and upsert logic.
 - After all changes, run a snapshot: `bash F:/OpenClaw-Vault/swap.sh snapshot`
 - Do NOT modify cron jobs without running the new scrapers manually first to confirm they work.
+- Read `docs/research/openclaw-every-backdoor-recon.md` for full context on every data source.
+- Build Phase 5 sources in order (5a through 5h). Each one is independent and can be tested alone.
+- For Walmart API: sign up at developer.walmartlabs.com first, get API key, store in Pi env vars.
+- For Trader Joe's: reference the open-source repos. TJ's blocks non-browser requests. Use Puppeteer with stealth.
+- For Stop & Shop: use browser DevTools on stopandshop.com to capture current API endpoints before building.
