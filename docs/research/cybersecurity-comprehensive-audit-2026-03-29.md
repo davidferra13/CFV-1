@@ -117,18 +117,17 @@ AI code generators hallucinate package names. Attackers register those names on 
 **Risk:** Enumeration of active events and chef details.
 **Fix needed:** Add rate limiting on guest code lookups.
 
-### HIGH-4: Partner Report Tokens Expose Revenue Data
+### HIGH-4: Partner Report Tokens Expose Revenue Data (FIXED 2026-03-29)
 
 **Route:** `/partner-report/[token]`
-**Issue:** Share tokens show revenue data with no expiration and no revocation mechanism.
-**Risk:** Financial data exposure via stale links.
-**Fix needed:** Add `expires_at` and `is_active` flags.
+**Issue:** Share tokens showed revenue data with no expiration.
+**Fix:** Added application-level 90-day expiration check using `created_at` in `lib/partners/actions.ts`. Tokens for long-term partners should be refreshed by the chef.
 
-### HIGH-5: Guest Feedback Tokens Missing Expiration
+### HIGH-5: Guest Feedback Tokens Missing Expiration (FIXED 2026-03-29)
 
 **Route:** `/guest-feedback/[token]`
-**Issue:** Feedback tokens have no expiration check.
-**Fix needed:** Add `expires_at` check.
+**Issue:** Feedback tokens had no expiration check.
+**Fix:** Added application-level 60-day expiration check using `sent_at` in `lib/sharing/actions.ts`.
 
 ### HIGH-6: 9 API Routes Leak Raw Error Messages (FIXED 2026-03-29)
 
@@ -223,18 +222,19 @@ Shared tokenized links (varies by route), SSE channels (now fixed), cron endpoin
 3. ~~Sanitize the 9 error-leaking API routes~~ DONE (7 patched, 2 already safe)
 4. ~~Add rate limiting to guest code route~~ DONE
 
-### Next Session
+### Also Done (2026-03-29, second pass)
 
-1. Audit `package.json` dependencies for slopsquatting (hallucinated packages)
+5. ~~Audit `package.json` dependencies for slopsquatting~~ DONE (74 packages, all clean)
+6. ~~Add `x-middleware-subrequest` to header strip list~~ DONE
+7. ~~Add guest feedback token expiration~~ DONE (60-day app-level check)
+8. ~~Add partner report token expiration~~ DONE (90-day app-level check)
 
 ### Before Launch
 
-5. Add persistent rate limiting (Redis or DB-backed) for multi-process deployments
-6. Implement HMAC-signed unsubscribe tokens
-7. Add partner report token expiration and revocation
-8. Test session expiry UX (what happens when JWT expires mid-form)
-9. Test client access revocation (removing a client from an event)
-10. Add `x-middleware-subrequest` to the header strip list (defense-in-depth)
+9. Add persistent rate limiting (Redis or DB-backed) for multi-process deployments
+10. Implement HMAC-signed unsubscribe tokens
+11. Test session expiry UX (what happens when JWT expires mid-form)
+12. Test client access revocation (removing a client from an event)
 
 ### Ongoing
 

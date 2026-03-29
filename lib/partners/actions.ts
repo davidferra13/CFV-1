@@ -993,7 +993,7 @@ export async function getPartnerContributionReport(token: string) {
     .from('referral_partners')
     .select(
       `
-      id, name, partner_type, contact_name, description, cover_image_url, tenant_id,
+      id, name, partner_type, contact_name, description, cover_image_url, tenant_id, created_at,
       partner_locations(id, name, city, state, description, max_guest_count, is_active)
     `
     )
@@ -1002,6 +1002,16 @@ export async function getPartnerContributionReport(token: string) {
     .single()
 
   if (error || !partner) return null
+
+  // Expire partner report links after 90 days (application-level check).
+  // Partners who need ongoing access should have their token refreshed by the chef.
+  const createdAt = partner.created_at ? new Date(partner.created_at as string) : null
+  if (createdAt) {
+    const ninetyDaysMs = 90 * 24 * 60 * 60 * 1000
+    if (Date.now() - createdAt.getTime() > ninetyDaysMs) {
+      return null
+    }
+  }
 
   // Get chef info
   const { data: chef } = await db

@@ -13,6 +13,9 @@ const INTERNAL_REQUEST_HEADERS = [
   ROLE_HEADER,
   ENTITY_ID_HEADER,
   TENANT_ID_HEADER,
+  // Defense-in-depth: strip Next.js internal header to prevent middleware bypass
+  // (CVE-2025-29927 is patched in our version, but belt-and-suspenders)
+  'x-middleware-subrequest',
 ] as const
 
 export type RequestPortalAuthContext = {

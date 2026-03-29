@@ -279,33 +279,36 @@ The following items were verified by searching the actual codebase, not assumed.
 
 ## Summary: Priority Order for Pre-Launch Security
 
-| Priority | Area                                  | Status                          | Action Needed                                                      |
-| -------- | ------------------------------------- | ------------------------------- | ------------------------------------------------------------------ |
-| 1        | Tenant scoping on every query         | Audited (March 2026)            | Re-verify on any new server actions                                |
-| 2        | Auth checks on every route/action     | Audited (March 2026)            | Re-verify on any new routes                                        |
-| 3        | SSE channel authorization             | **FIXED (2026-03-29)**          | None (was critical: eavesdropping possible)                        |
-| 4        | Password reset token security         | **FIXED (2026-03-29)**          | None (was critical: plaintext storage + expiration bypass)         |
-| 5        | Stripe webhook signature verification | **Verified secure**             | None                                                               |
-| 6        | Login rate limiting                   | **Verified implemented**        | Consider persistent storage + account lockout for production scale |
-| 7        | File upload validation                | **Verified strong**             | None                                                               |
-| 8        | Storage signing secret                | **FIXED (2026-03-29)**          | None (was high: hardcoded fallback removed)                        |
-| 9        | Input length validation               | Varies by form                  | Spot-check critical forms                                          |
-| 10       | dangerouslySetInnerHTML audit         | **Verified safe (0 issues)**    | None                                                               |
-| 11       | robots.txt                            | **FIXED (2026-03-29)**          | None (created `public/robots.txt`)                                 |
-| 12       | Sensitive file exposure               | **Verified protected**          | None                                                               |
-| 13       | CSRF protection                       | **Verified implemented**        | None                                                               |
-| 14       | Source maps                           | **Verified not shipped**        | None                                                               |
-| 15       | E2E auth endpoint                     | **Verified gated**              | None (hard-blocked in production)                                  |
-| 16       | Cron endpoint auth                    | **Verified (all 38 endpoints)** | None (timing-safe comparison)                                      |
-| 17       | Next.js CVEs                          | **Safe (14.2.35)**              | None (patched past both critical CVEs)                             |
-| 18       | Tip request token expiration          | **Missing**                     | Add `expires_at` to `tip_requests` table                           |
-| 19       | Guest code rate limiting              | **Missing**                     | Add rate limiting on `/g/[code]` lookups                           |
-| 20       | Partner report token security         | **Missing**                     | Add expiration and revocation mechanism                            |
-| 21       | Error message leakage                 | **9 API routes leak**           | Return generic errors, log real errors server-side                 |
-| 22       | Public token route rate limiting      | **Missing on 7 routes**         | Add `checkRateLimit()` to each                                     |
-| 23       | Session expiry UX                     | Unknown                         | Test expired session behavior                                      |
-| 24       | Client access revocation              | Unknown                         | Test removing client access                                        |
-| 25       | Unsubscribe token signing             | **Missing**                     | Implement HMAC-signed unsubscribe tokens                           |
+| Priority | Area                                  | Status                           | Action Needed                                                      |
+| -------- | ------------------------------------- | -------------------------------- | ------------------------------------------------------------------ |
+| 1        | Tenant scoping on every query         | Audited (March 2026)             | Re-verify on any new server actions                                |
+| 2        | Auth checks on every route/action     | Audited (March 2026)             | Re-verify on any new routes                                        |
+| 3        | SSE channel authorization             | **FIXED (2026-03-29)**           | None (was critical: eavesdropping possible)                        |
+| 4        | Password reset token security         | **FIXED (2026-03-29)**           | None (was critical: plaintext storage + expiration bypass)         |
+| 5        | Stripe webhook signature verification | **Verified secure**              | None                                                               |
+| 6        | Login rate limiting                   | **Verified implemented**         | Consider persistent storage + account lockout for production scale |
+| 7        | File upload validation                | **Verified strong**              | None                                                               |
+| 8        | Storage signing secret                | **FIXED (2026-03-29)**           | None (was high: hardcoded fallback removed)                        |
+| 9        | Input length validation               | Varies by form                   | Spot-check critical forms                                          |
+| 10       | dangerouslySetInnerHTML audit         | **Verified safe (0 issues)**     | None                                                               |
+| 11       | robots.txt                            | **FIXED (2026-03-29)**           | None (created `public/robots.txt`)                                 |
+| 12       | Sensitive file exposure               | **Verified protected**           | None                                                               |
+| 13       | CSRF protection                       | **Verified implemented**         | None                                                               |
+| 14       | Source maps                           | **Verified not shipped**         | None                                                               |
+| 15       | E2E auth endpoint                     | **Verified gated**               | None (hard-blocked in production)                                  |
+| 16       | Cron endpoint auth                    | **Verified (all 38 endpoints)**  | None (timing-safe comparison)                                      |
+| 17       | Next.js CVEs                          | **Safe (14.2.35)**               | None (patched past both critical CVEs)                             |
+| 18       | Tip request token expiration          | **FIXED (2026-03-29)**           | None (30-day app-level expiration)                                 |
+| 19       | Guest code rate limiting              | **FIXED (2026-03-29)**           | None (30 req/15min per IP)                                         |
+| 20       | Partner report token security         | **FIXED (2026-03-29)**           | None (90-day app-level expiration)                                 |
+| 21       | Error message leakage                 | **FIXED (2026-03-29)**           | None (7 routes patched, 2 already safe)                            |
+| 22       | Public token route rate limiting      | **FIXED (2026-03-29)**           | None (rate limiting added to all 7 + guest code)                   |
+| 23       | Middleware bypass header              | **FIXED (2026-03-29)**           | None (`x-middleware-subrequest` now stripped)                      |
+| 24       | Guest feedback token expiration       | **FIXED (2026-03-29)**           | None (60-day app-level expiration)                                 |
+| 25       | Slopsquatting audit                   | **Clean (74 packages verified)** | None                                                               |
+| 26       | Session expiry UX                     | Unknown                          | Test expired session behavior                                      |
+| 27       | Client access revocation              | Unknown                          | Test removing client access                                        |
+| 28       | Unsubscribe token signing             | **Low priority**                 | Consider HMAC-signed unsubscribe tokens (bare UUIDs, low risk)     |
 
 ---
 

@@ -3334,6 +3334,15 @@ export async function getGuestFeedbackByToken(token: string) {
 
   if (!data) return null
 
+  // Expire guest feedback links after 60 days (application-level check)
+  const sentAt = (data as any).sent_at ? new Date((data as any).sent_at) : null
+  if (sentAt) {
+    const sixtyDaysMs = 60 * 24 * 60 * 60 * 1000
+    if (Date.now() - sentAt.getTime() > sixtyDaysMs) {
+      return null
+    }
+  }
+
   return {
     ...(data as any),
     eventTitle: (data as any).event?.occasion || 'Private Dinner',
