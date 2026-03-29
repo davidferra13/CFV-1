@@ -22,7 +22,7 @@ console.log('Sign-in page URL:', page.url())
 
 // Fill credentials
 await page.fill('input[type="email"]', 'davidferra13@gmail.com')
-await page.fill('input[type="password"]', 'TDtd1943!')
+await page.fill('input[type="password"]', process.env.DEV_PASSWORD || 'CHEF.jdgyuegf9924092.FLOW')
 await page.screenshot({ path: `${DIR}/000-sign-in.png` })
 
 await page.click('button[type="submit"]')

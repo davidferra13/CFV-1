@@ -21,7 +21,7 @@ if (target === 'landing') {
   await page.goto(`${BASE}/auth/signin`, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForTimeout(3000);
   await page.locator('input[type="email"]').first().fill('agent@local.chefflow');
-  await page.locator('input[type="password"]').first().fill('ChefFlowLocal!123');
+  await page.locator('input[type="password"]').first().fill('CHEF.jdgyuegf9924092.FLOW');
   await page.locator('button[type="submit"]').first().click();
   await page.waitForTimeout(6000);
 

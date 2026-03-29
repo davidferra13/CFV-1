@@ -22,7 +22,7 @@ Local PostgreSQL services running:
 - **Realtime**: `http://127.0.0.1:54321/realtime/v1`
 - **Studio** (admin UI): `http://127.0.0.1:54323`
 - **Mailpit** (email testing): `http://127.0.0.1:54324`
-- **Postgres**: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+- **Postgres**: `postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres`
 
 ## Environment Configuration
 

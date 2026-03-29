@@ -4,14 +4,12 @@
 import { requireChef } from '@/lib/auth/get-user'
 import dynamic from 'next/dynamic'
 import { redirect } from 'next/navigation'
-import { headers } from 'next/headers'
 import { ChefSidebar, ChefMobileNav, SidebarProvider } from '@/components/navigation/chef-nav'
 import { ChefMainContent } from '@/components/navigation/chef-main-content'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
 import { getChefLayoutData } from '@/lib/chef/layout-cache'
 import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-shortcuts-wrapper'
-import { getOnboardingStatus } from '@/lib/chef/profile-actions'
 import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
 import { TrialBanner } from '@/components/billing/trial-banner'
@@ -20,11 +18,9 @@ import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
-import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 import {
   getCachedCannabisAccess,
-  getCachedChefArchetype,
   getCachedDeletionStatus,
   getCachedIsAdmin,
 } from '@/lib/chef/layout-data-cache'
@@ -75,57 +71,27 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     redirect('/auth/signin?portal=chef')
   }
 
-  // Onboarding gate - redirect new chefs to wizard before they can access any page.
-  // x-pathname is set by middleware so we can check the current path server-side
-  // without an additional round-trip or breaking the App Router server component model.
-  const pathname = headers().get('x-pathname') ?? ''
-  if (!pathname.startsWith('/onboarding') && !pathname.startsWith('/settings')) {
-    const onboardingComplete = await getOnboardingStatus().catch(() => true) // fail open
-    if (!onboardingComplete) {
-      redirect('/onboarding?reason=setup_required')
-    }
-  }
-  // Parallelized - all calls are independent. All 6 use unstable_cache (60s TTL)
+  // Parallelized - all calls are independent. All 5 use unstable_cache (60s TTL)
   // so navigating between pages costs ~0ms for these after the first load.
-  const [
-    layoutData,
-    announcement,
-    _unusedCannabisTier,
-    userIsAdmin,
-    chefArchetype,
-    deletionStatus,
-  ] = await Promise.all([
-    // Cached for 60s - slug and nav prefs change rarely, keyed per chef
-    getChefLayoutData(user.entityId),
-    // Platform announcement (non-fatal - fail open)
-    getAnnouncement().catch(() => null),
-    // Cannabis tier check - kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
-    getCachedCannabisAccess(user.id).catch(() => false),
-    // Admin check - cached 60s against persisted platform_admins access
-    getCachedIsAdmin(user.id).catch(() => false),
-    // Archetype - cached 60s, null means chef hasn't picked one yet (show selector)
-    getCachedChefArchetype(user.entityId).catch(() => null),
-    // Deletion status - cached 60s, non-fatal, fail closed (no banner)
-    getCachedDeletionStatus(user.entityId).catch(() => ({
-      isPending: false,
-      scheduledFor: null,
-      daysRemaining: null,
-      requestedAt: null,
-      reason: null,
-    })),
-  ])
-  // Archetype gate - new chefs pick their persona before seeing the portal.
-  // Admins skip this (they have full access and don't need a preset).
-  // Also skip on settings pages so they can manually configure if needed.
-  if (
-    !chefArchetype &&
-    !userIsAdmin &&
-    !pathname.startsWith('/settings') &&
-    !pathname.startsWith('/onboarding')
-  ) {
-    return <ArchetypeSelector />
-  }
-
+  const [layoutData, announcement, _unusedCannabisTier, userIsAdmin, deletionStatus] =
+    await Promise.all([
+      // Cached for 60s - slug and nav prefs change rarely, keyed per chef
+      getChefLayoutData(user.entityId),
+      // Platform announcement (non-fatal - fail open)
+      getAnnouncement().catch(() => null),
+      // Cannabis tier check - kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
+      getCachedCannabisAccess(user.id).catch(() => false),
+      // Admin check - cached 60s against persisted platform_admins access
+      getCachedIsAdmin(user.id).catch(() => false),
+      // Deletion status - cached 60s, non-fatal, fail closed (no banner)
+      getCachedDeletionStatus(user.entityId).catch(() => ({
+        isPending: false,
+        scheduledFor: null,
+        daysRemaining: null,
+        requestedAt: null,
+        reason: null,
+      })),
+    ])
   const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
 
   const profile = layoutData

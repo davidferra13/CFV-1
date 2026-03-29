@@ -475,12 +475,13 @@ export async function requestPasswordReset(email: string) {
     .limit(1)
 
   if (user) {
-    // Generate recovery token and store it
+    // Generate recovery token, hash before storage (plaintext only sent via email)
     const token = crypto.randomBytes(32).toString('hex')
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
     await db
       .update(authUsers)
       .set({
-        recoveryToken: token,
+        recoveryToken: tokenHash,
         recoverySentAt: new Date(),
       })
       .where(eq(authUsers.id, user.id))
@@ -513,22 +514,25 @@ export async function updatePassword(newPassword: string, recoveryToken?: string
 
   if (recoveryToken) {
     // Recovery token flow (from password reset email)
+    // Hash the incoming token to match the stored hash
+    const tokenHash = crypto.createHash('sha256').update(recoveryToken).digest('hex')
     const [user] = await db
       .select({ id: authUsers.id, recoverySentAt: authUsers.recoverySentAt })
       .from(authUsers)
-      .where(eq(authUsers.recoveryToken, recoveryToken))
+      .where(eq(authUsers.recoveryToken, tokenHash))
       .limit(1)
 
     if (!user) {
       throw new Error('Invalid or expired reset link. Please request a new one.')
     }
 
-    // Check token expiry (1 hour)
-    if (user.recoverySentAt) {
-      const expiry = new Date(user.recoverySentAt.getTime() + 60 * 60 * 1000)
-      if (new Date() > expiry) {
-        throw new Error('Reset link has expired. Please request a new one.')
-      }
+    // Check token expiry (1 hour). If recoverySentAt is missing, reject (fail closed).
+    if (!user.recoverySentAt) {
+      throw new Error('Invalid or expired reset link. Please request a new one.')
+    }
+    const expiry = new Date(user.recoverySentAt.getTime() + 60 * 60 * 1000)
+    if (new Date() > expiry) {
+      throw new Error('Reset link has expired. Please request a new one.')
     }
 
     await db

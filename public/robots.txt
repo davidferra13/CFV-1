@@ -1,0 +1,57 @@
+# ChefFlow - Search Engine Directives
+# Allow public marketing pages, block app internals
+
+User-agent: *
+
+# Public pages (allow indexing)
+Allow: /$
+Allow: /about
+Allow: /faq
+Allow: /contact
+Allow: /privacy-policy
+Allow: /terms
+Allow: /trust
+Allow: /compare
+Allow: /customers
+Allow: /chefs
+Allow: /discover
+Allow: /for-operators
+
+# Block everything else (app routes, APIs, admin, auth)
+Disallow: /api/
+Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /dashboard
+Disallow: /events/
+Disallow: /events
+Disallow: /clients/
+Disallow: /clients
+Disallow: /quotes/
+Disallow: /recipes/
+Disallow: /menus/
+Disallow: /settings/
+Disallow: /admin/
+Disallow: /prospecting/
+Disallow: /staff-dashboard
+Disallow: /staff-portal/
+Disallow: /my-events
+Disallow: /my-quotes
+Disallow: /embed/
+Disallow: /share/
+Disallow: /proposal/
+Disallow: /feedback/
+Disallow: /guest-feedback/
+Disallow: /tip/
+Disallow: /worksheet/
+Disallow: /view/
+Disallow: /review/
+Disallow: /book
+Disallow: /hub/
+Disallow: /partner-report/
+Disallow: /g/
+Disallow: /kiosk
+Disallow: /demo
+Disallow: /beta
+Disallow: /_next/
+
+# No crawl delay needed (Cloudflare handles rate limiting)

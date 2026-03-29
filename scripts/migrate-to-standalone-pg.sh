@@ -45,7 +45,7 @@ echo "Tables in standalone PostgreSQL: $TABLE_COUNT"
 
 echo ""
 echo "=== Done ==="
-echo "Connection string: postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+echo "Connection string: postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres"
 echo "This is the same connection string as before (port 54322)."
 echo ""
 echo "You can now remove database/ config if you no longer need it."

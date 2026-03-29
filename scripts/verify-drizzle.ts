@@ -7,7 +7,8 @@ import postgres from 'postgres'
 import { sql } from 'drizzle-orm'
 
 const connectionString =
-  process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  process.env.DATABASE_URL ||
+  'postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres'
 
 async function main() {
   console.log('Connecting to:', connectionString.replace(/:[^@]+@/, ':***@'))

@@ -5,7 +5,9 @@ export default defineConfig({
   schema: './lib/db/schema/*',
   out: './lib/db/migrations',
   dbCredentials: {
-    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
+    url:
+      process.env.DATABASE_URL ||
+      'postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres',
   },
   schemaFilter: ['public'],
   introspect: {

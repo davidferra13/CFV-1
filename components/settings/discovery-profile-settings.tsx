@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Alert } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -14,7 +15,11 @@ import {
   DISCOVERY_SERVICE_TYPE_OPTIONS,
 } from '@/lib/discovery/constants'
 import type { DiscoveryProfile } from '@/lib/discovery/profile'
-import { updateMyDiscoveryProfile } from '@/lib/discovery/actions'
+import {
+  updateMyDiscoveryProfile,
+  uploadDiscoveryHeroImage,
+  removeDiscoveryHeroImage,
+} from '@/lib/discovery/actions'
 
 function toggleValue(current: string[], value: string) {
   return current.includes(value) ? current.filter((item) => item !== value) : [...current, value]
@@ -24,6 +29,25 @@ function parseNullableInt(value: string) {
   if (!value.trim()) return null
   const parsed = Number.parseInt(value, 10)
   return Number.isFinite(parsed) ? parsed : null
+}
+
+const ALLOWED_HERO_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']
+const MAX_HERO_SIZE = 10 * 1024 * 1024 // 10MB
+
+function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new window.Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      resolve({ width: img.naturalWidth, height: img.naturalHeight })
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Could not read image'))
+    }
+    img.src = url
+  })
 }
 
 function OptionPills({
@@ -83,7 +107,78 @@ export function DiscoveryProfileSettings({ profile }: { profile: DiscoveryProfil
   const [nextAvailableDate, setNextAvailableDate] = useState(profile.next_available_date || '')
   const [leadTimeDays, setLeadTimeDays] = useState(profile.lead_time_days?.toString() || '')
   const [heroImageUrl, setHeroImageUrl] = useState(profile.hero_image_url || '')
+  const [heroPreview, setHeroPreview] = useState<string | null>(null)
+  const [heroUploading, setHeroUploading] = useState(false)
+  const heroFileRef = useRef<HTMLInputElement>(null)
   const [highlightText, setHighlightText] = useState(profile.highlight_text || '')
+
+  async function handleHeroUpload(file: File) {
+    if (!ALLOWED_HERO_TYPES.includes(file.type)) {
+      setError('Use JPEG, PNG, WebP, or HEIC.')
+      return
+    }
+    if (file.size > MAX_HERO_SIZE) {
+      setError('File too large. Maximum 10MB.')
+      return
+    }
+
+    // Dimension check (skip for HEIC since browsers can't preview it)
+    const isHeic = file.type === 'image/heic' || file.type === 'image/heif'
+    if (!isHeic) {
+      try {
+        const dims = await getImageDimensions(file)
+        if (dims.width < 800 || dims.height < 600) {
+          setError(null)
+          setSuccess(
+            'This image is smaller than recommended (at least 1200x900px) and may appear blurry on the directory.'
+          )
+        }
+      } catch {
+        // Could not read dimensions, proceed anyway
+      }
+    }
+
+    // Show local preview (skip for HEIC)
+    if (!isHeic) {
+      setHeroPreview(URL.createObjectURL(file))
+    }
+
+    setHeroUploading(true)
+    setError(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+      const result = await uploadDiscoveryHeroImage(formData)
+      setHeroImageUrl(result.url)
+      setHeroPreview(null)
+      setSuccess('Showcase image updated')
+      router.refresh()
+    } catch (uploadErr) {
+      setHeroPreview(null)
+      setError(uploadErr instanceof Error ? uploadErr.message : 'Failed to upload image')
+    } finally {
+      setHeroUploading(false)
+      if (heroFileRef.current) heroFileRef.current.value = ''
+    }
+  }
+
+  async function handleHeroRemove() {
+    setHeroUploading(true)
+    setError(null)
+
+    try {
+      await removeDiscoveryHeroImage()
+      setHeroImageUrl('')
+      setHeroPreview(null)
+      setSuccess('Showcase image removed')
+      router.refresh()
+    } catch (removeErr) {
+      setError(removeErr instanceof Error ? removeErr.message : 'Failed to remove image')
+    } finally {
+      setHeroUploading(false)
+    }
+  }
 
   function handleSave() {
     setError(null)
@@ -130,23 +225,92 @@ export function DiscoveryProfileSettings({ profile }: { profile: DiscoveryProfil
       {error && <Alert variant="error">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Select
-          label="Price positioning"
-          value={priceRange}
-          onChange={(event) => setPriceRange(event.target.value)}
-          options={DISCOVERY_PRICE_RANGE_OPTIONS.map((option) => ({
-            value: option.value,
-            label: option.label,
-          }))}
-        />
-        <Input
-          label="Hero image URL"
-          type="url"
-          value={heroImageUrl}
-          onChange={(event) => setHeroImageUrl(event.target.value)}
-          placeholder="https://..."
-          helperText="Optional discovery image shown on search surfaces."
+      <Select
+        label="Price positioning"
+        value={priceRange}
+        onChange={(event) => setPriceRange(event.target.value)}
+        options={DISCOVERY_PRICE_RANGE_OPTIONS.map((option) => ({
+          value: option.value,
+          label: option.label,
+        }))}
+      />
+
+      <div>
+        <p className="mb-2 text-sm font-medium text-stone-300">Showcase image</p>
+        <p className="mb-3 text-xs text-stone-500">
+          This image appears on your public directory tile. Landscape recommended, at least
+          1200x900px. Max 10MB. GPS and camera metadata are automatically removed for privacy.
+        </p>
+
+        {heroPreview || heroImageUrl ? (
+          <div className="space-y-3">
+            <div className="relative aspect-[4/3] w-full max-w-md overflow-hidden rounded-xl border border-stone-700 bg-stone-950">
+              <Image
+                src={heroPreview || heroImageUrl}
+                alt="Showcase preview"
+                fill
+                className="object-cover"
+                unoptimized
+              />
+              {heroUploading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-stone-400 border-t-brand-500" />
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                disabled={heroUploading}
+                onClick={() => heroFileRef.current?.click()}
+                className="text-sm font-medium text-brand-400 hover:text-brand-300 disabled:opacity-50"
+              >
+                Change image
+              </button>
+              <button
+                type="button"
+                disabled={heroUploading}
+                onClick={handleHeroRemove}
+                className="text-sm font-medium text-stone-400 hover:text-stone-300 disabled:opacity-50"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            disabled={heroUploading}
+            onClick={() => heroFileRef.current?.click()}
+            className="flex w-full max-w-md flex-col items-center justify-center rounded-xl border-2 border-dashed border-stone-700 bg-stone-950 p-8 text-center transition-colors hover:border-stone-600 disabled:opacity-50"
+          >
+            <svg
+              className="mb-2 h-8 w-8 text-stone-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+            </svg>
+            <span className="text-sm font-medium text-stone-400">Upload a showcase image</span>
+          </button>
+        )}
+
+        <input
+          ref={heroFileRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+          aria-label="Upload showcase image"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) handleHeroUpload(file)
+          }}
         />
       </div>
 

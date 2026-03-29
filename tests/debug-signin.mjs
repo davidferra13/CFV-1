@@ -38,7 +38,7 @@ console.log('   Forms:', JSON.stringify(formInfo.forms))
 
 console.log('\n2. Filling credentials...')
 await page.fill('input[type="email"]', 'davidferra13@gmail.com')
-await page.fill('input[type="password"]', 'TDtd1943!')
+await page.fill('input[type="password"]', process.env.DEV_PASSWORD || 'CHEF.jdgyuegf9924092.FLOW')
 await page.screenshot({ path: 'tests/screenshots/debug-2-filled.png' })
 
 console.log('3. Clicking submit and waiting for navigation...')

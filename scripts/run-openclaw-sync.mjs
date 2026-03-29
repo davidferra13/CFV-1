@@ -5,7 +5,7 @@
 import postgres from 'postgres'
 
 const PI_URL = 'http://10.0.0.177:8081'
-const DB_URL = 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+const DB_URL = 'postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres'
 
 const sql = postgres(DB_URL)
 

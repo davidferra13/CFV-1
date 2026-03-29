@@ -20,6 +20,7 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
 import { checkRateLimit } from '@/lib/rateLimit'
+import crypto from 'crypto'
 
 export async function POST(request: Request) {
   // Rate limit: 30 requests per minute per IP
@@ -35,7 +36,13 @@ export async function POST(request: Request) {
   const expectedKey = process.env.PROSPECTING_API_KEY
   const tenantId = process.env.PROSPECTING_TENANT_ID
 
-  if (!pipelineKey || !expectedKey || !tenantId || pipelineKey !== expectedKey) {
+  if (
+    !pipelineKey ||
+    !expectedKey ||
+    !tenantId ||
+    pipelineKey.length !== expectedKey.length ||
+    !crypto.timingSafeEqual(Buffer.from(pipelineKey), Buffer.from(expectedKey))
+  ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

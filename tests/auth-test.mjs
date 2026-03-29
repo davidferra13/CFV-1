@@ -20,7 +20,7 @@ console.log('2. POSTing to credentials callback...')
 const callbackRes = await page.request.post(`${BASE}/api/auth/callback/credentials`, {
   form: {
     email: 'davidferra13@gmail.com',
-    password: 'TDtd1943!',
+    password: process.env.DEV_PASSWORD || 'CHEF.jdgyuegf9924092.FLOW',
     csrfToken: csrfData.csrfToken,
     callbackUrl: `${BASE}/dashboard`,
     json: 'true',

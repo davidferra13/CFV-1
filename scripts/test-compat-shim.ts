@@ -7,7 +7,7 @@
  */
 import postgres from 'postgres'
 
-const sql = postgres('postgresql://postgres:postgres@127.0.0.1:54322/postgres', {
+const sql = postgres('postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres', {
   max: 5,
   idle_timeout: 10,
 })

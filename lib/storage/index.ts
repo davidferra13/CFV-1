@@ -4,7 +4,14 @@ import crypto from 'crypto'
 
 const STORAGE_ROOT = process.env.STORAGE_PATH || path.join(process.cwd(), 'storage')
 const SIGNING_SECRET =
-  process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || 'dev-signing-secret'
+  process.env.NEXTAUTH_SECRET ||
+  process.env.AUTH_SECRET ||
+  (() => {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('FATAL: No signing secret configured. Set AUTH_SECRET or NEXTAUTH_SECRET.')
+    }
+    return 'dev-signing-secret-local-only'
+  })()
 
 // Ensure directory exists
 async function ensureDir(dirPath: string): Promise<void> {

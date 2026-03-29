@@ -10,7 +10,7 @@ async function run() {
   // Step 1: Sign in
   console.log('--- Step 1: Signing in ---');
   const res = await page.request.post(`${BASE}/api/e2e/auth`, {
-    data: { email: 'agent@local.chefflow', password: 'ChefFlowLocal!123' }
+    data: { email: 'agent@local.chefflow', password: 'CHEF.jdgyuegf9924092.FLOW' }
   });
   console.log('Auth response status:', res.status());
   if (!res.ok()) {

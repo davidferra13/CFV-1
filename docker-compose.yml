@@ -1,6 +1,6 @@
 # Local PostgreSQL for ChefFlow development
 # Usage: docker compose up -d
-# Connection: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+# Connection: postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres
 
 services:
   postgres:
@@ -8,10 +8,10 @@ services:
     container_name: chefflow_postgres
     restart: unless-stopped
     ports:
-      - "54322:5432"
+      - "127.0.0.1:54322:5432"
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: CHEF.jdgyuegf9924092.FLOW
       POSTGRES_DB: postgres
     volumes:
       - chefflow_pgdata:/var/lib/postgresql/data

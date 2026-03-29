@@ -33,18 +33,18 @@ npm run dev
 
 ## Connection Details
 
-| Setting  | Value                                                     |
-| -------- | --------------------------------------------------------- |
-| Host     | 127.0.0.1                                                 |
-| Port     | 54322                                                     |
-| User     | postgres                                                  |
-| Password | postgres                                                  |
-| Database | postgres                                                  |
-| URL      | `postgresql://postgres:postgres@127.0.0.1:54322/postgres` |
+| Setting  | Value                                                                      |
+| -------- | -------------------------------------------------------------------------- |
+| Host     | 127.0.0.1                                                                  |
+| Port     | 54322                                                                      |
+| User     | postgres                                                                   |
+| Password | postgres                                                                   |
+| Database | postgres                                                                   |
+| URL      | `postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres` |
 
 ## Demo Accounts
 
-All accounts use password: `ChefFlowLocal!123`
+All accounts use password: `CHEF.jdgyuegf9924092.FLOW`
 
 | Account         | Email                      | Role         |
 | --------------- | -------------------------- | ------------ |

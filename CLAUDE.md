@@ -407,6 +407,29 @@ If the audit doesn't cover it, then search the codebase. But the audit covers ~2
 
 ---
 
+## RESEARCH GATE (Research Agents - READ THIS)
+
+Research agents answer questions. They do not write specs. They do not write code. They investigate and produce a written report in `docs/research/`.
+
+**When to use a research agent instead of a planner:**
+
+- You need answers, not a buildable plan
+- The question is open-ended ("how does X work?", "where are all the Y?", "what's the state of Z?")
+- You want an audit, trace, or inventory of something in the codebase
+- You need external context (standards, docs, comparisons) synthesized with codebase knowledge
+
+**Rules:**
+
+1. Every claim cites a file path and line number. No citation = not verified.
+2. Follow import chains at least 2 levels deep. Surface-level answers are worthless.
+3. No code changes. Flag issues in the report; a builder handles fixes.
+4. Reports go in `docs/research/[topic-name].md` with the format defined in the canonical prompt.
+5. Anti-Loop Rule applies. 3 failed search strategies on the same thing = document the gap and move on.
+
+**Canonical prompt lives in `docs/specs/README.md`** under "RESEARCH AGENT."
+
+---
+
 ## PLANNER GATE (Spec Agents - MANDATORY)
 
 **Every spec agent must pass this gate before a spec is marked "ready." No exceptions.**
@@ -456,12 +479,28 @@ If the answer is uncertain on anything that affects correctness, the spec is NOT
 
 This gate exists because agents say "done" when they mean "it compiled." Building code is not the same as shipping a working feature. This gate forces real testing, real evidence, and real accountability.
 
+**Canonical prompts for builder agents live in `docs/specs/README.md`.** That file has three prompts: BUILDER START (single spec, autonomous), BUILDER END (verification demand), and BUILDER CONTINUOUS (queue drain). Use those prompts to launch builder agents. The gate below is what those prompts enforce.
+
+### Queue Selection (How Builders Pick What to Build)
+
+Builder agents are queue-aware. They do not wait to be told what to build. The selection algorithm:
+
+1. **Scan** every file in `docs/specs/`. Collect all specs with status `ready`.
+2. **Filter** out any spec whose "Depends on" field references a spec that is NOT `verified` or `built`.
+3. **Sort** by priority: P0 first, then P1, P2, P3.
+4. **Pick the first one.** That is the build target.
+5. **Claim it** immediately: change status to `in-progress`, set "Built by" to your session, commit the claim. This prevents another agent from double-picking.
+6. If no buildable specs remain, report "Queue empty" and stop.
+
+If the developer says "Build [specific spec or plain English]," skip the queue scan and build that specific thing. The rest of the gate still applies.
+
 ### Before Writing Code (Spike Required)
 
 1. **Read `CLAUDE.md`** (this file) cover to cover
 2. **Read the spec** in `docs/specs/` that you're implementing. Understand every section.
-3. **Read every file the spec names.** Not skim. Read. If the spec says "modify `components/events/event-form.tsx`," open it and read the whole thing. Understand its conditional paths, validation, state management.
-4. **Spike report** - before writing any implementation code, report back:
+3. **Look up affected pages in `docs/app-complete-audit.md`** so you know what you're touching.
+4. **Read every file the spec names.** Not skim. Read. If the spec says "modify `components/events/event-form.tsx`," open it and read the whole thing. Understand its conditional paths, validation, state management.
+5. **Spike report** - before writing any implementation code, report back:
    - "I read these files: [list with line counts]"
    - "The spec is accurate about: [what matches]"
    - "The spec is wrong or incomplete about: [what doesn't match reality]"
@@ -478,7 +517,7 @@ This gate exists because agents say "done" when they mean "it compiled." Buildin
 **You are not allowed to mark this complete without executing these steps and showing the output.**
 
 1. **Type check:** Run `npx tsc --noEmit --skipLibCheck`. Paste the output. Must exit 0.
-2. **Build check:** Run `npx next build --no-lint`. Paste the output. Must exit 0.
+2. **Build check:** Run `npx next build --no-lint`. Paste the output. Must exit 0. **Skip if `.multi-agent-lock` exists** (another agent is running; the developer will run a clean build after all agents finish).
 3. **Playwright verification:** Launch Playwright. Sign in with agent credentials (`.auth/agent.json`). Navigate to the feature. Execute the full user flow. Take screenshots. Paste the screenshots. If Playwright literally cannot test this (rare), explain exactly why and what alternative you used.
 4. **Edge cases tested:** List each edge case from the spec's "Edge Cases" section. For each one: what did you do, what happened? Not what "would" happen - what DID happen.
 5. **Regression check:** List every other page or component that imports or shares code with your changes. Verify at least one still works. If the feature touches auth/layout/navigation, run `npm run test:experiential`.
@@ -498,8 +537,78 @@ If the answer is anything other than "nothing," fix it before marking complete.
 - If you've hit 3 failures on the same issue: stop and report (Anti-Loop Rule applies)
 - Update the spec status to "verified" only after all verification passes
 - Update `docs/app-complete-audit.md` if any UI changed
+- Write a short doc in `docs/` explaining what changed
+- Commit and push
 
 **Self-enforcement:** You must run every Verification step and the Final Check above ON YOUR OWN before telling the developer the build is complete. Do not wait to be asked. If you say "done" without having pasted typecheck output, build output, and Playwright screenshots, you have failed the gate.
+
+---
+
+## RESEARCH GATE (Research Agents - MANDATORY)
+
+**Research agents investigate questions and produce written reports. They do NOT write code. They do NOT write specs. They write findings.**
+
+This gate exists because agents mix research with implementation. They start investigating, find something, and immediately start fixing it or writing a spec. A research agent's only job is to understand and document. Someone else builds.
+
+### Step 1: Load Rules
+
+Read `CLAUDE.md` (this file) cover to cover. You need the architecture, file locations, and patterns to know where to look.
+
+### Step 2: Understand the Question
+
+Before investigating, restate what you're researching in one sentence. If the question is vague, make your interpretation explicit and confirm with the developer.
+
+### Step 3: Investigate
+
+Read the actual code. Follow import chains. Trace data flows. Check database schemas. Read existing docs in `docs/`. Search for patterns across the codebase.
+
+**Rules:**
+
+- Every claim in your report must cite a file path and line number. If you can't cite it, you didn't verify it.
+- Follow the trail at least 2 levels deep. If a function calls another function, read that one too.
+- If external context is needed (docs, APIs, standards), use web search.
+- **Do NOT make code changes, even "small fixes."** Flag issues in your report; a builder will handle them.
+- Anti-Loop Rule applies. If you can't find what you're looking for after 3 different search strategies, say what you tried and move on.
+
+### Step 4: Write the Report
+
+Create a file at `docs/research/[topic-name].md` with this structure:
+
+```markdown
+# Research: [Topic]
+
+> **Date:** [today's date]
+> **Question:** [the question you investigated]
+> **Status:** complete | partial (explain what's missing)
+
+## Summary
+
+[2-3 sentence answer to the question. Lead with the conclusion.]
+
+## Detailed Findings
+
+[Organized by sub-topic. Every finding cites file:line. Include code snippets where they clarify the point. Use tables for comparisons.]
+
+## Gaps and Unknowns
+
+[What you couldn't determine. What would need runtime testing, database queries, or the developer's input to resolve.]
+
+## Recommendations
+
+[If the findings suggest action items, list them. These are suggestions, not specs. Tag each as: "quick fix," "needs a spec," or "needs discussion."]
+```
+
+### Step 5: Report Back
+
+Tell the developer: what the report is called, the 2-3 sentence summary, and how many gaps remain. Link to the file.
+
+**Self-enforcement:** Do not tell the developer "research is done" without a written report in `docs/research/`. Verbal summaries are not deliverables. The report is the deliverable. Commit with message `docs(research): [topic name]` and push.
+
+---
+
+### Continuous Mode
+
+In continuous mode (BUILDER CONTINUOUS prompt), after completing one spec the agent loops back to Queue Selection and picks the next buildable spec. This continues until the queue is empty. If the Anti-Loop rule triggers on a spec, set its status back to `ready` with a note about what failed, then move to the next spec. One bad spec does not block the queue.
 
 ---
 
@@ -759,6 +868,16 @@ Revenue comes from **voluntary supporter contributions** (Stripe checkout, cance
 - `PRO_FEATURES` registry in `lib/billing/pro-features.ts` - retained for reference only
 - Stripe subscription flow - used for voluntary supporter contributions
 
+### 7. No Forced Onboarding Gates in Chef Layout (PERMANENT)
+
+**Never add a redirect gate or full-page blocker to `app/(chef)/layout.tsx` that prevents navigation based on onboarding status, archetype selection, or profile completeness.** Onboarding is opt-in, never forced.
+
+- No `redirect('/onboarding')` in the layout. Ever.
+- No full-page component returns (like `<ArchetypeSelector />`) that replace the normal page render.
+- The onboarding banner on the dashboard is the ONLY nudge. It is dismissible and non-blocking.
+- Users must be able to freely navigate the entire app immediately after authentication.
+- This rule exists because the forced redirect was added, "fixed," and re-added multiple times. It trapped users (including the developer) on the onboarding page and made the app unusable.
+
 ---
 
 ## ARCHITECTURE REMINDERS
@@ -876,6 +995,8 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 | AI routing audit       | `scripts/audit-model-routing.ts` (detects direct provider imports)                 |
 | App audit (living)     | `docs/app-complete-audit.md` **(update when UI changes)**                          |
 | Remy reference         | `docs/remy-complete-reference.md` **(read this instead of re-scanning Remy)**      |
+| Research reports       | `docs/research/` (research agent output, not specs, not code)                      |
+| Agent prompts          | `docs/specs/README.md` (canonical prompts for planner, builder, research agents)   |
 | MC Manual panel        | `scripts/launcher/index.html` (panel-manual, live codebase scanner)                |
 | MC Codebase scanner    | `scripts/launcher/server.mjs` (`scanCodebase()`, `GET /api/manual/scan`)           |
 | MC File watcher        | `scripts/launcher/server.mjs` (`initFileWatcher()`, `GET /api/activity/summary`)   |
@@ -911,7 +1032,7 @@ There are no beta/staging/prod directories. There is one copy of the app. The pr
 ## DATABASE
 
 - **Local PostgreSQL** via Docker container (`chefflow_postgres` on port 54322)
-- **Connection:** `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+- **Connection:** `postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres`
 - **Start:** `docker compose up -d`
 - **Init (first time):** `bash scripts/init-local-db.sh` (creates stubs, applies migrations, seeds demo accounts)
 - **Full docs:** `docs/local-database-setup.md`

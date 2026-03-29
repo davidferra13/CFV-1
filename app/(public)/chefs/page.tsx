@@ -40,6 +40,7 @@ import {
   resolveStateOnlyLocationQuery,
 } from '@/lib/directory/location-search'
 import { resolvePublicLocationQuery } from '@/lib/geo/public-location'
+import { getOptimizedGalleryImage } from '@/lib/images/cloudinary'
 import { ChefHero } from './_components/chef-hero'
 import { DirectoryFiltersForm } from './_components/directory-filters-form'
 import { DirectoryResultsTracker } from './_components/directory-results-tracker'
@@ -185,7 +186,7 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 to-brand-50">
         {heroImage ? (
           <Image
-            src={heroImage}
+            src={getOptimizedGalleryImage(heroImage, 800, 600)}
             alt={chef.display_name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"

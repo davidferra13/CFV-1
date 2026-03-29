@@ -40,6 +40,7 @@ export async function launchBrowser() {
   const browser = await puppeteer.launch({
     executablePath: '/usr/bin/chromium-browser',
     headless: 'new',
+    protocolTimeout: 120000,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',

@@ -2,7 +2,7 @@ import postgres from 'postgres';
 import { config } from 'dotenv';
 config({ path: '.env.local' });
 
-const sql = postgres(process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres');
+const sql = postgres(process.env.DATABASE_URL || 'postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres');
 
 try {
   await sql.unsafe(`INSERT INTO chef_preferences (chef_id, tenant_id, archetype) VALUES ('c0000000-0000-0000-0000-000000000099', 'c0000000-0000-0000-0000-000000000099', 'private-chef') ON CONFLICT (chef_id) DO UPDATE SET archetype = 'private-chef'`);

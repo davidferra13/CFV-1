@@ -13,7 +13,7 @@ type AuthUser = {
 
 const DEMO_CHEF = {
   email: 'chef.demo@local.chefflow',
-  password: 'ChefFlowLocal!123',
+  password: 'CHEF.jdgyuegf9924092.FLOW',
   businessName: 'ChefFlow Demo Kitchen',
   displayName: 'Chef Demo',
   phone: '617-555-0101',
@@ -22,7 +22,7 @@ const DEMO_CHEF = {
 
 const DEMO_CLIENT = {
   email: 'client.demo@local.chefflow',
-  password: 'ChefFlowLocal!123',
+  password: 'CHEF.jdgyuegf9924092.FLOW',
   fullName: 'Client Demo',
   phone: '617-555-0202',
 }

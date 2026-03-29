@@ -6,7 +6,7 @@
 
 ## Summary
 
-The ChefFlow repository has **one critical security issue**: the GitHub repo (`davidferra13/CFV1`) is **public** and contains the developer's **real account password** (`TDtd1943!` for `davidferra13@gmail.com`) hardcoded in 5 committed files across git history. This password must be rotated immediately. Additionally, there are 17 npm vulnerabilities (6 moderate, 11 high), one dependency (`xlsx`) with no fix available and known prototype pollution, and 49+ files with hardcoded agent/test credentials.
+The ChefFlow repository has **one critical security issue**: the GitHub repo (`davidferra13/CFV1`) is **public** and contains the developer's **real account password** (`[REDACTED]` for `davidferra13@gmail.com`) hardcoded in 5 committed files across git history. This password must be rotated immediately. Additionally, there are 17 npm vulnerabilities (6 moderate, 11 high), one dependency (`xlsx`) with no fix available and known prototype pollution, and 49+ files with hardcoded agent/test credentials.
 
 ---
 
@@ -18,13 +18,13 @@ The GitHub repository is **public** (confirmed via `https://api.github.com/repos
 
 The developer's **real email and password** are hardcoded in these committed files:
 
-| File                            | Content                                                  |
-| ------------------------------- | -------------------------------------------------------- |
-| `scripts/app-walkthrough.ts:23` | `email: 'davidferra13@gmail.com', password: 'TDtd1943!'` |
-| `scripts/test-auth.ts:9`        | `email: 'davidferra13@gmail.com', password: 'TDtd1943!'` |
-| `tests/auth-test.mjs`           | Same credentials                                         |
-| `tests/full-walkthrough.mjs`    | Same credentials                                         |
-| `tests/debug-signin.mjs`        | Same credentials                                         |
+| File                            | Content                                                   |
+| ------------------------------- | --------------------------------------------------------- |
+| `scripts/app-walkthrough.ts:23` | `email: 'davidferra13@gmail.com', password: '[REDACTED]'` |
+| `scripts/test-auth.ts:9`        | `email: 'davidferra13@gmail.com', password: '[REDACTED]'` |
+| `tests/auth-test.mjs`           | Same credentials                                          |
+| `tests/full-walkthrough.mjs`    | Same credentials                                          |
+| `tests/debug-signin.mjs`        | Same credentials                                          |
 
 These files are in git history (commits `58985670`, `7226678c`). Even if deleted from the working tree, they remain accessible in the public git history.
 
@@ -44,7 +44,7 @@ Files with agent credentials include: `scripts/test-remy.mjs`, `scripts/beta-log
 
 Other hardcoded passwords found:
 
-- `ChefFlowLocal!123` in 7 files (local dev seed scripts, docs)
+- `CHEF.jdgyuegf9924092.FLOW` in 7 files (local dev seed scripts, docs)
 - `DemoChefFlow!2026`, `DemoClientFlow!2026`, `DemoStaffFlow!2026`, etc. in `scripts/setup-demo-accounts.ts`
 - `E2eClientTest!2026`, `E2eChefTest!2026` in test harnesses
 
@@ -160,7 +160,7 @@ The `.env.local.example` file is committed (intentionally, as a template) and co
 
 ### P0 - Immediate (Do Today)
 
-1. **Rotate the developer's password** (`TDtd1943!`) on ChefFlow, Gmail, and any service where it is reused
+1. **Rotate the developer's password** (`[REDACTED]`) on ChefFlow, Gmail, and any service where it is reused
 2. **Make the repo private** on GitHub, or use BFG Repo Cleaner to purge the password from git history
 3. **Rotate the agent password** (`AgentChefFlow!2026`) since it is exposed in 49+ files in a public repo
 

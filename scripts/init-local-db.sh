@@ -161,7 +161,7 @@ echo "Applied $SUCCESS migration files."
 echo ""
 echo "=== Step 3: Seed demo accounts ==="
 # Generate bcrypt hash for demo password
-HASH=$(node -e "console.log(require('bcryptjs').hashSync('ChefFlowLocal!123', 10))")
+HASH=$(node -e "console.log(require('bcryptjs').hashSync('CHEF.jdgyuegf9924092.FLOW', 10))")
 
 docker exec -i "$CONTAINER" psql -U postgres -d postgres <<SQL
 -- Auth users
@@ -205,9 +205,9 @@ UNION ALL SELECT 'user_roles: ' || count(*) FROM user_roles;"
 
 echo ""
 echo "=== Done ==="
-echo "Connection: postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+echo "Connection: postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres"
 echo ""
-echo "Demo accounts (password: ChefFlowLocal!123):"
+echo "Demo accounts (password: CHEF.jdgyuegf9924092.FLOW):"
 echo "  Chef:   chef.demo@local.chefflow"
 echo "  Client: client.demo@local.chefflow"
 echo "  Agent:  agent@local.chefflow"

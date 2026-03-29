@@ -16,7 +16,23 @@ import {
 } from '@/lib/discovery/profile'
 import { normalizeZipCode, resolvePublicLocationQuery } from '@/lib/geo/public-location'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import sharp from 'sharp'
 import { z } from 'zod'
+
+const CHEF_HERO_IMAGES_BUCKET = 'chef-hero-images'
+const MAX_HERO_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
+const ALLOWED_HERO_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/heic',
+  'image/heif',
+]
+const HERO_IMAGE_MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+}
 
 function isRelationMissingError(error: any) {
   return error?.code === '42P01' || error?.code === '42703'
@@ -277,6 +293,191 @@ export async function updateMyDiscoveryProfile(input: z.input<typeof DiscoveryPr
     revalidatePath(`/chef/${chef.booking_slug}`)
     revalidatePath(`/chef/${chef.booking_slug}/inquire`)
   }
+
+  return { success: true }
+}
+
+function extractHeroImagePath(url: string | null | undefined): string | null {
+  if (!url) return null
+  const marker = `/api/storage/public/${CHEF_HERO_IMAGES_BUCKET}/`
+  const markerIndex = url.indexOf(marker)
+  if (markerIndex === -1) return null
+  return decodeURIComponent(
+    url
+      .slice(markerIndex + marker.length)
+      .split('?')[0]
+      .split('#')[0]
+  )
+}
+
+async function ensureChefHeroImagesBucket(db: any) {
+  const { error: createError } = await db.storage.createBucket(CHEF_HERO_IMAGES_BUCKET, {
+    public: true,
+    allowedMimeTypes: ALLOWED_HERO_IMAGE_TYPES,
+    fileSizeLimit: `${MAX_HERO_IMAGE_SIZE}`,
+  })
+  if (!createError) return
+  const message = String((createError as any)?.message || '').toLowerCase()
+  const statusCode = Number((createError as any)?.statusCode || (createError as any)?.status || 0)
+  const isConflict =
+    statusCode === 409 ||
+    message.includes('already exists') ||
+    message.includes('duplicate') ||
+    message.includes('conflict')
+  if (isConflict) return
+  console.error('[ensureChefHeroImagesBucket]', createError)
+  throw new Error('Storage bucket setup failed. Please create bucket "chef-hero-images" (public).')
+}
+
+async function revalidateDiscoveryPaths(db: any, chefId: string) {
+  revalidatePath('/settings/public-profile')
+  revalidatePath('/chefs')
+  revalidateTag(`chef-layout-${chefId}`)
+
+  const { data: chef } = await db
+    .from('chefs')
+    .select('slug, booking_slug')
+    .eq('id', chefId)
+    .maybeSingle()
+
+  if (chef?.slug) {
+    revalidatePath(`/chef/${chef.slug}`)
+    revalidatePath(`/chef/${chef.slug}/inquire`)
+  }
+  if (chef?.booking_slug && chef.booking_slug !== chef?.slug) {
+    revalidatePath(`/chef/${chef.booking_slug}`)
+    revalidatePath(`/chef/${chef.booking_slug}/inquire`)
+  }
+}
+
+export async function uploadDiscoveryHeroImage(
+  formData: FormData
+): Promise<{ success: true; url: string }> {
+  const user = await requireChef()
+  const db = createServerClient({ admin: true })
+
+  const file = formData.get('image') as File | null
+  if (!file) {
+    throw new Error('No image file provided')
+  }
+
+  if (!ALLOWED_HERO_IMAGE_TYPES.includes(file.type)) {
+    throw new Error('Invalid file type. Use JPEG, PNG, WebP, or HEIC.')
+  }
+
+  if (file.size > MAX_HERO_IMAGE_SIZE) {
+    throw new Error('File too large. Maximum 10MB.')
+  }
+
+  // Get existing hero image URL for cleanup
+  const existingRow = await fetchMarketplaceRow(db, user.entityId)
+  const previousPath = extractHeroImagePath(existingRow.data?.hero_image_url)
+
+  // Process image with sharp: strip EXIF metadata, convert HEIC to JPEG
+  const rawBuffer = Buffer.from(await file.arrayBuffer())
+  const isHeic = file.type === 'image/heic' || file.type === 'image/heif'
+
+  let processed: Buffer
+  let finalExt: string
+  let finalContentType: string
+
+  if (isHeic) {
+    processed = await sharp(rawBuffer).rotate().jpeg({ quality: 95 }).toBuffer()
+    finalExt = 'jpg'
+    finalContentType = 'image/jpeg'
+  } else {
+    processed = await sharp(rawBuffer).rotate().toBuffer()
+    finalExt = HERO_IMAGE_MIME_TO_EXT[file.type] || 'jpg'
+    finalContentType = file.type
+  }
+
+  const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${finalExt}`
+
+  // Create a File-like object from the processed buffer for the storage upload
+  const processedFile = new File([processed], `hero.${finalExt}`, { type: finalContentType })
+
+  const uploadFile = async () =>
+    db.storage
+      .from(CHEF_HERO_IMAGES_BUCKET)
+      .upload(storagePath, processedFile, { contentType: finalContentType, upsert: false })
+
+  let { error: uploadError } = await uploadFile()
+
+  if (
+    uploadError &&
+    String((uploadError as any).message || '')
+      .toLowerCase()
+      .includes('bucket')
+  ) {
+    await ensureChefHeroImagesBucket(db)
+    const retry = await uploadFile()
+    uploadError = retry.error
+  }
+
+  if (uploadError) {
+    console.error('[uploadDiscoveryHeroImage] upload error:', uploadError)
+    throw new Error('Failed to upload image')
+  }
+
+  const { data: publicUrlData } = db.storage.from(CHEF_HERO_IMAGES_BUCKET).getPublicUrl(storagePath)
+  const publicUrl = publicUrlData.publicUrl
+
+  // Upsert only hero_image_url + updated_at to avoid wiping other fields
+  const { error: upsertError } = await (db as any).from('chef_marketplace_profiles').upsert(
+    {
+      chef_id: user.entityId,
+      hero_image_url: publicUrl,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'chef_id' }
+  )
+
+  if (upsertError) {
+    console.error('[uploadDiscoveryHeroImage] upsert error:', upsertError)
+    // Clean up the uploaded file since DB write failed
+    await db.storage.from(CHEF_HERO_IMAGES_BUCKET).remove([storagePath])
+    throw new Error('Image uploaded but failed to save to profile')
+  }
+
+  // Clean up previous image if it was a local storage file
+  if (previousPath && previousPath !== storagePath) {
+    await db.storage.from(CHEF_HERO_IMAGES_BUCKET).remove([previousPath])
+  }
+
+  await revalidateDiscoveryPaths(db, user.entityId)
+
+  return { success: true, url: publicUrl }
+}
+
+export async function removeDiscoveryHeroImage(): Promise<{ success: true }> {
+  const user = await requireChef()
+  const db = createServerClient({ admin: true })
+
+  // Get existing hero image URL for cleanup
+  const existingRow = await fetchMarketplaceRow(db, user.entityId)
+  const previousPath = extractHeroImagePath(existingRow.data?.hero_image_url)
+
+  // Set hero_image_url to null
+  const { error } = await (db as any).from('chef_marketplace_profiles').upsert(
+    {
+      chef_id: user.entityId,
+      hero_image_url: null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'chef_id' }
+  )
+
+  if (error) {
+    console.error('[removeDiscoveryHeroImage] error:', error)
+    throw new Error('Failed to remove showcase image')
+  }
+
+  // Delete the file from storage if it's a local file
+  if (previousPath) {
+    await db.storage.from(CHEF_HERO_IMAGES_BUCKET).remove([previousPath])
+  }
+
+  await revalidateDiscoveryPaths(db, user.entityId)
 
   return { success: true }
 }

@@ -20,7 +20,10 @@ async function main() {
   // Authenticate
   console.log('Authenticating...')
   const authRes = await page.request.post(`${BASE}/api/e2e/auth`, {
-    data: { email: 'davidferra13@gmail.com', password: 'TDtd1943!' },
+    data: {
+      email: 'davidferra13@gmail.com',
+      password: process.env.DEV_PASSWORD || 'CHEF.jdgyuegf9924092.FLOW',
+    },
   })
   if (!authRes.ok()) {
     console.error('Auth failed:', authRes.status(), await authRes.text())

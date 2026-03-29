@@ -18,7 +18,7 @@ const COOKIE_DOMAIN = IS_PROD ? '.cheflowhq.com' : 'localhost'
 console.log(`Target: ${BASE} (${IS_PROD ? 'production' : 'dev'} mode)`)
 
 // Mint JWT token directly
-const sql = postgres('postgresql://postgres:postgres@127.0.0.1:54322/postgres')
+const sql = postgres('postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres')
 const [user] = await sql`
   SELECT u.id, u.email, ur.role, ur.entity_id
   FROM auth.users u

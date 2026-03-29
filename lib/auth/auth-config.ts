@@ -129,8 +129,10 @@ export const authConfig: NextAuthConfig = {
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
-      // Allow linking to existing accounts by email
-      allowDangerousEmailAccountLinking: true,
+      // Disabled: allowDangerousEmailAccountLinking enables account takeover
+      // if an attacker controls the victim's email. Users must link accounts
+      // manually through settings instead.
+      allowDangerousEmailAccountLinking: false,
     }),
   ],
 

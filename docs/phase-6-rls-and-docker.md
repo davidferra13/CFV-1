@@ -28,7 +28,7 @@ Handles the transition:
 3. Starts standalone PostgreSQL
 4. Restores the dump
 
-The connection string stays the same: `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
+The connection string stays the same: `postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres`
 
 **Important:** The PostgreSQL CLI is still needed for applying migrations (`drizzle-kit push`). The standalone PostgreSQL approach means you'd switch to `drizzle-kit migrate` or direct `psql` for future migrations. The database migration files in `database/migrations/` remain as the canonical schema history.
 

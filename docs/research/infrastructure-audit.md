@@ -163,7 +163,7 @@ ChefFlow runs on a single Windows 11 machine in Haverhill, MA with four network 
 ### FINDING 5.2: Database Connection String Visible in Multiple Files
 
 - **Severity:** Low (all gitignored or documentation)
-- **Where:** `docker-compose.yml` (committed), `.env.local.example` (committed, shows template only), `CLAUDE.md` (committed, documents the connection string `postgresql://postgres:postgres@127.0.0.1:54322/postgres`), `docs/local-database-setup.md` (committed).
+- **Where:** `docker-compose.yml` (committed), `.env.local.example` (committed, shows template only), `CLAUDE.md` (committed, documents the connection string `postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres`), `docs/local-database-setup.md` (committed).
 - **Risk:** The credentials are default and well-known. The real risk is network exposure (Finding 5.1), not credential secrecy.
 
 ---

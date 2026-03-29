@@ -9,9 +9,9 @@ import crypto from 'crypto'
 function verifyHmacSignature(payload: string, signature: string): boolean {
   const secret = process.env.DOCUSIGN_CONNECT_HMAC_KEY
   if (!secret) {
-    // If no HMAC key configured, skip verification (dev mode)
-    console.warn('[docusign-webhook] No HMAC key configured - skipping signature verification')
-    return true
+    // Fail closed: reject webhooks if no HMAC key is configured
+    console.error('[docusign-webhook] No HMAC key configured - rejecting webhook (fail-closed)')
+    return false
   }
   const computed = crypto.createHmac('sha256', secret).update(payload).digest('base64')
   return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature))

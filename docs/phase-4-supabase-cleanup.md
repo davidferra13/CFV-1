@@ -51,7 +51,7 @@ The following PostgreSQL env vars are still referenced by scripts/tests but are 
 
 The production app only needs:
 
-- `DATABASE_URL` (or the default `postgresql://postgres:postgres@127.0.0.1:54322/postgres`)
+- `DATABASE_URL` (or the default `postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres`)
 - `NEXTAUTH_SECRET` (for Auth.js + storage signed URLs)
 - `NEXTAUTH_URL`
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` (for Google OAuth)

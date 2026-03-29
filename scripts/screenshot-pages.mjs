@@ -13,7 +13,7 @@ async function main() {
   await page.goto(`${BASE}/auth/signin`, { waitUntil: 'domcontentloaded', timeout: 15000 })
   await page.waitForTimeout(1000)
   await page.fill('input[type="email"]', 'agent@local.chefflow')
-  await page.fill('input[type="password"]', 'ChefFlowLocal!123')
+  await page.fill('input[type="password"]', 'CHEF.jdgyuegf9924092.FLOW')
   await page.click('button[type="submit"]')
   await page.waitForURL('**/dashboard', { timeout: 15000 })
   console.log('Signed in')
