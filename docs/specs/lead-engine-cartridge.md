@@ -1,11 +1,13 @@
 # Spec: Lead Engine Cartridge + ChefFlow Connector
 
-> **Status:** ready
+> **Status:** built (Workstream B only, ChefFlow side)
 > **Priority:** P1 (next up)
-> **Depends on:** openclaw-cartridge-infrastructure (verified: built)
+> **Depends on:** openclaw-cartridge-infrastructure (verified)
 > **Estimated complexity:** large (9+ files across Pi + ChefFlow)
 > **Created:** 2026-03-29
-> **Built by:** not started
+> **Built by:** Claude Code (2026-03-29)
+> **Spec error found:** Spec claimed `prospects.source` has no CHECK constraint. It does: `CHECK (source IN ('ai_scrub', 'web_enriched', 'manual'))`. Migration `20260401000118` adds `openclaw_import` and `csv_import`.
+> **Note:** Workstream A (Pi scrapers) not built; requires physical Pi deployment. Workstream B (ChefFlow connector) complete.
 
 ---
 

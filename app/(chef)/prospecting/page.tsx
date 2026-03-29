@@ -27,7 +27,9 @@ import {
   Kanban,
   MapPin,
   Upload,
+  Database,
 } from '@/components/ui/icons'
+import { getOpenClawLeadCount } from '@/lib/prospecting/openclaw-import'
 
 export const metadata: Metadata = { title: 'Prospecting - ChefFlow' }
 
@@ -40,7 +42,7 @@ export default async function ProspectingPage({
   await requireChef()
 
   const params = await searchParams
-  const [prospects, stats, funnelData] = await Promise.all([
+  const [prospects, stats, funnelData, openclawCount] = await Promise.all([
     getProspects({
       status: params.status || undefined,
       category: params.category || undefined,
@@ -49,6 +51,7 @@ export default async function ProspectingPage({
     }),
     getProspectStats(),
     getConversionFunnelStats(),
+    getOpenClawLeadCount().catch(() => 0),
   ])
 
   return (
@@ -91,6 +94,12 @@ export default async function ProspectingPage({
               Import CSV
             </Button>
           </Link>
+          <Link href="/prospecting/openclaw">
+            <Button variant="secondary" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              OpenClaw Leads
+            </Button>
+          </Link>
           <AddProspectButton />
         </div>
       </div>
@@ -117,6 +126,15 @@ export default async function ProspectingPage({
           value={stats.converted}
           icon={<CheckCircle className="h-5 w-5 text-green-400" />}
         />
+        {openclawCount > 0 && (
+          <Link href="/prospecting/openclaw">
+            <StatCard
+              label="OpenClaw Leads"
+              value={openclawCount}
+              icon={<Database className="h-5 w-5 text-emerald-400" />}
+            />
+          </Link>
+        )}
       </div>
 
       {/* Conversion Funnel */}
@@ -148,6 +166,7 @@ export default async function ProspectingPage({
             <select
               name="status"
               defaultValue={params.status ?? ''}
+              aria-label="Filter by status"
               className="rounded-lg border border-stone-700 px-3 py-1.5 text-sm"
             >
               <option value="">All Statuses</option>

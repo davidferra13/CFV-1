@@ -1973,6 +1973,7 @@ export const actionBarItems: NavItem[] = [
   { href: '/tasks', label: 'Tasks', icon: ListChecks },
   { href: '/circles', label: 'Community', icon: MessagesSquare },
   { href: '/culinary/price-catalog', label: 'Price Catalog', icon: Store },
+  { href: '/prices', label: 'Store Prices', icon: ShoppingCart },
 ]
 
 // ─── + Create dropdown: 15 direct navigation links ───

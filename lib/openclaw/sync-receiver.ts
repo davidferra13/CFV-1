@@ -45,9 +45,21 @@ registerCartridge({
   },
 })
 
+// Lead Engine: scrapes catering businesses from Yelp, Google Maps, etc.
+registerCartridge({
+  codename: 'lead-engine',
+  name: 'Lead Engine',
+  port: 8083,
+  pullEndpoint: '/api/leads/unsynced',
+  targetType: 'database',
+  syncHandler: async (): Promise<CartridgeSyncResult> => {
+    const { handleLeadEngineSync } = await import('./lead-engine-handler')
+    return handleLeadEngineSync(null)
+  },
+})
+
 // Future cartridges register here as they are built:
 // registerCartridge({ codename: 'market-intel', ... })
-// registerCartridge({ codename: 'lead-engine', ... })
 // registerCartridge({ codename: 'trend-watch', ... })
 
 // --- Public API ---
