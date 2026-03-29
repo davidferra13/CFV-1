@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { usePersistentViewState } from '@/lib/view-state/use-persistent-view-state'
+import { MARKETPLACE_PLATFORMS } from '@/lib/marketplace/platforms'
 
 type InquiryFilter =
   | 'all'
@@ -19,10 +20,12 @@ export function InquiriesFilterTabs({
   initialStatus,
   initialChannel,
   initialBudgetMode,
+  activePlatforms,
 }: {
   initialStatus: InquiryFilter
   initialChannel: string | null
   initialBudgetMode: BudgetModeFilter
+  activePlatforms?: string[]
 }) {
   const defaults = useMemo(
     () => ({
@@ -41,6 +44,15 @@ export function InquiriesFilterTabs({
   const status = (state.status as InquiryFilter) || 'all'
   const channel = String(state.channel || '')
   const budgetMode = (state.budget_mode as BudgetModeFilter) || 'all'
+
+  // Build dynamic platform filter buttons from active platforms (or fallback to TAC + Yhangry)
+  const platformButtons = useMemo(() => {
+    const channels =
+      activePlatforms && activePlatforms.length > 0 ? activePlatforms : ['take_a_chef', 'yhangry']
+    return channels
+      .map((ch) => MARKETPLACE_PLATFORMS.find((p) => p.channel === ch))
+      .filter((p): p is (typeof MARKETPLACE_PLATFORMS)[number] => p != null)
+  }, [activePlatforms])
 
   const tabs: { value: InquiryFilter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -67,24 +79,34 @@ export function InquiriesFilterTabs({
         </Button>
       ))}
       <span className="mx-1 h-6 w-px shrink-0 bg-stone-300" />
-      <Button
-        type="button"
-        size="sm"
-        variant={channel === 'take_a_chef' ? 'primary' : 'secondary'}
-        className="shrink-0 whitespace-nowrap"
-        onClick={() => setState({ channel: channel === 'take_a_chef' ? '' : 'take_a_chef' })}
-      >
-        TakeAChef
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant={channel === 'yhangry' ? 'primary' : 'secondary'}
-        className="shrink-0 whitespace-nowrap"
-        onClick={() => setState({ channel: channel === 'yhangry' ? '' : 'yhangry' })}
-      >
-        Yhangry
-      </Button>
+      {platformButtons.length <= 4 ? (
+        platformButtons.map((p) => (
+          <Button
+            key={p.channel}
+            type="button"
+            size="sm"
+            variant={channel === p.channel ? 'primary' : 'secondary'}
+            className="shrink-0 whitespace-nowrap"
+            onClick={() => setState({ channel: channel === p.channel ? '' : p.channel })}
+          >
+            {p.shortLabel}
+          </Button>
+        ))
+      ) : (
+        <select
+          value={channel}
+          onChange={(e) => setState({ channel: e.target.value })}
+          aria-label="Filter by platform"
+          className="h-8 shrink-0 rounded-md border border-stone-700 bg-stone-900 px-2 text-xs text-stone-300 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        >
+          <option value="">All platforms</option>
+          {platformButtons.map((p) => (
+            <option key={p.channel} value={p.channel}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+      )}
       <span className="mx-1 h-6 w-px shrink-0 bg-stone-300" />
       <Button
         type="button"

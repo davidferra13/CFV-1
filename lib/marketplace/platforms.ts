@@ -8,6 +8,8 @@ export type MarketplacePlatform = {
   shortLabel: string
   defaultCommissionPercent: number
   tier: 'major' | 'lead_gen' | 'niche'
+  slaHours: number
+  deepLinkTemplate: string | null
 }
 
 export const MARKETPLACE_PLATFORMS: MarketplacePlatform[] = [
@@ -17,6 +19,8 @@ export const MARKETPLACE_PLATFORMS: MarketplacePlatform[] = [
     shortLabel: 'TAC',
     defaultCommissionPercent: 25,
     tier: 'major',
+    slaHours: 24,
+    deepLinkTemplate: 'https://www.takeachef.com/chef-dashboard/bookings',
   },
   {
     channel: 'yhangry',
@@ -24,6 +28,8 @@ export const MARKETPLACE_PLATFORMS: MarketplacePlatform[] = [
     shortLabel: 'Yhangry',
     defaultCommissionPercent: 25,
     tier: 'major',
+    slaHours: 24,
+    deepLinkTemplate: 'https://yhangry.com/chef/dashboard',
   },
   {
     channel: 'cozymeal',
@@ -31,6 +37,8 @@ export const MARKETPLACE_PLATFORMS: MarketplacePlatform[] = [
     shortLabel: 'Cozymeal',
     defaultCommissionPercent: 20,
     tier: 'major',
+    slaHours: 24,
+    deepLinkTemplate: 'https://www.cozymeal.com/chef/dashboard',
   },
   {
     channel: 'bark',
@@ -38,6 +46,8 @@ export const MARKETPLACE_PLATFORMS: MarketplacePlatform[] = [
     shortLabel: 'Bark',
     defaultCommissionPercent: 0, // pay-per-lead, not commission
     tier: 'lead_gen',
+    slaHours: 24,
+    deepLinkTemplate: 'https://www.bark.com/pro/dashboard',
   },
   {
     channel: 'thumbtack',
@@ -45,6 +55,8 @@ export const MARKETPLACE_PLATFORMS: MarketplacePlatform[] = [
     shortLabel: 'Thumbtack',
     defaultCommissionPercent: 0, // pay-per-lead
     tier: 'lead_gen',
+    slaHours: 4,
+    deepLinkTemplate: 'https://www.thumbtack.com/pro/dashboard',
   },
   {
     channel: 'gigsalad',
@@ -52,6 +64,8 @@ export const MARKETPLACE_PLATFORMS: MarketplacePlatform[] = [
     shortLabel: 'GigSalad',
     defaultCommissionPercent: 10,
     tier: 'niche',
+    slaHours: 24,
+    deepLinkTemplate: 'https://www.gigsalad.com/member/dashboard',
   },
   {
     channel: 'theknot',
@@ -59,6 +73,53 @@ export const MARKETPLACE_PLATFORMS: MarketplacePlatform[] = [
     shortLabel: 'The Knot',
     defaultCommissionPercent: 0, // listing fee
     tier: 'niche',
+    slaHours: 48,
+    deepLinkTemplate: 'https://www.theknot.com/marketplace/dashboard',
+  },
+  {
+    channel: 'privatechefmanager',
+    label: 'Private Chef Manager',
+    shortLabel: 'PCM',
+    defaultCommissionPercent: 2.9,
+    tier: 'niche',
+    slaHours: 24,
+    deepLinkTemplate: null,
+  },
+  {
+    channel: 'hireachef',
+    label: 'Hire a Chef (USPCA)',
+    shortLabel: 'USPCA',
+    defaultCommissionPercent: 0, // directory listing
+    tier: 'niche',
+    slaHours: 48,
+    deepLinkTemplate: null,
+  },
+  {
+    channel: 'cuisineistchef',
+    label: 'Cuisinist Chef',
+    shortLabel: 'Cuisinist',
+    defaultCommissionPercent: 15,
+    tier: 'niche',
+    slaHours: 24,
+    deepLinkTemplate: null,
+  },
+  {
+    channel: 'google_business',
+    label: 'Google Business Profile',
+    shortLabel: 'GBP',
+    defaultCommissionPercent: 0,
+    tier: 'lead_gen',
+    slaHours: 24,
+    deepLinkTemplate: 'https://business.google.com',
+  },
+  {
+    channel: 'wix',
+    label: 'Wix Website',
+    shortLabel: 'Wix',
+    defaultCommissionPercent: 0,
+    tier: 'niche',
+    slaHours: 48,
+    deepLinkTemplate: null,
   },
 ]
 

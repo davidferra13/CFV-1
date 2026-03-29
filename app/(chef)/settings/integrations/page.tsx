@@ -9,6 +9,7 @@ import {
 import { IntegrationCenter } from '@/components/settings/integration-center'
 import { getOAuthConnectionStatuses } from '@/lib/integrations/core/connection-status-actions'
 import { TakeAChefSetup } from '@/components/integrations/take-a-chef-setup'
+import { PlatformSetup } from '@/components/integrations/platform-setup'
 import { getTakeAChefStats } from '@/lib/gmail/take-a-chef-stats'
 import { createServerClient } from '@/lib/db/server'
 import { Suspense } from 'react'
@@ -17,6 +18,7 @@ import { IntegrationCallbackToast } from '@/components/settings/integration-call
 import { listConnectedAccounts } from '@/lib/integrations/integration-hub'
 import { ConnectedAccounts } from '@/components/integrations/connected-accounts'
 import { getTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-settings'
+import { getChefPlatformSettings } from '@/lib/integrations/platform-settings'
 
 export const metadata: Metadata = { title: 'Integrations - ChefFlow' }
 
@@ -31,6 +33,7 @@ export default async function IntegrationsSettingsPage() {
     oauthStatuses,
     connectedAccounts,
     tacSettings,
+    platformSettings,
   ] = await Promise.all([
     getIntegrationProviderOverview(),
     getRecentIntegrationEvents(30),
@@ -50,6 +53,7 @@ export default async function IntegrationsSettingsPage() {
     getOAuthConnectionStatuses(),
     listConnectedAccounts().catch(() => []),
     getTakeAChefIntegrationSettings(),
+    getChefPlatformSettings().catch(() => ({ platforms: {} })),
   ])
 
   return (
@@ -81,6 +85,9 @@ export default async function IntegrationsSettingsPage() {
         tacLeadCount={tacStats.totalAllTime}
         defaultCommissionPercent={tacSettings.defaultCommissionPercent}
       />
+
+      {/* Multi-platform configuration */}
+      <PlatformSetup settings={platformSettings.platforms} />
 
       <IntegrationCenter
         overview={overview}
