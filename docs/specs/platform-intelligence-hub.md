@@ -1,11 +1,11 @@
 # Spec: Platform Intelligence Hub
 
-> **Status:** ready
+> **Status:** in-progress (Phase 1 built)
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (60+ files across 14 phases)
 > **Created:** 2026-03-29
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-29 (Phase 1)
 
 ---
 
