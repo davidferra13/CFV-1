@@ -202,6 +202,9 @@ async function main() {
           pricingTier: 'retail',
           confidence: 'direct_scrape',
           sourceUrl: HANNAFORD_BASE,
+          imageUrl: null,
+          brand: null,
+          aisleCat: category.name,
         });
 
         if (result === 'new') totalNew++;

@@ -57,6 +57,11 @@ export type CatalogStore = {
   name: string
   tier: string
   status: string
+  logoUrl: string | null
+  storeColor: string | null
+  region: string | null
+  city: string | null
+  state: string | null
 }
 
 // --- Actions ---
@@ -149,6 +154,11 @@ export async function getCatalogStores(): Promise<CatalogStore[]> {
       name: s.name,
       tier: s.pricing_tier || 'retail',
       status: s.status || 'active',
+      logoUrl: s.logo_url ?? null,
+      storeColor: s.store_color ?? null,
+      region: s.region ?? null,
+      city: s.city ?? null,
+      state: s.state ?? null,
     }))
   } catch {
     return []
@@ -224,6 +234,8 @@ export type CatalogItemV2 = {
   bestPriceCents: number | null
   bestPriceStore: string | null
   bestPriceUnit: string | null
+  imageUrl: string | null
+  brand: string | null
   priceCount: number
   inStockCount: number
   outOfStockCount: number
@@ -243,6 +255,9 @@ export type CatalogDetailPrice = {
   confidence: string
   inStock: boolean
   sourceUrl: string | null
+  imageUrl: string | null
+  brand: string | null
+  aisleCat: string | null
   lastConfirmedAt: string
   lastChangedAt: string
   packageSize: string | null
@@ -342,6 +357,8 @@ export async function searchCatalogV2(params: {
       bestPriceCents: item.best_price_cents ?? item.price_cents ?? null,
       bestPriceStore: item.best_price_store ?? item.store ?? null,
       bestPriceUnit: item.best_price_unit ?? item.unit ?? null,
+      imageUrl: item.image_url ?? null,
+      brand: item.brand ?? null,
       priceCount: item.price_count ?? item.store_count ?? 0,
       inStockCount: item.in_stock_count ?? 0,
       outOfStockCount: item.out_of_stock_count ?? 0,

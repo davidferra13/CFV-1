@@ -151,7 +151,9 @@ function initSchema(db) {
 function migrateSchema(db) {
   // Add in_stock column if it doesn't exist yet
   const cols = db.prepare("PRAGMA table_info(current_prices)").all();
-  if (!cols.find(c => c.name === 'in_stock')) {
+  const colNames = new Set(cols.map(c => c.name));
+
+  if (!colNames.has('in_stock')) {
     db.exec("ALTER TABLE current_prices ADD COLUMN in_stock INTEGER NOT NULL DEFAULT 1");
     db.exec("CREATE INDEX IF NOT EXISTS idx_cp_stock ON current_prices(in_stock)");
   }
@@ -160,6 +162,31 @@ function migrateSchema(db) {
   const idxCheck = db.prepare("SELECT 1 FROM sqlite_master WHERE type='index' AND name='idx_cp_ingredient_stock'").get();
   if (!idxCheck) {
     db.exec("CREATE INDEX idx_cp_ingredient_stock ON current_prices(canonical_ingredient_id, in_stock)");
+  }
+
+  // Phase 1: Total Catalog Intelligence - new columns for current_prices
+  if (!colNames.has('image_url')) {
+    db.exec("ALTER TABLE current_prices ADD COLUMN image_url TEXT");
+  }
+  if (!colNames.has('brand')) {
+    db.exec("ALTER TABLE current_prices ADD COLUMN brand TEXT");
+  }
+  if (!colNames.has('aisle_category')) {
+    db.exec("ALTER TABLE current_prices ADD COLUMN aisle_category TEXT");
+  }
+
+  // Phase 1: source_registry new columns
+  const srcCols = db.prepare("PRAGMA table_info(source_registry)").all();
+  const srcColNames = new Set(srcCols.map(c => c.name));
+
+  if (!srcColNames.has('logo_url')) {
+    db.exec("ALTER TABLE source_registry ADD COLUMN logo_url TEXT");
+  }
+  if (!srcColNames.has('store_color')) {
+    db.exec("ALTER TABLE source_registry ADD COLUMN store_color TEXT");
+  }
+  if (!srcColNames.has('region')) {
+    db.exec("ALTER TABLE source_registry ADD COLUMN region TEXT");
   }
 }
 
@@ -170,7 +197,8 @@ export function upsertPrice(db, {
   sourceId, canonicalIngredientId, variantId, rawProductName,
   priceCents, priceUnit, pricePerStandardUnitCents, standardUnit,
   packageSize, priceType, pricingTier, confidence,
-  instacartMarkupPct, sourceUrl, saleDates, inStock
+  instacartMarkupPct, sourceUrl, saleDates, inStock,
+  imageUrl, brand, aisleCat
 }) {
   const id = `${sourceId}:${canonicalIngredientId}:${variantId || 'default'}`;
   const now = new Date().toISOString();
@@ -185,14 +213,16 @@ export function upsertPrice(db, {
         price_cents, price_unit, price_per_standard_unit_cents, standard_unit,
         package_size, price_type, pricing_tier, confidence,
         instacart_markup_applied_pct, source_url, in_stock,
+        image_url, brand, aisle_category,
         sale_start_date, sale_end_date,
         last_confirmed_at, last_changed_at, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id, sourceId, canonicalIngredientId, variantId, rawProductName,
       priceCents, priceUnit, pricePerStandardUnitCents, standardUnit,
       packageSize, priceType || 'regular', pricingTier || 'retail', confidence,
       instacartMarkupPct, sourceUrl, inStock !== undefined ? (inStock ? 1 : 0) : 1,
+      imageUrl || null, brand || null, aisleCat || null,
       saleDates?.start || null, saleDates?.end || null,
       now, now, now
     );
@@ -219,6 +249,8 @@ export function upsertPrice(db, {
         price_type = ?, confidence = ?,
         instacart_markup_applied_pct = ?, source_url = ?,
         in_stock = ?,
+        image_url = COALESCE(?, image_url), brand = COALESCE(?, brand),
+        aisle_category = COALESCE(?, aisle_category),
         sale_start_date = ?, sale_end_date = ?,
         last_confirmed_at = ?, last_changed_at = ?
       WHERE id = ?
@@ -228,6 +260,7 @@ export function upsertPrice(db, {
       priceType || 'regular', confidence,
       instacartMarkupPct, sourceUrl,
       inStock !== undefined ? (inStock ? 1 : 0) : 1,
+      imageUrl || null, brand || null, aisleCat || null,
       saleDates?.start || null, saleDates?.end || null,
       now, now, id
     );
@@ -241,9 +274,15 @@ export function upsertPrice(db, {
     return 'changed';
   }
 
-  // Price unchanged - update confirmation timestamp and stock status
-  db.prepare('UPDATE current_prices SET last_confirmed_at = ?, in_stock = ? WHERE id = ?').run(
-    now, inStock !== undefined ? (inStock ? 1 : 0) : 1, id
+  // Price unchanged - update confirmation timestamp, stock status, and new metadata
+  db.prepare(`
+    UPDATE current_prices SET last_confirmed_at = ?, in_stock = ?,
+    image_url = COALESCE(?, image_url), brand = COALESCE(?, brand),
+    aisle_category = COALESCE(?, aisle_category)
+    WHERE id = ?
+  `).run(
+    now, inStock !== undefined ? (inStock ? 1 : 0) : 1,
+    imageUrl || null, brand || null, aisleCat || null, id
   );
   return 'unchanged';
 }

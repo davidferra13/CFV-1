@@ -127,10 +127,17 @@ function checkDatabase() {
         log('ERROR', `${source.name}: ${source.scrape_failures_consecutive} consecutive failures`);
       }
 
-      // Government data updates monthly; scrapers update daily/weekly
-      const maxHours = source.source_id.startsWith('gov-') ? 720 : 48;
+      // Per-source staleness thresholds
+      // All retail sources scrape daily - alert after 26h (daily scrape + buffer)
+      // Government data updates monthly - 720h
+      // Flipp/flyer sources are weekly - 168h (7 days)
+      let maxHours = 26;
+      if (source.source_id.startsWith('gov-')) maxHours = 720;
+      if (source.source_id.includes('flipp') || source.source_id.includes('flyer')) maxHours = 168;
+
+      const level = source.source_id.startsWith('gov-') ? 'INFO' : hoursSince > 48 ? 'ERROR' : 'WARN';
       if (hoursSince > maxHours) {
-        log('WARN', `${source.name}: Last scraped ${Math.round(hoursSince)}h ago (max: ${maxHours}h)`);
+        log(level, `${source.name}: Last scraped ${Math.round(hoursSince)}h ago (max: ${maxHours}h)`);
         staleCount++;
       }
     }
@@ -147,6 +154,26 @@ function checkDatabase() {
         (SELECT COUNT(*) FROM normalization_map) as mappings
     `).get();
     log('INFO', `DB stats: ${stats.prices} prices, ${stats.changes} changes, ${stats.mappings} mappings`);
+
+    // Whole Foods specific: verify we have actual price data per region
+    try {
+      const wfRegions = db.prepare(
+        "SELECT source_id, COUNT(*) as count FROM current_prices WHERE source_id LIKE 'whole-foods-%' GROUP BY source_id"
+      ).all();
+      if (wfRegions.length === 0) {
+        log('ERROR', 'Whole Foods: 0 regions with prices');
+      } else {
+        for (const r of wfRegions) {
+          if (r.count < 30) {
+            log('WARN', `${r.source_id}: only ${r.count} prices (expected 40+)`);
+          } else {
+            log('OK', `${r.source_id}: ${r.count} active prices`);
+          }
+        }
+      }
+    } catch {
+      // Table may not exist yet
+    }
 
     return true;
   } catch (err) {

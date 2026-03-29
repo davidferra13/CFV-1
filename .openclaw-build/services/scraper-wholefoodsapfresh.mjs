@@ -1,162 +1,411 @@
 /**
- * OpenClaw - Whole Foods / Amazon Fresh Scraper
- * Scrapes product prices from Amazon Fresh (which includes Whole Foods pricing).
- * Both are Amazon-owned; Amazon Fresh shows Whole Foods prices in supported areas.
+ * OpenClaw - Whole Foods Scraper (v3 - Amazon ALM Platform, Relaxed Filters)
  *
- * Strategy: Amazon Fresh requires location setting for accurate pricing.
- * Set to Haverhill, MA (01835) for New England prices.
+ * v3 changes from v2:
+ * - Dramatically reduced PREPARED_FOOD_PATTERNS (was filtering out 300+ real ingredients)
+ * - Kept: truly composite prepared meals (sushi, rotisserie, pizza, cakes)
+ * - Removed from filter: broths, stocks, canned goods, smoked meats, cheeses,
+ *   powdered spices, ham, starch, salads, peppercorns, tallow/lard, buttermilk
+ * - Chefs buy ALL of these. Filtering them was cutting our catalog in half.
+ * - Raised name length heuristic from 80 to 150 chars
+ *
+ * Multi-region: scrapes Haverhill MA and Portland ME for New England coverage.
  */
 
 import { getDb, upsertPrice } from '../lib/db.mjs';
-import { launchBrowser, newPage, safeFetch, rateLimitDelay, sleep } from '../lib/scrape-utils.mjs';
+import { launchBrowser, newPage, sleep, rateLimitDelay } from '../lib/scrape-utils.mjs';
 import { normalizeByRules, isFoodItem, loadCachedMappings, saveMapping } from '../lib/normalize-rules.mjs';
 
-const STORES = [
-  {
-    sourceId: 'whole-foods-new-england',
-    name: 'Whole Foods Market (New England)',
-    chain: 'whole-foods',
-    state: 'MA',
-    baseUrl: 'https://www.wholefoodsmarket.com',
-    categories: [
-      { name: 'Meat', path: '/products/meat' },
-      { name: 'Seafood', path: '/products/seafood' },
-      { name: 'Produce', path: '/products/produce' },
-      { name: 'Dairy & Eggs', path: '/products/dairy-eggs' },
-      { name: 'Bakery', path: '/products/bakery' },
-      { name: 'Pantry Essentials', path: '/products/pantry-essentials' },
-      { name: 'Frozen', path: '/products/frozen-foods' },
-    ],
-  },
-  {
-    sourceId: 'amazon-fresh-new-england',
-    name: 'Amazon Fresh (New England)',
-    chain: 'amazon-fresh',
-    state: 'MA',
-    baseUrl: 'https://www.amazon.com/alm/category',
-    categories: [
-      { name: 'Meat & Seafood', path: '?almBrandId=QW1hem9uIEZyZXNo&node=16318981' },
-      { name: 'Produce', path: '?almBrandId=QW1hem9uIEZyZXNo&node=16319041' },
-      { name: 'Dairy, Cheese & Eggs', path: '?almBrandId=QW1hem9uIEZyZXNo&node=16318991' },
-      { name: 'Bread & Bakery', path: '?almBrandId=QW1hem9uIEZyZXNo&node=16319431' },
-      { name: 'Pantry Staples', path: '?almBrandId=QW1hem9uIEZyZXNo&node=16310231' },
-      { name: 'Frozen', path: '?almBrandId=QW1hem9uIEZyZXNo&node=16318961' },
-    ],
-  },
+const WF_BRAND_ID = 'VUZHIFdob2xlIEZvb2Rz';
+const BASE_URL = 'https://www.wholefoodsmarket.com';
+
+const REGIONS = [
+  { zip: '01835', label: 'Haverhill, MA', sourceId: 'whole-foods-haverhill-ma', state: 'MA' },
+  { zip: '04101', label: 'Portland, ME', sourceId: 'whole-foods-portland-me', state: 'ME' },
 ];
 
-function ensureSourceExists(db, store) {
+const CATEGORIES = [
+  { name: 'Produce',              node: '6506977011' },
+  { name: 'Meat & Seafood',       node: '371469011' },
+  { name: 'Breads & Bakery',      node: '16318751' },
+  { name: 'Deli & Prepared Foods', node: '18773724011' },
+  { name: 'Dairy, Cheese & Eggs', node: '371460011' },
+  { name: 'Frozen Foods',         node: '6459122011' },
+  { name: 'Pantry',               node: '18787303011' },
+];
+
+/**
+ * Prepared food filter v3 - MUCH more targeted.
+ *
+ * Only filters out truly composite prepared meals that are NOT raw ingredients.
+ * Chefs absolutely buy: broth, stock, canned goods, smoked salmon, ham, cheeses,
+ * garlic powder, cornstarch, salad mix, peppercorns, lard, buttermilk, etc.
+ */
+const PREPARED_FOOD_PATTERNS = [
+  // Prepared meals and assembled dishes (not raw ingredients)
+  /\b(sushi|rangoons?|dumplings?|wontons?|samosas?|burritos?|wraps?|tacos?|quesadillas?|pierog(i|ies))\b/i,
+  /\b(pizzas?|lasagnas?|calzones?|pot pies?|casseroles?|meal kits?|quiche|entrees?)\b/i,
+  /\b(sandwich(es)?|paninis?|sliders?)\b/i,
+  // Baked goods (composite, not raw)
+  /\b(cakes?|shortcakes?|cupcakes?|cheesecakes?|brownies?|cookies?|muffins?|scones?|donuts?|pastries|pastr?y|tarts?)\b/i,
+  // Snacks (composite processed products)
+  /\b(chips?|poppables|nuggets?|popcorn|pretzels?|puffs?|tots|fries|rings)\b/i,
+  /\b(protein bar|energy bar|granola bar)\b/i,
+  // Frozen desserts
+  /\b(ice cream|gelato|sorbet|frozen yogurt|popsicles?)\b/i,
+  // Mac and cheese
+  /\b(mac and cheese|mac & cheese|mac shells|mac cheese)\b/i,
+  // Baking mixes (not raw ingredients)
+  /\b(baking mix|cake mix|pancake mix|muffin mix)\b/i,
+  // Egg preparations (not raw eggs)
+  /\b(egg bites|egg sandwich|egg rolls?|scotch eggs?)\b/i,
+  // Spring rolls, pot stickers
+  /\b(spring rolls?|pot stickers?|gyoza)\b/i,
+  // Prepared proteins (rotisserie, pre-cooked, breaded)
+  /\b(rotisserie)\b/i,
+  /\b(cod cakes?|crab cakes?|fish cakes?|salmon cakes?|meatballs?|meat loaf|meatloaf)\b/i,
+  /\b(battered|breaded)\b/i,
+  // Nut butters (not dairy butter)
+  /\b(peanut butter|almond butter|cashew butter|sunflower butter|seed butter|nut butter|cookie butter)\b/i,
+  // Marshmallow, frosting, candy
+  /\b(marshmallows?|frosting|icing)\b/i,
+  // Jerky
+  /\b(jerky|jerkies)\b/i,
+  // Riced vegetables (prepared)
+  /\b(riced cauliflower|riced broccoli)\b/i,
+];
+
+// Products that ARE raw ingredients, even if they match a prepared pattern
+const PREPARED_FOOD_EXCEPTIONS = [
+  // Fresh produce
+  /^(organic |conventional )?(green |red |yellow |sweet )?(onion|garlic|potato|tomato|pepper|bean|pea|carrot|celery|cucumber|squash|zucchini|asparagus|fennel|leek|beet|turnip|radish|corn\b)/i,
+  /^(organic |conventional )?(large |small |hass )?(avocado|banana|apple|orange|lemon|lime|mango|peach|pear|plum|grape|berry|melon|pineapple|kiwi|grapefruit|nectarine)\b/i,
+  // Raw meat cuts
+  /\b(ground beef|ground turkey|ground pork|ground chicken|ground lamb|ground bison)\b/i,
+  /\b(breast|thigh|drumstick|wing|tenderloin|sirloin|ribeye|chuck|flank|brisket)\b/i,
+  /\b(fillet|filet|steak|chop|roast|loin|rack|shank)\b/i,
+  /\b(pork shoulder|pork butt|pork belly)\b/i,
+  /\b(whole chicken|whole turkey)\b/i,
+  // Greens & herbs
+  /\b(baby spinach|mixed greens|arugula|kale|lettuce|romaine|spring mix|salad mix|salad greens|salad kit)\b/i,
+  /^(organic )?(dill|parsley|cilantro|basil|rosemary|thyme|oregano|mint|chive|sage|tarragon)\b/i,
+  // Raw seafood
+  /\b(salmon fillet|cod fillet|halibut fillet|swordfish steak|tuna steak)\b/i,
+  /\b(shrimp .*(count|peeled|deveined|raw|shell))\b/i,
+  // Cheeses (all real ingredients chefs buy)
+  /\b(cheddar|mozzarella|parmesan|parmigiano|swiss|provolone|gouda|brie|camembert|gruyere|manchego|havarti|fontina|muenster|feta|goat cheese|ricotta|cream cheese|cottage cheese|colby|monterey|pepper jack)\b/i,
+  // Pantry staples that were incorrectly filtered
+  /\b(broth|stock|bouillon)\b/i,
+  /\b(canned|jarred|pickled|preserved)\b/i,
+  /\b(sardines?|anchovies|tuna)\b/i,
+  /\b(smoked salmon|smoked paprika|smoked salt)\b/i,
+  /\b(ham|prosciutto|pancetta)\b/i,
+  /\b(cornstarch|starch|arrowroot)\b/i,
+  /\b(garlic powder|onion powder|chili powder|cocoa powder|baking powder)\b/i,
+  /\b(peppercorns?|black pepper|white pepper)\b/i,
+  /\b(lard|tallow|shortening)\b/i,
+  /\b(buttermilk)\b/i,
+  /\b(granola|oatmeal|oats)\b/i,
+  /\b(cereal)\b/i,
+  /\b(bread|bagel|tortilla|pita|naan|ciabatta|baguette|croissant)\b/i,
+  /\b(crackers?)\b/i,
+  /\b(chocolate chips?|baking chips?|morsels)\b/i,
+  /\b(salad mix|salad greens|mixed greens|spring mix)\b/i,
+];
+
+function isPreparedFood(name) {
+  const lower = name.toLowerCase();
+
+  // Check exceptions FIRST - if it's a known raw ingredient, keep it
+  if (PREPARED_FOOD_EXCEPTIONS.some(e => e.test(lower))) return false;
+
+  // Then check prepared patterns
+  if (PREPARED_FOOD_PATTERNS.some(p => p.test(lower))) return true;
+
+  // Very long names are usually SEO-stuffed packaged products, but raise the bar
+  if (name.length > 150) return true;
+
+  return false;
+}
+
+function ensureSourceExists(db, region) {
   db.prepare(`
     INSERT OR IGNORE INTO source_registry (source_id, name, type, chain_id, state, scrape_method, scrape_url, has_online_pricing, pricing_tier, status, website, notes)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
-    store.sourceId, store.name, 'retail_chain', store.chain, store.state,
-    'direct_website', store.baseUrl, 1, 'retail', 'active',
-    store.baseUrl, 'Online catalog with prices. JS-rendered.'
+    region.sourceId,
+    'Whole Foods (' + region.label + ')',
+    'retail_chain', 'whole-foods', region.state,
+    'direct_website', BASE_URL, 1, 'retail', 'active',
+    BASE_URL, 'Amazon ALM platform. Zip: ' + region.zip
   );
 }
 
-/**
- * Scrape Whole Foods product page.
- * Their website uses a custom React app.
- */
-async function scrapeWholeFoodsCategory(page, store, category) {
-  const url = `${store.baseUrl}${category.path}`;
-  console.log(`  [${store.chain}/${category.name}] Loading ${url}`);
+async function setZipCode(page, zip) {
+  try {
+    const locationBtn = await page.$('button.cursor-pointer');
+    if (!locationBtn) {
+      console.log('  [zip] No location button found, proceeding with default');
+      return false;
+    }
+    await locationBtn.click();
+    await sleep(2000);
 
-  const loaded = await safeFetch(page, url, 45000);
-  if (!loaded) {
-    console.error(`  [${store.chain}/${category.name}] Failed to load`);
-    return [];
+    const clicked = await page.evaluate(() => {
+      const tabs = document.querySelectorAll('[role="radio"]');
+      for (const tab of tabs) {
+        if (tab.textContent.trim() === 'Delivery') { tab.click(); return true; }
+      }
+      return false;
+    });
+
+    if (!clicked) {
+      await page.keyboard.press('Escape');
+      return false;
+    }
+    await sleep(2000);
+
+    const zipInput = await page.$('input[name="zipCode"], input[name="zipcode"], input[placeholder*="zip" i]');
+    if (!zipInput) {
+      await page.keyboard.press('Escape');
+      return false;
+    }
+
+    await zipInput.click({ clickCount: 3 });
+    await zipInput.type(zip, { delay: 50 });
+    await sleep(500);
+
+    const applied = await page.evaluate(() => {
+      for (const btn of document.querySelectorAll('button')) {
+        if (btn.textContent.trim() === 'Apply') { btn.click(); return true; }
+      }
+      return false;
+    });
+    if (!applied) await page.keyboard.press('Enter');
+    await sleep(3000);
+
+    const continued = await page.evaluate(() => {
+      for (const btn of document.querySelectorAll('button')) {
+        if (btn.textContent.trim() === 'Continue') { btn.click(); return true; }
+      }
+      return false;
+    });
+    await sleep(2000);
+    console.log('  [zip] Set delivery zip to ' + zip);
+    return true;
+  } catch (err) {
+    console.log('  [zip] Could not set zip: ' + err.message);
+    return false;
   }
+}
 
-  await sleep(4000);
-
-  // Scroll to trigger lazy loading
-  for (let i = 0; i < 3; i++) {
-    await page.evaluate(() => window.scrollBy(0, window.innerHeight));
-    await sleep(1500);
-  }
-
-  const products = await page.evaluate(() => {
+async function extractProducts(page) {
+  return page.evaluate(() => {
     const items = [];
-
-    // Whole Foods / Amazon Fresh product card selectors
-    const cards = document.querySelectorAll(
-      '[data-testid="product-tile"], .w-pie--product-tile, [class*="ProductTile"], ' +
-      '[class*="product-card"], .s-result-item, [data-component-type="s-search-result"]'
-    );
+    const seen = new Set();
+    const cards = document.querySelectorAll('.a-carousel-card:not(.a-carousel-card-empty)');
 
     for (const card of cards) {
       try {
-        const nameEl = card.querySelector(
-          '[data-testid="product-tile-name"], .w-pie--product-tile__title, [class*="ProductTitle"], ' +
-          'h2 a span, .a-text-normal, [class*="product-name"]'
-        );
-        const name = nameEl?.textContent?.trim();
-        if (!name) continue;
+        const imgEl = card.querySelector('img[alt]');
+        let name = imgEl ? imgEl.alt.trim() : '';
+        if (!name) {
+          const linkEl = card.querySelector('a[href*="/dp/"]');
+          if (linkEl) name = linkEl.textContent.trim();
+        }
+        if (!name || name.length < 3) continue;
 
-        const priceEl = card.querySelector(
-          '[data-testid="product-tile-price"], .w-pie--product-tile__price, [class*="ProductPrice"], ' +
-          '.a-price .a-offscreen, [class*="price"], span[class*="Price"]'
-        );
-        const priceText = priceEl?.textContent?.trim();
+        const priceEl = card.querySelector('.a-price .a-offscreen');
+        const priceText = priceEl ? priceEl.textContent.trim() : '';
         if (!priceText) continue;
 
-        const sizeEl = card.querySelector(
-          '[data-testid="product-tile-size"], .w-pie--product-tile__unit, [class*="size"], ' +
-          '[class*="Size"], [class*="weight"]'
-        );
-        const size = sizeEl?.textContent?.trim() || '';
+        const priceRow = card.querySelector('[class*="priceRow"]');
+        const priceRowText = priceRow ? priceRow.textContent.trim() : '';
 
-        const unitPriceEl = card.querySelector(
-          '[class*="unit-price"], [class*="UnitPrice"], [class*="per-unit"]'
-        );
-        const unitPrice = unitPriceEl?.textContent?.trim() || '';
+        let size = '';
+        for (const s of card.querySelectorAll('span')) {
+          const t = s.textContent.trim();
+          if (/^\d+\.?\d*\s*(oz|ounce|lb|pound|gallon|gal|ct|count|pack|fl oz)/i.test(t) && t.length < 30) {
+            size = t;
+            break;
+          }
+        }
 
-        items.push({ name, priceText, size, unitPrice });
-      } catch (e) {
-        // Skip
-      }
+        const strikeEl = card.querySelector('[class*="strikeThroughPrice"] .a-offscreen, .a-text-price .a-offscreen');
+        const strikePrice = strikeEl ? strikeEl.textContent.trim() : '';
+
+        const key = name + '|' + priceText;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        items.push({ name, priceText, priceRowText, size, strikePrice });
+      } catch {}
     }
     return items;
   });
-
-  console.log(`  [${store.chain}/${category.name}] Found ${products.length} products`);
-  return products;
 }
 
 function parsePriceCents(priceText) {
   if (!priceText) return null;
-  const multiMatch = priceText.match(/(\d+)\s*(?:\/|for)\s*\$?([\d.]+)/);
-  if (multiMatch) {
-    const qty = parseInt(multiMatch[1]);
-    const total = parseFloat(multiMatch[2]);
-    if (qty > 0 && total > 0) return Math.round((total / qty) * 100);
-  }
-  const priceMatch = priceText.match(/\$?([\d]+\.[\d]{2})/);
-  if (priceMatch) return Math.round(parseFloat(priceMatch[1]) * 100);
-  return null;
+  const match = priceText.match(/\$?([\d,]+\.[\d]{2})/);
+  if (!match) return null;
+  const price = parseFloat(match[1].replace(',', ''));
+  if (price <= 0 || price > 1000) return null;
+  return Math.round(price * 100);
 }
 
-function detectUnit(name, size) {
-  const combined = `${name} ${size}`.toLowerCase();
+function detectUnit(name, size, priceRowText) {
+  const combined = (name + ' ' + size + ' ' + priceRowText).toLowerCase();
   if (combined.includes('/lb') || combined.includes('per lb') || combined.includes('per pound')) return 'lb';
-  if (combined.includes('/oz') || combined.includes('per oz')) return 'oz';
-  if (combined.match(/\b(chicken|beef|pork|turkey|salmon|cod|shrimp|steak|roast|chop|fillet|lamb|veal)\b/)) return 'lb';
-  if (combined.match(/\b(milk|cream)\b.*\b(gallon|gal)\b/)) return 'gallon';
-  if (combined.match(/\b(egg)\b/)) return 'dozen';
+  if (combined.includes('/oz') || combined.includes('per oz') || combined.includes('per ounce')) return 'oz';
+  if (combined.includes('/gal') || combined.includes('per gallon')) return 'gallon';
+  if (/\b(chicken breast|beef|pork|turkey|salmon|cod|shrimp|steak|roast|chop|fillet|filet|lamb|veal|sea bass|tilapia|halibut|swordfish|tuna steak|crab|lobster)\b/.test(combined)) return 'lb';
+  if (/\b(deli|charcuterie|sliced|in house)\b/.test(combined) && /\b(turkey|ham|roast beef|salami|bologna)\b/.test(combined)) return 'lb';
+  if (/\b(milk|cream)\b/.test(combined) && /\b(gallon|gal|half gallon)\b/.test(combined)) return 'gallon';
+  if (/\b(egg)\b/.test(combined) && /\b(dozen|12|18)\b/.test(combined)) return 'dozen';
+  const sizeMatch = size.match(/([\d.]+)\s*(oz|ounce|lb|pound|gallon|gal|fl oz)/i);
+  if (sizeMatch) {
+    const u = sizeMatch[2].toLowerCase();
+    if (u.includes('lb') || u.includes('pound')) return 'lb';
+    if (u.includes('gal')) return 'gallon';
+    if (u.includes('oz')) return 'oz';
+  }
   return 'each';
 }
 
-async function main() {
-  const storeArgs = process.argv.slice(2);
-  const storesToScrape = storeArgs.length > 0
-    ? STORES.filter(s => storeArgs.includes(s.chain))
-    : STORES;
+async function scrapeCategory(page, category, retries = 1) {
+  const url = BASE_URL + '/alm/category/?almBrandId=' + WF_BRAND_ID + '&node=' + category.node;
+  console.log('  [' + category.name + '] Loading ' + url);
 
-  console.log('=== OpenClaw Whole Foods / Amazon Fresh Scraper ===');
-  console.log(`Time: ${new Date().toISOString()}`);
+  try {
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 60000 });
+  } catch (err) {
+    console.error('  [' + category.name + '] Failed to load: ' + err.message);
+    return [];
+  }
+
+  await sleep(5000);
+
+  try {
+    for (let i = 0; i < 12; i++) {
+      await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+      await sleep(1500);
+    }
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await sleep(1000);
+    for (let i = 0; i < 12; i++) {
+      await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+      await sleep(800);
+    }
+
+    const products = await extractProducts(page);
+    console.log('  [' + category.name + '] Found ' + products.length + ' products');
+    return products;
+  } catch (err) {
+    if (err.message.includes('detached Frame') && retries > 0) {
+      await sleep(3000);
+      return scrapeCategory(page, category, retries - 1);
+    }
+    console.error('  [' + category.name + '] Error: ' + err.message);
+    return [];
+  }
+}
+
+async function scrapeRegion(browser, region, db, cachedMappings) {
+  console.log('\n========================================');
+  console.log('Region: ' + region.label + ' (' + region.zip + ')');
+  console.log('========================================');
+
+  ensureSourceExists(db, region);
+
+  {
+    const setupPage = await newPage(browser);
+    console.log('\n--- Setting delivery location ---');
+    await setupPage.goto(BASE_URL + '?almBrandId=' + WF_BRAND_ID, { waitUntil: 'networkidle2', timeout: 60000 });
+    await sleep(3000);
+    await setZipCode(setupPage, region.zip);
+    try { await setupPage.close(); } catch {}
+  }
+
+  let totalNew = 0, totalChanged = 0, totalUnchanged = 0;
+  let totalSkippedPrepared = 0, totalSkippedNonFood = 0;
+  let totalSkippedNoNorm = 0, totalSkippedNoPrice = 0;
+
+  for (const category of CATEGORIES) {
+    console.log('\n--- ' + category.name + ' ---');
+    const page = await newPage(browser);
+    let products;
+    try {
+      products = await scrapeCategory(page, category);
+    } finally {
+      try { await page.close(); } catch {}
+    }
+
+    for (const product of products) {
+      if (!isFoodItem(product.name)) { totalSkippedNonFood++; continue; }
+      if (isPreparedFood(product.name)) { totalSkippedPrepared++; continue; }
+
+      const normalized = normalizeByRules(product.name, cachedMappings);
+      if (!normalized) { totalSkippedNoNorm++; continue; }
+
+      const priceCents = parsePriceCents(product.priceText);
+      if (!priceCents) { totalSkippedNoPrice++; continue; }
+
+      const unit = detectUnit(product.name, product.size, product.priceRowText);
+      saveMapping(db, product.name, normalized.ingredientId, normalized.variantId, normalized.method, normalized.confidence);
+
+      const result = upsertPrice(db, {
+        sourceId: region.sourceId,
+        canonicalIngredientId: normalized.ingredientId,
+        variantId: normalized.variantId,
+        rawProductName: product.name,
+        priceCents,
+        priceUnit: unit,
+        pricePerStandardUnitCents: priceCents,
+        standardUnit: unit,
+        packageSize: product.size || null,
+        priceType: product.strikePrice ? 'sale' : 'regular',
+        pricingTier: 'retail',
+        confidence: 'direct_scrape',
+        sourceUrl: BASE_URL + '/alm/category/?almBrandId=' + WF_BRAND_ID,
+        imageUrl: null,
+        brand: null,
+        aisleCat: category.name,
+      });
+
+      if (result === 'new') totalNew++;
+      else if (result === 'changed') totalChanged++;
+      else totalUnchanged++;
+    }
+
+    await rateLimitDelay();
+  }
+
+  db.prepare("UPDATE source_registry SET last_scraped_at = datetime('now') WHERE source_id = ?").run(region.sourceId);
+
+  console.log('\n=== ' + region.label + ' Results ===');
+  console.log('  New: ' + totalNew);
+  console.log('  Changed: ' + totalChanged);
+  console.log('  Unchanged: ' + totalUnchanged);
+  console.log('  Skipped (non-food): ' + totalSkippedNonFood);
+  console.log('  Skipped (prepared): ' + totalSkippedPrepared);
+  console.log('  Skipped (no normalization): ' + totalSkippedNoNorm);
+  console.log('  Skipped (no price): ' + totalSkippedNoPrice);
+
+  return { new: totalNew, changed: totalChanged, unchanged: totalUnchanged };
+}
+
+async function main() {
+  const regionArg = process.argv.find(a => a.startsWith('--region='));
+  let regionsToScrape = REGIONS;
+  if (regionArg) {
+    const name = regionArg.split('=')[1].toLowerCase();
+    regionsToScrape = REGIONS.filter(r => r.label.toLowerCase().includes(name));
+  }
+
+  console.log('=== OpenClaw Whole Foods Scraper (v3 - Relaxed Filters) ===');
+  console.log('Time: ' + new Date().toISOString());
+  console.log('Regions: ' + regionsToScrape.map(r => r.label).join(', '));
 
   const db = getDb();
   const cachedMappings = loadCachedMappings(db);
@@ -165,62 +414,27 @@ async function main() {
   try {
     browser = await launchBrowser();
 
-    for (const store of storesToScrape) {
-      console.log(`\n--- Scraping ${store.name} ---`);
-      ensureSourceExists(db, store);
-
-      const page = await newPage(browser);
-      let totalNew = 0, totalChanged = 0, totalUnchanged = 0, totalSkipped = 0;
-
-      for (const category of store.categories) {
-        const products = await scrapeWholeFoodsCategory(page, store, category);
-
-        for (const product of products) {
-          if (!isFoodItem(product.name)) { totalSkipped++; continue; }
-          const normalized = normalizeByRules(product.name, cachedMappings);
-          if (!normalized) { totalSkipped++; continue; }
-          const priceCents = parsePriceCents(product.priceText);
-          if (!priceCents || priceCents <= 0 || priceCents > 100000) { totalSkipped++; continue; }
-
-          const unit = detectUnit(product.name, product.size);
-          saveMapping(db, product.name, normalized.ingredientId, normalized.variantId, normalized.method, normalized.confidence);
-
-          const result = upsertPrice(db, {
-            sourceId: store.sourceId,
-            canonicalIngredientId: normalized.ingredientId,
-            variantId: normalized.variantId,
-            rawProductName: product.name,
-            priceCents,
-            priceUnit: unit,
-            pricePerStandardUnitCents: priceCents,
-            standardUnit: unit,
-            packageSize: product.size || null,
-            priceType: 'regular',
-            pricingTier: 'retail',
-            confidence: 'direct_scrape',
-            sourceUrl: store.baseUrl,
-          });
-
-          if (result === 'new') totalNew++;
-          else if (result === 'changed') totalChanged++;
-          else totalUnchanged++;
-        }
-
-        await rateLimitDelay();
+    for (let i = 0; i < regionsToScrape.length; i++) {
+      try {
+        await scrapeRegion(browser, regionsToScrape[i], db, cachedMappings);
+      } catch (err) {
+        console.error('ERROR: Region ' + regionsToScrape[i].label + ': ' + err.message);
+        try { await browser.close(); } catch {}
+        browser = await launchBrowser();
       }
 
-      await page.close();
-      db.prepare("UPDATE source_registry SET last_scraped_at = datetime('now') WHERE source_id = ?").run(store.sourceId);
-      console.log(`  [${store.chain}] Results: New=${totalNew}, Changed=${totalChanged}, Unchanged=${totalUnchanged}, Skipped=${totalSkipped}`);
-      await sleep(8000);
+      if (i < regionsToScrape.length - 1) {
+        console.log('\n--- 10s pause before next region ---');
+        await sleep(10000);
+      }
     }
   } catch (err) {
-    console.error('FATAL:', err.message);
+    console.error('FATAL: ' + err.message);
   } finally {
     if (browser) await browser.close();
   }
 
-  console.log('\n=== Done ===');
+  console.log('\n=== Done (' + new Date().toISOString() + ') ===');
 }
 
 main().catch(err => { console.error('FATAL:', err); process.exit(1); });

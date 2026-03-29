@@ -143,7 +143,8 @@ const server = createServer((req, res) => {
 
       const prices = db.prepare(`
         SELECT cp.price_cents, cp.price_unit, cp.price_type, cp.pricing_tier, cp.confidence,
-               cp.in_stock, cp.source_url, cp.last_confirmed_at, cp.last_changed_at, cp.package_size,
+               cp.in_stock, cp.source_url, cp.image_url, cp.brand, cp.aisle_category,
+               cp.last_confirmed_at, cp.last_changed_at, cp.package_size,
                sr.name as store_name, sr.city, sr.state, sr.website as store_website
         FROM current_prices cp
         JOIN source_registry sr ON cp.source_id = sr.source_id
@@ -176,6 +177,9 @@ const server = createServer((req, res) => {
           confidence: p.confidence,
           inStock: p.in_stock === 1,
           sourceUrl: p.source_url || null,
+          imageUrl: p.image_url || null,
+          brand: p.brand || null,
+          aisleCat: p.aisle_category || null,
           lastConfirmedAt: p.last_confirmed_at,
           lastChangedAt: p.last_changed_at,
           packageSize: p.package_size || null,
@@ -670,6 +674,12 @@ const server = createServer((req, res) => {
                 WHERE cp2.canonical_ingredient_id = ci.ingredient_id ORDER BY cp2.price_cents ASC LIMIT 1) as best_price_store,
                (SELECT cp2.price_unit FROM current_prices cp2
                 WHERE cp2.canonical_ingredient_id = ci.ingredient_id ORDER BY cp2.price_cents ASC LIMIT 1) as best_price_unit,
+               (SELECT cp2.image_url FROM current_prices cp2
+                WHERE cp2.canonical_ingredient_id = ci.ingredient_id AND cp2.image_url IS NOT NULL
+                ORDER BY cp2.price_cents ASC LIMIT 1) as image_url,
+               (SELECT cp2.brand FROM current_prices cp2
+                WHERE cp2.canonical_ingredient_id = ci.ingredient_id AND cp2.brand IS NOT NULL
+                ORDER BY cp2.price_cents ASC LIMIT 1) as brand,
                COUNT(DISTINCT cp.source_id) as price_count,
                MAX(cp.last_confirmed_at) as last_updated,
                SUM(CASE WHEN cp.in_stock = 1 THEN 1 ELSE 0 END) as in_stock_count,
@@ -710,6 +720,8 @@ const server = createServer((req, res) => {
           best_price_cents: r.best_price_cents || null,
           best_price_store: r.best_price_store || null,
           best_price_unit: r.best_price_unit || r.standard_unit,
+          image_url: r.image_url || null,
+          brand: r.brand || null,
           price_count: r.price_count || 0,
           last_updated: r.last_updated || null,
           in_stock_count: r.in_stock_count || 0,
@@ -778,6 +790,9 @@ const server = createServer((req, res) => {
           confidence: p.confidence || 'unknown',
           inStock: p.in_stock === 1,
           sourceUrl: p.source_url || null,
+          imageUrl: p.image_url || null,
+          brand: p.brand || null,
+          aisleCat: p.aisle_category || null,
           lastConfirmedAt: p.last_confirmed_at,
           lastChangedAt: p.last_changed_at,
           packageSize: p.package_size || null,

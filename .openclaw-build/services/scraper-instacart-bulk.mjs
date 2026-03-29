@@ -1,23 +1,32 @@
 /**
- * OpenClaw - Instacart BULK Scraper (Session Extraction + HTTP API)
+ * OpenClaw - Instacart BULK Scraper v2 (Category Crawl + GraphQL Intercept)
  *
  * Strategy:
- * 1. Launch Puppeteer ONCE to get Instacart session cookies
- * 2. Close browser immediately (free memory)
- * 3. Use plain HTTP requests with those cookies to search their API
- * 4. Search for EVERY unpriced canonical ingredient
+ * 1. Launch Puppeteer to get session cookies + intercept GraphQL query template
+ * 2. Use HTTP GraphQL requests to search broad food terms per store
+ * 3. Falls back to Puppeteer category browsing if GraphQL fails
  *
- * This avoids heavy page rendering - the Pi can't handle Instacart's React app.
- * HTTP requests with cookies are fast and lightweight.
+ * CLI flags:
+ *   --stores market-basket,aldi    Select specific stores (comma-separated slugs)
+ *   --max 300                       Cap products per store
+ *   --force                         Ignore session cache, get fresh cookies
+ *
+ * Runs sequentially: one store at a time to protect Pi RAM.
  */
 
 import { getDb, upsertPrice } from '../lib/db.mjs';
-import { launchBrowser, newPage, sleep } from '../lib/scrape-utils.mjs';
+import { launchBrowser, sleep, randomUserAgent } from '../lib/scrape-utils.mjs';
 import { normalizeByRules, isFoodItem, loadCachedMappings, saveMapping } from '../lib/normalize-rules.mjs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import crypto from 'crypto';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const SESSION_PATH = join(__dirname, '..', 'data', 'instacart-session.json');
 const INSTACART_BASE = 'https://www.instacart.com';
 
-// Stores to search (Instacart slugs)
+// All stores with Instacart slugs
 const STORES = [
   { slug: 'market-basket', sourceId: 'market-basket-instacart', name: 'Market Basket', markupPct: 15, tier: 'retail' },
   { slug: 'hannaford', sourceId: 'hannaford-instacart', name: 'Hannaford', markupPct: 12, tier: 'retail' },
@@ -27,6 +36,39 @@ const STORES = [
   { slug: 'costco', sourceId: 'costco-instacart', name: 'Costco', markupPct: 20, tier: 'wholesale' },
   { slug: 'bjs-wholesale-club', sourceId: 'bjs-instacart', name: "BJ's", markupPct: 18, tier: 'wholesale' },
   { slug: 'whole-foods', sourceId: 'wholefoods-instacart', name: 'Whole Foods', markupPct: 10, tier: 'retail' },
+];
+
+// Broad search terms that return many products per search (~80 terms)
+const SEARCH_TERMS = [
+  // Produce
+  'apple', 'banana', 'orange', 'lemon', 'lime', 'grape', 'strawberry', 'blueberry',
+  'avocado', 'tomato', 'potato', 'onion', 'garlic', 'carrot', 'celery', 'broccoli',
+  'cauliflower', 'spinach', 'kale', 'lettuce', 'cucumber', 'mushroom', 'pepper',
+  'corn', 'asparagus', 'zucchini', 'sweet potato', 'green bean',
+  // Meat
+  'chicken breast', 'chicken thigh', 'ground beef', 'steak', 'pork chop',
+  'bacon', 'sausage', 'ground turkey', 'salmon', 'shrimp', 'cod', 'tilapia',
+  'lamb', 'pork tenderloin', 'ribs', 'ham', 'turkey breast',
+  // Dairy
+  'milk', 'butter', 'eggs', 'cheese', 'yogurt', 'cream cheese', 'sour cream',
+  'heavy cream', 'cottage cheese', 'mozzarella', 'cheddar',
+  // Pantry
+  'rice', 'pasta', 'bread', 'flour', 'sugar', 'olive oil', 'vegetable oil',
+  'canned tomato', 'broth', 'beans', 'peanut butter', 'cereal', 'oatmeal',
+  'honey', 'maple syrup', 'vinegar', 'soy sauce', 'hot sauce',
+  // Spices & herbs
+  'salt', 'pepper', 'garlic powder', 'onion powder', 'paprika', 'cumin',
+  'oregano', 'basil', 'thyme', 'rosemary', 'cinnamon',
+  // Frozen
+  'frozen vegetables', 'frozen fruit', 'ice cream',
+  // Beverages
+  'coffee', 'tea', 'juice', 'water',
+];
+
+// Instacart category slugs for fallback Puppeteer browsing
+const IC_CATEGORIES = [
+  'produce', 'dairy-eggs', 'meat-seafood', 'bakery-desserts',
+  'deli', 'frozen', 'pantry', 'snacks-candy', 'beverages',
 ];
 
 function ensureSourcesExist(db) {
@@ -44,247 +86,389 @@ function ensureSourcesExist(db) {
   }
 }
 
+// ============================================================================
+// SESSION MANAGEMENT
+// ============================================================================
+
+function loadCachedSession() {
+  try {
+    if (!existsSync(SESSION_PATH)) return null;
+    const data = JSON.parse(readFileSync(SESSION_PATH, 'utf8'));
+    if (Date.now() - data.timestamp < 2 * 60 * 60 * 1000) {
+      console.log('[session] Using cached session (age: ' + Math.round((Date.now() - data.timestamp) / 60000) + 'min)');
+      return data;
+    }
+    console.log('[session] Cached session expired');
+  } catch {}
+  return null;
+}
+
+function saveSession(session) {
+  try {
+    writeFileSync(SESSION_PATH, JSON.stringify({ ...session, timestamp: Date.now() }, null, 2));
+  } catch (err) {
+    console.warn('[session] Failed to cache:', err.message);
+  }
+}
+
 /**
- * Step 1: Use Puppeteer to get Instacart session cookies.
- * Opens a minimal page, grabs cookies, closes browser.
+ * Get Instacart session via Puppeteer.
+ * Captures cookies AND intercepts a real GraphQL search request.
  */
-async function getInstacartSession() {
-  console.log('[session] Launching browser to get Instacart cookies...');
+async function getInstacartSession(storeSlug) {
+  console.log('[session] Launching browser...');
   const browser = await launchBrowser();
+  let graphqlTemplate = null;
+  let capturedHeaders = {};
 
   try {
     const page = await browser.newPage();
-    await page.setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+    const ua = randomUserAgent();
+    await page.setUserAgent(ua);
+    await page.setViewport({ width: 1366, height: 768 });
 
-    // Block heavy resources - we just need cookies
+    // Block heavy resources
     await page.setRequestInterception(true);
     page.on('request', req => {
       const type = req.resourceType();
-      if (['image', 'font', 'media', 'stylesheet', 'script'].includes(type)) {
-        // Allow only critical scripts
-        if (type === 'script' && req.url().includes('instacart')) {
-          req.continue();
-        } else {
-          req.abort();
+      const url = req.url();
+      if (type === 'document' || type === 'xhr' || type === 'fetch') {
+        // Capture GraphQL search requests
+        if (url.includes('/graphql') && req.method() === 'POST') {
+          try {
+            const pd = req.postData();
+            if (pd && (pd.includes('earch') || pd.includes('items'))) {
+              graphqlTemplate = pd;
+              capturedHeaders = { ...req.headers() };
+              console.log('[session] Captured GraphQL template');
+            }
+          } catch {}
         }
-      } else {
         req.continue();
+      } else if (type === 'script' && url.includes('instacart')) {
+        req.continue();
+      } else {
+        req.abort();
       }
     });
 
-    // Capture any API responses we see
-    let apiHeaders = {};
-    page.on('response', async (response) => {
-      const url = response.url();
-      if (url.includes('/graphql') || url.includes('/v3/')) {
-        const headers = response.request().headers();
-        if (headers['x-client-identifier'] || headers['authorization']) {
-          apiHeaders = { ...headers };
-        }
-      }
-    });
-
-    // Navigate to Instacart - just the homepage
-    console.log('[session] Loading Instacart homepage...');
-    await page.goto(INSTACART_BASE, {
+    // Navigate to store
+    console.log('[session] Loading store page...');
+    await page.goto(`${INSTACART_BASE}/store/${storeSlug}`, {
       waitUntil: 'domcontentloaded',
-      timeout: 60000
+      timeout: 90000,
     });
-
-    // Wait for cookies to be set
     await sleep(5000);
 
-    // Try to set location to Haverhill MA
+    // Try to set location to 01835
     try {
-      // Type in zip code if there's a location prompt
-      const locationInput = await page.$('input[placeholder*="zip"], input[placeholder*="address"], input[aria-label*="address"]');
-      if (locationInput) {
-        await locationInput.type('01835');
+      const locBtns = await page.$$('button');
+      for (const btn of locBtns.slice(0, 10)) {
+        const text = await page.evaluate(el => el.textContent, btn);
+        if (text && (text.includes('address') || text.includes('zip') || text.includes('location') || text.includes('Deliver'))) {
+          await btn.click();
+          await sleep(2000);
+          break;
+        }
+      }
+      const zipInput = await page.$('input[placeholder*="zip"], input[placeholder*="address"], input[name="address"]');
+      if (zipInput) {
+        await zipInput.click({ clickCount: 3 });
+        await zipInput.type('01835', { delay: 30 });
         await sleep(1000);
         await page.keyboard.press('Enter');
         await sleep(3000);
       }
-    } catch (e) {
-      // Location prompt may not appear
-    }
+    } catch {}
 
-    // Extract all cookies
+    // Trigger a search to capture GraphQL template
+    try {
+      const searchInput = await page.$('input[aria-label*="earch"], input[placeholder*="earch"], input[role="combobox"]');
+      if (searchInput) {
+        await searchInput.click();
+        await sleep(500);
+        await searchInput.type('chicken', { delay: 50 });
+        await sleep(2000);
+        await page.keyboard.press('Enter');
+        await sleep(5000);
+      }
+    } catch {}
+
+    // Get cookies
     const cookies = await page.cookies();
     console.log(`[session] Got ${cookies.length} cookies`);
-
-    // Build cookie string for HTTP requests
     const cookieStr = cookies.map(c => `${c.name}=${c.value}`).join('; ');
 
-    // Get any useful headers from the page
-    const clientHeaders = await page.evaluate(() => {
-      // Try to find client identifiers in the page
+    // Extract client identifiers
+    const clientData = await page.evaluate(() => {
       const meta = {};
-      const scripts = document.querySelectorAll('script');
-      for (const s of scripts) {
+      for (const s of document.querySelectorAll('script')) {
         const text = s.textContent || '';
-        const clientIdMatch = text.match(/"clientIdentifier"\s*:\s*"([^"]+)"/);
-        if (clientIdMatch) meta.clientIdentifier = clientIdMatch[1];
-        const csrfMatch = text.match(/"csrfToken"\s*:\s*"([^"]+)"/);
-        if (csrfMatch) meta.csrfToken = csrfMatch[1];
+        const cid = text.match(/"clientIdentifier"\s*:\s*"([^"]+)"/);
+        if (cid) meta.clientIdentifier = cid[1];
+        const csrf = text.match(/"csrfToken"\s*:\s*"([^"]+)"/);
+        if (csrf) meta.csrfToken = csrf[1];
       }
       return meta;
     });
 
-    console.log('[session] Client headers:', JSON.stringify(clientHeaders));
+    const session = {
+      cookies: cookieStr,
+      clientData,
+      graphqlTemplate,
+      capturedHeaders: Object.fromEntries(
+        Object.entries(capturedHeaders).filter(([k]) =>
+          ['x-client-identifier', 'x-csrf-token', 'x-request-id', 'x-page-view-id'].includes(k.toLowerCase())
+        )
+      ),
+      ua,
+    };
 
-    return { cookies: cookieStr, clientHeaders, apiHeaders };
+    saveSession(session);
+    return session;
   } finally {
     await browser.close();
-    console.log('[session] Browser closed. Using HTTP from here.');
+    console.log('[session] Browser closed.');
   }
 }
 
-/**
- * Search Instacart's internal API for a product.
- * Uses extracted session cookies.
- */
-async function searchInstacart(session, storeSlug, query) {
-  // Instacart's internal search endpoint
-  const searchUrl = `${INSTACART_BASE}/store/${storeSlug}/search/${encodeURIComponent(query)}`;
+// ============================================================================
+// SEARCH (HTTP-only with session cookies)
+// ============================================================================
 
-  // Try the search results page API
+async function searchStore(session, storeSlug, query) {
+  // Attempt 1: GraphQL
+  const gqlProducts = await tryGraphQL(session, storeSlug, query);
+  if (gqlProducts && gqlProducts.length > 0) return gqlProducts;
+
+  // Attempt 2: HTML search page
+  const htmlProducts = await tryHTMLSearch(session, storeSlug, query);
+  if (htmlProducts && htmlProducts.length > 0) return htmlProducts;
+
+  return [];
+}
+
+async function tryGraphQL(session, storeSlug, query) {
   const headers = {
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    'Accept': 'application/json, text/html',
+    'User-Agent': session.ua || randomUserAgent(),
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
     'Cookie': session.cookies,
-    'X-Requested-With': 'XMLHttpRequest',
+    'Origin': INSTACART_BASE,
+    'Referer': `${INSTACART_BASE}/store/${storeSlug}/search/${encodeURIComponent(query)}`,
   };
 
-  if (session.clientHeaders.csrfToken) {
-    headers['X-CSRF-Token'] = session.clientHeaders.csrfToken;
+  // Add captured headers
+  if (session.clientData?.csrfToken) headers['X-CSRF-Token'] = session.clientData.csrfToken;
+  if (session.clientData?.clientIdentifier) headers['X-Client-Identifier'] = session.clientData.clientIdentifier;
+  Object.assign(headers, session.capturedHeaders || {});
+
+  // If we captured a real GraphQL template, replay it with modified query
+  let body;
+  if (session.graphqlTemplate) {
+    try {
+      const template = JSON.parse(session.graphqlTemplate);
+      if (template.variables) template.variables.query = query;
+      if (template.variables?.pageViewId) template.variables.pageViewId = crypto.randomUUID();
+      body = JSON.stringify(template);
+    } catch {
+      body = null;
+    }
   }
-  if (session.clientHeaders.clientIdentifier) {
-    headers['X-Client-Identifier'] = session.clientHeaders.clientIdentifier;
-  }
-  if (session.apiHeaders['x-client-identifier']) {
-    headers['X-Client-Identifier'] = session.apiHeaders['x-client-identifier'];
+
+  // Fallback: construct a generic search body
+  if (!body) {
+    body = JSON.stringify({
+      operationName: 'SearchResultsPlacements',
+      variables: {
+        query,
+        pageViewId: crypto.randomUUID(),
+        first: 30,
+        storeSlug,
+      },
+    });
   }
 
   try {
-    const res = await fetch(searchUrl, { headers, redirect: 'follow' });
-    const contentType = res.headers.get('content-type') || '';
-
-    if (contentType.includes('json')) {
-      return await res.json();
+    const res = await fetch(`${INSTACART_BASE}/graphql`, { method: 'POST', headers, body });
+    if (res.status === 429) {
+      console.log('[graphql] Rate limited, waiting 60s...');
+      await sleep(60000);
+      return null;
     }
+    if (!res.ok) return null;
 
-    // If HTML, try to extract JSON data embedded in the page
+    const data = await res.json();
+    return extractProducts(data);
+  } catch {
+    return null;
+  }
+}
+
+async function tryHTMLSearch(session, storeSlug, query) {
+  const url = `${INSTACART_BASE}/store/${storeSlug}/search/${encodeURIComponent(query)}`;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': session.ua || randomUserAgent(),
+        'Accept': 'text/html',
+        'Cookie': session.cookies,
+      },
+      redirect: 'follow',
+    });
     const html = await res.text();
 
-    // Instacart embeds initial data as JSON in script tags
-    const dataMatch = html.match(/<script[^>]*>\s*window\.__INITIAL_DATA__\s*=\s*({.+?})\s*;?\s*<\/script>/s);
-    if (dataMatch) {
-      try {
-        return JSON.parse(dataMatch[1]);
-      } catch (e) {
-        // Try relaxed parsing
-      }
-    }
-
-    // Try another common pattern
-    const nextDataMatch = html.match(/<script[^>]*id="__NEXT_DATA__"[^>]*>(.+?)<\/script>/s);
-    if (nextDataMatch) {
-      try {
-        return JSON.parse(nextDataMatch[1]);
-      } catch (e) {}
-    }
-
-    // Look for any large JSON blob that contains product data
-    const jsonBlobs = html.match(/\{[^{}]{500,}\}/g);
-    if (jsonBlobs) {
-      for (const blob of jsonBlobs.slice(0, 5)) {
+    // Try embedded JSON
+    for (const pattern of [
+      /<script[^>]*id="__NEXT_DATA__"[^>]*>(.+?)<\/script>/s,
+      /window\.__INITIAL_DATA__\s*=\s*({.+?});?\s*<\/script>/s,
+    ]) {
+      const match = html.match(pattern);
+      if (match) {
         try {
-          const parsed = JSON.parse(blob);
-          if (parsed.items || parsed.products || parsed.data) {
-            return parsed;
-          }
-        } catch (e) {}
+          const found = extractProducts(JSON.parse(match[1]));
+          if (found.length > 0) return found;
+        } catch {}
       }
     }
 
     return null;
-  } catch (err) {
-    console.error(`[search] Error searching "${query}" at ${storeSlug}: ${err.message}`);
+  } catch {
     return null;
   }
 }
 
 /**
- * Extract products from Instacart search results.
- * Handles multiple possible response formats.
+ * Walk any JSON structure and extract things that look like products.
  */
 function extractProducts(data) {
-  if (!data) return [];
-
   const products = [];
+  const seen = new Set();
 
-  // Format 1: Direct items array
-  if (data.items && Array.isArray(data.items)) {
-    for (const item of data.items) {
-      if (item.name && item.price) {
-        products.push({ name: item.name, price: item.price, size: item.size || '' });
-      }
-    }
-  }
+  const walk = (obj, depth = 0) => {
+    if (depth > 12 || !obj || typeof obj !== 'object') return;
 
-  // Format 2: GraphQL response
-  if (data.data?.search?.items) {
-    for (const item of data.data.search.items) {
-      const name = item.name || item.product?.name;
-      const price = item.price || item.product?.price;
-      if (name && price) {
-        products.push({ name, price: typeof price === 'string' ? price : `$${(price/100).toFixed(2)}`, size: item.size || '' });
-      }
-    }
-  }
-
-  // Format 3: __NEXT_DATA__ / props
-  const findProducts = (obj, depth = 0) => {
-    if (depth > 8 || !obj || typeof obj !== 'object') return;
     if (Array.isArray(obj)) {
-      for (const item of obj) {
-        if (item && typeof item === 'object' && item.name && (item.price || item.pricing)) {
-          const price = item.price || item.pricing?.price || item.pricing?.currentPrice;
-          if (price) {
-            products.push({
-              name: item.name,
-              price: typeof price === 'number' ? `$${(price/100).toFixed(2)}` : String(price),
-              size: item.size || item.unitSize || ''
-            });
-          }
-        }
-        findProducts(item, depth + 1);
+      for (const item of obj) walk(item, depth + 1);
+      return;
+    }
+
+    // Does this object look like a product?
+    const name = obj.name || obj.productName || obj.title;
+    const price = obj.price || obj.currentPrice || obj.pricing?.price || obj.viewSection?.itemImage?.price;
+    if (name && price && typeof name === 'string' && name.length > 2) {
+      const key = name.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        products.push({
+          name,
+          price: typeof price === 'number' ? `$${(price / 100).toFixed(2)}` : String(price),
+          size: obj.size || obj.unitSize || '',
+        });
       }
-    } else {
-      for (const key of Object.keys(obj)) {
-        if (['items', 'products', 'modules', 'results', 'product_items'].includes(key)) {
-          findProducts(obj[key], depth + 1);
-        }
-      }
+    }
+
+    for (const key of Object.keys(obj)) {
+      walk(obj[key], depth + 1);
     }
   };
-  findProducts(data);
 
+  walk(data);
   return products;
 }
+
+// ============================================================================
+// PUPPETEER CATEGORY BROWSE (fallback)
+// ============================================================================
+
+async function browseStoreCategories(store, db, cachedMappings, maxProducts) {
+  console.log(`[browse] Puppeteer fallback for ${store.name}`);
+  const browser = await launchBrowser();
+  let totalStored = 0;
+
+  try {
+    for (const catSlug of IC_CATEGORIES) {
+      if (totalStored >= maxProducts) break;
+
+      const page = await browser.newPage();
+      await page.setUserAgent(randomUserAgent());
+      await page.setViewport({ width: 1366, height: 768 });
+      await page.setRequestInterception(true);
+      page.on('request', req => {
+        const type = req.resourceType();
+        if (['image', 'font', 'media', 'stylesheet'].includes(type)) req.abort();
+        else req.continue();
+      });
+
+      const url = `${INSTACART_BASE}/store/${store.slug}/collections/${catSlug}`;
+      console.log(`  [${catSlug}] Loading...`);
+
+      try {
+        await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await sleep(5000);
+
+        // Scroll to load products
+        for (let i = 0; i < 8; i++) {
+          await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+          await sleep(1500);
+        }
+
+        // Extract from DOM
+        const products = await page.evaluate(() => {
+          const items = [];
+          const seen = new Set();
+
+          for (const sel of [
+            '[data-testid="product-card"]', '[class*="ProductCard"]',
+            '[class*="product-card"]', 'li[class*="Item"]', 'a[href*="/products/"]',
+          ]) {
+            for (const card of document.querySelectorAll(sel)) {
+              const nameEl = card.querySelector('[class*="name" i], [class*="title" i], h2, h3');
+              const priceEl = card.querySelector('[class*="price" i]');
+              if (!nameEl || !priceEl) continue;
+              const name = nameEl.textContent?.trim();
+              const priceText = priceEl.textContent?.trim();
+              if (!name || !priceText || seen.has(name)) continue;
+              seen.add(name);
+              const sizeEl = card.querySelector('[class*="size" i], [class*="weight" i]');
+              items.push({ name, price: priceText, size: sizeEl?.textContent?.trim() || '' });
+            }
+            if (items.length > 0) break;
+          }
+          return items;
+        });
+
+        console.log(`  [${catSlug}] Found ${products.length} products`);
+
+        for (const product of products) {
+          if (totalStored >= maxProducts) break;
+          const result = processProduct(db, cachedMappings, store, product);
+          if (result) totalStored++;
+        }
+      } catch (err) {
+        console.error(`  [${catSlug}] Error: ${err.message}`);
+      } finally {
+        try { await page.close(); } catch {}
+      }
+
+      await sleep(3000 + Math.random() * 2000);
+    }
+  } finally {
+    await browser.close();
+  }
+
+  return totalStored;
+}
+
+// ============================================================================
+// PRODUCT PROCESSING
+// ============================================================================
 
 function parsePriceCents(priceStr) {
   if (!priceStr) return null;
   if (typeof priceStr === 'number') return Math.round(priceStr * 100);
-
-  const match = String(priceStr).match(/\$?([\d]+\.[\d]{2})/);
-  if (match) return Math.round(parseFloat(match[1]) * 100);
-
-  const multiMatch = String(priceStr).match(/(\d+)\s*(?:\/|for)\s*\$?([\d.]+)/);
-  if (multiMatch) {
-    return Math.round((parseFloat(multiMatch[2]) / parseInt(multiMatch[1])) * 100);
-  }
-
+  const match = String(priceStr).match(/\$?([\d,]+\.[\d]{2})/);
+  if (match) return Math.round(parseFloat(match[1].replace(',', '')) * 100);
   return null;
 }
 
@@ -296,158 +480,164 @@ function detectUnit(name, size) {
   const combined = `${name} ${size}`.toLowerCase();
   if (combined.includes('/lb') || combined.includes('per lb') || combined.includes('per pound')) return 'lb';
   if (combined.includes('/oz') || combined.includes('per oz')) return 'oz';
-  if (combined.match(/\b(chicken|beef|pork|turkey|salmon|cod|shrimp|steak|roast|chop|fillet|lamb|veal|halibut|swordfish|tuna|haddock|lobster|crab)\b/)) return 'lb';
-  if (combined.match(/\b(milk|cream)\b.*\b(gal)\b/)) return 'gallon';
-  if (combined.match(/\begg\b/)) return 'dozen';
+  if (/\b(chicken|beef|pork|turkey|salmon|cod|shrimp|steak|roast|chop|fillet|lamb|veal|halibut|swordfish|tuna|haddock|lobster|crab)\b/.test(combined)) return 'lb';
+  if (/\b(milk|cream)\b.*\b(gal)\b/.test(combined)) return 'gallon';
+  if (/\begg\b/.test(combined)) return 'dozen';
   return 'each';
 }
 
+function processProduct(db, cachedMappings, store, product) {
+  if (!isFoodItem(product.name)) return null;
+
+  const priceCents = parsePriceCents(product.price);
+  if (!priceCents || priceCents <= 0 || priceCents > 100000) return null;
+
+  const normalized = normalizeByRules(product.name, cachedMappings);
+  if (!normalized) return null;
+
+  const adjustedPrice = adjustForMarkup(priceCents, store.markupPct);
+  const unit = detectUnit(product.name, product.size || '');
+
+  saveMapping(db, product.name, normalized.ingredientId, normalized.variantId, normalized.method, normalized.confidence);
+
+  return upsertPrice(db, {
+    sourceId: store.sourceId,
+    canonicalIngredientId: normalized.ingredientId,
+    variantId: normalized.variantId,
+    rawProductName: product.name,
+    priceCents: adjustedPrice,
+    priceUnit: unit,
+    pricePerStandardUnitCents: adjustedPrice,
+    standardUnit: unit,
+    packageSize: product.size || null,
+    priceType: 'regular',
+    pricingTier: store.tier,
+    confidence: 'instacart_search',
+    instacartMarkupPct: store.markupPct,
+    sourceUrl: `${INSTACART_BASE}/store/${store.slug}`,
+    imageUrl: null,
+    brand: null,
+    aisleCat: null,
+  });
+}
+
+// ============================================================================
+// MAIN
+// ============================================================================
+
 async function main() {
-  console.log('=== OpenClaw Instacart BULK Scraper ===');
+  console.log('=== OpenClaw Instacart BULK Scraper v2 ===');
   console.log(`Time: ${new Date().toISOString()}`);
+
+  const args = process.argv.slice(2);
+  const storesArg = args.find(a => a.startsWith('--stores='))?.split('=')[1];
+  const maxArg = parseInt(args.find(a => a.startsWith('--max='))?.split('=')[1] || '500');
+  const forceSession = args.includes('--force');
+
+  let storesToScrape = STORES;
+  if (storesArg) {
+    const slugs = storesArg.split(',');
+    storesToScrape = STORES.filter(s => slugs.includes(s.slug));
+  }
+
+  console.log(`Stores: ${storesToScrape.map(s => s.name).join(', ')}`);
+  console.log(`Max per store: ${maxArg}`);
 
   const db = getDb();
   ensureSourcesExist(db);
   const cachedMappings = loadCachedMappings(db);
-
-  // Get all unpriced canonical ingredients
-  const unpriced = db.prepare(`
-    SELECT ingredient_id, name, category
-    FROM canonical_ingredients
-    WHERE ingredient_id NOT IN (SELECT DISTINCT canonical_ingredient_id FROM current_prices)
-    ORDER BY
-      CASE category
-        WHEN 'produce' THEN 1
-        WHEN 'dairy' THEN 2
-        WHEN 'beef' THEN 3
-        WHEN 'poultry' THEN 4
-        WHEN 'pork' THEN 5
-        WHEN 'seafood' THEN 6
-        WHEN 'eggs' THEN 7
-        WHEN 'herbs' THEN 8
-        WHEN 'pantry' THEN 9
-        WHEN 'spices' THEN 10
-        WHEN 'oils' THEN 11
-        WHEN 'grains' THEN 12
-        WHEN 'beverages' THEN 13
-        WHEN 'lamb' THEN 14
-        ELSE 15
-      END,
-      name
-  `).all();
-
-  console.log(`Found ${unpriced.length} unpriced ingredients to search for`);
-
-  // Step 1: Get session cookies via Puppeteer
-  let session;
-  try {
-    session = await getInstacartSession();
-  } catch (err) {
-    console.error(`[session] Failed to get session: ${err.message}`);
-    console.log('[session] Falling back to cookie-less requests...');
-    session = { cookies: '', clientHeaders: {}, apiHeaders: {} };
-  }
-
-  // Step 2: Search for each unpriced ingredient
-  let totalNew = 0, totalMatched = 0, totalSkipped = 0, totalFailed = 0;
   const startTime = Date.now();
 
-  // Pick one store to start with (Market Basket - user's primary store)
-  const primaryStore = STORES[0];
-  console.log(`\nSearching ${primaryStore.name} for ${unpriced.length} ingredients...\n`);
+  for (const store of storesToScrape) {
+    console.log(`\n${'='.repeat(50)}`);
+    console.log(`STORE: ${store.name} (${store.slug})`);
+    console.log(`${'='.repeat(50)}`);
 
-  for (let i = 0; i < unpriced.length; i++) {
-    const ingredient = unpriced[i];
-    const searchTerm = ingredient.name
-      .replace(/,\s*(raw|cooked|roasted|grilled|baked|fried|boiled)\s*$/i, '')
-      .replace(/,\s*NFS$/i, '')
-      .trim();
-
-    if (i % 50 === 0) {
-      const elapsed = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
-      console.log(`[${i}/${unpriced.length}] (${elapsed}min) Searching: "${searchTerm}" [new=${totalNew}, matched=${totalMatched}, skip=${totalSkipped}]`);
-    }
-
-    try {
-      const data = await searchInstacart(session, primaryStore.slug, searchTerm);
-      const products = extractProducts(data);
-
-      if (products.length === 0) {
-        totalSkipped++;
-        // Rate limit
-        await sleep(1500 + Math.random() * 1500);
+    // Get or reuse session
+    let session = forceSession ? null : loadCachedSession();
+    if (!session) {
+      try {
+        session = await getInstacartSession(store.slug);
+      } catch (err) {
+        console.error(`[session] Failed: ${err.message}`);
+        console.log('[fallback] Trying Puppeteer category browse...');
+        const count = await browseStoreCategories(store, db, cachedMappings, maxArg);
+        console.log(`[browse] Stored ${count} products for ${store.name}`);
+        db.prepare("UPDATE source_registry SET last_scraped_at = datetime('now'), scrape_failures_consecutive = 0 WHERE source_id = ?").run(store.sourceId);
         continue;
       }
+    }
 
-      // Take the first product with a valid price
-      let matched = false;
-      for (const product of products.slice(0, 3)) {
-        const priceCents = parsePriceCents(product.price);
-        if (!priceCents || priceCents <= 0 || priceCents > 100000) continue;
+    // Search phase
+    let totalNew = 0, totalChanged = 0, totalUnchanged = 0, totalSkipped = 0;
+    let httpWorking = false;
+    let totalStored = 0;
 
-        const adjustedPrice = adjustForMarkup(priceCents, primaryStore.markupPct);
-        const unit = detectUnit(product.name, product.size);
+    for (let i = 0; i < SEARCH_TERMS.length && totalStored < maxArg; i++) {
+      const term = SEARCH_TERMS[i];
 
-        const result = upsertPrice(db, {
-          sourceId: primaryStore.sourceId,
-          canonicalIngredientId: ingredient.ingredient_id,
-          variantId: null,
-          rawProductName: product.name,
-          priceCents: adjustedPrice,
-          priceUnit: unit,
-          pricePerStandardUnitCents: adjustedPrice,
-          standardUnit: unit,
-          packageSize: product.size || null,
-          priceType: 'regular',
-          pricingTier: primaryStore.tier,
-          confidence: 'instacart_search',
-          instacartMarkupPct: primaryStore.markupPct,
-          sourceUrl: `${INSTACART_BASE}/store/${primaryStore.slug}/search/${encodeURIComponent(searchTerm)}`,
-        });
-
-        if (result === 'new') totalNew++;
-        else totalMatched++;
-        matched = true;
-        break;
+      if (i % 10 === 0) {
+        const elapsed = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
+        console.log(`  [${i}/${SEARCH_TERMS.length}] (${elapsed}min) "${term}" | stored=${totalStored}`);
       }
 
-      if (!matched) totalSkipped++;
+      try {
+        const products = await searchStore(session, store.slug, term);
 
-    } catch (err) {
-      totalFailed++;
-      if (err.message?.includes('429') || err.message?.includes('rate')) {
-        console.log(`[rate-limit] Hit rate limit at ingredient ${i}. Waiting 60s...`);
-        await sleep(60000);
+        if (products.length > 0) {
+          httpWorking = true;
+          for (const product of products) {
+            if (totalStored >= maxArg) break;
+            const result = processProduct(db, cachedMappings, store, product);
+            if (result === 'new') { totalNew++; totalStored++; }
+            else if (result === 'changed') { totalChanged++; totalStored++; }
+            else if (result === 'unchanged') { totalUnchanged++; totalStored++; }
+            else totalSkipped++;
+          }
+        } else {
+          totalSkipped++;
+        }
+      } catch (err) {
+        if (err.message?.includes('429')) {
+          console.log('[rate-limit] 60s wait...');
+          await sleep(60000);
+        }
+        totalSkipped++;
+      }
+
+      await sleep(2000 + Math.random() * 2000);
+      if (i > 0 && i % 25 === 0) {
+        console.log('  [cooldown] 15s...');
+        await sleep(15000);
       }
     }
 
-    // Rate limit: 1.5-3s between requests
-    await sleep(1500 + Math.random() * 1500);
+    // Fallback if HTTP search yielded nothing
+    if (!httpWorking && totalStored === 0) {
+      console.log(`[${store.name}] HTTP search empty. Puppeteer fallback...`);
+      const count = await browseStoreCategories(store, db, cachedMappings, maxArg);
+      totalNew = count;
+      totalStored = count;
+    }
 
-    // Every 200 requests, take a longer break
-    if (i > 0 && i % 200 === 0) {
-      console.log(`[cooldown] 30s cooldown after ${i} requests...`);
+    db.prepare("UPDATE source_registry SET last_scraped_at = datetime('now'), scrape_failures_consecutive = 0 WHERE source_id = ?").run(store.sourceId);
+
+    console.log(`\n--- ${store.name} ---`);
+    console.log(`  New: ${totalNew} | Changed: ${totalChanged} | Unchanged: ${totalUnchanged} | Skipped: ${totalSkipped}`);
+    console.log(`  Total stored: ${totalStored}`);
+
+    if (storesToScrape.indexOf(store) < storesToScrape.length - 1) {
+      console.log('\n--- 30s cooldown ---');
       await sleep(30000);
     }
   }
 
-  // Update source registry
-  for (const store of STORES) {
-    db.prepare("UPDATE source_registry SET last_scraped_at = datetime('now') WHERE source_id = ?").run(store.sourceId);
-  }
-
   const elapsed = ((Date.now() - startTime) / 1000 / 60).toFixed(1);
-  console.log(`\n=== Instacart Bulk Scraper Results ===`);
-  console.log(`Time: ${elapsed} minutes`);
-  console.log(`New prices: ${totalNew}`);
-  console.log(`Already matched: ${totalMatched}`);
-  console.log(`Not found: ${totalSkipped}`);
-  console.log(`Failed: ${totalFailed}`);
+  console.log(`\n=== Complete (${elapsed} min) ===`);
 
-  // Final stats
   const stats = db.prepare('SELECT COUNT(DISTINCT canonical_ingredient_id) as priced FROM current_prices').get();
   const total = db.prepare('SELECT COUNT(*) as total FROM canonical_ingredients').get();
-  console.log(`\nCoverage: ${stats.priced}/${total.total} (${(stats.priced/total.total*100).toFixed(1)}%)`);
+  console.log(`Coverage: ${stats.priced}/${total.total} (${(stats.priced / total.total * 100).toFixed(1)}%)`);
 }
 
 main().catch(err => {

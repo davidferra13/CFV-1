@@ -360,6 +360,9 @@ async function main() {
         pricingTier: item.store.tier,
         confidence: item.confidence,
         sourceUrl: `https://flipp.com/search?q=${encodeURIComponent(item.name)}&merchant_id=${item.merchantId}`,
+        imageUrl: null,
+        brand: null,
+        aisleCat: null,
       });
 
       // Write normalized columns (Phase 2)

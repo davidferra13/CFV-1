@@ -15,6 +15,17 @@ import { getPriceHistory } from '@/lib/openclaw/price-intelligence-actions'
 import { StockBadge } from '@/components/pricing/stock-badge'
 import { FreshnessDot } from '@/components/pricing/freshness-dot'
 import { PriceSparkline } from '@/components/pricing/price-sparkline'
+import { ProductCard } from '@/components/pricing/product-card'
+import { StoreAisleBrowser } from '@/components/pricing/store-aisle-browser'
+import { ShoppingCartSidebar } from '@/components/pricing/shopping-cart-sidebar'
+import { CartSummaryBar } from '@/components/pricing/cart-summary-bar'
+import {
+  getCarts,
+  getCartWithItems,
+  createCart,
+  addToCart,
+  type ShoppingCart,
+} from '@/lib/openclaw/cart-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import {
   ChevronDown,
@@ -27,8 +38,13 @@ import {
   Plus,
   ExternalLink,
   Loader2,
+  LayoutGrid,
+  List,
+  ShoppingBag,
 } from 'lucide-react'
 import type { PriceHistoryPoint } from '@/lib/openclaw/price-intelligence-actions'
+
+type ViewMode = 'table' | 'grid' | 'store-aisle'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -96,6 +112,16 @@ export function CatalogBrowser() {
   const [error, setError] = useState<string | null>(null)
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set())
   const [addingId, setAddingId] = useState<string | null>(null)
+
+  // View mode
+  const [viewMode, setViewMode] = useState<ViewMode>('table')
+
+  // Cart state
+  const [cartOpen, setCartOpen] = useState(false)
+  const [cartItemCount, setCartItemCount] = useState(0)
+  const [cartTotalCents, setCartTotalCents] = useState(0)
+  const [activeCartId, setActiveCartId] = useState<string | null>(null)
+  const [cartItemIds, setCartItemIds] = useState<Set<string>>(new Set())
 
   // Dropdowns
   const [showStoreDropdown, setShowStoreDropdown] = useState(false)
@@ -292,6 +318,82 @@ export function CatalogBrowser() {
     setPricedOnly(false)
   }, [])
 
+  // Load default cart on mount
+  useEffect(() => {
+    getCarts()
+      .then((carts) => {
+        if (carts.length > 0) {
+          setActiveCartId(carts[0].id)
+          getCartWithItems(carts[0].id)
+            .then((full) => {
+              if (full) {
+                setCartItemCount(full.items.length)
+                setCartTotalCents(full.totalCents)
+                setCartItemIds(
+                  new Set(
+                    full.items.map((i) => i.canonicalIngredientId).filter(Boolean) as string[]
+                  )
+                )
+              }
+            })
+            .catch(() => {})
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const handleAddToCart = useCallback(
+    async (item: CatalogItemV2) => {
+      // Auto-create a cart if none exists
+      let cartId = activeCartId
+      if (!cartId) {
+        try {
+          const result = await createCart({ name: 'Shopping List' })
+          if (result.success && result.cart) {
+            cartId = result.cart.id
+            setActiveCartId(cartId)
+          } else {
+            return
+          }
+        } catch {
+          return
+        }
+      }
+
+      try {
+        const result = await addToCart({
+          cartId,
+          ingredientName: item.name,
+          canonicalId: item.id,
+          unit: item.standardUnit || item.bestPriceUnit || 'each',
+          priceCents: item.bestPriceCents ?? undefined,
+          priceSource: item.bestPriceStore ?? undefined,
+          imageUrl: item.imageUrl ?? undefined,
+        })
+        if (result.success) {
+          setCartItemCount((prev) => prev + 1)
+          if (result.item?.priceCents != null) {
+            setCartTotalCents(
+              (prev) => prev + Math.round(result.item!.quantity * result.item!.priceCents!)
+            )
+          }
+          setCartItemIds((prev) => {
+            const next = new Set(prev)
+            if (item.id) next.add(item.id)
+            return next
+          })
+        }
+      } catch {
+        // Non-blocking
+      }
+    },
+    [activeCartId]
+  )
+
+  const handleCartCountChange = useCallback((count: number) => {
+    setCartItemCount(count)
+  }, [])
+
   const hasActiveFilters =
     search || category || selectedStore || inStockOnly || tier || pricedOnly || sort !== 'name'
 
@@ -324,281 +426,340 @@ export function CatalogBrowser() {
   // ---------------------------------------------------------------------------
   return (
     <div className="space-y-3">
-      {/* ---- Filter Bar ---- */}
-      <div className="bg-stone-900 rounded-lg border border-stone-800 p-3 space-y-3">
-        {/* Row 1: search + dropdowns */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Search */}
-          <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search ingredients..."
-              className="w-full pl-9 pr-8 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-600"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Category dropdown */}
-          <div className="relative" ref={categoryDropdownRef}>
-            <button
-              onClick={() => {
-                setShowCategoryDropdown(!showCategoryDropdown)
-                setShowStoreDropdown(false)
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 hover:bg-stone-700"
-            >
-              <Filter className="w-3.5 h-3.5" />
-              {category || 'Category'}
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-            {showCategoryDropdown && (
-              <div className="absolute z-40 mt-1 w-64 bg-stone-800 border border-stone-700 rounded-md shadow-xl overflow-hidden">
-                <div className="p-2 border-b border-stone-700">
-                  <input
-                    type="text"
-                    value={categorySearch}
-                    onChange={(e) => setCategorySearch(e.target.value)}
-                    placeholder="Search categories..."
-                    className="w-full px-2 py-1 text-sm bg-stone-900 border border-stone-600 rounded text-stone-100 placeholder:text-stone-500 focus:outline-none"
-                    autoFocus
-                  />
-                </div>
-                <div className="max-h-60 overflow-y-auto">
-                  <button
-                    onClick={() => {
-                      setCategory(null)
-                      setShowCategoryDropdown(false)
-                      setCategorySearch('')
-                    }}
-                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-stone-700 ${!category ? 'text-brand-400' : 'text-stone-300'}`}
-                  >
-                    All Categories
-                  </button>
-                  {filteredCategories.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => {
-                        setCategory(c)
-                        setShowCategoryDropdown(false)
-                        setCategorySearch('')
-                      }}
-                      className={`w-full text-left px-3 py-1.5 text-sm capitalize hover:bg-stone-700 ${category === c ? 'text-brand-400' : 'text-stone-300'}`}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                  {filteredCategories.length === 0 && (
-                    <div className="px-3 py-2 text-xs text-stone-500">No categories match</div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Store dropdown */}
-          <div className="relative" ref={storeDropdownRef}>
-            <button
-              onClick={() => {
-                setShowStoreDropdown(!showStoreDropdown)
-                setShowCategoryDropdown(false)
-              }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 hover:bg-stone-700"
-            >
-              <Store className="w-3.5 h-3.5" />
-              {selectedStore
-                ? stores.find((s) => s.id === selectedStore)?.name || 'Store'
-                : 'Store'}
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-            {showStoreDropdown && (
-              <div className="absolute z-40 mt-1 w-64 bg-stone-800 border border-stone-700 rounded-md shadow-xl overflow-hidden">
-                <div className="p-2 border-b border-stone-700">
-                  <input
-                    type="text"
-                    value={storeSearch}
-                    onChange={(e) => setStoreSearch(e.target.value)}
-                    placeholder="Search stores..."
-                    className="w-full px-2 py-1 text-sm bg-stone-900 border border-stone-600 rounded text-stone-100 placeholder:text-stone-500 focus:outline-none"
-                    autoFocus
-                  />
-                </div>
-                <div className="max-h-60 overflow-y-auto">
-                  <button
-                    onClick={() => {
-                      setSelectedStore(null)
-                      setShowStoreDropdown(false)
-                      setStoreSearch('')
-                    }}
-                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-stone-700 ${!selectedStore ? 'text-brand-400' : 'text-stone-300'}`}
-                  >
-                    All Stores
-                  </button>
-                  {filteredStores.map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => {
-                        setSelectedStore(s.id)
-                        setShowStoreDropdown(false)
-                        setStoreSearch('')
-                      }}
-                      className={`w-full text-left px-3 py-1.5 text-sm hover:bg-stone-700 ${selectedStore === s.id ? 'text-brand-400' : 'text-stone-300'}`}
-                    >
-                      <span>{s.name}</span>
-                      <span className="ml-2 text-xs text-stone-500 capitalize">{s.tier}</span>
-                    </button>
-                  ))}
-                  {filteredStores.length === 0 && (
-                    <div className="px-3 py-2 text-xs text-stone-500">No stores match</div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* In-stock toggle */}
-          <button
-            onClick={() => setInStockOnly(!inStockOnly)}
-            className={`px-3 py-1.5 text-sm border rounded-md ${
-              inStockOnly
-                ? 'bg-emerald-900/40 border-emerald-700 text-emerald-300'
-                : 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700'
-            }`}
-          >
-            In Stock
-          </button>
-
-          {/* Tier dropdown */}
-          <select
-            value={tier || ''}
-            onChange={(e) => setTier(e.target.value || null)}
-            className="px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 focus:outline-none focus:ring-1 focus:ring-brand-600"
-          >
-            <option value="">All Tiers</option>
-            <option value="retail">Retail</option>
-            <option value="wholesale">Wholesale</option>
-          </select>
-
-          {/* Sort dropdown */}
-          <div className="flex items-center gap-1.5">
-            <ArrowUpDown className="w-3.5 h-3.5 text-stone-500" />
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as typeof sort)}
-              className="px-2 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 focus:outline-none focus:ring-1 focus:ring-brand-600"
-            >
-              <option value="name">Name</option>
-              <option value="price">Price</option>
-              <option value="stores">Stores</option>
-              <option value="updated">Updated</option>
-            </select>
-          </div>
-
-          {/* Priced only */}
-          <button
-            onClick={() => setPricedOnly(!pricedOnly)}
-            className={`px-3 py-1.5 text-sm border rounded-md ${
-              pricedOnly
-                ? 'bg-blue-900/40 border-blue-700 text-blue-300'
-                : 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700'
-            }`}
-          >
-            Priced
-          </button>
-        </div>
-
-        {/* Row 2: result count + clear */}
-        <div className="flex items-center justify-between text-xs text-stone-500">
-          <span>
-            {isPending
-              ? 'Searching...'
-              : `${total.toLocaleString()} ingredient${total !== 1 ? 's' : ''}`}
-            {items.length > 0 && items.length < total && ` (showing ${items.length})`}
-          </span>
-          {hasActiveFilters && (
-            <button
-              onClick={clearAllFilters}
-              className="text-stone-400 hover:text-stone-200 underline"
-            >
-              Clear all filters
-            </button>
-          )}
-        </div>
-
-        {/* Active filter pills */}
-        {activeFilters.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {activeFilters.map((f) => (
-              <span
-                key={f.label}
-                className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-stone-800 border border-stone-700 rounded-full text-stone-300"
-              >
-                {f.label}
-                <button onClick={f.onClear} className="text-stone-500 hover:text-stone-200">
-                  <X className="w-3 h-3" />
-                </button>
-              </span>
-            ))}
-          </div>
-        )}
+      {/* ---- View Toggle ---- */}
+      <div className="flex items-center gap-1 bg-stone-800 rounded-lg p-1 w-fit">
+        <button
+          onClick={() => setViewMode('table')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            viewMode === 'table' ? 'bg-stone-700 text-white' : 'text-stone-400 hover:text-stone-300'
+          }`}
+        >
+          <List className="w-3.5 h-3.5" />
+          Table
+        </button>
+        <button
+          onClick={() => setViewMode('grid')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            viewMode === 'grid' ? 'bg-stone-700 text-white' : 'text-stone-400 hover:text-stone-300'
+          }`}
+        >
+          <LayoutGrid className="w-3.5 h-3.5" />
+          Grid
+        </button>
+        <button
+          onClick={() => setViewMode('store-aisle')}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+            viewMode === 'store-aisle'
+              ? 'bg-stone-700 text-white'
+              : 'text-stone-400 hover:text-stone-300'
+          }`}
+        >
+          <ShoppingBag className="w-3.5 h-3.5" />
+          Store Aisle
+        </button>
       </div>
 
-      {/* ---- Error state ---- */}
-      {error && (
-        <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 text-sm text-red-300">
-          {error}
-        </div>
-      )}
-
-      {/* ---- Loading skeleton (initial) ---- */}
-      {isPending && items.length === 0 && (
-        <div className="space-y-2">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-12 bg-stone-900 rounded-lg border border-stone-800 animate-pulse"
-            />
-          ))}
-        </div>
-      )}
-
-      {/* ---- Empty state ---- */}
-      {!isPending && !error && items.length === 0 && (
-        <div className="bg-stone-900 rounded-lg border border-stone-800 p-8 text-center">
-          <Search className="w-8 h-8 text-stone-600 mx-auto mb-2" />
-          <p className="text-sm text-stone-400">No ingredients found</p>
-          <p className="text-xs text-stone-500 mt-1">Try adjusting your filters or search term</p>
-        </div>
-      )}
-
-      {/* ---- Desktop table ---- */}
-      {items.length > 0 && (
+      {/* Store Aisle view is self-contained */}
+      {viewMode === 'store-aisle' ? (
+        <StoreAisleBrowser />
+      ) : (
         <>
-          {/* Desktop */}
-          <div className="hidden md:block bg-stone-900 rounded-lg border border-stone-800 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-stone-800 text-stone-500 text-xs uppercase tracking-wider">
-                  <th className="text-left px-4 py-2 font-medium">Name</th>
-                  <th className="text-left px-4 py-2 font-medium">Category</th>
-                  <th className="text-right px-4 py-2 font-medium">Best Price</th>
-                  <th className="text-left px-4 py-2 font-medium">Stock</th>
-                  <th className="text-center px-4 py-2 font-medium">Stores</th>
-                  <th className="text-left px-4 py-2 font-medium">Updated</th>
-                </tr>
-              </thead>
-              <tbody>
+          {/* ---- Filter Bar ---- */}
+          <div className="bg-stone-900 rounded-lg border border-stone-800 p-3 space-y-3">
+            {/* Row 1: search + dropdowns */}
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Search */}
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-500" />
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search ingredients..."
+                  className="w-full pl-9 pr-8 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-600"
+                />
+                {search && (
+                  <button
+                    onClick={() => setSearch('')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Category dropdown */}
+              <div className="relative" ref={categoryDropdownRef}>
+                <button
+                  onClick={() => {
+                    setShowCategoryDropdown(!showCategoryDropdown)
+                    setShowStoreDropdown(false)
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 hover:bg-stone-700"
+                >
+                  <Filter className="w-3.5 h-3.5" />
+                  {category || 'Category'}
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+                {showCategoryDropdown && (
+                  <div className="absolute z-40 mt-1 w-64 bg-stone-800 border border-stone-700 rounded-md shadow-xl overflow-hidden">
+                    <div className="p-2 border-b border-stone-700">
+                      <input
+                        type="text"
+                        value={categorySearch}
+                        onChange={(e) => setCategorySearch(e.target.value)}
+                        placeholder="Search categories..."
+                        className="w-full px-2 py-1 text-sm bg-stone-900 border border-stone-600 rounded text-stone-100 placeholder:text-stone-500 focus:outline-none"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="max-h-60 overflow-y-auto">
+                      <button
+                        onClick={() => {
+                          setCategory(null)
+                          setShowCategoryDropdown(false)
+                          setCategorySearch('')
+                        }}
+                        className={`w-full text-left px-3 py-1.5 text-sm hover:bg-stone-700 ${!category ? 'text-brand-400' : 'text-stone-300'}`}
+                      >
+                        All Categories
+                      </button>
+                      {filteredCategories.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => {
+                            setCategory(c)
+                            setShowCategoryDropdown(false)
+                            setCategorySearch('')
+                          }}
+                          className={`w-full text-left px-3 py-1.5 text-sm capitalize hover:bg-stone-700 ${category === c ? 'text-brand-400' : 'text-stone-300'}`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                      {filteredCategories.length === 0 && (
+                        <div className="px-3 py-2 text-xs text-stone-500">No categories match</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Store dropdown */}
+              <div className="relative" ref={storeDropdownRef}>
+                <button
+                  onClick={() => {
+                    setShowStoreDropdown(!showStoreDropdown)
+                    setShowCategoryDropdown(false)
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 hover:bg-stone-700"
+                >
+                  <Store className="w-3.5 h-3.5" />
+                  {selectedStore
+                    ? stores.find((s) => s.id === selectedStore)?.name || 'Store'
+                    : 'Store'}
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+                {showStoreDropdown && (
+                  <div className="absolute z-40 mt-1 w-64 bg-stone-800 border border-stone-700 rounded-md shadow-xl overflow-hidden">
+                    <div className="p-2 border-b border-stone-700">
+                      <input
+                        type="text"
+                        value={storeSearch}
+                        onChange={(e) => setStoreSearch(e.target.value)}
+                        placeholder="Search stores..."
+                        className="w-full px-2 py-1 text-sm bg-stone-900 border border-stone-600 rounded text-stone-100 placeholder:text-stone-500 focus:outline-none"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="max-h-60 overflow-y-auto">
+                      <button
+                        onClick={() => {
+                          setSelectedStore(null)
+                          setShowStoreDropdown(false)
+                          setStoreSearch('')
+                        }}
+                        className={`w-full text-left px-3 py-1.5 text-sm hover:bg-stone-700 ${!selectedStore ? 'text-brand-400' : 'text-stone-300'}`}
+                      >
+                        All Stores
+                      </button>
+                      {filteredStores.map((s) => (
+                        <button
+                          key={s.id}
+                          onClick={() => {
+                            setSelectedStore(s.id)
+                            setShowStoreDropdown(false)
+                            setStoreSearch('')
+                          }}
+                          className={`w-full text-left px-3 py-1.5 text-sm hover:bg-stone-700 ${selectedStore === s.id ? 'text-brand-400' : 'text-stone-300'}`}
+                        >
+                          <span>{s.name}</span>
+                          <span className="ml-2 text-xs text-stone-500 capitalize">{s.tier}</span>
+                        </button>
+                      ))}
+                      {filteredStores.length === 0 && (
+                        <div className="px-3 py-2 text-xs text-stone-500">No stores match</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* In-stock toggle */}
+              <button
+                onClick={() => setInStockOnly(!inStockOnly)}
+                className={`px-3 py-1.5 text-sm border rounded-md ${
+                  inStockOnly
+                    ? 'bg-emerald-900/40 border-emerald-700 text-emerald-300'
+                    : 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700'
+                }`}
+              >
+                In Stock
+              </button>
+
+              {/* Tier dropdown */}
+              <select
+                value={tier || ''}
+                onChange={(e) => setTier(e.target.value || null)}
+                className="px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 focus:outline-none focus:ring-1 focus:ring-brand-600"
+              >
+                <option value="">All Tiers</option>
+                <option value="retail">Retail</option>
+                <option value="wholesale">Wholesale</option>
+              </select>
+
+              {/* Sort dropdown */}
+              <div className="flex items-center gap-1.5">
+                <ArrowUpDown className="w-3.5 h-3.5 text-stone-500" />
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as typeof sort)}
+                  className="px-2 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 focus:outline-none focus:ring-1 focus:ring-brand-600"
+                >
+                  <option value="name">Name</option>
+                  <option value="price">Price</option>
+                  <option value="stores">Stores</option>
+                  <option value="updated">Updated</option>
+                </select>
+              </div>
+
+              {/* Priced only */}
+              <button
+                onClick={() => setPricedOnly(!pricedOnly)}
+                className={`px-3 py-1.5 text-sm border rounded-md ${
+                  pricedOnly
+                    ? 'bg-blue-900/40 border-blue-700 text-blue-300'
+                    : 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700'
+                }`}
+              >
+                Priced
+              </button>
+            </div>
+
+            {/* Row 2: result count + clear */}
+            <div className="flex items-center justify-between text-xs text-stone-500">
+              <span>
+                {isPending
+                  ? 'Searching...'
+                  : `${total.toLocaleString()} ingredient${total !== 1 ? 's' : ''}`}
+                {items.length > 0 && items.length < total && ` (showing ${items.length})`}
+              </span>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearAllFilters}
+                  className="text-stone-400 hover:text-stone-200 underline"
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
+
+            {/* Active filter pills */}
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {activeFilters.map((f) => (
+                  <span
+                    key={f.label}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-stone-800 border border-stone-700 rounded-full text-stone-300"
+                  >
+                    {f.label}
+                    <button onClick={f.onClear} className="text-stone-500 hover:text-stone-200">
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ---- Error state ---- */}
+          {error && (
+            <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 text-sm text-red-300">
+              {error}
+            </div>
+          )}
+
+          {/* ---- Loading skeleton (initial) ---- */}
+          {isPending && items.length === 0 && (
+            <div className="space-y-2">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-12 bg-stone-900 rounded-lg border border-stone-800 animate-pulse"
+                />
+              ))}
+            </div>
+          )}
+
+          {/* ---- Empty state ---- */}
+          {!isPending && !error && items.length === 0 && (
+            <div className="bg-stone-900 rounded-lg border border-stone-800 p-8 text-center">
+              <Search className="w-8 h-8 text-stone-600 mx-auto mb-2" />
+              <p className="text-sm text-stone-400">No ingredients found</p>
+              <p className="text-xs text-stone-500 mt-1">
+                Try adjusting your filters or search term
+              </p>
+            </div>
+          )}
+
+          {/* ---- Desktop table ---- */}
+          {viewMode === 'table' && items.length > 0 && (
+            <>
+              {/* Desktop */}
+              <div className="hidden md:block bg-stone-900 rounded-lg border border-stone-800 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-stone-800 text-stone-500 text-xs uppercase tracking-wider">
+                      <th className="text-left px-4 py-2 font-medium">Name</th>
+                      <th className="text-left px-4 py-2 font-medium">Category</th>
+                      <th className="text-right px-4 py-2 font-medium">Best Price</th>
+                      <th className="text-left px-4 py-2 font-medium">Stock</th>
+                      <th className="text-center px-4 py-2 font-medium">Stores</th>
+                      <th className="text-left px-4 py-2 font-medium">Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((item) => (
+                      <DesktopRow
+                        key={item.id}
+                        item={item}
+                        isExpanded={expandedId === item.id}
+                        expandedDetail={expandedId === item.id ? expandedDetail : null}
+                        priceHistory={expandedId === item.id ? priceHistory : []}
+                        onToggle={() => toggleExpand(item.id)}
+                        onAddToPantry={() => handleAddToPantry(item)}
+                        isAdded={addedIds.has(item.id)}
+                        isAdding={addingId === item.id}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="md:hidden space-y-2">
                 {items.map((item) => (
-                  <DesktopRow
+                  <MobileCard
                     key={item.id}
                     item={item}
                     isExpanded={expandedId === item.id}
@@ -610,44 +771,76 @@ export function CatalogBrowser() {
                     isAdding={addingId === item.id}
                   />
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+            </>
+          )}
 
-          {/* Mobile cards */}
-          <div className="md:hidden space-y-2">
-            {items.map((item) => (
-              <MobileCard
-                key={item.id}
-                item={item}
-                isExpanded={expandedId === item.id}
-                expandedDetail={expandedId === item.id ? expandedDetail : null}
-                priceHistory={expandedId === item.id ? priceHistory : []}
-                onToggle={() => toggleExpand(item.id)}
-                onAddToPantry={() => handleAddToPantry(item)}
-                isAdded={addedIds.has(item.id)}
-                isAdding={addingId === item.id}
-              />
-            ))}
-          </div>
+          {/* ---- Infinite scroll sentinel ---- */}
+          <div ref={sentinelRef} className="h-1" />
+
+          {/* ---- Loading more indicator ---- */}
+          {isLoadingMore && (
+            <div className="flex items-center justify-center gap-2 py-4 text-stone-500 text-sm">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading more...
+            </div>
+          )}
+
+          {/* ---- Pending overlay on filter change ---- */}
+          {isPending && items.length > 0 && (
+            <div className="fixed inset-0 bg-black/10 pointer-events-none z-10" />
+          )}
+
+          {/* Grid view renders product cards instead of table rows */}
+          {viewMode === 'grid' && items.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {items.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  item={item}
+                  onAddToCart={handleAddToCart}
+                  isInCart={cartItemIds.has(item.id)}
+                  onExpand={(item) => {
+                    setExpandedId(expandedId === item.id ? null : item.id)
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </>
       )}
 
-      {/* ---- Infinite scroll sentinel ---- */}
-      <div ref={sentinelRef} className="h-1" />
+      {/* Cart summary bar (floating) */}
+      <CartSummaryBar
+        itemCount={cartItemCount}
+        totalCents={cartTotalCents}
+        onOpen={() => setCartOpen(true)}
+      />
 
-      {/* ---- Loading more indicator ---- */}
-      {isLoadingMore && (
-        <div className="flex items-center justify-center gap-2 py-4 text-stone-500 text-sm">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          Loading more...
-        </div>
-      )}
-
-      {/* ---- Pending overlay on filter change ---- */}
-      {isPending && items.length > 0 && (
-        <div className="fixed inset-0 bg-black/10 pointer-events-none z-10" />
-      )}
+      {/* Cart sidebar */}
+      <ShoppingCartSidebar
+        open={cartOpen}
+        onClose={() => {
+          setCartOpen(false)
+          // Refresh cart state after closing
+          if (activeCartId) {
+            getCartWithItems(activeCartId)
+              .then((full) => {
+                if (full) {
+                  setCartItemCount(full.items.length)
+                  setCartTotalCents(full.totalCents)
+                  setCartItemIds(
+                    new Set(
+                      full.items.map((i) => i.canonicalIngredientId).filter(Boolean) as string[]
+                    )
+                  )
+                }
+              })
+              .catch(() => {})
+          }
+        }}
+        onCartCountChange={handleCartCountChange}
+      />
     </div>
   )
 }
