@@ -247,6 +247,27 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tierNote: 'ALWAYS tier 2 - never auto-send emails.',
   },
 
+  // ─── Food Safety & Dietary Intelligence ─────────────────────────────────────
+
+  {
+    type: 'food.safety',
+    tier: 1,
+    name: 'Food Safety Reference',
+    description:
+      'Look up FDA food safety data: safe cooking temperatures for proteins, shelf life for food categories, danger zone checks, and cooling requirements. Uses the FDA Food Code 2022. Ask about any protein or food item.',
+    inputSchema:
+      '{ "query": "string - food item to look up (e.g. chicken, salmon, ground beef)", "tempF": "number - optional, a specific temperature in Fahrenheit to check safety for" }',
+  },
+  {
+    type: 'food.dietary_ingredients',
+    tier: 1,
+    name: 'Ingredient Dietary Check',
+    description:
+      'Check if a list of ingredients is compatible with a specific diet (vegan, keto, gluten-free, etc.) or check against all 13 diets at once. Uses deterministic dietary rule sets with 1000+ keywords. No AI involved.',
+    inputSchema:
+      '{ "ingredients": "string[] - list of ingredient names to check", "diet": "string - optional, specific diet to check against (vegan, keto, paleo, gluten-free, dairy-free, etc.). If omitted, checks all 13 diets." }',
+  },
+
   // ─── Operations Intelligence ─────────────────────────────────────────────────
 
   {

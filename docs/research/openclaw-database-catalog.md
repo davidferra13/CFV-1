@@ -8,6 +8,8 @@
 
 30 databases identified across 5 tiers. These are NOT 30 separate OpenClaw cartridges. They are scraper jobs organized into a small number of cartridges (profiles), just like price-intel already runs 14 scrapers inside one profile. The grouping into cartridges is defined below.
 
+**Infrastructure status (2026-03-29):** Cartridge infrastructure BUILT. Shared library, template, profile scaffolds, vault swap updates, ChefFlow sync receiver, and unified cron endpoint are all in place. See `docs/specs/openclaw-cartridge-infrastructure.md`. Individual cartridge scrapers are NOT yet built.
+
 ## How This Maps to OpenClaw Cartridges
 
 OpenClaw runs one profile at a time on the Pi. Each profile is a full environment (files, services, cron, Docker). Swapping profiles is manual and takes the previous one offline. So we group related scrapers into as few profiles as possible.

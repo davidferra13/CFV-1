@@ -366,9 +366,26 @@ export default async function DiscoverPage({ searchParams }: PageProps) {
           <div className="mx-auto max-w-lg rounded-2xl border border-stone-800 bg-stone-900/50 p-5">
             <p className="text-xs font-semibold text-stone-300">How this directory works</p>
             <p className="mt-1.5 text-xs-tight leading-relaxed text-stone-500">
-              Listings are sourced from OpenStreetMap and enriched with AI classification.
-              Businesses can claim their listing to add photos, menus, and verified details. Anyone
-              can request removal of their listing at any time.
+              Listing data &copy;{' '}
+              <a
+                href="https://www.openstreetmap.org/copyright"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-stone-300"
+              >
+                OpenStreetMap contributors
+              </a>
+              , available under the{' '}
+              <a
+                href="https://opendatacommons.org/licenses/odbl/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-stone-300"
+              >
+                ODbL
+              </a>
+              . Enriched with AI classification. Businesses can claim their listing to add photos,
+              menus, and verified details. Anyone can request removal at any time.
             </p>
           </div>
         </div>

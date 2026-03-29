@@ -14,6 +14,8 @@ import {
   addIngredientToRecipe,
   addSubRecipe,
   removeSubRecipe,
+  analyzeRecipeDietaryCompatibility,
+  applyDietaryTags,
 } from '@/lib/recipes/actions'
 import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { snapshotProductFromRecipe } from '@/lib/commerce/product-actions'
@@ -71,6 +73,16 @@ export function RecipeDetailClient({ recipe }: Props) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteLogEntryId, setDeleteLogEntryId] = useState<string | null>(null)
 
+  // Dietary analysis state
+  const [dietaryAnalysis, setDietaryAnalysis] = useState<{
+    compatible: Array<{ dietId: string; label: string }>
+    cautions: Array<{ dietId: string; label: string; warnings: string[] }>
+    violations: Array<{ dietId: string; label: string; reasons: string[] }>
+  } | null>(null)
+  const [dietaryLoading, setDietaryLoading] = useState(false)
+  const [dietaryError, setDietaryError] = useState('')
+  const [isPendingDietaryApply, startDietaryApplyTransition] = useTransition()
+
   // Production log state
   const [productionLog, setProductionLog] = useState<ProductionLogEntry[]>([])
   const [logLoaded, setLogLoaded] = useState(false)
@@ -84,6 +96,50 @@ export function RecipeDetailClient({ recipe }: Props) {
   const [logBatchNotes, setLogBatchNotes] = useState('')
   const [logOutcomeRating, setLogOutcomeRating] = useState<number>(0)
   const [logSubstitutions, setLogSubstitutions] = useState('')
+
+  const handleDietaryAnalysis = async () => {
+    setDietaryLoading(true)
+    setDietaryError('')
+    try {
+      const result = await analyzeRecipeDietaryCompatibility(recipe.id)
+      if (!result.success) {
+        setDietaryError(result.error || 'Analysis failed')
+        return
+      }
+      setDietaryAnalysis({
+        compatible: result.compatible,
+        cautions: result.cautions,
+        violations: result.violations,
+      })
+    } catch (err) {
+      setDietaryError('Failed to analyze dietary compatibility')
+    } finally {
+      setDietaryLoading(false)
+    }
+  }
+
+  const handleApplyDietaryTags = () => {
+    if (!dietaryAnalysis) return
+    const tags = dietaryAnalysis.compatible.map((d) => d.label)
+    if (tags.length === 0) {
+      toast.error('No compatible diets to apply as tags')
+      return
+    }
+    const previous = dietaryAnalysis
+    startDietaryApplyTransition(async () => {
+      try {
+        const result = await applyDietaryTags(recipe.id, tags)
+        if (!result.success) {
+          toast.error(result.error || 'Failed to apply tags')
+          return
+        }
+        toast.success(`Applied ${tags.length} dietary tags`)
+        router.refresh()
+      } catch {
+        toast.error('Failed to apply dietary tags')
+      }
+    })
+  }
 
   const loadProductionLog = async () => {
     const entries = await getProductionLog(recipe.id)
@@ -672,6 +728,74 @@ export function RecipeDetailClient({ recipe }: Props) {
               </div>
             </div>
           )}
+
+          {/* Dietary Compatibility Analysis */}
+          <div className="mt-4 pt-4 border-t border-stone-800">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-medium text-stone-500">Dietary Compatibility</p>
+              <Button variant="ghost" onClick={handleDietaryAnalysis} disabled={dietaryLoading}>
+                {dietaryLoading ? 'Analyzing...' : dietaryAnalysis ? 'Re-analyze' : 'Analyze'}
+              </Button>
+            </div>
+            {dietaryError && <p className="text-sm text-red-400 mb-2">{dietaryError}</p>}
+            {dietaryAnalysis && (
+              <div className="space-y-3">
+                {dietaryAnalysis.compatible.length > 0 && (
+                  <div>
+                    <p className="text-xs text-stone-400 mb-1">Compatible</p>
+                    <div className="flex flex-wrap gap-1">
+                      {dietaryAnalysis.compatible.map((d) => (
+                        <Badge key={d.dietId} variant="success">
+                          {d.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {dietaryAnalysis.cautions.length > 0 && (
+                  <div>
+                    <p className="text-xs text-stone-400 mb-1">Caution (verify ingredients)</p>
+                    <div className="flex flex-wrap gap-1">
+                      {dietaryAnalysis.cautions.map((d) => (
+                        <span key={d.dietId} title={d.warnings.join(', ')}>
+                          <Badge variant="warning">{d.label}</Badge>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {dietaryAnalysis.violations.length > 0 && (
+                  <div>
+                    <p className="text-xs text-stone-400 mb-1">Not Compatible</p>
+                    <div className="flex flex-wrap gap-1">
+                      {dietaryAnalysis.violations.map((d) => (
+                        <span key={d.dietId} title={d.reasons.join(', ')}>
+                          <Badge variant="error">{d.label}</Badge>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {dietaryAnalysis.compatible.length > 0 && (
+                  <Button
+                    variant="secondary"
+                    onClick={handleApplyDietaryTags}
+                    disabled={isPendingDietaryApply}
+                  >
+                    {isPendingDietaryApply
+                      ? 'Applying...'
+                      : `Apply ${dietaryAnalysis.compatible.length} tags`}
+                  </Button>
+                )}
+              </div>
+            )}
+            {!dietaryAnalysis && !dietaryError && (
+              <p className="text-xs text-stone-600">
+                Check this recipe's ingredients against 13 dietary rule sets (vegan, keto,
+                gluten-free, etc.)
+              </p>
+            )}
+          </div>
 
           {(recipe.cuisine || recipe.meal_type) && (
             <div className="mt-4 pt-4 border-t border-stone-800">

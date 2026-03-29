@@ -90,6 +90,8 @@ import {
   executeCancellationImpact,
   executePostEventSequence,
   executeIngredientSubstitution,
+  executeFoodSafetyQuery,
+  executeDietaryCheck as executeIngredientDietaryCheck,
 } from '@/lib/ai/remy-intelligence-actions'
 import {
   executeClientSpending,
@@ -1534,6 +1536,14 @@ async function executeSingleTask(
       // ─── Phase 8-9: Operational intelligence ──────────────────────────────
       case 'ops.ingredient_sub':
         data = executeIngredientSubstitution(task.inputs)
+        break
+
+      // ─── Food Safety & Dietary Intelligence ──────────────────────────────
+      case 'food.safety':
+        data = await executeFoodSafetyQuery(task.inputs)
+        break
+      case 'food.dietary_ingredients':
+        data = await executeIngredientDietaryCheck(task.inputs)
         break
 
       // ─── Batch 2: Complete Domain Coverage ────────────────────────────────

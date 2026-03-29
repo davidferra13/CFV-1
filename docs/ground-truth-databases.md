@@ -28,11 +28,14 @@ ChefFlow depends on external knowledge about the real world. Without it, core fe
 
 ### Planned (OpenClaw jobs, need scraping)
 
-| Database                | What It Would Answer            | Difficulty                                  |
-| ----------------------- | ------------------------------- | ------------------------------------------- |
-| **Market Rates**        | What do chefs/caterers charge?  | Hard (Thumbtack, Bark, wedding directories) |
-| **Supplier Directory**  | Who sells food near me?         | Hard (Google Places, Yelp, distributors)    |
-| **Venue Kitchen Intel** | What's in this venue's kitchen? | Very hard (wedding sites, venue pages)      |
+**Full catalog: `docs/research/openclaw-database-catalog.md`** (30 databases across 4 cartridges)
+
+| Database                | What It Would Answer            | Cartridge      | Difficulty                                  |
+| ----------------------- | ------------------------------- | -------------- | ------------------------------------------- |
+| **Market Rates**        | What do chefs/caterers charge?  | `price-intel`  | Hard (Thumbtack, Bark, wedding directories) |
+| **Supplier Directory**  | Who sells food near me?         | `market-intel` | Hard (Google Places, Yelp, distributors)    |
+| **Venue Kitchen Intel** | What's in this venue's kitchen? | `lead-engine`  | Very hard (wedding sites, venue pages)      |
+| + 27 more databases     | See full catalog                | 4 cartridges   | Varies                                      |
 
 ## Architecture
 
@@ -43,9 +46,33 @@ All reference data follows these rules:
 3. **One-way pipeline.** OpenClaw (Pi) builds databases and pushes to ChefFlow. OpenClaw never reads client data, recipes, events, or anything from the live app.
 4. **Honest about gaps.** If a lookup returns no match, the UI shows "unknown" or "verify manually." Never fabricates data.
 
+## Cartridge Infrastructure
+
+The OpenClaw cartridge system provides reusable infrastructure for building new data-producing cartridges:
+
+| Component             | Location                                          | Purpose                                                                   |
+| --------------------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
+| Shared library        | `F:\OpenClaw-Vault\_shared\lib\`                  | db.mjs, scrape-utils.mjs, sync-api-base.mjs, cron-utils.mjs, reporter.mjs |
+| Cartridge template    | `F:\OpenClaw-Vault\_template\`                    | Scaffold for new cartridges (profile.json, sync API, DB layer)            |
+| Cartridge registry    | `lib/openclaw/cartridge-registry.ts`              | Maps cartridge codenames to sync handlers on ChefFlow side                |
+| Sync receiver         | `lib/openclaw/sync-receiver.ts`                   | Generalized dispatcher that routes sync requests to correct handler       |
+| Unified cron endpoint | `app/api/cron/openclaw-sync/route.ts`             | `POST ?cartridge=<name>` handles sync from any cartridge                  |
+| Spec                  | `docs/specs/openclaw-cartridge-infrastructure.md` | Full infrastructure spec                                                  |
+
+**Port assignments:** price-intel=8081, market-intel=8082, lead-engine=8083, trend-watch=8084
+
 ## Adding a New Reference Database
+
+### Static data (no scraping needed)
 
 1. Create the file in `lib/constants/` (static data) or `lib/formulas/` (data + computation)
 2. Export typed constants and lookup functions
 3. Add an entry to this document
 4. Update `CLAUDE.md` Key File Locations if it's a major addition
+
+### OpenClaw scraped data (new cartridge)
+
+1. Run `./swap.sh new <codename>` from `F:\OpenClaw-Vault\`
+2. Define cartridge schema in `lib/db.mjs`, write scrapers in `services/`
+3. Register the cartridge in `lib/openclaw/sync-receiver.ts`
+4. Add an entry to this document and `docs/research/openclaw-database-catalog.md`
