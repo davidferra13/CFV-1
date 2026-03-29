@@ -5,6 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { addDays, isBefore } from 'date-fns'
+import { isTempSafe, isInDangerZone, getCookingTemp } from '@/lib/constants/food-safety'
 
 // ============================================
 // CERTIFICATIONS
@@ -148,7 +149,33 @@ export async function logTemperature(input: TempLogInput) {
   const db: any = createServerClient()
   const data = TempLogSchema.parse(input)
 
-  const { error } = await db.from('event_temp_logs').insert({ ...data, chef_id: chef.id })
+  // Auto-determine safety using FDA Food Code reference data if not explicitly set
+  let isSafe = data.is_safe
+  if (isSafe === undefined || isSafe === null) {
+    if (data.phase === 'cold_holding') {
+      // Cold holding: must be at or below 41F
+      isSafe = data.temp_fahrenheit <= 41
+    } else if (data.phase === 'hot_holding') {
+      // Hot holding: must be at or above 135F
+      isSafe = data.temp_fahrenheit >= 135
+    } else if (data.phase === 'cooling') {
+      // Cooling: not in danger zone is ideal, but context matters
+      isSafe = !isInDangerZone(data.temp_fahrenheit)
+    } else if (data.phase === 'reheating') {
+      // Reheating: must reach 165F
+      isSafe = data.temp_fahrenheit >= 165
+    } else {
+      // Receiving or cooking: check against the specific item's required temp
+      const result = isTempSafe(data.item_description, data.temp_fahrenheit)
+      isSafe = result.safe
+    }
+  }
+
+  const { error } = await db.from('event_temp_logs').insert({
+    ...data,
+    is_safe: isSafe,
+    chef_id: chef.id,
+  })
 
   if (error) throw new Error(error.message)
   revalidatePath(`/events/${data.event_id}`)

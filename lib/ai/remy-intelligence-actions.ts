@@ -12,6 +12,22 @@ import { generateContract } from '@/lib/ai/contract-generator'
 import { generateContingencyPlans } from '@/lib/ai/contingency-ai'
 import { consolidateGroceryList } from '@/lib/ai/grocery-consolidation'
 import { getSeasonalProduceGrouped } from '@/lib/calendar/seasonal-produce'
+import {
+  getCookingTemp,
+  isTempSafe,
+  isInDangerZone,
+  getShelfLife,
+  DANGER_ZONE,
+  COOLING_REQUIREMENTS,
+  HOLDING_TEMPS,
+  CROSS_CONTAMINATION_RULES,
+} from '@/lib/constants/food-safety'
+import {
+  checkIngredientsAgainstDiet,
+  DIETARY_RULES,
+  type DietId,
+  ALL_DIET_IDS,
+} from '@/lib/constants/dietary-rules'
 
 // ─── Phase 1: Wire Existing Features ──────────────────────────────────────────
 
@@ -1241,5 +1257,132 @@ function parseDateThisYear(dateStr: string, now: Date): Date | null {
     return null
   } catch {
     return null
+  }
+}
+
+// ─── Food Safety Intelligence ────────────────────────────────────────────────
+
+/**
+ * Answer food safety questions using FDA Food Code reference data.
+ * Remy can call this when a chef asks about cooking temps, holding times,
+ * shelf life, or danger zone rules. Formula > AI.
+ */
+export async function executeFoodSafetyQuery(inputs: Record<string, unknown>) {
+  await requireChef()
+
+  const query = String(inputs.query ?? inputs.item ?? '').trim()
+  const tempF = inputs.tempF != null ? Number(inputs.tempF) : null
+
+  // If a specific temperature was provided with an item, check if it's safe
+  if (tempF != null && query) {
+    const result = isTempSafe(query, tempF)
+    const inDanger = isInDangerZone(tempF)
+    return {
+      item: query,
+      temperatureF: tempF,
+      safe: result.safe,
+      message: result.message,
+      inDangerZone: inDanger,
+      dangerZoneRange: `${DANGER_ZONE.rangeFahrenheit.min}-${DANGER_ZONE.rangeFahrenheit.max}F`,
+    }
+  }
+
+  // Look up cooking temp for an item
+  const cookingTemp = getCookingTemp(query)
+  if (cookingTemp) {
+    return {
+      item: cookingTemp.label,
+      minTempF: cookingTemp.minTempF,
+      minTempC: cookingTemp.minTempC,
+      holdTime: cookingTemp.holdTime,
+      examples: cookingTemp.examples,
+      source: cookingTemp.source,
+    }
+  }
+
+  // Look up shelf life
+  const shelfLife = getShelfLife(query)
+  if (shelfLife) {
+    return {
+      item: shelfLife.item,
+      refrigeratedDays: `${shelfLife.refrigeratedDays.min}-${shelfLife.refrigeratedDays.max} days`,
+      frozenMonths:
+        shelfLife.frozenMonths.max > 0
+          ? `${shelfLife.frozenMonths.min}-${shelfLife.frozenMonths.max} months`
+          : 'Not recommended',
+      notes: shelfLife.notes,
+    }
+  }
+
+  // Generic food safety summary if no specific item matched
+  return {
+    dangerZone: `${DANGER_ZONE.rangeFahrenheit.min}-${DANGER_ZONE.rangeFahrenheit.max}F (${DANGER_ZONE.rangeCelsius.min}-${DANGER_ZONE.rangeCelsius.max}C)`,
+    maxTimeInDangerZone: DANGER_ZONE.maxDuration,
+    coolingStage1: `${COOLING_REQUIREMENTS[0].fromTempF}F to ${COOLING_REQUIREMENTS[0].toTempF}F within ${COOLING_REQUIREMENTS[0].maxTime}`,
+    coolingStage2: `${COOLING_REQUIREMENTS[1].fromTempF}F to ${COOLING_REQUIREMENTS[1].toTempF}F within ${COOLING_REQUIREMENTS[1].maxTime}`,
+    hotHolding: `${HOLDING_TEMPS[0].tempF}F minimum, check ${HOLDING_TEMPS[0].checkInterval}`,
+    coldHolding: `${HOLDING_TEMPS[1].tempF}F maximum, check ${HOLDING_TEMPS[1].checkInterval}`,
+    crossContamination: CROSS_CONTAMINATION_RULES.filter((r) => r.risk === 'critical').map(
+      (r) => r.label
+    ),
+    _note: `No specific match for "${query}". Here are general food safety guidelines. Ask about a specific protein (chicken, salmon, pork) for exact temperatures.`,
+  }
+}
+
+/**
+ * Check if a list of ingredients is compatible with a specific diet.
+ * Remy can call this when a chef asks "is this recipe vegan?" or
+ * "can I serve this to someone who is keto?"
+ */
+export async function executeDietaryCheck(inputs: Record<string, unknown>) {
+  await requireChef()
+
+  const ingredients = (inputs.ingredients as string[]) ?? []
+  const diet = String(inputs.diet ?? '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+
+  if (ingredients.length === 0) {
+    return { error: 'Please provide a list of ingredients to check.' }
+  }
+
+  // Check against a specific diet
+  if (diet && ALL_DIET_IDS.includes(diet as DietId)) {
+    const dietId = diet as DietId
+    const violations = checkIngredientsAgainstDiet(ingredients, dietId)
+    const directViolations = violations.filter((v) => v.level === 'violates')
+    const cautionItems = violations.filter((v) => v.level === 'caution')
+
+    return {
+      diet: DIETARY_RULES[dietId].label,
+      compatible: directViolations.length === 0,
+      violations: directViolations.map((v) => v.reason),
+      cautions: cautionItems.map((v) => v.reason),
+      ingredientCount: ingredients.length,
+    }
+  }
+
+  // Check against all diets if none specified
+  const results: Array<{ diet: string; compatible: boolean; issueCount: number }> = []
+  for (const dietId of ALL_DIET_IDS) {
+    const violations = checkIngredientsAgainstDiet(ingredients, dietId)
+    const directViolations = violations.filter((v) => v.level === 'violates')
+    results.push({
+      diet: DIETARY_RULES[dietId].label,
+      compatible: directViolations.length === 0,
+      issueCount: directViolations.length,
+    })
+  }
+
+  const compatibleDiets = results.filter((r) => r.compatible).map((r) => r.diet)
+  const incompatibleDiets = results
+    .filter((r) => !r.compatible)
+    .map((r) => `${r.diet} (${r.issueCount} violations)`)
+
+  return {
+    ingredientCount: ingredients.length,
+    compatibleWith: compatibleDiets,
+    incompatibleWith: incompatibleDiets,
   }
 }

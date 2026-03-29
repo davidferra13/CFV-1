@@ -1976,3 +1976,142 @@ export async function recomputeRecipeCosts(recipeId: string) {
   revalidatePath(`/recipes/${recipeId}`)
   return { success: true, updated, warnings }
 }
+
+// ============================================
+// AUTO-TAG DIETARY COMPATIBILITY
+// ============================================
+
+/**
+ * Analyze a recipe's ingredients and return compatible diets.
+ * Uses the deterministic dietary rule sets (Formula > AI).
+ * Does NOT auto-save - returns suggestions for the chef to review.
+ */
+export async function analyzeRecipeDietaryCompatibility(recipeId: string): Promise<{
+  success: boolean
+  compatible: Array<{ dietId: string; label: string }>
+  cautions: Array<{ dietId: string; label: string; warnings: string[] }>
+  violations: Array<{ dietId: string; label: string; reasons: string[] }>
+  error?: string
+}> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  try {
+    // Fetch recipe ingredients
+    const { data: recipeIngredients, error: riErr } = await db
+      .from('recipe_ingredients')
+      .select('ingredient:ingredients(name)')
+      .eq('recipe_id', recipeId)
+
+    if (riErr) {
+      return {
+        success: false,
+        compatible: [],
+        cautions: [],
+        violations: [],
+        error: 'Failed to fetch ingredients',
+      }
+    }
+
+    const ingredientNames: string[] = (recipeIngredients || [])
+      .map((ri: { ingredient: { name: string } | null }) => ri.ingredient?.name)
+      .filter(Boolean) as string[]
+
+    if (ingredientNames.length === 0) {
+      return {
+        success: false,
+        compatible: [],
+        cautions: [],
+        violations: [],
+        error: 'Recipe has no ingredients',
+      }
+    }
+
+    // Import inline to avoid top-level import in this large file
+    const { ALL_DIET_IDS, DIETARY_RULES, checkIngredientsAgainstDiet } =
+      await import('@/lib/constants/dietary-rules')
+
+    const compatible: Array<{ dietId: string; label: string }> = []
+    const cautions: Array<{ dietId: string; label: string; warnings: string[] }> = []
+    const violations: Array<{ dietId: string; label: string; reasons: string[] }> = []
+
+    for (const dietId of ALL_DIET_IDS) {
+      const results = checkIngredientsAgainstDiet(ingredientNames, dietId)
+      const directViolations = results.filter((v) => v.level === 'violates')
+      const cautionResults = results.filter((v) => v.level === 'caution')
+
+      if (directViolations.length === 0 && cautionResults.length === 0) {
+        compatible.push({ dietId, label: DIETARY_RULES[dietId].label })
+      } else if (directViolations.length === 0 && cautionResults.length > 0) {
+        cautions.push({
+          dietId,
+          label: DIETARY_RULES[dietId].label,
+          warnings: cautionResults.map((v) => v.reason),
+        })
+      } else {
+        violations.push({
+          dietId,
+          label: DIETARY_RULES[dietId].label,
+          reasons: directViolations.map((v) => v.reason),
+        })
+      }
+    }
+
+    return { success: true, compatible, cautions, violations }
+  } catch (err) {
+    console.error('[analyzeRecipeDietaryCompatibility] Error:', err)
+    return {
+      success: false,
+      compatible: [],
+      cautions: [],
+      violations: [],
+      error: 'Analysis failed',
+    }
+  }
+}
+
+/**
+ * Apply dietary tags to a recipe (auto-tag from analysis).
+ * Merges with existing manually-set tags. Chef triggered only.
+ */
+export async function applyDietaryTags(
+  recipeId: string,
+  tags: string[]
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  try {
+    // Get existing tags to merge
+    const { data: recipe, error: fetchErr } = await db
+      .from('recipes')
+      .select('dietary_tags')
+      .eq('id', recipeId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (fetchErr || !recipe) {
+      return { success: false, error: 'Recipe not found' }
+    }
+
+    const existing = (recipe.dietary_tags as string[]) || []
+    const merged = [...new Set([...existing, ...tags])]
+
+    const { error: updateErr } = await db
+      .from('recipes')
+      .update({ dietary_tags: merged, updated_by: user.id })
+      .eq('id', recipeId)
+      .eq('tenant_id', user.tenantId!)
+
+    if (updateErr) {
+      return { success: false, error: 'Failed to update dietary tags' }
+    }
+
+    revalidatePath('/recipes')
+    revalidatePath(`/recipes/${recipeId}`)
+    return { success: true }
+  } catch (err) {
+    console.error('[applyDietaryTags] Error:', err)
+    return { success: false, error: 'Failed to apply tags' }
+  }
+}

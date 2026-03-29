@@ -10,6 +10,47 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { DIETARY_RULES, type DietId } from '@/lib/constants/dietary-rules'
+
+// Recognized diet names that can be checked with the dietary rule sets
+const RECOGNIZED_DIETS = new Set(Object.keys(DIETARY_RULES))
+
+/** Check if a concern string maps to a known diet ID */
+function matchDietId(concern: string): DietId | null {
+  const lower = concern.toLowerCase().trim().replace(/[-_]/g, '-').replace(/\s+/g, '-')
+  if (RECOGNIZED_DIETS.has(lower)) return lower as DietId
+  // Common aliases
+  const aliases: Record<string, DietId> = {
+    vegan: 'vegan',
+    vegetarian: 'vegetarian',
+    pescatarian: 'pescatarian',
+    keto: 'keto',
+    ketogenic: 'keto',
+    paleo: 'paleo',
+    paleolithic: 'paleo',
+    whole30: 'whole30',
+    'whole 30': 'whole30',
+    'gluten free': 'gluten-free',
+    'gluten-free': 'gluten-free',
+    celiac: 'gluten-free',
+    coeliac: 'gluten-free',
+    'dairy free': 'dairy-free',
+    'dairy-free': 'dairy-free',
+    'lactose free': 'dairy-free',
+    'low fodmap': 'low-fodmap',
+    'low-fodmap': 'low-fodmap',
+    fodmap: 'low-fodmap',
+    kosher: 'kosher',
+    halal: 'halal',
+    'low sodium': 'low-sodium',
+    'low-sodium': 'low-sodium',
+    'low salt': 'low-sodium',
+    'low sugar': 'low-sugar',
+    'low-sugar': 'low-sugar',
+    diabetic: 'low-sugar',
+  }
+  return aliases[lower] ?? null
+}
 
 // --- Types ---
 
@@ -137,6 +178,8 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
   }
 
   // Cross-reference: for each concern, check all dish names, descriptions, and ingredients
+  // Enhanced: if the concern is a recognized diet (vegan, keto, etc.), use the dietary rule
+  // sets for deep ingredient-level checking instead of just string matching.
   const conflicts: Array<{
     guestName: string
     allergy: string
@@ -148,20 +191,50 @@ export async function generateAndPersistDietaryAlerts(eventId: string): Promise<
     const concernLower = concern.toLowerCase().trim()
     if (!concernLower) continue
 
+    // Check if this concern maps to a recognized dietary rule set
+    const dietId = matchDietId(concernLower)
+
     for (const dish of dishes) {
       const dishNameLower = (dish.name || '').toLowerCase()
       const dishDescLower = (dish.description || '').toLowerCase()
+      const dishText = `${dishNameLower} ${dishDescLower}`
 
-      // Check if dish name or description mentions the allergen
-      const nameMatch = dishNameLower.includes(concernLower)
-      const descMatch = dishDescLower.includes(concernLower)
+      let matched = false
 
-      // Check ingredients
-      const ingredientMatch = ingredientNames.some(
-        (ing) => ing.includes(concernLower) || concernLower.includes(ing)
-      )
+      if (dietId) {
+        // Use dietary rule sets for deep ingredient-level checking
+        const rules = DIETARY_RULES[dietId]
+        const hasViolation = rules.violationKeywords.some((kw) => dishText.includes(kw))
+        const hasCaution =
+          !hasViolation && rules.cautionKeywords.some((kw) => dishText.includes(kw))
+        // Also check actual ingredient names against the rule set
+        const ingredientViolation = ingredientNames.some((ing) =>
+          rules.violationKeywords.some((kw) => ing.includes(kw) || kw.includes(ing))
+        )
 
-      if (nameMatch || descMatch || ingredientMatch) {
+        if (hasViolation || ingredientViolation) {
+          matched = true
+        } else if (hasCaution) {
+          // Caution-level: still flag but as info severity
+          conflicts.push({
+            guestName,
+            allergy: concern,
+            conflictingDish: dish.name,
+            severity: 'info',
+          })
+          continue
+        }
+      } else {
+        // Fallback: basic string matching for allergens and other concerns
+        const nameMatch = dishNameLower.includes(concernLower)
+        const descMatch = dishDescLower.includes(concernLower)
+        const ingredientMatch = ingredientNames.some(
+          (ing) => ing.includes(concernLower) || concernLower.includes(ing)
+        )
+        matched = nameMatch || descMatch || ingredientMatch
+      }
+
+      if (matched) {
         conflicts.push({
           guestName,
           allergy: concern,
