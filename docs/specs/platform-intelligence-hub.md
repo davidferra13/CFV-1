@@ -1177,6 +1177,18 @@ ALTER TABLE inquiries
   ADD COLUMN IF NOT EXISTS scam_flags TEXT[];
 ```
 
+### Critical Implementation Clarifications
+
+**Scam detection on platform emails:** Platform emails bypass `classifyEmail()` entirely (fast-path in `sync.ts:248`). Scam scoring MUST run as a post-parse step inside `processMessage()`, after the dedicated parser returns but before `handleInquiry()`/`handleGenericNewLead()` is called. This is the only way to catch scams arriving via platform sender domains.
+
+**Opportunity detection and food-relatedness:** The `is_food_related` flag from Ollama is NOT available at Layer 4.6. The opportunity detector must include its own food-related keyword check (chef, cooking, food, culinary, dining, catering, kitchen, menu, restaurant, recipe) as part of its scoring signals. Do not depend on the classification output's `is_food_related` field.
+
+**Reclassification creates minimal inquiries:** When `convertToInquiry(id)` is called from the unified feed, create a minimal inquiry record using only the stored `gmail_sync_log` metadata (from_address as client email, subject, synced_at as first_contact_at). The chef fills in the rest. Do NOT attempt to re-fetch or re-parse the email from Gmail API.
+
+**Backfill strategy for existing data:** Existing `gmail_sync_log` rows with NULL `sub_category` appear in the "All" tab only. Category-specific tabs (Opportunities, Spam & Scams, etc.) only show rows WITH a sub_category. This is correct behavior (old emails were processed before sub-classification existed). No backfill migration required.
+
+**Nav placement:** The `/email-feed` route gets a nav item under the "Inquiries" nav group in `nav-config.tsx`, labeled "Email Feed" with an Inbox icon. Not a standalone top-level item.
+
 ### How Scam Detection Integrates with the Existing Pipeline
 
 ```
@@ -1325,3 +1337,17 @@ This single line answers: "Is ChefFlow catching everything?" The chef sees it ev
 9. **Deep link templates as guaranteed URLs.** Every deep link template in Phase 8 is a best guess. They WILL break. The system must gracefully handle broken links: try the stored `external_link` first (from email parser), fall back to template, fall back to platform homepage. Never show a dead link with no fallback.
 
 10. **Putting commission calculation in a server action.** The commission preview (Phase 5) should be client-side only. It's a simple multiplication. No server round-trip needed. Read commission % from the inquiry data (already loaded) and calculate in the component.
+
+11. **Scam detection never runs on platform emails.** Platform emails skip the classifier entirely via the fast-path in `sync.ts:248` (`processMessage()` routes directly to dedicated parsers). A builder who puts scam detection at Layer 4.5 of `classify.ts` will never score platform emails for scams. Scam scoring must run as a POST-PARSE step inside `processMessage()` for platform-routed emails, not just as a classification layer. This is the only way to catch spoofed platform sender domains.
+
+12. **`convertToInquiry()` from unified feed has no full email body.** `gmail_sync_log` stores `body_preview` (truncated). When a chef reclassifies a spam/opportunity email as an inquiry, there's no full body to parse fields from. Two options: (a) store the full body in a new `raw_body` column on `gmail_sync_log` during sync (storage cost, but enables re-parsing), or (b) accept that reclassified inquiries are created as minimal records (from_address, subject, date) requiring the chef to fill in details manually. Option (b) is simpler and acceptable. Never try to re-fetch from Gmail API for old emails (may be deleted or archived).
+
+13. **Opportunity detection assumes `is_food_related` is available, but it's not.** The `is_food_related` flag is only reliably set by Ollama (Layer 6), which runs AFTER opportunity detection (Layer 4.6). The opportunity detector must include its OWN food-relatedness signals (mentions chef, cooking, food, culinary, dining, catering, kitchen, menu, etc.) as part of its scoring. Do not depend on a flag from a later pipeline stage.
+
+14. **Dynamic filter tabs need a "chef's active platforms" data source.** There is no single query that returns which platforms a chef has received inquiries from. The builder must add a `getChefActivePlatforms(tenantId)` server action that returns `SELECT DISTINCT channel FROM inquiries WHERE tenant_id = $1 AND channel IN (marketplace channels)`. Cache this with a short TTL or revalidate on new inquiry creation. Do not GROUP BY the full inquiries table on every page load.
+
+15. **`sub_category` column has no backfill for existing data.** Existing `gmail_sync_log` rows will have `sub_category = NULL`. The unified feed tab counts will be wrong (everything shows in "Unclassified"). Either: (a) write a one-time backfill script that runs the sub-classifier on existing rows, or (b) treat NULL sub_category as "legacy" in the feed UI and show these rows in the "All" tab only, not in category-specific tabs. Option (b) is simpler and avoids reprocessing thousands of emails.
+
+16. **`inquiry_channel` enum may need new values.** The enum at `lib/db/schema/schema.ts:66` has 23 values. If the spec adds platforms not in the enum (e.g., a new niche platform), a migration to ALTER TYPE is required. Enum migrations in PostgreSQL are tricky (no IF NOT EXISTS for enum values before PG 14). Use `ALTER TYPE inquiry_channel ADD VALUE IF NOT EXISTS 'new_channel'` if on PG 14+, or check with a DO block.
+
+17. **Stale leads cron has its own hardcoded channel list.** `app/api/scheduled/stale-leads/route.ts:19-30` has a separate `MARKETPLACE_CHANNELS` array (10 channels). Phase 6 per-platform SLA thresholds must update this file's channel list AND import SLA config from the new shared source. Do not leave two independent channel lists that drift apart. Extract to a shared constant.
