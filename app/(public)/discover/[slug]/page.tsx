@@ -5,6 +5,57 @@ import { getDirectoryListingBySlug } from '@/lib/discover/actions'
 import { getBusinessTypeLabel, getCuisineLabel } from '@/lib/discover/constants'
 import { ClaimRemoveActions } from './_components/claim-remove-actions'
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+
+function schemaType(businessType: string): string {
+  if (businessType === 'restaurant') return 'Restaurant'
+  if (businessType === 'bakery') return 'Bakery'
+  return 'FoodEstablishment'
+}
+
+function ListingJsonLd({ listing }: { listing: any }) {
+  const jsonLd: Record<string, any> = {
+    '@context': 'https://schema.org',
+    '@type': schemaType(listing.business_type),
+    name: listing.name,
+    url: `${APP_URL}/discover/${listing.slug}`,
+  }
+
+  // Address
+  const addressParts: Record<string, string> = {}
+  if (listing.address) addressParts.streetAddress = listing.address
+  if (listing.city) addressParts.addressLocality = listing.city
+  if (listing.state) addressParts.addressRegion = listing.state
+  if (listing.postcode) addressParts.postalCode = listing.postcode
+  if (Object.keys(addressParts).length > 0) {
+    jsonLd.address = { '@type': 'PostalAddress', ...addressParts }
+  }
+
+  // Geo
+  if (listing.lat && listing.lon) {
+    jsonLd.geo = {
+      '@type': 'GeoCoordinates',
+      latitude: listing.lat,
+      longitude: listing.lon,
+    }
+  }
+
+  if (listing.phone) jsonLd.telephone = listing.phone
+  if (listing.email) jsonLd.email = listing.email
+  if (listing.price_range) jsonLd.priceRange = listing.price_range
+
+  if (listing.cuisine_types?.length > 0) {
+    jsonLd.servesCuisine = listing.cuisine_types.map(getCuisineLabel)
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  )
+}
+
 type Props = {
   params: { slug: string }
 }
@@ -36,6 +87,7 @@ export default async function ListingDetailPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-stone-950">
+      <ListingJsonLd listing={listing} />
       {/* Back nav */}
       <div className="border-b border-stone-800/50">
         <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6 lg:px-8">
@@ -147,7 +199,7 @@ export default async function ListingDetailPage({ params }: Props) {
               </div>
             )}
 
-            {!isEnriched && (
+            {!isEnriched && !listing.address && !listing.phone && !listing.hours && (
               <div className="rounded-xl border border-amber-800/30 bg-amber-950/20 p-5">
                 <p className="text-xs font-semibold text-amber-300">This is a discovered listing</p>
                 <p className="mt-1 text-xs text-amber-200/60">

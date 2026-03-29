@@ -1,11 +1,11 @@
 # Spec: Discover Directory Polish
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P2 (queued)
 > **Depends on:** food-directory-import.md (built)
 > **Estimated complexity:** small (5 files modified, 0 files created)
 > **Created:** 2026-03-29
-> **Built by:** not started
+> **Built by:** Claude Code (2026-03-29)
 
 ---
 

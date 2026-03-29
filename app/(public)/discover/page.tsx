@@ -46,11 +46,17 @@ function firstParam(value?: string | string[]): string {
   return value ?? ''
 }
 
+// ─── Types for internal components ───────────────────────────────────────────
+
+type DirectoryStats = {
+  totalListings: number
+  states: { state: string; count: number }[]
+  topCities: { city: string; state: string; count: number }[]
+}
+
 // ─── State Grid (landing view) ───────────────────────────────────────────────
 
-async function StateGrid() {
-  const stats = await getDirectoryStats()
-
+function StateGrid({ stats }: { stats: DirectoryStats }) {
   if (stats.totalListings === 0) return null
 
   return (
@@ -105,6 +111,80 @@ async function StateGrid() {
         </div>
       )}
     </div>
+  )
+}
+
+// ─── Filtered Results (async, for Suspense streaming) ────────────────────────
+
+async function FilteredResults({
+  filters,
+  activeFilterLabels,
+  currentParams,
+}: {
+  filters: DiscoverFilters
+  activeFilterLabels: string[]
+  currentParams: URLSearchParams
+}) {
+  const result = await getDirectoryListings(filters)
+
+  return (
+    <>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-stone-400">
+            {result.total.toLocaleString()} listing{result.total !== 1 ? 's' : ''}
+            {activeFilterLabels.length > 0 && (
+              <span className="text-stone-500"> matching {activeFilterLabels.join(', ')}</span>
+            )}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Link
+            href="/discover/submit"
+            className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-700"
+          >
+            Add your business
+          </Link>
+        </div>
+      </div>
+
+      {result.listings.length === 0 ? (
+        <div className="py-24 text-center">
+          <h2 className="text-xl font-semibold text-stone-300">No listings match these filters</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-stone-500">
+            Try broadening your search or clearing some filters.
+          </p>
+          <div className="mt-6 flex items-center justify-center gap-4">
+            <Link
+              href="/discover"
+              className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              Clear filters
+            </Link>
+            <Link
+              href="/discover/submit"
+              className="rounded-lg border border-stone-600 px-5 py-2.5 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
+            >
+              Add your business
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {result.listings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+          <Pagination
+            page={result.page}
+            totalPages={result.totalPages}
+            total={result.total}
+            searchParams={currentParams}
+          />
+        </>
+      )}
+    </>
   )
 }
 
@@ -177,6 +257,9 @@ export default async function DiscoverPage({ searchParams }: PageProps) {
   const hasFilters = query || businessType || cuisine || state || priceRange || city
   const isLanding = !hasFilters
 
+  // Fetch stats at page level (used for landing grid + search placeholder count)
+  const stats = await getDirectoryStats()
+
   const filters: DiscoverFilters = {
     query: query || undefined,
     businessType: businessType || undefined,
@@ -204,9 +287,6 @@ export default async function DiscoverPage({ searchParams }: PageProps) {
   if (state) currentParams.set('state', state)
   if (city) currentParams.set('city', city)
   if (priceRange) currentParams.set('price', priceRange)
-
-  // Only fetch listings if filters are active
-  const result = isLanding ? null : await getDirectoryListings(filters)
 
   const heroTitle = state ? `Food in ${getStateName(state)}` : 'Discover great food near you'
 
@@ -243,7 +323,7 @@ export default async function DiscoverPage({ searchParams }: PageProps) {
               state={state}
               city={city}
               priceRange={priceRange}
-              totalListings={result?.total}
+              totalListings={isLanding ? stats.totalListings : undefined}
             />
           </Suspense>
         </div>
@@ -252,83 +332,29 @@ export default async function DiscoverPage({ searchParams }: PageProps) {
       {/* Content */}
       <section className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:px-6 lg:px-8">
         {isLanding ? (
-          /* Landing: show state grid */
+          /* Landing: show state grid (sync now, stats already fetched) */
+          <StateGrid stats={stats} />
+        ) : (
+          /* Filtered: show results grid via Suspense streaming */
           <Suspense
             fallback={
-              <div className="grid grid-cols-4 gap-2 md:grid-cols-6 lg:grid-cols-8">
-                {Array.from({ length: 51 }).map((_, i) => (
-                  <div key={i} className="h-16 animate-pulse rounded-xl bg-stone-800/50" />
-                ))}
+              <div className="space-y-6">
+                <div className="h-8 w-48 animate-pulse rounded-lg bg-stone-800/50" />
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-80 animate-pulse rounded-2xl bg-stone-800/50" />
+                  ))}
+                </div>
               </div>
             }
           >
-            <StateGrid />
+            <FilteredResults
+              filters={filters}
+              activeFilterLabels={activeFilterLabels}
+              currentParams={currentParams}
+            />
           </Suspense>
-        ) : result ? (
-          /* Filtered: show results grid */
-          <>
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-stone-400">
-                  {result.total.toLocaleString()} listing{result.total !== 1 ? 's' : ''}
-                  {activeFilterLabels.length > 0 && (
-                    <span className="text-stone-500">
-                      {' '}
-                      matching {activeFilterLabels.join(', ')}
-                    </span>
-                  )}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Link
-                  href="/discover/submit"
-                  className="rounded-lg bg-brand-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-700"
-                >
-                  Add your business
-                </Link>
-              </div>
-            </div>
-
-            {result.listings.length === 0 ? (
-              <div className="py-24 text-center">
-                <h2 className="text-xl font-semibold text-stone-300">
-                  No listings match these filters
-                </h2>
-                <p className="mx-auto mt-2 max-w-md text-sm text-stone-500">
-                  Try broadening your search or clearing some filters.
-                </p>
-                <div className="mt-6 flex items-center justify-center gap-4">
-                  <Link
-                    href="/discover"
-                    className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-                  >
-                    Clear filters
-                  </Link>
-                  <Link
-                    href="/discover/submit"
-                    className="rounded-lg border border-stone-600 px-5 py-2.5 text-sm font-medium text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
-                  >
-                    Add your business
-                  </Link>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {result.listings.map((listing) => (
-                    <ListingCard key={listing.id} listing={listing} />
-                  ))}
-                </div>
-                <Pagination
-                  page={result.page}
-                  totalPages={result.totalPages}
-                  total={result.total}
-                  searchParams={currentParams}
-                />
-              </>
-            )}
-          </>
-        ) : null}
+        )}
 
         {/* Nomination CTA */}
         <div className="mt-16 text-center">

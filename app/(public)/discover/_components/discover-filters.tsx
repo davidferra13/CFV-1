@@ -8,7 +8,6 @@ import {
   CUISINE_CATEGORIES,
   PRICE_RANGES,
   US_STATES,
-  getStateName,
 } from '@/lib/discover/constants'
 
 type Props = {
