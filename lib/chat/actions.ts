@@ -6,6 +6,7 @@
 
 import { requireAuth, requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { processMessageInsights } from '@/lib/insights/actions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -449,6 +450,10 @@ export async function getConversationParticipants(
  */
 export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) {
   const user = await requireAuth()
+
+  // Rate limit: 30 messages per minute per user
+  await checkRateLimit(`chat:${user.id}`, 30, 60_000)
+
   const validated = SendMessageSchema.parse(input)
   const db: any = createServerClient()
 

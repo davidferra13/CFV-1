@@ -64,7 +64,12 @@ export function validateHistory(raw: unknown, maxMessages = MAX_HISTORY_LENGTH):
         : 'user'
 
     // Truncate individual messages that are too long
-    const content = entry.content.slice(0, MAX_HISTORY_MESSAGE_LENGTH)
+    let content = entry.content.slice(0, MAX_HISTORY_MESSAGE_LENGTH)
+
+    // Sanitize history entries against prompt injection (same as current message)
+    // A poisoned earlier message could manipulate the LLM when replayed in context
+    content = content.normalize('NFC')
+    content = content.replace(/[\0\u200B\u200C\u200D\uFEFF\u00AD]/g, '')
 
     // Check total budget
     if (totalLength + content.length > MAX_HISTORY_TOTAL_LENGTH) break
@@ -440,8 +445,12 @@ export function sanitizeForPrompt(value: string | null | undefined): string {
 
   let sanitized = value
 
-  // Remove null bytes
-  sanitized = sanitized.replace(/\0/g, '')
+  // Unicode-normalize to NFC to prevent homoglyph bypass attacks
+  // (e.g., Cyrillic 'а' instead of Latin 'a' to evade regex patterns)
+  sanitized = sanitized.normalize('NFC')
+
+  // Remove null bytes and zero-width characters used to evade pattern matching
+  sanitized = sanitized.replace(/[\0\u200B\u200C\u200D\uFEFF\u00AD]/g, '')
 
   // Neutralize injection patterns by wrapping matched text in brackets
   // This preserves the text for context but breaks the instruction structure
