@@ -3,7 +3,7 @@
 > **Status:** ready
 > **Priority:** P1 (next up)
 > **Depends on:** none
-> **Estimated complexity:** large (40+ files across 12 phases)
+> **Estimated complexity:** large (50+ files across 13 phases)
 > **Created:** 2026-03-29
 > **Built by:** not started
 
@@ -807,6 +807,191 @@ This week: 4 events scheduled, $6,800 gross revenue
 ### No Database Changes
 
 Uses existing `notifications` table for delivery. Briefing data is computed on-the-fly from `inquiries`, `events`, `platform_records`, `platform_payouts`, `platform_snapshots`.
+
+---
+
+## Phase 13: Trust & Transparency Layer (CRITICAL - This Makes or Breaks Adoption)
+
+**Goal:** Make the chef trust ChefFlow enough to stop logging into third-party platforms. Without this phase, every other phase is wasted. A feature that's 95% reliable is 0% trusted, because the chef doesn't know which 5% it missed. So they check the platform anyway, and ChefFlow has zero value.
+
+This phase provides PROOF, not claims. The chef can verify at any time that ChefFlow has captured everything.
+
+### Files to Create
+
+| File                                                      | Purpose                                                                                                                                                                                                                      |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/integrations/email-accountability.ts`                | Server actions: `getPlatformEmailAccountability(channel, dateRange)` counts ALL emails from a platform domain, categorized by what ChefFlow did with each one. `getPlatformSyncHealth()` returns per-platform health status. |
+| `lib/integrations/capture-confidence.ts`                  | `computeCaptureConfidence(inquiryId)` returns confidence level (full/partial/minimal) based on which fields were extracted vs expected for that platform's email type.                                                       |
+| `lib/integrations/platform-reconciliation.ts`             | `generateReconciliationPrompt(tenantId)` creates weekly check-in: "We captured X inquiries from Y platform. Does that match?" Handles chef feedback (yes/no/missing).                                                        |
+| `components/integrations/email-accountability-ledger.tsx` | Per-platform breakdown: emails received, how each was categorized, parse success rate, unprocessable count with "view raw" links.                                                                                            |
+| `components/integrations/platform-sync-status.tsx`        | Per-platform indicator: green "All caught up" or orange "X actions needed." The single most important component in the entire spec.                                                                                          |
+| `components/integrations/raw-email-feed.tsx`              | Unfiltered view of every email from platform domains. Each shows subject, date, what ChefFlow did with it. One-click reclassify for misclassified emails.                                                                    |
+| `components/integrations/quarantine-view.tsx`             | Emails from platform domains that were classified as spam/marketing. Recovery button to reclassify as inquiry.                                                                                                               |
+| `components/inquiries/capture-confidence-badge.tsx`       | Per-inquiry badge: green (full capture), yellow (partial), orange (minimal + link to platform). Shows exactly which fields were/weren't extracted.                                                                           |
+| `app/api/scheduled/platform-health-check/route.ts`        | Cron: if no emails received from an active platform in 7+ days, alert the chef. Catches Gmail filter issues, platform account problems, or broken sync.                                                                      |
+| `components/integrations/reconciliation-prompt.tsx`       | Weekly check-in widget: "This week we captured X inquiries from TakeAChef. Does that match? [Yes] [No, something's missing]"                                                                                                 |
+
+### Files to Modify
+
+| File                                        | What to Change                                                                                                                                                      |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/(chef)/inquiries/[id]/page.tsx`        | Add `CaptureConfidenceBadge` to every platform inquiry. Shows what was captured and what wasn't.                                                                    |
+| `app/(chef)/settings/integrations/page.tsx` | Add `PlatformSyncStatus` per platform in the "My Platforms" grid. Green/orange indicator replaces guessing.                                                         |
+| `app/(chef)/dashboard/page.tsx`             | Add platform sync status summary widget + reconciliation prompt.                                                                                                    |
+| `lib/gmail/sync.ts`                         | After processing each email, record what was captured vs what was expected in a sync audit trail.                                                                   |
+| `lib/gmail/classify.ts`                     | When a platform-domain email is classified as non-inquiry (spam, marketing, admin), log it to the quarantine/accountability system so it's visible in the raw feed. |
+
+### Database Changes
+
+```sql
+-- Email accountability: tracks every email from platform domains
+-- Not just parsed ones - ALL of them, including spam/admin classifications
+CREATE TABLE IF NOT EXISTS platform_email_audit (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
+  platform text NOT NULL,
+  gmail_message_id text NOT NULL,
+  email_subject text,
+  email_from text,
+  email_date timestamptz,
+  classification text NOT NULL, -- 'inquiry', 'status_update', 'payment', 'message', 'review', 'administrative', 'spam', 'unprocessable'
+  action_taken text NOT NULL, -- 'created_inquiry', 'updated_status', 'captured_payment', 'logged_message', 'classified_admin', 'classified_spam', 'parse_failed'
+  inquiry_id uuid, -- links to inquiry if one was created/updated
+  confidence text DEFAULT 'high', -- 'full', 'partial', 'minimal'
+  fields_extracted text[] DEFAULT '{}', -- which fields were successfully extracted
+  fields_missing text[] DEFAULT '{}', -- which fields could not be extracted
+  raw_email_snippet text, -- first 500 chars of email body for quick review
+  reclassified_at timestamptz, -- set if chef manually reclassifies
+  reclassified_to text, -- what the chef reclassified it as
+  created_at timestamptz DEFAULT now() NOT NULL,
+  UNIQUE(tenant_id, gmail_message_id)
+);
+
+CREATE INDEX idx_platform_email_audit_tenant_platform ON platform_email_audit(tenant_id, platform, created_at DESC);
+CREATE INDEX idx_platform_email_audit_classification ON platform_email_audit(tenant_id, classification);
+
+-- Reconciliation responses: tracks chef's weekly yes/no on accuracy
+CREATE TABLE IF NOT EXISTS platform_reconciliation_log (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
+  platform text NOT NULL,
+  week_start date NOT NULL,
+  emails_reported integer NOT NULL,
+  inquiries_reported integer NOT NULL,
+  chef_response text, -- 'accurate', 'missing_items', 'too_many'
+  chef_notes text, -- free text if they say something's missing
+  responded_at timestamptz,
+  created_at timestamptz DEFAULT now() NOT NULL,
+  UNIQUE(tenant_id, platform, week_start)
+);
+```
+
+### The Six Trust Mechanisms
+
+**Mechanism 1: Email Accountability Ledger**
+
+For each platform, a complete accounting of every email received this period:
+
+```
+TakeAChef - This Month
+Emails received:     23
+  New inquiries:      8  (all parsed)
+  Status updates:     5  (all parsed)
+  Payment confirms:   4  (all parsed)
+  Messages:           4  (all parsed)
+  Administrative:     2  (classified, not actionable)
+  Unprocessable:      0
+Parse success rate: 100%
+Last email: 2 hours ago
+```
+
+Every email from `@takeachef.com` is accounted for. 23 in, 23 handled. Zero fell through the cracks. If one couldn't be parsed, it shows under "Unprocessable" with a "view raw" link.
+
+**Mechanism 2: The "Nothing to Do" / "Action Needed" Indicator**
+
+For each platform, exactly one of two states:
+
+- **Green: "All caught up on TakeAChef"** - All emails parsed, all inquiries responded to or within SLA, no pending actions. "You don't need to visit TakeAChef right now."
+- **Orange: "1 action needed on TakeAChef"** - Specific named action: "Respond to Sarah Miller's inquiry (16h until SLA)." Direct link to that exact conversation. After the chef completes it, TakeAChef sends a confirmation email, ChefFlow parses it, status flips back to green.
+
+This is THE trust builder. The chef never wonders "should I check TakeAChef?" ChefFlow says yes or no. And when yes, exactly what to do and a link straight there.
+
+**Mechanism 3: Raw Email Feed (the escape hatch)**
+
+"View All Platform Emails" tab showing every email from every platform domain. Unfiltered. Each email shows: subject, from, date, and what ChefFlow did with it ("Created inquiry #47" / "Updated booking" / "Classified as admin" / "Could not parse - view raw").
+
+This is the chef's proof. They eyeball it, see every email was processed. If something looks wrong, one click to see the raw email. One click to reclassify.
+
+The fact that this exists builds trust even if the chef never uses it. Knowing you CAN verify is what lets you stop verifying.
+
+**Mechanism 4: Capture Confidence Per Inquiry**
+
+Every platform inquiry shows how complete the capture was:
+
+- **Full capture (green):** "All fields extracted. Name, date, guests, location, dietary, budget."
+- **Partial capture (yellow):** "Name and date extracted. Guest count and dietary could not be read. [View raw email]"
+- **Minimal capture (orange):** "Only name extracted. Visit platform for full details. [Go to inquiry on TakeAChef]"
+
+No silent gaps. The chef knows exactly what ChefFlow has and what it doesn't.
+
+**Mechanism 5: Weekly Reconciliation**
+
+Simple weekly prompt: "This week, we received 15 emails from TakeAChef and captured 4 new inquiries. Does that match? [Yes, looks right] [No, something's missing]"
+
+If "no": ChefFlow asks what's missing, logs it, feeds it back into parser improvement. If "yes": confidence score for that platform increases. After 4 weeks of "yes," the chef stops checking.
+
+**Mechanism 6: Platform Health Monitoring**
+
+Alerts when something looks wrong:
+
+- "No emails from TakeAChef in 8 days. You said you're active there. Gmail might be filtering them. [Check Gmail filters]"
+- "Parse success rate for Private Chef Manager dropped from 95% to 60% this week. The platform may have changed their email format. [View failed parses]"
+- "3 TakeAChef emails couldn't be parsed today. [View quarantine]"
+
+Proactive, not reactive. The chef finds out about problems before they notice them.
+
+### Quarantine & Recovery Flow
+
+When a platform-domain email gets classified as spam/marketing (should be rare since Layer 1 in classify.ts catches platform emails first, but edge cases exist):
+
+1. Email appears in quarantine view
+2. Chef sees: "This email from notifications@takeachef.com was classified as marketing. [This is actually an inquiry] [Correct, it's marketing]"
+3. If chef clicks "This is actually an inquiry": email is reclassified, parser re-runs, inquiry created, classification feedback logged for model improvement
+4. Platform email audit updated with `reclassified_at` and `reclassified_to`
+
+### The Adoption Flywheel
+
+Week 1: Chef checks TakeAChef daily. Also checks ChefFlow. Sees that ChefFlow matches.
+Week 2: Chef checks TakeAChef every other day. ChefFlow accountability ledger shows 100% match.
+Week 3: Chef checks TakeAChef once. Reconciliation prompt: "Yes, looks right."
+Week 4: Chef stops checking TakeAChef. ChefFlow says "All caught up." Chef trusts it.
+Week 5+: Chef only visits TakeAChef when ChefFlow says "Action needed: respond to [inquiry]." 10 seconds, in and out.
+
+This flywheel only works if the system is honest about its limitations. Showing "partial capture" on one inquiry builds MORE trust than pretending everything is perfect. Transparency is what converts skeptics into believers.
+
+### Edge Cases
+
+| Scenario                                               | Correct Behavior                                                                                                   |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
+| Gmail filters archive platform emails                  | Platform health check detects 0 emails in 7+ days, alerts chef to check Gmail filters                              |
+| Parser extracts 0 fields from a new email format       | Email shows in accountability ledger as "unprocessable." Raw email viewable. Alert generated.                      |
+| Chef says "no, something's missing" on reconciliation  | Log what's missing. Flag for parser review. Create manual inquiry entry path.                                      |
+| Platform sends email from a new/unknown sender address | Layer 1 in classify.ts may miss it. Quarantine/raw feed catches it. Chef reclassifies. Sender added to known list. |
+| Chef never responds to reconciliation prompts          | Stop showing after 3 ignored prompts. Don't nag. Resume if chef opts back in.                                      |
+| Sync is 6+ hours behind (Gmail API rate limits)        | Show "Last sync: 6 hours ago" prominently. Don't show "All caught up" if sync is stale.                            |
+
+### Verification Steps (Phase 13)
+
+1. Create a test inquiry via email parser
+2. Navigate to Settings > Integrations, verify green "All caught up" status
+3. Navigate to raw email feed, verify all test emails appear with correct classifications
+4. Verify capture confidence badge on inquiry detail page shows correct field coverage
+5. Manually send an email from a platform domain, verify it appears in accountability ledger
+6. Trigger reconciliation prompt, click "Yes," verify response logged
+7. Click "No, something's missing," verify feedback form appears
+8. Verify quarantine view shows any misclassified platform emails
+9. Reclassify a quarantine email as inquiry, verify inquiry is created
+10. Verify platform health check cron alerts when no emails received in 7+ days
 
 ---
 
