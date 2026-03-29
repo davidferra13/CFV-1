@@ -3,7 +3,7 @@
 > **Status:** ready
 > **Priority:** P1 (next up)
 > **Depends on:** none
-> **Estimated complexity:** large (30+ files across 8 phases)
+> **Estimated complexity:** large (40+ files across 12 phases)
 > **Created:** 2026-03-29
 > **Built by:** not started
 
@@ -25,7 +25,7 @@ Chefs lose leads because they're spread across 5-10 platforms with no unified vi
 
 ---
 
-## Architecture: 8 Phases
+## Architecture: 12 Phases
 
 Each phase is independently buildable and shippable. Phases are ordered by dependency, not priority. A builder agent should build them in order but can mark each phase as a standalone deliverable.
 
@@ -616,6 +616,197 @@ All templates are stored in `MARKETPLACE_PLATFORMS` config and are overridable. 
 3. Type a response, click "Send on [Platform]"
 4. Verify clipboard contains the response text
 5. Verify new tab opens to platform deep link (or toast if no link)
+
+### Phase 9
+
+1. Navigate to Analytics > Platforms
+2. Verify reputation column shows star ratings per platform
+3. Verify dashboard widget shows compact reputation row
+
+### Phase 10
+
+1. Navigate to Analytics > Platforms
+2. Click "Log Platform Spend"
+3. Enter: Thumbtack, $47, today
+4. Verify spend appears in history table
+5. Verify ROI metrics update to include the spend
+
+### Phase 11
+
+1. Create a confirmed event for June 15
+2. Create a new inquiry with confirmed_date = June 15, channel = 'take_a_chef'
+3. Verify date conflict warning appears on inquiry detail page
+4. Verify warning names the conflicting event
+
+### Phase 12
+
+1. Open a TakeAChef inquiry, click "Ask Remy to draft"
+2. Verify draft tone matches TakeAChef context (professional, warm)
+3. Open a Thumbtack inquiry, click "Ask Remy to draft"
+4. Verify draft tone matches Thumbtack context (direct, casual)
+5. Verify morning briefing notification appears on dashboard (after cron runs)
+
+---
+
+## Phase 9: Review Aggregation
+
+**Goal:** Show a chef's reputation across all platforms in one view. Ratings, review counts, trends.
+
+### Files to Create
+
+| File                                                  | Purpose                                                                                                                                                                             |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/analytics/platform-reviews.ts`                   | Server actions: `getPlatformReviewSummary()` aggregates ratings/counts from `platform_snapshots` (review-type captures) and `platform_records` (review fields from extension sync). |
+| `components/analytics/platform-reputation-card.tsx`   | Card showing per-platform: star rating, review count, trend arrow (up/down/flat vs last month).                                                                                     |
+| `components/dashboard/platform-reputation-widget.tsx` | Dashboard widget: compact row of platform badges with ratings. "TAC 4.8 (23) / Cozymeal 4.5 (8) / GigSalad 5.0 (3)"                                                                 |
+
+### Data Sources
+
+- **Email parsers** already detect review notification emails for most platforms. These contain the star rating and review text. Captured in `platform_snapshots` with `capture_type = 'review'`.
+- **Extension sync** (Phase 7) can capture review data from platform profile pages.
+- **No new tables needed.** Review data is stored in `platform_snapshots.extracted_data` JSONB (already exists).
+
+### UI Spec
+
+**On the Platform ROI Dashboard (Phase 6), add a "Reputation" column:**
+
+- Star rating (1 decimal)
+- Review count
+- Trend: compare current month's average to previous month
+- Click to expand: see recent reviews with text
+
+**On the Dashboard, add a compact reputation widget:**
+
+- One-line summary of all platforms with ratings
+- Highlight any platform where rating dropped
+
+---
+
+## Phase 10: Platform Spend Entry
+
+**Goal:** Give chefs an easy way to log platform costs so the ROI dashboard has complete data.
+
+### Files to Create
+
+| File                                              | Purpose                                                                                                                  |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `components/analytics/platform-spend-form.tsx`    | Quick entry form: platform (dropdown), amount, date, optional note. Accessible from ROI dashboard and platform settings. |
+| `components/analytics/platform-spend-history.tsx` | Table of logged spend entries with edit/delete.                                                                          |
+
+### Files to Modify
+
+| File                                      | What to Change                                                                                              |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `app/(chef)/analytics/platforms/page.tsx` | Add spend entry form + history below ROI cards.                                                             |
+| `lib/inquiries/platform-cpl.ts`           | `recordPlatformSpend()` already exists (lines 40-75). Wire it to the new form. No new server action needed. |
+
+### No Database Changes
+
+`marketing_spend_log` table already exists with: `chef_id`, `spend_date`, `channel`, `amount_cents`, `campaign_name`, `notes`.
+
+### UI Spec
+
+**Spend entry (on ROI dashboard page):**
+
+- "Log Platform Spend" button at top of page
+- Modal or inline form: platform dropdown (pre-filtered to active platforms), amount ($), date (defaults to today), optional note
+- After save: ROI metrics recalculate immediately (revalidatePath)
+- Spend history table below: date, platform, amount, note, edit/delete actions
+
+**Also accessible from Settings > Integrations:** each platform card shows "Total spent: $X" with a "Log spend" shortcut link.
+
+---
+
+## Phase 11: Calendar Conflict Detection
+
+**Goal:** When a new platform inquiry has a date that conflicts with an existing booking, warn the chef immediately.
+
+### Files to Create
+
+| File                                             | Purpose                                                                                                                                              |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/inquiries/conflict-detection.ts`            | `checkDateConflicts(tenantId, date)` queries `events` table for confirmed/in_progress events on same date. Returns conflicting events if found.      |
+| `components/inquiries/date-conflict-warning.tsx` | Banner on inquiry detail: "Heads up: you have a confirmed event on June 15 (via Thumbtack, 12 guests in Portland). Consider this before responding." |
+
+### Files to Modify
+
+| File                                 | What to Change                                                                                                                 |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `lib/gmail/sync.ts`                  | After creating inquiry with a `confirmed_date`, call `checkDateConflicts()`. If conflict found, add to inquiry's notification. |
+| `app/(chef)/inquiries/[id]/page.tsx` | Show `DateConflictWarning` when inquiry has a date that conflicts.                                                             |
+
+### No Database Changes
+
+Uses existing `events` table. Query: `SELECT * FROM events WHERE tenant_id = $1 AND confirmed_date = $2 AND status IN ('confirmed', 'in_progress', 'paid', 'accepted')`.
+
+### Why This Matters
+
+Double-booking across platforms is a real risk. A chef confirms on TakeAChef for Saturday, then gets a Thumbtack lead for the same Saturday. Without a warning, they might quote both and have to cancel one, which tanks their platform rating. This is a 5-line query that prevents a reputation-destroying mistake.
+
+---
+
+## Phase 12: Platform-Aware Response Tone + Morning Briefing
+
+### Part A: Platform-Aware Remy Drafts
+
+**Goal:** When Remy drafts a response (Phase 8), adjust tone based on which platform the inquiry came from.
+
+### Files to Modify
+
+| File                                              | What to Change                                                                                                                 |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `lib/marketplace/platforms.ts`                    | Add `responseContext` field to `MarketplacePlatform`: a 1-2 sentence description of the platform's audience and expected tone. |
+| `components/inquiries/platform-compose-panel.tsx` | Pass `responseContext` to Remy's draft prompt.                                                                                 |
+
+### Response Context Per Platform
+
+| Platform           | Context for Remy                                                                                                                                                                                                 |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| take_a_chef        | "International marketplace. Clients are often affluent travelers booking luxury dining experiences. Professional, warm, detail-oriented tone. Mention menu customization and dietary accommodation proactively." |
+| thumbtack          | "Local services marketplace. Clients are comparing 3-5 pros side by side. Be direct, competitive, and responsive. Lead with availability and pricing. Keep it casual."                                           |
+| bark               | "Lead generation platform. Client submitted a brief request. Be concise, answer their specific ask, and suggest a call to discuss details."                                                                      |
+| cozymeal           | "Experience marketplace. Clients expect a curated dining experience. Emphasize the experience, ambiance, and menu storytelling."                                                                                 |
+| theknot            | "Wedding platform. Clients are planning their wedding and comparing vendors. Be warm, enthusiastic about their special day, and detail-oriented about logistics."                                                |
+| gigsalad           | "Event services marketplace. Clients are booking for parties, corporate events, or special occasions. Professional but approachable. Emphasize flexibility and experience."                                      |
+| yhangry            | "UK-originated marketplace expanding to US. Mix of casual dinners and events. Friendly, professional tone. Similar to TakeAChef but slightly less formal."                                                       |
+| privatechefmanager | "Professional chef services platform. Direct booking model. Clients expect a polished, experienced professional. Formal but personable."                                                                         |
+
+### Part B: Morning Platform Briefing
+
+**Goal:** Push a daily summary so the chef sees everything at a glance without opening each section.
+
+### Files to Create
+
+| File                                               | Purpose                                                                                                                                                                             |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/notifications/morning-briefing.ts`            | `generateMorningBriefing(tenantId)` aggregates: new leads since last briefing, bookings confirmed, reviews posted, overdue SLAs, revenue summary. Returns structured briefing data. |
+| `app/api/scheduled/morning-briefing/route.ts`      | Cron job: runs at 7am local time (or chef-configured time). Generates briefing, creates notification.                                                                               |
+| `components/dashboard/morning-briefing-widget.tsx` | Dashboard widget showing today's briefing in a compact card.                                                                                                                        |
+
+### Server Action
+
+| Action                              | Auth         | Trigger      | Output                               |
+| ----------------------------------- | ------------ | ------------ | ------------------------------------ |
+| `generateMorningBriefing(tenantId)` | Admin (cron) | Daily at 7am | Notification with structured summary |
+
+### Briefing Content
+
+```
+Good morning, Chef.
+
+Overnight: 2 new leads (1 TakeAChef, 1 Bark)
+Confirmed: 1 booking (Cozymeal, $1,200 gross, $960 net)
+Reviews: 1 new (TakeAChef, 5 stars)
+Action needed: 3 leads awaiting your response
+  - Thumbtack lead: 2h until SLA (respond first)
+  - TakeAChef lead: 18h until SLA
+  - Bark lead: 20h until SLA
+This week: 4 events scheduled, $6,800 gross revenue
+```
+
+### No Database Changes
+
+Uses existing `notifications` table for delivery. Briefing data is computed on-the-fly from `inquiries`, `events`, `platform_records`, `platform_payouts`, `platform_snapshots`.
 
 ---
 
