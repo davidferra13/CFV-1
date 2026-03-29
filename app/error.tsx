@@ -1,10 +1,11 @@
 // Global Error Boundary - 500 Page
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useChunkErrorRecovery } from '@/lib/hooks/use-chunk-error-recovery'
 
 /**
  * Report an error to Sentry via the lightweight API route.
@@ -41,6 +42,9 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const [clearing, setClearing] = useState(false)
+  const { isChunkError, triggerRecovery } = useChunkErrorRecovery(error)
+
   useEffect(() => {
     reportToSentry(error)
     console.error('Error boundary caught:', error)
@@ -65,24 +69,50 @@ export default function Error({
               />
             </svg>
           </div>
-          <CardTitle className="text-2xl">Something went wrong</CardTitle>
+          <CardTitle className="text-2xl">
+            {isChunkError ? 'Updating app...' : 'Something went wrong'}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-red-950 border border-red-200 rounded-md p-4">
-            <p className="text-sm text-red-800 font-mono break-all">
-              {error.message || 'An unexpected error occurred'}
+          {isChunkError ? (
+            <p className="text-sm text-stone-400 text-center">
+              A new version of ChefFlow is available. Clearing cache and reloading...
             </p>
-            {error.digest && <p className="text-xs text-red-600 mt-2">Error ID: {error.digest}</p>}
-          </div>
+          ) : (
+            <div className="bg-red-950 border border-red-200 rounded-md p-4">
+              <p className="text-sm text-red-800 font-mono break-all">
+                {error.message || 'An unexpected error occurred'}
+              </p>
+              {error.digest && (
+                <p className="text-xs text-red-600 mt-2">Error ID: {error.digest}</p>
+              )}
+            </div>
+          )}
           <div className="space-y-2">
-            <Button variant="primary" onClick={reset} className="w-full">
-              Try Again
-            </Button>
-            <Link href="/" className="block">
-              <Button variant="secondary" className="w-full">
-                Go Home
+            {isChunkError ? (
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setClearing(true)
+                  triggerRecovery()
+                }}
+                disabled={clearing}
+                className="w-full"
+              >
+                {clearing ? 'Clearing cache...' : 'Reload Now'}
               </Button>
-            </Link>
+            ) : (
+              <>
+                <Button variant="primary" onClick={reset} className="w-full">
+                  Try Again
+                </Button>
+                <Link href="/" className="block">
+                  <Button variant="secondary" className="w-full">
+                    Go Home
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </CardContent>
       </Card>

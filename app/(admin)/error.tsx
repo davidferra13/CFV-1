@@ -8,6 +8,7 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { reportClientBoundaryError } from '@/lib/monitoring/report-client-error'
+import { useChunkErrorRecovery } from '@/lib/hooks/use-chunk-error-recovery'
 
 export default function AdminError({
   error,
@@ -16,10 +17,28 @@ export default function AdminError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const { isChunkError, triggerRecovery } = useChunkErrorRecovery(error)
+
   useEffect(() => {
     reportClientBoundaryError(error, { boundary: 'admin', digest: error.digest })
     console.error('[Admin Error]', error)
   }, [error])
+
+  if (isChunkError) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+        <div className="w-full max-w-md bg-slate-900 border border-slate-700 rounded-xl p-6 text-center space-y-4">
+          <h1 className="text-base font-semibold text-slate-100">Updating app...</h1>
+          <p className="text-sm text-slate-400">
+            A new version of ChefFlow is available. Clearing cache and reloading...
+          </p>
+          <Button variant="primary" onClick={triggerRecovery} className="w-full">
+            Reload Now
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">

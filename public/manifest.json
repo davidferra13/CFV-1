@@ -2,7 +2,7 @@
   "name": "ChefFlow",
   "short_name": "ChefFlow",
   "description": "Ops for Artists - Private chef business operating system",
-  "start_url": "/dashboard",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#faf9f7",
   "theme_color": "#e88f47",

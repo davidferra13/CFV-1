@@ -5,6 +5,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { isChunkLoadError, nukeServiceWorkerAndReload } from '@/lib/hooks/use-chunk-error-recovery'
 
 /**
  * Report an error to Sentry via the lightweight API route.
@@ -37,10 +38,19 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
+  const isChunkError = isChunkLoadError(error)
+
   useEffect(() => {
     reportToSentry(error)
     console.error('Global error boundary caught:', error)
   }, [error])
+
+  // For chunk load errors, auto-recover: nuke SW + caches and reload
+  useEffect(() => {
+    if (isChunkError) {
+      nukeServiceWorkerAndReload()
+    }
+  }, [isChunkError])
 
   return (
     <html lang="en">
@@ -72,35 +82,53 @@ export default function GlobalError({
               width: '4rem',
               height: '4rem',
               borderRadius: '50%',
-              backgroundColor: '#450a0a',
+              backgroundColor: isChunkError ? '#1c1917' : '#450a0a',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 1.5rem',
             }}
           >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#dc2626"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+            {isChunkError ? (
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#e88f47"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+            ) : (
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#dc2626"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            )}
           </div>
 
           <h1 style={{ color: '#fafaf9', fontSize: '1.5rem', margin: '0 0 0.5rem' }}>
-            Something went wrong
+            {isChunkError ? 'Updating app...' : 'Something went wrong'}
           </h1>
           <p style={{ color: '#a8a29e', fontSize: '0.875rem', margin: '0 0 1.5rem' }}>
-            An unexpected error occurred. Our team has been notified.
+            {isChunkError
+              ? 'A new version of ChefFlow is available. Clearing cache and reloading...'
+              : 'An unexpected error occurred. Our team has been notified.'}
           </p>
 
-          {error.digest && (
+          {!isChunkError && error.digest && (
             <p
               style={{
                 color: '#78716c',
@@ -114,37 +142,57 @@ export default function GlobalError({
           )}
 
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-            <button
-              onClick={reset}
-              style={{
-                backgroundColor: '#e88f47',
-                color: '#1c1917',
-                border: 'none',
-                borderRadius: '0.5rem',
-                padding: '0.625rem 1.25rem',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-              }}
-            >
-              Try Again
-            </button>
-            <a
-              href="/"
-              style={{
-                backgroundColor: '#292524',
-                color: '#fafaf9',
-                border: '1px solid #44403c',
-                borderRadius: '0.5rem',
-                padding: '0.625rem 1.25rem',
-                fontWeight: 600,
-                fontSize: '0.875rem',
-                textDecoration: 'none',
-                display: 'inline-block',
-              }}
-            >
-              Go Home
-            </a>
+            {isChunkError ? (
+              <button
+                onClick={() => nukeServiceWorkerAndReload()}
+                style={{
+                  backgroundColor: '#e88f47',
+                  color: '#1c1917',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  padding: '0.625rem 1.25rem',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Reload Now
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={reset}
+                  style={{
+                    backgroundColor: '#e88f47',
+                    color: '#1c1917',
+                    border: 'none',
+                    borderRadius: '0.5rem',
+                    padding: '0.625rem 1.25rem',
+                    fontWeight: 600,
+                    fontSize: '0.875rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Try Again
+                </button>
+                <a
+                  href="/"
+                  style={{
+                    backgroundColor: '#292524',
+                    color: '#fafaf9',
+                    border: '1px solid #44403c',
+                    borderRadius: '0.5rem',
+                    padding: '0.625rem 1.25rem',
+                    fontWeight: 600,
+                    fontSize: '0.875rem',
+                    textDecoration: 'none',
+                    display: 'inline-block',
+                  }}
+                >
+                  Go Home
+                </a>
+              </>
+            )}
           </div>
         </div>
       </body>
