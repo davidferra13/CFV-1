@@ -16,6 +16,8 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { PriceAttribution } from '@/components/pricing/price-attribution'
 import { AddIngredientForm } from '@/components/culinary/add-ingredient-form'
 import { PriceWatchList } from '@/components/pricing/price-watch-list'
+import { ImageWithFallback } from '@/components/pricing/image-with-fallback'
+import { EnrichImagesButton } from '@/components/culinary/enrich-images-button'
 
 export const metadata: Metadata = { title: 'Ingredients - ChefFlow' }
 
@@ -59,6 +61,7 @@ export default async function IngredientsPage() {
             </span>
           </div>
           <div className="flex gap-2">
+            <EnrichImagesButton />
             <Link href="/culinary/ingredients/receipt-scan">
               <Button variant="secondary" size="sm">
                 Scan Receipt
@@ -116,12 +119,22 @@ export default async function IngredientsPage() {
               {ingredients.map((ing: any) => (
                 <TableRow key={ing.id}>
                   <TableCell className="font-medium">
-                    {ing.name}
-                    {ing.preferred_vendor && (
-                      <p className="text-xs text-stone-400 mt-0.5">
-                        Vendor: {ing.preferred_vendor}
-                      </p>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <ImageWithFallback
+                        src={ing.image_url ?? null}
+                        alt={ing.name}
+                        category={ing.category}
+                        className="h-8 w-8 rounded flex-shrink-0"
+                      />
+                      <div>
+                        {ing.name}
+                        {ing.preferred_vendor && (
+                          <p className="text-xs text-stone-400 mt-0.5">
+                            Vendor: {ing.preferred_vendor}
+                          </p>
+                        )}
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell>
                     <span

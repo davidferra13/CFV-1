@@ -679,7 +679,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/culinary/price-catalog',
-        label: 'Price Catalog',
+        label: 'Food Catalog',
         icon: Store,
         tier: 'secondary',
       },
@@ -1972,7 +1972,7 @@ export const actionBarItems: NavItem[] = [
   { href: '/culinary/prep', label: 'Prep', icon: Timer },
   { href: '/tasks', label: 'Tasks', icon: ListChecks },
   { href: '/circles', label: 'Community', icon: MessagesSquare },
-  { href: '/culinary/price-catalog', label: 'Price Catalog', icon: Store },
+  { href: '/culinary/price-catalog', label: 'Food Catalog', icon: Store },
   { href: '/prices', label: 'Store Prices', icon: ShoppingCart },
 ]
 
