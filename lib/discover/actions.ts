@@ -466,6 +466,170 @@ export async function requestListingClaim(input: {
   return { success: true }
 }
 
+/**
+ * Claim a listing by fuzzy matching on business name + city + state.
+ * Used by the /discover/join page (outreach funnel).
+ * Public (no auth) - operators clicking from invitation email are not logged in.
+ */
+export async function claimListingByMatch(input: {
+  businessName: string
+  email: string
+  city: string
+  state?: string
+  phone?: string
+  website?: string
+  ref?: string
+}): Promise<{
+  success: boolean
+  listingId?: string
+  slug?: string
+  isNew?: boolean
+  error?: string
+}> {
+  if (!input.businessName.trim() || !input.email.trim()) {
+    return { success: false, error: 'Business name and email are required.' }
+  }
+
+  const db = createServerClient({ admin: true })
+
+  // Step 1: If ref param exists, try to decrypt to listing ID
+  if (input.ref) {
+    const { decryptRef } = await import('./outreach-campaign')
+    const listingId = decryptRef(input.ref)
+    if (listingId) {
+      const { data: listing } = await db
+        .from('directory_listings')
+        .select('id, status, slug')
+        .eq('id', listingId)
+        .maybeSingle()
+
+      if (listing && (listing as any).status === 'discovered') {
+        const result = await requestListingClaim({
+          listingId: (listing as any).id,
+          name: input.businessName.trim(),
+          email: input.email.trim(),
+          phone: input.phone,
+        })
+        if (result.success) {
+          // Mark outreach status
+          await db
+            .from('directory_listings')
+            .update({
+              outreach_status: 'claimed_via_outreach',
+            })
+            .eq('id', (listing as any).id)
+          return { success: true, listingId: (listing as any).id, slug: (listing as any).slug }
+        }
+      }
+    }
+  }
+
+  // Step 2: Tier 1 - Exact name + city + state match
+  const name = input.businessName.trim()
+  const city = input.city.trim()
+  const state = input.state?.trim() || null
+
+  let matchQuery = db
+    .from('directory_listings')
+    .select('id, name, slug, lead_score')
+    .eq('status', 'discovered')
+    .ilike('name', name)
+    .ilike('city', city)
+
+  if (state) matchQuery = matchQuery.eq('state', state)
+
+  const { data: exactMatches } = await matchQuery.limit(5)
+
+  if (exactMatches && exactMatches.length === 1) {
+    const match = exactMatches[0] as any
+    const result = await requestListingClaim({
+      listingId: match.id,
+      name: input.businessName.trim(),
+      email: input.email.trim(),
+      phone: input.phone,
+    })
+    if (result.success) {
+      await db
+        .from('directory_listings')
+        .update({
+          outreach_status: 'claimed_via_outreach',
+        })
+        .eq('id', match.id)
+      return { success: true, listingId: match.id, slug: match.slug }
+    }
+  }
+
+  // Step 3: Tier 2 - Loose match (strip apostrophes, case-insensitive)
+  const looseName = name.replace(/'/g, '')
+  let looseQuery = db
+    .from('directory_listings')
+    .select('id, name, slug, lead_score')
+    .eq('status', 'discovered')
+    .ilike('city', city)
+
+  if (state) looseQuery = looseQuery.eq('state', state)
+
+  const { data: looseMatches } = await looseQuery.limit(50)
+
+  if (looseMatches) {
+    const filtered = (looseMatches as any[]).filter(
+      (m: any) => m.name.replace(/'/g, '').toLowerCase() === looseName.toLowerCase()
+    )
+    if (filtered.length > 0) {
+      // Pick highest lead_score
+      filtered.sort((a: any, b: any) => (b.lead_score ?? 0) - (a.lead_score ?? 0))
+      const match = filtered[0]
+      const result = await requestListingClaim({
+        listingId: match.id,
+        name: input.businessName.trim(),
+        email: input.email.trim(),
+        phone: input.phone,
+      })
+      if (result.success) {
+        await db
+          .from('directory_listings')
+          .update({
+            outreach_status: 'claimed_via_outreach',
+          })
+          .eq('id', match.id)
+        return { success: true, listingId: match.id, slug: match.slug }
+      }
+    }
+  }
+
+  // Step 4: Tier 3 - No match. Create a new pending_submission listing.
+  const slug = slugify(name) + '-' + city.toLowerCase().replace(/\s+/g, '-')
+
+  const { data: newListing, error: insertError } = await db
+    .from('directory_listings')
+    .insert({
+      name: name,
+      slug,
+      city,
+      state,
+      email: input.email.trim(),
+      phone: input.phone || null,
+      website_url: input.website || null,
+      business_type: 'restaurant',
+      status: 'pending_submission',
+      source: 'outreach_join',
+    })
+    .select('id, slug')
+    .single()
+
+  if (insertError) {
+    console.error('[claimListingByMatch] Insert failed:', insertError)
+    return { success: false, error: 'Failed to create listing.' }
+  }
+
+  return {
+    success: true,
+    listingId: (newListing as any)?.id,
+    slug: (newListing as any)?.slug,
+    isNew: true,
+  }
+}
+
 export async function requestListingRemoval(input: {
   listingId: string
   reason: string

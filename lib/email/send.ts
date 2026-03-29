@@ -10,6 +10,7 @@ type SendEmailParams = {
   to: string | string[]
   subject: string
   react: ReactElement
+  from?: string
   replyTo?: string
   attachments?: Array<{
     filename: string
@@ -27,6 +28,7 @@ export async function sendEmail({
   to,
   subject,
   react,
+  from,
   replyTo,
   attachments,
 }: SendEmailParams): Promise<boolean> {
@@ -42,7 +44,7 @@ export async function sendEmail({
     // Circuit breaker: trips after 5 consecutive Resend failures (60s reset)
     const { error } = await breakers.resend.execute(() =>
       resend.emails.send({
-        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        from: from || `${FROM_NAME} <${FROM_EMAIL}>`,
         to,
         subject,
         react,

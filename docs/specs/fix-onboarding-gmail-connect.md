@@ -1,6 +1,6 @@
 # Spec: Fix Onboarding Gmail Connect Button
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** small (3 files)

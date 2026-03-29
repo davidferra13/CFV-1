@@ -1,6 +1,6 @@
 # Spec: Lead Engine Cartridge + ChefFlow Connector
 
-> **Status:** built (Workstream B only, ChefFlow side)
+> **Status:** verified (Workstream B only, ChefFlow side; Pi-side Workstream A pending)
 > **Priority:** P1 (next up)
 > **Depends on:** openclaw-cartridge-infrastructure (verified)
 > **Estimated complexity:** large (9+ files across Pi + ChefFlow)

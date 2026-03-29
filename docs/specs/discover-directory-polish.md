@@ -1,6 +1,6 @@
 # Spec: Discover Directory Polish
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P2 (queued)
 > **Depends on:** food-directory-import.md (built)
 > **Estimated complexity:** small (5 files modified, 0 files created)

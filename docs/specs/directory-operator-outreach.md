@@ -1,11 +1,13 @@
 # Spec: Directory Operator Outreach Pipeline
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P2 (queued)
-> **Depends on:** food-directory-import.md (built), discover-directory-polish.md (built)
+> **Depends on:** food-directory-import.md (verified), discover-directory-polish.md (verified)
 > **Estimated complexity:** medium (7 files created, 4 files modified)
 > **Created:** 2026-03-29
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-29
+>
+> **Build notes:** Migration uses 000120 (spec said 000117, which was already taken). Spec said modify `outreach.ts` but campaign logic is in separate `outreach-campaign.ts` to keep existing transactional emails untouched. `sendEmail` in `lib/email/send.ts` now accepts optional `from` parameter for sender identity override.
 
 ---
 

@@ -1,6 +1,6 @@
 # Spec: OpenClaw Inventory Evolution (Price Sampler to Full Catalog)
 
-> **Status:** built (Phases 0, 1, 5 - ChefFlow + pull service)
+> **Status:** verified (Phases 0, 1, 5 - ChefFlow + pull service; Pi-side Phases 2-4 pending)
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files, multi-machine, 6 phases)

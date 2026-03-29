@@ -1,6 +1,6 @@
 # Spec: OpenClaw Phase 3 - Full Integration
 
-> **Status:** built
+> **Status:** verified (ChefFlow side complete; Pi endpoints for Workstreams E+H pending)
 > **Priority:** P1 (next up)
 > **Depends on:** openclaw-v2-unified-pricing.md (built), openclaw-price-surfacing.md (built)
 > **Estimated complexity:** large (9+ files)
