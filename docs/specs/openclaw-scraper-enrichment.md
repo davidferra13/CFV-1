@@ -1,12 +1,11 @@
 # Spec: OpenClaw Scraper Enrichment (Images, Stock, Location Granularity, New Sources)
 
-> **Status:** in-progress
+> **Status:** in-progress (Phases 1, 2, 4, 5a, 5b complete. Phase 3, 5d, 5e, 5g, 5h remaining.)
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (12+ files on Pi)
 > **Created:** 2026-03-29
 > **Built by:** Claude Code session 2026-03-29
-> **Progress:** Phase 1 (image_url schema) DONE, Phase 4 (search terms 80->499) DONE, Phase 5a (OFF enricher) DONE, scrapers patched for image capture. Crontab v4 deployed. Phases 2 (stock), 3 (location), 5b-5h (new sources) remaining.
 > **Research:** `docs/research/openclaw-every-backdoor-recon.md`
 
 ---
@@ -23,144 +22,157 @@ The catalog is unusable as a real shopping tool without images (chefs need to se
 
 ---
 
-## Scope: Pi-Side Only
+## Scope: Pi-Side Only (with one sync exception)
 
-This spec covers ONLY changes to the OpenClaw price-intel codebase on the Raspberry Pi (`~/openclaw-prices/`). No ChefFlow app changes. The ChefFlow catalog UI spec (separate) consumes the enriched data this produces.
-
----
-
-## Phase 1: Image URL Capture
-
-### Schema Change
-
-Add `image_url` column to `current_prices` table:
-
-```sql
-ALTER TABLE current_prices ADD COLUMN image_url TEXT DEFAULT NULL;
-```
-
-Add to `db.mjs` in the `ensureSchema()` function alongside the existing `in_stock` migration pattern.
-
-### Scraper Changes
-
-**`scraper-instacart-bulk.mjs`** (highest value, most products):
-
-- During product extraction (the GraphQL response parsing and the Puppeteer fallback), capture the product image URL
-- GraphQL responses include `image_url` or `product.image.url` in the response payload
-- Puppeteer fallback: extract `img[src]` from the product card element
-- Pass `imageUrl` to the `upsertPrice()` call
-
-**`scraper-instacart.mjs`** (original scraper):
-
-- Same approach: extract image URL from product card during Puppeteer browsing
-- Pass to `upsertPrice()`
-
-**`scraper-hannaford.mjs`**:
-
-- Extract product image from the rendered page during JS scrape
-- Pass to `upsertPrice()`
-
-**`scraper-target.mjs`**:
-
-- Target's Redsky API returns image URLs in the product response. Extract and pass through.
-
-**`scraper-flipp.mjs`**:
-
-- Flipp API responses include flyer images. These are flyer clippings, not product photos. Still useful. Extract `image_url` from item response.
-
-### `db.mjs` Changes
-
-Update `upsertPrice()` function to accept and store `imageUrl` parameter:
-
-```javascript
-async upsertPrice({ sourceId, ingredientId, variantId, price, unit, ..., imageUrl }) {
-  // Add image_url to INSERT and UPDATE statements
-}
-```
-
-### Image Storage Strategy
-
-Store URLs only (not downloaded images). The images live on Instacart/retailer CDNs. This keeps the Pi's 104MB database small. If CDN URLs expire, the UI shows a fallback. If this becomes a problem, a future phase can add a cron job to download and cache images locally.
+This spec covers changes to the OpenClaw price-intel codebase on the Raspberry Pi (`~/openclaw-prices/`). The one exception: the sync pipeline (`sync-to-chefflow.mjs` and `sync-api.mjs`) must be updated to pass through the new columns so ChefFlow can consume them. The ChefFlow catalog UI itself is a separate spec (`catalog-ux-overhaul`).
 
 ---
 
-## Phase 2: Stock/Availability Capture
+## Completed (Deployed 2026-03-29)
 
-### Schema
+Everything below is live on Pi. Do not rebuild.
 
-The `in_stock` column already exists on `current_prices` (0=out, 1=in). No schema change needed. Currently defaults to 1 everywhere.
+### Phase 1: Image URL Capture - DONE
 
-### Scraper Changes
+**Schema deployed:**
 
-**`scraper-instacart-bulk.mjs`**:
+- `image_url TEXT DEFAULT NULL` added to `current_prices`
+- `location_id TEXT DEFAULT NULL` added to `current_prices`
+- `off_image_url`, `off_barcode`, `off_nutrition_json` added to `canonical_ingredients`
+- All via migration in `db.mjs` `migrateSchema()` function
 
-- Instacart marks out-of-stock items in both GraphQL responses and rendered pages
-- GraphQL: check for `available`, `in_stock`, or `out_of_stock` field in product response
-- Puppeteer: check for "Out of stock" badge or disabled "Add to cart" button
-- Pass `inStock: 0` or `inStock: 1` to `upsertPrice()`
+**`upsertPrice()` updated:**
 
-**`scraper-instacart.mjs`**:
+- Accepts `imageUrl` parameter
+- INSERT includes `image_url` column
+- UPDATE uses `image_url = COALESCE(?, image_url)` (preserves existing if new value is null)
 
-- Same approach via Puppeteer extraction
+**Scrapers patched for image capture:**
 
-**`scraper-hannaford.mjs`**:
+| Scraper                      | Image source                                                                                   | Status                                 |
+| ---------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `scraper-instacart-bulk.mjs` | `obj.imageUrl`, `obj.image`, `obj.thumbnailUrl`, `viewSection.itemImage.url` from GraphQL walk | Done                                   |
+| `scraper-walmart.mjs`        | `item.imageInfo.thumbnailUrl` or `item.imageInfo.url` from `__NEXT_DATA__` SSR JSON            | Done                                   |
+| `scraper-stopsandshop.mjs`   | `img` element `src` from Puppeteer product card                                                | Done, `imageUrl` passed to upsertPrice |
+| `scraper-target.mjs`         | Not yet patched (Redsky API has image URLs, needs extraction)                                  | TODO                                   |
+| `scraper-flipp.mjs`          | Not yet patched (flyer clipping images available)                                              | TODO                                   |
 
-- Check for "Out of Stock" or "Unavailable" indicators on product pages
+**Image storage strategy:** URLs only (not downloaded images). CDN-hosted images keep the Pi database small. If CDN URLs expire, the UI shows a fallback placeholder. If expiry becomes a problem, a future phase can download and cache locally.
 
-**Other scrapers** (Flipp, Target, Government):
+**Image fallback chain (for ChefFlow UI to implement):**
 
-- Flipp: flyer items are inherently "available this week." Set `inStock: 1` for active flyers, `inStock: 0` for expired.
-- Target: Redsky API may include `available_to_promise` field. Extract if present.
-- Government: N/A (regional averages, no stock concept). Leave as default.
+1. `current_prices.image_url` (store-specific product photo from scraper)
+2. `canonical_ingredients.off_image_url` (generic product photo from Open Food Facts)
+3. Placeholder image
 
-### Staleness Rule
+### Phase 4: Expanded Search Terms - DONE
 
-Add to `watchdog.mjs`: if a price record's `last_confirmed_at` is older than 7 days and the source is a direct scraper (not government), set `in_stock = 0`. Rationale: if we haven't confirmed an item exists in over a week, we should not claim it's available. The next successful scrape resets it to 1.
+- Created `config/search-terms.json` with 499 terms across 15 categories (produce_fruit, produce_vegetable, fresh_herbs, meat_poultry, seafood, dairy_eggs, pantry_grain, pantry_canned, oil_vinegar_sauce, spices, baking, nuts_dried, frozen, beverage, tofu_plant)
+- `scraper-instacart-bulk.mjs` patched: `loadSearchTerms()` reads from config file at startup, falls back to 33-term hardcoded array if file missing
+- Confirmed: scraper loads all 499 terms on startup
+
+### Phase 5a: Open Food Facts Enricher - DONE
+
+- Created `services/enricher-openfoodfacts.mjs`
+- Searches OFF by ingredient name via `/cgi/search.pl` endpoint
+- Stores: `off_image_url`, `off_barcode`, `off_nutrition_json` (energy_kcal, fat, carbs, protein, fiber, sodium per 100g)
+- Rate limited to ~85 req/min (700ms delay between requests)
+- Stops after 10 consecutive errors (resilient to temporary API outages)
+- Marks checked-but-not-found ingredients with `off_image_url = 'none'`
+
+**Known issue: OFF returns 503 as of 2026-03-29.** The enricher handles this gracefully (stops after 10 errors). It will succeed on the next cron run when OFF recovers. However, there's a bug: if OFF is down for the entire run, all 11K ingredients get marked `'none'` and are never re-checked. See Phase 5a-fix below.
+
+### Phase 5b: Instacart Expansion - DONE
+
+Shaw's was already in the STORES array. Hannaford was already in STORES but not scheduled in cron. Both now resolved:
+
+- Shaw's: in even-day Instacart rotation
+- Hannaford: added to odd-day Instacart rotation
+- `--max` increased from 300 to 2000 per store
+- Search terms: 80 -> 499 (via Phase 4)
+
+### Crontab v4 - DEPLOYED
+
+20 active cron jobs. Key changes from v3:
+
+- Instacart `--max=2000` (was 300)
+- Hannaford added to odd-day Instacart rotation
+- `scraper-walmart.mjs` added daily at 6:30 AM (existed but was never scheduled)
+- `scraper-stopsandshop.mjs` added Tue/Thu/Sat at 7 AM (existed but was never scheduled)
+- `enricher-openfoodfacts.mjs` added Sundays at 12 PM
 
 ---
 
-## Phase 3: Store-Location Granularity
+## Remaining Work
 
-### Concept
+### Phase 5a-fix: OFF Enricher Retry Logic (quick fix)
 
-Currently one `source_registry` entry per chain. Change to one entry per physical store location. A single Instacart scraper run for "Market Basket" with zip 01835 creates prices under source "market-basket-haverhill". A run with zip 01852 creates prices under "market-basket-lowell".
+**Problem:** The enricher marks items `off_image_url = 'none'` when not found, which is also what happens when OFF is unreachable (503). If OFF is down for a full run, thousands of ingredients get permanently marked as "no match" when they were never actually checked.
 
-### Schema Change
+**Fix:**
 
-Add `location_id` column to `current_prices`:
+- Distinguish between "OFF confirmed no results" (`'none'`) and "OFF was unreachable" (leave `NULL`)
+- Only set `'none'` when the API returned 200 with zero matching products
+- On non-200 responses or network errors, skip the ingredient (leave `NULL` for retry next week)
+- The current `markChecked` statement already handles the `'none'` case; just don't call it on API failures
 
-```sql
-ALTER TABLE current_prices ADD COLUMN location_id TEXT DEFAULT NULL;
-```
+**Files:** `services/enricher-openfoodfacts.mjs` (lines 106-114, the error handling block)
 
-The `source_registry` already has address/city/state/zip/lat/lon columns. They just need to be populated.
+### Phase 2: Stock/Availability Capture
 
-### Location Registry
+**Schema:** The `in_stock` column already exists on `current_prices` (0=out, 1=in). No schema change needed. Currently defaults to 1 everywhere (a lie).
 
-Create `config/locations.json` defining the store locations to scrape:
+**Scraper changes:**
+
+| Scraper                      | How to detect stock                                                                                                                                        | Effort |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `scraper-instacart-bulk.mjs` | GraphQL: check `available`, `in_stock`, `out_of_stock` fields in the JSON walk. Puppeteer: check for "Out of stock" badge or disabled "Add to cart" button | Medium |
+| `scraper-walmart.mjs`        | `__NEXT_DATA__` SSR JSON includes `availabilityStatusV2` or `availabilityStatus` on items. Extract and map to boolean                                      | Low    |
+| `scraper-stopsandshop.mjs`   | Puppeteer: check for "Out of Stock" badge or "Unavailable" text on product card                                                                            | Low    |
+| `scraper-target.mjs`         | Redsky API includes `available_to_promise_quantity` field. `> 0` = in stock                                                                                | Low    |
+| `scraper-flipp.mjs`          | Flyer items are inherently "available this week." Set `inStock: 1` for active flyers. When flyer expires, don't set to 0 (let staleness rule handle it)    | Skip   |
+| Government scrapers          | N/A (regional averages, no stock concept). Leave default                                                                                                   | Skip   |
+
+**Staleness rule (add to `watchdog.mjs`):**
+
+- If `last_confirmed_at` is older than 7 days AND source is a direct scraper (not government), set `in_stock = 0`
+- Rationale: if we haven't confirmed an item exists in over a week, we should not claim it's available
+- The next successful scrape resets it to 1
+- Government/wholesale sources exempt (they report monthly/quarterly)
+
+### Phase 3: Store-Location Granularity
+
+**Schema:** `location_id` column already exists on `current_prices` (added in Phase 1 migration). Needs to be populated.
+
+**The hard part (Instacart):** Instacart determines store location via cookies and geolocation, not URL parameters. Switching locations requires:
+
+1. Set a new delivery address in the Instacart session (Puppeteer interaction)
+2. Re-scrape with the new location context
+3. Each location = a new Puppeteer session = ~2-5 min setup overhead per location
+
+This means 3 locations x 4 stores = 12 sessions per odd/even day, significantly increasing scrape time. Current single-location runs take ~30-60 min per rotation. Multi-location could push to 2-3 hours.
+
+**Mitigation:** Start with just 2 locations (Haverhill + one other in Merrimack Valley). Expand only after confirming time/load is acceptable.
+
+**Location registry:** Create `config/locations.json`:
 
 ```json
 {
   "regions": [
     {
       "name": "Merrimack Valley",
-      "zip_codes": ["01835", "01830", "01832"],
+      "zip_codes": ["01835", "01830", "01844"],
       "priority": 1
     },
     {
       "name": "Greater Boston",
-      "zip_codes": ["02101", "02134", "02139"],
+      "zip_codes": ["02101", "02134"],
       "priority": 2
     },
     {
       "name": "Southern NH",
       "zip_codes": ["03103", "03060"],
       "priority": 2
-    },
-    {
-      "name": "Southern Maine",
-      "zip_codes": ["04101"],
-      "priority": 3
     }
   ],
   "stores": {
@@ -168,215 +180,219 @@ Create `config/locations.json` defining the store locations to scrape:
       "chain": "Market Basket",
       "instacart_slug": "market-basket",
       "locations": [
-        { "name": "Market Basket Haverhill", "zip": "01835", "store_id": null },
-        { "name": "Market Basket Lowell", "zip": "01852", "store_id": null },
-        { "name": "Market Basket Methuen", "zip": "01844", "store_id": null }
+        { "name": "Market Basket Haverhill", "zip": "01835", "location_id": "mb-haverhill" },
+        { "name": "Market Basket Methuen", "zip": "01844", "location_id": "mb-methuen" }
       ]
     }
   }
 }
 ```
 
-Start with the developer's area (Haverhill/Merrimack Valley) and expand outward by priority.
+**Scraper changes:**
 
-### Scraper Changes
+- `scraper-instacart-bulk.mjs`: Add `--location=01835` CLI flag. For each store, set delivery address to the target zip before scraping. Tag all prices with `location_id`. Register separate `source_registry` entries per location (e.g., "market-basket-haverhill-instacart").
+- `scraper-flipp.mjs`: Cycle through zip codes from `locations.json`. Register sources per location.
+- `scraper-walmart.mjs`: Already store-specific (store #2153 Methuen). Add `location_id` to upsertPrice call using existing store info.
+- `scraper-target.mjs`: Already store-specific (#1290 Methuen). Add `location_id` similarly.
 
-**`scraper-instacart-bulk.mjs`**:
-
-- Instead of one hardcoded geolocation, loop through `locations.json` entries
-- For each store+location combo, set the appropriate zip/geo and scrape
-- Register a separate `source_registry` entry per location (e.g., "market-basket-haverhill")
-- Tag prices with `location_id`
-
-**`scraper-flipp.mjs`**:
-
-- Instead of one postal code, cycle through zip codes from `locations.json`
-- Register sources per location
-
-**Cron impact:**
-
-- More locations = more scraper runs = more time. Current scraper schedule has plenty of gaps.
-- Start with 3-5 locations for the top stores, monitor Pi load, expand.
-
-### Sync API Changes
-
-Update `sync-api.mjs` endpoints to support location filtering:
+**Sync API changes:**
 
 - `/api/ingredients?location=haverhill` returns prices for that location
 - `/api/ingredients?store=market-basket&location=haverhill` combined filter
-- Existing endpoints continue to work (no location filter = all locations aggregated, cheapest shown)
+- No location filter = all locations aggregated, cheapest price shown (backward compatible)
 
----
-
-## Phase 4: Expanded Search Terms
-
-### Current State
-
-The Instacart bulk scraper searches 80 food terms. This misses huge categories.
-
-### Expansion
-
-Create `config/search-terms.json` with 250+ terms organized by category:
-
-- **Produce (50+):** apple, banana, avocado, tomato, lettuce, spinach, kale, arugula, cilantro, basil, thyme, rosemary, potato, sweet potato, onion, garlic, shallot, ginger, lemon, lime, orange, grapefruit, berry, strawberry, blueberry, raspberry, mushroom, pepper, jalapeno, serrano, habanero, corn, broccoli, cauliflower, asparagus, green bean, zucchini, squash, eggplant, celery, carrot, radish, turnip, beet, cabbage, brussels sprout, artichoke, fennel, leek, scallion...
-- **Protein (40+):** chicken breast, chicken thigh, whole chicken, ground beef, ribeye, sirloin, filet mignon, pork chop, pork tenderloin, bacon, sausage, ground turkey, lamb, duck, salmon, tuna, shrimp, scallop, lobster, crab, cod, halibut, swordfish, mahi mahi, tilapia, clam, mussel, oyster, tofu, tempeh...
-- **Dairy (20+):** milk, cream, butter, egg, cheese, cheddar, mozzarella, parmesan, goat cheese, cream cheese, sour cream, yogurt, heavy cream, half and half, whipping cream, brie, gruyere, ricotta, mascarpone, cottage cheese...
-- **Pantry (40+):** flour, sugar, salt, olive oil, vegetable oil, coconut oil, sesame oil, vinegar, soy sauce, fish sauce, worcestershire, hot sauce, honey, maple syrup, vanilla extract, baking soda, baking powder, yeast, cornstarch, breadcrumbs, panko, pasta, rice, quinoa, couscous, lentil, black bean, chickpea, kidney bean, canned tomato, tomato paste, coconut milk, stock, broth...
-- **Spices (30+):** black pepper, cumin, paprika, chili powder, cayenne, cinnamon, nutmeg, clove, cardamom, turmeric, coriander, oregano, thyme, bay leaf, red pepper flake, garlic powder, onion powder, smoked paprika, curry powder, garam masala, za'atar, sumac, saffron, vanilla bean, mustard seed, fennel seed, celery seed, white pepper, allspice, star anise...
-- **Beverages/Other (20+):** coffee, tea, sparkling water, wine, beer, spirits for cooking...
-
-### Cron Update
-
-Split the expanded terms across the existing cron schedule. Odd/even day split already exists for Instacart stores. Add a term rotation: A-M terms on odd days, N-Z on even days, to avoid overwhelming any single store.
-
----
-
-## Verification Steps
-
-1. SSH into Pi, verify `image_url` column exists on `current_prices`
-2. Run Instacart bulk scraper manually for one store, verify image URLs are populated
-3. Verify `in_stock` field is actually 0 for out-of-stock items (find a known out-of-stock item on Instacart, check DB)
-4. Verify sync-api returns image_url and in_stock in API responses
-5. Verify location-based source entries appear in `source_registry`
-6. Run `watchdog.mjs`, verify stale items get `in_stock = 0`
-7. Check Pi load after expanded scraper run stays under 0.5
-
----
-
-## Phase 5: New Data Sources (From Recon Report)
-
-Full details in `docs/research/openclaw-every-backdoor-recon.md`. Build in this order:
-
-### 5a. Open Food Facts Enrichment (FREE, images for 60%+ of catalog)
-
-New script: `enricher-openfoodfacts.mjs`
-
-- API: `https://world.openfoodfacts.org/api/v2/product/{barcode}` (no auth needed)
-- Iterate through `canonical_ingredients`, fuzzy-match by product name
-- Pull: front image URL, ingredient list, nutrition data, barcode
-- Store in new columns on `canonical_ingredients`: `off_image_url`, `off_barcode`, `off_nutrition_json`
-- Run weekly (Sunday). Rate limit: 100 req/min (be polite).
-- This is the fastest way to get images on the catalog without touching any scraper.
-
-### 5b. Instacart Expansion (add Shaw's, increase limits)
-
-Update `scraper-instacart-bulk.mjs`:
-
-- Add Shaw's (`shaws`) to the store list
-- Increase `max` from 500 to 2000 per store
-- Increase search terms from 80 to 250+ (load from `config/search-terms.json`)
-- Estimated gain: +3K-5K new items
-
-### 5c. Walmart API (official, free, no headless browser)
-
-New script: `scraper-walmart-api.mjs`
-
-- Sign up at developer.walmartlabs.com for free API key
-- Endpoints: Product Search, Product Lookup by UPC, Store Finder
-- Returns: name, price, images, availability, UPC, description, store-specific data
-- Target stores: Methuen, Plaistow NH, Salem NH
-- Run daily. Clean REST API, no Puppeteer needed.
-- Estimated gain: +2K-3K items
-
-### 5d. Target Expansion (multi-store)
+### Phase 5d: Target Multi-Store Expansion
 
 Update `scraper-target.mjs`:
 
 - Currently hard-coded to store #1290 (Methuen)
 - Add store IDs for: Salem NH, Tewksbury, North Andover, Nashua NH
-- Use Target's store locator API to discover IDs by zip
-- Same Redsky API, just loop through stores
+- Use Target's store locator API to discover IDs by zip: `https://redsky.target.com/redsky_aggregations/v1/web/nearby_stores_v1?zip={zip}`
+- Same Redsky API, loop through stores
+- Tag with `location_id`
 - Estimated gain: +500-1K items (mostly location-specific availability data)
 
-### 5e. Trader Joe's Scraper (NEW)
+### Phase 5e: Trader Joe's Scraper (NEW)
 
 New script: `scraper-traderjoes.mjs`
 
-- Reference: github.com/jackgisel/traderjoeapi, Apify scraper
-- TJ's website serves product catalog. Needs Puppeteer (403s basic requests).
-- Capture: product name, price, SKU, image URL, category, tags
-- Run weekly (TJ's inventory is stable)
-- Estimated gain: +1K-2K exclusive TJ's items
+- TJ's website (`traderjoes.com/home/products/category/...`) serves product catalog
+- 403s basic HTTP requests; needs Puppeteer with stealth plugin
+- Reference: github.com/jackgisel/traderjoeapi for endpoint patterns
+- Capture: product name, price, SKU, image URL, category
+- TJ's doesn't do store-specific pricing (uniform national pricing), so one run covers all NE locations
+- Run weekly (TJ's inventory is stable, rotates seasonally)
+- Schedule: Wednesday 8 AM (light day in current cron)
+- Estimated gain: +1K-2K exclusive TJ's items not available elsewhere
 
-### 5f. Stop & Shop Direct Scrape (NEW)
-
-New script: `scraper-stopandshop.mjs`
-
-- stopandshop.com has full e-commerce with internal JSON APIs
-- Reference: github.com/blaskovicz/go-stopandshop for endpoint patterns
-- Use Puppeteer to capture session token, then make direct API calls
-- Product search, category browsing, store-specific pricing
-- Returns: name, price, images, availability, UPC
-- Run daily
-- Estimated gain: +3K-5K items
-
-### 5g. Open Grocery Database Import (UPC cross-referencing)
+### Phase 5g: Open Grocery Database Import (UPC cross-referencing)
 
 One-time script: `import-open-grocery-db.mjs`
 
 - Download from grocery.com/open-grocery-database-project/ (7MB XLS)
 - 100K+ UPC-to-product mappings
-- Create `upc_registry` table: `upc TEXT PRIMARY KEY, brand TEXT, product_name TEXT`
-- Cross-reference with existing products to deduplicate across stores
+- Create `upc_registry` table: `upc TEXT PRIMARY KEY, brand TEXT, product_name TEXT, category TEXT`
+- Cross-reference with existing products by UPC (from OFF barcodes, Walmart, Target) to deduplicate across stores
+- Enables: "this $3.99 item at Walmart is the same as this $4.29 item at Stop & Shop"
 
-### 5h. USDA FoodData Central Enrichment
+### Phase 5h: USDA FoodData Central Enrichment
 
 New script: `enricher-usda-fdc.mjs`
 
-- API: `https://api.nal.usda.gov/fdc/v1/` (free, API key required)
-- 400K+ branded food products with UPCs, nutrition, ingredients
-- Run monthly. Enrichment only.
+- API: `https://api.nal.usda.gov/fdc/v1/` (free, API key required, sign up at fdc.nal.usda.gov)
+- 400K+ branded food products with UPCs, detailed nutrition, ingredient lists
+- Cross-reference by UPC or fuzzy name match against `canonical_ingredients`
+- Store nutrition data in `off_nutrition_json` (supplement/replace OFF data where USDA is more complete)
+- Run monthly (USDA data updates quarterly)
 
 ---
 
-## Updated Cron Schedule (After All Phases)
+## Sync Pipeline Update (Required for ChefFlow to consume new data)
+
+The nightly sync (`sync-to-chefflow.mjs`) and the sync API (`sync-api.mjs` on port 8081) need to pass through the new columns. Without this, ChefFlow can't display images, stock status, or location data even though the Pi has it.
+
+**`sync-api.mjs` changes:**
+
+- `/api/ingredients` response must include `image_url`, `in_stock`, `location_id` from `current_prices`
+- `/api/ingredients` response must include `off_image_url`, `off_barcode`, `off_nutrition_json` from `canonical_ingredients`
+- Add location filter support: `?location=haverhill`
+- Add stock filter: `?in_stock=1` (default: show all, let ChefFlow decide display)
+
+**`sync-to-chefflow.mjs` changes:**
+
+- Include new columns in the nightly sync payload
+- ChefFlow's `/api/cron/price-sync` endpoint must accept and store them (this is a ChefFlow-side change, noted here for completeness)
+
+---
+
+## Data Quality Safeguards
+
+### Image URL Validation
+
+- Before storing an image URL, verify it starts with `https://` and is from a known CDN domain (instacart, walmart, target, openfoodfacts, etc.)
+- Reject data: URIs, blob: URIs, SVG placeholders, and tracking pixels (< 100 bytes)
+- If a stored URL returns 404 on consecutive scraper runs, clear it
+
+### Stock Status Accuracy
+
+- Never set `in_stock = 0` based on a single failed scrape (could be transient)
+- Require 2 consecutive "not found" scrapes before marking out of stock
+- Government/wholesale sources never get stock status changes (they report averages)
+
+### Rollback Plan
+
+- If a scraper starts returning garbage data (wrong images, corrupted prices), the watchdog should detect anomalous change rates (>50% of a source's prices changing in one run = suspicious)
+- Existing anomaly detection in `aggregator.mjs` already flags unusual price swings
+- Emergency: disable a scraper by commenting it out of crontab, not by deleting the script
+
+---
+
+## Verification Steps
+
+### Already Verified (2026-03-29)
+
+1. All 5 new columns exist in SQLite schema (confirmed via PRAGMA table_info)
+2. `scraper-instacart-bulk.mjs` loads 499 search terms from config (confirmed via import test)
+3. All modified scrapers pass `node --check` syntax validation
+4. Crontab v4 installed with 20 active jobs
+
+### Needs Verification (next scraper run)
+
+1. Run Instacart bulk scraper manually for one store (`--max=10`), verify `image_url` is populated on new price records
+2. Run Walmart scraper manually, verify `image_url` from `__NEXT_DATA__` is captured
+3. Run OFF enricher manually when API recovers from 503, verify `off_image_url` populated on canonical_ingredients
+4. Verify sync-api returns new columns in API responses
+5. Check Pi load after a full expanded scraper run stays under 0.5
+
+### After Phase 2
+
+6. Verify `in_stock = 0` for known out-of-stock items (check against Instacart website)
+7. Run `watchdog.mjs`, verify staleness rule marks old items out of stock
+
+### After Phase 3
+
+8. Verify location-specific source entries appear in `source_registry`
+9. Verify same product at two locations has two separate price records with different `location_id`
+
+---
+
+## Current Crontab v4 (Live on Pi)
 
 ```
-# DAILY
-0 1 * * *   scraper-government.mjs
-0 2 * * *   scraper-walmart-api.mjs
-0 3 * * *   scraper-flipp.mjs
-0 4 * * *   scraper-wholefoodsapfresh.mjs
-0 5 * * *   scraper-target.mjs
-0 6 * * *   scraper-stopandshop.mjs
+# OpenClaw Price Intelligence - Scraper Schedule v4
+# Updated 2026-03-29
 
-# INSTACART (ALTERNATING DAYS)
-30 7 1-31/2 * *  scraper-instacart-bulk.mjs --stores=market-basket,aldi,stop-and-shop,shaws --max=2000
-30 7 2-30/2 * *  scraper-instacart-bulk.mjs --stores=costco,bjs,whole-foods,hannaford --max=2000
+# Government data - Weekly Monday 2 AM
+0 2 * * 1     scraper-government.mjs
 
-# TWICE WEEKLY
-0 8 * * 1,4   scraper-hannaford.mjs
-0 8 * * 2,5   scraper-traderjoes.mjs
+# Flipp API - Daily 3 AM
+0 3 * * *     scraper-flipp.mjs
 
-# WEEKLY
-30 9 * * 3   scraper-wholesale.mjs
-0 10 * * 0   enricher-openfoodfacts.mjs
+# Cross-match round 1 - Daily 4 AM
+0 4 * * *     cross-match.mjs
 
-# PROCESSING
-0 9 * * *    cross-match.mjs
-0 10 * * *   aggregator.mjs
-*/15 * * * * watchdog.mjs
-*/30 * * * * receipt-processor.mjs batch
+# Whole Foods - Daily 5 AM
+0 5 * * *     scraper-wholefoodsapfresh.mjs
 
-# SYNC + MAINTENANCE
-0 23 * * *   sync-to-chefflow.mjs
-0 0 * * 0    log rotation
+# Target Redsky - Daily 6 AM
+0 6 * * *     scraper-target.mjs
+
+# Walmart HTTP - Daily 6:30 AM
+30 6 * * *    scraper-walmart.mjs
+
+# Stop & Shop + Shaws direct - Tue/Thu/Sat 7 AM
+0 7 * * 2,4,6 scraper-stopsandshop.mjs
+
+# Instacart Bulk - Odd days: Market Basket + Hannaford + Aldi + Stop & Shop (max=2000)
+30 7 1-31/2 * * scraper-instacart-bulk.mjs --stores=market-basket,hannaford,aldi,stop-and-shop --max=2000
+
+# Instacart Bulk - Even days: Shaws + Costco + BJs + Whole Foods (max=2000)
+30 7 2-30/2 * * scraper-instacart-bulk.mjs --stores=shaws,costco,bjs-wholesale-club,whole-foods --max=2000
+
+# Cross-match round 2 - Daily 9 AM
+0 9 * * *     cross-match.mjs
+
+# Wholesale - Wednesday 9:30 AM
+30 9 * * 3    scraper-wholesale.mjs
+
+# Aggregator - Daily 10 AM
+0 10 * * *    aggregator.mjs
+
+# OFF Enrichment - Sunday 12 PM
+0 12 * * 0    enricher-openfoodfacts.mjs
+
+# Watchdog - Every 15 min
+*/15 * * * *  watchdog.mjs
+
+# Receipt processing - Every 30 min
+*/30 * * * *  receipt-processor.mjs batch
+
+# ChefFlow sync - 11 PM
+0 23 * * *    sync-to-chefflow.mjs
+
+# Log rotation - Sunday midnight
+0 0 * * 0     log rotation
 ```
 
-**Estimated final catalog:** 25K-35K items (up from 11K). ~70-80% of New England purchasable inventory.
+### Future Cron Additions (after remaining phases built)
+
+| Phase | Script                   | Schedule           | Notes                    |
+| ----- | ------------------------ | ------------------ | ------------------------ |
+| 5e    | `scraper-traderjoes.mjs` | Wednesday 8 AM     | Weekly, stable inventory |
+| 5h    | `enricher-usda-fdc.mjs`  | 1st of month, 2 AM | Monthly, enrichment only |
 
 ---
 
 ## Out of Scope
 
-- ChefFlow UI changes (separate spec: catalog-ux-overhaul)
-- Wholesale distributor APIs (requires membership, separate discussion)
-- Specialty/ethnic store scrapers (requires physical visits, long-term)
+- ChefFlow catalog UI changes (separate spec: `catalog-ux-overhaul`)
+- Wholesale distributor APIs (requires paid membership accounts)
+- Specialty/ethnic store scrapers (requires physical store visits for API recon)
 - Image downloading/caching (URLs only for now)
 - Receipt scanning improvements (existing system works, separate scope)
-- Anomaly backlog cleanup (separate task)
-- Costco Akamai bypass (attempt separately, high risk of failure)
-- Market Basket aisle walk (physical task, not automatable)
+- Anomaly backlog cleanup (23K unacked anomalies, separate task)
+- Costco direct scrape (Akamai bot protection, extremely high failure risk)
+- Market Basket direct scrape (no e-commerce site, Instacart only)
 
 ---
 
@@ -386,11 +402,10 @@ New script: `enricher-usda-fdc.mjs`
 - Test scrapers manually before updating cron: `cd ~/openclaw-prices && node services/scraper-instacart-bulk.mjs --stores=market-basket --max=10`
 - The Pi has 78GB free storage and 6.3GB available RAM. No resource constraints.
 - Current Pi load is 0.07. We have massive headroom.
-- `db.mjs` is the single source of truth for schema and upsert logic.
-- After all changes, run a snapshot: `bash F:/OpenClaw-Vault/swap.sh snapshot`
+- `db.mjs` is the single source of truth for schema and upsert logic. All column migrations live in `migrateSchema()`.
+- After all changes, run a vault snapshot: `bash F:/OpenClaw-Vault/swap.sh snapshot`
 - Do NOT modify cron jobs without running the new scrapers manually first to confirm they work.
 - Read `docs/research/openclaw-every-backdoor-recon.md` for full context on every data source.
-- Build Phase 5 sources in order (5a through 5h). Each one is independent and can be tested alone.
-- For Walmart API: sign up at developer.walmartlabs.com first, get API key, store in Pi env vars.
-- For Trader Joe's: reference the open-source repos. TJ's blocks non-browser requests. Use Puppeteer with stealth.
-- For Stop & Shop: use browser DevTools on stopandshop.com to capture current API endpoints before building.
+- The Walmart API (developer.walmartlabs.com) was in the original spec but is NOT needed. The existing `scraper-walmart.mjs` uses HTTP SSR parsing and works. Only pursue the official API if the HTML scraper gets blocked.
+- For Trader Joe's: reference open-source repos (github.com/jackgisel/traderjoeapi). TJ's blocks non-browser requests. Use Puppeteer with stealth plugin.
+- The `scraper-instacart.mjs` (original, non-bulk) still exists but is superseded by `scraper-instacart-bulk.mjs`. Don't patch the old one.
