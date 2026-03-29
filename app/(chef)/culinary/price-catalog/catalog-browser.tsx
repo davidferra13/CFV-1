@@ -461,7 +461,7 @@ export function CatalogBrowser() {
 
       {/* Store Aisle view is self-contained */}
       {viewMode === 'store-aisle' ? (
-        <StoreAisleBrowser />
+        <StoreAisleBrowser onAddToCart={handleAddToCart} cartItemIds={cartItemIds} />
       ) : (
         <>
           {/* ---- Filter Bar ---- */}
