@@ -3,7 +3,7 @@
 > **Status:** ready
 > **Priority:** P1 (next up)
 > **Depends on:** none
-> **Estimated complexity:** large (50+ files across 13 phases)
+> **Estimated complexity:** large (60+ files across 14 phases)
 > **Created:** 2026-03-29
 > **Built by:** not started
 
@@ -992,6 +992,284 @@ This flywheel only works if the system is honest about its limitations. Showing 
 8. Verify quarantine view shows any misclassified platform emails
 9. Reclassify a quarantine email as inquiry, verify inquiry is created
 10. Verify platform health check cron alerts when no emails received in 7+ days
+
+---
+
+## Phase 14: Unified Email Feed, Smart Spam, Scam Detection & Opportunities Bucket
+
+**Goal:** Give the chef a single place to see EVERYTHING ChefFlow captured from their inbox, categorized with surgical precision. The raw feed is the ultimate proof: "We see every email. Here's what we did with each one." Spam isn't hidden; it's showcased (tucked away) as evidence of thoroughness. Scam booking attempts are flagged before the chef wastes time. And a whole new class of email (sponsorship, partnerships, collaborations) gets its own home instead of being lost or misclassified.
+
+### Why This Phase Exists
+
+The chef's #1 adoption barrier is: "Did ChefFlow actually catch everything?" Phase 13 provides metrics and reconciliation prompts. Phase 14 provides the RAW PROOF. The chef can open the unified feed, scroll through, and see every single food-related email from the past week with ChefFlow's classification stamp on each one. If something was miscategorized, they fix it in one click. If a scam slipped through as a real inquiry, the scam detection flags would have caught it. If a sponsorship email got buried in marketing, the opportunities bucket recovers it.
+
+This is the "I never need to check my Gmail again" phase.
+
+### 14a: Enhanced Classification Categories
+
+The current classifier (`lib/gmail/classify.ts`) uses 5 categories: `inquiry`, `existing_thread`, `personal`, `spam`, `marketing`. This phase adds granular sub-classification for non-inquiry emails, stored as a new `sub_category` field.
+
+**New sub-categories (stored alongside the primary category):**
+
+| Primary Category | Sub-Category          | What It Catches                                                                                                                  |
+| ---------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `spam`           | `scam_booking`        | Fake dinner requests, phishing disguised as inquiries, too-good-to-be-true events                                                |
+| `spam`           | `vendor_solicitation` | "We'd love to supply your kitchen," wholesale cold outreach, equipment sales pitches                                             |
+| `spam`           | `aggregator_spam`     | Catering aggregator sites scraping chef profiles and sending fake leads                                                          |
+| `marketing`      | `platform_admin`      | Platform receipts, profile updates, "your listing was viewed X times," account alerts                                            |
+| `marketing`      | `platform_marketing`  | Platform newsletters, "boost your profile," seasonal promotions from platforms                                                   |
+| `marketing`      | `industry_newsletter` | Food industry newsletters, culinary publications, trade org updates                                                              |
+| `personal`       | `opportunity`         | Sponsorship offers, brand partnerships, collaboration requests, media/press, event invites to participate (not to cook for hire) |
+| `personal`       | `vendor_relationship` | Existing supplier communications, wholesale account updates, delivery notifications from regular vendors                         |
+
+**Why sub-categories instead of new primary categories:** Backward compatibility. Every piece of code that reads `classification` from `gmail_sync_log` continues working. The `sub_category` is additive. The unified feed uses it for smart grouping; everything else ignores it.
+
+### 14b: Scam Booking Detection (Formula-First)
+
+Fake booking inquiries waste the chef's most valuable resource: time. A chef who spends 20 minutes crafting a custom menu proposal for a scam loses trust in the whole pipeline. Scam detection must be deterministic (Formula > AI), running as a new sub-layer within Layer 4.5 of the classifier.
+
+**Scam Red Flags (each adds to a scam_score):**
+
+| Red Flag                                                                                         | Score | Why                                             |
+| ------------------------------------------------------------------------------------------------ | ----- | ----------------------------------------------- |
+| Generic event description + no specific date                                                     | +1    | Real clients mention dates; scammers stay vague |
+| Unrealistic guest count for the inquiry type (200 guests for "intimate dinner")                  | +1    | Mismatch between occasion language and scale    |
+| Email address is less than 30 days old (heuristic: free email + no prior history)                | +1    | New throwaway accounts                          |
+| Mentions payment method upfront before any discussion ("I'll pay by check/wire")                 | +2    | Classic advance-fee scam pattern                |
+| Asks chef to procure unusually expensive ingredients or equipment                                | +1    | Overpayment scam setup                          |
+| Budget is dramatically above market rate with no negotiation                                     | +1    | Too good to be true                             |
+| Sender location has no relation to service area and email doesn't explain travel                 | +1    | Random geography with no context                |
+| Email body is copy-paste generic (no personalization, no chef name, no mention of cuisine style) | +1    | Mass blast to multiple chefs                    |
+| Reply-to address differs from sender address                                                     | +1    | Impersonation attempt                           |
+| Contains suspicious links or requests to "click here to confirm"                                 | +2    | Phishing                                        |
+
+**Scoring threshold:**
+
+- scam_score >= 4: Auto-classify as `spam` / `scam_booking`, do NOT create inquiry. Show in quarantine with "Suspected scam" badge.
+- scam_score 2-3: Create inquiry but add `scam_warning` flag. Show yellow warning badge on inquiry detail: "This inquiry has some characteristics of a scam. Review before investing time."
+- scam_score 0-1: Normal processing, no flag.
+
+**Critical rule:** Scam detection NEVER blocks a real inquiry silently. If scam_score >= 4, the email still appears in the unified feed and quarantine. The chef can always reclassify it as a real inquiry with one click. False positives are recoverable; false negatives waste hours.
+
+### 14c: Opportunities Bucket
+
+Sponsorship offers, brand partnership pitches, collaboration requests, media inquiries, and event invitations (to participate, not to be hired) currently get lost. They're not inquiries (no booking), not personal (they're business), and lumping them into marketing loses them forever.
+
+**Detection (Layer 4.6, after inquiry heuristic, before sender reputation):**
+
+Deterministic signals for `opportunity` sub-category:
+
+| Signal                                                     | Score | Pattern                                                                           |
+| ---------------------------------------------------------- | ----- | --------------------------------------------------------------------------------- |
+| Sponsorship language                                       | +2    | "sponsor," "partnership," "collaborate," "brand ambassador," "represent"          |
+| Media/press language                                       | +2    | "feature," "interview," "article," "podcast," "publication," "press," "editorial" |
+| Event participation                                        | +1    | "food festival," "culinary event," "guest chef," "pop-up," "demo," "competition"  |
+| Influencer outreach                                        | +1    | "content creator," "social media," "Instagram," "TikTok," "followers"             |
+| Revenue share language                                     | +1    | "revenue share," "affiliate," "commission for referrals," "earn per"              |
+| From a recognizable brand domain (not free email)          | +1    | Company domain, not @gmail/@yahoo/@hotmail                                        |
+| Mentions chef by name + references their cuisine/specialty | +1    | Personalized, not mass blast                                                      |
+
+Threshold: score >= 3 AND `is_food_related: true` -> classify as `personal` / `opportunity`.
+
+**Where opportunities appear:**
+
+- NOT in the inquiry pipeline (they're not bookings)
+- In the unified feed, highlighted with a distinct "Opportunity" badge
+- In a dedicated "Opportunities" tab on the unified feed page
+- Optional: weekly digest "You received 2 opportunity emails this week" in the dashboard
+
+**What the chef can do:**
+
+- View the full email
+- "Convert to Inquiry" if it's actually a booking request in disguise
+- "Archive" to dismiss
+- "Star" to mark for follow-up (simple boolean flag, no complex workflow)
+
+### 14d: Unified Email Feed (The Proof Layer)
+
+Expands the existing `lib/inquiries/platform-raw-feed.ts` into a full unified email feed. This is NOT just platform emails. This is EVERY food-related email ChefFlow processed, from all sources.
+
+**Architecture:**
+
+The feed reads from `gmail_sync_log` (already stores every processed email) and enriches each entry with:
+
+- Primary classification + sub-category
+- What ChefFlow did with it (created inquiry, added to thread, quarantined, ignored)
+- Platform badge (if from a known platform domain)
+- Scam warning badge (if applicable)
+- Opportunity badge (if applicable)
+- One-click actions (reclassify, view raw, convert to inquiry)
+
+**Feed Views (tabs within the unified feed page):**
+
+| Tab                | What It Shows                                | Purpose                                     |
+| ------------------ | -------------------------------------------- | ------------------------------------------- |
+| **All**            | Every email, most recent first               | The "I can see everything" view             |
+| **Inquiries**      | Emails that became inquiries                 | Quick access to what matters most           |
+| **Opportunities**  | Sponsorship, partnerships, collaborations    | Business opportunities that aren't bookings |
+| **Platform Admin** | Receipts, profile updates, listing stats     | Platform housekeeping (usually ignorable)   |
+| **Spam & Scams**   | Food-related spam + flagged scam attempts    | The "proof we catch everything" view        |
+| **Unclassified**   | Emails the classifier wasn't confident about | Chef can manually categorize                |
+
+**Key UX decisions:**
+
+- Default view is "All" with most recent first
+- Each row: sender, subject (truncated), platform badge, classification badge, timestamp, action taken
+- Expandable row shows full email preview + available actions
+- Search/filter by platform, date range, classification
+- Spam & Scams tab is NOT in the primary nav. It's accessible from the feed page as a tab. Tucked away but one click from the main feed.
+- The feed shows a running count: "247 emails processed this month. 31 inquiries, 4 opportunities, 189 marketing, 23 spam/scams."
+
+### Files to Create
+
+| File                                              | Purpose                                                                                                                                                                                |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/gmail/scam-detection.ts`                     | Deterministic scam scoring function. Takes email fields, returns `{ scamScore: number, flags: string[] }`. Pure function, no DB calls, no AI.                                          |
+| `lib/gmail/opportunity-detection.ts`              | Deterministic opportunity scoring. Takes email fields, returns `{ opportunityScore: number, signals: string[] }`. Pure function, no DB calls, no AI.                                   |
+| `lib/gmail/sub-classifier.ts`                     | Post-classification enrichment. Takes the primary classification + email data, returns sub-category. Called after `classifyEmail()` in the sync pipeline.                              |
+| `lib/integrations/unified-feed.ts`                | Server actions: `getUnifiedFeed(filters)`, `reclassifyEmail(id, newCategory, newSubCategory)`, `starOpportunity(id)`, `convertToInquiry(id)`. Replaces/extends `platform-raw-feed.ts`. |
+| `components/integrations/unified-email-feed.tsx`  | Main feed page component. Tabs, search, filters, expandable rows, action buttons.                                                                                                      |
+| `components/integrations/feed-row.tsx`            | Single email row in the feed. Shows sender, subject, badges, timestamp, expand/collapse.                                                                                               |
+| `components/integrations/scam-warning-badge.tsx`  | Yellow/red badge for scam-flagged emails/inquiries. Shows which red flags triggered. Tooltip with details.                                                                             |
+| `components/integrations/opportunity-badge.tsx`   | Distinct badge for opportunity emails. Differentiates from inquiry/marketing visually.                                                                                                 |
+| `components/integrations/email-detail-drawer.tsx` | Slide-out drawer showing full email content when a feed row is expanded. Includes reclassify dropdown, convert-to-inquiry button, star toggle.                                         |
+| `app/(chef)/email-feed/page.tsx`                  | Route for the unified feed. Accessible from integrations settings and from a dashboard link.                                                                                           |
+
+### Files to Modify
+
+| File                                                       | What to Change                                                                                                                                                                                   |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `lib/gmail/classify.ts`                                    | Add Layer 4.6 (opportunity detection) between Layer 4.5 and Layer 5. Scam detection integrates into Layer 4.5 as a parallel check. Export `sub_category` field alongside primary classification. |
+| `lib/gmail/sync.ts`                                        | After classification, call `sub-classifier.ts` to enrich with sub-category. Write `sub_category` to `gmail_sync_log`.                                                                            |
+| `lib/inquiries/platform-raw-feed.ts`                       | Deprecate or redirect to `unified-feed.ts`. Keep the export for backward compat but internally delegate.                                                                                         |
+| `app/(chef)/inquiries/[id]/page.tsx`                       | Show `ScamWarningBadge` on inquiries with `scam_warning` flag.                                                                                                                                   |
+| `app/(chef)/settings/integrations/page.tsx`                | Add link to unified email feed.                                                                                                                                                                  |
+| `app/(chef)/dashboard/page.tsx`                            | Add small feed summary widget: "X emails processed today, Y inquiries, Z flagged." Link to full feed.                                                                                            |
+| `components/inquiries/inquiry-list-item.tsx` or equivalent | Show scam warning icon on inquiry list for flagged items.                                                                                                                                        |
+
+### Database Changes
+
+```sql
+-- Add sub_category to gmail_sync_log
+ALTER TABLE gmail_sync_log
+  ADD COLUMN IF NOT EXISTS sub_category TEXT,
+  ADD COLUMN IF NOT EXISTS scam_score INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS scam_flags TEXT[],
+  ADD COLUMN IF NOT EXISTS is_starred BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS reclassified_by TEXT,
+  ADD COLUMN IF NOT EXISTS reclassified_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS original_classification TEXT,
+  ADD COLUMN IF NOT EXISTS original_sub_category TEXT;
+
+-- Index for unified feed queries
+CREATE INDEX IF NOT EXISTS idx_gmail_sync_log_feed
+  ON gmail_sync_log(tenant_id, synced_at DESC, classification, sub_category);
+
+-- Index for starred opportunities
+CREATE INDEX IF NOT EXISTS idx_gmail_sync_log_starred
+  ON gmail_sync_log(tenant_id, is_starred)
+  WHERE is_starred = true;
+
+-- Add scam_warning flag to inquiries
+ALTER TABLE inquiries
+  ADD COLUMN IF NOT EXISTS scam_warning BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS scam_score INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS scam_flags TEXT[];
+```
+
+### How Scam Detection Integrates with the Existing Pipeline
+
+```
+Email arrives
+  -> Layer 1: Platform detection (existing)
+  -> Layer 1.5: Partner detection (existing)
+  -> Layer 2: Gmail labels (existing)
+  -> Layer 3: RFC headers (existing)
+  -> Layer 4: Marketing heuristic (existing)
+  -> Layer 4.5: Inquiry heuristic (existing) + Scam scoring (NEW, parallel)
+       If inquiry detected AND scam_score >= 4:
+         Override to spam/scam_booking, skip inquiry creation
+       If inquiry detected AND scam_score 2-3:
+         Create inquiry WITH scam_warning flag
+  -> Layer 4.6: Opportunity detection (NEW)
+       If not already classified AND opportunity_score >= 3:
+         Classify as personal/opportunity
+  -> Layer 5: Sender reputation (existing)
+  -> Layer 6: Ollama fallback (existing)
+  -> Post-classification: Sub-classifier enrichment (NEW)
+       Adds sub_category to whatever the primary classification was
+```
+
+### How the Unified Feed Differs from Phase 13's Raw Email Feed
+
+Phase 13's `raw-email-feed.tsx` is a trust verification tool: "Here are all emails from platform domains, showing what we did with each." It's platform-focused and audit-oriented.
+
+Phase 14's unified feed is the chef's EMAIL COMMAND CENTER: every food-related email from every source, with smart categorization, one-click actions, and the ability to discover business opportunities that would otherwise be invisible. It subsumes Phase 13's raw feed (which becomes the "All" tab filtered to platform domains).
+
+### What the Spam & Scams Tab Actually Shows
+
+This is the "tucked away but powerful proof" the developer described. The tab shows:
+
+**Scam Bookings:**
+
+- "Fake inquiry: 'I need a chef for 500 guests, will pay $50,000 by wire transfer' - flagged: unrealistic budget, payment method upfront, generic description, no specific date" (red badge)
+- Chef sees: "Yep, that's the one I almost responded to last month. ChefFlow caught it."
+
+**Vendor Solicitations:**
+
+- "Hi Chef, we'd love to supply your kitchen with premium olive oil..." (gray badge)
+- Chef sees: "I get 10 of these a week. Glad they're here, not in my inquiries."
+
+**Aggregator Spam:**
+
+- "New lead from CateringRequest.com: Someone in your area needs catering!" (orange badge)
+- Chef sees: "These are always fake. Good, they're quarantined."
+
+**Platform Marketing:**
+
+- "Your TakeAChef profile was viewed 47 times this week!" (blue badge)
+- Chef sees: "Nice to know, but not an inquiry. Correctly sorted."
+
+Each item has a "This is actually a real inquiry" recovery button. One click reclassifies and creates the inquiry. False positives are never permanent.
+
+### The Running Count (Always Visible)
+
+At the top of the unified feed page, a persistent summary bar:
+
+```
+This month: 247 emails processed
+  31 inquiries created | 4 opportunities | 189 marketing | 23 spam/scams
+  Capture rate: 100% of platform emails | Last sync: 2 minutes ago
+```
+
+This single line answers: "Is ChefFlow catching everything?" The chef sees it every time they visit the feed. 100% capture rate + recent sync + correct categorization = trust.
+
+### Edge Cases
+
+| Scenario                                                        | Correct Behavior                                                                                                                                                                |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scam email uses a real platform's sender domain (spoofing)      | Platform detection (Layer 1) triggers first, creates inquiry. Scam scoring runs post-classification and adds warning flag. Chef sees inquiry with yellow "Possible scam" badge. |
+| Legitimate high-budget inquiry triggers scam detection          | scam_score 2-3 range: inquiry created with warning badge. Chef reviews and dismisses the warning. System learns (future: reduce scam weight for this sender domain).            |
+| Sponsorship email mentions cooking/booking language             | Opportunity detector checks BEFORE creating inquiry. If opportunity signals dominate, classifies as opportunity. Chef can convert to inquiry if it's actually a booking.        |
+| Chef reclassifies an email; sync processes the same email again | `gmail_sync_log` has UNIQUE constraint on `(tenant_id, gmail_message_id)`. Re-sync hits the constraint and skips. Reclassification is preserved.                                |
+| Chef stars 50 opportunities and never follows up                | Stars persist. No nagging. Optional: monthly digest "You have 50 starred opportunities." No forced workflow.                                                                    |
+| Email is in a language the classifier doesn't handle well       | Ollama fallback (Layer 6) handles non-English. Sub-classifier still runs. If classification is low-confidence, email shows in "Unclassified" tab for manual triage.             |
+| A new scam pattern emerges that scam detection doesn't catch    | Chef reclassifies from inquiry to spam/scam_booking. System logs the reclassification. Future: pattern analysis on reclassified emails to improve detection.                    |
+
+### Verification Steps (Phase 14)
+
+1. Send a test email with scam signals (vague event + high budget + wire transfer mention). Verify it's classified as spam/scam_booking and appears in quarantine, NOT in inquiry list
+2. Send a test email with scam_score 2-3. Verify inquiry is created WITH scam_warning badge visible on inquiry detail page
+3. Send a sponsorship/partnership email. Verify it's classified as personal/opportunity and appears in Opportunities tab
+4. Navigate to unified feed (/email-feed). Verify all tabs render with correct counts
+5. Expand a feed row. Verify email detail drawer shows full content + action buttons
+6. Reclassify a spam email as inquiry. Verify inquiry is created and email's original_classification is preserved
+7. Star an opportunity. Refresh page. Verify star persists
+8. Verify running count at top of feed page matches actual data
+9. Verify scam warning badge on inquiry list for flagged inquiries
+10. Verify "Convert to Inquiry" on an opportunity email creates a real inquiry
+11. Check that existing platform-raw-feed.ts callers still work (backward compat)
+12. Verify the Spam & Scams tab shows food-related spam with correct sub-category badges
 
 ---
 
