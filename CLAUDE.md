@@ -385,6 +385,124 @@ These steps run automatically at the end of every session, whether or not the de
 
 ---
 
+## FEATURE LOOKUP (How to Find What You're Looking For)
+
+When the developer describes a feature, page, or UI element by what it does (not by file path), your FIRST step is to look it up in `docs/app-complete-audit.md`. This is the master registry of every page, route, button, tab, form, modal, and component in the app. It maps plain-English descriptions to exact routes, components, and file paths.
+
+**Do not guess file paths. Do not search the codebase blindly. Read the audit first.**
+
+1. Open `docs/app-complete-audit.md` and search for keywords from the developer's description
+2. Find the matching section (it's organized by feature area: Dashboard, Events, Clients, etc.)
+3. Get the route, component name, and related files from that section
+4. Now you know exactly what you're working with
+
+If the audit doesn't cover it, then search the codebase. But the audit covers ~265 pages and should be your first stop.
+
+**Developer:** you don't need to know file names. Describe what you want in plain English. The agent will look it up. Examples of valid prompts:
+
+- "The widget on the dashboard that shows today's schedule"
+- "The page where I manage staff members"
+- "The form for creating a new quote"
+- "The settings page for email"
+
+---
+
+## PLANNER GATE (Spec Agents - MANDATORY)
+
+**Every spec agent must pass this gate before a spec is marked "ready." No exceptions.**
+
+This gate exists because agents hallucinate specs. They skim 3 files, make assumptions about the rest, and write confident-sounding plans that break during implementation. This gate forces evidence-based planning.
+
+### Before Writing Anything
+
+1. **Read `CLAUDE.md`** (this file) cover to cover
+2. **Read `docs/specs/_TEMPLATE.md`** for the required spec format
+3. **Scope the inspection** - read every file in the directories this feature touches. Follow import chains 2 levels deep from the entry point. Read the schema for every table this feature queries. Do NOT claim you "inspected the codebase" after reading 3 files.
+4. **Produce a current-state summary** - before writing the spec, output a plain-English summary of what exists today in the areas this feature touches. Include file paths, current behavior, and data flow. **This summary is for the developer to review.** If they spot errors, the spec hasn't been started yet, so nothing is wasted. This is the single highest-ROI human checkpoint.
+
+### Spec Validation (Evidence Required)
+
+Answer every item below. **Each answer must include the specific file paths and line numbers you read.** If you cannot cite a file, you did not verify it. Saying "I checked" without showing `Read` tool output is a lie.
+
+1. **What exists today that this touches?** List files, routes, schemas, components, server actions. Cite line numbers.
+2. **What exactly changes?** Add / modify / remove at the file + data level. Be surgical.
+3. **What assumptions are you making?** For each one: is it verified (you read the code) or unverified (you're guessing)? If unverified, go verify it now or flag it for the developer.
+4. **Where will this most likely break?** Top 2-3 failure points, with reasoning.
+5. **What is underspecified?** What could cause a builder agent to guess? Eliminate it or flag it.
+6. **What dependencies or prerequisites exist?** Migrations, other specs, config changes.
+7. **What existing logic could this conflict with?** Search for shared components, shared server actions, shared DB tables.
+8. **What is the end-to-end data flow?** Input (user action) -> processing (server action) -> storage (DB write) -> output (UI update). No gaps.
+9. **What is the correct implementation order?** Migration first? Schema first? Component first? Be explicit.
+10. **What are the exact success criteria?** What must be true when done? These become the builder's verification steps.
+11. **What are the non-negotiable constraints?** (Auth, tenant scoping, privacy boundary, financial rules)
+12. **What should NOT be touched?** Explicitly fence off adjacent code.
+13. **Is this the simplest complete version?** If not, cut scope now. A spec longer than 10x the expected code change is bloated - trim it.
+14. **If implemented exactly as written, what would still be wrong?** Be honest. This question catches the gaps you're tempted to gloss over.
+
+### Final Check (Must Answer Explicitly)
+
+> Is this spec production-ready, or am I proceeding with uncertainty?
+> If uncertain: where specifically, and what would resolve it?
+
+If the answer is uncertain on anything that affects correctness, the spec is NOT ready. Resolve it or flag it for the developer. Do not mark "ready" with known gaps.
+
+**Self-enforcement:** You must run the Spec Validation and Final Check above ON YOUR OWN before telling the developer the spec is ready. Do not wait for the developer to ask. If you say "ready" without having answered every question with cited evidence, you have failed the gate.
+
+---
+
+## BUILDER GATE (Execution Agents - MANDATORY)
+
+**Every builder agent must pass this gate before marking work complete. No exceptions.**
+
+This gate exists because agents say "done" when they mean "it compiled." Building code is not the same as shipping a working feature. This gate forces real testing, real evidence, and real accountability.
+
+### Before Writing Code (Spike Required)
+
+1. **Read `CLAUDE.md`** (this file) cover to cover
+2. **Read the spec** in `docs/specs/` that you're implementing. Understand every section.
+3. **Read every file the spec names.** Not skim. Read. If the spec says "modify `components/events/event-form.tsx`," open it and read the whole thing. Understand its conditional paths, validation, state management.
+4. **Spike report** - before writing any implementation code, report back:
+   - "I read these files: [list with line counts]"
+   - "The spec is accurate about: [what matches]"
+   - "The spec is wrong or incomplete about: [what doesn't match reality]"
+   - If the spec is wrong: **STOP. Do not improvise.** Update the spec with corrections, note what was wrong, then continue. Never silently deviate from a spec.
+
+### Build Phase
+
+- Implement exactly what the spec defines. No unapproved additions.
+- No "while I'm here" refactors. No bonus features. No extra error handling for impossible scenarios.
+- If you discover something the spec didn't anticipate: stop, update the spec, then continue.
+
+### Verification (Proof Required - Not Descriptions of Proof)
+
+**You are not allowed to mark this complete without executing these steps and showing the output.**
+
+1. **Type check:** Run `npx tsc --noEmit --skipLibCheck`. Paste the output. Must exit 0.
+2. **Build check:** Run `npx next build --no-lint`. Paste the output. Must exit 0.
+3. **Playwright verification:** Launch Playwright. Sign in with agent credentials (`.auth/agent.json`). Navigate to the feature. Execute the full user flow. Take screenshots. Paste the screenshots. If Playwright literally cannot test this (rare), explain exactly why and what alternative you used.
+4. **Edge cases tested:** List each edge case from the spec's "Edge Cases" section. For each one: what did you do, what happened? Not what "would" happen - what DID happen.
+5. **Regression check:** List every other page or component that imports or shares code with your changes. Verify at least one still works. If the feature touches auth/layout/navigation, run `npm run test:experiential`.
+6. **Before vs after:** Show what changed. UI screenshots, data output, or behavioral comparison.
+
+### Final Check (Must Answer Explicitly)
+
+> If this were handed to a real user right now:
+> What is most likely to be broken, incomplete, or misleading?
+
+If the answer is anything other than "nothing," fix it before marking complete.
+
+### Completion Rules
+
+- If any verification step fails: fix it, re-verify, then proceed
+- If you discover a regression: fix it before finishing
+- If you've hit 3 failures on the same issue: stop and report (Anti-Loop Rule applies)
+- Update the spec status to "verified" only after all verification passes
+- Update `docs/app-complete-audit.md` if any UI changed
+
+**Self-enforcement:** You must run every Verification step and the Final Check above ON YOUR OWN before telling the developer the build is complete. Do not wait to be asked. If you say "done" without having pasted typecheck output, build output, and Playwright screenshots, you have failed the gate.
+
+---
+
 ## DEVELOPMENT WORKFLOW
 
 ### Before Making Changes
@@ -770,21 +888,23 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 
 ## SINGLE ENVIRONMENT
 
-One directory. One command. One deployment path.
+One directory. Two servers. Zero fragmentation.
 
 ```text
 C:\Users\david\Documents\CFv1\    (THE app, the only copy)
-localhost:3100                     (development: npm run dev)
-app.cheflowhq.com                 (Cloudflare Tunnel to localhost:3100)
+localhost:3100                     (dev server: npm run dev, hot reload for coding)
+localhost:3000                     (prod server: npm run prod, compiled build, fast)
+app.cheflowhq.com                 (Cloudflare Tunnel -> localhost:3000)
 ```
 
-- **Run:** `npm run dev` (port 3100, hot reload)
-- **Build:** `npm run build && npm start` (production build, same directory)
-- **Deploy:** `git push` to GitHub, rebuild in place
+- **Dev:** `npm run dev` (port 3100, hot reload, your coding window)
+- **Prod:** `npm run prod` (port 3000, optimized build, what clients see via app.cheflowhq.com)
+- **Build only:** `npm run build` (compile without starting)
+- **Ship workflow:** commit + push + rebuild prod (`npm run prod`)
 - **Ollama:** `localhost:11434` (local AI, all private data processing)
 - **Database:** Remote PostgreSQL via postgres.js (direct TCP)
 
-There are no beta/staging/prod directories. There is one copy of the app.
+There are no beta/staging/prod directories. There is one copy of the app. The prod server is just the compiled version of whatever is in this folder.
 
 ---
 
