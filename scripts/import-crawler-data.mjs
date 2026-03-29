@@ -139,9 +139,12 @@ function extractArchive() {
   console.log(`Extracting enriched_findings from archive to ${extractDir}...`)
 
   try {
+    // Convert Windows drive paths (F:/) to MSYS/Git Bash paths (/f/) for tar
+    const archivePath = ARCHIVE_PATH.replace(/^([A-Z]):/i, (_, d) => '/' + d.toLowerCase()).replace(/\\/g, '/')
+    const destPath = extractDir.replace(/\\/g, '/').replace(/^([A-Z]):/i, (_, d) => '/' + d.toLowerCase())
     execSync(
-      `cd "F:/Pi-Backup/home/archive/openclaw-crawler-era/" && tar -xzf openclaw-workspace.tar.gz -C "${extractDir}" "openclaw/enriched_findings/"`,
-      { stdio: 'pipe', maxBuffer: 1024 * 1024 * 50 }
+      `tar -xzf "${archivePath}" -C "${destPath}" "openclaw/enriched_findings/"`,
+      { stdio: 'pipe', maxBuffer: 1024 * 1024 * 50, shell: 'bash' }
     )
   } catch (err) {
     console.error('Failed to extract archive:', err.message)
@@ -186,7 +189,7 @@ function collectRecords(findingsDir) {
           records.push({
             name: biz.name.trim(),
             city: biz.address?.city || file.replace('.json', '').replace(/_/g, ' '),
-            state: biz.address?.state || state,
+            state: (biz.address?.state || state).replace(/^US\//, ''),
             address: buildAddress(biz),
             postcode: biz.address?.postcode || null,
             phone: biz.phone || null,
@@ -273,25 +276,33 @@ async function importToDatabase(records) {
     }))
 
     try {
-      // Use raw SQL for bulk insert with ON CONFLICT
+      // Build multi-row VALUES clause for true bulk insert
+      const cols = [
+        'name', 'slug', 'city', 'state', 'address', 'postcode', 'phone', 'website_url', 'email',
+        'description', 'hours', 'cuisine_types', 'business_type', 'lat', 'lon', 'lead_score',
+        'osm_id', 'status', 'source', 'source_id', 'photo_urls', 'featured',
+      ]
+      const placeholders = []
+      const flatParams = []
+      let pIdx = 1
+
       for (const v of values) {
-        const result = await sql`
-          INSERT INTO directory_listings (
-            name, slug, city, state, address, postcode, phone, website_url, email,
-            description, hours, cuisine_types, business_type, lat, lon, lead_score,
-            osm_id, status, source, source_id, photo_urls, featured
-          ) VALUES (
-            ${v.name}, ${v.slug}, ${v.city}, ${v.state}, ${v.address}, ${v.postcode},
-            ${v.phone}, ${v.website_url}, ${v.email}, ${v.description},
-            ${v.hours ? sql.json(JSON.parse(v.hours)) : null},
-            ${v.cuisine_types}, ${v.business_type},
-            ${v.lat}, ${v.lon}, ${v.lead_score}, ${v.osm_id},
-            ${v.status}, ${v.source}, ${v.source_id}, ${v.photo_urls}, ${v.featured}
-          )
-          ON CONFLICT (slug) DO NOTHING
-        `
-        imported++
+        const hoursVal = v.hours ? JSON.parse(v.hours) : null
+        placeholders.push(
+          `($${pIdx}, $${pIdx+1}, $${pIdx+2}, $${pIdx+3}, $${pIdx+4}, $${pIdx+5}, $${pIdx+6}, $${pIdx+7}, $${pIdx+8}, $${pIdx+9}, $${pIdx+10}::jsonb, $${pIdx+11}::text[], $${pIdx+12}, $${pIdx+13}, $${pIdx+14}, $${pIdx+15}, $${pIdx+16}, $${pIdx+17}, $${pIdx+18}, $${pIdx+19}, $${pIdx+20}::text[], $${pIdx+21})`
+        )
+        flatParams.push(
+          v.name, v.slug, v.city, v.state, v.address, v.postcode, v.phone, v.website_url, v.email,
+          v.description, hoursVal ? JSON.stringify(hoursVal) : null, v.cuisine_types, v.business_type,
+          v.lat, v.lon, v.lead_score, v.osm_id, v.status, v.source, v.source_id,
+          v.photo_urls === '{}' ? [] : v.photo_urls, v.featured,
+        )
+        pIdx += 22
       }
+
+      const query = `INSERT INTO directory_listings (${cols.join(', ')}) VALUES ${placeholders.join(', ')} ON CONFLICT (slug) DO NOTHING`
+      const result = await sql.unsafe(query, flatParams)
+      imported += batch.length
     } catch (err) {
       console.error(`  Batch error at offset ${i}:`, err.message)
       skipped += batch.length

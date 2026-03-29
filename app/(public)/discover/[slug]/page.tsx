@@ -270,25 +270,30 @@ export default async function ListingDetailPage({ params }: Props) {
               </div>
             )}
 
-            {listing.hours && (
-              <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-4">
-                <h3 className="text-xs font-semibold text-stone-300">Hours</h3>
-                <div className="mt-2 space-y-1">
-                  {typeof listing.hours === 'object' && 'raw' in listing.hours ? (
-                    <p className="text-xs text-stone-400 whitespace-pre-line">
-                      {(listing.hours as { raw: string }).raw}
-                    </p>
-                  ) : (
-                    Object.entries(listing.hours).map(([day, hours]) => (
-                      <div key={day} className="flex justify-between text-xs">
-                        <span className="text-stone-400">{day}</span>
-                        <span className="text-stone-300">{hours as string}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
+            {listing.hours &&
+              (() => {
+                const hours =
+                  typeof listing.hours === 'string' ? JSON.parse(listing.hours) : listing.hours
+                return (
+                  <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-4">
+                    <h3 className="text-xs font-semibold text-stone-300">Hours</h3>
+                    <div className="mt-2 space-y-1">
+                      {typeof hours === 'object' && 'raw' in hours ? (
+                        <p className="text-xs text-stone-400 whitespace-pre-line">
+                          {(hours as { raw: string }).raw}
+                        </p>
+                      ) : (
+                        Object.entries(hours).map(([day, h]) => (
+                          <div key={day} className="flex justify-between text-xs">
+                            <span className="text-stone-400">{day}</span>
+                            <span className="text-stone-300">{h as string}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )
+              })()}
 
             {/* Claim / Remove actions */}
             <ClaimRemoveActions listingId={listing.id} status={listing.status} />
