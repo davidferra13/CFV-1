@@ -5,8 +5,10 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { getChefByGuestCode } from '@/lib/guest-leads/actions'
 import { GuestLeadForm } from '@/components/guest-leads/guest-lead-form'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 type Props = { params: { code: string } }
 
@@ -26,6 +28,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GuestLandingPage({ params }: Props) {
+  // Rate limit guest code lookups to prevent enumeration (short codes are brute-forceable)
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+  try {
+    await checkRateLimit(`guest-code:${ip}`, 30, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-stone-900">
+        <p className="text-stone-400">Too many requests. Please try again later.</p>
+      </div>
+    )
+  }
+
   const data = await getChefByGuestCode(params.code)
   if (!data) notFound()
 

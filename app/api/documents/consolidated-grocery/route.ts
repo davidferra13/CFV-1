@@ -52,7 +52,10 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (err: any) {
-    console.error('[consolidated-grocery] Error:', err)
-    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 })
+    console.error('[consolidated-grocery] Internal error:', err)
+    return NextResponse.json(
+      { error: 'An unexpected error occurred. Please try again.' },
+      { status: 500 }
+    )
   }
 }

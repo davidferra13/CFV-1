@@ -2,12 +2,27 @@
 // Client receives this link after a completed event (Uber-style tip prompt).
 
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { getTipRequestByToken } from '@/lib/finance/tip-actions'
 import { TipForm } from './tip-form'
 
 export const metadata = { title: 'Leave a Tip - ChefFlow' }
 
 export default async function TipPage({ params }: { params: { token: string } }) {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+
+  try {
+    await checkRateLimit(`tip:${ip}`, 30, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-stone-400">
+        Too many requests. Please try again later.
+      </div>
+    )
+  }
+
   const data = await getTipRequestByToken(params.token)
 
   if (!data) notFound()

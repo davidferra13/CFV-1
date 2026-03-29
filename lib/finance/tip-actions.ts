@@ -298,6 +298,15 @@ export async function getTipRequestByToken(token: string): Promise<{
 
   if (error || !data) return null
 
+  // Expire tip requests after 30 days (application-level check)
+  const createdAt = data.created_at ? new Date(data.created_at) : null
+  if (createdAt) {
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000
+    if (Date.now() - createdAt.getTime() > thirtyDaysMs) {
+      return null
+    }
+  }
+
   const chef = data.chef as any
   const event = data.event as any
 

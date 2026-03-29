@@ -1,10 +1,25 @@
 import { getSurveyData } from '@/lib/feedback/surveys'
 import { PostEventSurveyForm } from '@/components/feedback/post-event-survey-form'
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 export const metadata = { title: 'Share Your Feedback | ChefFlow' }
 
 export default async function FeedbackPage({ params }: { params: { token: string } }) {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+
+  try {
+    await checkRateLimit(`feedback:${ip}`, 30, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-stone-400">
+        Too many requests. Please try again later.
+      </div>
+    )
+  }
+
   const surveyData = await getSurveyData(params.token)
 
   if (!surveyData) {

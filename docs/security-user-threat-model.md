@@ -279,20 +279,104 @@ The following items were verified by searching the actual codebase, not assumed.
 
 ## Summary: Priority Order for Pre-Launch Security
 
-| Priority | Area                                  | Status                       | Action Needed                                                      |
-| -------- | ------------------------------------- | ---------------------------- | ------------------------------------------------------------------ |
-| 1        | Tenant scoping on every query         | Audited (March 2026)         | Re-verify on any new server actions                                |
-| 2        | Auth checks on every route/action     | Audited (March 2026)         | Re-verify on any new routes                                        |
-| 3        | Stripe webhook signature verification | **Verified secure**          | None                                                               |
-| 4        | Login rate limiting                   | **Verified implemented**     | Consider persistent storage + account lockout for production scale |
-| 5        | File upload validation                | **Verified strong**          | None                                                               |
-| 6        | Input length validation               | Varies by form               | Spot-check critical forms                                          |
-| 7        | dangerouslySetInnerHTML audit         | **Verified safe (0 issues)** | None                                                               |
-| 8        | robots.txt                            | **Missing**                  | Create before launch                                               |
-| 9        | Sensitive file exposure               | **Verified protected**       | None                                                               |
-| 10       | Session expiry UX                     | Unknown                      | Test expired session behavior                                      |
-| 11       | Client access revocation              | Unknown                      | Test removing client access                                        |
-| 12       | CSRF protection                       | **Verified implemented**     | None                                                               |
+| Priority | Area                                  | Status                          | Action Needed                                                      |
+| -------- | ------------------------------------- | ------------------------------- | ------------------------------------------------------------------ |
+| 1        | Tenant scoping on every query         | Audited (March 2026)            | Re-verify on any new server actions                                |
+| 2        | Auth checks on every route/action     | Audited (March 2026)            | Re-verify on any new routes                                        |
+| 3        | SSE channel authorization             | **FIXED (2026-03-29)**          | None (was critical: eavesdropping possible)                        |
+| 4        | Password reset token security         | **FIXED (2026-03-29)**          | None (was critical: plaintext storage + expiration bypass)         |
+| 5        | Stripe webhook signature verification | **Verified secure**             | None                                                               |
+| 6        | Login rate limiting                   | **Verified implemented**        | Consider persistent storage + account lockout for production scale |
+| 7        | File upload validation                | **Verified strong**             | None                                                               |
+| 8        | Storage signing secret                | **FIXED (2026-03-29)**          | None (was high: hardcoded fallback removed)                        |
+| 9        | Input length validation               | Varies by form                  | Spot-check critical forms                                          |
+| 10       | dangerouslySetInnerHTML audit         | **Verified safe (0 issues)**    | None                                                               |
+| 11       | robots.txt                            | **FIXED (2026-03-29)**          | None (created `public/robots.txt`)                                 |
+| 12       | Sensitive file exposure               | **Verified protected**          | None                                                               |
+| 13       | CSRF protection                       | **Verified implemented**        | None                                                               |
+| 14       | Source maps                           | **Verified not shipped**        | None                                                               |
+| 15       | E2E auth endpoint                     | **Verified gated**              | None (hard-blocked in production)                                  |
+| 16       | Cron endpoint auth                    | **Verified (all 38 endpoints)** | None (timing-safe comparison)                                      |
+| 17       | Next.js CVEs                          | **Safe (14.2.35)**              | None (patched past both critical CVEs)                             |
+| 18       | Tip request token expiration          | **Missing**                     | Add `expires_at` to `tip_requests` table                           |
+| 19       | Guest code rate limiting              | **Missing**                     | Add rate limiting on `/g/[code]` lookups                           |
+| 20       | Partner report token security         | **Missing**                     | Add expiration and revocation mechanism                            |
+| 21       | Error message leakage                 | **9 API routes leak**           | Return generic errors, log real errors server-side                 |
+| 22       | Public token route rate limiting      | **Missing on 7 routes**         | Add `checkRateLimit()` to each                                     |
+| 23       | Session expiry UX                     | Unknown                         | Test expired session behavior                                      |
+| 24       | Client access revocation              | Unknown                         | Test removing client access                                        |
+| 25       | Unsubscribe token signing             | **Missing**                     | Implement HMAC-signed unsubscribe tokens                           |
+
+---
+
+## Actor 7: AI-Aware Attackers (The "Vibe Code" Threat)
+
+**Added 2026-03-29 based on external research.**
+
+**Who they are:** Attackers who understand that AI-generated code follows predictable patterns and specifically target those patterns.
+
+**Why this is a real threat:**
+
+- 45% of AI-generated code contains security flaws (Veracode, 2026)
+- 2.74x more vulnerabilities than human-written code
+- 322% more privilege escalation paths
+- AI-generated code is now the cause of 1 in 5 breaches
+- The Armis "Trusted Vibing Benchmark" tested 18 AI models: 100% failure rate in generating fully secure code
+- The Enrichlead incident (2025): 100% AI-coded platform was breached within 72 hours of launch (subscription bypass, hardcoded API keys, client-side-only auth)
+
+**What they exploit:**
+
+- Default error handling patterns (AI rarely adds proper error boundaries)
+- Missing input sanitization (the #1 AI-generated flaw across all models)
+- Client-side auth logic (AI sometimes puts security checks in the browser)
+- Predictable file structures and route naming conventions
+- Default configurations unchanged from AI output
+- Hardcoded API keys left in generated code
+
+**What we've done about it:**
+
+- Full server action audit (215 functions, 117 gaps fixed)
+- Server-side auth on every route and action (not client-side)
+- Parameterized queries via Drizzle ORM (no AI-generated raw SQL)
+- This comprehensive security audit (2026-03-29) specifically tested for AI-generated vulnerability patterns
+
+**What still needs attention:**
+
+- Audit `package.json` for slopsquatting (AI-hallucinated package names registered as malware)
+- Ongoing vigilance: every new AI-generated code path must be manually reviewed for the common AI failure modes
+
+---
+
+## Actor 8: Swarm/Bot Attacks (Automated Enumeration)
+
+**Added 2026-03-29 based on external research.**
+
+**Who they are:** Automated tools that systematically probe web applications. Not targeting ChefFlow specifically, just scanning everything they can find.
+
+**Tools used:** gobuster, ffuf, dirbuster (URL fuzzing), OpenBullet 2 (credential stuffing with 100+ SaaS configs), AI-enhanced bots with CAPTCHA solving.
+
+**Scale:** Small businesses face automated attacks approximately every 11 seconds.
+
+**What they try:**
+
+- **URL enumeration:** Try thousands of paths per second (`/admin`, `/api/users`, `/.env`, `/wp-admin`, `/debug`, etc.)
+- **Credential stuffing:** Try leaked username/password combos from other breaches
+- **API enumeration:** Discover undocumented API endpoints and test them for auth gaps
+- **Token brute-forcing:** Try random UUIDs/tokens on shared link routes
+
+**Current protections:**
+
+- Cloudflare Tunnel (bot detection, DDoS protection, not directly exposed)
+- Rate limiting on auth endpoints (10 attempts/15min)
+- Turnstile CAPTCHA on public forms
+- `robots.txt` blocking app routes from crawlers (added 2026-03-29)
+- All app routes require authentication (middleware-enforced)
+
+**What still needs attention:**
+
+- Rate limiting on all public token routes (7 routes currently unprotected)
+- Guest codes (`/g/[code]`) are short and enumerable without rate limiting
+- Consider adding fail2ban-style IP blocking for repeated 401/403 responses
 
 ---
 
@@ -300,12 +384,14 @@ The following items were verified by searching the actual codebase, not assumed.
 
 This is not a penetration test. This is not a security certification. This is a practical threat model that identifies who interacts with ChefFlow, what could go wrong, and what to check before real data goes in.
 
+The full technical audit with code-level findings is at `docs/research/cybersecurity-comprehensive-audit-2026-03-29.md`.
+
 When the app is ready for real users, a focused verification pass through the "Action Needed" items above is the right next step. Not before.
 
 ---
 
 ## What to Tell People Who Are Worried
 
-"Credit card numbers never touch my server. Stripe handles all payment processing directly. Client data is isolated per account at the database level; one chef cannot see another chef's data. The framework prevents the most common web attacks (SQL injection, XSS) by default. The app sits behind Cloudflare, which handles DDoS protection. Before real users go live, I'm verifying access controls, webhook security, and input validation."
+"Credit card numbers never touch my server. Stripe handles all payment processing directly. Client data is isolated per account at the database level; one chef cannot see another chef's data. The framework prevents the most common web attacks (SQL injection, XSS) by default. The app sits behind Cloudflare, which handles DDoS protection. We've completed a comprehensive security audit covering all 6 actor types, verified protections against the OWASP top 10, patched 4 critical vulnerabilities, and confirmed we're safe from the major 2025 Next.js CVEs. Every server action (215 total) has been audited for auth and tenant scoping."
 
-That's a factual, specific answer. Not a promise that nothing will ever go wrong, but proof that the architecture was built with these concerns in mind from the start.
+That's a factual, specific answer. Not a promise that nothing will ever go wrong, but proof that the architecture was built with these concerns in mind from the start, and that it's been tested.

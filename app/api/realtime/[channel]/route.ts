@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { subscribe, getPresenceState } from '@/lib/realtime/sse-server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { events, conversations } from '@/lib/db/schema'
+import { events, conversations } from '@/lib/db/schema/schema'
 import { eq, and } from 'drizzle-orm'
 
 export const dynamic = 'force-dynamic'

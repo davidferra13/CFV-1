@@ -125,7 +125,10 @@ export async function POST(req: NextRequest) {
 
     return response
   } catch (err: any) {
-    console.error('[e2e/auth] Error:', err?.message, err?.stack)
-    return NextResponse.json({ error: err?.message || 'Internal error' }, { status: 500 })
+    console.error('[e2e/auth] Internal error:', err)
+    return NextResponse.json(
+      { error: 'An unexpected error occurred. Please try again.' },
+      { status: 500 }
+    )
   }
 }

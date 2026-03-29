@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { getStaffEventView } from '@/lib/staff/staff-event-portal-actions'
 import { StaffEventView } from '@/components/staff/staff-event-view'
 import { Card, CardContent } from '@/components/ui/card'
@@ -11,6 +13,19 @@ export const metadata: Metadata = {
 }
 
 export default async function StaffPortalPage({ params }: { params: { id: string } }) {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+
+  try {
+    await checkRateLimit(`staff-portal:${ip}`, 60, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-stone-400">
+        Too many requests. Please try again later.
+      </div>
+    )
+  }
+
   const result = await getStaffEventView(params.id)
 
   if (result.state === 'invalid') {

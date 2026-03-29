@@ -72,7 +72,8 @@ async function checkEndpoint(url: string, expectedModel: string): Promise<Endpoi
       (m) => m === expectedModel || m.startsWith(expectedModel.split(':')[0])
     )
   } catch (err) {
-    result.error = err instanceof Error ? err.message : String(err)
+    console.error('[ai/health] Endpoint check failed:', err)
+    result.error = 'Health check failed'
     return result
   }
 

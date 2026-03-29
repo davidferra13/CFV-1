@@ -31,9 +31,9 @@ export async function GET(request: Request) {
       daily: dailyResult,
     })
   } catch (err) {
-    console.error('[circle-digest cron] Failed:', err)
+    console.error('[circle-digest cron] Internal error:', err)
     return NextResponse.json(
-      { success: false, error: err instanceof Error ? err.message : 'Unknown error' },
+      { success: false, error: 'An unexpected error occurred. Please try again.' },
       { status: 500 }
     )
   }

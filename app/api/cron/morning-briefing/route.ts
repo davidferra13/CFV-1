@@ -43,7 +43,8 @@ export async function GET(request: Request) {
 
         if (!error) created++
       } catch (err) {
-        errors.push(`${tenant.id}: ${err instanceof Error ? err.message : String(err)}`)
+        console.error(`[cron/morning-briefing] Briefing failed for tenant ${tenant.id}:`, err)
+        errors.push(`${tenant.id}: briefing generation failed`)
       }
     }
 
@@ -53,9 +54,9 @@ export async function GET(request: Request) {
       errors: errors.length > 0 ? errors : undefined,
     })
   } catch (err) {
-    console.error('[cron/morning-briefing] Error:', err)
+    console.error('[cron/morning-briefing] Internal error:', err)
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Unknown error' },
+      { error: 'An unexpected error occurred. Please try again.' },
       { status: 500 }
     )
   }

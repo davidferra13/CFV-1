@@ -43,7 +43,8 @@ export async function POST(req: NextRequest) {
   })
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 401 })
+    console.error('[demo/switch] Auth error:', error)
+    return NextResponse.json({ error: 'Failed to switch demo account.' }, { status: 401 })
   }
 
   return NextResponse.json({ ok: true, target })

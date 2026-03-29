@@ -42,7 +42,8 @@ export async function POST(req: NextRequest) {
     .eq('id', demoChef.chefId)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[demo/tier] Database error:', error)
+    return NextResponse.json({ error: 'Failed to update demo tier.' }, { status: 500 })
   }
 
   revalidateTag(`chef-layout-${demoChef.chefId}`)

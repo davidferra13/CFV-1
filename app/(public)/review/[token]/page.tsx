@@ -2,12 +2,27 @@
 // Clients receive a link with a unique token to submit their review.
 
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { getReviewRequestByToken } from '@/lib/testimonials/submit-testimonial'
 import { ReviewForm } from './review-form'
 
 export const metadata = { title: 'Leave a Review - ChefFlow' }
 
 export default async function ReviewPage({ params }: { params: { token: string } }) {
+  const headersList = await headers()
+  const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+
+  try {
+    await checkRateLimit(`review:${ip}`, 30, 15 * 60 * 1000)
+  } catch {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-stone-400">
+        Too many requests. Please try again later.
+      </div>
+    )
+  }
+
   const request = await getReviewRequestByToken(params.token)
 
   if (!request) notFound()
