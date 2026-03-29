@@ -160,37 +160,80 @@ export default async function ListingDetailPage({ params }: Props) {
 
           {/* Sidebar */}
           <div className="space-y-4">
-            {isEnriched && listing.address && (
+            {listing.address && (
               <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-4">
                 <h3 className="text-xs font-semibold text-stone-300">Address</h3>
-                <p className="mt-1 text-sm text-stone-400">{listing.address}</p>
+                <p className="mt-1 text-sm text-stone-400">
+                  {listing.address}
+                  {location && `, ${location}`}
+                </p>
+                {listing.lat && listing.lon && (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${listing.lat},${listing.lon}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-block text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors"
+                  >
+                    View on Google Maps
+                  </a>
+                )}
               </div>
             )}
 
-            {isEnriched && listing.phone && (
+            {!listing.address && listing.lat && listing.lon && (
+              <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-4">
+                <h3 className="text-xs font-semibold text-stone-300">Location</h3>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${listing.lat},${listing.lon}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-block text-xs font-medium text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  View on Google Maps
+                </a>
+              </div>
+            )}
+
+            {listing.phone && (
               <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-4">
                 <h3 className="text-xs font-semibold text-stone-300">Phone</h3>
-                <p className="mt-1 text-sm text-stone-400">{listing.phone}</p>
+                <a
+                  href={`tel:${listing.phone}`}
+                  className="mt-1 block text-sm text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  {listing.phone}
+                </a>
               </div>
             )}
 
-            {isEnriched && listing.email && (
+            {listing.email && (
               <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-4">
                 <h3 className="text-xs font-semibold text-stone-300">Email</h3>
-                <p className="mt-1 text-sm text-stone-400">{listing.email}</p>
+                <a
+                  href={`mailto:${listing.email}`}
+                  className="mt-1 block text-sm text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  {listing.email}
+                </a>
               </div>
             )}
 
-            {isEnriched && listing.hours && (
+            {listing.hours && (
               <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-4">
                 <h3 className="text-xs font-semibold text-stone-300">Hours</h3>
                 <div className="mt-2 space-y-1">
-                  {Object.entries(listing.hours).map(([day, hours]) => (
-                    <div key={day} className="flex justify-between text-xs">
-                      <span className="text-stone-400">{day}</span>
-                      <span className="text-stone-300">{hours}</span>
-                    </div>
-                  ))}
+                  {typeof listing.hours === 'object' && 'raw' in listing.hours ? (
+                    <p className="text-xs text-stone-400 whitespace-pre-line">
+                      {(listing.hours as { raw: string }).raw}
+                    </p>
+                  ) : (
+                    Object.entries(listing.hours).map(([day, hours]) => (
+                      <div key={day} className="flex justify-between text-xs">
+                        <span className="text-stone-400">{day}</span>
+                        <span className="text-stone-300">{hours as string}</span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             )}

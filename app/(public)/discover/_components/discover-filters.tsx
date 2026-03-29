@@ -7,71 +7,29 @@ import {
   BUSINESS_TYPES,
   CUISINE_CATEGORIES,
   PRICE_RANGES,
-  getBusinessTypeLabel,
+  US_STATES,
+  getStateName,
 } from '@/lib/discover/constants'
-
-const US_STATES = [
-  'AL',
-  'AK',
-  'AZ',
-  'AR',
-  'CA',
-  'CO',
-  'CT',
-  'DE',
-  'FL',
-  'GA',
-  'HI',
-  'ID',
-  'IL',
-  'IN',
-  'IA',
-  'KS',
-  'KY',
-  'LA',
-  'ME',
-  'MD',
-  'MA',
-  'MI',
-  'MN',
-  'MS',
-  'MO',
-  'MT',
-  'NE',
-  'NV',
-  'NH',
-  'NJ',
-  'NM',
-  'NY',
-  'NC',
-  'ND',
-  'OH',
-  'OK',
-  'OR',
-  'PA',
-  'RI',
-  'SC',
-  'SD',
-  'TN',
-  'TX',
-  'UT',
-  'VT',
-  'VA',
-  'WA',
-  'WV',
-  'WI',
-  'WY',
-]
 
 type Props = {
   query: string
   businessType: string
   cuisine: string
   state: string
+  city: string
   priceRange: string
+  totalListings?: number
 }
 
-export function DiscoverFilters({ query, businessType, cuisine, state, priceRange }: Props) {
+export function DiscoverFilters({
+  query,
+  businessType,
+  cuisine,
+  state,
+  city,
+  priceRange,
+  totalListings,
+}: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -84,6 +42,12 @@ export function DiscoverFilters({ query, businessType, cuisine, state, priceRang
         params.set(key, value)
       } else {
         params.delete(key)
+      }
+      // Reset to page 1 on any filter change
+      params.delete('page')
+      // Clear city when state changes
+      if (key === 'state') {
+        params.delete('city')
       }
       router.push(`/discover?${params.toString()}`)
     },
@@ -103,7 +67,7 @@ export function DiscoverFilters({ query, businessType, cuisine, state, priceRang
     setSearchInput('')
   }, [router])
 
-  const hasFilters = query || businessType || cuisine || state || priceRange
+  const hasFilters = query || businessType || cuisine || state || city || priceRange
 
   return (
     <div className="space-y-4">
@@ -115,7 +79,11 @@ export function DiscoverFilters({ query, businessType, cuisine, state, priceRang
             type="text"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Search by name, city, or cuisine..."
+            placeholder={
+              totalListings
+                ? `Search ${totalListings.toLocaleString()}+ food businesses...`
+                : 'Search by name, city, or cuisine...'
+            }
             className="h-11 w-full rounded-lg border border-stone-700 bg-stone-900/80 pl-10 pr-4 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
           />
         </div>
@@ -164,12 +132,28 @@ export function DiscoverFilters({ query, businessType, cuisine, state, priceRang
           className="h-9 rounded-lg border border-stone-700 bg-stone-900 px-3 text-xs text-stone-300 focus:border-brand-500 focus:outline-none"
         >
           <option value="">All states</option>
-          {US_STATES.map((s) => (
-            <option key={s} value={s}>
-              {s}
+          {Object.entries(US_STATES).map(([code, name]) => (
+            <option key={code} value={code}>
+              {name}
             </option>
           ))}
         </select>
+
+        {/* City (only when state is selected) */}
+        {state && (
+          <input
+            type="text"
+            defaultValue={city}
+            onBlur={(e) => updateFilter('city', e.target.value.trim())}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                updateFilter('city', (e.target as HTMLInputElement).value.trim())
+              }
+            }}
+            placeholder="City name..."
+            className="h-9 w-36 rounded-lg border border-stone-700 bg-stone-900 px-3 text-xs text-stone-300 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
+          />
+        )}
 
         {/* Price range */}
         <select

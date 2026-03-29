@@ -57,7 +57,21 @@ export function ListingCard({ listing }: Props) {
 
         {/* Badges */}
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-3">
-          <StatusBadge status={listing.status} />
+          <div className="flex items-center gap-1.5">
+            <StatusBadge status={listing.status} />
+            {listing.lead_score != null && listing.lead_score > 0 && (
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  listing.lead_score >= 70
+                    ? 'bg-emerald-400'
+                    : listing.lead_score >= 40
+                      ? 'bg-amber-400'
+                      : 'bg-stone-500'
+                }`}
+                title={`Quality score: ${listing.lead_score}`}
+              />
+            )}
+          </div>
           {listing.featured && (
             <span className="rounded-full bg-brand-900/90 px-2.5 py-0.5 text-xxs font-semibold text-brand-300 backdrop-blur-sm">
               Featured
@@ -84,7 +98,22 @@ export function ListingCard({ listing }: Props) {
           </span>
         </div>
 
-        {location && <p className="mt-1 text-xs text-stone-500">{location}</p>}
+        {/* Location + address */}
+        {(location || listing.address) && (
+          <p className="mt-1 text-xs text-stone-500">
+            {listing.address ? `${listing.address}, ${location}` : location}
+          </p>
+        )}
+
+        {/* Phone */}
+        {listing.phone && (
+          <a
+            href={`tel:${listing.phone}`}
+            className="mt-1 block text-xs text-stone-400 hover:text-brand-400 transition-colors"
+          >
+            {listing.phone}
+          </a>
+        )}
 
         {listing.description && (
           <p className="mt-2 text-sm leading-relaxed text-stone-400 line-clamp-2">
@@ -122,6 +151,17 @@ export function ListingCard({ listing }: Props) {
             <span className="flex-1 rounded-lg bg-stone-800 px-3 py-2.5 text-center text-xs font-medium text-stone-500">
               No website listed
             </span>
+          )}
+          {listing.lat && listing.lon && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${listing.lat},${listing.lon}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-lg border border-stone-700 px-3 py-2.5 text-center text-xs font-medium text-stone-300 transition-colors hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100"
+              title="View on Google Maps"
+            >
+              Map
+            </a>
           )}
           <Link
             href={`/discover/${listing.slug}`}

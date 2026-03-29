@@ -5,8 +5,9 @@
 // Uses admin client for all operations since this table uses service_role RLS.
 
 import { createServerClient } from '@/lib/db/server'
+import { pgClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
-import { slugify } from './constants'
+import { slugify, ITEMS_PER_PAGE } from './constants'
 import {
   sendDirectoryWelcomeEmail,
   sendDirectoryClaimedEmail,
@@ -40,6 +41,11 @@ export type DirectoryListing = {
   claimed_at: string | null
   created_at: string
   updated_at: string
+  lat: number | null
+  lon: number | null
+  postcode: string | null
+  lead_score: number | null
+  osm_id: string | null
 }
 
 export type DirectoryListingSummary = Pick<
@@ -57,7 +63,19 @@ export type DirectoryListingSummary = Pick<
   | 'featured'
   | 'description'
   | 'photo_urls'
+  | 'phone'
+  | 'address'
+  | 'lat'
+  | 'lon'
+  | 'lead_score'
 >
+
+export type PaginatedListings = {
+  listings: DirectoryListingSummary[]
+  total: number
+  page: number
+  totalPages: number
+}
 
 // ─── Public Queries ───────────────────────────────────────────────────────────
 
@@ -68,65 +86,94 @@ export type DiscoverFilters = {
   city?: string
   state?: string
   priceRange?: string
+  page?: number
 }
 
 export async function getDirectoryListings(
   filters: DiscoverFilters = {}
-): Promise<DirectoryListingSummary[]> {
-  const db = createServerClient({ admin: true })
+): Promise<PaginatedListings> {
+  const page = Math.max(1, filters.page || 1)
+  const offset = (page - 1) * ITEMS_PER_PAGE
 
-  let query = db
-    .from('directory_listings')
-    .select(
-      'id, name, slug, city, state, cuisine_types, business_type, website_url, status, price_range, featured, description, photo_urls'
+  try {
+    // Build WHERE conditions
+    const conditions: string[] = ["status IN ('discovered', 'claimed', 'verified')"]
+    const params: any[] = []
+    let paramIndex = 1
+
+    if (filters.query) {
+      // Full-text search with prefix matching on last word
+      const terms = filters.query.trim().split(/\s+/).filter(Boolean)
+      if (terms.length > 0) {
+        const tsQuery = terms.map((t, i) => (i === terms.length - 1 ? `${t}:*` : t)).join(' & ')
+        conditions.push(`search_vector @@ to_tsquery('english', $${paramIndex})`)
+        params.push(tsQuery)
+        paramIndex++
+      }
+    }
+
+    if (filters.businessType) {
+      conditions.push(`business_type = $${paramIndex}`)
+      params.push(filters.businessType)
+      paramIndex++
+    }
+
+    if (filters.cuisine) {
+      conditions.push(`$${paramIndex} = ANY(cuisine_types)`)
+      params.push(filters.cuisine)
+      paramIndex++
+    }
+
+    if (filters.state) {
+      conditions.push(`upper(state) = upper($${paramIndex})`)
+      params.push(filters.state)
+      paramIndex++
+    }
+
+    if (filters.city) {
+      conditions.push(`city ILIKE $${paramIndex}`)
+      params.push(`%${filters.city}%`)
+      paramIndex++
+    }
+
+    if (filters.priceRange) {
+      conditions.push(`price_range = $${paramIndex}`)
+      params.push(filters.priceRange)
+      paramIndex++
+    }
+
+    const whereClause = conditions.join(' AND ')
+
+    // Count query
+    const countResult = await pgClient.unsafe(
+      `SELECT count(*) as count FROM directory_listings WHERE ${whereClause}`,
+      params
     )
-    .in('status', ['discovered', 'claimed', 'verified'])
-    .order('featured', { ascending: false })
-    .order('name', { ascending: true })
+    const total = parseInt(countResult[0].count)
+    const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE))
 
-  if (filters.businessType) {
-    query = query.eq('business_type', filters.businessType)
-  }
-
-  if (filters.cuisine) {
-    query = query.contains('cuisine_types', [filters.cuisine])
-  }
-
-  if (filters.state) {
-    query = query.ilike('state', filters.state)
-  }
-
-  if (filters.city) {
-    query = query.ilike('city', `%${filters.city}%`)
-  }
-
-  if (filters.priceRange) {
-    query = query.eq('price_range', filters.priceRange)
-  }
-
-  const { data, error } = await query
-
-  if (error) {
-    console.error('[getDirectoryListings]', error)
-    return []
-  }
-
-  let results = (data || []) as DirectoryListingSummary[]
-
-  // Client-side text search across name, city, cuisine_types
-  if (filters.query) {
-    const q = filters.query.toLowerCase()
-    results = results.filter(
-      (l) =>
-        l.name.toLowerCase().includes(q) ||
-        l.city?.toLowerCase().includes(q) ||
-        l.state?.toLowerCase().includes(q) ||
-        l.cuisine_types.some((c) => c.toLowerCase().includes(q)) ||
-        l.description?.toLowerCase().includes(q)
+    // Data query
+    const dataResult = await pgClient.unsafe(
+      `SELECT id, name, slug, city, state, cuisine_types, business_type, website_url,
+              status, price_range, featured, description, photo_urls, phone, address,
+              lat, lon, lead_score
+       FROM directory_listings
+       WHERE ${whereClause}
+       ORDER BY featured DESC, lead_score DESC NULLS LAST, name ASC
+       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
+      [...params, ITEMS_PER_PAGE, offset]
     )
-  }
 
-  return results
+    return {
+      listings: dataResult as unknown as DirectoryListingSummary[],
+      total,
+      page,
+      totalPages,
+    }
+  } catch (err) {
+    console.error('[getDirectoryListings]', err)
+    return { listings: [], total: 0, page: 1, totalPages: 1 }
+  }
 }
 
 export async function getDirectoryListingBySlug(slug: string): Promise<DirectoryListing | null> {
@@ -151,46 +198,82 @@ export async function getDirectoryFacets(): Promise<{
   cuisines: { value: string; count: number }[]
   states: { value: string; count: number }[]
 }> {
-  const db = createServerClient({ admin: true })
+  try {
+    const [typeRows, stateRows] = await Promise.all([
+      pgClient`
+        SELECT business_type as value, count(*)::int as count
+        FROM directory_listings
+        WHERE status IN ('discovered', 'claimed', 'verified')
+        GROUP BY business_type
+        ORDER BY count DESC
+      `,
+      pgClient`
+        SELECT upper(state) as value, count(*)::int as count
+        FROM directory_listings
+        WHERE status IN ('discovered', 'claimed', 'verified') AND state IS NOT NULL
+        GROUP BY upper(state)
+        ORDER BY value
+      `,
+    ])
 
-  const { data, error } = await db
-    .from('directory_listings')
-    .select('business_type, cuisine_types, state')
-    .in('status', ['discovered', 'claimed', 'verified'])
+    // Cuisine facets need unnest since it's an array column
+    const cuisineRows = await pgClient`
+      SELECT c as value, count(*)::int as count
+      FROM directory_listings, unnest(cuisine_types) as c
+      WHERE status IN ('discovered', 'claimed', 'verified')
+      GROUP BY c
+      ORDER BY count DESC
+    `
 
-  if (error || !data) {
+    return {
+      businessTypes: typeRows as unknown as { value: string; count: number }[],
+      cuisines: cuisineRows as unknown as { value: string; count: number }[],
+      states: stateRows as unknown as { value: string; count: number }[],
+    }
+  } catch (err) {
+    console.error('[getDirectoryFacets]', err)
     return { businessTypes: [], cuisines: [], states: [] }
   }
+}
 
-  const typeCounts: Record<string, number> = {}
-  const cuisineCounts: Record<string, number> = {}
-  const stateCounts: Record<string, number> = {}
+// ─── Directory Stats (for landing page) ──────────────────────────────────────
 
-  for (const row of data) {
-    const bt = (row as any).business_type
-    if (bt) typeCounts[bt] = (typeCounts[bt] || 0) + 1
+export async function getDirectoryStats(): Promise<{
+  totalListings: number
+  states: { state: string; count: number }[]
+  topCities: { city: string; state: string; count: number }[]
+}> {
+  try {
+    const [totalResult, stateResults, cityResults] = await Promise.all([
+      pgClient`
+        SELECT count(*)::int as count FROM directory_listings
+        WHERE status IN ('discovered', 'claimed', 'verified')
+      `,
+      pgClient`
+        SELECT upper(state) as state, count(*)::int as count
+        FROM directory_listings
+        WHERE status IN ('discovered', 'claimed', 'verified') AND state IS NOT NULL
+        GROUP BY upper(state)
+        ORDER BY state
+      `,
+      pgClient`
+        SELECT city, upper(state) as state, count(*)::int as count
+        FROM directory_listings
+        WHERE status IN ('discovered', 'claimed', 'verified') AND city IS NOT NULL
+        GROUP BY city, upper(state)
+        ORDER BY count DESC
+        LIMIT 20
+      `,
+    ])
 
-    const cuisines = (row as any).cuisine_types as string[]
-    if (cuisines) {
-      for (const c of cuisines) {
-        cuisineCounts[c] = (cuisineCounts[c] || 0) + 1
-      }
+    return {
+      totalListings: totalResult[0]?.count || 0,
+      states: stateResults as unknown as { state: string; count: number }[],
+      topCities: cityResults as unknown as { city: string; state: string; count: number }[],
     }
-
-    const st = (row as any).state
-    if (st) stateCounts[st] = (stateCounts[st] || 0) + 1
-  }
-
-  return {
-    businessTypes: Object.entries(typeCounts)
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => b.count - a.count),
-    cuisines: Object.entries(cuisineCounts)
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => b.count - a.count),
-    states: Object.entries(stateCounts)
-      .map(([value, count]) => ({ value, count }))
-      .sort((a, b) => a.value.localeCompare(b.value)),
+  } catch (err) {
+    console.error('[getDirectoryStats]', err)
+    return { totalListings: 0, states: [], topCities: [] }
   }
 }
 
