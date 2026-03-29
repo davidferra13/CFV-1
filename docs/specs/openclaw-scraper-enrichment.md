@@ -79,8 +79,9 @@ Everything below is live on Pi. Do not rebuild.
 - Rate limited to ~85 req/min (700ms delay between requests)
 - Stops after 10 consecutive errors (resilient to temporary API outages)
 - Marks checked-but-not-found ingredients with `off_image_url = 'none'`
+- Error handling verified correct: on non-200 (e.g., 503), `searchOFF` returns `null`, error counter increments, ingredient stays NULL (retried next week). The `'none'` marker only applies when OFF returns 200 with zero matching products.
 
-**Known issue: OFF returns 503 as of 2026-03-29.** The enricher handles this gracefully (stops after 10 errors). It will succeed on the next cron run when OFF recovers. However, there's a bug: if OFF is down for the entire run, all 11K ingredients get marked `'none'` and are never re-checked. See Phase 5a-fix below.
+**Note:** OFF returned 503 as of 2026-03-29. The enricher will stop after ~10 errors and exit cleanly. No data corruption. Items stay NULL and get retried on the next Sunday cron run.
 
 ### Phase 5b: Instacart Expansion - DONE
 
@@ -125,17 +126,27 @@ Verified live: `curl localhost:8081/api/ingredients?limit=1` returns all new fie
 
 ---
 
+### Phase 3: Store-Location Granularity (Partial) - DONE
+
+**Schema + db.mjs:** `location_id` column exists on `current_prices`. `upsertPrice()` accepts and stores `locationId` parameter (INSERT and UPDATE with `COALESCE`).
+
+**All scrapers now tag prices with `location_id`:**
+
+- **Walmart**: `location_id = 'walmart-methuen-2153'` (store-specific constant)
+- **Target**: `location_id = 'target-methuen-1290'` (store-specific constant)
+- **Stop & Shop**: `location_id = store.sourceId` (from store config)
+- **Instacart**: `location_id = '{sourceId}-haverhill'` (default geolocation is Haverhill)
+- **Flipp**: `location_id = '{sourceId}-haverhill'` (default postal code)
+
+---
+
 ## Remaining Work
 
-### Phase 5a-fix: OFF Enricher Retry Logic (quick fix)
+### Phase 3-full: Multi-Location Instacart Scraping
 
-The enricher already handles this correctly: when the API returns non-200 (null from `searchOFF`), the `continue` on line 113 skips the ingredient, leaving `off_image_url` as NULL for retry next week. The `markChecked` with `'none'` only runs when the API returned 200 with zero matching products. No code change needed.
+The single-location tagging is deployed. What remains is scraping the SAME stores from DIFFERENT locations to get location-specific pricing and availability.
 
-### Phase 3: Store-Location Granularity
-
-**Schema:** `location_id` column already exists on `current_prices` (added in Phase 1 migration). Needs to be populated.
-
-**The hard part (Instacart):** Instacart determines store location via cookies and geolocation, not URL parameters. Switching locations requires:
+**The hard part:** Instacart determines store location via cookies and geolocation, not URL parameters. Switching locations requires:
 
 1. Set a new delivery address in the Instacart session (Puppeteer interaction)
 2. Re-scrape with the new location context
@@ -145,52 +156,13 @@ This means 3 locations x 4 stores = 12 sessions per odd/even day, significantly 
 
 **Mitigation:** Start with just 2 locations (Haverhill + one other in Merrimack Valley). Expand only after confirming time/load is acceptable.
 
-**Location registry:** Create `config/locations.json`:
+**What to build:**
 
-```json
-{
-  "regions": [
-    {
-      "name": "Merrimack Valley",
-      "zip_codes": ["01835", "01830", "01844"],
-      "priority": 1
-    },
-    {
-      "name": "Greater Boston",
-      "zip_codes": ["02101", "02134"],
-      "priority": 2
-    },
-    {
-      "name": "Southern NH",
-      "zip_codes": ["03103", "03060"],
-      "priority": 2
-    }
-  ],
-  "stores": {
-    "market-basket": {
-      "chain": "Market Basket",
-      "instacart_slug": "market-basket",
-      "locations": [
-        { "name": "Market Basket Haverhill", "zip": "01835", "location_id": "mb-haverhill" },
-        { "name": "Market Basket Methuen", "zip": "01844", "location_id": "mb-methuen" }
-      ]
-    }
-  }
-}
-```
-
-**Scraper changes:**
-
-- `scraper-instacart-bulk.mjs`: Add `--location=01835` CLI flag. For each store, set delivery address to the target zip before scraping. Tag all prices with `location_id`. Register separate `source_registry` entries per location (e.g., "market-basket-haverhill-instacart").
-- `scraper-flipp.mjs`: Cycle through zip codes from `locations.json`. Register sources per location.
-- `scraper-walmart.mjs`: Already store-specific (store #2153 Methuen). Add `location_id` to upsertPrice call using existing store info.
-- `scraper-target.mjs`: Already store-specific (#1290 Methuen). Add `location_id` similarly.
-
-**Sync API changes:**
-
-- `/api/ingredients?location=haverhill` returns prices for that location
-- `/api/ingredients?store=market-basket&location=haverhill` combined filter
-- No location filter = all locations aggregated, cheapest price shown (backward compatible)
+- Create `config/locations.json` with region/zip/store definitions
+- Add `--location=01835` CLI flag to `scraper-instacart-bulk.mjs`
+- For each location, set Instacart delivery address before scraping
+- Register separate `source_registry` entries per location (e.g., "market-basket-haverhill-instacart" vs "market-basket-methuen-instacart")
+- Add location filter to sync-api: `/api/ingredients?location=haverhill`
 
 ### Phase 5d: Target Multi-Store Expansion
 
@@ -238,21 +210,21 @@ New script: `enricher-usda-fdc.mjs`
 
 ---
 
-## Sync Pipeline Update (Required for ChefFlow to consume new data)
+## Sync Pipeline Update
 
-The nightly sync (`sync-to-chefflow.mjs`) and the sync API (`sync-api.mjs` on port 8081) need to pass through the new columns. Without this, ChefFlow can't display images, stock status, or location data even though the Pi has it.
+### Completed: sync-api.mjs (live on port 8081)
 
-**`sync-api.mjs` changes:**
+The sync API already serves all new columns:
 
-- `/api/ingredients` response must include `image_url`, `in_stock`, `location_id` from `current_prices`
-- `/api/ingredients` response must include `off_image_url`, `off_barcode`, `off_nutrition_json` from `canonical_ingredients`
-- Add location filter support: `?location=haverhill`
-- Add stock filter: `?in_stock=1` (default: show all, let ChefFlow decide display)
+- `/api/ingredients`: returns `image_url` (best scraper image, falling back to OFF image), `off_image_url`, `off_barcode`, `off_nutrition_json`, `best_price_cents`, `best_source`, `store_count`
+- `/api/ingredients/detail/{id}`: returns per-store prices with `imageUrl`, `locationId`, `inStock`
+- Restarted and verified with curl on 2026-03-29
 
-**`sync-to-chefflow.mjs` changes:**
+### Remaining: sync-to-chefflow.mjs + filters
 
-- Include new columns in the nightly sync payload
-- ChefFlow's `/api/cron/price-sync` endpoint must accept and store them (this is a ChefFlow-side change, noted here for completeness)
+- `sync-to-chefflow.mjs`: include new columns in the nightly sync payload
+- ChefFlow's `/api/cron/price-sync` endpoint: accept and store image*url, off*\*, location_id (ChefFlow-side change)
+- sync-api filter support: `?location=haverhill`, `?in_stock=1` (nice-to-have, not blocking)
 
 ---
 
@@ -297,19 +269,19 @@ The nightly sync (`sync-to-chefflow.mjs`) and the sync API (`sync-api.mjs` on po
 
 ### After Phase 2
 
-6. Verify `in_stock = 0` for known out-of-stock items (check against Instacart website)
-7. Run `watchdog.mjs`, verify staleness rule marks old items out of stock
+1. Verify `in_stock = 0` for known out-of-stock items (check against Instacart website)
+2. Run `watchdog.mjs`, verify staleness rule marks old items out of stock
 
 ### After Phase 3
 
-8. Verify location-specific source entries appear in `source_registry`
-9. Verify same product at two locations has two separate price records with different `location_id`
+1. Verify location-specific source entries appear in `source_registry`
+2. Verify same product at two locations has two separate price records with different `location_id`
 
 ---
 
 ## Current Crontab v4 (Live on Pi)
 
-```
+```crontab
 # OpenClaw Price Intelligence - Scraper Schedule v4
 # Updated 2026-03-29
 
