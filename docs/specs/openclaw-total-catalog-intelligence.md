@@ -1,6 +1,6 @@
 # Spec: OpenClaw Total Catalog Intelligence
 
-> **Status:** in-progress
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** none (all infrastructure exists)
 > **Estimated complexity:** large (30+ files across Pi and ChefFlow)
