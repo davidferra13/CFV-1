@@ -366,6 +366,27 @@ Report: ~/chefflow-sentinel/results/smoke-20260329-0800.json
 
 ## Notes for Builder Agent
 
+### CRITICAL: Builder Traps (Read First)
+
+**Trap 1: Two different agent accounts exist.** `.auth/agent.json` has `agent@local.chefflow` / `CHEF.jdgyuegf9924092.FLOW`. But `tests/smoke/agent-auth.spec.ts:10-11` uses `agent@chefflow.test` / `AgentChefFlow!2026`. These are DIFFERENT accounts. The sentinel must use whichever one exists in the production database. Verify with a manual sign-in attempt before writing any test code. If neither exists in prod, run `npm run agent:setup` targeting the prod DB.
+
+**Trap 2: Sign-in is a React server action, NOT a form POST.** The sign-in page (`app/auth/signin/page.tsx:69-89`) uses `signIn(formData)` via Next.js server action. Playwright handles this fine by filling inputs and clicking submit (the React handler fires normally). Do NOT try `page.request.post()` to the sign-in URL. Copy the exact pattern from `tests/smoke/agent-auth.spec.ts:20-44`:
+
+```typescript
+await page.fill('input[type="email"]', email)
+await page.fill('input[type="password"]', password)
+await page.click('button[type="submit"]')
+await page.waitForURL(/\/(dashboard|onboarding|my-events)/, { timeout: 120_000 })
+```
+
+**Trap 3: Rate limiting will block the Pi.** `lib/auth/actions.ts:404` calls `checkRateLimit(email)` in production. The bypass at line 398-402 only works for `@chefflow.test` emails with `DISABLE_AUTH_RATE_LIMIT_FOR_E2E=true` set, which prod won't have. **Solution:** Cache the auth state. Sign in ONCE, save the JWT (lasts 30 days per `app/api/e2e/auth/route.ts:123`). Only re-auth when the stored JWT expires or a test gets 401. Do NOT sign in on every test run.
+
+**Trap 4: Cookie domain must match test target.** If you auth via `https://app.cheflowhq.com`, the cookie is scoped to that domain. If you auth via direct LAN (`http://10.0.0.X:3000`), the cookie won't work on `app.cheflowhq.com`. Auth and test targets MUST be the same origin.
+
+**Trap 5: The tunnel path is LAN-to-Internet-back-to-LAN.** When the Pi hits `app.cheflowhq.com`, traffic goes: Pi (LAN) -> Internet -> Cloudflare -> Tunnel -> PC:3000 (LAN). This requires: (a) PC prod server running, (b) `cloudflared` tunnel active on PC, (c) internet up. Alternative: hit `http://<PC-LAN-IP>:3000` directly for faster/more reliable tests, but this bypasses Cloudflare and doesn't test the real user path. The spec recommends `app.cheflowhq.com` as default with LAN fallback.
+
+**Trap 6: `/api/e2e/auth` is permanently blocked in production.** Confirmed at `app/api/e2e/auth/route.ts:19`. The soak tests work around this by authing against dev server port 3100 (`tests/soak/soak-global-setup.ts:16`), but the Pi can't reach localhost:3100 on the PC. The Pi MUST use the normal sign-in form flow via `https://app.cheflowhq.com/auth/signin`.
+
 ### Pi Hardware Constraints
 
 - **RAM:** 8GB. Chromium headless uses ~300-500MB. Leave headroom for price scrapers + Docker containers
@@ -373,12 +394,9 @@ Report: ~/chefflow-sentinel/results/smoke-20260329-0800.json
 - **Disk:** ~78GB free. Playwright install is ~400MB. Screenshots/results: budget 1GB rotating
 - **Architecture:** ARM64 (aarch64). Playwright supports this via `npx playwright install --with-deps chromium`
 
-### Auth Gotcha
-
-`/api/e2e/auth` returns 403 in production (`app/api/e2e/auth/route.ts:19`). The soak tests already solve this by authenticating against the dev server (`soak-global-setup.ts:16`), but the Pi can't reach the dev server (it's on localhost:3100 on the PC). The Pi must use the normal sign-in form flow via `https://app.cheflowhq.com/auth/signin`.
-
 ### Existing Patterns to Follow
 
+- `tests/smoke/agent-auth.spec.ts:20-44` - **THE reference implementation** for UI sign-in from Playwright (exact selectors, retry logic, URL pattern matching)
 - `tests/helpers/fixtures.ts` - custom Playwright fixture pattern (use for sentinel too)
 - `tests/experiential/helpers/experiential-utils.ts` - screenshot checkpoint pattern
 - `tests/soak/soak-utils.ts` - report generation pattern

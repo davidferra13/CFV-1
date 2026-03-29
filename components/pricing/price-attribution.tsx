@@ -21,6 +21,8 @@ export interface PriceAttributionProps {
   trendPct?: number | null
   lastPriceDate?: string | null
   compact?: boolean
+  /** Chef's preferred store name. When it matches `store`, a star indicator is shown. */
+  preferredStore?: string | null
 }
 
 function freshnessText(date: string | null): string {
@@ -95,7 +97,10 @@ export function PriceAttribution({
   trendPct,
   lastPriceDate,
   compact = false,
+  preferredStore,
 }: PriceAttributionProps) {
+  const isPreferred =
+    !!preferredStore && !!store && store.toLowerCase() === preferredStore.toLowerCase()
   // No price
   if (priceCents === null || priceCents === undefined) {
     return <span className="text-sm text-stone-500">--</span>
@@ -125,7 +130,16 @@ export function PriceAttribution({
           {priceText}
           {unitSuffix && <span className="text-stone-400">{unitSuffix}</span>}
         </span>
-        {store && <span className="text-xs text-stone-500 truncate max-w-[80px]">at {store}</span>}
+        {store && (
+          <span className="text-xs text-stone-500 truncate max-w-[80px]">
+            {isPreferred && (
+              <span className="text-amber-400 mr-0.5" title="Your preferred store">
+                &#9733;
+              </span>
+            )}
+            at {store}
+          </span>
+        )}
         <span className={`inline-block w-1.5 h-1.5 rounded-full ${dot.color}`} title={dot.title} />
         {trend && (
           <span className={`text-xs ${trend.color}`} title={trend.title}>
@@ -145,7 +159,14 @@ export function PriceAttribution({
       {store && (
         <>
           <span className="text-stone-600">&middot;</span>
-          <span className="text-xs text-stone-400">{store}</span>
+          <span className="text-xs text-stone-400">
+            {isPreferred && (
+              <span className="text-amber-400 mr-0.5" title="Your preferred store">
+                &#9733;
+              </span>
+            )}
+            {store}
+          </span>
         </>
       )}
       <span className={`inline-block w-2 h-2 rounded-full ${dot.color}`} title={dot.title} />

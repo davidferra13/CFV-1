@@ -13,6 +13,8 @@ import {
   getStoreScorecard,
   type StoreScorecard as StoreScore,
 } from '@/lib/openclaw/price-intelligence-actions'
+import { getMyPrimaryStoreName } from '@/lib/openclaw/store-preference-actions'
+import { useEffect } from 'react'
 
 interface Props {
   ingredientNames: string[]
@@ -22,6 +24,19 @@ export function StoreScorecard({ ingredientNames }: Props) {
   const [stores, setStores] = useState<StoreScore[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [primaryStore, setPrimaryStore] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    getMyPrimaryStoreName()
+      .then((name) => {
+        if (!cancelled) setPrimaryStore(name)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   if (ingredientNames.length === 0) return null
 
@@ -65,44 +80,55 @@ export function StoreScorecard({ ingredientNames }: Props) {
       {stores && stores.length > 0 && (
         <CardContent>
           <div className="space-y-2">
-            {stores.slice(0, 8).map((s, i) => (
-              <div key={s.store} className="space-y-1">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`w-5 text-center text-xs font-bold ${
-                        i === 0
-                          ? 'text-emerald-400'
-                          : i === 1
-                            ? 'text-stone-300'
-                            : i === 2
-                              ? 'text-amber-500'
-                              : 'text-stone-500'
-                      }`}
-                    >
-                      #{i + 1}
-                    </span>
-                    <span className="text-stone-200 font-medium">{s.store}</span>
+            {stores.slice(0, 8).map((s, i) => {
+              const isPreferred =
+                !!primaryStore && s.store.toLowerCase() === primaryStore.toLowerCase()
+              return (
+                <div key={s.store} className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`w-5 text-center text-xs font-bold ${
+                          i === 0
+                            ? 'text-emerald-400'
+                            : i === 1
+                              ? 'text-stone-300'
+                              : i === 2
+                                ? 'text-amber-500'
+                                : 'text-stone-500'
+                        }`}
+                      >
+                        #{i + 1}
+                      </span>
+                      <span className="text-stone-200 font-medium">
+                        {isPreferred && (
+                          <span className="text-amber-400 mr-0.5" title="Your preferred store">
+                            &#9733;
+                          </span>
+                        )}
+                        {s.store}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs">
+                      <span className="text-stone-500">
+                        {s.itemCount} items ({s.coveragePct}%)
+                      </span>
+                      <span className="text-emerald-400 font-medium">{s.wins} cheapest</span>
+                      <span className="text-stone-300 font-medium w-16 text-right">
+                        avg {formatCurrency(s.avgCents)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4 text-xs">
-                    <span className="text-stone-500">
-                      {s.itemCount} items ({s.coveragePct}%)
-                    </span>
-                    <span className="text-emerald-400 font-medium">{s.wins} cheapest</span>
-                    <span className="text-stone-300 font-medium w-16 text-right">
-                      avg {formatCurrency(s.avgCents)}
-                    </span>
+                  {/* Coverage bar */}
+                  <div className="ml-7 h-1 bg-stone-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${i === 0 ? 'bg-emerald-500' : 'bg-stone-600'}`}
+                      style={{ width: `${(s.coveragePct / maxCoverage) * 100}%` }}
+                    />
                   </div>
                 </div>
-                {/* Coverage bar */}
-                <div className="ml-7 h-1 bg-stone-800 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full ${i === 0 ? 'bg-emerald-500' : 'bg-stone-600'}`}
-                    style={{ width: `${(s.coveragePct / maxCoverage) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {stores.length === 0 && (

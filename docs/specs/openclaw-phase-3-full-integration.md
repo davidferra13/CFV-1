@@ -815,12 +815,12 @@ Add a 7th tab to the admin price catalog: "Vendor Import". The admin catalog cur
 
 - `.openclaw-build/services/sync-api.mjs` - Extend `GET /api/stats/category-coverage` with totals
 
-**Workstream C:**
+**Workstream C:** (UI integration points completed 2026-03-29)
 
 - `lib/pricing/resolve-price.ts` - Activate unused `_options.preferredStore` param: prefer chef's primary store when multiple prices exist at same tier
-- `components/pricing/price-attribution.tsx` - Use preferred store price when available
-- `components/pricing/event-shopping-planner.tsx` - Default single-store to chef's primary store
-- `components/pricing/store-scorecard.tsx` - Highlight chef's preferred stores
+- ~~`components/pricing/price-attribution.tsx` - Use preferred store price when available~~ DONE: added `preferredStore` prop with star indicator
+- ~~`components/pricing/event-shopping-planner.tsx` - Default single-store to chef's primary store~~ DONE: fetches primary store, highlights in single-store and rankings
+- ~~`components/pricing/store-scorecard.tsx` - Highlight chef's preferred stores~~ DONE: fetches primary store, shows star indicator on matching rows
 - `app/(chef)/settings/page.tsx` - Add link to store preferences
 
 **Workstream D:**

@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import { JoinForm } from './_components/join-form'
 import { createServerClient } from '@/lib/db/server'
-import { decryptRef } from '@/lib/discover/outreach-campaign'
+import { decryptRef } from '@/lib/discover/outreach-crypto'
 
 export const metadata: Metadata = {
   title: 'Join the Food Directory',

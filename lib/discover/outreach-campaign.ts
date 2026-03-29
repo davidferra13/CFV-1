@@ -10,68 +10,11 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { sendEmail } from '@/lib/email/send'
 import { DirectoryInvitationEmail } from '@/lib/email/templates/directory-invitation'
 import { revalidatePath } from 'next/cache'
-import crypto from 'crypto'
+import { createOutreachRef } from './outreach-crypto'
 
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 const OUTREACH_FROM = process.env.DIRECTORY_OUTREACH_FROM_EMAIL || ''
 const OUTREACH_PHYSICAL_ADDRESS = process.env.OUTREACH_PHYSICAL_ADDRESS || ''
-const OUTREACH_HASH_SECRET =
-  process.env.OUTREACH_HASH_SECRET || process.env.AUTH_SECRET || 'dev-secret-do-not-use'
-
-// ── Ref Encryption (AES-256-CBC, reversible) ─────────────────────────────────
-
-function deriveKeyAndIv(listingId: string): { key: Buffer; iv: Buffer } {
-  const keyMaterial = crypto.createHash('sha256').update(OUTREACH_HASH_SECRET).digest()
-  // Deterministic IV from listing ID so same listing always produces same ref
-  const iv = crypto.createHash('md5').update(listingId).digest()
-  return { key: keyMaterial, iv }
-}
-
-export function encryptRef(listingId: string): string {
-  const { key, iv } = deriveKeyAndIv(listingId)
-  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
-  let encrypted = cipher.update(listingId, 'utf8', 'base64url')
-  encrypted += cipher.final('base64url')
-  return encrypted
-}
-
-export function decryptRef(ref: string): string | null {
-  try {
-    // We need to try all possible listing IDs... but we don't know the ID.
-    // Instead, use a fixed IV approach: derive IV from the secret, not the listing.
-    const keyMaterial = crypto.createHash('sha256').update(OUTREACH_HASH_SECRET).digest()
-    // For decryption, we need the same IV. Since we used listing-based IV for encryption,
-    // we need a different approach: encode IV + ciphertext together.
-    // Let's switch to: ref = base64url(iv + ciphertext)
-    const raw = Buffer.from(ref, 'base64url')
-    if (raw.length < 17) return null // 16-byte IV + at least 1 byte
-    const iv = raw.subarray(0, 16)
-    const ciphertext = raw.subarray(16)
-    const decipher = crypto.createDecipheriv('aes-256-cbc', keyMaterial, iv)
-    let decrypted = decipher.update(ciphertext, undefined, 'utf8')
-    decrypted += decipher.final('utf8')
-    // Validate it looks like a UUID
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(decrypted)) {
-      return decrypted
-    }
-    return null
-  } catch {
-    return null
-  }
-}
-
-// Re-implement encryptRef to include IV in output for decryptability
-function encryptRefV2(listingId: string): string {
-  const keyMaterial = crypto.createHash('sha256').update(OUTREACH_HASH_SECRET).digest()
-  const iv = crypto.randomBytes(16)
-  const cipher = crypto.createCipheriv('aes-256-cbc', keyMaterial, iv)
-  let encrypted = cipher.update(listingId, 'utf8')
-  encrypted = Buffer.concat([encrypted, cipher.final()])
-  return Buffer.concat([iv, encrypted]).toString('base64url')
-}
-
-// Export the V2 version as the primary
-export { encryptRefV2 as createOutreachRef }
 
 // ── Outreach Queue Selection ─────────────────────────────────────────────────
 
@@ -175,7 +118,7 @@ export async function sendDirectoryInvitationEmail(listing: {
   }
 
   const db = createServerClient({ admin: true })
-  const ref = encryptRefV2(listing.id)
+  const ref = createOutreachRef(listing.id)
   const joinUrl = `${SITE_URL}/discover/join?ref=${ref}`
   const optOutUrl = `${SITE_URL}/discover/unsubscribe?t=${Buffer.from(listing.email.toLowerCase()).toString('base64url')}`
 

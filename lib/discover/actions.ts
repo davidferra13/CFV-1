@@ -494,7 +494,7 @@ export async function claimListingByMatch(input: {
 
   // Step 1: If ref param exists, try to decrypt to listing ID
   if (input.ref) {
-    const { decryptRef } = await import('./outreach-campaign')
+    const { decryptRef } = await import('./outreach-crypto')
     const listingId = decryptRef(input.ref)
     if (listingId) {
       const { data: listing } = await db

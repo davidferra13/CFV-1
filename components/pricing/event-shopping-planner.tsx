@@ -14,12 +14,27 @@ import {
   getUpcomingEventShoppingPlan,
   type EventShoppingPlan,
 } from '@/lib/openclaw/event-shopping-actions'
+import { getMyPrimaryStoreName } from '@/lib/openclaw/store-preference-actions'
+import { useEffect } from 'react'
 
 export function EventShoppingPlanner() {
   const [plan, setPlan] = useState<EventShoppingPlan | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [daysAhead, setDaysAhead] = useState(14)
+  const [primaryStore, setPrimaryStore] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    getMyPrimaryStoreName()
+      .then((name) => {
+        if (!cancelled) setPrimaryStore(name)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const handlePlan = () => {
     setError(null)
@@ -47,6 +62,7 @@ export function EventShoppingPlanner() {
             <select
               value={daysAhead}
               onChange={(e) => setDaysAhead(Number(e.target.value))}
+              aria-label="Planning horizon"
               className="text-xs bg-stone-800 border border-stone-700 rounded px-2 py-1 text-stone-300"
             >
               <option value={7}>Next 7 days</option>
@@ -104,28 +120,46 @@ export function EventShoppingPlanner() {
               {plan.optimization && (
                 <div className="space-y-3 pt-2">
                   {/* Single store option */}
-                  {plan.optimization.singleStoreBest && (
-                    <div className="p-3 rounded-lg border border-stone-700 bg-stone-900/50">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-stone-200">Best Single Store</p>
-                          <p className="text-xs text-stone-500 mt-0.5">
-                            One trip, {plan.optimization.singleStoreBest.availableCount} items
-                            {plan.optimization.singleStoreBest.missingCount > 0 &&
-                              ` (${plan.optimization.singleStoreBest.missingCount} not found)`}
-                          </p>
+                  {plan.optimization.singleStoreBest &&
+                    (() => {
+                      const isSinglePreferred =
+                        !!primaryStore &&
+                        plan.optimization.singleStoreBest.store.toLowerCase() ===
+                          primaryStore.toLowerCase()
+                      return (
+                        <div
+                          className={`p-3 rounded-lg border ${
+                            isSinglePreferred
+                              ? 'border-amber-700/50 bg-amber-950/20'
+                              : 'border-stone-700 bg-stone-900/50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-stone-200">
+                                {isSinglePreferred ? 'Your Preferred Store' : 'Best Single Store'}
+                              </p>
+                              <p className="text-xs text-stone-500 mt-0.5">
+                                One trip, {plan.optimization.singleStoreBest.availableCount} items
+                                {plan.optimization.singleStoreBest.missingCount > 0 &&
+                                  ` (${plan.optimization.singleStoreBest.missingCount} not found)`}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-lg font-bold text-stone-100">
+                                {formatCurrency(plan.optimization.singleStoreBest.totalCents)}
+                              </p>
+                              <p className="text-xs text-stone-400">
+                                {isSinglePreferred && (
+                                  <span className="text-amber-400 mr-0.5">&#9733;</span>
+                                )}
+                                {plan.optimization.singleStoreBest.store}
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-lg font-bold text-stone-100">
-                            {formatCurrency(plan.optimization.singleStoreBest.totalCents)}
-                          </p>
-                          <p className="text-xs text-stone-400">
-                            {plan.optimization.singleStoreBest.store}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                      )
+                    })()}
 
                   {/* Multi-store optimal */}
                   {plan.optimization.multiStoreOptimal &&
@@ -172,27 +206,39 @@ export function EventShoppingPlanner() {
                         Store Rankings (for your ingredients)
                       </p>
                       <div className="space-y-1">
-                        {plan.optimization.storeRanking.slice(0, 5).map((s, i) => (
-                          <div key={s.store} className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`w-4 text-center font-bold ${
-                                  i === 0 ? 'text-emerald-400' : 'text-stone-500'
-                                }`}
-                              >
-                                {i + 1}
-                              </span>
-                              <span className="text-stone-300">{s.store}</span>
+                        {plan.optimization.storeRanking.slice(0, 5).map((s, i) => {
+                          const isRankPreferred =
+                            !!primaryStore && s.store.toLowerCase() === primaryStore.toLowerCase()
+                          return (
+                            <div
+                              key={s.store}
+                              className="flex items-center justify-between text-xs"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`w-4 text-center font-bold ${
+                                    i === 0 ? 'text-emerald-400' : 'text-stone-500'
+                                  }`}
+                                >
+                                  {i + 1}
+                                </span>
+                                <span className="text-stone-300">
+                                  {isRankPreferred && (
+                                    <span className="text-amber-400 mr-0.5">&#9733;</span>
+                                  )}
+                                  {s.store}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 text-stone-500">
+                                <span>{s.coveragePct}% coverage</span>
+                                <span>{s.wins} cheapest</span>
+                                <span className="text-stone-400 font-medium">
+                                  avg {formatCurrency(s.avgCents)}
+                                </span>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-3 text-stone-500">
-                              <span>{s.coveragePct}% coverage</span>
-                              <span>{s.wins} cheapest</span>
-                              <span className="text-stone-400 font-medium">
-                                avg {formatCurrency(s.avgCents)}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     </div>
                   )}
