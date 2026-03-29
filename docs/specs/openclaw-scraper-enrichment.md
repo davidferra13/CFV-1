@@ -1,6 +1,6 @@
 # Spec: OpenClaw Scraper Enrichment (Images, Stock, Location Granularity, New Sources)
 
-> **Status:** in-progress (Phases 1, 2, 4, 5a, 5b complete. Phase 3, 5d, 5e, 5g, 5h remaining.)
+> **Status:** in-progress (Phases 1, 2, 3-partial, 4, 5a, 5b complete. Phase 3-full, 5d, 5e, 5g, 5h remaining.)
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (12+ files on Pi)
@@ -54,8 +54,8 @@ Everything below is live on Pi. Do not rebuild.
 | `scraper-instacart-bulk.mjs` | `obj.imageUrl`, `obj.image`, `obj.thumbnailUrl`, `viewSection.itemImage.url` from GraphQL walk | Done                                   |
 | `scraper-walmart.mjs`        | `item.imageInfo.thumbnailUrl` or `item.imageInfo.url` from `__NEXT_DATA__` SSR JSON            | Done                                   |
 | `scraper-stopsandshop.mjs`   | `img` element `src` from Puppeteer product card                                                | Done, `imageUrl` passed to upsertPrice |
-| `scraper-target.mjs`         | Not yet patched (Redsky API has image URLs, needs extraction)                                  | TODO                                   |
-| `scraper-flipp.mjs`          | Not yet patched (flyer clipping images available)                                              | TODO                                   |
+| `scraper-target.mjs`         | `item.enrichment.images.primary_image_url` from Redsky API + `fulfillment.is_out_of_stock`     | Done                                   |
+| `scraper-flipp.mjs`          | `item.cutout_image_url` or `item.image_url` from Flipp API response                            | Done                                   |
 
 **Image storage strategy:** URLs only (not downloaded images). CDN-hosted images keep the Pi database small. If CDN URLs expire, the UI shows a fallback placeholder. If expiry becomes a problem, a future phase can download and cache locally.
 
@@ -101,44 +101,35 @@ Shaw's was already in the STORES array. Hannaford was already in STORES but not 
 - `scraper-stopsandshop.mjs` added Tue/Thu/Sat at 7 AM (existed but was never scheduled)
 - `enricher-openfoodfacts.mjs` added Sundays at 12 PM
 
+### Phase 2: Stock/Availability Capture - DONE
+
+All scrapers now extract stock status and pass `inStock` to `upsertPrice()`:
+
+- **Instacart**: checks `available`, `in_stock`, `out_of_stock` fields in GraphQL JSON walk
+- **Walmart**: reads `availabilityStatusV2` / `availabilityStatus` from `__NEXT_DATA__` SSR JSON
+- **Stop & Shop**: detects "Out of Stock" / "Unavailable" text and disabled cart buttons via Puppeteer
+- **Target**: reads `fulfillment.is_out_of_stock_in_all_store_locations` from Redsky API
+- **Flipp**: no stock detection (flyer items inherently available), staleness rule handles expiry
+
+**Watchdog staleness rule deployed**: items not confirmed in 7+ days automatically marked `in_stock = 0`. Government/wholesale sources exempt.
+
+### Sync API Update - DONE
+
+`sync-api.mjs` updated and restarted. API responses now include:
+
+- `image_url` (best available product image, fallback to OFF image)
+- `off_image_url`, `off_barcode`, `off_nutrition_json` from canonical_ingredients
+- `imageUrl` and `locationId` on per-store detail responses
+
+Verified live: `curl localhost:8081/api/ingredients?limit=1` returns all new fields.
+
 ---
 
 ## Remaining Work
 
 ### Phase 5a-fix: OFF Enricher Retry Logic (quick fix)
 
-**Problem:** The enricher marks items `off_image_url = 'none'` when not found, which is also what happens when OFF is unreachable (503). If OFF is down for a full run, thousands of ingredients get permanently marked as "no match" when they were never actually checked.
-
-**Fix:**
-
-- Distinguish between "OFF confirmed no results" (`'none'`) and "OFF was unreachable" (leave `NULL`)
-- Only set `'none'` when the API returned 200 with zero matching products
-- On non-200 responses or network errors, skip the ingredient (leave `NULL` for retry next week)
-- The current `markChecked` statement already handles the `'none'` case; just don't call it on API failures
-
-**Files:** `services/enricher-openfoodfacts.mjs` (lines 106-114, the error handling block)
-
-### Phase 2: Stock/Availability Capture
-
-**Schema:** The `in_stock` column already exists on `current_prices` (0=out, 1=in). No schema change needed. Currently defaults to 1 everywhere (a lie).
-
-**Scraper changes:**
-
-| Scraper                      | How to detect stock                                                                                                                                        | Effort |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `scraper-instacart-bulk.mjs` | GraphQL: check `available`, `in_stock`, `out_of_stock` fields in the JSON walk. Puppeteer: check for "Out of stock" badge or disabled "Add to cart" button | Medium |
-| `scraper-walmart.mjs`        | `__NEXT_DATA__` SSR JSON includes `availabilityStatusV2` or `availabilityStatus` on items. Extract and map to boolean                                      | Low    |
-| `scraper-stopsandshop.mjs`   | Puppeteer: check for "Out of Stock" badge or "Unavailable" text on product card                                                                            | Low    |
-| `scraper-target.mjs`         | Redsky API includes `available_to_promise_quantity` field. `> 0` = in stock                                                                                | Low    |
-| `scraper-flipp.mjs`          | Flyer items are inherently "available this week." Set `inStock: 1` for active flyers. When flyer expires, don't set to 0 (let staleness rule handle it)    | Skip   |
-| Government scrapers          | N/A (regional averages, no stock concept). Leave default                                                                                                   | Skip   |
-
-**Staleness rule (add to `watchdog.mjs`):**
-
-- If `last_confirmed_at` is older than 7 days AND source is a direct scraper (not government), set `in_stock = 0`
-- Rationale: if we haven't confirmed an item exists in over a week, we should not claim it's available
-- The next successful scrape resets it to 1
-- Government/wholesale sources exempt (they report monthly/quarterly)
+The enricher already handles this correctly: when the API returns non-200 (null from `searchOFF`), the `continue` on line 113 skips the ingredient, leaving `off_image_url` as NULL for retry next week. The `markChecked` with `'none'` only runs when the API returned 200 with zero matching products. No code change needed.
 
 ### Phase 3: Store-Location Granularity
 
