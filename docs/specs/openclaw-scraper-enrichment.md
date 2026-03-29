@@ -1,11 +1,12 @@
 # Spec: OpenClaw Scraper Enrichment (Images, Stock, Location Granularity, New Sources)
 
-> **Status:** ready
+> **Status:** in-progress
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (12+ files on Pi)
 > **Created:** 2026-03-29
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-29
+> **Progress:** Phase 1 (image_url schema) DONE, Phase 4 (search terms 80->499) DONE, Phase 5a (OFF enricher) DONE, scrapers patched for image capture. Crontab v4 deployed. Phases 2 (stock), 3 (location), 5b-5h (new sources) remaining.
 > **Research:** `docs/research/openclaw-every-backdoor-recon.md`
 
 ---
