@@ -53,6 +53,7 @@ SENTINEL_BASE_URL=https://app.cheflowhq.com
 SENTINEL_EMAIL=agent@local.chefflow
 SENTINEL_PASSWORD=CHEF.jdgyuegf9924092.FLOW
 CRON_SECRET=SaltyPhish7!
+DISCORD_SENTINEL_WEBHOOK=
 ENV
   echo "Created .env.local template - verify credentials are correct"
 else
@@ -67,17 +68,17 @@ crontab -l 2>/dev/null > "$CRON_TMP" || true
 grep -v "sentinel" "$CRON_TMP" > "${CRON_TMP}.clean" || true
 mv "${CRON_TMP}.clean" "$CRON_TMP"
 
-# Add sentinel cron schedule
+# Add sentinel cron schedule (with Discord notifications)
 cat >> "$CRON_TMP" << CRON
-# ChefFlow Sentinel - Automated QA
+# ChefFlow Sentinel - Automated QA (with Discord alerts)
 # T0: Smoke - every 4 hours
-0 */4 * * * cd $SENTINEL_DIR && npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-smoke >> results/cron-smoke.log 2>&1
+0 */4 * * * cd $SENTINEL_DIR && npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-smoke >> results/cron-smoke.log 2>&1; bash scripts/sentinel/notify-discord.sh smoke \$? results/sentinel-report.json
 # T1: Critical Paths - daily 6 AM
-0 6 * * * cd $SENTINEL_DIR && npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-critical >> results/cron-critical.log 2>&1
+0 6 * * * cd $SENTINEL_DIR && npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-critical >> results/cron-critical.log 2>&1; bash scripts/sentinel/notify-discord.sh critical \$? results/sentinel-report.json
 # T2: Data Verification - daily 11:15 PM (after 11 PM price sync)
-15 23 * * * cd $SENTINEL_DIR && npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-data >> results/cron-data.log 2>&1
+15 23 * * * cd $SENTINEL_DIR && npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-data >> results/cron-data.log 2>&1; bash scripts/sentinel/notify-discord.sh data \$? results/sentinel-report.json
 # T3: Full Regression - Sunday 3 AM
-0 3 * * 0 cd $SENTINEL_DIR && npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-regression >> results/cron-regression.log 2>&1
+0 3 * * 0 cd $SENTINEL_DIR && npx playwright test --config=playwright.sentinel.config.ts --project=sentinel-regression >> results/cron-regression.log 2>&1; bash scripts/sentinel/notify-discord.sh regression \$? results/sentinel-report.json
 CRON
 
 crontab "$CRON_TMP"
