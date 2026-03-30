@@ -150,7 +150,7 @@ async function fetchDepartmentItemIds(ctx, storeSlug, departmentSlug) {
 async function fetchItemsBatch(ctx, itemIds) {
   const params = new URLSearchParams({
     operationName: 'Items',
-    variables: JSON.stringify({ ids: itemIds }),
+    variables: JSON.stringify({ ids: itemIds, shopId: ctx.shopId, zoneId: ctx.zoneId, postalCode: ctx.postalCode }),
     extensions: JSON.stringify({ persistedQuery: { version: 1, sha256Hash: ITEMS_HASH } }),
   });
 
@@ -314,14 +314,14 @@ async function main() {
     scraperName: 'instacart-department-walker', scope: 'full',
   });
 
-  // Department slugs for Market Basket (will work for most chains)
+  // Department slugs (common across most Instacart chains)
   const departments = [
     'produce', 'meat-and-seafood', 'dairy', 'snacks-and-candy',
     'frozen', 'beverages', '3089-deli', 'household', 'baked-goods',
     'canned-goods', '3095-prepared-foods', 'dry-goods-pasta',
     'breakfast-foods', 'condiments-sauces', 'baking-essentials',
     'oils-vinegars-spices', 'pets', 'personal-care', 'kitchen-supplies',
-    'health-care',
+    'health-care', 'baby', 'alcohol',
   ];
 
   let totalProducts = 0, totalNew = 0, totalChanged = 0, totalErrors = 0;
