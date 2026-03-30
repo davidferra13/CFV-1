@@ -1,11 +1,12 @@
 'use client'
 
 import { useMemo } from 'react'
-import type { MealBoardEntry, MealType, MealStatus } from '@/lib/hub/types'
+import type { MealBoardEntry, MealType, MealStatus, DefaultMealTimes } from '@/lib/hub/types'
 
 interface TodaysMealsCardProps {
   entries: MealBoardEntry[]
   defaultHeadCount: number | null
+  defaultMealTimes: DefaultMealTimes | null
   isChefOrAdmin: boolean
   onStatusChange?: (entryId: string, status: MealStatus) => void
 }
@@ -56,9 +57,17 @@ function formatTime(): string {
   })
 }
 
+function formatServingTime(time: string): string {
+  const [h, m] = time.split(':').map(Number)
+  const suffix = h >= 12 ? 'PM' : 'AM'
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return `${h12}:${m.toString().padStart(2, '0')} ${suffix}`
+}
+
 export function TodaysMealsCard({
   entries,
   defaultHeadCount,
+  defaultMealTimes,
   isChefOrAdmin,
   onStatusChange,
 }: TodaysMealsCardProps) {
@@ -104,6 +113,12 @@ export function TodaysMealsCard({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium text-stone-100 truncate">{meal.title}</p>
+                  {(meal.serving_time ?? defaultMealTimes?.[meal.meal_type]) && (
+                    <span className="shrink-0 text-[10px] text-stone-500">
+                      🕐{' '}
+                      {formatServingTime(meal.serving_time ?? defaultMealTimes![meal.meal_type]!)}
+                    </span>
+                  )}
                   {headCount && (
                     <span className="shrink-0 text-[10px] text-stone-500">👥 {headCount}</span>
                   )}

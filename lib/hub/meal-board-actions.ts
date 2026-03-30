@@ -2,7 +2,7 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
-import type { MealBoardEntry } from './types'
+import type { MealBoardEntry, MealComment, MealRequest, DefaultMealTimes } from './types'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -84,6 +84,7 @@ const UpsertMealSchema = z.object({
   dishId: z.string().uuid().optional().nullable(),
   headCount: z.number().int().min(0).max(100).optional().nullable(),
   prepNotes: z.string().max(1000).optional().nullable(),
+  servingTime: z.string().max(10).optional().nullable(),
   status: z.enum(['planned', 'confirmed', 'served', 'cancelled']).optional(),
 })
 
@@ -120,9 +121,10 @@ export async function upsertMealEntry(
       status: validated.status ?? 'planned',
       updated_at: new Date().toISOString(),
     }
-    // Only include head_count and prep_notes if explicitly provided
+    // Only include head_count, prep_notes, serving_time if explicitly provided
     if (validated.headCount !== undefined) entryData.head_count = validated.headCount
     if (validated.prepNotes !== undefined) entryData.prep_notes = validated.prepNotes
+    if (validated.servingTime !== undefined) entryData.serving_time = validated.servingTime
 
     let entry: MealBoardEntry
 
@@ -1184,4 +1186,236 @@ export async function getGroupDefaultHeadCount(groupId: string): Promise<number 
     .eq('id', groupId)
     .single()
   return data?.default_head_count ?? null
+}
+
+// ===========================================================================
+// DEFAULT MEAL TIMES
+// ===========================================================================
+
+export async function getDefaultMealTimes(groupId: string): Promise<DefaultMealTimes | null> {
+  const db: any = createServerClient({ admin: true })
+  const { data } = await db
+    .from('hub_groups')
+    .select('default_meal_times')
+    .eq('id', groupId)
+    .single()
+  return data?.default_meal_times ?? null
+}
+
+export async function updateDefaultMealTimes(input: {
+  groupId: string
+  profileToken: string
+  times: DefaultMealTimes
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db: any = createServerClient({ admin: true })
+    const profile = await resolveProfile(db, input.profileToken)
+    await requireChefOrAdmin(db, input.groupId, profile.id)
+
+    const { error } = await db
+      .from('hub_groups')
+      .update({
+        default_meal_times: input.times,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', input.groupId)
+
+    if (error) throw new Error(error.message)
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+}
+
+// ===========================================================================
+// MEAL COMMENTS
+// ===========================================================================
+
+export async function getMealComments(mealEntryId: string): Promise<MealComment[]> {
+  const db: any = createServerClient({ admin: true })
+  const { data, error } = await db
+    .from('hub_meal_comments')
+    .select('*, author:hub_guest_profiles!author_profile_id(id, display_name, avatar_url)')
+    .eq('meal_entry_id', mealEntryId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw new Error(`Failed to load comments: ${error.message}`)
+  return (data ?? []).map((c: any) => ({
+    ...c,
+    author: c.author ?? undefined,
+  }))
+}
+
+export async function addMealComment(input: {
+  mealEntryId: string
+  profileToken: string
+  body: string
+}): Promise<{ success: boolean; comment?: MealComment; error?: string }> {
+  try {
+    if (!input.body.trim()) return { success: false, error: 'Comment cannot be empty' }
+    if (input.body.length > 500)
+      return { success: false, error: 'Comment too long (max 500 chars)' }
+
+    const db: any = createServerClient({ admin: true })
+    const profile = await resolveProfile(db, input.profileToken)
+
+    // Verify the meal exists and get group for membership check
+    const { data: meal } = await db
+      .from('hub_meal_board')
+      .select('group_id')
+      .eq('id', input.mealEntryId)
+      .single()
+    if (!meal) return { success: false, error: 'Meal not found' }
+
+    // Verify membership
+    const { data: membership } = await db
+      .from('hub_group_members')
+      .select('id')
+      .eq('group_id', meal.group_id)
+      .eq('profile_id', profile.id)
+      .single()
+    if (!membership) return { success: false, error: 'Not a member of this circle' }
+
+    const { data, error } = await db
+      .from('hub_meal_comments')
+      .insert({
+        meal_entry_id: input.mealEntryId,
+        author_profile_id: profile.id,
+        body: input.body.trim(),
+      })
+      .select('*, author:hub_guest_profiles!author_profile_id(id, display_name, avatar_url)')
+      .single()
+
+    if (error) throw new Error(error.message)
+    return { success: true, comment: { ...data, author: data.author ?? undefined } }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+}
+
+// ===========================================================================
+// MEAL REQUESTS
+// ===========================================================================
+
+export async function getMealRequests(input: {
+  groupId: string
+  status?: string
+}): Promise<MealRequest[]> {
+  const db: any = createServerClient({ admin: true })
+  let query = db
+    .from('hub_meal_requests')
+    .select(
+      '*, requested_by:hub_guest_profiles!requested_by_profile_id(id, display_name, avatar_url)'
+    )
+    .eq('group_id', input.groupId)
+    .order('created_at', { ascending: false })
+
+  if (input.status) {
+    query = query.eq('status', input.status)
+  }
+
+  const { data, error } = await query
+  if (error) throw new Error(`Failed to load meal requests: ${error.message}`)
+  return (data ?? []).map((r: any) => ({
+    ...r,
+    requested_by: r.requested_by ?? undefined,
+  }))
+}
+
+export async function createMealRequest(input: {
+  groupId: string
+  profileToken: string
+  title: string
+  notes?: string | null
+}): Promise<{ success: boolean; request?: MealRequest; error?: string }> {
+  try {
+    if (!input.title.trim()) return { success: false, error: 'Title is required' }
+    if (input.title.length > 200) return { success: false, error: 'Title too long (max 200 chars)' }
+
+    const db: any = createServerClient({ admin: true })
+    const profile = await resolveProfile(db, input.profileToken)
+
+    // Verify membership
+    const { data: membership } = await db
+      .from('hub_group_members')
+      .select('id')
+      .eq('group_id', input.groupId)
+      .eq('profile_id', profile.id)
+      .single()
+    if (!membership) return { success: false, error: 'Not a member of this circle' }
+
+    const { data, error } = await db
+      .from('hub_meal_requests')
+      .insert({
+        group_id: input.groupId,
+        requested_by_profile_id: profile.id,
+        title: input.title.trim(),
+        notes: input.notes?.trim() || null,
+      })
+      .select(
+        '*, requested_by:hub_guest_profiles!requested_by_profile_id(id, display_name, avatar_url)'
+      )
+      .single()
+
+    if (error) throw new Error(error.message)
+
+    // Post system message (non-blocking)
+    try {
+      const { data: prof } = await db
+        .from('hub_guest_profiles')
+        .select('display_name')
+        .eq('id', profile.id)
+        .single()
+      await db.from('hub_messages').insert({
+        group_id: input.groupId,
+        author_profile_id: profile.id,
+        message_type: 'system',
+        body: `${prof?.display_name ?? 'Someone'} requested: "${input.title.trim()}"`,
+        system_event_type: 'meal_request',
+        system_metadata: { title: input.title.trim() },
+      })
+    } catch {
+      console.error('[non-blocking] Failed to post meal request system message')
+    }
+
+    return { success: true, request: { ...data, requested_by: data.requested_by ?? undefined } }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+}
+
+export async function resolveMealRequest(input: {
+  requestId: string
+  profileToken: string
+  status: 'planned' | 'declined'
+  resolvedMealId?: string | null
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db: any = createServerClient({ admin: true })
+    const profile = await resolveProfile(db, input.profileToken)
+
+    // Get request to check group
+    const { data: request } = await db
+      .from('hub_meal_requests')
+      .select('group_id')
+      .eq('id', input.requestId)
+      .single()
+    if (!request) return { success: false, error: 'Request not found' }
+
+    await requireChefOrAdmin(db, request.group_id, profile.id)
+
+    const { error } = await db
+      .from('hub_meal_requests')
+      .update({
+        status: input.status,
+        resolved_meal_id: input.resolvedMealId ?? null,
+        resolved_at: new Date().toISOString(),
+      })
+      .eq('id', input.requestId)
+
+    if (error) throw new Error(error.message)
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
 }

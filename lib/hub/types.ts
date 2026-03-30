@@ -315,6 +315,7 @@ export interface MealBoardEntry {
   dish_id: string | null
   head_count: number | null
   prep_notes: string | null
+  serving_time: string | null
   status: MealStatus
   created_at: string
   updated_at: string
@@ -380,4 +381,43 @@ export interface MealFeedbackSummary {
   disliked: number
   total: number
   notes: { profile_name: string; note: string; reaction: MealReaction }[]
+}
+
+// ---- Meal Comments ----
+
+export interface MealComment {
+  id: string
+  meal_entry_id: string
+  author_profile_id: string
+  body: string
+  created_at: string
+  // Joined
+  author?: HubGuestProfile
+}
+
+// ---- Meal Requests ----
+
+export type MealRequestStatus = 'pending' | 'planned' | 'declined'
+
+export interface MealRequest {
+  id: string
+  group_id: string
+  requested_by_profile_id: string
+  title: string
+  notes: string | null
+  status: MealRequestStatus
+  resolved_meal_id: string | null
+  created_at: string
+  resolved_at: string | null
+  // Joined
+  requested_by?: HubGuestProfile
+}
+
+// ---- Default Meal Times ----
+
+export interface DefaultMealTimes {
+  breakfast: string | null
+  lunch: string | null
+  dinner: string | null
+  snack: string | null
 }

@@ -32,6 +32,11 @@ import { MealAttendance } from './meal-attendance'
 import { TodaysMealsCard } from './todays-meals-card'
 import { DietaryDashboard } from './dietary-dashboard'
 import { WeeklyPrepSummary } from './weekly-prep-summary'
+import { MealCommentTrigger } from './meal-comments'
+import { MealRequests } from './meal-requests'
+import { MealTimeSettings } from './meal-time-settings'
+import type { DefaultMealTimes } from '@/lib/hub/types'
+import { getDefaultMealTimes } from '@/lib/hub/meal-board-actions'
 
 // ---------------------------------------------------------------------------
 // Date helpers (ISO weeks: Monday = start)
@@ -136,11 +141,16 @@ export function WeeklyMealBoard({
   const [defaultHeadCount, setDefaultHeadCount] = useState<number | null>(null)
   const [editHeadCount, setEditHeadCount] = useState<string>('')
   const [editPrepNotes, setEditPrepNotes] = useState<string>('')
+  const [defaultMealTimes, setDefaultMealTimes] = useState<DefaultMealTimes | null>(null)
+  const [showMealTimeSettings, setShowMealTimeSettings] = useState(false)
 
-  // Load default head count
+  // Load default head count and meal times
   useEffect(() => {
     getGroupDefaultHeadCount(groupId)
       .then(setDefaultHeadCount)
+      .catch(() => {})
+    getDefaultMealTimes(groupId)
+      .then(setDefaultMealTimes)
       .catch(() => {})
   }, [groupId])
 
@@ -224,6 +234,7 @@ export function WeeklyMealBoard({
       dish_id: null,
       head_count: parsedHeadCount,
       prep_notes: editPrepNotes.trim() || null,
+      serving_time: null,
       status: 'planned',
       created_at: existing?.created_at ?? new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -410,6 +421,7 @@ export function WeeklyMealBoard({
         <TodaysMealsCard
           entries={entries}
           defaultHeadCount={defaultHeadCount}
+          defaultMealTimes={defaultMealTimes}
           isChefOrAdmin={isChefOrAdmin}
           onStatusChange={profileToken ? handleStatusChange : undefined}
         />
@@ -444,9 +456,18 @@ export function WeeklyMealBoard({
         </button>
       </div>
 
-      {/* Edit mode toggle (chef/admin only) */}
+      {/* Edit mode toggle + meal time settings (chef/admin only) */}
       {isChefOrAdmin && profileToken && (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2">
+          {editMode && (
+            <button
+              type="button"
+              onClick={() => setShowMealTimeSettings(true)}
+              className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-400 hover:bg-stone-700"
+            >
+              🕐 Meal Times
+            </button>
+          )}
           <button
             onClick={() => {
               setEditMode(!editMode)
@@ -461,6 +482,16 @@ export function WeeklyMealBoard({
             {editMode ? '✓ Done Editing' : '✎ Edit Meals'}
           </button>
         </div>
+      )}
+
+      {/* Meal time settings modal */}
+      {showMealTimeSettings && profileToken && (
+        <MealTimeSettings
+          groupId={groupId}
+          profileToken={profileToken}
+          onClose={() => setShowMealTimeSettings(false)}
+          onSaved={setDefaultMealTimes}
+        />
       )}
 
       {/* Chef tools (clone, templates) - only in edit mode */}
@@ -598,6 +629,11 @@ export function WeeklyMealBoard({
           defaultHeadCount={defaultHeadCount}
           weekLabel={formatWeekRange(currentMonday)}
         />
+      )}
+
+      {/* Meal requests from family members */}
+      {!editMode && (
+        <MealRequests groupId={groupId} profileToken={profileToken} isChefOrAdmin={isChefOrAdmin} />
       )}
 
       {/* Recurring meals manager (chef edit mode) */}
@@ -792,14 +828,18 @@ export function WeeklyMealBoard({
                             <p className="text-xs font-medium text-stone-200 leading-tight">
                               {entry.title}
                             </p>
-                            {(entry.head_count ?? defaultHeadCount) && (
-                              <span
-                                className="shrink-0 text-[10px] text-stone-500"
-                                title="Head count"
-                              >
-                                👥{entry.head_count ?? defaultHeadCount}
-                              </span>
-                            )}
+                            <div className="flex shrink-0 items-center gap-1.5">
+                              {(entry.serving_time ?? defaultMealTimes?.[mealType]) && (
+                                <span className="text-[10px] text-stone-500" title="Serving time">
+                                  🕐{entry.serving_time ?? defaultMealTimes?.[mealType]}
+                                </span>
+                              )}
+                              {(entry.head_count ?? defaultHeadCount) && (
+                                <span className="text-[10px] text-stone-500" title="Head count">
+                                  👥{entry.head_count ?? defaultHeadCount}
+                                </span>
+                              )}
+                            </div>
                           </div>
                           {entry.description && (
                             <p className="mt-0.5 text-xs text-stone-500 leading-tight">
@@ -834,10 +874,15 @@ export function WeeklyMealBoard({
                             </div>
                           )}
 
-                          {/* Attendance (who's eating) */}
+                          {/* Attendance + comments (who's eating, discuss) */}
                           {!editMode && !entry.id.startsWith('temp-') && (
-                            <div className="mt-1.5">
+                            <div className="mt-1.5 flex items-center gap-2">
                               <MealAttendance groupId={groupId} mealEntryId={entry.id} compact />
+                              <MealCommentTrigger
+                                mealEntryId={entry.id}
+                                profileToken={profileToken}
+                                mealTitle={entry.title}
+                              />
                             </div>
                           )}
 
