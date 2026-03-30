@@ -58,7 +58,8 @@ export function InquiryResponseComposer({
   const [editedSubject, setEditedSubject] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [savedMessageId, setSavedMessageId] = useState<string | null>(null)
-  const [includeCircleLink, setIncludeCircleLink] = useState(!!circleToken && !!isFirstResponse)
+  // Version B is the default when we have a circle token (90% adoption vs 33%)
+  const [includeCircleLink, setIncludeCircleLink] = useState(!!circleToken)
   const [includeSnapshot, setIncludeSnapshot] = useState(!!snapshotData)
 
   // ── Generate AI Draft ──────────────────────────────────────────────────────
@@ -82,19 +83,28 @@ export function InquiryResponseComposer({
         body = result.draft.slice(subjectMatch[0].length).trim()
       }
 
-      // Auto-append Dinner Circle invitation if toggle is on
+      // Auto-append based on Version A/B strategy
       let finalBody = body
-      if (includeCircleLink && circleToken) {
-        const circleUrl = `https://app.cheflowhq.com/hub/g/${circleToken}`
+      const circleUrl = circleToken ? `https://app.cheflowhq.com/hub/g/${circleToken}` : null
+
+      if (includeCircleLink && circleUrl && includeSnapshot && snapshotData?.formatted) {
+        // Version B: snapshot with circle link woven in, menu teased
+        const invitation = getDinnerCircleInvitation({
+          chefName: chefName || 'Your chef',
+          circleUrl,
+        })
+        finalBody = body + '\n\n' + invitation.paragraph + '\n\n' + snapshotData.formatted
+        // Append "View full details" link at the end of the snapshot
+        finalBody = finalBody + '\n\nView full details: ' + circleUrl
+      } else if (includeCircleLink && circleUrl) {
+        // Circle link without snapshot
         const invitation = getDinnerCircleInvitation({
           chefName: chefName || 'Your chef',
           circleUrl,
         })
         finalBody = body + '\n\n' + invitation.paragraph
-      }
-
-      // Auto-append email snapshot ("at a glance") after sign-off
-      if (includeSnapshot && snapshotData?.formatted) {
+      } else if (includeSnapshot && snapshotData?.formatted) {
+        // Version A: full snapshot inlined, no portal link
         finalBody = finalBody + '\n\n' + snapshotData.formatted
       }
 
