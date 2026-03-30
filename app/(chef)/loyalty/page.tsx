@@ -21,6 +21,7 @@ import { format } from 'date-fns'
 import { RewardActions } from './reward-actions'
 import { PendingDeliveriesPanel } from '@/components/loyalty/pending-deliveries-panel'
 import { BackfillLoyaltyButton } from './backfill-button'
+import { TierPerksDisplay } from '@/components/loyalty/tier-perks-display'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',
@@ -171,6 +172,17 @@ export default async function LoyaltyDashboardPage() {
               </div>
             ))}
           </div>
+
+          {/* Tier Perks - what each tier unlocks */}
+          {config.tier_perks &&
+            Object.values(config.tier_perks).some((p: string[]) => p.length > 0) && (
+              <div className="mt-6 pt-6 border-t border-stone-700">
+                <h3 className="text-sm font-semibold text-stone-400 mb-3">
+                  What Each Tier Unlocks
+                </h3>
+                <TierPerksDisplay tierPerks={config.tier_perks} compact />
+              </div>
+            )}
         </Card>
       )}
 

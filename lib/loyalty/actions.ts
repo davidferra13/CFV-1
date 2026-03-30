@@ -43,6 +43,9 @@ export type LoyaltyConfig = {
   earn_mode: EarnMode // per_guest, per_dollar, per_event
   points_per_dollar: number // Rate for per_dollar earn mode
   points_per_event: number // Flat points for per_event earn mode
+  tier_perks: Record<string, string[]> // Chef-configurable perks per tier
+  guest_milestones: { guests: number; bonus: number }[] // Cumulative guest-count milestones
+  base_points_per_event: number // Flat bonus per event (hybrid: stacks with any earn mode)
 }
 
 export type LoyaltyTransaction = {
@@ -147,8 +150,18 @@ const UpdateLoyaltyConfigSchema = z.object({
   referral_points: z.number().int().nonnegative().optional(),
   program_mode: z.enum(['full', 'lite', 'off']).optional(),
   earn_mode: z.enum(['per_guest', 'per_dollar', 'per_event']).optional(),
-  points_per_dollar: z.number().positive().optional(),
-  points_per_event: z.number().int().positive().optional(),
+  points_per_dollar: z.coerce.number().positive().optional(),
+  points_per_event: z.coerce.number().int().positive().optional(),
+  tier_perks: z.record(z.string(), z.array(z.string())).optional(),
+  guest_milestones: z
+    .array(
+      z.object({
+        guests: z.number().int().positive(),
+        bonus: z.number().int().positive(),
+      })
+    )
+    .optional(),
+  base_points_per_event: z.number().int().nonnegative().optional(),
 })
 
 const CreateRewardSchema = z.object({
@@ -230,6 +243,56 @@ const DEFAULT_REWARDS: Omit<CreateRewardInput, 'tenant_id'>[] = [
     points_required: 300,
     reward_type: 'free_dinner',
     description: 'Complimentary dinner for two (covers service, you cover ingredients)',
+  },
+  {
+    name: 'Complimentary amuse-bouche course',
+    points_required: 40,
+    reward_type: 'free_course',
+    description: 'A surprise bite to start your next dinner',
+  },
+  {
+    name: 'Recipe card collection',
+    points_required: 60,
+    reward_type: 'upgrade',
+    description: 'Printed recipe cards from your favorite dishes',
+  },
+  {
+    name: 'Priority booking for next available date',
+    points_required: 75,
+    reward_type: 'upgrade',
+    description: 'Jump to the front of the booking queue',
+  },
+  {
+    name: 'Wine pairing upgrade',
+    points_required: 100,
+    reward_type: 'upgrade',
+    description: 'Expert wine pairing added to your next dinner',
+  },
+  {
+    name: 'Custom menu consultation',
+    points_required: 125,
+    reward_type: 'upgrade',
+    description: 'One-on-one menu planning session with your chef',
+  },
+  {
+    name: '$50 off your next dinner',
+    points_required: 175,
+    reward_type: 'discount_fixed',
+    reward_value_cents: 5000,
+    description: '$50 discount on your next booking',
+  },
+  {
+    name: 'Behind-the-scenes cooking demo',
+    points_required: 175,
+    reward_type: 'upgrade',
+    description: 'Watch your chef prepare your meal with live commentary',
+  },
+  {
+    name: '25% off a dinner party',
+    points_required: 200,
+    reward_type: 'discount_percent',
+    reward_percent: 25,
+    description: '25% off any dinner party of 6+ guests',
   },
 ]
 
@@ -464,6 +527,12 @@ export async function getLoyaltyConfig(): Promise<LoyaltyConfig> {
       }[],
       welcome_points: (newConfig as any).welcome_points ?? 0,
       referral_points: (newConfig as any).referral_points ?? 0,
+      tier_perks: ((newConfig as any).tier_perks ?? {}) as Record<string, string[]>,
+      guest_milestones: ((newConfig as any).guest_milestones ?? []) as {
+        guests: number
+        bonus: number
+      }[],
+      base_points_per_event: (newConfig as any).base_points_per_event ?? 0,
     }
   }
 
@@ -472,6 +541,12 @@ export async function getLoyaltyConfig(): Promise<LoyaltyConfig> {
     milestone_bonuses: (config as any).milestone_bonuses as { events: number; bonus: number }[],
     welcome_points: (config as any).welcome_points ?? 0,
     referral_points: (config as any).referral_points ?? 0,
+    tier_perks: ((config as any).tier_perks ?? {}) as Record<string, string[]>,
+    guest_milestones: ((config as any).guest_milestones ?? []) as {
+      guests: number
+      bonus: number
+    }[],
+    base_points_per_event: (config as any).base_points_per_event ?? 0,
   }
 }
 
@@ -495,7 +570,6 @@ export async function updateLoyaltyConfig(input: z.infer<typeof UpdateLoyaltyCon
     .single()
 
   if (error) {
-    console.error('[updateLoyaltyConfig] Error:', error)
     throw new Error('Failed to update loyalty configuration')
   }
 
@@ -582,6 +656,17 @@ export async function awardEventPoints(eventId: string) {
     description: baseDescription,
   })
 
+  // Base event bonus (hybrid: flat bonus stacked on top of any earn mode)
+  const basePerEvent = config.base_points_per_event || 0
+  if (basePerEvent > 0) {
+    totalPoints += basePerEvent
+    transactions.push({
+      type: 'earned',
+      points: basePerEvent,
+      description: `Base event bonus: ${basePerEvent} pts`,
+    })
+  }
+
   // Large party bonus
   if (config.bonus_large_party_threshold && guestCount >= config.bonus_large_party_threshold) {
     totalPoints += config.bonus_large_party_points || 0
@@ -616,7 +701,7 @@ export async function awardEventPoints(eventId: string) {
 
   const currentEventsCompleted = (client?.total_events_completed || 0) + 1 // +1 for this event
 
-  // Milestone bonuses
+  // Event milestone bonuses
   for (const milestone of config.milestone_bonuses) {
     if (currentEventsCompleted === milestone.events) {
       totalPoints += milestone.bonus
@@ -624,6 +709,20 @@ export async function awardEventPoints(eventId: string) {
         type: 'bonus',
         points: milestone.bonus,
         description: `Milestone bonus: ${milestone.events}th event completed!`,
+      })
+    }
+  }
+
+  // Guest milestone bonuses (range check: handles jumping past multiple milestones in one event)
+  const oldGuestsServed = client?.total_guests_served || 0
+  const newGuestsServed = oldGuestsServed + guestCount
+  for (const milestone of config.guest_milestones || []) {
+    if (oldGuestsServed < milestone.guests && newGuestsServed >= milestone.guests) {
+      totalPoints += milestone.bonus
+      transactions.push({
+        type: 'bonus',
+        points: milestone.bonus,
+        description: `Guest milestone: ${milestone.guests} guests served!`,
       })
     }
   }
@@ -647,7 +746,6 @@ export async function awardEventPoints(eventId: string) {
 
   // Update client stats
   const newPointsBalance = (client?.loyalty_points || 0) + totalPoints
-  const newGuestsServed = (client?.total_guests_served || 0) + guestCount
 
   // Compute lifetime earned points for tier calculation
   const { data: lifetimeData } = await db
@@ -728,6 +826,21 @@ export async function awardEventPoints(eventId: string) {
     .update({ loyalty_points_awarded: true })
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
+
+  // SSE real-time broadcast (non-blocking)
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', user.tenantId!, {
+      clientId: event.client_id,
+      type: 'points_awarded',
+      points: totalPoints,
+      newBalance: newPointsBalance,
+      newTier,
+      tierChanged: newTier !== oldTier,
+    })
+  } catch (sseErr) {
+    console.error('[awardEventPoints] SSE broadcast failed (non-blocking):', sseErr)
+  }
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/clients/${event.client_id}`)
@@ -864,71 +977,24 @@ export async function awardLiteVisit(eventId: string) {
 }
 
 // =====================================================================================
-// 4. awardBonusPoints - Manual bonus by chef
+// 4. awardBonusPoints - Manual bonus by chef (delegates to internal helper)
 // =====================================================================================
 
 export async function awardBonusPoints(clientId: string, points: number, description: string) {
   const user = await requireChef()
-  const db: any = createServerClient()
 
-  if (points <= 0) {
-    throw new Error('Bonus points must be positive')
-  }
-
-  // Verify client belongs to tenant
-  const { data: client } = await db
-    .from('clients')
-    .select('id, loyalty_points, total_events_completed')
-    .eq('id', clientId)
-    .eq('tenant_id', user.tenantId!)
-    .single()
-
-  if (!client) {
-    throw new Error('Client not found')
-  }
-
-  // Insert bonus transaction
-  const { error: txError } = await db.from('loyalty_transactions').insert({
-    tenant_id: user.tenantId!,
-    client_id: clientId,
-    type: 'bonus',
+  const { awardBonusPointsInternal } = await import('@/lib/loyalty/award-internal')
+  const result = await awardBonusPointsInternal(
+    user.tenantId!,
+    clientId,
     points,
-    description: description || 'Manual bonus from chef',
-    created_by: user.id,
-  })
-
-  if (txError) {
-    console.error('[awardBonusPoints] Error:', txError)
-    throw new Error('Failed to award bonus points')
-  }
-
-  // Update client balance
-  const newBalance = (client.loyalty_points || 0) + points
-
-  // Recalculate tier based on lifetime earned
-  const config = await getLoyaltyConfig()
-  const { data: lifetimeData } = await db
-    .from('loyalty_transactions')
-    .select('points')
-    .eq('client_id', clientId)
-    .eq('tenant_id', user.tenantId!)
-    .in('type', ['earned', 'bonus'])
-
-  const lifetimeEarned = (lifetimeData || []).reduce((sum: number, tx: any) => sum + tx.points, 0)
-  const newTier = computeTier(lifetimeEarned, config)
-
-  await db
-    .from('clients')
-    .update({
-      loyalty_points: newBalance,
-      loyalty_tier: newTier,
-    })
-    .eq('id', clientId)
-    .eq('tenant_id', user.tenantId!)
+    description || 'Manual bonus from chef',
+    user.id
+  )
 
   revalidatePath(`/clients/${clientId}`)
   revalidatePath('/loyalty')
-  return { success: true, newBalance, newTier }
+  return result
 }
 
 // =====================================================================================
@@ -1022,6 +1088,20 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
     } catch (delivErr) {
       console.error('[redeemReward] Pending delivery creation failed (non-blocking):', delivErr)
     }
+  }
+
+  // SSE real-time broadcast (non-blocking)
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', user.tenantId!, {
+      clientId,
+      type: 'reward_redeemed',
+      rewardName: reward.name,
+      pointsSpent: reward.points_required,
+      newBalance,
+    })
+  } catch (sseErr) {
+    console.error('[redeemReward] SSE broadcast failed (non-blocking):', sseErr)
   }
 
   revalidatePath(`/clients/${clientId}`)
@@ -1635,6 +1715,7 @@ export async function backfillLoyaltyForHistoricalImports(): Promise<BackfillLoy
       for (const event of events) {
         const guestCount = event.guest_count || 1
         runningEventsCompleted++
+        const oldGuestsServedBeforeEvent = runningGuestsServed
         runningGuestsServed += guestCount
 
         if (config.program_mode === 'full') {
@@ -1697,7 +1778,7 @@ export async function backfillLoyaltyForHistoricalImports(): Promise<BackfillLoy
             }
           }
 
-          // Milestone bonuses
+          // Event milestone bonuses
           for (const milestone of config.milestone_bonuses) {
             if (runningEventsCompleted === milestone.events) {
               await db.from('loyalty_transactions').insert({
@@ -1707,6 +1788,26 @@ export async function backfillLoyaltyForHistoricalImports(): Promise<BackfillLoy
                 type: 'bonus',
                 points: milestone.bonus,
                 description: `Milestone bonus: ${milestone.events}th event completed! (historical import)`,
+                created_by: user.id,
+              })
+              runningPointsBalance += milestone.bonus
+              clientPointsAwarded += milestone.bonus
+            }
+          }
+
+          // Guest milestone bonuses (range check for jumping past multiple milestones)
+          for (const milestone of config.guest_milestones || []) {
+            if (
+              oldGuestsServedBeforeEvent < milestone.guests &&
+              runningGuestsServed >= milestone.guests
+            ) {
+              await db.from('loyalty_transactions').insert({
+                tenant_id: user.tenantId!,
+                client_id: clientId,
+                event_id: event.id,
+                type: 'bonus',
+                points: milestone.bonus,
+                description: `Guest milestone: ${milestone.guests} guests served! (historical import)`,
                 created_by: user.id,
               })
               runningPointsBalance += milestone.bonus
@@ -1814,15 +1915,28 @@ export async function getMyLoyaltyStatus() {
     return null
   }
 
-  // Get loyalty config for program_mode / earn_mode
+  // Get loyalty config for program_mode / earn_mode / tier_perks
   const { data: configRow } = await db
     .from('loyalty_config')
-    .select('program_mode, earn_mode')
+    .select(
+      'program_mode, earn_mode, tier_perks, guest_milestones, milestone_bonuses, referral_points, base_points_per_event, tier_silver_min, tier_gold_min, tier_platinum_min'
+    )
     .eq('tenant_id', client.tenant_id)
     .single()
 
   const programMode = ((configRow as any)?.program_mode || 'full') as ProgramMode
   const earnMode = ((configRow as any)?.earn_mode || 'per_guest') as EarnMode
+  const tierPerks = ((configRow as any)?.tier_perks ?? {}) as Record<string, string[]>
+  const guestMilestones = ((configRow as any)?.guest_milestones ?? []) as {
+    guests: number
+    bonus: number
+  }[]
+  const milestoneBonuses = ((configRow as any)?.milestone_bonuses ?? []) as {
+    events: number
+    bonus: number
+  }[]
+  const referralPoints = (configRow as any)?.referral_points ?? 0
+  const basePointsPerEvent = (configRow as any)?.base_points_per_event ?? 0
 
   // Get available rewards for this tenant
   const { data: rewards } = await db
@@ -1845,13 +1959,45 @@ export async function getMyLoyaltyStatus() {
   const availableRewards = allRewards.filter((r: any) => r.points_required <= balance)
   const nextReward = allRewards.find((r: any) => r.points_required > balance)
 
+  // Compute milestone progress
+  const eventsCompleted = client.total_events_completed || 0
+  const guestsServed = client.total_guests_served || 0
+
+  const upcomingEventMilestones = milestoneBonuses
+    .filter((m) => m.events > eventsCompleted)
+    .sort((a, b) => a.events - b.events)
+
+  const upcomingGuestMilestones = guestMilestones
+    .filter((m) => m.guests > guestsServed)
+    .sort((a, b) => a.guests - b.guests)
+
+  const nextEventMilestone =
+    upcomingEventMilestones.length > 0
+      ? {
+          target: upcomingEventMilestones[0].events,
+          current: eventsCompleted,
+          remaining: upcomingEventMilestones[0].events - eventsCompleted,
+          bonus: upcomingEventMilestones[0].bonus,
+        }
+      : null
+
+  const nextGuestMilestone =
+    upcomingGuestMilestones.length > 0
+      ? {
+          target: upcomingGuestMilestones[0].guests,
+          current: guestsServed,
+          remaining: upcomingGuestMilestones[0].guests - guestsServed,
+          bonus: upcomingGuestMilestones[0].bonus,
+        }
+      : null
+
   return {
     programMode,
     earnMode,
     tier: (client.loyalty_tier || 'bronze') as LoyaltyTier,
     pointsBalance: balance,
-    totalEventsCompleted: client.total_events_completed || 0,
-    totalGuestsServed: client.total_guests_served || 0,
+    totalEventsCompleted: eventsCompleted,
+    totalGuestsServed: guestsServed,
     availableRewards: availableRewards as LoyaltyReward[],
     nextReward: nextReward
       ? {
@@ -1861,5 +2007,13 @@ export async function getMyLoyaltyStatus() {
         }
       : null,
     recentTransactions: (transactions || []) as LoyaltyTransaction[],
+    tierPerks,
+    guestMilestones,
+    referralPoints,
+    basePointsPerEvent,
+    milestoneProgress: {
+      nextEventMilestone,
+      nextGuestMilestone,
+    },
   }
 }

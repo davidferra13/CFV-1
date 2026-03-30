@@ -12,11 +12,14 @@ type Props = {
     | 'bonus_large_party_threshold'
     | 'bonus_large_party_points'
     | 'milestone_bonuses'
+    | 'guest_milestones'
     | 'welcome_points'
+    | 'referral_points'
   > & {
     earn_mode?: EarnMode
     points_per_dollar?: number
     points_per_event?: number
+    base_points_per_event?: number
   }
 }
 
@@ -49,6 +52,15 @@ export function HowToEarnPanel({ config }: Props) {
               emoji="👋"
               label="Join the loyalty program (one-time welcome bonus)"
               points={`${config.welcome_points} pts`}
+            />
+          )}
+
+          {/* Base event bonus (hybrid mode) */}
+          {(config.base_points_per_event ?? 0) > 0 && (
+            <EarnRow
+              emoji="📅"
+              label={`Base event bonus: +${config.base_points_per_event} pts every time you complete a dinner`}
+              points={`${config.base_points_per_event} pts / event`}
             />
           )}
 
@@ -95,11 +107,22 @@ export function HowToEarnPanel({ config }: Props) {
               />
             ))}
 
-          {/* Referrals (informational) */}
+          {/* Guest milestones */}
+          {(config.guest_milestones ?? []).length > 0 &&
+            config.guest_milestones.map((m) => (
+              <EarnRow
+                key={`g${m.guests}`}
+                emoji="👥"
+                label={`Guest milestone: serve ${m.guests} total guests`}
+                points={`+${m.bonus} bonus`}
+              />
+            ))}
+
+          {/* Referrals (automatic) */}
           <EarnRow
             emoji="💌"
-            label="Refer a friend who books a dinner (chef awards manually)"
-            points="varies"
+            label={`Refer a friend who completes their first event${(config.referral_points ?? 0) > 0 ? ` (+${config.referral_points} pts)` : ''}`}
+            points={(config.referral_points ?? 0) > 0 ? `+${config.referral_points} pts` : 'varies'}
           />
 
           {/* Chef bonus */}

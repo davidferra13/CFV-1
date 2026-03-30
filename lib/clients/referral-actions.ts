@@ -129,7 +129,73 @@ export async function updateReferralStatus(
     throw new Error('Failed to update referral status')
   }
 
+  // Auto-award referral bonus when status changes to 'completed' (non-blocking)
+  if (status === 'completed') {
+    try {
+      // SELECT referral row for idempotency check
+      const { data: referral } = await db
+        .from('client_referrals' as any)
+        .select('id, referrer_client_id, reward_points_awarded, referred_client_id')
+        .eq('id', id)
+        .eq('tenant_id', user.tenantId!)
+        .single()
+
+      if (referral && (referral.reward_points_awarded || 0) === 0 && referral.referrer_client_id) {
+        // Look up loyalty config for this tenant
+        const { data: loyaltyConfig } = await db
+          .from('loyalty_config' as any)
+          .select('referral_points, is_active, program_mode')
+          .eq('tenant_id', user.tenantId!)
+          .single()
+
+        const referralPoints = (loyaltyConfig as any)?.referral_points ?? 0
+        const programMode = (loyaltyConfig as any)?.program_mode ?? 'off'
+        const isActive = (loyaltyConfig as any)?.is_active ?? false
+
+        if (isActive && programMode !== 'off' && referralPoints > 0) {
+          // Get referred client name for the description
+          let referredName = 'a friend'
+          if (referral.referred_client_id) {
+            const { data: referredClient } = await db
+              .from('clients' as any)
+              .select('full_name')
+              .eq('id', referral.referred_client_id)
+              .single()
+            if (referredClient) {
+              referredName = (referredClient as any).full_name || 'a friend'
+            }
+          }
+
+          // Award points via internal helper
+          const { awardBonusPointsInternal } = await import('@/lib/loyalty/award-internal')
+          await awardBonusPointsInternal(
+            user.tenantId!,
+            referral.referrer_client_id,
+            referralPoints,
+            `Referral bonus: ${referredName} completed their first event`,
+            user.id
+          )
+
+          // Mark referral as rewarded (CAS guard: only if still 0)
+          await db
+            .from('client_referrals' as any)
+            .update({
+              reward_points_awarded: referralPoints,
+              reward_awarded_at: new Date().toISOString(),
+            })
+            .eq('id', id)
+            .eq('tenant_id', user.tenantId!)
+            .eq('reward_points_awarded', 0)
+        }
+      }
+    } catch (err) {
+      // Non-blocking: log but never fail the status update
+      console.error('[updateReferralStatus] Auto-award referral bonus failed:', err)
+    }
+  }
+
   revalidatePath('/clients')
+  revalidatePath('/loyalty')
 }
 
 export async function deleteReferral(id: string): Promise<void> {

@@ -15,6 +15,8 @@ import { RewardCard } from './reward-card'
 import { ClientIncentiveList } from '@/components/incentives/client-incentive-list'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { HowToEarnPanel } from '@/components/loyalty/how-to-earn-panel'
+import { NextRewardCard } from '@/components/loyalty/next-reward-card'
+import { TierPerksDisplay } from '@/components/loyalty/tier-perks-display'
 
 export const metadata: Metadata = { title: 'My Rewards - ChefFlow' }
 
@@ -114,7 +116,7 @@ export default async function MyRewardsPage() {
       db
         .from('loyalty_config')
         .select(
-          'tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, milestone_bonuses, earn_mode, points_per_dollar, points_per_event'
+          'tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, milestone_bonuses, guest_milestones, referral_points, earn_mode, points_per_dollar, points_per_event, welcome_points, base_points_per_event'
         )
         .eq('tenant_id', client?.tenant_id || '')
         .maybeSingle(),
@@ -219,6 +221,84 @@ export default async function MyRewardsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Next Reward progress - motivates the next booking */}
+      {status.programMode === 'full' && status.nextReward && (
+        <NextRewardCard nextReward={status.nextReward} currentPoints={status.pointsBalance} />
+      )}
+
+      {/* Tier perks - what each tier unlocks */}
+      {status.tierPerks && Object.values(status.tierPerks).some((p: string[]) => p.length > 0) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Tier Benefits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <TierPerksDisplay tierPerks={status.tierPerks} currentTier={status.tier} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Milestone Progress - what's coming next */}
+      {status.programMode === 'full' &&
+        status.milestoneProgress &&
+        (status.milestoneProgress.nextEventMilestone ||
+        status.milestoneProgress.nextGuestMilestone ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Upcoming Milestones</CardTitle>
+              <p className="text-sm text-stone-500 mt-1">
+                Keep going! You&rsquo;re close to earning bonus points.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {status.milestoneProgress.nextEventMilestone && (
+                <div className="flex items-center justify-between py-3 border-b border-stone-800 last:border-b-0">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl w-7 text-center">🏆</span>
+                    <div>
+                      <p className="text-sm font-medium text-stone-100">
+                        {status.milestoneProgress.nextEventMilestone.remaining} more event
+                        {status.milestoneProgress.nextEventMilestone.remaining !== 1 ? 's' : ''}{' '}
+                        until your {ordinal(status.milestoneProgress.nextEventMilestone.target)}{' '}
+                        dinner
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {status.milestoneProgress.nextEventMilestone.current} of{' '}
+                        {status.milestoneProgress.nextEventMilestone.target} completed
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-emerald-700 shrink-0 ml-4">
+                    +{status.milestoneProgress.nextEventMilestone.bonus} pts
+                  </span>
+                </div>
+              )}
+              {status.milestoneProgress.nextGuestMilestone && (
+                <div className="flex items-center justify-between py-3 border-b border-stone-800 last:border-b-0">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl w-7 text-center">👥</span>
+                    <div>
+                      <p className="text-sm font-medium text-stone-100">
+                        {status.milestoneProgress.nextGuestMilestone.remaining} more guest
+                        {status.milestoneProgress.nextGuestMilestone.remaining !== 1 ? 's' : ''}{' '}
+                        until your {status.milestoneProgress.nextGuestMilestone.target}-guest
+                        milestone
+                      </p>
+                      <p className="text-xs text-stone-500">
+                        {status.milestoneProgress.nextGuestMilestone.current} of{' '}
+                        {status.milestoneProgress.nextGuestMilestone.target} guests served
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-sm font-bold text-emerald-700 shrink-0 ml-4">
+                    +{status.milestoneProgress.nextGuestMilestone.bonus} pts
+                  </span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ) : null)}
 
       {/* Monthly Raffle - game-based entries, anonymous leaderboard */}
       {raffleData && (
@@ -335,10 +415,16 @@ export default async function MyRewardsPage() {
                   events: number
                   bonus: number
                 }[],
+                guest_milestones: (configData.guest_milestones ?? []) as {
+                  guests: number
+                  bonus: number
+                }[],
                 welcome_points: configData.welcome_points ?? 25,
+                referral_points: configData.referral_points ?? 100,
                 earn_mode: configData.earn_mode ?? 'per_guest',
                 points_per_dollar: configData.points_per_dollar ?? 1,
                 points_per_event: configData.points_per_event ?? 100,
+                base_points_per_event: configData.base_points_per_event ?? 0,
               }}
             />
           )}
@@ -387,4 +473,10 @@ export default async function MyRewardsPage() {
       />
     </div>
   )
+}
+
+function ordinal(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = n % 100
+  return n + (s[(v - 20) % 10] || s[v] || s[0])
 }

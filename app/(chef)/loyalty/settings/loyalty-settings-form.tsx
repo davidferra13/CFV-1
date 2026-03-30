@@ -19,6 +19,7 @@ import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
 
 type Milestone = { events: number; bonus: number }
+type GuestMilestone = { guests: number; bonus: number }
 
 function NumberField({
   label,
@@ -75,6 +76,7 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
   const [pointsPerEvent, setPointsPerEvent] = useState(config.points_per_event ?? 100)
   const [welcomePoints, setWelcomePoints] = useState(config.welcome_points ?? 25)
   const [referralPoints, setReferralPoints] = useState(config.referral_points ?? 100)
+  const [basePointsPerEvent, setBasePointsPerEvent] = useState(config.base_points_per_event ?? 0)
 
   // Large party bonus
   const [largePartyThreshold, setLargePartyThreshold] = useState(
@@ -92,10 +94,23 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
   const [newMilestoneEvents, setNewMilestoneEvents] = useState('')
   const [newMilestoneBonus, setNewMilestoneBonus] = useState('')
 
+  // Guest milestones
+  const [guestMilestones, setGuestMilestones] = useState<GuestMilestone[]>(
+    [...(config.guest_milestones ?? [])].sort((a, b) => a.guests - b.guests)
+  )
+  const [newGuestMilestoneGuests, setNewGuestMilestoneGuests] = useState('')
+  const [newGuestMilestoneBonus, setNewGuestMilestoneBonus] = useState('')
+
   // Tier thresholds
   const [silverMin, setSilverMin] = useState(config.tier_silver_min)
   const [goldMin, setGoldMin] = useState(config.tier_gold_min)
   const [platinumMin, setPlatinumMin] = useState(config.tier_platinum_min)
+
+  // Tier perks (one string per tier, newline-separated perks)
+  const initPerks = config.tier_perks ?? {}
+  const [silverPerks, setSilverPerks] = useState((initPerks.silver || []).join('\n'))
+  const [goldPerks, setGoldPerks] = useState((initPerks.gold || []).join('\n'))
+  const [platinumPerks, setPlatinumPerks] = useState((initPerks.platinum || []).join('\n'))
 
   const defaultData = useMemo(
     () => ({
@@ -106,15 +121,20 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
       pointsPerEvent: config.points_per_event ?? 100,
       welcomePoints: config.welcome_points ?? 25,
       referralPoints: config.referral_points ?? 100,
+      basePointsPerEvent: config.base_points_per_event ?? 0,
       largePartyThreshold: config.bonus_large_party_threshold ?? 10,
       largePartyBonus: config.bonus_large_party_points ?? 50,
       largePartyEnabled: (config.bonus_large_party_points ?? 0) > 0,
       milestones: [...(config.milestone_bonuses ?? [])].sort((a, b) => a.events - b.events),
+      guestMilestones: [...(config.guest_milestones ?? [])].sort((a, b) => a.guests - b.guests),
       silverMin: config.tier_silver_min,
       goldMin: config.tier_gold_min,
       platinumMin: config.tier_platinum_min,
+      silverPerks: (initPerks.silver || []).join('\n'),
+      goldPerks: (initPerks.gold || []).join('\n'),
+      platinumPerks: (initPerks.platinum || []).join('\n'),
     }),
-    [config]
+    [config, initPerks]
   )
 
   const currentData = useMemo(
@@ -126,13 +146,18 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
       pointsPerEvent,
       welcomePoints,
       referralPoints,
+      basePointsPerEvent,
       largePartyThreshold,
       largePartyBonus,
       largePartyEnabled,
       milestones,
+      guestMilestones,
       silverMin,
       goldMin,
       platinumMin,
+      silverPerks,
+      goldPerks,
+      platinumPerks,
     }),
     [
       programMode,
@@ -142,13 +167,18 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
       pointsPerEvent,
       welcomePoints,
       referralPoints,
+      basePointsPerEvent,
       largePartyThreshold,
       largePartyBonus,
       largePartyEnabled,
       milestones,
+      guestMilestones,
       silverMin,
       goldMin,
       platinumMin,
+      silverPerks,
+      goldPerks,
+      platinumPerks,
     ]
   )
 
@@ -168,14 +198,19 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
     if (typeof data.pointsPerEvent === 'number') setPointsPerEvent(data.pointsPerEvent)
     if (typeof data.welcomePoints === 'number') setWelcomePoints(data.welcomePoints)
     if (typeof data.referralPoints === 'number') setReferralPoints(data.referralPoints)
+    if (typeof data.basePointsPerEvent === 'number') setBasePointsPerEvent(data.basePointsPerEvent)
     if (typeof data.largePartyThreshold === 'number')
       setLargePartyThreshold(data.largePartyThreshold)
     if (typeof data.largePartyBonus === 'number') setLargePartyBonus(data.largePartyBonus)
     if (typeof data.largePartyEnabled === 'boolean') setLargePartyEnabled(data.largePartyEnabled)
     if (Array.isArray(data.milestones)) setMilestones(data.milestones)
+    if (Array.isArray(data.guestMilestones)) setGuestMilestones(data.guestMilestones)
     if (typeof data.silverMin === 'number') setSilverMin(data.silverMin)
     if (typeof data.goldMin === 'number') setGoldMin(data.goldMin)
     if (typeof data.platinumMin === 'number') setPlatinumMin(data.platinumMin)
+    if (typeof data.silverPerks === 'string') setSilverPerks(data.silverPerks)
+    if (typeof data.goldPerks === 'string') setGoldPerks(data.goldPerks)
+    if (typeof data.platinumPerks === 'string') setPlatinumPerks(data.platinumPerks)
   }
 
   function addMilestone() {
@@ -194,6 +229,24 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
 
   function removeMilestone(events: number) {
     setMilestones((prev) => prev.filter((m) => m.events !== events))
+  }
+
+  function addGuestMilestone() {
+    const guests = parseInt(newGuestMilestoneGuests)
+    const bonus = parseInt(newGuestMilestoneBonus)
+    if (!guests || !bonus || guests <= 0 || bonus <= 0) return
+    if (guestMilestones.some((m) => m.guests === guests)) {
+      setError(`A guest milestone already exists for ${guests} guests.`)
+      return
+    }
+    setGuestMilestones((prev) => [...prev, { guests, bonus }].sort((a, b) => a.guests - b.guests))
+    setNewGuestMilestoneGuests('')
+    setNewGuestMilestoneBonus('')
+    setError(null)
+  }
+
+  function removeGuestMilestone(guests: number) {
+    setGuestMilestones((prev) => prev.filter((m) => m.guests !== guests))
   }
 
   function handleSave() {
@@ -224,9 +277,26 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
           bonus_large_party_threshold: largePartyEnabled ? largePartyThreshold : undefined,
           bonus_large_party_points: largePartyEnabled ? largePartyBonus : 0,
           milestone_bonuses: milestones,
+          guest_milestones: guestMilestones,
+          base_points_per_event: basePointsPerEvent,
           tier_silver_min: silverMin,
           tier_gold_min: goldMin,
           tier_platinum_min: platinumMin,
+          tier_perks: {
+            bronze: [],
+            silver: silverPerks
+              .split('\n')
+              .map((s) => s.trim())
+              .filter(Boolean),
+            gold: goldPerks
+              .split('\n')
+              .map((s) => s.trim())
+              .filter(Boolean),
+            platinum: platinumPerks
+              .split('\n')
+              .map((s) => s.trim())
+              .filter(Boolean),
+          },
         })
         setSaved(true)
         protection.markCommitted()
@@ -250,6 +320,110 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
       saveState={protection.saveState}
     >
       <div className="space-y-10">
+        {/* ── Quick Setup Presets ─────────────────────────────────────── */}
+        <section>
+          <h2 className="text-lg font-semibold text-stone-100 mb-1">Quick Setup</h2>
+          <p className="text-sm text-stone-500 mb-3">
+            Start with a preset, then customize. This fills all fields below but does not save until
+            you click Save.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              {
+                label: 'Private Dining',
+                desc: 'Intimate dinners (2-8 guests). Rewards loyalty and referrals.',
+                apply: () => {
+                  setProgramMode('full')
+                  setEarnMode('per_guest')
+                  setPointsPerGuest(15)
+                  setBasePointsPerEvent(25)
+                  setWelcomePoints(50)
+                  setReferralPoints(150)
+                  setMilestones([
+                    { events: 5, bonus: 50 },
+                    { events: 10, bonus: 100 },
+                    { events: 25, bonus: 300 },
+                  ])
+                  setGuestMilestones([
+                    { guests: 25, bonus: 100 },
+                    { guests: 50, bonus: 250 },
+                  ])
+                  setSilverMin(150)
+                  setGoldMin(400)
+                  setPlatinumMin(800)
+                  setLargePartyEnabled(true)
+                  setLargePartyThreshold(8)
+                  setLargePartyBonus(25)
+                },
+              },
+              {
+                label: 'Catering',
+                desc: 'Large events (20-200 guests). Flat earn, high guest milestones.',
+                apply: () => {
+                  setProgramMode('full')
+                  setEarnMode('per_event')
+                  setPointsPerEvent(100)
+                  setBasePointsPerEvent(0)
+                  setWelcomePoints(25)
+                  setReferralPoints(200)
+                  setMilestones([
+                    { events: 3, bonus: 75 },
+                    { events: 10, bonus: 200 },
+                  ])
+                  setGuestMilestones([
+                    { guests: 100, bonus: 150 },
+                    { guests: 500, bonus: 500 },
+                  ])
+                  setSilverMin(200)
+                  setGoldMin(500)
+                  setPlatinumMin(1000)
+                  setLargePartyEnabled(true)
+                  setLargePartyThreshold(50)
+                  setLargePartyBonus(50)
+                },
+              },
+              {
+                label: 'Balanced',
+                desc: 'Mix of event types. Base bonus + per-guest. Fair for all.',
+                apply: () => {
+                  setProgramMode('full')
+                  setEarnMode('per_guest')
+                  setPointsPerGuest(10)
+                  setBasePointsPerEvent(50)
+                  setWelcomePoints(25)
+                  setReferralPoints(100)
+                  setMilestones([
+                    { events: 5, bonus: 50 },
+                    { events: 10, bonus: 100 },
+                  ])
+                  setGuestMilestones([
+                    { guests: 20, bonus: 75 },
+                    { guests: 50, bonus: 200 },
+                  ])
+                  setSilverMin(100)
+                  setGoldMin(250)
+                  setPlatinumMin(500)
+                  setLargePartyEnabled(true)
+                  setLargePartyThreshold(10)
+                  setLargePartyBonus(30)
+                },
+              },
+            ].map((preset) => (
+              <button
+                key={preset.label}
+                type="button"
+                onClick={preset.apply}
+                className="text-left rounded-lg p-4 border border-stone-700 bg-stone-800/50 hover:border-brand-500 hover:bg-brand-500/10 transition-colors"
+              >
+                <p className="text-sm font-semibold text-stone-200">{preset.label}</p>
+                <p className="text-xs text-stone-400 mt-1">{preset.desc}</p>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <hr className="border-stone-700" />
+
         {/* ── Program Mode ──────────────────────────────────────────────── */}
         <section>
           <h2 className="text-lg font-semibold text-stone-100 mb-1">Program Mode</h2>
@@ -389,6 +563,15 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
                     />
                   )}
                   <NumberField
+                    label="Base event bonus"
+                    name="base_points_per_event"
+                    value={basePointsPerEvent}
+                    onChange={setBasePointsPerEvent}
+                    min={0}
+                    suffix="pts / event"
+                    hint="Flat bonus added to every completed event on top of the earn mode. Set to 0 to disable. Creates a hybrid earning model."
+                  />
+                  <NumberField
                     label="Welcome bonus"
                     name="welcome_points"
                     value={welcomePoints}
@@ -404,7 +587,7 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
                     onChange={setReferralPoints}
                     min={0}
                     suffix="pts"
-                    hint="Reference value for manual referral awards - not applied automatically."
+                    hint="Automatically awarded to the referrer when a referred client completes their first event."
                   />
                 </div>
               </section>
@@ -548,6 +731,90 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
                 </p>
               </div>
             </section>
+
+            <hr className="border-stone-700" />
+
+            {/* ── Guest Milestones ────────────────────────────────────────── */}
+            <section>
+              <h2 className="text-lg font-semibold text-stone-100 mb-1">Guest Milestones</h2>
+              <p className="text-sm text-stone-500 mb-4">
+                Award bonus points when a client reaches a cumulative number of guests served across
+                all their events.
+              </p>
+
+              {guestMilestones.length > 0 ? (
+                <div className="space-y-2 mb-4">
+                  {guestMilestones.map((m) => (
+                    <div
+                      key={m.guests}
+                      className="flex items-center justify-between px-4 py-3 rounded-lg bg-stone-800 border border-stone-700"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg">👥</span>
+                        <div>
+                          <p className="text-sm font-medium text-stone-100">
+                            {m.guests} total guests served
+                          </p>
+                          <p className="text-xs text-stone-500">+{m.bonus} bonus points</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeGuestMilestone(m.guests)}
+                        className="text-stone-400 hover:text-red-600 text-sm transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-stone-400 mb-4 italic">
+                  No guest milestones set. Add one below.
+                </p>
+              )}
+
+              <div className="p-4 rounded-lg border border-dashed border-stone-600 bg-stone-800">
+                <p className="text-sm font-medium text-stone-300 mb-3">Add a guest milestone</p>
+                <div className="flex items-end gap-3 flex-wrap">
+                  <div>
+                    <label className="block text-xs text-stone-500 mb-1">At total guests</label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="e.g. 50"
+                      value={newGuestMilestoneGuests}
+                      onChange={(e) => setNewGuestMilestoneGuests(e.target.value)}
+                      className="w-28"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-stone-500 mb-1">Bonus points</label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="e.g. 200"
+                      value={newGuestMilestoneBonus}
+                      onChange={(e) => setNewGuestMilestoneBonus(e.target.value)}
+                      className="w-28"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={addGuestMilestone}
+                    disabled={!newGuestMilestoneGuests || !newGuestMilestoneBonus}
+                  >
+                    Add Milestone
+                  </Button>
+                </div>
+                <p className="text-xs text-stone-400 mt-2">
+                  Example: At 50 total guests served, award +200 pts. Encourages larger parties and
+                  repeat bookings!
+                </p>
+              </div>
+            </section>
           </>
         )}
 
@@ -629,6 +896,60 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
                 {programMode === 'full'
                   ? `Bronze is 0–${silverMin - 1} pts · Silver is ${silverMin}–${goldMin - 1} pts · Gold is ${goldMin}–${platinumMin - 1} pts · Platinum is ${platinumMin}+ pts`
                   : `Bronze is 0–${silverMin - 1} events · Silver is ${silverMin}–${goldMin - 1} events · Gold is ${goldMin}–${platinumMin - 1} events · Platinum is ${platinumMin}+ events`}
+              </p>
+            </section>
+
+            <hr className="border-stone-700" />
+
+            {/* ── Tier Perks ───────────────────────────────────────────────── */}
+            <section>
+              <h2 className="text-lg font-semibold text-stone-100 mb-1">Tier Perks</h2>
+              <p className="text-sm text-stone-500 mb-5">
+                Define what each tier unlocks for your clients. One perk per line. Bronze is always
+                &quot;Standard service&quot; (no special perks needed).
+              </p>
+              <div className="space-y-4">
+                {(
+                  [
+                    {
+                      label: 'Silver Perks',
+                      value: silverPerks,
+                      setter: setSilverPerks,
+                      placeholder: 'e.g. Complimentary amuse-bouche at every event',
+                    },
+                    {
+                      label: 'Gold Perks',
+                      value: goldPerks,
+                      setter: setGoldPerks,
+                      placeholder:
+                        'e.g. Priority holiday booking\nRecipe card for your favorite dish',
+                    },
+                    {
+                      label: 'Platinum Perks',
+                      value: platinumPerks,
+                      setter: setPlatinumPerks,
+                      placeholder:
+                        'e.g. Annual tasting menu experience\nCustom menu consultation\nAll Gold perks included',
+                    },
+                  ] as const
+                ).map((tier) => (
+                  <div key={tier.label}>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      {tier.label}
+                    </label>
+                    <textarea
+                      value={tier.value}
+                      onChange={(e) => tier.setter(e.target.value)}
+                      placeholder={tier.placeholder}
+                      rows={3}
+                      className="w-full rounded-md border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    />
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-stone-400 mt-2">
+                Clients see these perks on their rewards page. Make them tangible: priority access,
+                complimentary courses, exclusive experiences.
               </p>
             </section>
           </>

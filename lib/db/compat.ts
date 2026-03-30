@@ -1040,9 +1040,13 @@ class QueryBuilder<T = any> {
 
   private serializeValue(val: unknown): unknown {
     if (val === null || val === undefined) return null
-    // Let postgres.js handle arrays natively (text[], int[], etc.)
-    // Only JSON-stringify plain objects (for JSONB columns)
-    if (Array.isArray(val)) return val
+    // Arrays of objects are JSONB columns - must be JSON-stringified.
+    // Arrays of primitives (string[], int[]) are native PostgreSQL arrays - pass through.
+    if (Array.isArray(val)) {
+      const hasObjects = val.length > 0 && typeof val[0] === 'object' && val[0] !== null
+      if (hasObjects || val.length === 0) return JSON.stringify(val)
+      return val
+    }
     if (typeof val === 'object' && !(val instanceof Date)) return JSON.stringify(val)
     return val
   }
