@@ -94,7 +94,7 @@ ALTER TABLE ingredients ADD COLUMN image_url TEXT;
 | File | Change |
 |------|--------|
 | `app/(chef)/expenses/page.tsx` (or expense list component) | Add optional thumbnail column |
-| Expense row/card component | Render receipt thumbnail if `receipt_url` exists |
+| Expense row/card component | Render receipt thumbnail if `receipt_photo_url` exists. MUST use `getReceiptUrl()` from `lib/expenses/receipt-upload.ts` for signed URL (private bucket). |
 
 ### 1C. Event Card Photos
 
@@ -107,10 +107,13 @@ ALTER TABLE ingredients ADD COLUMN image_url TEXT;
 - No photo available: colored dot with event status (existing behavior, no change)
 
 **Files to modify:**
-| File | Change |
-|------|--------|
-| Events list page/component | Add thumbnail column to table |
-| Server action for events list | Include first gallery/dish photo URL in query |
+
+| File                                                               | Change                                                                                                                                                                                                              |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/(chef)/events/page.tsx` (EventsList component, lines 105-192) | Add thumbnail column to table                                                                                                                                                                                       |
+| `lib/events/actions.ts` (`getEvents()`)                            | Add LEFT JOIN to `event_photos` (first by `display_order`) or subquery for first dish photo via events -> menus -> dishes. Current query is `select('*, client:clients(id, full_name, email)')` with NO photo join. |
+
+**Query guidance:** Event photos are in `event_photos` table (private bucket, requires signed URLs via storage). Dish photos are in `dishes.photo_url` (public bucket, direct URL). Priority: event gallery photo first, dish photo fallback.
 
 ### 1D. Menu Card Dish Photos
 
@@ -119,10 +122,11 @@ ALTER TABLE ingredients ADD COLUMN image_url TEXT;
 **Solution:** Menu cards show the first available dish photo as a small hero banner (16:9, 200px wide) at the top of the card. If no dish has a photo, show the existing card design (no change).
 
 **Files to modify:**
-| File | Change |
-|------|--------|
-| Menu list page/component | Add dish photo hero to card |
-| Server action for menus list | Include first dish photo URL in query |
+
+| File                                                                            | Change                                                                                                                |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `app/(chef)/menus/menus-client-wrapper.tsx` (MenuCard component, lines 114-200) | Add dish photo hero to card. NOTE: NOT `/culinary/menus/` which is a redirect.                                        |
+| `lib/menus/actions.ts` (`getMenus()`, lines 333-362)                            | Add subquery for first dish with non-null `photo_url` per menu. Current query selects menu fields only, NO dish join. |
 
 ### 1E. Rename "Price Catalog" to "Food Catalog"
 
@@ -214,15 +218,17 @@ ALTER TABLE vendors ADD COLUMN logo_url TEXT;
 
 **Solution:**
 
-1. Add `photo_url TEXT` column to `equipment_inventory` table (migration)
+1. Add `photo_url TEXT` column to `equipment_items` table (migration `20260401000122`)
 2. Equipment list: show 48x48 thumbnail
 3. Equipment detail: show larger photo
 4. Upload via equipment edit form
 
+**NOTE:** The original migration (000121) targeted `equipment_inventory` which does not exist. The correct table is `equipment_items` (`types/database.ts:15668`). A fix migration (000122) has been applied.
+
 **Database Change:**
 
 ```sql
-ALTER TABLE equipment_inventory ADD COLUMN photo_url TEXT;
+ALTER TABLE equipment_items ADD COLUMN IF NOT EXISTS photo_url TEXT;
 ```
 
 ### 2E. Chef-Uploaded Ingredient Photos
@@ -303,16 +309,9 @@ Store logo image files go in `public/images/stores/` (small PNGs, ~5KB each).
 
 **This extends the existing OpenClaw price scraping cartridge, not a new cartridge.**
 
-### 3D. Culinary Board Technique Photos
+### ~~3D. Culinary Board Technique Photos~~ (DEFERRED)
 
-**Problem:** The culinary board (`/culinary-board`) displays culinary vocabulary terms (chiffonade, brunoise, etc.) as text. Reference photos showing the technique or result would be educational.
-
-**Solution:**
-
-1. Add `image_url TEXT` column to `culinary_terms` table (or equivalent)
-2. Source: curated stock photos or creative commons images for each technique
-3. Display: thumbnail on each term card, larger image in detail/expanded view
-4. This is a manual curation job (finite set of culinary terms), not a scraping job
+**BLOCKED:** The `culinary_terms` table does not exist in production. The culinary board page (`/culinary-board`) is experimental and only exists in agent worktrees, not in the deployed app. This phase cannot be built until the culinary board ships as a production feature. Revisit when that happens.
 
 ---
 
@@ -347,11 +346,13 @@ Store logo image files go in `public/images/stores/` (small PNGs, ~5KB each).
 - Not a recipe suggestion engine
 - It's a reference card. Photo, facts, your own usage history. Simple. Useful.
 
-### 4B. Dashboard Widget Photos
+### 4B. Dashboard Widget Photos (DEFERRED - needs design review)
 
 **Problem:** "Today's Schedule" and "Week Strip" widgets are pure text/color. A small dish photo from the event's menu adds visual context.
 
-**Solution:**
+**CONCERN:** The schedule widget (`dashboard/_sections/schedule-cards.tsx:44-160`) is already compact: time, occasion, client, guests, weather. Adding images may violate the non-invasive rule. The widget shows 1-3 events and is information-dense.
+
+**Solution (if approved after design review):**
 
 - Today's Schedule widget: show a 48x48 dish photo from the event's menu (first dish with a photo)
 - Week Strip: show a tiny 24x24 thumbnail on event day cells (if available)
@@ -397,11 +398,11 @@ ALTER TABLE staff_members ADD COLUMN IF NOT EXISTS photo_url TEXT;
 -- Phase 2C: Vendor logos
 ALTER TABLE vendors ADD COLUMN IF NOT EXISTS logo_url TEXT;
 
--- Phase 2D: Equipment photos
-ALTER TABLE equipment_inventory ADD COLUMN IF NOT EXISTS photo_url TEXT;
+-- Phase 2D: Equipment photos (CORRECTED: was equipment_inventory, which doesn't exist)
+-- See migration 20260401000122_equipment_items_photo_url.sql
+ALTER TABLE equipment_items ADD COLUMN IF NOT EXISTS photo_url TEXT;
 
--- Phase 3D: Culinary board technique photos (if table exists)
--- ALTER TABLE culinary_terms ADD COLUMN IF NOT EXISTS image_url TEXT;
+-- Phase 3D: DEFERRED (culinary_terms table does not exist yet)
 ```
 
 ### Migration Notes
@@ -410,6 +411,7 @@ ALTER TABLE equipment_inventory ADD COLUMN IF NOT EXISTS photo_url TEXT;
 - All additive, no data loss risk
 - Migration filename must be checked against existing files in `database/migrations/` (timestamp collision rule)
 - The `directory_listings.photo_urls` and `referral_partners.cover_image_url` columns already exist; no migration needed for those
+- **Migration 000121** targeted `equipment_inventory` (doesn't exist, wrapped in IF EXISTS so no harm). **Migration 000122** fixes this by targeting `equipment_items` (the real table). Both have been applied.
 
 ---
 
