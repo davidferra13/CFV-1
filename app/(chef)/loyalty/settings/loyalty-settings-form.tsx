@@ -17,7 +17,7 @@ import {
   TRIGGER_CATEGORY_LABELS,
   type TriggerCategory,
   type TriggerConfigOverride,
-} from '@/lib/loyalty/triggers'
+} from '@/lib/loyalty/trigger-registry'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
