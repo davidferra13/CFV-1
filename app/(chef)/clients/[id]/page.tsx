@@ -82,6 +82,7 @@ import { KitchenProfilePanel } from '@/components/clients/kitchen-profile-panel'
 import { ClientIntelligencePanel } from '@/components/intelligence/client-intelligence-panel'
 import { findPotentialClientMatches } from '@/lib/clients/cross-platform-matching'
 import { PotentialDuplicatesCard } from '@/components/clients/potential-duplicates-card'
+import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',
@@ -194,6 +195,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             ← Back to Clients
           </Link>
           <div className="flex items-center gap-3 flex-wrap">
+            <EntityPhotoUpload
+              entityType="client"
+              entityId={client.id}
+              currentPhotoUrl={(client as any).avatar_url ?? null}
+              compact
+              label="Add avatar"
+            />
             <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">{client.full_name}</h1>
             <ClientStatusBadge
               clientId={client.id}

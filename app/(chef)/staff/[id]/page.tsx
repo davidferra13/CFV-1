@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { StaffMemberForm } from '@/components/staff/staff-member-form'
 import { CreateStaffLoginForm } from '@/components/staff/create-staff-login-form'
+import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 
 export const metadata: Metadata = { title: 'Staff Profile | ChefFlow' }
 
@@ -49,18 +50,27 @@ export default async function StaffDetailPage({ params }: { params: { id: string
 
       {/* Header */}
       <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-stone-100">{member.name}</h1>
-          <div className="mt-1 flex items-center gap-2">
-            <Badge variant="default">{ROLE_LABELS[member.role] ?? member.role}</Badge>
-            <Badge variant={member.status === 'active' ? 'success' : 'error'}>
-              {member.status}
-            </Badge>
-            {member.hourly_rate_cents > 0 && (
-              <span className="text-sm text-stone-400">
-                ${(member.hourly_rate_cents / 100).toFixed(2)}/hr
-              </span>
-            )}
+        <div className="flex items-center gap-4">
+          <EntityPhotoUpload
+            entityType="staff"
+            entityId={member.id}
+            currentPhotoUrl={(member as any).photo_url ?? null}
+            compact
+            label="Add photo"
+          />
+          <div>
+            <h1 className="text-2xl font-bold text-stone-100">{member.name}</h1>
+            <div className="mt-1 flex items-center gap-2">
+              <Badge variant="default">{ROLE_LABELS[member.role] ?? member.role}</Badge>
+              <Badge variant={member.status === 'active' ? 'success' : 'error'}>
+                {member.status}
+              </Badge>
+              {member.hourly_rate_cents > 0 && (
+                <span className="text-sm text-stone-400">
+                  ${(member.hourly_rate_cents / 100).toFixed(2)}/hr
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>

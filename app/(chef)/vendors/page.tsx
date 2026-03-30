@@ -99,22 +99,36 @@ export default async function VendorsPage({
               <Card interactive className="mb-3">
                 <CardContent className="pt-4 pb-4">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-stone-100">{vendor.name}</span>
-                        <Badge variant={vendor.status === 'active' ? 'success' : 'default'}>
-                          {vendor.status}
-                        </Badge>
-                      </div>
-                      {vendor.contact_name && (
-                        <p className="text-xs text-stone-400 mt-0.5">
-                          Contact: {vendor.contact_name}
-                        </p>
+                    <div className="flex items-start gap-3">
+                      {vendor.logo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={vendor.logo_url}
+                          alt=""
+                          className="h-8 w-8 rounded object-cover flex-shrink-0 mt-0.5"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded bg-stone-800 flex items-center justify-center flex-shrink-0 mt-0.5 text-xs font-semibold text-stone-500">
+                          {vendor.name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
                       )}
-                      <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-stone-500">
-                        {vendor.phone && <span>{vendor.phone}</span>}
-                        {vendor.email && <span>{vendor.email}</span>}
-                        {vendor.payment_terms && <span>Terms: {vendor.payment_terms}</span>}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-stone-100">{vendor.name}</span>
+                          <Badge variant={vendor.status === 'active' ? 'success' : 'default'}>
+                            {vendor.status}
+                          </Badge>
+                        </div>
+                        {vendor.contact_name && (
+                          <p className="text-xs text-stone-400 mt-0.5">
+                            Contact: {vendor.contact_name}
+                          </p>
+                        )}
+                        <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-stone-500">
+                          {vendor.phone && <span>{vendor.phone}</span>}
+                          {vendor.email && <span>{vendor.email}</span>}
+                          {vendor.payment_terms && <span>Terms: {vendor.payment_terms}</span>}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">

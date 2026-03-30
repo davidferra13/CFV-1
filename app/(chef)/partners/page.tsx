@@ -110,24 +110,38 @@ export default async function PartnersPage({
               className="block rounded-lg border border-stone-700 p-4 hover:shadow-sm transition-all hover:bg-stone-800"
             >
               <div className="flex justify-between items-start gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-stone-100">{partner.name}</span>
-                    <Badge variant={TYPE_VARIANTS[partner.partner_type] || 'default'}>
-                      {TYPE_LABELS[partner.partner_type] || partner.partner_type}
-                    </Badge>
-                    {partner.is_showcase_visible && <Badge variant="success">Showcase</Badge>}
-                    {partner.status === 'inactive' && <Badge variant="error">Inactive</Badge>}
+                <div className="flex-1 min-w-0 flex items-start gap-3">
+                  {partner.cover_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={partner.cover_image_url}
+                      alt=""
+                      className="h-10 w-10 rounded object-cover flex-shrink-0 mt-0.5"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded bg-stone-800 flex items-center justify-center flex-shrink-0 mt-0.5 text-sm font-semibold text-stone-500">
+                      {partner.name?.charAt(0)?.toUpperCase() || '?'}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-stone-100">{partner.name}</span>
+                      <Badge variant={TYPE_VARIANTS[partner.partner_type] || 'default'}>
+                        {TYPE_LABELS[partner.partner_type] || partner.partner_type}
+                      </Badge>
+                      {partner.is_showcase_visible && <Badge variant="success">Showcase</Badge>}
+                      {partner.status === 'inactive' && <Badge variant="error">Inactive</Badge>}
+                    </div>
+                    {partner.contact_name && (
+                      <p className="text-sm text-stone-500 mt-1">Contact: {partner.contact_name}</p>
+                    )}
+                    {partner.partner_locations && partner.partner_locations.length > 0 && (
+                      <p className="text-xs text-stone-400 mt-1">
+                        {partner.partner_locations.length} location
+                        {partner.partner_locations.length !== 1 ? 's' : ''}
+                      </p>
+                    )}
                   </div>
-                  {partner.contact_name && (
-                    <p className="text-sm text-stone-500 mt-1">Contact: {partner.contact_name}</p>
-                  )}
-                  {partner.partner_locations && partner.partner_locations.length > 0 && (
-                    <p className="text-xs text-stone-400 mt-1">
-                      {partner.partner_locations.length} location
-                      {partner.partner_locations.length !== 1 ? 's' : ''}
-                    </p>
-                  )}
                 </div>
                 <div className="text-right flex-shrink-0 space-y-1">
                   <div className="flex gap-4 text-sm">

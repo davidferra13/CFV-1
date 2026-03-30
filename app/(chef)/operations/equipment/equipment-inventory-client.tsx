@@ -18,6 +18,7 @@ import {
 import { EQUIPMENT_CATEGORIES } from '@/lib/equipment/constants'
 import MaintenanceSchedule from '@/components/equipment/maintenance-schedule'
 import type { EquipmentMaintenanceStatus } from '@/lib/equipment/maintenance-actions'
+import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 import { format, addDays, isBefore } from 'date-fns'
 
 type EquipmentItem = {
@@ -29,6 +30,7 @@ type EquipmentItem = {
   maintenance_interval_days: number | null
   last_maintained_at: string | null
   notes: string | null
+  photo_url?: string | null
 }
 
 type Rental = {
@@ -192,18 +194,29 @@ export function EquipmentInventoryClient({
               <Card key={item.id}>
                 <CardContent className="pt-3 pb-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-stone-100">{item.name}</span>
-                        <Badge variant="default">
-                          {CATEGORY_LABELS[item.category] ?? item.category}
-                        </Badge>
-                        {mStatus === 'overdue' && (
-                          <Badge variant="error">Maintenance Overdue</Badge>
+                    <div className="flex items-start gap-3">
+                      <EntityPhotoUpload
+                        entityType="equipment"
+                        entityId={item.id}
+                        currentPhotoUrl={item.photo_url ?? null}
+                        compact
+                        label="Add photo"
+                      />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-stone-100">{item.name}</span>
+                          <Badge variant="default">
+                            {CATEGORY_LABELS[item.category] ?? item.category}
+                          </Badge>
+                          {mStatus === 'overdue' && (
+                            <Badge variant="error">Maintenance Overdue</Badge>
+                          )}
+                          {mStatus === 'due_soon' && <Badge variant="warning">Due Soon</Badge>}
+                        </div>
+                        {item.notes && (
+                          <p className="mt-0.5 text-xs text-stone-400">{item.notes}</p>
                         )}
-                        {mStatus === 'due_soon' && <Badge variant="warning">Due Soon</Badge>}
                       </div>
-                      {item.notes && <p className="mt-0.5 text-xs text-stone-400">{item.notes}</p>}
                     </div>
                     {mStatus !== 'none' && (
                       <Button

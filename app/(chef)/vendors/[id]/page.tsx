@@ -19,6 +19,7 @@ import { VendorPriceInsights } from '@/components/vendors/vendor-price-insights'
 import { VendorPriceAlertSettings } from '@/components/vendors/vendor-price-alert-settings'
 import { InvoiceForm } from '@/components/vendors/invoice-form'
 import { VendorComparisonPanel } from '@/components/inventory/vendor-comparison-panel'
+import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Vendor Detail | ChefFlow' }
@@ -67,6 +68,13 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
+            <EntityPhotoUpload
+              entityType="vendor"
+              entityId={vendor.id}
+              currentPhotoUrl={(vendor as any).logo_url ?? null}
+              compact
+              label="Add logo"
+            />
             <CardTitle>{vendor.name}</CardTitle>
             <Badge variant={vendor.status === 'active' ? 'success' : 'default'}>
               {vendor.status}

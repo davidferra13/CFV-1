@@ -11,6 +11,7 @@
  */
 
 import { formatCurrency } from '@/lib/utils/currency'
+import { getStoreLogo } from '@/lib/constants/store-logos'
 
 export interface PriceAttributionProps {
   priceCents: number | null
@@ -101,6 +102,7 @@ export function PriceAttribution({
 }: PriceAttributionProps) {
   const isPreferred =
     !!preferredStore && !!store && store.toLowerCase() === preferredStore.toLowerCase()
+  const storeLogo = getStoreLogo(store)
   // No price
   if (priceCents === null || priceCents === undefined) {
     return <span className="text-sm text-stone-500">--</span>
@@ -131,11 +133,15 @@ export function PriceAttribution({
           {unitSuffix && <span className="text-stone-400">{unitSuffix}</span>}
         </span>
         {store && (
-          <span className="text-xs text-stone-500 truncate max-w-[80px]">
+          <span className="inline-flex items-center gap-0.5 text-xs text-stone-500 truncate max-w-[100px]">
             {isPreferred && (
               <span className="text-amber-400 mr-0.5" title="Your preferred store">
                 &#9733;
               </span>
+            )}
+            {storeLogo && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={storeLogo} alt="" className="h-3.5 w-3.5 object-contain inline-block" />
             )}
             at {store}
           </span>
@@ -159,11 +165,15 @@ export function PriceAttribution({
       {store && (
         <>
           <span className="text-stone-600">&middot;</span>
-          <span className="text-xs text-stone-400">
+          <span className="inline-flex items-center gap-1 text-xs text-stone-400">
             {isPreferred && (
               <span className="text-amber-400 mr-0.5" title="Your preferred store">
                 &#9733;
               </span>
+            )}
+            {storeLogo && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={storeLogo} alt="" className="h-4 w-4 object-contain inline-block" />
             )}
             {store}
           </span>

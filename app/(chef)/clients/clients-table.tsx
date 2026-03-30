@@ -162,12 +162,28 @@ const ClientTableRow = memo(function ClientTableRow({ client }: { client: Client
       onClick={() => (window.location.href = `/clients/${client.id}`)}
     >
       <TableCell className="font-medium">
-        {client.full_name}
-        {isDemoClient(client) && (
-          <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
-            Sample
-          </Badge>
-        )}
+        <div className="flex items-center gap-2">
+          {(client as any).avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={(client as any).avatar_url}
+              alt=""
+              className="h-8 w-8 rounded-full object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-stone-800 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-stone-500">
+              {client.full_name?.charAt(0)?.toUpperCase() || '?'}
+            </div>
+          )}
+          <span>
+            {client.full_name}
+            {isDemoClient(client) && (
+              <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
+                Sample
+              </Badge>
+            )}
+          </span>
+        </div>
       </TableCell>
       <TableCell className="text-stone-600">{client.email}</TableCell>
       <TableCell className="text-stone-600">{client.phone || '-'}</TableCell>

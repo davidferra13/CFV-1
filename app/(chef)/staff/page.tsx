@@ -75,6 +75,18 @@ export default async function StaffRosterPage({
                 <div className="flex items-start justify-between">
                   <Link href={`/staff/${member.id}`} className="group flex-1">
                     <div className="flex items-center gap-2">
+                      {member.photo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={member.photo_url}
+                          alt=""
+                          className="h-8 w-8 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded-full bg-stone-800 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-stone-500">
+                          {member.name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                      )}
                       <span className="font-medium text-stone-100 group-hover:text-amber-500 transition-colors">
                         {member.name}
                       </span>

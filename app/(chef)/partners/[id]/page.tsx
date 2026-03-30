@@ -19,6 +19,7 @@ import { BulkAssignEvents } from '@/components/partners/bulk-assign-events'
 import { SharePartnerReportButton } from '@/components/partners/share-partner-report-button'
 import { PartnerInviteButton } from '@/components/partners/partner-invite-button'
 import { Inbox, CalendarCheck, DollarSign, Users, TrendingUp, MapPin } from '@/components/ui/icons'
+import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 
 const TYPE_LABELS: Record<string, string> = {
   airbnb_host: 'Airbnb Host',
@@ -69,6 +70,13 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
       <div className="flex justify-between items-start">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
+            <EntityPhotoUpload
+              entityType="partner"
+              entityId={partner.id}
+              currentPhotoUrl={(partner as any).cover_image_url ?? null}
+              compact
+              label="Add image"
+            />
             <h1 className="text-3xl font-bold text-stone-100">{partner.name}</h1>
             <Badge variant="info">
               {TYPE_LABELS[partner.partner_type] || partner.partner_type}

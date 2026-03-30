@@ -1,11 +1,12 @@
 # Spec: Visual Representation Strategy (Images Across ChefFlow)
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** showcase-image-upload.md (verified), portfolio-upload-fix.md (verified)
 > **Estimated complexity:** large (30+ files across 4 phases)
 > **Created:** 2026-03-29
-> **Built by:** not started
+> **Built by:** Claude Code (2026-03-29)
+> **Deferred:** Phase 3D (culinary_terms table missing), Phase 4B (dashboard too compact)
 
 ---
 

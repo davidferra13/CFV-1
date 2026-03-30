@@ -40,7 +40,17 @@ function formatDateRange(start: string, end: string): string {
   return `${months[sm - 1]} ${sd} \u2013 ${months[em - 1]} ${ed}`
 }
 
-export function SeasonalPaletteList({ palettes }: { palettes: SeasonalPalette[] }) {
+type PaletteListProps = {
+  palettes: SeasonalPalette[]
+  ingredientImageMap?: Record<string, string>
+  recipeImageMap?: Record<string, string>
+}
+
+export function SeasonalPaletteList({
+  palettes,
+  ingredientImageMap = {},
+  recipeImageMap = {},
+}: PaletteListProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -123,7 +133,7 @@ export function SeasonalPaletteList({ palettes }: { palettes: SeasonalPalette[] 
                   <p className="text-sm text-stone-400 mb-3">No notes yet</p>
                 )}
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500 mb-4">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500 mb-2">
                   <span>
                     {ingredientCount} ingredient{ingredientCount !== 1 ? 's' : ''}
                   </span>
@@ -131,6 +141,41 @@ export function SeasonalPaletteList({ palettes }: { palettes: SeasonalPalette[] 
                     {dishCount} go-to dish{dishCount !== 1 ? 'es' : ''}
                   </span>
                 </div>
+
+                {/* Ingredient + recipe thumbnails */}
+                {(() => {
+                  const thumbs: { url: string; label: string }[] = []
+                  for (const mw of palette.micro_windows) {
+                    const url = ingredientImageMap[mw.ingredient]
+                    if (url) thumbs.push({ url, label: mw.ingredient })
+                  }
+                  for (const pw of palette.proven_wins) {
+                    if (pw.recipe_id) {
+                      const url = recipeImageMap[pw.recipe_id]
+                      if (url) thumbs.push({ url, label: pw.dish_name })
+                    }
+                  }
+                  if (thumbs.length === 0) return null
+                  const shown = thumbs.slice(0, 6)
+                  const remaining = thumbs.length - shown.length
+                  return (
+                    <div className="flex items-center gap-1 mb-3">
+                      {shown.map((t, i) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={i}
+                          src={t.url}
+                          alt={t.label}
+                          title={t.label}
+                          className="h-6 w-6 rounded object-cover"
+                        />
+                      ))}
+                      {remaining > 0 && (
+                        <span className="text-xs text-stone-500 ml-1">+{remaining}</span>
+                      )}
+                    </div>
+                  )
+                })()}
 
                 <div className="flex gap-2">
                   <Link href={`/settings/repertoire/${palette.id}`} className="flex-1">
