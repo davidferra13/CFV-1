@@ -52,9 +52,39 @@ The cartridge runs on the Pi. It processes files from a staging area (copied fro
 For each file in the staging folder:
 
 1. Hash the file (SHA-256) to prevent duplicate processing
-2. Detect file type (image, PDF, email, document, CSV)
-3. For images/PDFs: run OCR via Tesseract to extract text
-4. Send extracted text + filename + metadata to Ollama for classification
+2. Detect file type (image, PDF, email, document, CSV, audio)
+3. For images/PDFs: run through the **3-tier OCR pipeline** (see below)
+4. For audio files (.m4a, .mp3, .wav): transcribe via Whisper on Ollama
+5. Send extracted text + filename + metadata to Ollama for classification
+
+#### 3-Tier OCR Pipeline (images and PDFs)
+
+Documents go through three tiers in order. Each tier is tried; if confidence is too low, the next tier runs. Results from all tiers are merged (best text wins).
+
+| Tier                             | Method                                              | Cost                    | Best For                                                | Accuracy                                                   |
+| -------------------------------- | --------------------------------------------------- | ----------------------- | ------------------------------------------------------- | ---------------------------------------------------------- |
+| **Tier 1: Multimodal Vision**    | Send image directly to LLaVA/Llama-Vision on Ollama | Free (local)            | Photos, handwritten notes, context-dependent documents  | High for understanding WHAT it is; moderate for exact text |
+| **Tier 2: Cloud Vision OCR**     | Google Cloud Vision API or Azure Computer Vision    | ~$1.50 per 1,000 images | Blurry receipts, faded thermal paper, messy handwriting | 90-95% on worst-case documents                             |
+| **Tier 3: Tesseract (fallback)** | Local Tesseract OCR                                 | Free                    | Clean typed/printed text, digital screenshots           | 95%+ on clean text, 60% on handwriting                     |
+
+**How it works:**
+
+- Tier 3 (Tesseract) runs first on every image (free, fast, handles clean text perfectly)
+- If Tesseract confidence is below 70% OR the document is classified as handwritten: Tier 1 (multimodal vision) runs. The LLM sees the actual image and extracts meaning, not just characters. This catches context that pure OCR misses ("this is a grocery list for 12 people" vs raw text)
+- If both Tier 3 and Tier 1 produce low-confidence results: Tier 2 (Cloud Vision) runs. This is the heavy hitter for faded/blurry/damaged documents. Costs pennies per image but reads almost anything
+
+**Privacy note:** Tier 2 sends the image to Google/Azure for OCR only. No client PII is in receipt images (just store names, item names, prices). For documents that DO contain client PII (handwritten client notes with names/phones), Tier 1 (local multimodal) is preferred. The pipeline can be configured to skip Tier 2 for PII-classified documents.
+
+#### Voice Memo Fallback
+
+For documents that all three OCR tiers cannot read (badly damaged, illegible handwriting), the developer can record a voice memo describing what the document says. Drop the audio file in the same staging folder. The cartridge:
+
+1. Detects audio files (.m4a, .mp3, .wav, .ogg)
+2. Transcribes via Whisper model on Ollama (free, local)
+3. Links the transcription to the source document (by filename convention: `receipt_003.jpg` pairs with `receipt_003.m4a`)
+4. Extracts entities from the transcription instead of from OCR
+
+This means the developer can flip through a stack of illegible papers and just narrate: "Whole Foods receipt, March 3, 2024, about $340 for the Henderson dinner." Thirty seconds of talking replaces 30 minutes of squinting at faded ink.
 
 Classification categories:
 
@@ -261,7 +291,9 @@ F:\OpenClaw-Vault\profiles\archive-digester\
   │   └── sync-api.mjs            -- HTTP API (port 8086)
   ├── lib/
   │   ├── db.mjs                  -- SQLite schema init
-  │   ├── ocr.mjs                 -- Tesseract wrapper
+  │   ├── ocr-pipeline.mjs        -- 3-tier OCR (Tesseract -> LLaVA -> Cloud Vision)
+  │   ├── cloud-vision.mjs        -- Google Cloud Vision API wrapper (Tier 2)
+  │   ├── whisper.mjs             -- Audio transcription via Ollama Whisper
   │   ├── ollama-prompts.mjs      -- Classification and extraction prompts
   │   └── fuzzy-match.mjs         -- Name matching utilities
   ├── storage/
@@ -370,7 +402,7 @@ POST /api/reprocess/{fileId}        -- reprocess a single file
 - Does not scrape external websites (this is an internal archive processor)
 - Does not run on a cron schedule (manual trigger, not automated)
 - Does not interfere with price-intel or any other cartridge
-- Does not send any data to cloud services (Ollama only, on-device)
+- Does not send PII to cloud services. Cloud Vision OCR is used only for receipts/invoices (store names, prices, no client data). All client-facing documents processed locally via Ollama
 - Does not generate recipes (extracts them from the developer's own documents)
 - Does not auto-import to ChefFlow without approval (export + review + manual sync trigger)
 
@@ -378,8 +410,9 @@ POST /api/reprocess/{fileId}        -- reprocess a single file
 
 ## Dependencies
 
-- **Tesseract OCR** installed on Pi (`sudo apt install tesseract-ocr`)
-- **Ollama** running on Pi with a capable model (qwen2.5 or similar)
+- **Tesseract OCR** installed on Pi (`sudo apt install tesseract-ocr`) - Tier 3 fallback
+- **Ollama** running on Pi with: text model (qwen2.5 or similar), multimodal model (LLaVA or Llama-Vision) for Tier 1 image understanding, Whisper model for audio transcription
+- **Google Cloud Vision API key** (or Azure Computer Vision) - Tier 2 OCR for blurry/faded/handwritten documents. ~$1.50 per 1,000 images. Only used for non-PII documents (receipts, invoices)
 - **Cartridge infrastructure** (verified, shared library available)
 - **ChefFlow sync pipeline** (cartridge registry, cron endpoint)
 
