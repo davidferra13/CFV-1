@@ -363,6 +363,58 @@ export async function toggleMuteCircle(input: {
 }
 
 // ---------------------------------------------------------------------------
+// Member Notification Preferences
+// ---------------------------------------------------------------------------
+
+/**
+ * Update notification preferences for the current member.
+ */
+export async function updateMemberNotificationPreferences(input: {
+  groupId: string
+  profileToken: string
+  prefs: Record<string, unknown>
+}): Promise<{ success: boolean; error?: string }> {
+  const db = createServerClient({ admin: true })
+
+  const { data: profile } = await db
+    .from('hub_guest_profiles')
+    .select('id')
+    .eq('profile_token', input.profileToken)
+    .single()
+
+  if (!profile) return { success: false, error: 'Invalid profile token' }
+
+  // Only allow known notification fields
+  const allowed = [
+    'notifications_muted',
+    'notify_email',
+    'notify_push',
+    'quiet_hours_start',
+    'quiet_hours_end',
+    'digest_mode',
+  ]
+  const updates: Record<string, unknown> = {}
+  for (const key of allowed) {
+    if (key in input.prefs) {
+      updates[key] = input.prefs[key]
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return { success: true }
+  }
+
+  const { error } = await db
+    .from('hub_group_members')
+    .update(updates)
+    .eq('group_id', input.groupId)
+    .eq('profile_id', profile.id)
+
+  if (error) return { success: false, error: error.message }
+  return { success: true }
+}
+
+// ---------------------------------------------------------------------------
 // Member Management - Owner/Admin actions
 // ---------------------------------------------------------------------------
 

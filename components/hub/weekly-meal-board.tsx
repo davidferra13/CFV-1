@@ -21,6 +21,7 @@ import { ScheduleChangeBadge } from './schedule-change-flag'
 import { WeekSummaryCard } from './week-summary-card'
 import { FeedbackInsightsPanel } from './feedback-insights-panel'
 import { RecurringMealsManager } from './recurring-meals-manager'
+import { MealAttendance } from './meal-attendance'
 
 // ---------------------------------------------------------------------------
 // Date helpers (ISO weeks: Monday = start)
@@ -755,6 +756,13 @@ export function WeeklyMealBoard({
                                   ⚠ {flag}
                                 </span>
                               ))}
+                            </div>
+                          )}
+
+                          {/* Attendance (who's eating) */}
+                          {!editMode && !entry.id.startsWith('temp-') && (
+                            <div className="mt-1.5">
+                              <MealAttendance groupId={groupId} mealEntryId={entry.id} compact />
                             </div>
                           )}
 

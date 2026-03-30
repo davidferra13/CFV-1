@@ -288,3 +288,111 @@ export async function removeHouseholdMember(
     return { success: false, error: err.message }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Meal Attendance
+// ---------------------------------------------------------------------------
+
+export interface MealAttendance {
+  id: string
+  meal_entry_id: string
+  household_member_id: string
+  status: 'in' | 'out' | 'maybe'
+  created_at: string
+}
+
+/**
+ * Get all household members for a circle (across all profiles in the group).
+ */
+export async function getCircleHouseholdMembers(groupId: string): Promise<HouseholdMember[]> {
+  const db: any = createServerClient({ admin: true })
+
+  const { data: memberships } = await db
+    .from('hub_group_members')
+    .select('profile_id')
+    .eq('group_id', groupId)
+
+  const profileIds = (memberships ?? []).map((m: any) => m.profile_id)
+  if (profileIds.length === 0) return []
+
+  const { data, error } = await db
+    .from('hub_household_members')
+    .select('*')
+    .in('profile_id', profileIds)
+    .order('sort_order', { ascending: true })
+
+  if (error) throw new Error(`Failed to load household members: ${error.message}`)
+  return data ?? []
+}
+
+/**
+ * Get attendance records for a meal entry.
+ */
+export async function getMealAttendance(mealEntryId: string): Promise<MealAttendance[]> {
+  const db: any = createServerClient({ admin: true })
+
+  const { data, error } = await db
+    .from('hub_meal_attendance')
+    .select('*')
+    .eq('meal_entry_id', mealEntryId)
+
+  if (error) throw new Error(`Failed to load attendance: ${error.message}`)
+  return data ?? []
+}
+
+/**
+ * Set attendance for a household member on a meal (upsert).
+ */
+export async function setMealAttendance(input: {
+  mealEntryId: string
+  householdMemberId: string
+  status: 'in' | 'out' | 'maybe'
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db: any = createServerClient({ admin: true })
+
+    const { error } = await db.from('hub_meal_attendance').upsert(
+      {
+        meal_entry_id: input.mealEntryId,
+        household_member_id: input.householdMemberId,
+        status: input.status,
+      },
+      { onConflict: 'meal_entry_id,household_member_id' }
+    )
+
+    if (error) throw new Error(error.message)
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+}
+
+/**
+ * Bulk set attendance for all household members on a meal.
+ * Accepts a map of householdMemberId -> status.
+ */
+export async function bulkSetMealAttendance(input: {
+  mealEntryId: string
+  attendance: Record<string, 'in' | 'out' | 'maybe'>
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db: any = createServerClient({ admin: true })
+
+    const rows = Object.entries(input.attendance).map(([householdMemberId, status]) => ({
+      meal_entry_id: input.mealEntryId,
+      household_member_id: householdMemberId,
+      status,
+    }))
+
+    if (rows.length === 0) return { success: true }
+
+    const { error } = await db
+      .from('hub_meal_attendance')
+      .upsert(rows, { onConflict: 'meal_entry_id,household_member_id' })
+
+    if (error) throw new Error(error.message)
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+}

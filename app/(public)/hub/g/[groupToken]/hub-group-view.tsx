@@ -20,7 +20,8 @@ import { HubAvailabilityGrid } from '@/components/hub/hub-availability-grid'
 import { HubMessageSearch } from '@/components/hub/hub-message-search'
 import { HubGroupSettings } from '@/components/hub/hub-group-settings'
 import { WeeklyMealBoard } from '@/components/hub/weekly-meal-board'
-import { toggleMuteCircle } from '@/lib/hub/group-actions'
+import { toggleMuteCircle, updateMemberNotificationPreferences } from '@/lib/hub/group-actions'
+import { NotificationPreferences } from '@/components/hub/notification-preferences'
 
 type Tab =
   | 'chat'
@@ -61,6 +62,7 @@ export function HubGroupView({
   const [currentMember, setCurrentMember] = useState<HubGroupMember | null>(null)
   const [isMuted, setIsMuted] = useState(false)
   const [mutePending, startMuteTransition] = useTransition()
+  const [showNotifPrefs, setShowNotifPrefs] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
 
   // Show welcome card on first visit
@@ -145,62 +147,83 @@ export function HubGroupView({
               )}
             </div>
 
-            {/* Mute toggle */}
+            {/* Notification bell (opens preferences) */}
             {profileToken && currentMember && (
-              <button
-                type="button"
-                onClick={() => {
-                  startMuteTransition(async () => {
-                    try {
-                      const newMuted = await toggleMuteCircle({
-                        groupId: group.id,
-                        profileToken: profileToken!,
-                      })
-                      setIsMuted(newMuted)
-                    } catch {
-                      // Ignore
-                    }
-                  })
-                }}
-                disabled={mutePending}
-                className="rounded-full bg-stone-800 p-1.5 text-stone-400 hover:bg-stone-700 hover:text-stone-200 disabled:opacity-50"
-                title={isMuted ? 'Unmute notifications' : 'Mute notifications'}
-              >
-                {isMuted ? (
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                    />
-                  </svg>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowNotifPrefs(!showNotifPrefs)}
+                  className="rounded-full bg-stone-800 p-1.5 text-stone-400 hover:bg-stone-700 hover:text-stone-200"
+                  title="Notification settings"
+                >
+                  {isMuted ? (
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="h-4 w-4"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                      />
+                    </svg>
+                  )}
+                </button>
+
+                {/* Notification preferences dropdown */}
+                {showNotifPrefs && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowNotifPrefs(false)} />
+                    <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-xl border border-stone-700 bg-stone-900 p-4 shadow-xl">
+                      <NotificationPreferences
+                        groupId={group.id}
+                        profileToken={profileToken!}
+                        initialPrefs={{
+                          notifications_muted: isMuted,
+                          notify_email: currentMember.notify_email ?? true,
+                          notify_push: currentMember.notify_push ?? true,
+                          quiet_hours_start: currentMember.quiet_hours_start ?? null,
+                          quiet_hours_end: currentMember.quiet_hours_end ?? null,
+                          digest_mode: currentMember.digest_mode ?? 'instant',
+                        }}
+                        onSave={async (prefs) => {
+                          const result = await updateMemberNotificationPreferences({
+                            groupId: group.id,
+                            profileToken: profileToken!,
+                            prefs,
+                          })
+                          if (result.success && 'notifications_muted' in prefs) {
+                            setIsMuted(prefs.notifications_muted as boolean)
+                          }
+                          return result
+                        }}
+                      />
+                    </div>
+                  </>
                 )}
-              </button>
+              </div>
             )}
 
             {/* My Hub link */}
