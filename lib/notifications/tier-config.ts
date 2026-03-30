@@ -139,6 +139,10 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   // Marketplace
   marketplace_lead_stale: 'alert',
 
+  // Loyalty
+  loyalty_trigger: 'info',
+  loyalty_adjustment: 'alert',
+
   // System
   system_alert: 'critical',
 }

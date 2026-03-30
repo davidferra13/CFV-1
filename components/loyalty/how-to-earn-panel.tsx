@@ -5,6 +5,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { LoyaltyConfig, EarnMode } from '@/lib/loyalty/actions'
 
+type ActiveTrigger = {
+  key: string
+  label: string
+  description: string
+  points: number
+  category: string
+  enabled: boolean
+}
+
 type Props = {
   config: Pick<
     LoyaltyConfig,
@@ -21,6 +30,7 @@ type Props = {
     points_per_event?: number
     base_points_per_event?: number
   }
+  activeTriggers?: ActiveTrigger[]
 }
 
 function EarnRow({ emoji, label, points }: { emoji: string; label: string; points: string }) {
@@ -35,7 +45,25 @@ function EarnRow({ emoji, label, points }: { emoji: string; label: string; point
   )
 }
 
-export function HowToEarnPanel({ config }: Props) {
+const TRIGGER_EMOJIS: Record<string, string> = {
+  profile_completed: '📝',
+  fun_qa_completed: '🎭',
+  review_submitted: '⭐',
+  google_review_clicked: '🔗',
+  public_review_consent: '📢',
+  quote_accepted: '✅',
+  payment_on_time: '💳',
+  tip_added: '💝',
+  rsvp_collected: '📩',
+  menu_approved: '🍽️',
+  meal_feedback_given: '💬',
+  chat_engagement: '💬',
+  hub_group_created: '👥',
+  friend_invited: '🤝',
+}
+
+export function HowToEarnPanel({ config, activeTriggers }: Props) {
+  const enabledTriggers = (activeTriggers || []).filter((t) => t.enabled && t.points > 0)
   return (
     <Card>
       <CardHeader>
@@ -131,6 +159,25 @@ export function HowToEarnPanel({ config }: Props) {
             label="Special bonus at your chef's discretion (thank-you, occasion gift, etc.)"
             points="varies"
           />
+
+          {/* Active triggers (bonus ways to earn) */}
+          {enabledTriggers.length > 0 && (
+            <>
+              <div className="pt-4 pb-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-brand-400">
+                  Bonus Ways to Earn
+                </p>
+              </div>
+              {enabledTriggers.map((trigger) => (
+                <EarnRow
+                  key={trigger.key}
+                  emoji={TRIGGER_EMOJIS[trigger.key] || '✨'}
+                  label={trigger.description || trigger.label}
+                  points={`+${trigger.points} pts`}
+                />
+              ))}
+            </>
+          )}
         </div>
 
         <div className="mt-4 p-3 bg-stone-800 rounded-lg">

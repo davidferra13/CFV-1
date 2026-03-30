@@ -46,6 +46,7 @@ export type LoyaltyConfig = {
   tier_perks: Record<string, string[]> // Chef-configurable perks per tier
   guest_milestones: { guests: number; bonus: number }[] // Cumulative guest-count milestones
   base_points_per_event: number // Flat bonus per event (hybrid: stacks with any earn mode)
+  trigger_config: Record<string, { enabled: boolean; points: number }> // Per-trigger overrides (defaults from registry)
 }
 
 export type LoyaltyTransaction = {
@@ -162,6 +163,15 @@ const UpdateLoyaltyConfigSchema = z.object({
     )
     .optional(),
   base_points_per_event: z.number().int().nonnegative().optional(),
+  trigger_config: z
+    .record(
+      z.string(),
+      z.object({
+        enabled: z.boolean(),
+        points: z.number().int().nonnegative(),
+      })
+    )
+    .optional(),
 })
 
 const CreateRewardSchema = z.object({
@@ -293,6 +303,114 @@ const DEFAULT_REWARDS: Omit<CreateRewardInput, 'tenant_id'>[] = [
     reward_type: 'discount_percent',
     reward_percent: 25,
     description: '25% off any dinner party of 6+ guests',
+  },
+  // ── Experience rewards (zero cost to chef, high perceived value) ──
+  {
+    name: 'Welcome cocktail or mocktail',
+    points_required: 40,
+    reward_type: 'free_course',
+    description: 'A handcrafted welcome drink to start your evening',
+  },
+  {
+    name: 'Tableside preparation for one course',
+    points_required: 60,
+    reward_type: 'upgrade',
+    description: 'Your chef prepares one course right at your table',
+  },
+  {
+    name: "Chef's choice surprise course",
+    points_required: 80,
+    reward_type: 'free_course',
+    description: 'A surprise course chosen by your chef based on what inspires them',
+  },
+  {
+    name: 'Next-day leftover meal prep',
+    points_required: 90,
+    reward_type: 'upgrade',
+    description: 'Your chef packages leftovers into portioned meals for the next day',
+  },
+  {
+    name: 'Seasonal menu first access',
+    points_required: 50,
+    reward_type: 'upgrade',
+    description: 'Preview and book new seasonal menus before anyone else',
+  },
+  {
+    name: 'Dietary deep-dive consultation',
+    points_required: 100,
+    reward_type: 'upgrade',
+    description: 'A personalized session to design menus around your dietary goals',
+  },
+  {
+    name: "Kids' mini-chef experience",
+    points_required: 120,
+    reward_type: 'upgrade',
+    description: 'Your chef teaches the kids a simple, fun recipe during your event',
+  },
+  {
+    name: 'Private cooking lesson (one dish)',
+    points_required: 150,
+    reward_type: 'upgrade',
+    description: 'A 30-minute hands-on lesson to learn one of your favorite dishes',
+  },
+  {
+    name: 'Ingredient sourcing tour',
+    points_required: 175,
+    reward_type: 'upgrade',
+    description: 'Join your chef at a local market or farm to pick ingredients together',
+  },
+  {
+    name: 'Family recipe from your chef',
+    points_required: 200,
+    reward_type: 'upgrade',
+    description: 'A handwritten family recipe from your chef, just for you',
+  },
+  {
+    name: 'Personalized celebration menu',
+    points_required: 250,
+    reward_type: 'upgrade',
+    description: 'A custom menu designed around your birthday, anniversary, or milestone',
+  },
+  // ── Higher-tier discount rewards ──
+  {
+    name: '10% off your next 3 events',
+    points_required: 300,
+    reward_type: 'discount_percent',
+    reward_percent: 10,
+    description: '10% discount applied to your next three bookings',
+  },
+  {
+    name: '$100 off a large dinner party',
+    points_required: 400,
+    reward_type: 'discount_fixed',
+    reward_value_cents: 10000,
+    description: '$100 off any event with 10 or more guests',
+  },
+  {
+    name: 'Travel/delivery fee waiver',
+    points_required: 80,
+    reward_type: 'discount_fixed',
+    reward_value_cents: 0,
+    description: 'Your chef waives the travel or delivery fee on your next event',
+  },
+  // ── Aspirational milestone rewards ──
+  {
+    name: 'Full dinner party for up to 6',
+    points_required: 500,
+    reward_type: 'free_dinner',
+    description: 'A complimentary dinner party for you and up to 5 guests',
+  },
+  {
+    name: 'Annual appreciation dinner',
+    points_required: 750,
+    reward_type: 'free_dinner',
+    description: 'A yearly celebration dinner honoring your loyalty',
+  },
+  {
+    name: "Chef's Table multi-course experience",
+    points_required: 1000,
+    reward_type: 'free_dinner',
+    description: 'The ultimate reward: a full multi-course tasting menu experience for two',
   },
 ]
 
@@ -533,6 +651,10 @@ export async function getLoyaltyConfig(): Promise<LoyaltyConfig> {
         bonus: number
       }[],
       base_points_per_event: (newConfig as any).base_points_per_event ?? 0,
+      trigger_config: ((newConfig as any).trigger_config ?? {}) as Record<
+        string,
+        { enabled: boolean; points: number }
+      >,
     }
   }
 
@@ -547,6 +669,10 @@ export async function getLoyaltyConfig(): Promise<LoyaltyConfig> {
       bonus: number
     }[],
     base_points_per_event: (config as any).base_points_per_event ?? 0,
+    trigger_config: ((config as any).trigger_config ?? {}) as Record<
+      string,
+      { enabled: boolean; points: number }
+    >,
   }
 }
 
@@ -558,6 +684,12 @@ export async function updateLoyaltyConfig(input: z.infer<typeof UpdateLoyaltyCon
   const user = await requireChef()
   const validated = UpdateLoyaltyConfigSchema.parse(input)
   const db: any = createServerClient()
+
+  // Validate trigger_config keys against the registry (strip unknown keys)
+  if (validated.trigger_config) {
+    const { validateTriggerConfig } = await import('@/lib/loyalty/triggers')
+    ;(validated as any).trigger_config = validateTriggerConfig(validated.trigger_config)
+  }
 
   // Ensure config exists
   await getLoyaltyConfig()
@@ -1603,6 +1735,32 @@ export async function adjustClientLoyalty(input: AdjustLoyaltyInput) {
 
   revalidatePath(`/clients/${validated.clientId}`)
   revalidatePath('/loyalty')
+
+  // Retraction notification: notify client when points are deducted (non-blocking)
+  if ((validated.adjustmentPoints && validated.adjustmentPoints < 0) || validated.resetPoints) {
+    try {
+      const { createNotification } = await import('@/lib/notifications/actions')
+      const { getClientAuthUserId } = await import('@/lib/notifications/client-actions')
+      const clientAuthUserId = await getClientAuthUserId(validated.clientId)
+      if (clientAuthUserId) {
+        const body = validated.adjustmentReason
+          ? `Your points balance was adjusted. ${validated.adjustmentReason}. Thank you for your understanding.`
+          : 'Your points balance was updated. If you have questions, feel free to reach out.'
+        await createNotification({
+          tenantId: user.tenantId!,
+          recipientId: clientAuthUserId,
+          category: 'loyalty',
+          action: 'loyalty_adjustment',
+          title: 'Points balance updated',
+          body,
+          actionUrl: '/my-rewards',
+          clientId: validated.clientId,
+        })
+      }
+    } catch (notifyErr) {
+      console.error('[adjustClientLoyalty] Retraction notification failed:', notifyErr)
+    }
+  }
 
   return { success: true, actions, updates }
 }

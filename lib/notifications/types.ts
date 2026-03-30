@@ -131,6 +131,9 @@ export type NotificationAction =
   | 'raffle_winner'
   | 'raffle_new_round'
   | 'raffle_drawn_chef'
+  // Loyalty triggers
+  | 'loyalty_trigger'
+  | 'loyalty_adjustment'
   // Marketplace
   | 'marketplace_lead_stale'
 
@@ -319,6 +322,10 @@ export const NOTIFICATION_CONFIG: Record<
   raffle_winner: { category: 'loyalty', icon: 'Trophy', toastByDefault: true },
   raffle_new_round: { category: 'loyalty', icon: 'Gift', toastByDefault: true },
   raffle_drawn_chef: { category: 'loyalty', icon: 'Trophy', toastByDefault: true },
+
+  // Loyalty triggers
+  loyalty_trigger: { category: 'loyalty', icon: 'Star', toastByDefault: true },
+  loyalty_adjustment: { category: 'loyalty', icon: 'AlertCircle', toastByDefault: true },
 
   // Marketplace
   marketplace_lead_stale: { category: 'lead', icon: 'AlertTriangle', toastByDefault: true },

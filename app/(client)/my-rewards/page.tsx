@@ -15,6 +15,7 @@ import { RewardCard } from './reward-card'
 import { ClientIncentiveList } from '@/components/incentives/client-incentive-list'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { HowToEarnPanel } from '@/components/loyalty/how-to-earn-panel'
+import { getActiveTriggers } from '@/lib/loyalty/triggers'
 import { NextRewardCard } from '@/components/loyalty/next-reward-card'
 import { TierPerksDisplay } from '@/components/loyalty/tier-perks-display'
 
@@ -104,28 +105,40 @@ export default async function MyRewardsPage() {
     .eq('id', user.entityId)
     .single()
 
-  const [incentivesSettled, rewardsSettled, configSettled, pendingSettled, raffleSettled] =
-    await Promise.allSettled([
-      getVoucherAndGiftCards(),
-      db
-        .from('loyalty_rewards')
-        .select('*')
-        .eq('tenant_id', client?.tenant_id || '')
-        .eq('is_active', true)
-        .order('points_required', { ascending: true }),
-      db
-        .from('loyalty_config')
-        .select(
-          'tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, milestone_bonuses, guest_milestones, referral_points, earn_mode, points_per_dollar, points_per_event, welcome_points, base_points_per_event'
-        )
-        .eq('tenant_id', client?.tenant_id || '')
-        .maybeSingle(),
-      getMyPendingRedemptions(),
-      getActiveRaffle().catch((err) => {
-        console.error('[my-rewards] Failed to load active raffle:', err)
-        return null
-      }),
-    ])
+  const [
+    incentivesSettled,
+    rewardsSettled,
+    configSettled,
+    pendingSettled,
+    raffleSettled,
+    triggersSettled,
+  ] = await Promise.allSettled([
+    getVoucherAndGiftCards(),
+    db
+      .from('loyalty_rewards')
+      .select('*')
+      .eq('tenant_id', client?.tenant_id || '')
+      .eq('is_active', true)
+      .order('points_required', { ascending: true }),
+    db
+      .from('loyalty_config')
+      .select(
+        'tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, milestone_bonuses, guest_milestones, referral_points, earn_mode, points_per_dollar, points_per_event, welcome_points, base_points_per_event'
+      )
+      .eq('tenant_id', client?.tenant_id || '')
+      .maybeSingle(),
+    getMyPendingRedemptions(),
+    getActiveRaffle().catch((err) => {
+      console.error('[my-rewards] Failed to load active raffle:', err)
+      return null
+    }),
+    client?.tenant_id
+      ? getActiveTriggers(client.tenant_id).catch((err) => {
+          console.error('[my-rewards] Failed to load active triggers:', err)
+          return []
+        })
+      : Promise.resolve([]),
+  ])
   const incentives =
     incentivesSettled.status === 'fulfilled'
       ? incentivesSettled.value
@@ -162,6 +175,13 @@ export default async function MyRewardsPage() {
       : (() => {
           console.error('[my-rewards] Raffle failed:', raffleSettled.reason)
           return null
+        })()
+  const activeTriggers =
+    triggersSettled.status === 'fulfilled'
+      ? triggersSettled.value
+      : (() => {
+          console.error('[my-rewards] Triggers failed:', triggersSettled.reason)
+          return [] as Awaited<ReturnType<typeof getActiveTriggers>>
         })()
 
   const allRewards = ((rewardsResult as any)?.data || []) as LoyaltyReward[]
@@ -259,7 +279,9 @@ export default async function MyRewardsPage() {
                     <div>
                       <p className="text-sm font-medium text-stone-100">
                         {status.milestoneProgress.nextEventMilestone.remaining} more event
-                        {status.milestoneProgress.nextEventMilestone.remaining !== 1 ? 's' : ''}{' '}
+                        {status.milestoneProgress.nextEventMilestone.remaining !== 1
+                          ? 's'
+                          : ''}{' '}
                         until your {ordinal(status.milestoneProgress.nextEventMilestone.target)}{' '}
                         dinner
                       </p>
@@ -281,7 +303,9 @@ export default async function MyRewardsPage() {
                     <div>
                       <p className="text-sm font-medium text-stone-100">
                         {status.milestoneProgress.nextGuestMilestone.remaining} more guest
-                        {status.milestoneProgress.nextGuestMilestone.remaining !== 1 ? 's' : ''}{' '}
+                        {status.milestoneProgress.nextGuestMilestone.remaining !== 1
+                          ? 's'
+                          : ''}{' '}
                         until your {status.milestoneProgress.nextGuestMilestone.target}-guest
                         milestone
                       </p>
@@ -426,6 +450,7 @@ export default async function MyRewardsPage() {
                 points_per_event: configData.points_per_event ?? 100,
                 base_points_per_event: configData.base_points_per_event ?? 0,
               }}
+              activeTriggers={activeTriggers}
             />
           )}
 

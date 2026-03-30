@@ -1,11 +1,10 @@
 'use server'
 
-// Monthly Raffle Server Actions (Pro-gated)
+// Monthly Raffle Server Actions
 // Creates and manages raffle rounds, draws winners using crypto.getRandomValues
 // for provably fair selection. All tenant-scoped via session.
 
 import { requireChef } from '@/lib/auth/get-user'
-import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import crypto from 'crypto'
@@ -65,7 +64,6 @@ export async function createRaffle(input: {
   prizeTopScorer?: string
   prizeMostDedicated?: string
 }): Promise<{ success: true; roundId: string } | { success: false; error: string }> {
-  await requirePro('raffle')
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -114,7 +112,6 @@ export async function createRaffle(input: {
 // ── List Raffles ─────────────────────────────────────────────────────────
 
 export async function getRaffles(): Promise<RaffleRound[]> {
-  await requirePro('raffle')
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -135,7 +132,6 @@ export async function getRaffles(): Promise<RaffleRound[]> {
 // ── Get Current Raffle ───────────────────────────────────────────────────
 
 export async function getCurrentRaffle(): Promise<RaffleRound | null> {
-  await requirePro('raffle')
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -159,7 +155,6 @@ export async function getCurrentRaffle(): Promise<RaffleRound | null> {
 // ── Get Eligible Entries ─────────────────────────────────────────────────
 
 export async function getEligibleEntries(raffleId: string): Promise<EligibleEntry[]> {
-  await requirePro('raffle')
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -222,7 +217,6 @@ export async function drawWinner(
 ): Promise<
   { success: true; winnerId: string; winnerName: string } | { success: false; error: string }
 > {
-  await requirePro('raffle')
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -302,7 +296,6 @@ export async function getRaffleResults(raffleId: string): Promise<{
   uniqueParticipants: number
   winnerName: string | null
 }> {
-  await requirePro('raffle')
   const user = await requireChef()
   const db: any = createServerClient()
 

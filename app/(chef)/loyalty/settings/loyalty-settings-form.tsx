@@ -12,6 +12,12 @@ import {
   type ProgramMode,
   type EarnMode,
 } from '@/lib/loyalty/actions'
+import {
+  TRIGGER_REGISTRY,
+  TRIGGER_CATEGORY_LABELS,
+  type TriggerCategory,
+  type TriggerConfigOverride,
+} from '@/lib/loyalty/triggers'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -101,6 +107,35 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
   const [newGuestMilestoneGuests, setNewGuestMilestoneGuests] = useState('')
   const [newGuestMilestoneBonus, setNewGuestMilestoneBonus] = useState('')
 
+  // Trigger config: override map keyed by trigger key
+  const initTriggerConfig = (config.trigger_config ?? {}) as Record<string, TriggerConfigOverride>
+  const [triggerConfig, setTriggerConfig] = useState<Record<string, TriggerConfigOverride>>(() => {
+    // Initialize with defaults merged with overrides
+    const merged: Record<string, TriggerConfigOverride> = {}
+    for (const def of TRIGGER_REGISTRY) {
+      const override = initTriggerConfig[def.key]
+      merged[def.key] = {
+        enabled: override ? override.enabled : true,
+        points: override ? override.points : def.defaultPoints,
+      }
+    }
+    return merged
+  })
+
+  function setTriggerEnabled(key: string, enabled: boolean) {
+    setTriggerConfig((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], enabled },
+    }))
+  }
+
+  function setTriggerPoints(key: string, points: number) {
+    setTriggerConfig((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], points: Math.max(0, points) },
+    }))
+  }
+
   // Tier thresholds
   const [silverMin, setSilverMin] = useState(config.tier_silver_min)
   const [goldMin, setGoldMin] = useState(config.tier_gold_min)
@@ -133,7 +168,19 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
       silverPerks: (initPerks.silver || []).join('\n'),
       goldPerks: (initPerks.gold || []).join('\n'),
       platinumPerks: (initPerks.platinum || []).join('\n'),
+      triggerConfig: (() => {
+        const merged: Record<string, TriggerConfigOverride> = {}
+        for (const def of TRIGGER_REGISTRY) {
+          const override = initTriggerConfig[def.key]
+          merged[def.key] = {
+            enabled: override ? override.enabled : true,
+            points: override ? override.points : def.defaultPoints,
+          }
+        }
+        return merged
+      })(),
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [config, initPerks]
   )
 
@@ -158,6 +205,7 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
       silverPerks,
       goldPerks,
       platinumPerks,
+      triggerConfig,
     }),
     [
       programMode,
@@ -179,6 +227,7 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
       silverPerks,
       goldPerks,
       platinumPerks,
+      triggerConfig,
     ]
   )
 
@@ -211,6 +260,8 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
     if (typeof data.silverPerks === 'string') setSilverPerks(data.silverPerks)
     if (typeof data.goldPerks === 'string') setGoldPerks(data.goldPerks)
     if (typeof data.platinumPerks === 'string') setPlatinumPerks(data.platinumPerks)
+    if (typeof data.triggerConfig === 'object' && data.triggerConfig)
+      setTriggerConfig(data.triggerConfig as Record<string, TriggerConfigOverride>)
   }
 
   function addMilestone() {
@@ -263,6 +314,16 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
       return
     }
 
+    // Build trigger_config overrides (only entries that differ from defaults)
+    const triggerOverrides: Record<string, TriggerConfigOverride> = {}
+    for (const def of TRIGGER_REGISTRY) {
+      const cur = triggerConfig[def.key]
+      if (!cur) continue
+      if (cur.enabled !== true || cur.points !== def.defaultPoints) {
+        triggerOverrides[def.key] = { enabled: cur.enabled, points: cur.points }
+      }
+    }
+
     startTransition(async () => {
       try {
         await updateLoyaltyConfig({
@@ -297,6 +358,7 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
               .map((s) => s.trim())
               .filter(Boolean),
           },
+          trigger_config: triggerOverrides,
         })
         setSaved(true)
         protection.markCommitted()
@@ -647,6 +709,88 @@ export function LoyaltySettingsForm({ config, chefId }: { config: LoyaltyConfig;
                   />
                 </div>
               )}
+            </section>
+
+            <hr className="border-stone-700" />
+
+            {/* ── Earning Triggers ─────────────────────────────────────── */}
+            <section>
+              <h2 className="text-lg font-semibold text-stone-100 mb-1">Earning Triggers</h2>
+              <p className="text-sm text-stone-500 mb-4">
+                Clients earn bonus points automatically when they take these actions. Toggle
+                individual triggers off or adjust the points awarded.
+              </p>
+              <div className="space-y-6">
+                {(
+                  ['engagement', 'event_lifecycle', 'financial', 'social'] as TriggerCategory[]
+                ).map((category) => {
+                  const triggers = TRIGGER_REGISTRY.filter((t) => t.category === category)
+                  if (triggers.length === 0) return null
+                  return (
+                    <div key={category}>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-brand-400 mb-2">
+                        {TRIGGER_CATEGORY_LABELS[category]}
+                      </p>
+                      <div className="space-y-2">
+                        {triggers.map((def) => {
+                          const cur = triggerConfig[def.key] ?? {
+                            enabled: true,
+                            points: def.defaultPoints,
+                          }
+                          return (
+                            <div
+                              key={def.key}
+                              className={`flex items-center justify-between gap-4 px-4 py-3 rounded-lg border transition-colors ${
+                                cur.enabled
+                                  ? 'bg-stone-800 border-stone-700'
+                                  : 'bg-stone-800/50 border-stone-700/50 opacity-60'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <button
+                                  type="button"
+                                  aria-label={`Toggle ${def.label}`}
+                                  onClick={() => setTriggerEnabled(def.key, !cur.enabled)}
+                                  className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none ${
+                                    cur.enabled ? 'bg-emerald-500' : 'bg-stone-600'
+                                  }`}
+                                >
+                                  <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-stone-900 shadow transition-transform ${
+                                      cur.enabled ? 'translate-x-6' : 'translate-x-1'
+                                    }`}
+                                  />
+                                </button>
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-stone-200 truncate">
+                                    {def.label}
+                                  </p>
+                                  <p className="text-xs text-stone-500 truncate">
+                                    {def.description}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  value={cur.points}
+                                  onChange={(e) =>
+                                    setTriggerPoints(def.key, parseInt(e.target.value) || 0)
+                                  }
+                                  disabled={!cur.enabled}
+                                  className="w-20 text-right"
+                                />
+                                <span className="text-xs text-stone-500">pts</span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </section>
 
             <hr className="border-stone-700" />
