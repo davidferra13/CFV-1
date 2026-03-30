@@ -29,6 +29,8 @@ import { IntelligenceCards } from './_sections/intelligence-cards'
 import { HeroMetrics } from './_sections/hero-metrics'
 import { getWeeklyPriceBriefing } from '@/lib/openclaw/weekly-briefing-actions'
 import { WeeklyBriefingCard } from '@/components/pricing/weekly-briefing-card'
+import { isAdmin } from '@/lib/auth/admin'
+import { CoverageHealthWidget } from '@/components/pricing/coverage-health-widget'
 
 export const metadata: Metadata = { title: 'Dashboard - ChefFlow' }
 
@@ -270,6 +272,17 @@ async function WeeklyBriefingSection() {
   return <WeeklyBriefingCard briefing={briefing} />
 }
 
+async function CoverageHealthSection() {
+  const admin = await safe('isAdmin', isAdmin, false)
+  if (!admin) return null
+  return (
+    <section>
+      <div className="section-label mb-4">Price Coverage</div>
+      <CoverageHealthWidget />
+    </section>
+  )
+}
+
 export default async function ChefDashboard() {
   const user = await requireChef()
 
@@ -405,6 +418,13 @@ export default async function ChefDashboard() {
           </Suspense>
         </WidgetErrorBoundary>
       </section>
+
+      {/* ============================================ */}
+      {/* PRICE COVERAGE HEALTH (admin only)           */}
+      {/* ============================================ */}
+      <Suspense fallback={null}>
+        <CoverageHealthSection />
+      </Suspense>
 
       {/* ============================================ */}
       {/* ALERTS + INTELLIGENCE                        */}

@@ -487,6 +487,19 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
       await suggestCatalogItems(notFoundNames)
     }
 
+    // Step 9: Trigger data polish job (non-blocking)
+    // Enriches images, nutrition links, volatility, source URLs
+    if (updated > 0 && !dryRun) {
+      try {
+        const { runPolishJobInternal } = await import('@/lib/openclaw/polish-job')
+        runPolishJobInternal().catch((err: unknown) => {
+          console.error('[syncPrices] Post-sync polish job failed (non-blocking):', err)
+        })
+      } catch (err) {
+        console.error('[syncPrices] Could not trigger polish job (non-blocking):', err)
+      }
+    }
+
     return {
       success: true,
       matched,

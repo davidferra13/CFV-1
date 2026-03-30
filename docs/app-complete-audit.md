@@ -299,6 +299,15 @@
 - Condensed card: headline + basket total only (expandable)
 - Wrapped in Suspense + WidgetErrorBoundary
 
+#### Price Coverage Health (Admin Only)
+
+- **Component:** `CoverageHealthWidget` (`components/pricing/coverage-health-widget.tsx`)
+- **Data:** `getCoverageHealth()` (`lib/openclaw/coverage-health.ts`)
+- **Condition:** Admin only (hidden for non-admin users)
+- **Display:** 4 stat boxes (total ingredients, coverage %, images %, nutrition %), top 5 category coverage bars, confidence distribution badges, top gaps list
+- **States:** Loading skeleton, empty state ("No ingredient data yet"), error state ("Could not load coverage data"), populated with color-coded percentages
+- Wrapped in Suspense
+
 #### Price Intelligence (Unified Card)
 
 - **Component:** `AlertsCards` (`app/(chef)/dashboard/_sections/alerts-cards.tsx`)

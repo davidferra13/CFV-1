@@ -47,6 +47,8 @@ export interface ResolvedPrice {
   sourceTier: string | null
   store: string | null
   confidence: number
+  /** Confidence adjusted for age. Decays over time. Use this for ranking. */
+  effectiveConfidence: number
   freshness: PriceFreshness
   confirmedAt: string | null
   reason: string | null
@@ -88,6 +90,36 @@ function computeFreshness(dateStr: string | null): PriceFreshness {
   if (daysDiff <= 14) return 'recent'
   if (daysDiff <= 90) return 'stale'
   return 'none'
+}
+
+// --- Confidence Decay ---
+
+/**
+ * Step decay: confidence drops in tiers based on price age.
+ * A 3-day-old receipt (base 1.0) stays at 1.0.
+ * A 45-day-old Instacart price (base 0.6) drops to 0.3.
+ * A 6-month-old government baseline (base 0.4) drops to 0.06.
+ */
+function decayConfidence(baseConfidence: number, dateStr: string | null): number {
+  if (!dateStr) return baseConfidence * 0.15
+  const ageDays = Math.floor(
+    (new Date().getTime() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24)
+  )
+  if (ageDays <= 3) return baseConfidence
+  if (ageDays <= 14) return baseConfidence * 0.9
+  if (ageDays <= 30) return baseConfidence * 0.75
+  if (ageDays <= 60) return baseConfidence * 0.5
+  if (ageDays <= 90) return baseConfidence * 0.3
+  return baseConfidence * 0.15
+}
+
+/** Add effectiveConfidence to a resolved price */
+function withDecay(price: Omit<ResolvedPrice, 'effectiveConfidence'>): ResolvedPrice {
+  return {
+    ...price,
+    effectiveConfidence:
+      Math.round(decayConfidence(price.confidence, price.confirmedAt) * 100) / 100,
+  }
 }
 
 // --- Source display names ---
@@ -132,6 +164,7 @@ export async function resolvePrice(
     sourceTier: null,
     store: null,
     confidence: 0,
+    effectiveConfidence: 0,
     freshness: 'none',
     confirmedAt: null,
     reason: 'No price data. Log a receipt to set the price.',
@@ -152,7 +185,7 @@ export async function resolvePrice(
   if (receipt.length > 0) {
     const row = receipt[0]
     if (row.price_per_unit_cents !== null) {
-      return {
+      return withDecay({
         cents: row.price_per_unit_cents,
         unit: row.unit || 'each',
         source: 'receipt',
@@ -162,7 +195,7 @@ export async function resolvePrice(
         freshness: computeFreshness(row.purchase_date),
         confirmedAt: row.purchase_date,
         reason: null,
-      }
+      })
     }
   }
 
@@ -196,7 +229,7 @@ export async function resolvePrice(
   if (apiQuote.length > 0) {
     const row = apiQuote[0]
     if (row.best_cents !== null && row.best_cents > 0) {
-      return {
+      return withDecay({
         cents: row.best_cents,
         unit: 'each',
         source: 'api_quote',
@@ -206,7 +239,7 @@ export async function resolvePrice(
         freshness: computeFreshness(row.created_at),
         confirmedAt: row.created_at,
         reason: null,
-      }
+      })
     }
   }
 
@@ -228,7 +261,7 @@ export async function resolvePrice(
   if (scrape.length > 0) {
     const row = scrape[0]
     if (row.price_per_unit_cents !== null) {
-      return {
+      return withDecay({
         cents: row.price_per_unit_cents,
         unit: row.unit || 'each',
         source: 'direct_scrape',
@@ -238,7 +271,7 @@ export async function resolvePrice(
         freshness: computeFreshness(row.purchase_date),
         confirmedAt: row.purchase_date,
         reason: null,
-      }
+      })
     }
   }
 
@@ -259,7 +292,7 @@ export async function resolvePrice(
   if (flyer.length > 0) {
     const row = flyer[0]
     if (row.price_per_unit_cents !== null) {
-      return {
+      return withDecay({
         cents: row.price_per_unit_cents,
         unit: row.unit || 'each',
         source: 'flyer',
@@ -269,7 +302,7 @@ export async function resolvePrice(
         freshness: computeFreshness(row.purchase_date),
         confirmedAt: row.purchase_date,
         reason: null,
-      }
+      })
     }
   }
 
@@ -290,7 +323,7 @@ export async function resolvePrice(
   if (instacart.length > 0) {
     const row = instacart[0]
     if (row.price_per_unit_cents !== null) {
-      return {
+      return withDecay({
         cents: row.price_per_unit_cents,
         unit: row.unit || 'each',
         source: 'instacart',
@@ -300,7 +333,7 @@ export async function resolvePrice(
         freshness: computeFreshness(row.purchase_date),
         confirmedAt: row.purchase_date,
         reason: null,
-      }
+      })
     }
   }
 
@@ -315,7 +348,7 @@ export async function resolvePrice(
         )
       : 999
     if (daysSinceRecent <= 60) {
-      return {
+      return withDecay({
         cents: regionalAvg.avgPricePerUnitCents,
         unit: regionalAvg.mostCommonUnit,
         source: 'regional_average',
@@ -325,7 +358,7 @@ export async function resolvePrice(
         freshness: computeFreshness(regionalAvg.mostRecentDate),
         confirmedAt: regionalAvg.mostRecentDate,
         reason: null,
-      }
+      })
     }
   }
 
@@ -343,7 +376,7 @@ export async function resolvePrice(
   if (gov.length > 0) {
     const row = gov[0]
     if (row.price_per_unit_cents !== null) {
-      return {
+      return withDecay({
         cents: row.price_per_unit_cents,
         unit: row.unit || 'each',
         source: 'government',
@@ -353,7 +386,7 @@ export async function resolvePrice(
         freshness: computeFreshness(row.purchase_date),
         confirmedAt: row.purchase_date,
         reason: null,
-      }
+      })
     }
   }
 
@@ -373,7 +406,7 @@ export async function resolvePrice(
   if (historical.length > 0) {
     const row = historical[0]
     if (row.avg_cents !== null) {
-      return {
+      return withDecay({
         cents: row.avg_cents,
         unit: row.unit || 'each',
         source: 'historical',
@@ -383,7 +416,7 @@ export async function resolvePrice(
         freshness: computeFreshness(row.latest_date),
         confirmedAt: row.latest_date,
         reason: null,
-      }
+      })
     }
   }
 
@@ -396,7 +429,7 @@ export async function resolvePrice(
   if (ingredientCat.length > 0 && ingredientCat[0].category) {
     const baseline = await getCategoryBaseline(ingredientCat[0].category)
     if (baseline) {
-      return {
+      return withDecay({
         cents: baseline.medianCentsPerUnit,
         unit: baseline.mostCommonUnit,
         source: 'category_baseline',
@@ -406,7 +439,7 @@ export async function resolvePrice(
         freshness: 'stale' as PriceFreshness,
         confirmedAt: null,
         reason: `Based on median of ${baseline.ingredientCount} ${baseline.category} ingredients`,
-      }
+      })
     }
   }
 
@@ -534,33 +567,39 @@ export async function resolvePricesBatch(
       (r) => r.price_per_unit_cents !== null && daysAgo(r.purchase_date) <= 90
     )
     if (recentReceipt && recentReceipt.price_per_unit_cents !== null) {
-      result.set(id, {
-        cents: recentReceipt.price_per_unit_cents,
-        unit: recentReceipt.unit || 'each',
-        source: 'receipt',
-        sourceTier: recentReceipt.source,
-        store: sourceDisplayStore('receipt', recentReceipt.store_name),
-        confidence: 1.0,
-        freshness: computeFreshness(recentReceipt.purchase_date),
-        confirmedAt: recentReceipt.purchase_date,
-        reason: null,
-      })
+      result.set(
+        id,
+        withDecay({
+          cents: recentReceipt.price_per_unit_cents,
+          unit: recentReceipt.unit || 'each',
+          source: 'receipt',
+          sourceTier: recentReceipt.source,
+          store: sourceDisplayStore('receipt', recentReceipt.store_name),
+          confidence: 1.0,
+          freshness: computeFreshness(recentReceipt.purchase_date),
+          confirmedAt: recentReceipt.purchase_date,
+          reason: null,
+        })
+      )
       continue
     }
 
     // Tier 2: API quote (within 30 days, already filtered by query)
     if (quote && quote.best_cents !== null && quote.best_cents > 0) {
-      result.set(id, {
-        cents: quote.best_cents,
-        unit: 'each',
-        source: 'api_quote',
-        sourceTier: quote.source_label || 'api',
-        store: sourceDisplayStore('api_quote', quote.source_label),
-        confidence: 0.75,
-        freshness: computeFreshness(quote.created_at),
-        confirmedAt: quote.created_at,
-        reason: null,
-      })
+      result.set(
+        id,
+        withDecay({
+          cents: quote.best_cents,
+          unit: 'each',
+          source: 'api_quote',
+          sourceTier: quote.source_label || 'api',
+          store: sourceDisplayStore('api_quote', quote.source_label),
+          confidence: 0.75,
+          freshness: computeFreshness(quote.created_at),
+          confirmedAt: quote.created_at,
+          reason: null,
+        })
+      )
       continue
     }
 
@@ -585,51 +624,60 @@ export async function resolvePricesBatch(
     // Tier 3: Direct scrape (within 14 days)
     const scrapeRow = findBestRow(openclaw, 'openclaw_scrape', 14)
     if (scrapeRow && scrapeRow.price_per_unit_cents !== null) {
-      result.set(id, {
-        cents: scrapeRow.price_per_unit_cents,
-        unit: scrapeRow.unit || 'each',
-        source: 'direct_scrape',
-        sourceTier: 'openclaw_scrape',
-        store: sourceDisplayStore('direct_scrape', scrapeRow.store_name),
-        confidence: 0.85,
-        freshness: computeFreshness(scrapeRow.purchase_date),
-        confirmedAt: scrapeRow.purchase_date,
-        reason: null,
-      })
+      result.set(
+        id,
+        withDecay({
+          cents: scrapeRow.price_per_unit_cents,
+          unit: scrapeRow.unit || 'each',
+          source: 'direct_scrape',
+          sourceTier: 'openclaw_scrape',
+          store: sourceDisplayStore('direct_scrape', scrapeRow.store_name),
+          confidence: 0.85,
+          freshness: computeFreshness(scrapeRow.purchase_date),
+          confirmedAt: scrapeRow.purchase_date,
+          reason: null,
+        })
+      )
       continue
     }
 
     // Tier 4: Flyer (within 14 days)
     const flyerRow = findBestRow(openclaw, 'openclaw_flyer', 14)
     if (flyerRow && flyerRow.price_per_unit_cents !== null) {
-      result.set(id, {
-        cents: flyerRow.price_per_unit_cents,
-        unit: flyerRow.unit || 'each',
-        source: 'flyer',
-        sourceTier: 'openclaw_flyer',
-        store: sourceDisplayStore('flyer', flyerRow.store_name),
-        confidence: 0.7,
-        freshness: computeFreshness(flyerRow.purchase_date),
-        confirmedAt: flyerRow.purchase_date,
-        reason: null,
-      })
+      result.set(
+        id,
+        withDecay({
+          cents: flyerRow.price_per_unit_cents,
+          unit: flyerRow.unit || 'each',
+          source: 'flyer',
+          sourceTier: 'openclaw_flyer',
+          store: sourceDisplayStore('flyer', flyerRow.store_name),
+          confidence: 0.7,
+          freshness: computeFreshness(flyerRow.purchase_date),
+          confirmedAt: flyerRow.purchase_date,
+          reason: null,
+        })
+      )
       continue
     }
 
     // Tier 5: Instacart (within 30 days)
     const instacartRow = findBestRow(openclaw, 'openclaw_instacart', 30)
     if (instacartRow && instacartRow.price_per_unit_cents !== null) {
-      result.set(id, {
-        cents: instacartRow.price_per_unit_cents,
-        unit: instacartRow.unit || 'each',
-        source: 'instacart',
-        sourceTier: 'openclaw_instacart',
-        store: sourceDisplayStore('instacart', instacartRow.store_name),
-        confidence: 0.6,
-        freshness: computeFreshness(instacartRow.purchase_date),
-        confirmedAt: instacartRow.purchase_date,
-        reason: null,
-      })
+      result.set(
+        id,
+        withDecay({
+          cents: instacartRow.price_per_unit_cents,
+          unit: instacartRow.unit || 'each',
+          source: 'instacart',
+          sourceTier: 'openclaw_instacart',
+          store: sourceDisplayStore('instacart', instacartRow.store_name),
+          confidence: 0.6,
+          freshness: computeFreshness(instacartRow.purchase_date),
+          confirmedAt: instacartRow.purchase_date,
+          reason: null,
+        })
+      )
       continue
     }
 
@@ -638,17 +686,20 @@ export async function resolvePricesBatch(
     if (regional) {
       const daysSinceRegional = regional.mostRecentDate ? daysAgo(regional.mostRecentDate) : 999
       if (daysSinceRegional <= 60) {
-        result.set(id, {
-          cents: regional.avgPricePerUnitCents,
-          unit: regional.mostCommonUnit,
-          source: 'regional_average',
-          sourceTier: 'regional_average',
-          store: `Regional Average (${regional.storeCount} stores)`,
-          confidence: 0.5,
-          freshness: computeFreshness(regional.mostRecentDate),
-          confirmedAt: regional.mostRecentDate,
-          reason: null,
-        })
+        result.set(
+          id,
+          withDecay({
+            cents: regional.avgPricePerUnitCents,
+            unit: regional.mostCommonUnit,
+            source: 'regional_average',
+            sourceTier: 'regional_average',
+            store: `Regional Average (${regional.storeCount} stores)`,
+            confidence: 0.5,
+            freshness: computeFreshness(regional.mostRecentDate),
+            confirmedAt: regional.mostRecentDate,
+            reason: null,
+          })
+        )
         continue
       }
     }
@@ -656,38 +707,44 @@ export async function resolvePricesBatch(
     // Tier 7: Government (no age limit)
     const govRow = findBestRow(openclaw, 'openclaw_government', null)
     if (govRow && govRow.price_per_unit_cents !== null) {
-      result.set(id, {
-        cents: govRow.price_per_unit_cents,
-        unit: govRow.unit || 'each',
-        source: 'government',
-        sourceTier: 'openclaw_government',
-        store: sourceDisplayStore('government', null),
-        confidence: 0.4,
-        freshness: computeFreshness(govRow.purchase_date),
-        confirmedAt: govRow.purchase_date,
-        reason: null,
-      })
+      result.set(
+        id,
+        withDecay({
+          cents: govRow.price_per_unit_cents,
+          unit: govRow.unit || 'each',
+          source: 'government',
+          sourceTier: 'openclaw_government',
+          store: sourceDisplayStore('government', null),
+          confidence: 0.4,
+          freshness: computeFreshness(govRow.purchase_date),
+          confirmedAt: govRow.purchase_date,
+          reason: null,
+        })
+      )
       continue
     }
 
-    // Tier 7: Historical average from receipts (any age)
+    // Tier 8: Historical average from receipts (any age)
     const allReceiptPrices = receipts
       .filter((r) => r.price_per_unit_cents !== null)
       .map((r) => r.price_per_unit_cents!)
     if (allReceiptPrices.length > 0) {
       const avg = Math.round(allReceiptPrices.reduce((a, b) => a + b, 0) / allReceiptPrices.length)
       const latestDate = receipts[0]?.purchase_date || null
-      result.set(id, {
-        cents: avg,
-        unit: receipts[0]?.unit || 'each',
-        source: 'historical',
-        sourceTier: null,
-        store: sourceDisplayStore('historical', null),
-        confidence: 0.3,
-        freshness: computeFreshness(latestDate),
-        confirmedAt: latestDate,
-        reason: null,
-      })
+      result.set(
+        id,
+        withDecay({
+          cents: avg,
+          unit: receipts[0]?.unit || 'each',
+          source: 'historical',
+          sourceTier: null,
+          store: sourceDisplayStore('historical', null),
+          confidence: 0.3,
+          freshness: computeFreshness(latestDate),
+          confirmedAt: latestDate,
+          reason: null,
+        })
+      )
       continue
     }
 
@@ -696,17 +753,20 @@ export async function resolvePricesBatch(
     if (category) {
       const baseline = categoryBaselines.get(category)
       if (baseline) {
-        result.set(id, {
-          cents: baseline.medianCentsPerUnit,
-          unit: baseline.mostCommonUnit,
-          source: 'category_baseline',
-          sourceTier: 'category_baseline',
-          store: `${baseline.category} category estimate`,
-          confidence: 0.2,
-          freshness: 'stale',
-          confirmedAt: null,
-          reason: `Based on median of ${baseline.ingredientCount} ${baseline.category} ingredients`,
-        })
+        result.set(
+          id,
+          withDecay({
+            cents: baseline.medianCentsPerUnit,
+            unit: baseline.mostCommonUnit,
+            source: 'category_baseline',
+            sourceTier: 'category_baseline',
+            store: `${baseline.category} category estimate`,
+            confidence: 0.2,
+            freshness: 'stale',
+            confirmedAt: null,
+            reason: `Based on median of ${baseline.ingredientCount} ${baseline.category} ingredients`,
+          })
+        )
         continue
       }
     }
@@ -719,6 +779,7 @@ export async function resolvePricesBatch(
       sourceTier: null,
       store: null,
       confidence: 0,
+      effectiveConfidence: 0,
       freshness: 'none',
       confirmedAt: null,
       reason: 'No price data. Log a receipt to set the price.',
