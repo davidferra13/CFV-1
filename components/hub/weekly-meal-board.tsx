@@ -1,7 +1,13 @@
 'use client'
 
 import { useState, useTransition, useCallback, useEffect } from 'react'
-import type { MealBoardEntry, MealType, MealReaction, MealFeedbackSummary } from '@/lib/hub/types'
+import type {
+  MealBoardEntry,
+  MealType,
+  MealStatus,
+  MealReaction,
+  MealFeedbackSummary,
+} from '@/lib/hub/types'
 import {
   upsertMealEntry,
   deleteMealEntry,
@@ -12,6 +18,7 @@ import {
   loadTemplate,
   getScheduleChanges,
   getGroupDefaultHeadCount,
+  updateMealStatus,
   type MealTemplate,
   type ScheduleChange,
 } from '@/lib/hub/meal-board-actions'
@@ -22,6 +29,9 @@ import { WeekSummaryCard } from './week-summary-card'
 import { FeedbackInsightsPanel } from './feedback-insights-panel'
 import { RecurringMealsManager } from './recurring-meals-manager'
 import { MealAttendance } from './meal-attendance'
+import { TodaysMealsCard } from './todays-meals-card'
+import { DietaryDashboard } from './dietary-dashboard'
+import { WeeklyPrepSummary } from './weekly-prep-summary'
 
 // ---------------------------------------------------------------------------
 // Date helpers (ISO weeks: Monday = start)
@@ -257,6 +267,34 @@ export function WeeklyMealBoard({
     })
   }
 
+  // Update meal status (chef/admin only)
+  const handleStatusChange = (entryId: string, newStatus: MealStatus) => {
+    if (!profileToken) return
+
+    const previous = [...entries]
+    // Optimistic update
+    setEntries((prev) => prev.map((e) => (e.id === entryId ? { ...e, status: newStatus } : e)))
+
+    startTransition(async () => {
+      try {
+        const result = await updateMealStatus({
+          entryId,
+          profileToken,
+          status: newStatus,
+        })
+        if (!result.success) {
+          setEntries(previous)
+          setError(result.error ?? 'Failed to update status')
+        } else if (result.entry) {
+          setEntries((prev) => prev.map((e) => (e.id === entryId ? result.entry! : e)))
+        }
+      } catch {
+        setEntries(previous)
+        setError('Failed to update meal status')
+      }
+    })
+  }
+
   // Delete a meal entry
   const deleteEntry = (entryId: string) => {
     if (!profileToken) return
@@ -367,6 +405,16 @@ export function WeeklyMealBoard({
 
   return (
     <div className="flex flex-col gap-3 p-4">
+      {/* Today's meals hero (only on current week view) */}
+      {weekOffset === 0 && !editMode && (
+        <TodaysMealsCard
+          entries={entries}
+          defaultHeadCount={defaultHeadCount}
+          isChefOrAdmin={isChefOrAdmin}
+          onStatusChange={profileToken ? handleStatusChange : undefined}
+        />
+      )}
+
       {/* Week navigation */}
       <div className="flex items-center justify-between">
         <button
@@ -540,6 +588,18 @@ export function WeeklyMealBoard({
         feedbackData={feedbackData}
       />
 
+      {/* Dietary dashboard (chef only, collapsible) */}
+      <DietaryDashboard groupId={groupId} isChefOrAdmin={isChefOrAdmin} />
+
+      {/* Weekly prep summary (chef only, collapsible) */}
+      {isChefOrAdmin && (
+        <WeeklyPrepSummary
+          weekEntries={weekEntries}
+          defaultHeadCount={defaultHeadCount}
+          weekLabel={formatWeekRange(currentMonday)}
+        />
+      )}
+
       {/* Recurring meals manager (chef edit mode) */}
       {editMode && isChefOrAdmin && profileToken && (
         <RecurringMealsManager
@@ -620,9 +680,24 @@ export function WeeklyMealBoard({
                     >
                       {/* Meal type label */}
                       <div className="mb-1 flex items-center justify-between">
-                        <span className="text-xs text-stone-500">
-                          {MEAL_EMOJI[mealType]} {MEAL_LABELS[mealType]}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs text-stone-500">
+                            {MEAL_EMOJI[mealType]} {MEAL_LABELS[mealType]}
+                          </span>
+                          {entry && entry.status !== 'planned' && (
+                            <span
+                              className={`rounded-full px-1.5 py-0.5 text-[9px] font-medium ${
+                                entry.status === 'confirmed'
+                                  ? 'bg-blue-500/20 text-blue-400'
+                                  : entry.status === 'served'
+                                    ? 'bg-emerald-500/20 text-emerald-400'
+                                    : 'bg-red-500/20 text-red-400'
+                              }`}
+                            >
+                              {entry.status}
+                            </span>
+                          )}
+                        </div>
                         {editMode && entry && !isEditing && (
                           <div className="flex gap-1">
                             <button

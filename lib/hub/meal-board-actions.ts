@@ -188,6 +188,42 @@ export async function deleteMealEntry(
 }
 
 // ---------------------------------------------------------------------------
+// Update meal status (planned -> confirmed -> served | cancelled)
+// ---------------------------------------------------------------------------
+
+export async function updateMealStatus(input: {
+  entryId: string
+  profileToken: string
+  status: 'planned' | 'confirmed' | 'served' | 'cancelled'
+}): Promise<{ success: boolean; entry?: MealBoardEntry; error?: string }> {
+  try {
+    const db: any = createServerClient({ admin: true })
+    const profile = await resolveProfile(db, input.profileToken)
+
+    const { data: entry } = await db
+      .from('hub_meal_board')
+      .select('group_id, status')
+      .eq('id', input.entryId)
+      .single()
+
+    if (!entry) throw new Error('Meal entry not found')
+    await requireChefOrAdmin(db, entry.group_id, profile.id)
+
+    const { data, error } = await db
+      .from('hub_meal_board')
+      .update({ status: input.status, updated_at: new Date().toISOString() })
+      .eq('id', input.entryId)
+      .select('*')
+      .single()
+
+    if (error) throw new Error(error.message)
+    return { success: true, entry: data }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Bulk upsert meal entries (for posting a full week)
 // ---------------------------------------------------------------------------
 
