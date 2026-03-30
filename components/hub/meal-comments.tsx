@@ -190,21 +190,25 @@ interface MealCommentTriggerProps {
   mealEntryId: string
   profileToken: string | null
   mealTitle: string
+  initialCount?: number
 }
 
 export function MealCommentTrigger({
   mealEntryId,
   profileToken,
   mealTitle,
+  initialCount,
 }: MealCommentTriggerProps) {
-  const [commentCount, setCommentCount] = useState<number | null>(null)
+  const [commentCount, setCommentCount] = useState<number | null>(initialCount ?? null)
   const [showThread, setShowThread] = useState(false)
 
+  // Only self-fetch if no initialCount was provided
   useEffect(() => {
+    if (initialCount !== undefined) return
     getMealComments(mealEntryId)
       .then((c) => setCommentCount(c.length))
       .catch(() => {})
-  }, [mealEntryId])
+  }, [mealEntryId, initialCount])
 
   return (
     <>

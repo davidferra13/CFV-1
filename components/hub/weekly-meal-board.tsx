@@ -19,6 +19,7 @@ import {
   getScheduleChanges,
   getGroupDefaultHeadCount,
   updateMealStatus,
+  getBatchCommentCounts,
   type MealTemplate,
   type ScheduleChange,
 } from '@/lib/hub/meal-board-actions'
@@ -70,6 +71,16 @@ function formatWeekRange(monday: Date): string {
   const startMonth = monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   const endMonth = sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   return `${startMonth} - ${endMonth}`
+}
+
+function formatServingTime(time: string): string {
+  // Handle both HH:MM and HH:MM:SS from postgres
+  const parts = time.split(':')
+  const h = parseInt(parts[0], 10)
+  const m = parseInt(parts[1], 10)
+  const suffix = h >= 12 ? 'PM' : 'AM'
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return `${h12}:${m.toString().padStart(2, '0')} ${suffix}`
 }
 
 function isToday(date: Date): boolean {
@@ -141,8 +152,10 @@ export function WeeklyMealBoard({
   const [defaultHeadCount, setDefaultHeadCount] = useState<number | null>(null)
   const [editHeadCount, setEditHeadCount] = useState<string>('')
   const [editPrepNotes, setEditPrepNotes] = useState<string>('')
+  const [editServingTime, setEditServingTime] = useState<string>('')
   const [defaultMealTimes, setDefaultMealTimes] = useState<DefaultMealTimes | null>(null)
   const [showMealTimeSettings, setShowMealTimeSettings] = useState(false)
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
 
   // Load default head count and meal times
   useEffect(() => {
@@ -181,12 +194,15 @@ export function WeeklyMealBoard({
     refreshScheduleChanges()
   }, [refreshScheduleChanges])
 
-  // Load feedback for visible entries
+  // Load feedback and comment counts for visible entries
   useEffect(() => {
     const entryIds = weekEntries.map((e) => e.id).filter((id) => !id.startsWith('temp-'))
     if (entryIds.length === 0) return
     getBatchMealFeedback({ mealEntryIds: entryIds, profileToken })
       .then(setFeedbackData)
+      .catch(() => {})
+    getBatchCommentCounts(entryIds)
+      .then(setCommentCounts)
       .catch(() => {})
   }, [weekEntries.map((e) => e.id).join(','), profileToken]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -203,6 +219,7 @@ export function WeeklyMealBoard({
     setEditDescription(existing?.description ?? '')
     setEditHeadCount(existing?.head_count?.toString() ?? '')
     setEditPrepNotes(existing?.prep_notes ?? '')
+    setEditServingTime(existing?.serving_time?.substring(0, 5) ?? '')
     setError(null)
   }
 
@@ -234,7 +251,7 @@ export function WeeklyMealBoard({
       dish_id: null,
       head_count: parsedHeadCount,
       prep_notes: editPrepNotes.trim() || null,
-      serving_time: null,
+      serving_time: editServingTime || null,
       status: 'planned',
       created_at: existing?.created_at ?? new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -261,6 +278,7 @@ export function WeeklyMealBoard({
           description: editDescription.trim() || null,
           headCount: parsedHeadCount,
           prepNotes: editPrepNotes.trim() || null,
+          servingTime: editServingTime || null,
         })
         if (!result.success) {
           setEntries(previous)
@@ -628,6 +646,7 @@ export function WeeklyMealBoard({
           weekEntries={weekEntries}
           defaultHeadCount={defaultHeadCount}
           weekLabel={formatWeekRange(currentMonday)}
+          defaultMealTimes={defaultMealTimes}
         />
       )}
 
@@ -791,10 +810,17 @@ export function WeeklyMealBoard({
                               type="number"
                               value={editHeadCount}
                               onChange={(e) => setEditHeadCount(e.target.value)}
-                              placeholder="👥 Head count"
+                              placeholder="👥 Heads"
                               min={0}
                               max={100}
-                              className="w-24 rounded bg-stone-700 px-2 py-1 text-xs text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-[var(--hub-primary,#e88f47)]"
+                              className="w-20 rounded bg-stone-700 px-2 py-1 text-xs text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-[var(--hub-primary,#e88f47)]"
+                            />
+                            <input
+                              type="time"
+                              value={editServingTime}
+                              onChange={(e) => setEditServingTime(e.target.value)}
+                              className="w-24 rounded bg-stone-700 px-2 py-1 text-xs text-stone-100 focus:outline-none focus:ring-1 focus:ring-[var(--hub-primary,#e88f47)] [color-scheme:dark]"
+                              title="Serving time (overrides default)"
                             />
                             <input
                               type="text"
@@ -831,7 +857,10 @@ export function WeeklyMealBoard({
                             <div className="flex shrink-0 items-center gap-1.5">
                               {(entry.serving_time ?? defaultMealTimes?.[mealType]) && (
                                 <span className="text-[10px] text-stone-500" title="Serving time">
-                                  🕐{entry.serving_time ?? defaultMealTimes?.[mealType]}
+                                  🕐
+                                  {formatServingTime(
+                                    entry.serving_time ?? defaultMealTimes![mealType]!
+                                  )}
                                 </span>
                               )}
                               {(entry.head_count ?? defaultHeadCount) && (
@@ -882,6 +911,7 @@ export function WeeklyMealBoard({
                                 mealEntryId={entry.id}
                                 profileToken={profileToken}
                                 mealTitle={entry.title}
+                                initialCount={commentCounts[entry.id] ?? 0}
                               />
                             </div>
                           )}

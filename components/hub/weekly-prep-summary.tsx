@@ -1,12 +1,13 @@
 'use client'
 
 import { useMemo, useState, useRef } from 'react'
-import type { MealBoardEntry, MealType } from '@/lib/hub/types'
+import type { MealBoardEntry, MealType, DefaultMealTimes } from '@/lib/hub/types'
 
 interface WeeklyPrepSummaryProps {
   weekEntries: MealBoardEntry[]
   defaultHeadCount: number | null
   weekLabel: string
+  defaultMealTimes?: DefaultMealTimes | null
 }
 
 const MEAL_ORDER: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack']
@@ -22,10 +23,20 @@ function formatDayShort(dateStr: string): string {
   return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
+function formatServingTime(time: string): string {
+  const parts = time.split(':')
+  const h = parseInt(parts[0], 10)
+  const m = parseInt(parts[1], 10)
+  const suffix = h >= 12 ? 'PM' : 'AM'
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
+  return `${h12}:${m.toString().padStart(2, '0')} ${suffix}`
+}
+
 export function WeeklyPrepSummary({
   weekEntries,
   defaultHeadCount,
   weekLabel,
+  defaultMealTimes,
 }: WeeklyPrepSummaryProps) {
   const [expanded, setExpanded] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
@@ -168,11 +179,17 @@ export function WeeklyPrepSummary({
                   <div className="ml-2 space-y-0.5">
                     {sorted.map((meal) => {
                       const hc = meal.head_count ?? defaultHeadCount
+                      const time = meal.serving_time ?? defaultMealTimes?.[meal.meal_type] ?? null
                       return (
                         <div key={meal.id} className="flex items-baseline gap-2">
                           <span className="w-16 shrink-0 text-stone-500">
                             {MEAL_LABELS[meal.meal_type]}
                           </span>
+                          {time && (
+                            <span className="w-14 shrink-0 text-[10px] text-stone-500">
+                              {formatServingTime(time)}
+                            </span>
+                          )}
                           <span className="text-stone-200">{meal.title}</span>
                           {hc && <span className="text-[10px] text-stone-500">({hc} pax)</span>}
                           {meal.status === 'confirmed' && (
