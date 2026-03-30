@@ -383,6 +383,87 @@ POST /api/reprocess/{fileId}        -- reprocess a single file
 
 ---
 
+## Operational Constraints (Pi Hardware Limits)
+
+### Memory Management
+
+The Pi 5 has 8GB RAM shared between CPU and GPU. LLaVA-7B alone needs ~5GB. Processing must be batched to avoid OOM kills.
+
+- **Batch size:** 50 files per processing run (configurable via `BATCH_SIZE` env var)
+- **Sequential model loading:** Tesseract first (unload), then LLaVA (unload), then text model for classification. Never run two models simultaneously
+- **WAL mode + checkpoints:** SQLite uses WAL mode with checkpoint after every batch. If the Pi crashes mid-batch, the DB is not corrupted; unprocessed files stay in `pending` status and resume on next run
+- **Crash recovery:** On startup, the cartridge checks for files in `processing` status (interrupted batch) and resets them to `pending`
+
+### Disk Space Management
+
+The Pi has ~78GB free. A full Google Takeout could exceed this.
+
+- **Process from USB drive:** The staging folder can be an external USB drive mounted at `/mnt/archive-staging/`. The Pi reads from USB, writes structured data to its SD card. Raw files stay on USB, never copied to SD
+- **Batch transfer alternative:** If no USB drive, transfer files in batches (5-10GB at a time via `scp`). Process each batch, then `rm` the staging folder and transfer the next batch. The cartridge handles incremental processing (SHA-256 dedup prevents re-processing if the same file appears again)
+- **Estimated DB size:** ~500KB per 100 files (text + entities + metadata). Even 10,000 files = ~50MB database. Not a concern
+
+### Processing Time Estimates
+
+Ollama on Pi 5 processes each file in ~5-10 seconds (classification + extraction). Rough estimates:
+
+| Volume       | Time (estimated) | Recommendation               |
+| ------------ | ---------------- | ---------------------------- |
+| 100 files    | 10-20 minutes    | Single run                   |
+| 500 files    | 1-2 hours        | Single run, leave it going   |
+| 2,000 files  | 3-6 hours        | Run overnight                |
+| 5,000+ files | 8-15 hours       | Run in batches over 2-3 days |
+
+### HEIC Image Support
+
+iPhone photos default to HEIC format. Tesseract and most OCR tools cannot read HEIC directly.
+
+- **Conversion step:** Before OCR, the ingest service detects `.heic`/`.heif` files and converts to JPEG using `sharp` (Node.js, already supports HEIC on ARM64)
+- **No quality loss:** Conversion preserves EXIF data (dates, GPS) which helps with event linking
+
+## Review Queue (Human-in-the-Loop)
+
+The cross-referencing stage (Stage 3) will produce ambiguous links. A receipt dated March 3 near two different clients' events on March 4 and March 5 could belong to either. The spec must not silently guess.
+
+### Confidence Levels
+
+Every link between a file and a client/event gets a confidence score:
+
+| Confidence           | Criteria                               | Action                           |
+| -------------------- | -------------------------------------- | -------------------------------- |
+| **High** (0.8+)      | Name match + date match + dollar match | Auto-link, no review needed      |
+| **Medium** (0.5-0.8) | Date match only, or name match only    | Auto-link but flag for review    |
+| **Low** (below 0.5)  | Ambiguous: multiple possible matches   | Do NOT link. Add to review queue |
+
+### Review API
+
+The sync API exposes a review endpoint:
+
+```
+GET  /api/review/pending           -- list items needing human review
+POST /api/review/{fileId}/link     -- manually link file to client/event
+POST /api/review/{fileId}/skip     -- mark as unresolvable
+```
+
+The developer reviews ambiguous items before triggering the ChefFlow sync. Nothing with `low` confidence syncs without manual approval.
+
+### Pre-Sync Approval
+
+Before any data goes to ChefFlow, the developer sees a summary:
+
+```
+Ready to sync:
+  - 87 clients (74 high-confidence, 13 medium)
+  - 203 events (189 high, 14 medium)
+  - 12 items in review queue (not synced until resolved)
+  - 31 files unlinked (no client/event match found)
+
+Proceed? [y/n]
+```
+
+Nothing syncs automatically. The developer approves every batch.
+
+---
+
 ## What the Developer Needs to Do (Their Part)
 
 1. **Create `F:\ChefArchive\`** on the PC
@@ -390,10 +471,11 @@ POST /api/reprocess/{fileId}        -- reprocess a single file
 3. **Payment exports:** Download Venmo/Zelle/PayPal/Square history as CSV. Drop in ChefArchive
 4. **Physical scanning:** Use phone scanner app on all physical receipts, menus, notes, recipes. Save to ChefArchive
 5. **Screenshots:** Save any text message screenshots, Wix form screenshots to ChefArchive
-6. **Transfer to Pi:** `scp -r /f/ChefArchive/ pi:~/archive-staging/` (or USB drive)
-7. **Run the cartridge:** SSH to Pi, start processing
-8. **Review gap report:** See what's missing, scan more if needed
-9. **Approve sync:** When satisfied, trigger sync to ChefFlow
+6. **Transfer to Pi:** USB drive recommended (mount at `/mnt/archive-staging/`). Or `scp` in batches of 5-10GB
+7. **Run the cartridge:** SSH to Pi, start processing. Runs in batches of 50 files. Can leave overnight for large archives
+8. **Review ambiguous links:** Check `/api/review/pending` for items the system couldn't confidently match. Resolve or skip
+9. **Review gap report:** See what's missing, scan more if needed
+10. **Approve sync:** Review the sync summary, confirm, trigger sync to ChefFlow
 
 ---
 
@@ -413,6 +495,8 @@ POST /api/reprocess/{fileId}        -- reprocess a single file
 - **Tesseract OCR** installed on Pi (`sudo apt install tesseract-ocr`) - Tier 3 fallback
 - **Ollama** running on Pi with: text model (qwen2.5 or similar), multimodal model (LLaVA or Llama-Vision) for Tier 1 image understanding, Whisper model for audio transcription
 - **Google Cloud Vision API key** (or Azure Computer Vision) - Tier 2 OCR for blurry/faded/handwritten documents. ~$1.50 per 1,000 images. Only used for non-PII documents (receipts, invoices)
+- **sharp** npm package for HEIC-to-JPEG conversion (ARM64 compatible, already widely used)
+- **mailparser** npm package for streaming mbox/eml parsing (handles multi-GB Gmail Takeout exports without loading into memory)
 - **Cartridge infrastructure** (verified, shared library available)
 - **ChefFlow sync pipeline** (cartridge registry, cron endpoint)
 
