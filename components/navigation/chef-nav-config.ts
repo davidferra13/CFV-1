@@ -7,6 +7,7 @@ export type NavQuickItem = { href: string; label: string; icon: LucideIcon }
 
 export const QUICK_CREATE_ITEMS: NavQuickItem[] = [
   { href: '/events/new', label: 'Event', icon: Plus },
+  { href: '/menus/new', label: 'Menu', icon: Plus },
   { href: '/quotes/new', label: 'Quote', icon: Plus },
   { href: '/inquiries/new', label: 'Inquiry', icon: Plus },
   { href: '/clients/new', label: 'Client', icon: Plus },

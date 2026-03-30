@@ -586,3 +586,363 @@ If a surface has fewer than 4 items per screen, thumbnails aren't needed. If a s
 9. **EXIF stripping is mandatory on all uploads.** Chefs photograph at clients' homes. GPS data in EXIF is a privacy risk. Every upload action uses `sharp(buffer).rotate().toBuffer()` to strip metadata.
 
 10. **The OpenClaw directory-images cartridge (3A) is a separate spec.** This spec defines what ChefFlow needs (the `photo_urls` array populated). The cartridge spec defines how OpenClaw sources and delivers those images. Write the cartridge spec separately.
+
+---
+
+## Spec Validation (Planner Gate - All 14 Questions)
+
+Completed 2026-03-29. Every answer cites file paths and line numbers from `Read` tool output.
+
+---
+
+### 1. What exists today that this touches?
+
+**Ingredient system:**
+
+| File                                                    | What exists                                                                            | Lines    |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------- |
+| `lib/recipes/actions.ts`                                | `getIngredients()` uses `select('*')`, auto-includes new columns                       | 903-942  |
+| `app/(chef)/inventory/ingredients/[id]/page.tsx`        | Detail page queries explicit columns: `'id, name, category, unit, last_price_cents'`   | 33-36    |
+| `app/(chef)/culinary/ingredients/page.tsx`              | List page, now has 32x32 thumbnails (Phase 1A built)                                   | modified |
+| `app/(chef)/recipes/ingredients/ingredients-client.tsx` | Ingredient type has `[key: string]: unknown` spread                                    | 1-50     |
+| `components/pricing/image-with-fallback.tsx`            | Client component, category SVG fallbacks, used in ProductCard                          | 1-80     |
+| `lib/ingredients/image-actions.ts`                      | `resolveIngredientImage()`, `enrichIngredientImages()`, `lookupCatalogImage()` (built) | 1-186    |
+| `components/culinary/enrich-images-button.tsx`          | "Find Images" button (built)                                                           | 1-44     |
+| `components/inventory/price-history-chart.tsx`          | Recharts LineChart on ingredient detail, monthly averages                              | 1-80     |
+
+**Expense system:**
+
+| File                                | What exists                                                                                       | Lines       |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------- | ----------- |
+| `app/(chef)/expenses/page.tsx`      | List page with table: Date, Event, Description, Category, Amount, Type, Actions. NO thumbnails    | 215-279     |
+| `app/(chef)/expenses/[id]/page.tsx` | Detail page with "Receipt Dual View" showing original photo + parsed details                      | 137-172     |
+| `lib/expenses/receipt-upload.ts`    | `uploadReceipt()` stores to `receipts` bucket, updates `receipt_photo_url` and `receipt_uploaded` | 23-74       |
+| `types/database.ts`                 | Column is `receipt_photo_url` (not `receipt_url`), plus `receipt_uploaded` boolean                | 20812-20813 |
+
+**Events system:**
+
+| File                                                         | What exists                                                                       | Lines   |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------- | ------- | ----- |
+| `app/(chef)/events/page.tsx`                                 | List with table: Occasion, Date, Client, Status, Quoted Price, Actions. NO images | 149-186 |
+| `database/migrations/20260228000004_event_photo_gallery.sql` | `event_photos` table with `storage_path`, `photo_type`, `thumbnail_path`          | 23-61   |
+| `components/events/event-photo-gallery.tsx`                  | Full CRUD gallery with drag-to-reorder, signed URLs                               | 1-150+  |
+| `database/migrations/20260305000009_dish_photos.sql`         | Added `photo_url` to dishes table                                                 | 23-24   |
+| `types/database.ts`                                          | `dishes.photo_url: string                                                         | null`   | 14811 |
+| `lib/events/actions.ts`                                      | `getEvents()` uses `select('*, client:clients(id, full_name, email)')`            | ~700+   |
+
+**Menu system:**
+
+| File                                        | What exists                                                                                       | Lines   |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------- |
+| `app/(chef)/culinary/menus/page.tsx`        | REDIRECT to `/menus` (not the real page)                                                          | 1-7     |
+| `app/(chef)/menus/page.tsx`                 | Real menu list page, calls `getMenus()`                                                           | 15-73   |
+| `app/(chef)/menus/menus-client-wrapper.tsx` | `MenuCard` component: name, date, status badges, description, guest count, food cost %. NO images | 114-200 |
+| `lib/menus/actions.ts`                      | `getMenus()` selects menu fields only, does NOT include dishes                                    | 333-362 |
+
+**Entity pages (Phase 2 targets):**
+
+| File                                      | What exists                                                                  | Lines   |
+| ----------------------------------------- | ---------------------------------------------------------------------------- | ------- |
+| `app/(chef)/clients/clients-table.tsx`    | Table: Name, Email, Phone, Events, Spent, Created, Actions. NO avatars       | 101-134 |
+| `app/(chef)/staff/page.tsx`               | Table: Name, Role, Status, Rate, Phone, Email, Notes. NO photos              | 72-111  |
+| `app/(chef)/vendors/page.tsx`             | Table: Name, Status, Contact, Phone, Email, Terms, Delivery Days. NO logos   | 97-138  |
+| `components/ui/avatar.tsx`                | `<Avatar>`, `<AvatarImage>`, `<AvatarFallback>` with Cloudinary optimization | 1-69    |
+| `components/dishes/dish-photo-upload.tsx` | Upload component with compact/full modes, handles HEIC, EXIF strip           | 1-275   |
+
+**OpenClaw infrastructure:**
+
+| File                                                 | What exists                                                                        | Lines  |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------- | ------ |
+| `lib/openclaw/sync-receiver.ts`                      | Two cartridges registered: `price-intel` (8081), `lead-engine` (8083)              | 26-59  |
+| `lib/openclaw/cartridge-registry.ts`                 | `CartridgeDefinition` interface, `CartridgeSyncResult` type, `registerCartridge()` | 10-47  |
+| `lib/openclaw/lead-engine-handler.ts`                | Handler pattern: fetch from Pi, upsert to DB, revalidate tags, mark synced         | 59-196 |
+| `types/database.ts`                                  | `directory_listings.photo_urls: string[]`                                          | 14219  |
+| `app/(public)/discover/_components/listing-card.tsx` | Already displays `photo_urls[0]` with fallback                                     | 32, 44 |
+| `app/api/storage/public/[...path]/route.ts`          | Public file serving, no auth, 24h cache                                            | 6-40   |
+
+**Storage system:**
+
+| File                          | What exists                                                                              | Lines   |
+| ----------------------------- | ---------------------------------------------------------------------------------------- | ------- |
+| `lib/storage/index.ts`        | `createBucket()` creates dirs on demand, ~14 buckets in use across codebase              | 152-170 |
+| `lib/chef/profile-actions.ts` | `uploadChefLogo()`: validate MIME + size, store, update DB, cleanup previous, revalidate | 196-269 |
+
+**Other surfaces:**
+
+| File                                                | What exists                                                                               | Lines  |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------ | ----- |
+| `types/database.ts`                                 | `referral_partners.cover_image_url: string                                                | null`  | 37198 |
+| `app/(chef)/dashboard/_sections/schedule-cards.tsx` | Today's Schedule widget: time, occasion, client, guests, weather. NO images, tight layout | 44-160 |
+| `app/(chef)/settings/repertoire/page.tsx`           | Seasonal Palettes page, calls `getSeasonalPalettes()`                                     | 1-32   |
+
+**Tables that do NOT exist:**
+
+| Spec references       | Reality                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `equipment_inventory` | Does not exist. Equipment uses `equipment_items` table (types/database.ts line 15668) |
+| `culinary_terms`      | Does not exist. Culinary board is experimental, only in agent worktrees               |
+
+---
+
+### 2. What exactly changes?
+
+**Already done (Phase 1A + 1E):**
+
+- Migration applied: `image_url` on ingredients, `avatar_url` on clients, `photo_url` on staff_members, `logo_url` on vendors, `photo_url` on equipment_inventory (wrapped in IF EXISTS)
+- `lib/ingredients/image-actions.ts` created (catalog bridge + batch enrich)
+- `components/culinary/enrich-images-button.tsx` created
+- Ingredient list thumbnails wired
+- "Food Catalog" rename in nav + page title
+
+**Phase 1B (expense thumbnails):** Add 40x40 thumbnail column to `app/(chef)/expenses/page.tsx` table using `receipt_photo_url`. Link to detail view on click.
+
+**Phase 1C (event photos):** Modify `app/(chef)/events/page.tsx` to show 48x48 thumbnail. Query needs to join `event_photos` (first by `display_order`) or fall back to first dish photo via events -> menus -> dishes chain.
+
+**Phase 1D (menu dish photos):** Modify `app/(chef)/menus/menus-client-wrapper.tsx` MenuCard to show first dish photo as hero. Requires `getMenus()` in `lib/menus/actions.ts` to also fetch first dish photo per menu.
+
+**Phase 2 (5 upload surfaces):** New server actions for client avatar, staff photo, vendor logo, equipment photo, ingredient photo uploads. Each follows `uploadChefLogo()` pattern. New storage buckets created on demand.
+
+**Phase 3A (directory images):** Separate spec (`openclaw-directory-images-cartridge.md`). ChefFlow side: new handler + cartridge registration + admin queue endpoint.
+
+**Phase 3B (store logos):** Static TypeScript map + ~39 PNG files in `public/images/stores/`.
+
+**Phase 3C (catalog enrichment):** Extends OpenClaw price scraping, no ChefFlow changes.
+
+**Phase 3D (culinary board photos):** BLOCKED. `culinary_terms` table does not exist. Culinary board is not in production.
+
+**Phase 4A (ingredient reference card):** Enhance `app/(chef)/inventory/ingredients/[id]/page.tsx` with hero image, seasonal info, recipe usage list. Must add `image_url` to explicit column select.
+
+**Phase 4B (dashboard photos):** Add 48x48 dish photo to `schedule-cards.tsx`. Requires `getTodaysScheduleEnriched()` to include menu dish photo.
+
+**Phase 4C (seasonal palettes):** Wire ingredient thumbnails into palette component.
+
+**Phase 4D (partner covers):** Upload UI on partner edit form. Display on partner list/detail. `cover_image_url` column already exists.
+
+---
+
+### 3. What assumptions am I making?
+
+| #   | Assumption                                 | Status           | Evidence                                                                                                         |
+| --- | ------------------------------------------ | ---------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 1   | `getIngredients()` uses `select('*')`      | VERIFIED         | `lib/recipes/actions.ts:909`                                                                                     |
+| 2   | Ingredient detail uses `select('*')`       | **WRONG**        | `app/(chef)/inventory/ingredients/[id]/page.tsx:33` uses explicit `'id, name, category, unit, last_price_cents'` |
+| 3   | Expense column is `receipt_url`            | **WRONG**        | Column is `receipt_photo_url` per `types/database.ts:20812`                                                      |
+| 4   | Menu list is at `/culinary/menus`          | **WRONG**        | That's a redirect (`app/(chef)/culinary/menus/page.tsx:5-6`). Real page: `app/(chef)/menus/page.tsx`             |
+| 5   | `equipment_inventory` table exists         | **WRONG**        | Table is `equipment_items` (`types/database.ts:15668`). Migration wrapped in IF EXISTS so no harm done           |
+| 6   | `culinary_terms` table exists              | **WRONG**        | Does not exist. Culinary board is experimental, not production                                                   |
+| 7   | `directory_listings.photo_urls` exists     | VERIFIED         | `types/database.ts:14219`                                                                                        |
+| 8   | Listing cards display `photo_urls[0]`      | VERIFIED         | `app/(public)/discover/_components/listing-card.tsx:32,44`                                                       |
+| 9   | `referral_partners.cover_image_url` exists | VERIFIED         | `types/database.ts:37198`                                                                                        |
+| 10  | `dishes.photo_url` exists                  | VERIFIED         | `types/database.ts:14811`                                                                                        |
+| 11  | `event_photos` gallery exists              | VERIFIED         | `database/migrations/20260228000004_event_photo_gallery.sql:23-61`                                               |
+| 12  | Avatar component handles image URLs        | VERIFIED         | `components/ui/avatar.tsx:18-53` with Cloudinary optimization                                                    |
+| 13  | DishPhotoUpload has compact mode           | VERIFIED         | `components/dishes/dish-photo-upload.tsx:50-58`                                                                  |
+| 14  | `uploadChefLogo()` pattern is reusable     | VERIFIED         | `lib/chef/profile-actions.ts:196-269`                                                                            |
+| 15  | Storage buckets are created on demand      | VERIFIED         | `lib/storage/index.ts:152-159`                                                                                   |
+| 16  | `getMenus()` includes dish data            | **WRONG**        | `lib/menus/actions.ts:333-362` selects menu fields only, no dish join                                            |
+| 17  | `getEvents()` includes photo data          | **WRONG**        | `lib/events/actions.ts` selects `*, client:clients(...)` only, no photo join                                     |
+| 18  | Dashboard widget has space for images      | **QUESTIONABLE** | `schedule-cards.tsx:44-160` is compact text. Adding images may clutter it                                        |
+
+---
+
+### 4. Where will this most likely break?
+
+**Break point 1: Ingredient detail page won't show images.**
+`app/(chef)/inventory/ingredients/[id]/page.tsx:33` queries `'id, name, category, unit, last_price_cents'`. A builder who reads the spec but not this file will assume `select('*')` and skip it. The image column will be undefined even though it exists in the DB.
+
+**Break point 2: TypeScript type errors everywhere.**
+`types/database.ts` hasn't been regenerated after migration. Every reference to `ingredient.image_url`, `client.avatar_url`, `staff.photo_url`, `vendor.logo_url` will fail type checking. Builder must regenerate types first.
+
+**Break point 3: Event card photos require a multi-table join.**
+Getting a photo for an event row requires: events -> event_photos (by display_order), OR events -> menus -> dishes (by first dish with photo_url). Neither join exists in `getEvents()` today. This is a non-trivial query change, not a simple "add a column to the select."
+
+**Break point 4: Menu card photos require a query change.**
+`getMenus()` (`lib/menus/actions.ts:333-362`) does not fetch dishes. To show a dish photo hero on menu cards, the builder must add a subquery or separate fetch for the first dish photo per menu. This is a data-fetching change, not just a UI change.
+
+**Break point 5: Phase 3D (culinary board technique photos) is unbuildable.**
+The `culinary_terms` table does not exist. The culinary board page is experimental (only in agent worktrees). A builder following the spec linearly will hit a wall here.
+
+---
+
+### 5. What is underspecified?
+
+1. **Event card photo source priority.** The spec says "completed events: first gallery photo; events with menu: first dish photo." But what is the SQL? Is it a LEFT JOIN to `event_photos` with `ORDER BY display_order LIMIT 1`? Or a subquery? The query pattern is not specified.
+
+2. **Upload component reuse vs creation.** Phase 2 adds 5 upload surfaces. Should the builder create one shared `<EntityImageUpload>` component, or copy `DishPhotoUpload`'s pattern 5 times? The spec says "use the DishPhotoUpload pattern" but doesn't say whether to create a generic wrapper.
+
+3. **Image size limits.** No max file size or dimension constraints specified for new upload surfaces. `uploadChefLogo()` uses 5MB max. `uploadReceipt()` uses 10MB. What should client avatars, vendor logos, etc. use?
+
+4. **Ingredient reference card interaction.** Phase 4A says "click to expand" for recipe ingredient thumbnails. Is this a modal? A drawer? An inline expand? The ingredient detail page layout ("hero photo at top, facts below") is described in prose but not as a component tree.
+
+5. **Phase 3D scope.** The culinary board and `culinary_terms` table don't exist in production. The spec doesn't acknowledge this. Builder will waste time looking for them.
+
+6. **Which storage buckets for new uploads.** The spec names bucket patterns (`client-avatars`, etc.) but doesn't list them explicitly. Buckets are created on demand so this isn't a blocker, but naming should be consistent with existing buckets (`chef-logos`, `dish-photos`, `event-photos`, `receipts`).
+
+---
+
+### 6. What dependencies or prerequisites exist?
+
+| Dependency                                    | Status                                      | Required before                               |
+| --------------------------------------------- | ------------------------------------------- | --------------------------------------------- |
+| Migration `20260401000121` applied            | DONE                                        | All phases                                    |
+| `types/database.ts` regenerated               | **NOT DONE**                                | Any TypeScript referencing new columns        |
+| `showcase-image-upload.md` spec               | Verified                                    | Phase 1 (listed dependency)                   |
+| `portfolio-upload-fix.md` spec                | Verified                                    | Phase 1 (listed dependency)                   |
+| OpenClaw Pi running on 10.0.0.177:8081        | Required                                    | Phase 1A enrichment, Phase 3                  |
+| `openclaw-directory-images-cartridge.md` spec | Ready (separate)                            | Phase 3A                                      |
+| `culinary_terms` table + culinary board page  | **DOES NOT EXIST**                          | Phase 3D (BLOCKED)                            |
+| `equipment_inventory` table                   | **DOES NOT EXIST** (it's `equipment_items`) | Phase 2D (migration col added to wrong table) |
+
+---
+
+### 7. What existing logic could this conflict with?
+
+1. **`ImageWithFallback` component** (`components/pricing/image-with-fallback.tsx`) is the standard. Any new image display MUST use it, not a custom component. Conflict risk: builder creates a second image component.
+
+2. **Cloudinary optimization** via `getOptimizedGalleryImage()` and `getOptimizedAvatar()`. The `Avatar` component (`components/ui/avatar.tsx:18-53`) already uses Cloudinary. New avatar/photo surfaces must use the same optimization path, not raw URLs.
+
+3. **Signed URLs for private storage.** `event_photos` and `receipts` buckets use signed URLs (1-hour expiry via `getReceiptUrl()` at `lib/expenses/receipt-upload.ts:80-107`). If the builder uses public URLs for private data, it's a security issue.
+
+4. **`DishPhotoUpload`** (`components/dishes/dish-photo-upload.tsx`) calls either `uploadRecipePhoto()` or `uploadDishPhoto()` based on `entityType`. New upload surfaces need new server actions, not overloading these existing ones.
+
+5. **`getMenuQuickViewData()`** (`lib/menus/actions.ts:1602-1683`) already fetches dish data for modals. Phase 1D must use a lighter query for list cards (just first dish photo), not reuse the full quick view query.
+
+---
+
+### 8. What is the end-to-end data flow?
+
+**Phase 1A (ingredient images, BUILT):**
+User clicks "Find Images" -> `enrichIngredientImages()` -> fetches ingredients where `image_url IS NULL` -> for each, `lookupCatalogImage(name)` hits `http://10.0.0.177:8081/api/ingredients?search={name}&limit=1` -> validates name match -> caches URL in `ingredients.image_url` -> `revalidatePath('/culinary/ingredients')` + `revalidatePath('/recipes/ingredients')` -> UI re-renders with `ImageWithFallback`
+
+**Phase 1B (expense thumbnails):**
+Page loads -> `getExpenses()` query includes `receipt_photo_url` -> expense table renders thumbnail column -> if `receipt_photo_url` exists, call `getReceiptUrl()` for signed URL -> render 40x40 thumbnail -> click opens detail page with full receipt view
+
+**Phase 1C (event photos):**
+Page loads -> `getEvents()` needs new join: LEFT JOIN `event_photos` (first by display_order) OR subquery for first dish photo via menus -> dishes -> render 48x48 thumbnail in event row -> no photo = existing status dot behavior
+
+**Phase 1D (menu dish photos):**
+Page loads -> `getMenus()` needs new subquery: first dish with non-null `photo_url` per menu -> `MenuCard` renders dish photo as 200px hero banner -> no dish photo = existing card design unchanged
+
+**Phase 2 (uploads, any entity):**
+User clicks upload on entity detail page -> file picker -> `FormData` sent to server action (e.g., `uploadClientAvatar()`) -> validate MIME type + size -> `sharp()` for EXIF strip -> `storage.upload()` to bucket -> update entity column -> cleanup previous file -> `revalidatePath()` -> UI shows uploaded image
+
+**Phase 3A (directory images):**
+Pi scraper runs nightly -> sources images (og:image, favicon, optionally Google Places) -> stores locally -> sync cron fires every 6h -> ChefFlow handler fetches from `http://10.0.0.177:8085/api/images/unsynced` -> downloads images to `./storage/directory-images/` -> updates `directory_listings.photo_urls` -> `revalidatePath('/discover')` -> listing cards auto-show images via existing `photo_urls[0]` display
+
+---
+
+### 9. What is the correct implementation order?
+
+1. **Regenerate `types/database.ts`** (unblocks all TypeScript work)
+2. **Phase 1B** (expense thumbnails - signed URL pattern, uses existing `receipt_photo_url`)
+3. **Phase 1C** (event card photos - requires query join to `event_photos` or dishes)
+4. **Phase 1D** (menu card dish photos - requires `getMenus()` query change)
+5. **Phase 2A-2E** (upload surfaces, each independent, follow `uploadChefLogo()` pattern)
+6. **Phase 3B** (store logos - static map, ~39 PNGs, no external dependency)
+7. **Phase 3A** (directory images cartridge - separate spec, OpenClaw Pi work)
+8. **Phase 3C** (catalog enrichment - OpenClaw scraper extension)
+9. **Phase 4A** (ingredient reference card - the capstone, needs `image_url` in detail page select)
+10. **Phase 4B-4D** (dashboard photos, palettes, partner covers - polish)
+
+**Skip Phase 3D** until culinary board is production-ready.
+
+---
+
+### 10. What are the exact success criteria?
+
+| Phase | Criterion                                                                                                                                                                |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1A    | Ingredient list at `/culinary/ingredients` shows 32x32 thumbnails for ingredients matched to catalog. "Find Images" button works end-to-end. (DONE)                      |
+| 1B    | Expense list at `/expenses` shows 40x40 receipt thumbnail when `receipt_photo_url` exists. Click navigates to detail. No broken images for expenses without receipts.    |
+| 1C    | Event list at `/events` shows 48x48 thumbnail when gallery or dish photos exist. Events without photos show existing status dot.                                         |
+| 1D    | Menu cards at `/menus` show dish photo hero when any dish has `photo_url`. Cards without dish photos render unchanged.                                                   |
+| 1E    | Nav and page title say "Food Catalog" everywhere. Route stays `/culinary/price-catalog`. (DONE)                                                                          |
+| 2A-2E | Each entity detail page has upload UI. Upload -> refresh -> image persists. Previous image cleaned up on re-upload. EXIF stripped. Initials/icon fallback when no image. |
+| 3A    | After OpenClaw sync, `/discover` listing cards show business photos. Listings with existing photos not overwritten.                                                      |
+| 3B    | Store names in food catalog show 16x16 logo inline. Missing logos show name-only (no broken image).                                                                      |
+| 4A    | `/inventory/ingredients/[id]` shows hero image, seasonal info, "your recipes using this" list. Price chart and vendor panel still work.                                  |
+| ALL   | `npx tsc --noEmit --skipLibCheck` exits 0. `npx next build --no-lint` exits 0.                                                                                           |
+
+---
+
+### 11. What are the non-negotiable constraints?
+
+1. **Auth:** Every server action starts with `requireChef()` (`lib/auth/get-user.ts`)
+2. **Tenant scoping:** Every query includes `.eq('tenant_id', user.tenantId!)` or `.eq('chef_id', user.entityId)`
+3. **Privacy:** Receipt photos use signed URLs (private bucket). Client photos are private. Never expose private storage paths as public URLs
+4. **EXIF stripping:** All uploads must call `sharp(buffer).rotate().toBuffer()` to strip GPS metadata
+5. **No AI image generation:** No DALL-E, Midjourney, or any AI-generated photos (spec "Out of Scope")
+6. **Chef upload priority:** Chef-uploaded images always override catalog-sourced images
+7. **Non-invasive rule:** No images on dense trees, forms, financial tables, settings pages
+8. **Nullable columns:** App must work perfectly with zero images. Images are enhancement, never requirement
+9. **No em dashes** in any UI copy or error messages
+
+---
+
+### 12. What should NOT be touched?
+
+- `types/database.ts` (regenerate only, never manually edit)
+- `components/pricing/image-with-fallback.tsx` existing API (extend if needed, don't break)
+- `lib/events/transitions.ts` (event FSM, unrelated)
+- `lib/ledger/` (financial system, unrelated)
+- Recipe creation flow (recipes are chef IP, no AI)
+- Financial tables, ledger views, invoice displays (no decorative images)
+- Settings pages (except `/settings/repertoire` for Phase 4C)
+- Route paths (keep `/culinary/price-catalog`, don't rename to `/food-catalog`)
+- `app/(chef)/culinary/menus/page.tsx` (it's a redirect; modify `app/(chef)/menus/` instead)
+
+---
+
+### 13. Is this the simplest complete version?
+
+Phase 1 is minimal and correct. Each subsequent phase is independently useful and can ship alone.
+
+**Simplification opportunities:**
+
+- Phase 3D (culinary board) should be **removed** from this spec entirely. The table and page don't exist.
+- Phase 2D (equipment photos) should reference `equipment_items` table, not `equipment_inventory`.
+- Phase 4B (dashboard widget photos) is questionable. The schedule widget (`schedule-cards.tsx:44-160`) is already compact. Adding images may violate the non-invasive rule. Consider making this optional/deferred.
+
+**Recommendation:** Split into 4 separate builder specs (one per phase) for clearer scope. Phase 1 is ready now. Phase 2-4 each need a focused spec.
+
+---
+
+### 14. If implemented exactly as written, what would still be wrong?
+
+**8 things a builder WILL get wrong:**
+
+1. **Ingredient detail page will be missed.** It queries `'id, name, category, unit, last_price_cents'` at `app/(chef)/inventory/ingredients/[id]/page.tsx:33`. Builder must add `image_url` to this explicit select. Every other ingredient query uses `select('*')` and works automatically, which makes this one easy to miss.
+
+2. **Expense column name is wrong in spec.** Phase 1B says "receipt_url." The column is `receipt_photo_url` (`types/database.ts:20812`). Builder will write code referencing a non-existent column.
+
+3. **Menu list file is at the wrong path.** Spec says `/culinary/menus`. That's a redirect (`app/(chef)/culinary/menus/page.tsx:5-6`). Real file is `app/(chef)/menus/menus-client-wrapper.tsx:114-200`.
+
+4. **Event and menu photo queries don't exist yet.** The spec implies photos are "just there" to wire up. In reality, `getEvents()` and `getMenus()` do NOT join photo tables. Builder must write new multi-table queries (events -> event_photos, menus -> dishes) that don't exist today.
+
+5. **Equipment table name is wrong.** Spec says `equipment_inventory`. Real table is `equipment_items` (`types/database.ts:15668`). The migration wrapped the ALTER in IF EXISTS so it silently did nothing. The column was NOT added.
+
+6. **Phase 3D is unbuildable.** `culinary_terms` table and culinary board page don't exist in production. Builder will search, find nothing, and waste time.
+
+7. **TypeScript types will fail until regenerated.** `types/database.ts` doesn't have the new columns yet. Builder's first `tsc` run will fail on every file referencing `image_url`, `avatar_url`, `photo_url`, or `logo_url`.
+
+8. **Signed URL requirement for receipts.** Receipt photos are in a private `receipts` bucket. The expense list thumbnail needs `getReceiptUrl()` (`lib/expenses/receipt-upload.ts:80-107`) to generate a signed URL with 1-hour expiry. If the builder uses the raw `receipt_photo_url` value directly, the image won't load.
+
+---
+
+### Final Check
+
+> Is this spec production-ready, or am I proceeding with uncertainty?
+
+**Production-ready for Phases 1-2 with corrections applied above.** The 8 builder traps are now documented.
+
+**Uncertain on:**
+
+- **Phase 3D** (culinary board): Remove from spec. Table and page don't exist.
+- **Phase 2D** (equipment): Migration added column to `equipment_inventory` which doesn't exist. Must re-migrate targeting `equipment_items`.
+- **Phase 4B** (dashboard photos): May violate non-invasive rule on the compact schedule widget. Needs design review.
+
+**What would resolve it:**
+
+1. Remove Phase 3D from spec or mark as "deferred until culinary board ships"
+2. Create new migration adding `photo_url` to `equipment_items` (the real table)
+3. Developer decision on whether dashboard schedule widget should have images

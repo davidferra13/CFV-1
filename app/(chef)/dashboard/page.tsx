@@ -9,7 +9,7 @@ import { getPriorityQueue } from '@/lib/queue/actions'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { getDashboardPrimaryAction } from '@/lib/archetypes/ui-copy'
 import Link from 'next/link'
-import { Plus } from '@/components/ui/icons'
+import { Plus, UtensilsCrossed } from '@/components/ui/icons'
 import type { PriorityQueue } from '@/lib/queue/types'
 import { CommandCenterSection } from './_sections/command-center-data'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
@@ -312,6 +312,13 @@ export default async function ChefDashboard() {
             className="inline-flex items-center justify-center px-4 py-2.5 border border-stone-700 text-stone-300 rounded-xl hover:bg-stone-800 hover:border-stone-600 transition-all font-medium text-sm"
           >
             Briefing
+          </Link>
+          <Link
+            href="/menus/new"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 border border-stone-700 text-stone-300 rounded-xl hover:bg-stone-800 hover:border-stone-600 transition-all font-medium text-sm"
+          >
+            <UtensilsCrossed className="h-4 w-4" />
+            Create Menu
           </Link>
           <Link
             href={primaryAction.href}

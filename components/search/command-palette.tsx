@@ -46,6 +46,13 @@ const QUICK_ACTIONS: PaletteItem[] = [
     icon: '+',
   },
   {
+    id: 'action:new-menu',
+    label: 'New Menu',
+    href: '/menus/new',
+    section: 'Quick Actions',
+    icon: '+',
+  },
+  {
     id: 'action:new-client',
     label: 'New Client',
     href: '/clients/new',
