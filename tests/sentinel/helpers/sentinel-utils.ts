@@ -36,6 +36,21 @@ function sleep(ms: number) {
 }
 
 /**
+ * Dismiss cookie consent banner if present on the page.
+ */
+async function dismissCookieBanner(page: Page): Promise<void> {
+  try {
+    const acceptBtn = page.locator('button:has-text("Accept cookies")')
+    if (await acceptBtn.isVisible({ timeout: 2_000 })) {
+      await acceptBtn.click()
+      await sleep(300)
+    }
+  } catch {
+    // Banner not present or already dismissed
+  }
+}
+
+/**
  * Sign in via the UI form.
  * Uses pressSequentially (not fill) because React controlled inputs
  * need real key events to update state. Does NOT use /api/e2e/auth
@@ -44,19 +59,9 @@ function sleep(ms: number) {
 export async function signInViaUI(page: Page, credentials?: AgentCredentials): Promise<void> {
   const creds = credentials ?? loadAgentCredentials()
 
+  // Use domcontentloaded (not load) because Next.js dev server delays load event
   await page.goto('/auth/signin', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-
-  // Dismiss cookie consent banner if present
-  const cookieDismiss = page.locator('button:has-text("Accept"), button:has-text("Dismiss cookie")')
-  if (
-    await cookieDismiss
-      .first()
-      .isVisible({ timeout: 2_000 })
-      .catch(() => false)
-  ) {
-    await cookieDismiss.first().click()
-    await sleep(500)
-  }
+  await dismissCookieBanner(page)
 
   const emailInput = page.locator('input[type="email"]')
   const passwordInput = page.locator('input[type="password"]')
@@ -64,35 +69,37 @@ export async function signInViaUI(page: Page, credentials?: AgentCredentials): P
   await expect(emailInput).toBeVisible({ timeout: 30_000 })
   await expect(passwordInput).toBeVisible({ timeout: 10_000 })
 
-  // pressSequentially triggers React onChange on controlled inputs
-  await emailInput.click()
-  await emailInput.pressSequentially(creds.email, { delay: 10 })
+  // Wait for React hydration: click + type in a retry loop.
+  // Dev server compiles on-demand so hydration can be very slow.
+  let filled = false
+  for (let attempt = 0; attempt < 5; attempt++) {
+    await emailInput.click()
+    await sleep(1_000 + attempt * 500) // Increasing wait for hydration
+    await emailInput.pressSequentially(creds.email, { delay: 10 })
+
+    const emailValue = await emailInput.inputValue()
+    if (emailValue === creds.email) {
+      filled = true
+      break
+    }
+    // React wasn't hydrated yet, clear and retry
+    await emailInput.fill('')
+  }
+  if (!filled) {
+    throw new Error('Failed to fill email input after 5 hydration attempts')
+  }
+
   await passwordInput.click()
   await passwordInput.pressSequentially(creds.password, { delay: 10 })
 
-  // Submit and wait for the hard navigation (window.location.href)
+  // Submit via Enter key
   await passwordInput.press('Enter')
 
-  // The sign-in page uses window.location.href for hard navigation.
-  // Poll for the URL to change away from /auth/signin.
-  const deadline = Date.now() + 60_000
-  while (Date.now() < deadline) {
-    await sleep(1_000)
-    const url = page.url()
-    if (!url.includes('/auth/signin')) {
-      // Wait for the destination page to finish loading
-      await page.waitForLoadState('domcontentloaded', { timeout: 30_000 })
-      return
-    }
-    // Check if an error appeared on the sign-in page
-    const errorAlert = page.locator('[role="alert"], .text-red-600, .text-red-500')
-    if (await errorAlert.isVisible({ timeout: 500 }).catch(() => false)) {
-      const errorText = await errorAlert.textContent()
-      throw new Error(`Sign-in error: ${errorText}`)
-    }
-  }
-
-  throw new Error('Sign-in timed out: URL never changed from /auth/signin')
+  // Wait for URL to leave /auth/signin after the server action completes
+  await page.waitForURL((url) => !url.pathname.startsWith('/auth/signin'), {
+    timeout: 60_000,
+    waitUntil: 'domcontentloaded',
+  })
 }
 
 /**

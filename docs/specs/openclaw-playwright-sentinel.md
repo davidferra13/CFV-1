@@ -1,11 +1,11 @@
 # Spec: OpenClaw Playwright Sentinel
 
-> **Status:** draft
+> **Status:** in-progress
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-29
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-29
 
 ---
 
