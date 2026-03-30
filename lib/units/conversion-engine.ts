@@ -451,6 +451,165 @@ export function canConvert(unitA: string, unitB: string, densityGPerMl?: number 
   return false
 }
 
+// ── Count-to-Weight Equivalents ─────────────────────────────────────────────
+// Inline lookup table for common count units. The canonical source is
+// system_ingredients.count_weight_grams (populated by migration), but this
+// in-memory table provides a fast fallback without a database query.
+
+const COUNT_TO_WEIGHT_GRAMS: Record<string, Record<string, number>> = {
+  // Fresh herbs (standard grocery bunch ~ 56g / 2oz)
+  cilantro: { bunch: 56 },
+  parsley: { bunch: 56 },
+  dill: { bunch: 56 },
+  mint: { bunch: 56 },
+  basil: { bunch: 56 },
+  chives: { bunch: 56 },
+  tarragon: { bunch: 56 },
+  watercress: { bunch: 56 },
+  // Leafy greens (larger bunches ~ 170g / 6oz)
+  kale: { bunch: 170 },
+  'collard greens': { bunch: 170 },
+  'swiss chard': { bunch: 170 },
+  spinach: { bunch: 170 },
+  'mustard greens': { bunch: 170 },
+  // Garlic
+  garlic: { head: 56, clove: 5 },
+  // Cabbage family
+  cabbage: { head: 750 },
+  'napa cabbage': { head: 750 },
+  'red cabbage': { head: 750 },
+  cauliflower: { head: 600 },
+  broccoli: { head: 600 },
+  // Lettuce
+  'iceberg lettuce': { head: 500 },
+  'romaine lettuce': { head: 500 },
+  'butter lettuce': { head: 500 },
+  // Sprigs
+  thyme: { sprig: 2, bunch: 56 },
+  rosemary: { sprig: 2, bunch: 56 },
+  oregano: { sprig: 2, bunch: 56 },
+  // Canned goods (standard 14.5oz)
+  'diced tomatoes': { can: 411 },
+  'crushed tomatoes': { can: 411 },
+  'tomato sauce': { can: 411 },
+  'coconut milk': { can: 411 },
+  'black beans': { can: 411 },
+  'kidney beans': { can: 411 },
+  chickpeas: { can: 411 },
+  'cannellini beans': { can: 411 },
+  'pinto beans': { can: 411 },
+  corn: { can: 411 },
+  // Small cans (6oz)
+  'tomato paste': { can: 170 },
+  // Butter
+  butter: { stick: 113 },
+  'unsalted butter': { stick: 113 },
+  'salted butter': { stick: 113 },
+  // Eggs
+  egg: { each: 50 },
+  eggs: { each: 50 },
+  // Common produce (each)
+  onion: { each: 150 },
+  'yellow onion': { each: 150 },
+  'white onion': { each: 150 },
+  'red onion': { each: 150 },
+  lemon: { each: 150 },
+  lime: { each: 150 },
+  orange: { each: 200 },
+  apple: { each: 182 },
+  'bell pepper': { each: 150 },
+  'red bell pepper': { each: 150 },
+  potato: { each: 200 },
+  'sweet potato': { each: 150 },
+  avocado: { each: 170 },
+  banana: { each: 120 },
+  celery: { bunch: 450 },
+}
+
+/**
+ * Convert a count-based quantity to grams using ingredient-specific equivalents.
+ * Returns grams if a match is found, null otherwise.
+ *
+ * Example: convertCountToGrams("cilantro", "bunch", 2) => 112 (2 bunches * 56g)
+ */
+export function convertCountToGrams(
+  ingredientName: string,
+  countUnit: string,
+  quantity: number
+): number | null {
+  const lower = ingredientName.toLowerCase().trim()
+  const normalizedUnit = normalizeUnit(countUnit)
+
+  // Exact match
+  if (COUNT_TO_WEIGHT_GRAMS[lower]?.[normalizedUnit]) {
+    return round4(quantity * COUNT_TO_WEIGHT_GRAMS[lower][normalizedUnit])
+  }
+
+  // Partial match (e.g., "organic cilantro" should match "cilantro")
+  for (const [key, units] of Object.entries(COUNT_TO_WEIGHT_GRAMS)) {
+    if (lower.includes(key) && units[normalizedUnit]) {
+      return round4(quantity * units[normalizedUnit])
+    }
+  }
+
+  return null
+}
+
+/**
+ * Enhanced cost computation that handles count-to-weight conversion.
+ * If the recipe uses a count unit (bunch, can, head, etc.) and the price
+ * is per weight unit (oz, lb, g), this converts via count-to-weight equivalents
+ * before computing cost.
+ *
+ * Falls back to computeIngredientCost() for standard conversions.
+ */
+export function computeIngredientCostWithCountConversion(
+  ingredientName: string,
+  qty: number,
+  recipeUnit: string,
+  costPerUnitCents: number,
+  costUnit: string,
+  densityGPerMl?: number | null
+): number | null {
+  // Try standard conversion first
+  const standard = computeIngredientCost(qty, recipeUnit, costPerUnitCents, costUnit, densityGPerMl)
+  if (standard !== null) return standard
+
+  // If recipe uses a count unit and cost is by weight, try count-to-weight
+  const recipeType = getUnitType(recipeUnit)
+  const costType = getUnitType(costUnit)
+
+  if (recipeType === 'count' && costType === 'weight') {
+    const grams = convertCountToGrams(ingredientName, recipeUnit, qty)
+    if (grams !== null) {
+      // Convert grams to cost unit, then multiply by cost
+      const costUnitNorm = normalizeUnit(costUnit)
+      if (costUnitNorm in WEIGHT_TO_G) {
+        const qtyInCostUnit = grams / WEIGHT_TO_G[costUnitNorm]
+        return Math.round(qtyInCostUnit * costPerUnitCents)
+      }
+    }
+  }
+
+  // If cost is count and recipe is weight, reverse lookup
+  if (costType === 'count' && recipeType === 'weight') {
+    const gramsPerCount = convertCountToGrams(ingredientName, costUnit, 1)
+    if (gramsPerCount !== null) {
+      const recipeUnitNorm = normalizeUnit(recipeUnit)
+      if (recipeUnitNorm in WEIGHT_TO_G) {
+        const recipeGrams = qty * WEIGHT_TO_G[recipeUnitNorm]
+        const countEquivalent = recipeGrams / gramsPerCount
+        return Math.round(countEquivalent * costPerUnitCents)
+      }
+    }
+  }
+
+  return null
+}
+
+// Re-export WEIGHT_TO_G for use in the count-to-weight function above
+// (it's already defined at module scope, just making the dependency explicit)
+
 // ── Internal helpers ────────────────────────────────────────────────────────
 
 function round4(n: number): number {

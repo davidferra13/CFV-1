@@ -20,6 +20,8 @@ import { db } from '@/lib/db'
 import { ingredients } from '@/lib/db/schema/schema'
 import { eq, sql } from 'drizzle-orm'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { normalizeIngredientName } from '@/lib/pricing/name-normalizer'
+import { refreshPriceViews } from '@/lib/pricing/cross-store-average'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
 
@@ -291,19 +293,32 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
       })
       .from(ingredients)
 
-    // Step 2: Deduplicate names
+    // Step 2: Deduplicate names (send both original and normalized for better match rates)
     const uniqueNames = [
       ...new Set(cfIngredients.filter((i) => i.name?.trim()).map((i) => i.name!.trim())),
     ]
+
+    // Build normalized -> original name map for fallback matching
+    const normalizedToOriginal = new Map<string, string[]>()
+    for (const name of uniqueNames) {
+      const normalized = normalizeIngredientName(name)
+      if (normalized !== name.toLowerCase().trim()) {
+        if (!normalizedToOriginal.has(normalized)) normalizedToOriginal.set(normalized, [])
+        normalizedToOriginal.get(normalized)!.push(name)
+      }
+    }
+    // Add normalized variants to the lookup set (Pi gets both original and normalized names)
+    const allNamesToSend = [...new Set([...uniqueNames, ...normalizedToOriginal.keys()])]
 
     if (uniqueNames.length === 0) {
       return { success: true, matched: 0, updated: 0, skipped: 0, notFound: 0 }
     }
 
     // Step 3: Send to Pi's enriched endpoint (batches of 200)
+    // Sends both original and normalized names for better match rates
     const enrichedResults: Record<string, EnrichedResult | null> = {}
-    for (let i = 0; i < uniqueNames.length; i += 200) {
-      const batch = uniqueNames.slice(i, i + 200)
+    for (let i = 0; i < allNamesToSend.length; i += 200) {
+      const batch = allNamesToSend.slice(i, i + 200)
       const response = await fetchEnriched(batch)
       if (!response) {
         console.warn('[sync] Pi enriched endpoint not available. Aborting sync.')
@@ -337,8 +352,16 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
     const notFoundNames: string[] = []
 
     for (const [name, result] of Object.entries(enrichedResults)) {
-      const tenantIngredients = byName.get(name)
-      if (!tenantIngredients) continue
+      // Try exact name match first, then check if this was a normalized name
+      let tenantIngredients = byName.get(name)
+      if (!tenantIngredients) {
+        // Check if this normalized name maps back to original names
+        const originals = normalizedToOriginal.get(name)
+        if (originals) {
+          tenantIngredients = originals.flatMap((orig) => byName.get(orig) || [])
+        }
+      }
+      if (!tenantIngredients || tenantIngredients.length === 0) continue
 
       if (!result || !result.best_price) {
         notFound += tenantIngredients.length
@@ -452,7 +475,14 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
       }
     }
 
-    // Step 7: Feed unmatched names back to Pi for catalog growth (Phase 3.5)
+    // Step 7: Refresh materialized views for cross-store averaging (non-blocking)
+    if (updated > 0 && !dryRun) {
+      refreshPriceViews().catch((err: unknown) => {
+        console.error('[syncPrices] View refresh failed (non-blocking):', err)
+      })
+    }
+
+    // Step 8: Feed unmatched names back to Pi for catalog growth (Phase 3.5)
     if (!dryRun) {
       await suggestCatalogItems(notFoundNames)
     }

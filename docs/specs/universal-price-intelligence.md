@@ -1,11 +1,11 @@
 # Spec: Universal Price Intelligence (Cross-Store Averaging + Safety Net)
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** `auto-costing-engine.md` (verified)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-30
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-30
 
 ---
 

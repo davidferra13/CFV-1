@@ -1,24 +1,28 @@
 /**
  * Unified Price Resolution Chain
  * Single function that resolves the best price for any ingredient
- * using an 8-tier fallback chain. ALL data comes from local PostgreSQL.
+ * using a 10-tier fallback chain. ALL data comes from local PostgreSQL.
  *
  * This is NOT a 'use server' file. It's internal logic called by
  * server actions and server components.
  *
  * Resolution order (by trust):
- *   1. RECEIPT      - Chef's own purchase (manual, grocery_entry, po_receipt, vendor_invoice)
- *   2. API QUOTE    - Live API price from Kroger/Spoonacular/MealMe (grocery_price_quote_items)
- *   3. DIRECT SCRAPE - Real store website price (openclaw_scrape)
- *   4. FLYER        - Weekly circular (openclaw_flyer)
- *   5. INSTACART    - Markup-adjusted proxy (openclaw_instacart)
- *   6. GOVERNMENT   - BLS/USDA NE regional average (openclaw_government)
- *   7. HISTORICAL   - Chef's own average from past purchases
- *   8. NONE         - No price data available
+ *   1. RECEIPT            - Chef's own purchase (manual, grocery_entry, po_receipt, vendor_invoice)
+ *   2. API QUOTE          - Live API price from Kroger/Spoonacular/MealMe
+ *   3. DIRECT SCRAPE      - Real store website price (openclaw_scrape)
+ *   4. FLYER              - Weekly circular (openclaw_flyer)
+ *   5. INSTACART          - Markup-adjusted proxy (openclaw_instacart)
+ *   6. REGIONAL AVERAGE   - Cross-store average from all OpenClaw sources (2+ stores)
+ *   7. GOVERNMENT         - BLS/USDA NE regional average (openclaw_government)
+ *   8. HISTORICAL         - Chef's own average from past purchases
+ *   9. CATEGORY BASELINE  - Category-level median (e.g., average spice price per oz)
+ *  10. NONE               - No price data available
  */
 
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
+import { getRegionalAverage, getRegionalAveragesBatch } from './cross-store-average'
+import { getCategoryBaseline, getCategoryBaselinesBatch } from './category-baseline'
 
 // --- Types ---
 
@@ -28,8 +32,10 @@ export type PriceSource =
   | 'direct_scrape'
   | 'flyer'
   | 'instacart'
+  | 'regional_average'
   | 'government'
   | 'historical'
+  | 'category_baseline'
   | 'none'
 
 export type PriceFreshness = 'current' | 'recent' | 'stale' | 'none'
@@ -98,10 +104,14 @@ function sourceDisplayStore(source: PriceSource, storeName: string | null): stri
       return storeName || 'Weekly circular'
     case 'instacart':
       return storeName ? `${storeName} (Instacart)` : 'Instacart'
+    case 'regional_average':
+      return storeName || 'Regional Average'
     case 'government':
       return 'USDA NE avg'
     case 'historical':
       return 'Your avg'
+    case 'category_baseline':
+      return storeName || 'Category estimate'
     case 'none':
       return ''
   }
@@ -294,7 +304,32 @@ export async function resolvePrice(
     }
   }
 
-  // Tier 6: GOVERNMENT (openclaw_government) - no age limit
+  // Tier 6: REGIONAL_AVERAGE (cross-store average from materialized view)
+  const regionalAvg = await getRegionalAverage(ingredientId)
+  if (regionalAvg) {
+    // Check freshness: only use if most recent data is within 60 days
+    const daysSinceRecent = regionalAvg.mostRecentDate
+      ? Math.floor(
+          (new Date().getTime() - new Date(regionalAvg.mostRecentDate).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      : 999
+    if (daysSinceRecent <= 60) {
+      return {
+        cents: regionalAvg.avgPricePerUnitCents,
+        unit: regionalAvg.mostCommonUnit,
+        source: 'regional_average',
+        sourceTier: 'regional_average',
+        store: `Regional Average (${regionalAvg.storeCount} stores)`,
+        confidence: 0.5,
+        freshness: computeFreshness(regionalAvg.mostRecentDate),
+        confirmedAt: regionalAvg.mostRecentDate,
+        reason: null,
+      }
+    }
+  }
+
+  // Tier 7: GOVERNMENT (openclaw_government) - no age limit
   const gov = (await db.execute(sql`
     SELECT price_per_unit_cents, unit, purchase_date
     FROM ingredient_price_history
@@ -352,7 +387,30 @@ export async function resolvePrice(
     }
   }
 
-  // Tier 8: NONE
+  // Tier 9: CATEGORY_BASELINE (category-level median from materialized view)
+  // Need the ingredient's category for this lookup
+  const ingredientCat = (await db.execute(sql`
+    SELECT category FROM ingredients WHERE id = ${ingredientId} LIMIT 1
+  `)) as unknown as Array<{ category: string | null }>
+
+  if (ingredientCat.length > 0 && ingredientCat[0].category) {
+    const baseline = await getCategoryBaseline(ingredientCat[0].category)
+    if (baseline) {
+      return {
+        cents: baseline.medianCentsPerUnit,
+        unit: baseline.mostCommonUnit,
+        source: 'category_baseline',
+        sourceTier: 'category_baseline',
+        store: `${baseline.category} category estimate`,
+        confidence: 0.2,
+        freshness: 'stale' as PriceFreshness,
+        confirmedAt: null,
+        reason: `Based on median of ${baseline.ingredientCount} ${baseline.category} ingredients`,
+      }
+    }
+  }
+
+  // Tier 10: NONE
   return noPrice
 }
 
@@ -444,6 +502,22 @@ export async function resolvePricesBatch(
       openclawByIngredient.set(row.ingredient_id, [])
     openclawByIngredient.get(row.ingredient_id)!.push(row)
   }
+
+  // Query 4: Regional averages for all ingredients (batch)
+  const regionalAverages = await getRegionalAveragesBatch(ingredientIds)
+
+  // Query 5: Get categories for all ingredients (needed for category baseline fallback)
+  const categoryRows = (await db.execute(sql`
+    SELECT id, category FROM ingredients WHERE id = ANY(${ingredientIds})
+  `)) as unknown as Array<{ id: string; category: string | null }>
+  const categoryById = new Map<string, string | null>()
+  for (const row of categoryRows) {
+    categoryById.set(row.id, row.category)
+  }
+
+  // Query 6: Category baselines for all unique categories
+  const uniqueCategories = [...new Set([...categoryById.values()].filter(Boolean))] as string[]
+  const categoryBaselines = await getCategoryBaselinesBatch(uniqueCategories)
 
   // Resolve each ingredient
   const now = new Date()
@@ -559,7 +633,27 @@ export async function resolvePricesBatch(
       continue
     }
 
-    // Tier 6: Government (no age limit)
+    // Tier 6: Regional average (cross-store)
+    const regional = regionalAverages.get(id)
+    if (regional) {
+      const daysSinceRegional = regional.mostRecentDate ? daysAgo(regional.mostRecentDate) : 999
+      if (daysSinceRegional <= 60) {
+        result.set(id, {
+          cents: regional.avgPricePerUnitCents,
+          unit: regional.mostCommonUnit,
+          source: 'regional_average',
+          sourceTier: 'regional_average',
+          store: `Regional Average (${regional.storeCount} stores)`,
+          confidence: 0.5,
+          freshness: computeFreshness(regional.mostRecentDate),
+          confirmedAt: regional.mostRecentDate,
+          reason: null,
+        })
+        continue
+      }
+    }
+
+    // Tier 7: Government (no age limit)
     const govRow = findBestRow(openclaw, 'openclaw_government', null)
     if (govRow && govRow.price_per_unit_cents !== null) {
       result.set(id, {
@@ -597,7 +691,27 @@ export async function resolvePricesBatch(
       continue
     }
 
-    // Tier 8: None
+    // Tier 9: Category baseline
+    const category = categoryById.get(id)
+    if (category) {
+      const baseline = categoryBaselines.get(category)
+      if (baseline) {
+        result.set(id, {
+          cents: baseline.medianCentsPerUnit,
+          unit: baseline.mostCommonUnit,
+          source: 'category_baseline',
+          sourceTier: 'category_baseline',
+          store: `${baseline.category} category estimate`,
+          confidence: 0.2,
+          freshness: 'stale',
+          confirmedAt: null,
+          reason: `Based on median of ${baseline.ingredientCount} ${baseline.category} ingredients`,
+        })
+        continue
+      }
+    }
+
+    // Tier 10: None
     result.set(id, {
       cents: null,
       unit: 'each',

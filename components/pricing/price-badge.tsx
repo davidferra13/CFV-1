@@ -67,10 +67,14 @@ function sourceLabel(source: PriceSource): string {
       return 'Circular'
     case 'instacart':
       return 'Instacart'
+    case 'regional_average':
+      return 'Regional avg'
     case 'government':
       return 'USDA avg'
     case 'historical':
       return 'Your avg'
+    case 'category_baseline':
+      return 'Category est.'
     case 'none':
       return ''
   }
