@@ -239,7 +239,7 @@ try {
     UPDATE system_ingredients
     SET scales_linearly = false,
         scaling_notes = COALESCE(scaling_notes, 'Use 1.5x when doubling recipe')
-    WHERE category IN ('spices', 'seasonings')
+    WHERE category IN ('spice', 'dry_herb', 'fresh_herb')
       AND scales_linearly = true
       AND is_active = true
   `
