@@ -12,12 +12,16 @@ import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { draftResponseForInquiry } from '@/lib/ai/correspondence'
 import { createDraftMessage, approveAndSendMessage, updateDraftMessage } from '@/lib/gmail/actions'
+import { getDinnerCircleInvitation } from '@/lib/lifecycle/dinner-circle-templates'
 
 interface InquiryResponseComposerProps {
   inquiryId: string
   clientId: string | null
   clientEmail: string | null
   gmailConnected: boolean
+  circleToken?: string | null
+  chefName?: string | null
+  isFirstResponse?: boolean
 }
 
 interface DraftState {
@@ -37,6 +41,9 @@ export function InquiryResponseComposer({
   clientId,
   clientEmail,
   gmailConnected,
+  circleToken,
+  chefName,
+  isFirstResponse,
 }: InquiryResponseComposerProps) {
   const router = useRouter()
   const [generating, setGenerating] = useState(false)
@@ -48,6 +55,7 @@ export function InquiryResponseComposer({
   const [editedSubject, setEditedSubject] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [savedMessageId, setSavedMessageId] = useState<string | null>(null)
+  const [includeCircleLink, setIncludeCircleLink] = useState(!!circleToken && !!isFirstResponse)
 
   // ── Generate AI Draft ──────────────────────────────────────────────────────
 
@@ -70,8 +78,19 @@ export function InquiryResponseComposer({
         body = result.draft.slice(subjectMatch[0].length).trim()
       }
 
+      // Auto-append Dinner Circle invitation if toggle is on
+      let finalBody = body
+      if (includeCircleLink && circleToken) {
+        const circleUrl = `https://app.cheflowhq.com/hub/g/${circleToken}`
+        const invitation = getDinnerCircleInvitation({
+          chefName: chefName || 'Your chef',
+          circleUrl,
+        })
+        finalBody = body + '\n\n' + invitation.paragraph
+      }
+
       setDraftState({
-        draft: body,
+        draft: finalBody,
         subject,
         flags: result.flags,
         lifecycleState: result.lifecycleState,
@@ -81,7 +100,7 @@ export function InquiryResponseComposer({
         confidence: result.confidence,
         conversationDepth: result.conversationDepth,
       })
-      setEditedBody(body)
+      setEditedBody(finalBody)
       setEditedSubject(subject)
     } catch (err) {
       const e = err as Error
@@ -299,6 +318,19 @@ export function InquiryResponseComposer({
               </div>
             )}
           </div>
+
+          {/* Dinner Circle toggle */}
+          {circleToken && (
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={includeCircleLink}
+                onChange={(e) => setIncludeCircleLink(e.target.checked)}
+                className="h-4 w-4 rounded border-stone-600 bg-stone-800 text-[#e88f47] focus:ring-[#e88f47]"
+              />
+              <span className="text-xs text-stone-400">Include Dinner Circle link</span>
+            </label>
+          )}
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">

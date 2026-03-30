@@ -1,11 +1,11 @@
 # Spec: Critical Path Tracking & Dinner Circle Onboarding
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** none (standalone; lifecycle-intelligence spec enhances this later but is not required)
 > **Estimated complexity:** medium (3-8 files)
 > **Created:** 2026-03-30
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-30
 
 ---
 

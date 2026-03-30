@@ -22,6 +22,8 @@ import { HubGroupSettings } from '@/components/hub/hub-group-settings'
 import { WeeklyMealBoard } from '@/components/hub/weekly-meal-board'
 import { toggleMuteCircle, updateMemberNotificationPreferences } from '@/lib/hub/group-actions'
 import { NotificationPreferences } from '@/components/hub/notification-preferences'
+import { CircleClientStatus } from '@/components/hub/circle-client-status'
+import type { GuestCriticalPathResult } from '@/lib/lifecycle/critical-path'
 
 type Tab =
   | 'chat'
@@ -43,6 +45,7 @@ interface HubGroupViewProps {
   groupEvents: HubGroupEvent[]
   mealBoardEntries: MealBoardEntry[]
   profileToken?: string
+  guestStatus?: GuestCriticalPathResult | null
 }
 
 export function HubGroupView({
@@ -54,6 +57,7 @@ export function HubGroupView({
   groupEvents,
   mealBoardEntries,
   profileToken: profileTokenProp,
+  guestStatus,
 }: HubGroupViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>(((group as any).default_tab as Tab) || 'chat')
   const [localGroup, setLocalGroup] = useState<HubGroup>(group)
@@ -282,6 +286,13 @@ export function HubGroupView({
           </div>
         </div>
       </header>
+
+      {/* Guest Status Banner (persistent, above content) */}
+      {guestStatus && (guestStatus.confirmed.length > 0 || guestStatus.missing.length > 0) && (
+        <div className="mx-auto w-full max-w-2xl">
+          <CircleClientStatus status={guestStatus} />
+        </div>
+      )}
 
       {/* Content */}
       <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col overflow-hidden">

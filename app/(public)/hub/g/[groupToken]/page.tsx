@@ -6,6 +6,7 @@ import { getGroupNotes } from '@/lib/hub/message-actions'
 import { getGroupMedia } from '@/lib/hub/media-actions'
 import { getGroupAvailability } from '@/lib/hub/availability-actions'
 import { getMealBoard } from '@/lib/hub/meal-board-actions'
+import { getCriticalPathForGuest } from '@/lib/lifecycle/critical-path'
 import { HubGroupView } from './hub-group-view'
 
 interface Props {
@@ -33,14 +34,16 @@ export default async function HubGroupPage({ params }: Props) {
     notFound()
   }
 
-  const [members, notes, media, availability, groupEvents, mealBoardEntries] = await Promise.all([
-    getGroupMembers(group.id),
-    getGroupNotes(group.id),
-    getGroupMedia({ groupId: group.id }),
-    getGroupAvailability(group.id),
-    getGroupEvents(group.id),
-    getMealBoard({ groupId: group.id }),
-  ])
+  const [members, notes, media, availability, groupEvents, mealBoardEntries, guestStatus] =
+    await Promise.all([
+      getGroupMembers(group.id),
+      getGroupNotes(group.id),
+      getGroupMedia({ groupId: group.id }),
+      getGroupAvailability(group.id),
+      getGroupEvents(group.id),
+      getMealBoard({ groupId: group.id }),
+      getCriticalPathForGuest(groupToken).catch(() => null),
+    ])
 
   return (
     <HubGroupView
@@ -51,6 +54,7 @@ export default async function HubGroupPage({ params }: Props) {
       availability={availability}
       groupEvents={groupEvents}
       mealBoardEntries={mealBoardEntries}
+      guestStatus={guestStatus}
     />
   )
 }

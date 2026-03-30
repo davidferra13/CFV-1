@@ -68,6 +68,8 @@ import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/s
 import { Suspense } from 'react'
 import { InquiryIntelligencePanel } from '@/components/intelligence/inquiry-intelligence-panel'
 import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
+import { getCriticalPath } from '@/lib/lifecycle/critical-path'
+import { CriticalPathCard } from '@/components/lifecycle/critical-path-card'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -169,6 +171,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     bookingScore,
     timelineEntries,
     circleToken,
+    criticalPath,
   ] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
@@ -182,6 +185,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     getBookingScoreForInquiry(params.id).catch(() => null),
     getEntityActivityTimeline('inquiry', params.id),
     getInquiryCircleToken(params.id).catch(() => null),
+    getCriticalPath({ inquiryId: params.id }).catch(() => null),
   ])
 
   if (!inquiry) {
@@ -316,8 +320,11 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
         </Link>
       </div>
 
+      {/* Critical Path - the go/no-go status for this dinner */}
+      {criticalPath && <CriticalPathCard criticalPath={criticalPath} circleToken={circleToken} />}
+
       {/* Dinner Circle Link */}
-      {circleToken && (
+      {circleToken && !criticalPath && (
         <Card className="bg-stone-800/50 border-stone-700 p-4">
           <div className="flex items-center justify-between">
             <div>
@@ -801,6 +808,9 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           clientId={inquiry.client_id}
           clientEmail={email}
           gmailConnected={gmailStatus.gmail.connected}
+          circleToken={circleToken}
+          chefName={null}
+          isFirstResponse={!(inquiry as any).first_response_at}
         />
       )}
 
