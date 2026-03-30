@@ -46376,54 +46376,78 @@ export type Database = {
       }
       system_ingredients: {
         Row: {
+          aliases: string[] | null
           allergen_tags: string[]
           category: Database["public"]["Enums"]["ingredient_category"]
           common_prep_actions: Json
           cost_per_unit_cents: number | null
+          count_notes: string | null
+          count_unit: string | null
+          count_weight_grams: number | null
           created_at: string
           cup_weight_grams: number | null
           id: string
           is_active: boolean
           name: string
+          slug: string | null
           standard_unit: string
           subcategory: string
           tbsp_weight_grams: number | null
           unit_type: string
           updated_at: string
+          usda_fdc_id: number | null
+          usda_food_group: string | null
+          usda_ndb_number: number | null
           weight_to_volume_ratio: number | null
         }
         Insert: {
+          aliases?: string[] | null
           allergen_tags?: string[]
           category: Database["public"]["Enums"]["ingredient_category"]
           common_prep_actions?: Json
           cost_per_unit_cents?: number | null
+          count_notes?: string | null
+          count_unit?: string | null
+          count_weight_grams?: number | null
           created_at?: string
           cup_weight_grams?: number | null
           id?: string
           is_active?: boolean
           name: string
+          slug?: string | null
           standard_unit?: string
           subcategory?: string
           tbsp_weight_grams?: number | null
           unit_type?: string
           updated_at?: string
+          usda_fdc_id?: number | null
+          usda_food_group?: string | null
+          usda_ndb_number?: number | null
           weight_to_volume_ratio?: number | null
         }
         Update: {
+          aliases?: string[] | null
           allergen_tags?: string[]
           category?: Database["public"]["Enums"]["ingredient_category"]
           common_prep_actions?: Json
           cost_per_unit_cents?: number | null
+          count_notes?: string | null
+          count_unit?: string | null
+          count_weight_grams?: number | null
           created_at?: string
           cup_weight_grams?: number | null
           id?: string
           is_active?: boolean
           name?: string
+          slug?: string | null
           standard_unit?: string
           subcategory?: string
           tbsp_weight_grams?: number | null
           unit_type?: string
           updated_at?: string
+          usda_fdc_id?: number | null
+          usda_food_group?: string | null
+          usda_ndb_number?: number | null
           weight_to_volume_ratio?: number | null
         }
         Relationships: []

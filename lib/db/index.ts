@@ -2,8 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 
 const connectionString =
-  process.env.DATABASE_URL ||
-  'postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres'
+  process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
 
 // Create postgres.js connection with connection pooling
 const client = postgres(connectionString, {

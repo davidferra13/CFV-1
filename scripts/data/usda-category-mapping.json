@@ -1,0 +1,39 @@
+{
+  "_comment": "Maps USDA food_category_id to ChefFlow ingredient_category enum values. Keyword overrides apply after the group-level default.",
+  "group_defaults": {
+    "1": { "code": "0100", "name": "Dairy and Egg Products", "category": "dairy" },
+    "2": { "code": "0200", "name": "Spices and Herbs", "category": "spice" },
+    "4": { "code": "0400", "name": "Fats and Oils", "category": "oil" },
+    "5": { "code": "0500", "name": "Poultry Products", "category": "protein" },
+    "6": { "code": "0600", "name": "Soups, Sauces, and Gravies", "category": "condiment" },
+    "7": { "code": "0700", "name": "Sausages and Luncheon Meats", "category": "protein" },
+    "9": { "code": "0900", "name": "Fruits and Fruit Juices", "category": "produce" },
+    "10": { "code": "1000", "name": "Pork Products", "category": "protein" },
+    "11": { "code": "1100", "name": "Vegetables and Vegetable Products", "category": "produce" },
+    "12": { "code": "1200", "name": "Nut and Seed Products", "category": "pantry" },
+    "13": { "code": "1300", "name": "Beef Products", "category": "protein" },
+    "14": { "code": "1400", "name": "Beverages", "category": "beverage" },
+    "15": { "code": "1500", "name": "Finfish and Shellfish Products", "category": "protein" },
+    "16": { "code": "1600", "name": "Legumes and Legume Products", "category": "pantry" },
+    "17": { "code": "1700", "name": "Lamb, Veal, and Game Products", "category": "protein" },
+    "18": { "code": "1800", "name": "Baked Products", "category": "baking" },
+    "19": { "code": "1900", "name": "Sweets", "category": "baking" },
+    "20": { "code": "2000", "name": "Cereal Grains and Pasta", "category": "pantry" },
+    "24": { "code": "3500", "name": "American Indian/Alaska Native Foods", "category": "specialty" }
+  },
+  "keyword_overrides": [
+    { "pattern": "frozen", "category": "frozen", "groups": ["9", "11", "16"] },
+    { "pattern": "canned", "category": "canned", "groups": ["9", "11", "16"] },
+    { "pattern": "juice", "category": "beverage", "groups": ["9"] },
+    { "pattern": "wine|beer|liqueur|liquor|brandy", "category": "alcohol", "groups": ["14"] },
+    { "pattern": "soup", "category": "pantry", "groups": ["6"] },
+    { "pattern": "bread|roll|muffin|bagel|pita", "category": "pantry", "groups": ["18"] },
+    { "pattern": "sugar|honey|syrup|molasses", "category": "pantry", "groups": ["19"] },
+    { "pattern": "candy|chocolate|fudge|caramel", "category": "specialty", "groups": ["19"] },
+    {
+      "pattern": "fresh|basil|cilantro|parsley|mint|dill|chive|oregano|rosemary|thyme|tarragon|sage",
+      "category": "fresh_herb",
+      "groups": ["2"]
+    }
+  ]
+}

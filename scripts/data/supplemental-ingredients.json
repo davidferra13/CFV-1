@@ -1,0 +1,2546 @@
+[
+  {
+    "name": "Gochujang",
+    "category": "condiment",
+    "subcategory": "korean",
+    "aliases": ["korean chili paste", "red pepper paste", "go chu jang"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Gochugaru",
+    "category": "spice",
+    "subcategory": "korean",
+    "aliases": ["korean chili flakes", "korean red pepper flakes"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Doenjang",
+    "category": "condiment",
+    "subcategory": "korean",
+    "aliases": ["korean soybean paste", "korean miso"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Kimchi",
+    "category": "condiment",
+    "subcategory": "korean",
+    "aliases": ["kim chi", "kimchee", "napa cabbage kimchi"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Ssamjang",
+    "category": "condiment",
+    "subcategory": "korean",
+    "aliases": ["korean dipping paste", "ssam sauce"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Korean Rice Cakes",
+    "category": "pantry",
+    "subcategory": "korean",
+    "aliases": ["tteok", "dduk", "garaetteok", "rice cake cylinders"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Sesame Oil, Toasted",
+    "category": "oil",
+    "subcategory": "korean",
+    "aliases": ["toasted sesame oil", "chamgireum", "dark sesame oil"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Perilla Leaves",
+    "category": "fresh_herb",
+    "subcategory": "korean",
+    "aliases": ["kkaennip", "sesame leaves", "shiso leaves"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Za'atar",
+    "category": "spice",
+    "subcategory": "middle_eastern",
+    "aliases": ["zaatar", "zatar", "za'tar"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Sumac",
+    "category": "spice",
+    "subcategory": "middle_eastern",
+    "aliases": ["ground sumac", "sumac powder"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Tahini",
+    "category": "condiment",
+    "subcategory": "middle_eastern",
+    "aliases": ["sesame paste", "tahina", "sesame butter"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Pomegranate Molasses",
+    "category": "condiment",
+    "subcategory": "middle_eastern",
+    "aliases": ["pomegranate syrup", "dibs rumman"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Harissa",
+    "category": "condiment",
+    "subcategory": "middle_eastern",
+    "aliases": ["harissa paste", "harissa sauce", "north african chili paste"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Ras el Hanout",
+    "category": "spice",
+    "subcategory": "middle_eastern",
+    "aliases": ["ras el hanout blend", "moroccan spice blend"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Rose Water",
+    "category": "condiment",
+    "subcategory": "middle_eastern",
+    "aliases": ["rose extract", "gulab jal"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Orange Blossom Water",
+    "category": "condiment",
+    "subcategory": "middle_eastern",
+    "aliases": ["orange flower water", "mazaher"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Preserved Lemons",
+    "category": "condiment",
+    "subcategory": "middle_eastern",
+    "aliases": ["salt-preserved lemons", "lemon confit"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Baharat",
+    "category": "spice",
+    "subcategory": "middle_eastern",
+    "aliases": ["baharat spice blend", "arabic seven spice"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Dukkah",
+    "category": "spice",
+    "subcategory": "middle_eastern",
+    "aliases": ["duqqa", "egyptian nut spice blend"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Galangal",
+    "category": "produce",
+    "subcategory": "thai",
+    "aliases": ["thai ginger", "blue ginger", "laos root"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Lemongrass",
+    "category": "fresh_herb",
+    "subcategory": "thai",
+    "aliases": ["lemon grass", "citronella grass", "takrai"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Kaffir Lime Leaves",
+    "category": "fresh_herb",
+    "subcategory": "thai",
+    "aliases": ["makrut lime leaves", "bai makrut", "lime leaves"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Thai Basil",
+    "category": "fresh_herb",
+    "subcategory": "thai",
+    "aliases": ["horapa", "asian basil", "sweet basil thai"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Thai Bird Chili",
+    "category": "produce",
+    "subcategory": "thai",
+    "aliases": ["bird's eye chili", "prik kee noo", "thai chili"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Fish Sauce",
+    "category": "condiment",
+    "subcategory": "thai",
+    "aliases": ["nam pla", "nuoc mam", "patis"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Palm Sugar",
+    "category": "pantry",
+    "subcategory": "thai",
+    "aliases": ["coconut palm sugar", "nam tan pip", "jaggery"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Tamarind Paste",
+    "category": "condiment",
+    "subcategory": "thai",
+    "aliases": ["tamarind concentrate", "makham piak"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Shrimp Paste",
+    "category": "condiment",
+    "subcategory": "thai",
+    "aliases": ["kapi", "belacan", "fermented shrimp paste"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Thai Green Curry Paste",
+    "category": "condiment",
+    "subcategory": "thai",
+    "aliases": ["green curry paste", "prik gaeng khiao wan"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Thai Red Curry Paste",
+    "category": "condiment",
+    "subcategory": "thai",
+    "aliases": ["red curry paste", "prik gaeng phet"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Thai Yellow Curry Paste",
+    "category": "condiment",
+    "subcategory": "thai",
+    "aliases": ["yellow curry paste", "prik gaeng karee"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Panko Breadcrumbs",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["panko", "japanese breadcrumbs"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Miso Paste, White",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["white miso", "shiro miso", "sweet miso"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Miso Paste, Red",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["red miso", "aka miso", "dark miso"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Mirin",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["sweet rice wine", "rice wine for cooking"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Dashi",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["dashi stock", "dashi powder", "hondashi", "japanese soup stock"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Nori",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["nori sheets", "seaweed sheets", "sushi nori", "dried seaweed"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Wakame",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["wakame seaweed", "dried wakame"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Kombu",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["kelp", "dried kelp", "konbu", "dashima"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Bonito Flakes",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["katsuobushi", "dried bonito", "shaved bonito"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Rice Vinegar",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["rice wine vinegar", "su"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Sake",
+    "category": "alcohol",
+    "subcategory": "japanese",
+    "aliases": ["cooking sake", "ryorishu", "japanese rice wine"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Pickled Ginger",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["gari", "sushi ginger", "beni shoga"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Wasabi",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["wasabi paste", "wasabi powder", "japanese horseradish"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Furikake",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["rice seasoning", "japanese rice sprinkle"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Yuzu Juice",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["yuzu", "yuzu citrus juice"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Sichuan Peppercorn",
+    "category": "spice",
+    "subcategory": "chinese",
+    "aliases": ["szechuan peppercorn", "chinese prickly ash", "hua jiao"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Five Spice Powder",
+    "category": "spice",
+    "subcategory": "chinese",
+    "aliases": ["chinese five spice", "five spice blend", "wu xiang fen"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Doubanjiang",
+    "category": "condiment",
+    "subcategory": "chinese",
+    "aliases": ["chili bean paste", "toban djan", "sichuan chili paste", "broad bean paste"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Black Bean Sauce",
+    "category": "condiment",
+    "subcategory": "chinese",
+    "aliases": ["fermented black bean sauce", "douchi sauce"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Hoisin Sauce",
+    "category": "condiment",
+    "subcategory": "chinese",
+    "aliases": ["hoisin", "chinese bbq sauce"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Oyster Sauce",
+    "category": "condiment",
+    "subcategory": "chinese",
+    "aliases": ["oyster flavored sauce"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Shaoxing Wine",
+    "category": "alcohol",
+    "subcategory": "chinese",
+    "aliases": ["shaoxing rice wine", "chinese cooking wine", "shao hsing"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Chili Oil",
+    "category": "oil",
+    "subcategory": "chinese",
+    "aliases": ["la you", "red chili oil", "chili crisp oil"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Black Vinegar",
+    "category": "condiment",
+    "subcategory": "chinese",
+    "aliases": ["chinkiang vinegar", "zhenjiang vinegar", "chinese black vinegar"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Dried Shiitake Mushrooms",
+    "category": "pantry",
+    "subcategory": "chinese",
+    "aliases": ["dried chinese mushrooms", "dried shiitake", "dong gu"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Wood Ear Mushrooms",
+    "category": "produce",
+    "subcategory": "chinese",
+    "aliases": ["black fungus", "cloud ear mushroom", "mu er"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Water Chestnuts",
+    "category": "canned",
+    "subcategory": "chinese",
+    "aliases": ["canned water chestnuts", "ma ti"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Bamboo Shoots",
+    "category": "canned",
+    "subcategory": "chinese",
+    "aliases": ["canned bamboo shoots", "winter bamboo shoots"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Wonton Wrappers",
+    "category": "pantry",
+    "subcategory": "chinese",
+    "aliases": ["wonton skins", "wonton sheets"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Spring Roll Wrappers",
+    "category": "pantry",
+    "subcategory": "chinese",
+    "aliases": ["egg roll wrappers", "spring roll skins"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Ghee",
+    "category": "dairy",
+    "subcategory": "indian",
+    "aliases": ["clarified butter", "desi ghee", "indian clarified butter"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Garam Masala",
+    "category": "spice",
+    "subcategory": "indian",
+    "aliases": ["garam masala blend", "indian spice blend"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Tandoori Masala",
+    "category": "spice",
+    "subcategory": "indian",
+    "aliases": ["tandoori spice blend", "tandoori powder"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Chaat Masala",
+    "category": "spice",
+    "subcategory": "indian",
+    "aliases": ["chat masala", "chaat spice"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Curry Leaves",
+    "category": "fresh_herb",
+    "subcategory": "indian",
+    "aliases": ["kadi patta", "sweet neem leaves", "fresh curry leaves"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Fenugreek Leaves",
+    "category": "spice",
+    "subcategory": "indian",
+    "aliases": ["kasuri methi", "dried fenugreek", "methi leaves"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Asafoetida",
+    "category": "spice",
+    "subcategory": "indian",
+    "aliases": ["hing", "devil's dung", "asafetida"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Amchur",
+    "category": "spice",
+    "subcategory": "indian",
+    "aliases": ["amchoor", "dried mango powder", "mango powder"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Paneer",
+    "category": "dairy",
+    "subcategory": "indian",
+    "aliases": ["indian cottage cheese", "panir"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Tamarind Concentrate",
+    "category": "condiment",
+    "subcategory": "indian",
+    "aliases": ["tamarind block", "imli paste"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Coconut Cream",
+    "category": "canned",
+    "subcategory": "indian",
+    "aliases": ["thick coconut milk", "cream of coconut"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Black Mustard Seeds",
+    "category": "spice",
+    "subcategory": "indian",
+    "aliases": ["rai", "brown mustard seeds"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Nigella Seeds",
+    "category": "spice",
+    "subcategory": "indian",
+    "aliases": ["kalonji", "black onion seeds", "black cumin"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Achiote Paste",
+    "category": "condiment",
+    "subcategory": "mexican",
+    "aliases": ["annatto paste", "recado rojo"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Chipotle in Adobo",
+    "category": "canned",
+    "subcategory": "mexican",
+    "aliases": ["chipotle peppers in adobo", "chipotles en adobo"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Cotija Cheese",
+    "category": "dairy",
+    "subcategory": "mexican",
+    "aliases": ["queso cotija", "mexican parmesan"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Queso Fresco",
+    "category": "dairy",
+    "subcategory": "mexican",
+    "aliases": ["fresh mexican cheese", "queso blanco"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Oaxaca Cheese",
+    "category": "dairy",
+    "subcategory": "mexican",
+    "aliases": ["queso oaxaca", "quesillo", "string cheese mexican"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Masa Harina",
+    "category": "pantry",
+    "subcategory": "mexican",
+    "aliases": ["corn masa flour", "masa", "tortilla flour"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Epazote",
+    "category": "fresh_herb",
+    "subcategory": "mexican",
+    "aliases": ["mexican tea herb", "wormseed"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Ancho Chile",
+    "category": "spice",
+    "subcategory": "mexican",
+    "aliases": ["dried ancho", "ancho chili", "dried poblano"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Guajillo Chile",
+    "category": "spice",
+    "subcategory": "mexican",
+    "aliases": ["dried guajillo", "guajillo chili"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Pasilla Chile",
+    "category": "spice",
+    "subcategory": "mexican",
+    "aliases": ["dried pasilla", "pasilla chili", "chile negro"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Arbol Chile",
+    "category": "spice",
+    "subcategory": "mexican",
+    "aliases": ["chile de arbol", "bird's beak chile"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Tomatillo",
+    "category": "produce",
+    "subcategory": "mexican",
+    "aliases": ["tomate verde", "mexican husk tomato"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Nopales",
+    "category": "produce",
+    "subcategory": "mexican",
+    "aliases": ["nopal cactus", "cactus paddles", "prickly pear pads"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Mexican Oregano",
+    "category": "spice",
+    "subcategory": "mexican",
+    "aliases": ["oregano mexicano", "lippia graveolens"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Piloncillo",
+    "category": "pantry",
+    "subcategory": "mexican",
+    "aliases": ["panela", "mexican brown sugar cone", "panocha"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Crema Mexicana",
+    "category": "dairy",
+    "subcategory": "mexican",
+    "aliases": ["mexican crema", "mexican sour cream"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Sofrito",
+    "category": "condiment",
+    "subcategory": "latin",
+    "aliases": ["sofrito base", "recaito"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Sazon",
+    "category": "spice",
+    "subcategory": "latin",
+    "aliases": ["sazon seasoning", "sazon goya"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Adobo Seasoning",
+    "category": "spice",
+    "subcategory": "latin",
+    "aliases": ["adobo powder", "adobo all purpose"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Aji Amarillo Paste",
+    "category": "condiment",
+    "subcategory": "latin",
+    "aliases": ["yellow pepper paste", "peruvian chili paste"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Chimichurri",
+    "category": "condiment",
+    "subcategory": "latin",
+    "aliases": ["chimichurri sauce", "argentine herb sauce"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Dulce de Leche",
+    "category": "pantry",
+    "subcategory": "latin",
+    "aliases": ["caramelized milk", "cajeta", "arequipe"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Plantain",
+    "category": "produce",
+    "subcategory": "latin",
+    "aliases": ["cooking banana", "platano", "green plantain", "ripe plantain"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Yuca",
+    "category": "produce",
+    "subcategory": "latin",
+    "aliases": ["cassava", "manioc", "tapioca root"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Calabaza",
+    "category": "produce",
+    "subcategory": "latin",
+    "aliases": ["west indian pumpkin", "tropical pumpkin", "caribbean squash"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Nduja",
+    "category": "protein",
+    "subcategory": "italian",
+    "aliases": ["nduja paste", "calabrian spicy sausage spread"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Guanciale",
+    "category": "protein",
+    "subcategory": "italian",
+    "aliases": ["pork jowl", "cured pork cheek"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Pancetta",
+    "category": "protein",
+    "subcategory": "italian",
+    "aliases": ["italian bacon", "cured pork belly italian"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Mascarpone",
+    "category": "dairy",
+    "subcategory": "italian",
+    "aliases": ["mascarpone cheese", "italian cream cheese"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Burrata",
+    "category": "dairy",
+    "subcategory": "italian",
+    "aliases": ["burrata cheese", "fresh burrata"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Stracciatella Cheese",
+    "category": "dairy",
+    "subcategory": "italian",
+    "aliases": ["stracciatella", "burrata filling"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "San Marzano Tomatoes",
+    "category": "canned",
+    "subcategory": "italian",
+    "aliases": ["san marzano", "dop tomatoes", "italian plum tomatoes"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Calabrian Chili Paste",
+    "category": "condiment",
+    "subcategory": "italian",
+    "aliases": ["calabrian pepper paste", "crema di peperoncino"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Truffle Oil",
+    "category": "oil",
+    "subcategory": "italian",
+    "aliases": ["black truffle oil", "white truffle oil", "olio al tartufo"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Polenta",
+    "category": "pantry",
+    "subcategory": "italian",
+    "aliases": ["cornmeal italian", "polenta grits", "corn grits"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Arborio Rice",
+    "category": "pantry",
+    "subcategory": "italian",
+    "aliases": ["risotto rice", "italian short grain rice"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Semolina Flour",
+    "category": "pantry",
+    "subcategory": "italian",
+    "aliases": ["semolina", "durum wheat flour", "semola"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "00 Flour",
+    "category": "pantry",
+    "subcategory": "italian",
+    "aliases": ["doppio zero flour", "italian pizza flour", "tipo 00"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Pecorino Romano",
+    "category": "dairy",
+    "subcategory": "italian",
+    "aliases": ["pecorino", "romano cheese", "sheep milk cheese"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Parmigiano Reggiano",
+    "category": "dairy",
+    "subcategory": "italian",
+    "aliases": ["parmesan", "parm", "parmigiano"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Gruyere",
+    "category": "dairy",
+    "subcategory": "french",
+    "aliases": ["gruyere cheese", "swiss gruyere"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Comte",
+    "category": "dairy",
+    "subcategory": "french",
+    "aliases": ["comte cheese", "french gruyere"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Creme Fraiche",
+    "category": "dairy",
+    "subcategory": "french",
+    "aliases": ["french sour cream", "cultured cream"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Duck Fat",
+    "category": "oil",
+    "subcategory": "french",
+    "aliases": ["rendered duck fat", "graisse de canard"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Herbes de Provence",
+    "category": "spice",
+    "subcategory": "french",
+    "aliases": ["provencal herbs", "french herb blend"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Quatre Epices",
+    "category": "spice",
+    "subcategory": "french",
+    "aliases": ["four spice blend", "french four spice"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Cornichons",
+    "category": "condiment",
+    "subcategory": "french",
+    "aliases": ["french pickles", "gherkins", "baby pickles"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Dijon Mustard",
+    "category": "condiment",
+    "subcategory": "french",
+    "aliases": ["dijon", "french mustard"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Fleur de Sel",
+    "category": "spice",
+    "subcategory": "french",
+    "aliases": ["french sea salt", "flower of salt"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Piment d'Espelette",
+    "category": "spice",
+    "subcategory": "french",
+    "aliases": ["espelette pepper", "basque chili"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Saffron Threads",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["saffron", "azafran", "kesar"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Vanilla Bean",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["whole vanilla bean", "vanilla pod", "madagascar vanilla"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Vanilla Bean Paste",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["vanilla paste", "vanilla bean paste extract"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Matcha Powder",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["matcha", "green tea powder", "ceremonial matcha"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Nutritional Yeast",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["nooch", "nutritional yeast flakes"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Miso Paste, Awase",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["mixed miso", "awase miso", "blended miso"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Goji Berries",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["wolfberries", "dried goji", "lycium berries"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Chia Seeds",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["chia", "salvia hispanica seeds"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Hemp Seeds",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["hemp hearts", "shelled hemp seeds"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Flax Seeds",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["linseed", "ground flax", "flaxseed"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Acai Powder",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["acai", "freeze dried acai"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Spirulina",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["spirulina powder", "blue-green algae"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Collagen Powder",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["collagen peptides", "hydrolyzed collagen"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Protein Powder, Whey",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["whey protein", "whey isolate"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Protein Powder, Plant",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["plant protein", "pea protein", "vegan protein powder"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Tajin",
+    "category": "spice",
+    "subcategory": "mexican",
+    "aliases": ["tajin seasoning", "chili lime seasoning"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Everything Bagel Seasoning",
+    "category": "spice",
+    "subcategory": "american",
+    "aliases": ["everything seasoning", "bagel spice blend"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Old Bay Seasoning",
+    "category": "spice",
+    "subcategory": "american",
+    "aliases": ["old bay", "seafood seasoning"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Creole Seasoning",
+    "category": "spice",
+    "subcategory": "american",
+    "aliases": ["cajun seasoning", "louisiana seasoning", "tony chachere"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "BBQ Rub",
+    "category": "spice",
+    "subcategory": "american",
+    "aliases": ["barbecue rub", "dry rub", "bbq seasoning"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Liquid Smoke",
+    "category": "condiment",
+    "subcategory": "american",
+    "aliases": ["hickory liquid smoke", "mesquite liquid smoke"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Sriracha",
+    "category": "condiment",
+    "subcategory": "thai",
+    "aliases": ["sriracha sauce", "rooster sauce", "thai chili sauce"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Sambal Oelek",
+    "category": "condiment",
+    "subcategory": "indonesian",
+    "aliases": ["sambal", "chili paste indonesian", "ground fresh chili paste"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Kecap Manis",
+    "category": "condiment",
+    "subcategory": "indonesian",
+    "aliases": ["sweet soy sauce", "indonesian sweet soy", "ketjap manis"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Tempeh",
+    "category": "protein",
+    "subcategory": "indonesian",
+    "aliases": ["fermented soybean cake", "soy tempeh"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Jackfruit",
+    "category": "produce",
+    "subcategory": "tropical",
+    "aliases": ["young jackfruit", "green jackfruit"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Dragon Fruit",
+    "category": "produce",
+    "subcategory": "tropical",
+    "aliases": ["pitaya", "dragonfruit"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Passion Fruit",
+    "category": "produce",
+    "subcategory": "tropical",
+    "aliases": ["passionfruit", "maracuya", "lilikoi"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Lychee",
+    "category": "produce",
+    "subcategory": "tropical",
+    "aliases": ["litchi", "lichee"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Rambutan",
+    "category": "produce",
+    "subcategory": "tropical",
+    "aliases": ["hairy fruit"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Starfruit",
+    "category": "produce",
+    "subcategory": "tropical",
+    "aliases": ["carambola", "star fruit"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Tamarillo",
+    "category": "produce",
+    "subcategory": "tropical",
+    "aliases": ["tree tomato"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Cherimoya",
+    "category": "produce",
+    "subcategory": "tropical",
+    "aliases": ["custard apple"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Persimmon",
+    "category": "produce",
+    "subcategory": "tropical",
+    "aliases": ["fuyu persimmon", "hachiya persimmon", "kaki"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Blood Orange",
+    "category": "produce",
+    "subcategory": "citrus",
+    "aliases": ["moro orange", "tarocco orange"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Meyer Lemon",
+    "category": "produce",
+    "subcategory": "citrus",
+    "aliases": ["meyer's lemon"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Kumquat",
+    "category": "produce",
+    "subcategory": "citrus",
+    "aliases": ["cumquat"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Bergamot",
+    "category": "produce",
+    "subcategory": "citrus",
+    "aliases": ["bergamot orange"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Calamansi",
+    "category": "produce",
+    "subcategory": "citrus",
+    "aliases": ["calamondin", "philippine lime"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Ube",
+    "category": "produce",
+    "subcategory": "filipino",
+    "aliases": ["purple yam", "ube halaya"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Pandan Leaves",
+    "category": "fresh_herb",
+    "subcategory": "southeast_asian",
+    "aliases": ["pandan", "screwpine leaf", "bai toey"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Pandan Extract",
+    "category": "condiment",
+    "subcategory": "southeast_asian",
+    "aliases": ["pandan paste", "pandan flavoring"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Banana Leaves",
+    "category": "produce",
+    "subcategory": "southeast_asian",
+    "aliases": ["banana leaf", "cooking leaves"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Annatto Seeds",
+    "category": "spice",
+    "subcategory": "latin",
+    "aliases": ["achiote seeds", "atsuete"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Black Garlic",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["fermented garlic", "aged garlic"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Ramps",
+    "category": "produce",
+    "subcategory": "american",
+    "aliases": ["wild leeks", "wild ramps", "spring ramps"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Fiddlehead Ferns",
+    "category": "produce",
+    "subcategory": "american",
+    "aliases": ["fiddleheads", "ostrich fern"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Morel Mushrooms",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["morels", "dried morels"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Chanterelle Mushrooms",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["chanterelles", "golden chanterelle", "girolle"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Porcini Mushrooms",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["porcini", "dried porcini", "cep mushroom", "king bolete"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Maitake Mushrooms",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["hen of the woods", "maitake"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Lion's Mane Mushroom",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["lion's mane", "bearded tooth mushroom"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "King Trumpet Mushroom",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["king oyster mushroom", "eryngii"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Truffle, Black",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["black truffle", "tuber melanosporum", "winter truffle"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Truffle, White",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["white truffle", "tuber magnatum", "alba truffle"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Duck Confit",
+    "category": "protein",
+    "subcategory": "french",
+    "aliases": ["confit de canard", "preserved duck leg"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Foie Gras",
+    "category": "protein",
+    "subcategory": "french",
+    "aliases": ["duck liver", "goose liver", "fatty liver"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Prosciutto di Parma",
+    "category": "protein",
+    "subcategory": "italian",
+    "aliases": ["prosciutto", "parma ham", "italian dry-cured ham"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Bresaola",
+    "category": "protein",
+    "subcategory": "italian",
+    "aliases": ["air-dried beef", "italian dried beef"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Sopressata",
+    "category": "protein",
+    "subcategory": "italian",
+    "aliases": ["soppressata", "italian dry salami"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Chorizo, Spanish",
+    "category": "protein",
+    "subcategory": "spanish",
+    "aliases": ["spanish chorizo", "cured chorizo"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Chorizo, Mexican",
+    "category": "protein",
+    "subcategory": "mexican",
+    "aliases": ["mexican chorizo", "fresh chorizo"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Merguez",
+    "category": "protein",
+    "subcategory": "middle_eastern",
+    "aliases": ["merguez sausage", "north african lamb sausage"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Chinese Sausage",
+    "category": "protein",
+    "subcategory": "chinese",
+    "aliases": ["lap cheong", "lop chong", "chinese dried sausage"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Andouille Sausage",
+    "category": "protein",
+    "subcategory": "american",
+    "aliases": ["andouille", "cajun sausage", "smoked andouille"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Halloumi",
+    "category": "dairy",
+    "subcategory": "middle_eastern",
+    "aliases": ["halloumi cheese", "grilling cheese", "cypriot cheese"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Labneh",
+    "category": "dairy",
+    "subcategory": "middle_eastern",
+    "aliases": ["labne", "yogurt cheese", "strained yogurt spread"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Manchego",
+    "category": "dairy",
+    "subcategory": "spanish",
+    "aliases": ["manchego cheese", "spanish sheep cheese"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Queso Manchego",
+    "category": "dairy",
+    "subcategory": "spanish",
+    "aliases": ["aged manchego"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Brie",
+    "category": "dairy",
+    "subcategory": "french",
+    "aliases": ["brie cheese", "french brie"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Camembert",
+    "category": "dairy",
+    "subcategory": "french",
+    "aliases": ["camembert cheese"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Roquefort",
+    "category": "dairy",
+    "subcategory": "french",
+    "aliases": ["roquefort cheese", "french blue cheese"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Gorgonzola",
+    "category": "dairy",
+    "subcategory": "italian",
+    "aliases": ["gorgonzola cheese", "italian blue cheese"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Taleggio",
+    "category": "dairy",
+    "subcategory": "italian",
+    "aliases": ["taleggio cheese"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Fontina",
+    "category": "dairy",
+    "subcategory": "italian",
+    "aliases": ["fontina cheese", "fontina val d'aosta"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Gouda, Aged",
+    "category": "dairy",
+    "subcategory": "dutch",
+    "aliases": ["aged gouda", "old gouda", "boerenkaas"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Stilton",
+    "category": "dairy",
+    "subcategory": "british",
+    "aliases": ["stilton cheese", "blue stilton", "english blue cheese"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Mozzarella di Bufala",
+    "category": "dairy",
+    "subcategory": "italian",
+    "aliases": ["buffalo mozzarella", "fresh mozzarella"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Coconut Aminos",
+    "category": "condiment",
+    "subcategory": "specialty",
+    "aliases": ["soy-free soy sauce", "coconut soy sauce alternative"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Tamari",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["tamari soy sauce", "gluten-free soy sauce", "wheat-free soy sauce"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Ponzu",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["ponzu sauce", "citrus soy sauce"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Umeboshi",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["pickled plum", "japanese pickled plum", "ume"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Togarashi",
+    "category": "spice",
+    "subcategory": "japanese",
+    "aliases": ["shichimi togarashi", "seven spice", "japanese chili blend"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Berbere",
+    "category": "spice",
+    "subcategory": "ethiopian",
+    "aliases": ["berbere spice", "ethiopian spice blend"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Injera",
+    "category": "pantry",
+    "subcategory": "ethiopian",
+    "aliases": ["ethiopian flatbread", "teff bread"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Teff Flour",
+    "category": "pantry",
+    "subcategory": "ethiopian",
+    "aliases": ["teff", "teff grain flour"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Suya Spice",
+    "category": "spice",
+    "subcategory": "west_african",
+    "aliases": ["yaji", "suya seasoning", "nigerian spice blend"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Scotch Bonnet Pepper",
+    "category": "produce",
+    "subcategory": "caribbean",
+    "aliases": ["scotch bonnet", "caribbean hot pepper"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Habanero Pepper",
+    "category": "produce",
+    "subcategory": "mexican",
+    "aliases": ["habanero", "habanero chili"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Jerk Seasoning",
+    "category": "spice",
+    "subcategory": "caribbean",
+    "aliases": ["jamaican jerk spice", "jerk rub", "jerk marinade"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Allspice Berries",
+    "category": "spice",
+    "subcategory": "caribbean",
+    "aliases": ["whole allspice", "pimento berries", "jamaican pepper"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Coconut Oil",
+    "category": "oil",
+    "subcategory": "tropical",
+    "aliases": ["virgin coconut oil", "refined coconut oil", "copra oil"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Avocado Oil",
+    "category": "oil",
+    "subcategory": "specialty",
+    "aliases": ["refined avocado oil"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Grapeseed Oil",
+    "category": "oil",
+    "subcategory": "specialty",
+    "aliases": ["grape seed oil"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Walnut Oil",
+    "category": "oil",
+    "subcategory": "specialty",
+    "aliases": ["pressed walnut oil"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Pistachio Oil",
+    "category": "oil",
+    "subcategory": "specialty",
+    "aliases": ["pressed pistachio oil"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Toasted Sesame Seeds",
+    "category": "pantry",
+    "subcategory": "asian",
+    "aliases": ["roasted sesame seeds", "toasted sesame"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Black Sesame Seeds",
+    "category": "pantry",
+    "subcategory": "asian",
+    "aliases": ["black sesame", "kuro goma"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Pomegranate Seeds",
+    "category": "produce",
+    "subcategory": "middle_eastern",
+    "aliases": ["pomegranate arils", "fresh pomegranate seeds"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Pine Nuts",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["pignoli", "pinoli", "cedar nuts"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Marcona Almonds",
+    "category": "pantry",
+    "subcategory": "spanish",
+    "aliases": ["spanish almonds", "fried marcona"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Pepitas",
+    "category": "pantry",
+    "subcategory": "mexican",
+    "aliases": ["pumpkin seeds", "raw pepitas", "hulled pumpkin seeds"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Cacao Nibs",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["raw cacao nibs", "cocoa nibs"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Cacao Powder",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["raw cacao", "unsweetened cacao"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Couverture Chocolate, Dark",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["dark couverture", "baking chocolate dark", "70% chocolate"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Couverture Chocolate, White",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["white couverture", "baking chocolate white"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Couverture Chocolate, Milk",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["milk couverture", "baking chocolate milk"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Cocoa Butter",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["cacao butter", "theobroma oil"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Gelatin Sheets",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["leaf gelatin", "gelatin leaves", "sheet gelatin"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Agar Agar",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["agar", "agar powder", "vegetable gelatin", "kanten"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Xanthan Gum",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["xanthan", "thickener"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Pectin",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["fruit pectin", "apple pectin", "jam pectin"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Cream of Tartar",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["potassium bitartrate", "tartaric acid"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Meringue Powder",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["dried egg white powder"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Glucose Syrup",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["liquid glucose", "corn glucose"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Isomalt",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["sugar substitute isomalt", "sugar work isomalt"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Food Coloring, Gel",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["gel food color", "food dye gel"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Edible Gold Leaf",
+    "category": "baking",
+    "subcategory": "specialty",
+    "aliases": ["gold leaf", "24k gold leaf"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Edible Flowers",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["edible flower petals", "garnish flowers"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Microgreens",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["micro greens", "micro herbs", "baby greens"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Pea Shoots",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["pea tendrils", "dou miao"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Bean Sprouts",
+    "category": "produce",
+    "subcategory": "asian",
+    "aliases": ["mung bean sprouts", "soybean sprouts"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Enoki Mushrooms",
+    "category": "produce",
+    "subcategory": "japanese",
+    "aliases": ["enoki", "enokitake", "golden needle mushroom"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Shimeji Mushrooms",
+    "category": "produce",
+    "subcategory": "japanese",
+    "aliases": ["beech mushroom", "bunapi", "buna shimeji"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Oyster Mushrooms",
+    "category": "produce",
+    "subcategory": "specialty",
+    "aliases": ["pleurotus", "hiratake"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Tofu, Firm",
+    "category": "protein",
+    "subcategory": "asian",
+    "aliases": ["firm tofu", "pressed tofu", "bean curd firm"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Tofu, Silken",
+    "category": "protein",
+    "subcategory": "asian",
+    "aliases": ["silken tofu", "soft tofu", "kinugoshi"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Tofu, Extra Firm",
+    "category": "protein",
+    "subcategory": "asian",
+    "aliases": ["extra firm tofu", "super firm tofu"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Seitan",
+    "category": "protein",
+    "subcategory": "specialty",
+    "aliases": ["wheat gluten", "vital wheat gluten", "wheat meat"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Mochi",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["japanese rice cake", "glutinous rice cake"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Rice Paper",
+    "category": "pantry",
+    "subcategory": "vietnamese",
+    "aliases": ["rice paper wrappers", "banh trang", "spring roll wrappers rice"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Glass Noodles",
+    "category": "pantry",
+    "subcategory": "asian",
+    "aliases": ["cellophane noodles", "bean thread noodles", "mung bean noodles"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Rice Noodles",
+    "category": "pantry",
+    "subcategory": "asian",
+    "aliases": ["rice stick noodles", "pad thai noodles", "pho noodles", "banh pho"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Udon Noodles",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["udon", "thick wheat noodles"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Soba Noodles",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["buckwheat noodles", "soba"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Ramen Noodles, Fresh",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["fresh ramen", "alkaline noodles", "chukamen"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Shirataki Noodles",
+    "category": "pantry",
+    "subcategory": "japanese",
+    "aliases": ["konjac noodles", "zero calorie noodles", "miracle noodles"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Egg Noodles, Chinese",
+    "category": "pantry",
+    "subcategory": "chinese",
+    "aliases": ["lo mein noodles", "chow mein noodles", "chinese egg noodles"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Phyllo Dough",
+    "category": "pantry",
+    "subcategory": "middle_eastern",
+    "aliases": ["filo dough", "phyllo sheets", "filo pastry"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Puff Pastry",
+    "category": "pantry",
+    "subcategory": "french",
+    "aliases": ["puff pastry sheets", "pate feuilletee"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Smoked Paprika",
+    "category": "spice",
+    "subcategory": "spanish",
+    "aliases": ["pimenton", "pimenton de la vera", "spanish smoked paprika"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Urfa Biber",
+    "category": "spice",
+    "subcategory": "turkish",
+    "aliases": ["urfa pepper", "isot pepper", "dried urfa chili"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Aleppo Pepper",
+    "category": "spice",
+    "subcategory": "middle_eastern",
+    "aliases": ["aleppo chili flakes", "pul biber", "halaby pepper"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Szechuan Chili Flakes",
+    "category": "spice",
+    "subcategory": "chinese",
+    "aliases": ["sichuan chili flakes", "facing heaven pepper flakes"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Chipotle Powder",
+    "category": "spice",
+    "subcategory": "mexican",
+    "aliases": ["ground chipotle", "chipotle chile powder"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Ghost Pepper Powder",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["bhut jolokia", "ghost chili powder"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Smoked Salt",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["hickory smoked salt", "applewood smoked salt"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Black Hawaiian Salt",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["black lava salt", "black salt hawaiian"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Pink Himalayan Salt",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["himalayan salt", "pink salt"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Maldon Salt",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["maldon sea salt flakes", "flaky sea salt"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Kala Namak",
+    "category": "spice",
+    "subcategory": "indian",
+    "aliases": ["black salt", "indian black salt", "himalayan black salt"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "MSG",
+    "category": "spice",
+    "subcategory": "asian",
+    "aliases": ["monosodium glutamate", "umami seasoning", "ajinomoto"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Mushroom Powder",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["dried mushroom powder", "umami powder"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Sumac Onions",
+    "category": "condiment",
+    "subcategory": "middle_eastern",
+    "aliases": ["pickled onion with sumac"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Aquafaba",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["chickpea water", "bean water", "vegan egg replacement"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Oat Milk",
+    "category": "dairy",
+    "subcategory": "specialty",
+    "aliases": ["oat beverage", "plant milk oat"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Almond Milk",
+    "category": "dairy",
+    "subcategory": "specialty",
+    "aliases": ["almond beverage", "plant milk almond"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Cashew Cream",
+    "category": "dairy",
+    "subcategory": "specialty",
+    "aliases": ["cashew cream sauce", "vegan cream"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Vegan Butter",
+    "category": "dairy",
+    "subcategory": "specialty",
+    "aliases": ["plant butter", "plant-based butter"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Mango Chutney",
+    "category": "condiment",
+    "subcategory": "indian",
+    "aliases": ["sweet mango chutney", "major grey's chutney"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Mint Chutney",
+    "category": "condiment",
+    "subcategory": "indian",
+    "aliases": ["green chutney", "pudina chutney"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Chili Garlic Sauce",
+    "category": "condiment",
+    "subcategory": "asian",
+    "aliases": ["chili garlic paste"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Sweet Chili Sauce",
+    "category": "condiment",
+    "subcategory": "thai",
+    "aliases": ["thai sweet chili", "mae ploy"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "XO Sauce",
+    "category": "condiment",
+    "subcategory": "chinese",
+    "aliases": ["xo chili sauce", "hong kong xo sauce"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Ginger Paste",
+    "category": "condiment",
+    "subcategory": "asian",
+    "aliases": ["minced ginger", "ginger puree"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Garlic Paste",
+    "category": "condiment",
+    "subcategory": "asian",
+    "aliases": ["minced garlic", "garlic puree"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Lemon Curd",
+    "category": "condiment",
+    "subcategory": "british",
+    "aliases": ["english lemon curd", "citrus curd"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Clotted Cream",
+    "category": "dairy",
+    "subcategory": "british",
+    "aliases": ["devonshire cream", "cornish clotted cream"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Tahitian Vanilla",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["tahitian vanilla bean", "vanilla tahitensis"],
+    "unit_type": "each",
+    "standard_unit": "each"
+  },
+  {
+    "name": "Espresso Powder",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["instant espresso", "espresso powder for baking"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Lavender",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["culinary lavender", "dried lavender buds", "lavande"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Hibiscus Flowers",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["dried hibiscus", "jamaica flowers", "flor de jamaica"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Elderflower",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["dried elderflower", "elderflower blossoms"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Juniper Berries",
+    "category": "spice",
+    "subcategory": "specialty",
+    "aliases": ["dried juniper", "juniperus communis"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Szechuan Oil",
+    "category": "oil",
+    "subcategory": "chinese",
+    "aliases": ["sichuan peppercorn oil", "numbing oil", "ma you"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Perilla Oil",
+    "category": "oil",
+    "subcategory": "korean",
+    "aliases": ["deulgireum", "roasted perilla oil"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Capers",
+    "category": "condiment",
+    "subcategory": "italian",
+    "aliases": ["caper berries", "salted capers"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Anchovy Paste",
+    "category": "condiment",
+    "subcategory": "italian",
+    "aliases": ["anchovy in tube", "pasta di acciughe"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Sun-Dried Tomatoes",
+    "category": "produce",
+    "subcategory": "italian",
+    "aliases": ["sun dried tomato", "pomodori secchi"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Kalamata Olives",
+    "category": "produce",
+    "subcategory": "greek",
+    "aliases": ["greek olives", "kalamata"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Castelvetrano Olives",
+    "category": "produce",
+    "subcategory": "italian",
+    "aliases": ["sicilian green olives", "nocellara del belice"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Balsamic Glaze",
+    "category": "condiment",
+    "subcategory": "italian",
+    "aliases": ["balsamic reduction", "crema di balsamico"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Sherry Vinegar",
+    "category": "condiment",
+    "subcategory": "spanish",
+    "aliases": ["vinagre de jerez", "spanish sherry vinegar"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Champagne Vinegar",
+    "category": "condiment",
+    "subcategory": "french",
+    "aliases": ["sparkling wine vinegar"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Ume Plum Vinegar",
+    "category": "condiment",
+    "subcategory": "japanese",
+    "aliases": ["umeboshi vinegar", "red plum vinegar"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Dulse",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["dulse flakes", "dulse seaweed", "sea lettuce"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Nutritional Yeast Flakes",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["nooch flakes", "b12 yeast"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Turbinado Sugar",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["raw sugar", "sugar in the raw", "demerara sugar"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Muscovado Sugar",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["dark muscovado", "barbados sugar", "unrefined brown sugar"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Coconut Sugar",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["coconut palm sugar", "gula melaka"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Agave Nectar",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["agave syrup", "light agave", "dark agave"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Date Syrup",
+    "category": "pantry",
+    "subcategory": "middle_eastern",
+    "aliases": ["silan", "date molasses"],
+    "unit_type": "volume",
+    "standard_unit": "ml"
+  },
+  {
+    "name": "Monk Fruit Sweetener",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["monk fruit", "luo han guo"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  },
+  {
+    "name": "Erythritol",
+    "category": "pantry",
+    "subcategory": "specialty",
+    "aliases": ["sugar alcohol sweetener"],
+    "unit_type": "weight",
+    "standard_unit": "g"
+  }
+]

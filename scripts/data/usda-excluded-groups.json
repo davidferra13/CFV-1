@@ -1,0 +1,12 @@
+{
+  "_comment": "USDA food_category IDs to exclude from the ingredient catalog. These are prepared/branded/non-ingredient items.",
+  "excluded": [
+    { "id": "3", "code": "0300", "name": "Baby Foods", "count": 345 },
+    { "id": "8", "code": "0800", "name": "Breakfast Cereals", "count": 195 },
+    { "id": "21", "code": "2100", "name": "Fast Foods", "count": 312 },
+    { "id": "22", "code": "2200", "name": "Meals, Entrees, and Side Dishes", "count": 81 },
+    { "id": "23", "code": "2500", "name": "Snacks", "count": 176 },
+    { "id": "25", "code": "3600", "name": "Restaurant Foods", "count": 109 }
+  ],
+  "excluded_ids": ["3", "8", "21", "22", "23", "25"]
+}
