@@ -8,6 +8,7 @@ import type {
   HubPinnedNote,
   HubMedia,
   HubGroupEvent,
+  MealBoardEntry,
 } from '@/lib/hub/types'
 import type { HubAvailability } from '@/lib/hub/availability-actions'
 import { ThemedWrapper } from '@/components/hub/themed-wrapper'
@@ -18,9 +19,19 @@ import { HubPhotoGallery } from '@/components/hub/hub-photo-gallery'
 import { HubAvailabilityGrid } from '@/components/hub/hub-availability-grid'
 import { HubMessageSearch } from '@/components/hub/hub-message-search'
 import { HubGroupSettings } from '@/components/hub/hub-group-settings'
+import { WeeklyMealBoard } from '@/components/hub/weekly-meal-board'
 import { toggleMuteCircle } from '@/lib/hub/group-actions'
 
-type Tab = 'chat' | 'events' | 'photos' | 'notes' | 'schedule' | 'members' | 'search' | 'settings'
+type Tab =
+  | 'chat'
+  | 'meals'
+  | 'events'
+  | 'photos'
+  | 'notes'
+  | 'schedule'
+  | 'members'
+  | 'search'
+  | 'settings'
 
 interface HubGroupViewProps {
   group: HubGroup
@@ -29,6 +40,7 @@ interface HubGroupViewProps {
   media: HubMedia[]
   availability: HubAvailability[]
   groupEvents: HubGroupEvent[]
+  mealBoardEntries: MealBoardEntry[]
   profileToken?: string
 }
 
@@ -39,9 +51,10 @@ export function HubGroupView({
   media,
   availability,
   groupEvents,
+  mealBoardEntries,
   profileToken: profileTokenProp,
 }: HubGroupViewProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('chat')
+  const [activeTab, setActiveTab] = useState<Tab>(((group as any).default_tab as Tab) || 'chat')
   const [localGroup, setLocalGroup] = useState<HubGroup>(group)
   const [profileToken, setProfileToken] = useState<string | null>(profileTokenProp ?? null)
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null)
@@ -96,6 +109,7 @@ export function HubGroupView({
 
   const baseTabs: { id: Tab; label: string; emoji: string; count?: number }[] = [
     { id: 'chat', label: 'Chat', emoji: '💬' },
+    { id: 'meals', label: 'Meals', emoji: '🍽️' },
     { id: 'members', label: 'Members', emoji: '👥', count: members.length },
     { id: 'photos', label: 'Photos', emoji: '📸', count: media.length },
     // Conditional tabs: only show when they have content
@@ -286,6 +300,15 @@ export function HubGroupView({
             profileToken={profileToken}
             currentProfileId={currentProfileId}
             isOwnerOrAdmin={isOwnerOrAdmin}
+          />
+        )}
+
+        {activeTab === 'meals' && (
+          <WeeklyMealBoard
+            groupId={group.id}
+            initialEntries={mealBoardEntries}
+            profileToken={profileToken}
+            isChefOrAdmin={isOwnerOrAdmin}
           />
         )}
 

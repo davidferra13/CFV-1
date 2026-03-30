@@ -27,6 +27,11 @@ export function HubGroupSettings({
   const [showThemePicker, setShowThemePicker] = useState(false)
   const [selectedThemeId, setSelectedThemeId] = useState(group.theme_id)
   const [allowAnonymous, setAllowAnonymous] = useState(group.allow_anonymous_posts)
+  const [circleMode, setCircleMode] = useState<string>((group as any).circle_mode ?? 'standard')
+  const [defaultTab, setDefaultTab] = useState<string>((group as any).default_tab ?? 'chat')
+  const [silentByDefault, setSilentByDefault] = useState<boolean>(
+    (group as any).silent_by_default ?? false
+  )
   const [isPending, startTransition] = useTransition()
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -44,7 +49,10 @@ export function HubGroupSettings({
           emoji,
           allow_member_invites: allowInvites,
           allow_anonymous_posts: allowAnonymous,
-        })
+          circle_mode: circleMode,
+          default_tab: defaultTab,
+          silent_by_default: silentByDefault,
+        } as any)
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
         onUpdated?.(updated)
@@ -191,6 +199,84 @@ export function HubGroupSettings({
             }`}
           />
         </button>
+      </div>
+
+      {/* Circle Mode */}
+      <div className="rounded-lg border border-stone-700 bg-stone-900/50 p-3 space-y-3">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-stone-400">Circle Mode</label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setCircleMode('standard')
+                setDefaultTab('chat')
+                setSilentByDefault(false)
+              }}
+              className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                circleMode === 'standard'
+                  ? 'bg-[#e88f47]/20 text-[#e88f47] ring-1 ring-[#e88f47]'
+                  : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+              }`}
+            >
+              Standard
+              <p className="mt-0.5 text-[10px] font-normal text-stone-500">Chat-first, social</p>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setCircleMode('residency')
+                setDefaultTab('meals')
+                setSilentByDefault(true)
+              }}
+              className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+                circleMode === 'residency'
+                  ? 'bg-[#e88f47]/20 text-[#e88f47] ring-1 ring-[#e88f47]'
+                  : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+              }`}
+            >
+              Residency
+              <p className="mt-0.5 text-[10px] font-normal text-stone-500">Meals-first, quiet</p>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-medium text-stone-400">Default Tab</label>
+          <select
+            value={defaultTab}
+            onChange={(e) => setDefaultTab(e.target.value)}
+            title="Default tab for circle members"
+            className="w-full rounded-lg bg-stone-800 px-3 py-2 text-sm text-stone-200 ring-1 ring-stone-700 focus:outline-none focus:ring-[#e88f47]"
+          >
+            <option value="chat">Chat</option>
+            <option value="meals">Meals</option>
+            <option value="events">Events</option>
+            <option value="photos">Photos</option>
+            <option value="members">Members</option>
+          </select>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-sm text-stone-200">Silent by default</span>
+            <p className="text-xs text-stone-500">New members join with notifications off</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSilentByDefault(!silentByDefault)}
+            title={silentByDefault ? 'Disable silent default' : 'Enable silent default'}
+            className={`relative h-6 w-11 rounded-full transition-colors ${
+              silentByDefault ? 'bg-[#e88f47]' : 'bg-stone-600'
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform ${
+                silentByDefault ? 'translate-x-5' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Invite link */}

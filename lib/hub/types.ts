@@ -295,3 +295,65 @@ export interface EventStub {
   group?: HubGroup
   created_by?: HubGuestProfile
 }
+
+// ---- Meal Board ----
+
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+export type MealStatus = 'planned' | 'confirmed' | 'served' | 'cancelled'
+
+export interface MealBoardEntry {
+  id: string
+  group_id: string
+  author_profile_id: string
+  meal_date: string
+  meal_type: MealType
+  title: string
+  description: string | null
+  dietary_tags: string[]
+  allergen_flags: string[]
+  menu_id: string | null
+  dish_id: string | null
+  status: MealStatus
+  created_at: string
+  updated_at: string
+  // Joined
+  author?: HubGuestProfile
+  feedback_summary?: MealFeedbackSummary
+  my_feedback?: MealFeedback | null
+}
+
+export interface MealBoardWeek {
+  weekStart: string // ISO date string (Monday)
+  days: MealBoardDay[]
+}
+
+export interface MealBoardDay {
+  date: string // ISO date string
+  dayOfWeek: number // 0=Mon, 6=Sun
+  entries: MealBoardEntry[]
+}
+
+// ---- Meal Feedback ----
+
+export type MealReaction = 'loved' | 'liked' | 'neutral' | 'disliked'
+
+export interface MealFeedback {
+  id: string
+  meal_entry_id: string
+  profile_id: string
+  reaction: MealReaction
+  note: string | null
+  created_at: string
+  updated_at: string
+  // Joined
+  profile?: HubGuestProfile
+}
+
+export interface MealFeedbackSummary {
+  loved: number
+  liked: number
+  neutral: number
+  disliked: number
+  total: number
+  notes: { profile_name: string; note: string; reaction: MealReaction }[]
+}

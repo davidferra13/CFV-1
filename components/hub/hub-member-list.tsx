@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import type { HubGroupMember } from '@/lib/hub/types'
 import {
   updateMemberRole,
@@ -9,6 +9,7 @@ import {
   removeMember,
   leaveGroup,
 } from '@/lib/hub/group-actions'
+import { getCircleHouseholdSummary, type HouseholdMember } from '@/lib/hub/household-actions'
 
 const ROLE_BADGES: Record<string, { label: string; color: string }> = {
   owner: { label: 'Host', color: 'bg-amber-500/20 text-amber-400' },
@@ -51,6 +52,18 @@ export function HubMemberList({
   const [isPending, startTransition] = useTransition()
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [householdSummary, setHouseholdSummary] = useState<{
+    members: HouseholdMember[]
+    allAllergies: string[]
+    allDietary: string[]
+  } | null>(null)
+
+  // Load household dietary summary
+  useEffect(() => {
+    getCircleHouseholdSummary(groupId)
+      .then(setHouseholdSummary)
+      .catch(() => {})
+  }, [groupId])
 
   const handleRoleChange = (memberId: string, newRole: 'admin' | 'member' | 'viewer') => {
     if (!profileToken) return
@@ -158,6 +171,62 @@ export function HubMemberList({
           {error}
         </div>
       )}
+
+      {/* Household Dietary Summary (visible to all, especially chef) */}
+      {householdSummary &&
+        (householdSummary.allAllergies.length > 0 || householdSummary.allDietary.length > 0) && (
+          <div
+            className={`mb-4 rounded-xl border p-3 ${
+              householdSummary.allAllergies.length > 0
+                ? 'border-amber-800/50 bg-amber-950/20'
+                : 'border-stone-700 bg-stone-900/50'
+            }`}
+          >
+            <h4 className="text-xs font-semibold text-stone-300 mb-2">Household Dietary Summary</h4>
+            {householdSummary.allAllergies.length > 0 && (
+              <div className="mb-1.5">
+                <span className="text-[10px] font-medium text-amber-400 uppercase tracking-wide">
+                  Allergies
+                </span>
+                <div className="mt-0.5 flex flex-wrap gap-1">
+                  {householdSummary.allAllergies.map((a) => (
+                    <span
+                      key={a}
+                      className="rounded-full bg-amber-900/40 px-2 py-0.5 text-xs font-medium text-amber-400"
+                    >
+                      ⚠ {a}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {householdSummary.allDietary.length > 0 && (
+              <div>
+                <span className="text-[10px] font-medium text-emerald-400 uppercase tracking-wide">
+                  Dietary
+                </span>
+                <div className="mt-0.5 flex flex-wrap gap-1">
+                  {householdSummary.allDietary.map((d) => (
+                    <span
+                      key={d}
+                      className="rounded-full bg-emerald-900/40 px-2 py-0.5 text-xs text-emerald-400"
+                    >
+                      {d}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {householdSummary.members.length > 0 && (
+              <div className="mt-2 border-t border-stone-700/50 pt-2">
+                <span className="text-[10px] text-stone-500">
+                  {householdSummary.members.length} household member
+                  {householdSummary.members.length !== 1 ? 's' : ''} tracked
+                </span>
+              </div>
+            )}
+          </div>
+        )}
 
       <div className="space-y-2">
         {localMembers.map((member) => {

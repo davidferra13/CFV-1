@@ -12,6 +12,7 @@ import {
 import { getGroupNotes } from '@/lib/hub/message-actions'
 import { getGroupMedia } from '@/lib/hub/media-actions'
 import { getGroupAvailability } from '@/lib/hub/availability-actions'
+import { getMealBoard } from '@/lib/hub/meal-board-actions'
 import { HubGroupView } from '@/app/(public)/hub/g/[groupToken]/hub-group-view'
 
 interface Props {
@@ -35,12 +36,13 @@ export default async function ClientHubGroupPage({ params }: Props) {
   // Auto-join if not already a member
   await joinHubGroup({ groupToken, profileId: profile.id })
 
-  const [members, notes, media, availability, groupEvents] = await Promise.all([
+  const [members, notes, media, availability, groupEvents, mealBoardEntries] = await Promise.all([
     getGroupMembers(group.id),
     getGroupNotes(group.id),
     getGroupMedia({ groupId: group.id }),
     getGroupAvailability(group.id),
     getGroupEvents(group.id),
+    getMealBoard({ groupId: group.id }),
   ])
 
   // Pass profileToken as a prop - the HubGroupView will set the cookie client-side
@@ -53,6 +55,7 @@ export default async function ClientHubGroupPage({ params }: Props) {
         media={media}
         availability={availability}
         groupEvents={groupEvents}
+        mealBoardEntries={mealBoardEntries}
         profileToken={profile.profile_token}
       />
     </div>
