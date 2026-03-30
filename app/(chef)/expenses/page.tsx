@@ -26,6 +26,7 @@ import {
 } from '@/lib/constants/expense-categories'
 import { ExpensesExportButton } from '@/components/exports/expenses-export-button'
 import { format } from 'date-fns'
+import { getSignedUrl } from '@/lib/storage'
 
 export default async function ExpensesPage({
   searchParams,
@@ -212,6 +213,7 @@ export default async function ExpensesPage({
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-12"></TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Event</TableHead>
                 <TableHead>Description</TableHead>
@@ -226,6 +228,18 @@ export default async function ExpensesPage({
                 const event = (expense as any).event
                 return (
                   <TableRow key={expense.id}>
+                    <TableCell className="w-12 p-1">
+                      {expense.receipt_photo_url && (
+                        <Link href={`/expenses/${expense.id}`}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={getSignedUrl('receipts', expense.receipt_photo_url, 3600)}
+                            alt="Receipt"
+                            className="h-10 w-10 rounded object-cover"
+                          />
+                        </Link>
+                      )}
+                    </TableCell>
                     <TableCell>{format(new Date(expense.expense_date), 'MMM d, yyyy')}</TableCell>
                     <TableCell>
                       {event ? (

@@ -58,6 +58,7 @@ type Props = {
   menus: Menu[]
   eventsById: Record<string, EventLite>
   costByMenuId: Record<string, MenuCostSummary>
+  dishPhotoByMenuId?: Record<string, string>
 }
 
 type SortValue = 'created_desc' | 'created_asc' | 'name' | 'status'
@@ -116,12 +117,14 @@ function MenuCard({
   menuEvent,
   costSummary,
   isActive,
+  dishPhotoUrl,
   onClick,
 }: {
   menu: Menu
   menuEvent: EventLite | null
   costSummary: MenuCostSummary | undefined
   isActive: boolean
+  dishPhotoUrl?: string | null
   onClick: () => void
 }) {
   const displayStatus = getDisplayStatus(menu.status)
@@ -137,7 +140,14 @@ function MenuCard({
             : 'border-stone-700/80 bg-gradient-to-br from-stone-900 via-stone-900 to-stone-800'
         }`}
       >
-        <CardContent className="space-y-3 pt-5">
+        <CardContent className="space-y-3 pt-0">
+          {dishPhotoUrl && (
+            <div className="relative -mx-6 -mt-0 mb-2 aspect-[16/9] w-[calc(100%+3rem)] overflow-hidden rounded-t-lg">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={dishPhotoUrl} alt="" className="h-full w-full object-cover" />
+            </div>
+          )}
+          {!dishPhotoUrl && <div className="pt-5" />}
           <div className="flex items-start justify-between gap-3">
             <div>
               <h3 className="line-clamp-1 text-lg font-semibold text-stone-100">{menu.name}</h3>
@@ -203,7 +213,12 @@ function MenuCard({
 // MAIN COMPONENT
 // ============================================
 
-export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
+export function MenusClientWrapper({
+  menus,
+  eventsById,
+  costByMenuId,
+  dishPhotoByMenuId = {},
+}: Props) {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<SortValue>('created_desc')
@@ -430,6 +445,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                 menuEvent={menu.event_id ? (eventsById[menu.event_id] ?? null) : null}
                 costSummary={costByMenuId[menu.id]}
                 isActive
+                dishPhotoUrl={dishPhotoByMenuId[menu.id]}
                 onClick={() => openMenuModal(menu.id)}
               />
             ))}
@@ -529,6 +545,7 @@ export function MenusClientWrapper({ menus, eventsById, costByMenuId }: Props) {
                 menuEvent={menu.event_id ? (eventsById[menu.event_id] ?? null) : null}
                 costSummary={costByMenuId[menu.id]}
                 isActive={false}
+                dishPhotoUrl={dishPhotoByMenuId[menu.id]}
                 onClick={() => openMenuModal(menu.id)}
               />
             ))}

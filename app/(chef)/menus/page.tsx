@@ -51,6 +51,30 @@ export default async function MenusPage() {
     costSummaries.map((summary) => [summary.menu_id, summary])
   )
 
+  // Fetch first dish photo per menu for card heroes
+  let dishPhotoByMenuId: Record<string, string> = {}
+  const menuIds = menus.map((m: any) => m.id)
+  if (menuIds.length > 0) {
+    try {
+      const db: any = createServerClient()
+      const { data: dishes } = await db
+        .from('dishes')
+        .select('menu_id, photo_url')
+        .in('menu_id', menuIds)
+        .not('photo_url', 'is', null)
+        .order('course_number', { ascending: true })
+      if (dishes) {
+        for (const dish of dishes) {
+          if (dish.photo_url && !dishPhotoByMenuId[dish.menu_id]) {
+            dishPhotoByMenuId[dish.menu_id] = dish.photo_url
+          }
+        }
+      }
+    } catch (err: any) {
+      console.error('[menus-list] Dish photos fetch failed (non-blocking):', err.message)
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Dietary Intelligence */}
@@ -67,7 +91,12 @@ export default async function MenusPage() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <MenusClientWrapper menus={menus} eventsById={eventsById} costByMenuId={costByMenuId} />
+      <MenusClientWrapper
+        menus={menus}
+        eventsById={eventsById}
+        costByMenuId={costByMenuId}
+        dishPhotoByMenuId={dishPhotoByMenuId}
+      />
     </div>
   )
 }

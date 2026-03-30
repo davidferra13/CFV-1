@@ -22,6 +22,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { isDemoEvent } from '@/lib/onboarding/demo-data-utils'
+import { createServerClient } from '@/lib/db/server'
 
 export const metadata: Metadata = { title: 'Events - ChefFlow' }
 
@@ -103,7 +104,7 @@ type EventStatus =
   | 'cancelled'
 
 async function EventsList({ status }: { status: EventStatus }) {
-  await requireChef()
+  const user = await requireChef()
 
   let events = await getEvents()
 
@@ -114,6 +115,41 @@ async function EventsList({ status }: { status: EventStatus }) {
   events = events.sort(
     (a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
   )
+
+  // Fetch first dish photo per event (via menus -> dishes, public bucket)
+  let eventPhotoMap: Record<string, string> = {}
+  const eventIds = events.map((e: any) => e.id)
+  if (eventIds.length > 0) {
+    try {
+      const db: any = createServerClient()
+      const { data: menus } = await db
+        .from('menus')
+        .select('id, event_id')
+        .in('event_id', eventIds)
+        .eq('tenant_id', user.tenantId!)
+      if (menus && menus.length > 0) {
+        const menuIds = menus.map((m: any) => m.id)
+        const menuToEvent: Record<string, string> = {}
+        for (const m of menus) menuToEvent[m.id] = m.event_id
+        const { data: dishes } = await db
+          .from('dishes')
+          .select('menu_id, photo_url')
+          .in('menu_id', menuIds)
+          .not('photo_url', 'is', null)
+          .order('course_number', { ascending: true })
+        if (dishes) {
+          for (const dish of dishes) {
+            const eid = menuToEvent[dish.menu_id]
+            if (eid && dish.photo_url && !eventPhotoMap[eid]) {
+              eventPhotoMap[eid] = dish.photo_url
+            }
+          }
+        }
+      }
+    } catch (err: any) {
+      console.error('[events-list] Dish photos fetch failed (non-blocking):', err.message)
+    }
+  }
 
   if (events.length === 0) {
     return (
@@ -137,6 +173,7 @@ async function EventsList({ status }: { status: EventStatus }) {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-14"></TableHead>
             <TableHead>Occasion</TableHead>
             <TableHead>Date</TableHead>
             <TableHead>Client</TableHead>
@@ -148,6 +185,18 @@ async function EventsList({ status }: { status: EventStatus }) {
         <TableBody>
           {events.map((event: any) => (
             <TableRow key={event.id}>
+              <TableCell className="w-14 p-1">
+                {eventPhotoMap[event.id] && (
+                  <Link href={`/events/${event.id}`}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={eventPhotoMap[event.id]}
+                      alt=""
+                      className="h-12 w-12 rounded object-cover"
+                    />
+                  </Link>
+                )}
+              </TableCell>
               <TableCell className="font-medium">
                 <Link
                   href={`/events/${event.id}`}
