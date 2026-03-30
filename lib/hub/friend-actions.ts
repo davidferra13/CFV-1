@@ -159,6 +159,24 @@ export async function acceptFriendRequest(friendshipId: string): Promise<{ succe
     .eq('status', 'pending')
 
   if (error) throw new Error(`Failed to accept request: ${error.message}`)
+
+  // Loyalty trigger: friend connection accepted (non-blocking)
+  try {
+    const { data: client } = await (createServerClient({ admin: true }) as any)
+      .from('hub_guest_profiles')
+      .select('client_id, clients(tenant_id)')
+      .eq('id', myProfile.id)
+      .single()
+    if (client?.client_id && (client as any).clients?.tenant_id) {
+      const { fireTrigger } = await import('@/lib/loyalty/triggers')
+      await fireTrigger('friend_invited', (client as any).clients.tenant_id, client.client_id, {
+        description: 'Friend connection accepted',
+      })
+    }
+  } catch (err) {
+    console.error('[acceptFriendRequest] Loyalty trigger failed (non-blocking):', err)
+  }
+
   return { success: true }
 }
 

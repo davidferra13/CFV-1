@@ -512,6 +512,37 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
     .eq('conversation_id', validated.conversation_id)
     .eq('auth_user_id', user.id)
 
+  // Loyalty trigger: first message in conversation (non-blocking, client only)
+  if (user.role === 'client' && user.tenantId) {
+    try {
+      const { data: msgCount } = await db
+        .from('chat_messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('conversation_id', validated.conversation_id)
+        .eq('sender_id', user.id)
+      const count = (msgCount as any)?.length ?? (db as any).__count ?? 1
+      // If this is the first message from this user, fire the trigger
+      // The idempotency guard on the event provides secondary safety
+      if (count <= 1) {
+        // Look up the event for this conversation
+        const { data: conv } = await db
+          .from('conversations')
+          .select('event_id')
+          .eq('id', validated.conversation_id)
+          .single()
+        if (conv?.event_id) {
+          const { fireTrigger } = await import('@/lib/loyalty/triggers')
+          await fireTrigger('chat_engagement', user.tenantId, user.entityId!, {
+            eventId: conv.event_id,
+            description: 'First message in event chat',
+          })
+        }
+      }
+    } catch (err) {
+      console.error('[sendChatMessage] Loyalty trigger failed (non-blocking):', err)
+    }
+  }
+
   // Fire-and-forget: analyze client messages for insights
   if (user.role === 'client' && validated.message_type === 'text') {
     processMessageInsights(message.id, validated.conversation_id).catch((err) =>

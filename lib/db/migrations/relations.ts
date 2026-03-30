@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { chefs, automatedSequences, adminTimeLogs, events, chefTodos, usersInAuth, chefEmergencyContacts, communicationEvents, suggestedLinks, communicationClassificationRules, eventSurveys, clients, conversationThreads, followUpTimers, chefCertifications, copilotActions, copilotRecommendations, copilotRuns, campaignTemplates, directOutreachLog, integrationConnections, auditLog, clientInvitations, userRoles, integrationEvents, inquiries, inquiryStateTransitions, eventStateTransitions, dishes, menus, tastingMenuCourses, afterActionReviews, menuStateTransitions, components, recipes, loyaltyTransactions, contractTemplates, eventContracts, proposalTokens, eventTips, seasonalPalettes, shoppingSubstitutions, chatInsights, conversations, chatMessages, conversationParticipants, chefConnections, clientNotes, chefFeedback, activityEvents, communicationActionLog, clientIntakeResponses, clientIntakeForms, clientIntakeShares, chefJourneys, jobRetryLog, chefJourneyEntries, chefJournalMedia, chefMomentumSnapshots, chefGoals, chefAvailabilityShareTokens, dishIndex, dishAppearances, menuUploadJobs, eventStaffAssignments, staffMembers, zapierWebhookSubscriptions, chefSocialChannels, chefChannelMemberships, zapierWebhookDeliveries, eventShares, hubGroups, eventThemes, chefNetworkFeaturePreferences, chefStories, posAlertEvents, posMetricSnapshots, chefCalendarEntries, availabilitySignalNotificationLog, competitorBenchmarks, clientSatisfactionSurveys, guestDayOfReminders, eventGuests, chefSchedulingRules, clientQuickRequests, guestDietaryConfirmations, eventGuestDocuments, contractorPayments, clientProposals, proposalTemplates, benchmarkSnapshots, clientPreferencePatterns, automationExecutionLog, staffEventTokens, deadLetterQueue, equipmentDepreciationSchedules, equipmentItems, mealPrepWeeks, mealPrepPrograms, eventSalesTax, chefServiceTypes, fineTuningExamples, goalCheckIns, cannabisEventDetails, menuNutrition, followUpSends, followupRules, chefBackupContacts, chefBrandMentions, chefCreativeProjects, chefAutomationSettings, guestMessages, openTableRequests, hubGuestProfiles, clientPhotos, favoriteChefs, chefCulinaryWords, dailyPlanDismissals, gmailSyncLog, googleMailboxes, messages, aiTaskQueue, platformActionLog, platformRecords, remySupportShares, eventReadinessGates, featureVotes, featureRequests, devices, deviceEvents, haccpPlans, inventoryAudits, storageLocations, tipRequests, cannabisControlPacketEvidence, cannabisControlPacketReconciliations, cannabisControlPacketSnapshots, mutationIdempotency, qolMetricEvents, clientMergeLog, chefActivityLog, chefPreferences, eventCannabisCourseConfig, directoryListings, directoryNominations, commercePaymentSchedules, commercePayments, sales, ledgerEntries, inventoryTransactions, ingredients, vendorInvoices, wasteLogs, orderQueue, cashDrawerMovements, commerceRefunds, registerSessions, chefProfiles, dailyReconciliationReports, dailyTaxSummary, settlementRecords, charityHours, chefMarketplaceProfiles, eventGuestDietaryItems, eventGuestRsvpAudit, eventJoinRequests, eventShareInvites, eventStubs, hubGroupEvents, hubAvailability, hubAvailabilityResponses, emailSenderReputation, aiPreferences, hubChefRecommendations, betaSurveyResponses, betaSurveyInvites, betaSurveyDefinitions, chefHandoffs, chefHandoffRecipients, chefHandoffEvents, chefAvailabilitySignals, commerceDiningZones, commerceDiningTables, commerceDiningChecks, clientMealRequests, clientPreferences, chefServiceConfig, eventSeries, hubMessages, hubMessageReads, clientWorksheets, betaOnboardingChecklist, hubShareCards, openTableConsents, quotes, quoteLineItems, eventPrepSteps, dietaryConfirmations, eventLiveStatus, clientReferrals, bookingAvailabilityRules, proposalSections, chefBudgets, clientOutreachLog, eventEquipmentChecklist, eventFloorPlans, clientMealPrepPreferences, containerInventory, containerTransactions, dailySpecials, productProjections, permits, bakeryOvens, bakeSchedule, bakeryBatches, bakeryOrders, bakeryParStock, bakeryProductionLog, feedbackRequests, feedbackResponses, giftCards, giftCardTransactions, businessLocations, communicationLog, complianceCleaningLogs, complianceTempLogs, eventSiteAssessments, reorderSettings, vendors, documentIntelligenceJobs, documentIntelligenceItems, chefDocuments, chefFolders, entityPhotos, sops, sopCompletions, productPublicMediaLinks, publicMediaAssets, eventTemplates, tipPoolConfigs, tipDistributions, tipEntries, cancellationPolicies, chefCapacitySettings, chefEquipmentMaster, chefDepositSettings, cookingClasses, classRegistrations, chefSeasonalAvailability, groceryTrips, groceryTripItems, groceryTripSplits, aislePreferences, chefEquipment, chefPreferredStores, emailSequenceEnrollments, emailSequences, eventFeedback, mealPrepItems, chefDirectoryListings, communityBenchmarks, giftCertificates, grocerySpendEntries, expenses, ingredientPriceHistory, autoResponseConfig, businessHoursConfig, eventContacts, eventPaymentMilestones, guestCountChanges, followUpSequences, chefPricingConfig, clientTasteProfiles, marketingCampaigns, abTests, automationRules, automationExecutions, bakerySeasonalItems, bakeryTastings, bakeryYieldRecords, bankConnections, bankTransactions, betaSignupTrackers, betaSignups, beverages, bookingDailyCaps, bookingDateOverrides, bookingEventTypes, campaignRecipients, cannabisHostAgreements, cannabisTierInvitations, cannabisTierUsers, chefApiKeys, chefAvailabilityBlocks, chefBusinessHealthItems, chefCapabilityInventory, chefCommentReactions, chefPostComments, chefCrisisPlans, chefCulinaryProfiles, chefDailyBriefings, chefEducationLog, chefEventTypeLabels, chefFollows, chefGrowthCheckins, chefIncidents, chefInsurancePolicies, chefJournalRecipeLinks, chefJourneyIdeas, chefNetworkContactShares, chefNetworkPosts, chefNotificationTierOverrides, chefPortfolioRemovalRequests, chefSocialPosts, chefPostMentions, chefPostReactions, chefPostSaves, chefReminders, chefBreadcrumbs, chefSocialNotifications, chefStoryReactions, chefStoryViews, chefTaxConfig, chefTaxonomyExtensions, chefTaxonomyHidden, chefTeamMembers, clientConnections, clientFollowupRules, clientGiftLog, clientIncentives, clientKitchenInventory, clientNdas, clientReviews, clientSegments, clientTouchpointRules, clipboardEntries, stationComponents, stations, communityMessages, communityProfiles, communityTemplates, contactSubmissions, contentPerformance, contractorServiceAgreements, customFieldDefinitions, customFieldValues, dailyChecklistCompletions, dailyChecklistCustomItems, dailyPlanDrafts, copilotRunErrors, clientTags, clientAllergyRecords, commercePromotions, chefTrustedCircle, dailyReports, dailyRevenue, demandForecasts, deviceSessions, dietaryChangeLog, dietaryConflictAlerts, dishFeedback, dishVariations, displayCaseItems, documentComments, documentVersions, emailSequenceSteps, employees, entityTemplates, equipmentMaintenanceLog, equipmentRentals, eventAlcoholLogs, eventCannabisSettings, eventCollaborators, eventContentDrafts, eventContingencyNotes, eventContractSigners, eventContractVersions, eventDocumentGenerationJobs, eventEquipmentAssignments, eventEquipmentRentals, eventLeftoverDetails, eventPhotos, eventSafetyChecklists, eventServiceSessions, eventShareInviteEvents, eventStationAssignments, eventPrepBlocks, dopTaskCompletions, directoryOutreachLog, eventDocumentSnapshots, eventTempLogs, eventTravelLegs, eventVendorDeliveries, eventWasteLogs, externalReviewSources, expenseTaxCategories, experiencePackages, fermentationLogs, frontOfHouseMenus, menuTemplates, giftCardPurchaseIntents, goalClientSuggestions, goalSnapshots, googleConnections, groceryPriceEntries, groceryPriceQuoteItems, groceryPriceQuotes, guestCommunicationLogs, guestComps, guests, guestLeads, guestPhotos, guestReservations, guestTags, guestTestimonials, guestVisits, healthInsurancePremiums, householdMembers, households, externalReviews, guestEventProfile, receiptPhotos, hubGuestEventHistory, guestFeedback, hubGroupMembers, gmailHistoricalFindings, hubGuestFriends, incentiveDeliveries, incentiveRedemptions, ingredientShelfLifeDefaults, ingredientSubstitutions, responseTemplates, partnerLocations, referralPartners, inquiryNotes, inquiryRecipeLinks, insuranceClaims, insurancePolicies, inventoryAuditItems, inventoryBatches, inventoryCounts, inventoryLots, kdsTickets, kitchenAssessments, kitchenRentals, learningGoals, loyaltyConfig, loyaltyRewardRedemptions, loyaltyRewards, mealPrepBatchLog, mealPrepContainers, mealPrepDeliveries, mealPrepOrders, mealPrepWindows, mentorshipConnections, mentorshipProfiles, integrationSyncJobs, integrationEntityLinks, integrationFieldMappings, hubMessageReactions, hubMedia, hubPinnedNotes, hubPolls, hubPollOptions, hubPollVotes, recurringServices, marketingSpendLog, menuApprovalRequests, menuBeveragePairings, menuDishFeedback, menuRevisions, menuItems, menuModifications, menuPreferences, menuServiceHistory, paymentPlanInstallments, notifications, notificationDeliveryLog, notificationPreferences, onboardingProgress, opsLog, orderAheadItems, orderAheadOrderItems, orderAheadOrders, orderRequests, outreachCampaigns, packingChecklists, packingChecklistItems, packingTemplates, pantryItems, pantryLocations, partnerImages, paymentDisputes, paymentMilestoneTemplates, paymentMilestones, payroll941Summaries, payrollRecords, payrollW2Summaries, mileageLogs, platformPayouts, platformApiConnections, packingConfirmations, platingGuides, portfolioItems, postEventSurveys, prepTimeline, productModifierAssignments, productModifierGroups, productModifiers, professionalAchievements, profileHighlights, proposalAddonSelections, quoteAddons, proposalAddons, proposalViews, prospectCallScripts, prospectNotes, prospects, prospectOutreachLog, prospectScrubSessions, prospectStageHistory, purchaseOrderItems, purchaseOrders, pushSubscriptions, qrCodes, qrScans, quoteStateTransitions, raffleEntries, raffleRounds, platformSnapshots, productTourProgress, rebookTokens, receiptExtractions, receiptLineItems, recipeIngredients, recipeNutrition, recipeProductionLog, recipeShares, recipeStepPhotos, recipeSubRecipes, saleAppliedPromotions, recurringInvoiceHistory, recurringInvoices, recurringMenuRecommendations, recurringSchedules, referralRequestLog, remyAbuseLog, remyActionAuditLog, remyApprovalPolicies, remyArtifacts, remyConversations, remyFeedback, remyMemories, remyMessages, remyUsageMetrics, retainers, retainerPeriods, retirementContributions, rsvpReminderLog, saleItems, salesTaxRemittances, salesTaxSettings, scheduledCalls, scheduledMessages, scheduledShifts, shiftTemplates, seasonalAvailabilityPeriods, sequenceEnrollments, sequenceSteps, servedDishHistory, serviceCourses, shiftHandoffNotes, shiftLogs, shiftSwapRequests, shoppingLists, simulationRuns, simulationResults, smartFieldValues, smartGroceryLists, smartGroceryItems, smsMessages, smsSendLog, socialConnectedAccounts, socialHashtagSets, socialMediaAssets, socialPlatformCredentials, socialPostAssets, socialPosts, socialQueueSettings, socialStatsSnapshots, socialTemplates, sourcingEntries, staffAvailability, staffClockEntries, staffMealItems, staffMeals, staffOnboardingItems, staffPerformanceScores, staffSchedules, stationMenuItems, stocktakes, stocktakeItems, storeItemAssignments, stripeTransfers, subcontractAgreements, taskCompletionLog, tasks, taskDependencies, taskTemplates, tastingMenus, vendorItems, vendorCatalogImportRows, taxJurisdictions, taxCollected, taxFilings, taxQuarterlyEstimates, taxSettings, tenantSettings, timeBlocks, travelLegIngredients, truckLocations, truckSchedule, truckPreorders, unusedIngredients, userFeedback, vaTasks, varianceAlertSettings, vehicleMaintenance, vendorEventAssignments, vendorInvoiceItems, vendorInvoiceLineItems, vendorPreferredIngredients, vendorPriceEntries, vendorPricePoints, waitlistEntries, wasteLog, webhookEndpoints, webhookDeliveries, websiteStatsSnapshots, wholesaleAccounts, wholesaleOrders, wixConnections, wixSubmissions, vendorPriceAlertSettings, workflowExecutionLog, workflowExecutions, testimonials, vendorDocumentUploads, aarRecipeFeedback, recipeFamilies, aarIngredientIssues, expenseLineItems, workflowTemplates, workflowSteps, chefSocialHashtags, chefPostHashtags, conversationThreadReads, chefFeatureFlags, quoteSelectedAddons } from "./schema";
+import { chefs, automatedSequences, adminTimeLogs, events, chefTodos, usersInAuth, chefEmergencyContacts, communicationEvents, suggestedLinks, communicationClassificationRules, eventSurveys, clients, conversationThreads, followUpTimers, chefCertifications, copilotActions, copilotRecommendations, copilotRuns, campaignTemplates, directOutreachLog, integrationConnections, auditLog, clientInvitations, userRoles, integrationEvents, inquiries, inquiryStateTransitions, eventStateTransitions, dishes, menus, tastingMenuCourses, afterActionReviews, menuStateTransitions, components, recipes, loyaltyTransactions, contractTemplates, eventContracts, proposalTokens, eventTips, seasonalPalettes, shoppingSubstitutions, chatInsights, conversations, chatMessages, conversationParticipants, chefConnections, clientNotes, chefFeedback, activityEvents, communicationActionLog, clientIntakeResponses, clientIntakeForms, clientIntakeShares, chefJourneys, jobRetryLog, chefJourneyEntries, chefJournalMedia, chefMomentumSnapshots, chefGoals, chefAvailabilityShareTokens, dishIndex, dishAppearances, menuUploadJobs, eventStaffAssignments, staffMembers, zapierWebhookSubscriptions, chefSocialChannels, chefChannelMemberships, zapierWebhookDeliveries, eventShares, hubGroups, eventThemes, chefNetworkFeaturePreferences, chefStories, posAlertEvents, posMetricSnapshots, chefCalendarEntries, availabilitySignalNotificationLog, competitorBenchmarks, clientSatisfactionSurveys, guestDayOfReminders, eventGuests, chefSchedulingRules, clientQuickRequests, guestDietaryConfirmations, eventGuestDocuments, contractorPayments, clientProposals, proposalTemplates, benchmarkSnapshots, clientPreferencePatterns, automationExecutionLog, staffEventTokens, deadLetterQueue, equipmentDepreciationSchedules, equipmentItems, mealPrepWeeks, mealPrepPrograms, eventSalesTax, chefServiceTypes, fineTuningExamples, goalCheckIns, cannabisEventDetails, menuNutrition, followUpSends, followupRules, chefBackupContacts, chefBrandMentions, chefCreativeProjects, chefAutomationSettings, guestMessages, openTableRequests, hubGuestProfiles, clientPhotos, favoriteChefs, chefCulinaryWords, dailyPlanDismissals, gmailSyncLog, googleMailboxes, messages, aiTaskQueue, platformActionLog, platformRecords, remySupportShares, eventReadinessGates, featureVotes, featureRequests, devices, deviceEvents, haccpPlans, inventoryAudits, storageLocations, tipRequests, cannabisControlPacketEvidence, cannabisControlPacketReconciliations, cannabisControlPacketSnapshots, mutationIdempotency, qolMetricEvents, clientMergeLog, chefActivityLog, chefPreferences, eventCannabisCourseConfig, directoryListings, directoryNominations, commercePaymentSchedules, commercePayments, sales, ledgerEntries, inventoryTransactions, ingredients, vendorInvoices, wasteLogs, orderQueue, cashDrawerMovements, commerceRefunds, registerSessions, chefProfiles, dailyReconciliationReports, dailyTaxSummary, settlementRecords, charityHours, chefMarketplaceProfiles, eventGuestDietaryItems, eventGuestRsvpAudit, eventJoinRequests, eventShareInvites, eventStubs, hubGroupEvents, priceWatchList, hubAvailability, hubAvailabilityResponses, emailSenderReputation, aiPreferences, hubChefRecommendations, ingredientAliases, systemIngredients, betaSurveyResponses, betaSurveyInvites, betaSurveyDefinitions, chefHandoffs, chefHandoffRecipients, chefHandoffEvents, chefAvailabilitySignals, commerceDiningZones, commerceDiningTables, commerceDiningChecks, clientMealRequests, clientPreferences, chefServiceConfig, eventSeries, hubMessages, hubMessageReads, clientWorksheets, betaOnboardingChecklist, hubShareCards, openTableConsents, quotes, quoteLineItems, eventPrepSteps, dietaryConfirmations, eventLiveStatus, clientReferrals, bookingAvailabilityRules, proposalSections, chefBudgets, clientOutreachLog, eventEquipmentChecklist, eventFloorPlans, clientMealPrepPreferences, containerInventory, containerTransactions, dailySpecials, productProjections, permits, hubMealBoard, bakeryOvens, bakeSchedule, bakeryBatches, bakeryOrders, bakeryParStock, bakeryProductionLog, feedbackRequests, feedbackResponses, hubMealFeedback, giftCards, giftCardTransactions, businessLocations, communicationLog, hubHouseholdMembers, complianceCleaningLogs, complianceTempLogs, eventSiteAssessments, reorderSettings, vendors, documentIntelligenceJobs, documentIntelligenceItems, chefDocuments, chefFolders, hubMealTemplates, entityPhotos, sops, sopCompletions, productPublicMediaLinks, publicMediaAssets, eventTemplates, hubScheduleChanges, tipPoolConfigs, tipDistributions, tipEntries, cancellationPolicies, chefCapacitySettings, chefEquipmentMaster, hubRecurringMeals, chefDepositSettings, cookingClasses, classRegistrations, chefSeasonalAvailability, hubMealAttendance, groceryTrips, groceryTripItems, groceryTripSplits, hubMealComments, aislePreferences, chefEquipment, chefPreferredStores, emailSequenceEnrollments, emailSequences, hubMealRequests, eventFeedback, mealPrepItems, chefDirectoryListings, communityBenchmarks, giftCertificates, grocerySpendEntries, expenses, ingredientPriceHistory, autoResponseConfig, businessHoursConfig, eventContacts, eventPaymentMilestones, guestCountChanges, followUpSequences, chefPricingConfig, clientTasteProfiles, marketingCampaigns, abTests, automationRules, automationExecutions, bakerySeasonalItems, bakeryTastings, bakeryYieldRecords, bankConnections, bankTransactions, betaSignupTrackers, betaSignups, beverages, bookingDailyCaps, bookingDateOverrides, bookingEventTypes, campaignRecipients, cannabisHostAgreements, cannabisTierInvitations, cannabisTierUsers, chefApiKeys, chefAvailabilityBlocks, chefBusinessHealthItems, chefCapabilityInventory, chefCommentReactions, chefPostComments, chefCrisisPlans, chefCulinaryProfiles, chefDailyBriefings, chefEducationLog, chefEventTypeLabels, chefFollows, chefGrowthCheckins, chefIncidents, chefInsurancePolicies, chefJournalRecipeLinks, chefJourneyIdeas, chefNetworkContactShares, chefNetworkPosts, chefNotificationTierOverrides, chefPortfolioRemovalRequests, chefSocialPosts, chefPostMentions, chefPostReactions, chefPostSaves, chefReminders, chefBreadcrumbs, chefSocialNotifications, chefStoryReactions, chefStoryViews, chefTaxConfig, chefTaxonomyExtensions, chefTaxonomyHidden, chefTeamMembers, clientConnections, clientFollowupRules, clientGiftLog, clientIncentives, clientKitchenInventory, clientNdas, clientReviews, clientSegments, clientTouchpointRules, clipboardEntries, stationComponents, stations, communityMessages, communityProfiles, communityTemplates, contactSubmissions, contentPerformance, contractorServiceAgreements, customFieldDefinitions, customFieldValues, dailyChecklistCompletions, dailyChecklistCustomItems, dailyPlanDrafts, copilotRunErrors, clientTags, clientAllergyRecords, commercePromotions, chefTrustedCircle, dailyReports, dailyRevenue, demandForecasts, deviceSessions, dietaryChangeLog, dietaryConflictAlerts, dishFeedback, dishVariations, displayCaseItems, documentComments, documentVersions, emailSequenceSteps, employees, entityTemplates, equipmentMaintenanceLog, equipmentRentals, eventAlcoholLogs, eventCannabisSettings, eventCollaborators, eventContentDrafts, eventContingencyNotes, eventContractSigners, eventContractVersions, eventDocumentGenerationJobs, eventEquipmentAssignments, eventEquipmentRentals, eventLeftoverDetails, eventPhotos, eventSafetyChecklists, eventServiceSessions, eventShareInviteEvents, eventStationAssignments, eventPrepBlocks, dopTaskCompletions, directoryOutreachLog, eventDocumentSnapshots, eventTempLogs, eventTravelLegs, eventVendorDeliveries, eventWasteLogs, externalReviewSources, expenseTaxCategories, experiencePackages, fermentationLogs, frontOfHouseMenus, menuTemplates, giftCardPurchaseIntents, goalClientSuggestions, goalSnapshots, googleConnections, groceryPriceEntries, groceryPriceQuoteItems, groceryPriceQuotes, guestCommunicationLogs, guestComps, guests, guestLeads, guestPhotos, guestReservations, guestTags, guestTestimonials, guestVisits, healthInsurancePremiums, householdMembers, households, externalReviews, guestEventProfile, receiptPhotos, hubGuestEventHistory, guestFeedback, hubGroupMembers, gmailHistoricalFindings, hubGuestFriends, incentiveDeliveries, incentiveRedemptions, ingredientShelfLifeDefaults, ingredientSubstitutions, inquiryNotes, inquiryRecipeLinks, insuranceClaims, insurancePolicies, inventoryAuditItems, inventoryBatches, inventoryCounts, inventoryLots, kdsTickets, kitchenAssessments, kitchenRentals, learningGoals, loyaltyRewardRedemptions, loyaltyRewards, mealPrepBatchLog, mealPrepContainers, mealPrepDeliveries, mealPrepOrders, mealPrepWindows, mentorshipConnections, mentorshipProfiles, integrationSyncJobs, integrationEntityLinks, integrationFieldMappings, hubMessageReactions, hubMedia, hubPinnedNotes, hubPolls, hubPollOptions, hubPollVotes, recurringServices, loyaltyConfig, marketingSpendLog, responseTemplates, partnerLocations, referralPartners, menuApprovalRequests, menuBeveragePairings, menuDishFeedback, menuRevisions, menuItems, menuModifications, menuPreferences, menuServiceHistory, paymentPlanInstallments, notifications, notificationDeliveryLog, notificationPreferences, onboardingProgress, opsLog, orderAheadItems, orderAheadOrderItems, orderAheadOrders, orderRequests, outreachCampaigns, packingChecklists, packingChecklistItems, packingTemplates, pantryItems, pantryLocations, partnerImages, paymentDisputes, paymentMilestoneTemplates, paymentMilestones, payroll941Summaries, payrollRecords, payrollW2Summaries, mileageLogs, platformPayouts, platformApiConnections, packingConfirmations, platingGuides, portfolioItems, postEventSurveys, prepTimeline, productModifierAssignments, productModifierGroups, productModifiers, professionalAchievements, profileHighlights, proposalAddonSelections, quoteAddons, proposalAddons, proposalViews, prospectCallScripts, prospectNotes, prospects, prospectOutreachLog, prospectScrubSessions, prospectStageHistory, purchaseOrderItems, purchaseOrders, pushSubscriptions, qrCodes, qrScans, quoteStateTransitions, raffleEntries, raffleRounds, platformSnapshots, productTourProgress, rebookTokens, receiptExtractions, receiptLineItems, recipeIngredients, recipeNutrition, recipeProductionLog, recipeShares, recipeStepPhotos, recipeSubRecipes, saleAppliedPromotions, recurringInvoiceHistory, recurringInvoices, recurringMenuRecommendations, recurringSchedules, referralRequestLog, remyAbuseLog, remyActionAuditLog, remyApprovalPolicies, remyArtifacts, remyConversations, remyFeedback, remyMemories, remyMessages, remyUsageMetrics, retainers, retainerPeriods, retirementContributions, rsvpReminderLog, saleItems, salesTaxRemittances, salesTaxSettings, scheduledCalls, scheduledMessages, scheduledShifts, shiftTemplates, seasonalAvailabilityPeriods, sequenceEnrollments, sequenceSteps, servedDishHistory, serviceCourses, shiftHandoffNotes, shiftLogs, shiftSwapRequests, shoppingLists, simulationRuns, simulationResults, smartFieldValues, smartGroceryLists, smartGroceryItems, smsMessages, smsSendLog, socialConnectedAccounts, socialHashtagSets, socialMediaAssets, socialPlatformCredentials, socialPostAssets, socialPosts, socialQueueSettings, socialStatsSnapshots, socialTemplates, sourcingEntries, staffAvailability, staffClockEntries, staffMealItems, staffMeals, staffOnboardingItems, staffPerformanceScores, staffSchedules, stationMenuItems, stocktakes, stocktakeItems, storeItemAssignments, stripeTransfers, subcontractAgreements, taskCompletionLog, tasks, taskDependencies, taskTemplates, tastingMenus, vendorItems, vendorCatalogImportRows, taxJurisdictions, taxCollected, taxFilings, taxQuarterlyEstimates, taxSettings, timeBlocks, travelLegIngredients, truckLocations, truckSchedule, truckPreorders, unusedIngredients, userFeedback, vaTasks, varianceAlertSettings, vehicleMaintenance, vendorEventAssignments, vendorInvoiceItems, vendorInvoiceLineItems, vendorPreferredIngredients, vendorPriceEntries, vendorPricePoints, waitlistEntries, wasteLog, webhookEndpoints, webhookDeliveries, websiteStatsSnapshots, wholesaleAccounts, wholesaleOrders, wixConnections, wixSubmissions, tenantSettings, vendorPriceAlertSettings, workflowExecutionLog, workflowExecutions, testimonials, vendorDocumentUploads, aarRecipeFeedback, recipeFamilies, aarIngredientIssues, expenseLineItems, workflowTemplates, workflowSteps, chefSocialHashtags, chefPostHashtags, conversationThreadReads, chefFeatureFlags, quoteSelectedAddons } from "./schema";
 
 export const automatedSequencesRelations = relations(automatedSequences, ({one, many}) => ({
 	chef: one(chefs, {
@@ -170,9 +170,11 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	eventGuestRsvpAudits: many(eventGuestRsvpAudit),
 	eventJoinRequests: many(eventJoinRequests),
 	eventStubs: many(eventStubs),
+	priceWatchLists: many(priceWatchList),
 	emailSenderReputations: many(emailSenderReputation),
 	aiPreferences: many(aiPreferences),
 	hubChefRecommendations: many(hubChefRecommendations),
+	ingredientAliases: many(ingredientAliases),
 	chefHandoffRecipients: many(chefHandoffRecipients),
 	chefHandoffEvents: many(chefHandoffEvents),
 	chefAvailabilitySignals: many(chefAvailabilitySignals),
@@ -186,7 +188,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	clientWorksheets: many(clientWorksheets),
 	betaOnboardingChecklists: many(betaOnboardingChecklist),
 	quoteLineItems: many(quoteLineItems),
-	clients: many(clients),
 	eventPrepSteps: many(eventPrepSteps),
 	dietaryConfirmations_confirmedByChefId: many(dietaryConfirmations, {
 		relationName: "dietaryConfirmations_confirmedByChefId_chefs_id"
@@ -205,6 +206,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	clientMealPrepPreferences: many(clientMealPrepPreferences),
 	containerInventories: many(containerInventory),
 	containerTransactions: many(containerTransactions),
+	clients: many(clients),
 	dailySpecials: many(dailySpecials),
 	permits: many(permits),
 	bakeSchedules: many(bakeSchedule),
@@ -393,7 +395,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	emailSequences: many(emailSequences),
 	employees: many(employees),
 	entityTemplates: many(entityTemplates),
-	equipmentItems: many(equipmentItems),
 	equipmentMaintenanceLogs: many(equipmentMaintenanceLog),
 	equipmentRentals: many(equipmentRentals),
 	eventAlcoholLogs: many(eventAlcoholLogs),
@@ -418,6 +419,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	eventShareInviteEvents: many(eventShareInviteEvents),
 	eventShareInvites: many(eventShareInvites),
 	eventStationAssignments: many(eventStationAssignments),
+	equipmentItems: many(equipmentItems),
 	eventPrepBlocks: many(eventPrepBlocks),
 	dopTaskCompletions: many(dopTaskCompletions),
 	eventDocumentSnapshots: many(eventDocumentSnapshots),
@@ -460,7 +462,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	expenses: many(expenses),
 	hubGuestEventHistories: many(hubGuestEventHistory),
 	guestFeedbacks: many(guestFeedback),
-	hubGroups: many(hubGroups),
 	googleMailboxes_chefId: many(googleMailboxes, {
 		relationName: "googleMailboxes_chefId_chefs_id"
 	}),
@@ -473,11 +474,11 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	gmailHistoricalFindings_tenantId: many(gmailHistoricalFindings, {
 		relationName: "gmailHistoricalFindings_tenantId_chefs_id"
 	}),
+	hubGroups: many(hubGroups),
 	incentiveDeliveries: many(incentiveDeliveries),
 	incentiveRedemptions: many(incentiveRedemptions),
 	ingredientShelfLifeDefaults: many(ingredientShelfLifeDefaults),
 	ingredientSubstitutions: many(ingredientSubstitutions),
-	inquiries: many(inquiries),
 	inquiryNotes: many(inquiryNotes),
 	inquiryRecipeLinks: many(inquiryRecipeLinks),
 	insuranceClaims: many(insuranceClaims),
@@ -489,7 +490,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	kitchenAssessments: many(kitchenAssessments),
 	kitchenRentals: many(kitchenRentals),
 	learningGoals: many(learningGoals),
-	loyaltyConfigs: many(loyaltyConfig),
 	loyaltyRewardRedemptions: many(loyaltyRewardRedemptions),
 	loyaltyRewards: many(loyaltyRewards),
 	marketingCampaigns: many(marketingCampaigns),
@@ -510,8 +510,10 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	integrationFieldMappings: many(integrationFieldMappings),
 	ledgerEntries: many(ledgerEntries),
 	mealPrepPrograms: many(mealPrepPrograms),
-	ingredients: many(ingredients),
+	loyaltyConfigs: many(loyaltyConfig),
 	marketingSpendLogs: many(marketingSpendLog),
+	inquiries: many(inquiries),
+	ingredients: many(ingredients),
 	menuApprovalRequests: many(menuApprovalRequests),
 	menuBeveragePairings: many(menuBeveragePairings),
 	menuDishFeedbacks: many(menuDishFeedback),
@@ -572,7 +574,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	prospectOutreachLogs: many(prospectOutreachLog),
 	prospectScrubSessions: many(prospectScrubSessions),
 	prospectStageHistories: many(prospectStageHistory),
-	prospects: many(prospects),
 	purchaseOrderItems: many(purchaseOrderItems),
 	purchaseOrders: many(purchaseOrders),
 	pushSubscriptions: many(pushSubscriptions),
@@ -585,6 +586,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	raffleRounds: many(raffleRounds),
 	platformSnapshots: many(platformSnapshots),
 	rebookTokens: many(rebookTokens),
+	prospects: many(prospects),
 	receiptExtractions: many(receiptExtractions),
 	receiptLineItems: many(receiptLineItems),
 	receiptPhotos: many(receiptPhotos),
@@ -675,7 +677,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	}),
 	staffClockEntries: many(staffClockEntries),
 	staffMeals: many(staffMeals),
-	staffMembers: many(staffMembers),
 	staffOnboardingItems: many(staffOnboardingItems),
 	staffPerformanceScores: many(staffPerformanceScores),
 	staffSchedules: many(staffSchedules),
@@ -696,6 +697,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	taskCompletionLogs: many(taskCompletionLog),
 	taskDependencies: many(taskDependencies),
 	socialPosts: many(socialPosts),
+	staffMembers: many(staffMembers),
 	taskTemplates: many(taskTemplates),
 	tasks: many(tasks),
 	vendorCatalogImportRows: many(vendorCatalogImportRows),
@@ -704,7 +706,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	taxJurisdictions: many(taxJurisdictions),
 	taxQuarterlyEstimates: many(taxQuarterlyEstimates),
 	taxSettings: many(taxSettings),
-	tenantSettings: many(tenantSettings),
 	timeBlocks: many(timeBlocks),
 	truckLocations: many(truckLocations),
 	truckPreorders: many(truckPreorders),
@@ -720,7 +721,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	vendorPreferredIngredients: many(vendorPreferredIngredients),
 	vendorPriceEntries: many(vendorPriceEntries),
 	vendorPricePoints: many(vendorPricePoints),
-	vendors: many(vendors),
 	waitlistEntries: many(waitlistEntries),
 	wasteLogs_chefId: many(wasteLog),
 	wasteLogs_chefId: many(wasteLogs),
@@ -735,10 +735,12 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 		relationName: "wixConnections_tenantId_chefs_id"
 	}),
 	wixSubmissions: many(wixSubmissions),
+	tenantSettings: many(tenantSettings),
 	vendorPriceAlertSettings: many(vendorPriceAlertSettings),
 	workflowExecutionLogs: many(workflowExecutionLog),
 	testimonials: many(testimonials),
 	vendorDocumentUploads: many(vendorDocumentUploads),
+	vendors: many(vendors),
 	tastingMenus: many(tastingMenus),
 	aarRecipeFeedbacks: many(aarRecipeFeedback),
 	recipeFamilies: many(recipeFamilies),
@@ -880,15 +882,15 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 	guestFeedbacks: many(guestFeedback),
 	hubGroups: many(hubGroups),
 	incentiveRedemptions: many(incentiveRedemptions),
-	inquiries: many(inquiries, {
-		relationName: "inquiries_convertedToEventId_events_id"
-	}),
 	insuranceClaims: many(insuranceClaims),
 	kitchenAssessments: many(kitchenAssessments),
 	kitchenRentals: many(kitchenRentals),
 	loyaltyRewardRedemptions: many(loyaltyRewardRedemptions),
 	ledgerEntries: many(ledgerEntries),
 	hubMedias: many(hubMedia),
+	inquiries: many(inquiries, {
+		relationName: "inquiries_convertedToEventId_events_id"
+	}),
 	menuApprovalRequests: many(menuApprovalRequests),
 	menuModifications: many(menuModifications),
 	menuPreferences: many(menuPreferences),
@@ -1371,6 +1373,16 @@ export const clientsRelations = relations(clients, ({one, many}) => ({
 	clientWorksheets: many(clientWorksheets),
 	betaOnboardingChecklists: many(betaOnboardingChecklist),
 	hubGuestProfiles: many(hubGuestProfiles),
+	dietaryConfirmations: many(dietaryConfirmations),
+	clientReferrals_referredClientId: many(clientReferrals, {
+		relationName: "clientReferrals_referredClientId_clients_id"
+	}),
+	clientReferrals_referrerClientId: many(clientReferrals, {
+		relationName: "clientReferrals_referrerClientId_clients_id"
+	}),
+	clientOutreachLogs: many(clientOutreachLog),
+	clientMealPrepPreferences: many(clientMealPrepPreferences),
+	containerTransactions: many(containerTransactions),
 	usersInAuth: one(usersInAuth, {
 		fields: [clients.authUserId],
 		references: [usersInAuth.id]
@@ -1397,16 +1409,6 @@ export const clientsRelations = relations(clients, ({one, many}) => ({
 		fields: [clients.tenantId],
 		references: [chefs.id]
 	}),
-	dietaryConfirmations: many(dietaryConfirmations),
-	clientReferrals_referredClientId: many(clientReferrals, {
-		relationName: "clientReferrals_referredClientId_clients_id"
-	}),
-	clientReferrals_referrerClientId: many(clientReferrals, {
-		relationName: "clientReferrals_referrerClientId_clients_id"
-	}),
-	clientOutreachLogs: many(clientOutreachLog),
-	clientMealPrepPreferences: many(clientMealPrepPreferences),
-	containerTransactions: many(containerTransactions),
 	bakeryOrders: many(bakeryOrders),
 	communicationLogs: many(communicationLog),
 	chefDocuments: many(chefDocuments),
@@ -1447,13 +1449,13 @@ export const clientsRelations = relations(clients, ({one, many}) => ({
 	householdMembers: many(householdMembers),
 	households: many(households),
 	incentiveRedemptions: many(incentiveRedemptions),
-	inquiries: many(inquiries),
 	kitchenAssessments: many(kitchenAssessments),
 	loyaltyRewardRedemptions: many(loyaltyRewardRedemptions),
 	mealPrepContainers: many(mealPrepContainers),
 	mealPrepDeliveries: many(mealPrepDeliveries),
 	ledgerEntries: many(ledgerEntries),
 	mealPrepPrograms: many(mealPrepPrograms),
+	inquiries: many(inquiries),
 	menuApprovalRequests: many(menuApprovalRequests),
 	menuDishFeedbacks: many(menuDishFeedback),
 	menuServiceHistories: many(menuServiceHistory),
@@ -1666,8 +1668,10 @@ export const inquiriesRelations = relations(inquiries, ({one, many}) => ({
 	contactSubmissions: many(contactSubmissions),
 	conversations: many(conversations),
 	eventServiceSessions: many(eventServiceSessions),
-	hubGroups: many(hubGroups),
 	gmailHistoricalFindings: many(gmailHistoricalFindings),
+	hubGroups: many(hubGroups),
+	inquiryNotes: many(inquiryNotes),
+	inquiryRecipeLinks: many(inquiryRecipeLinks),
 	event: one(events, {
 		fields: [inquiries.convertedToEventId],
 		references: [events.id],
@@ -1697,15 +1701,13 @@ export const inquiriesRelations = relations(inquiries, ({one, many}) => ({
 		fields: [inquiries.tenantId],
 		references: [chefs.id]
 	}),
-	inquiryNotes: many(inquiryNotes),
-	inquiryRecipeLinks: many(inquiryRecipeLinks),
 	notifications: many(notifications),
 	messages: many(messages),
 	platformRecords: many(platformRecords),
 	platformPayouts: many(platformPayouts),
-	prospects: many(prospects),
 	quotes: many(quotes),
 	platformSnapshots: many(platformSnapshots),
+	prospects: many(prospects),
 	scheduledCalls: many(scheduledCalls),
 	wixSubmissions: many(wixSubmissions),
 	events: many(events, {
@@ -1752,6 +1754,7 @@ export const dishesRelations = relations(dishes, ({one, many}) => ({
 		relationName: "dishes_updatedBy_usersInAuth_id"
 	}),
 	components: many(components),
+	hubMealBoards: many(hubMealBoard),
 	menuDishFeedbacks: many(menuDishFeedback),
 }));
 
@@ -1766,11 +1769,12 @@ export const menusRelations = relations(menus, ({one, many}) => ({
 	chefs: many(chefs, {
 		relationName: "chefs_featuredBookingMenuId_menus_id"
 	}),
+	hubMealBoards: many(hubMealBoard),
 	cookingClasses: many(cookingClasses),
 	experiencePackages: many(experiencePackages),
 	frontOfHouseMenus: many(frontOfHouseMenus),
-	inquiries: many(inquiries),
 	marketingCampaigns: many(marketingCampaigns),
+	inquiries: many(inquiries),
 	menuBeveragePairings: many(menuBeveragePairings),
 	menuItems: many(menuItems),
 	menuPreferences: many(menuPreferences),
@@ -2416,6 +2420,10 @@ export const staffMembersRelations = relations(staffMembers, ({one, many}) => ({
 	}),
 	staffAvailabilities: many(staffAvailability),
 	staffClockEntries: many(staffClockEntries),
+	staffOnboardingItems: many(staffOnboardingItems),
+	staffPerformanceScores: many(staffPerformanceScores),
+	staffSchedules: many(staffSchedules),
+	taskCompletionLogs: many(taskCompletionLog),
 	usersInAuth: one(usersInAuth, {
 		fields: [staffMembers.authUserId],
 		references: [usersInAuth.id]
@@ -2428,10 +2436,6 @@ export const staffMembersRelations = relations(staffMembers, ({one, many}) => ({
 		fields: [staffMembers.locationId],
 		references: [businessLocations.id]
 	}),
-	staffOnboardingItems: many(staffOnboardingItems),
-	staffPerformanceScores: many(staffPerformanceScores),
-	staffSchedules: many(staffSchedules),
-	taskCompletionLogs: many(taskCompletionLog),
 	tasks_assignedTo: many(tasks, {
 		relationName: "tasks_assignedTo_staffMembers_id"
 	}),
@@ -2523,6 +2527,11 @@ export const hubGroupsRelations = relations(hubGroups, ({one, many}) => ({
 	clients_referredFromGroupId: many(clients, {
 		relationName: "clients_referredFromGroupId_hubGroups_id"
 	}),
+	hubMealBoards: many(hubMealBoard),
+	hubMealTemplates: many(hubMealTemplates),
+	hubScheduleChanges: many(hubScheduleChanges),
+	hubRecurringMeals: many(hubRecurringMeals),
+	hubMealRequests: many(hubMealRequests),
 	hubGroupMembers: many(hubGroupMembers),
 	hubGuestProfile: one(hubGuestProfiles, {
 		fields: [hubGroups.createdByProfileId],
@@ -2856,12 +2865,12 @@ export const equipmentDepreciationSchedulesRelations = relations(equipmentDeprec
 
 export const equipmentItemsRelations = relations(equipmentItems, ({one, many}) => ({
 	equipmentDepreciationSchedules: many(equipmentDepreciationSchedules),
+	equipmentMaintenanceLogs: many(equipmentMaintenanceLog),
+	eventEquipmentAssignments: many(eventEquipmentAssignments),
 	chef: one(chefs, {
 		fields: [equipmentItems.chefId],
 		references: [chefs.id]
 	}),
-	equipmentMaintenanceLogs: many(equipmentMaintenanceLog),
-	eventEquipmentAssignments: many(eventEquipmentAssignments),
 }));
 
 export const mealPrepWeeksRelations = relations(mealPrepWeeks, ({one}) => ({
@@ -3085,6 +3094,19 @@ export const hubGuestProfilesRelations = relations(hubGuestProfiles, ({one, many
 	openTableConsents_requestedByProfileId: many(openTableConsents, {
 		relationName: "openTableConsents_requestedByProfileId_hubGuestProfiles_id"
 	}),
+	hubMealBoards: many(hubMealBoard),
+	hubMealFeedbacks: many(hubMealFeedback),
+	hubHouseholdMembers: many(hubHouseholdMembers),
+	hubMealTemplates: many(hubMealTemplates),
+	hubScheduleChanges_acknowledgedByProfileId: many(hubScheduleChanges, {
+		relationName: "hubScheduleChanges_acknowledgedByProfileId_hubGuestProfiles_id"
+	}),
+	hubScheduleChanges_postedByProfileId: many(hubScheduleChanges, {
+		relationName: "hubScheduleChanges_postedByProfileId_hubGuestProfiles_id"
+	}),
+	hubRecurringMeals: many(hubRecurringMeals),
+	hubMealComments: many(hubMealComments),
+	hubMealRequests: many(hubMealRequests),
 	hubGuestEventHistories: many(hubGuestEventHistory),
 	hubGroupMembers: many(hubGroupMembers),
 	hubGroups: many(hubGroups, {
@@ -3715,6 +3737,7 @@ export const inventoryTransactionsRelations = relations(inventoryTransactions, (
 
 export const ingredientsRelations = relations(ingredients, ({one, many}) => ({
 	inventoryTransactions: many(inventoryTransactions),
+	ingredientAliases: many(ingredientAliases),
 	ingredientPriceHistories: many(ingredientPriceHistory),
 	groceryPriceQuoteItems: many(groceryPriceQuoteItems),
 	inventoryAuditItems: many(inventoryAuditItems),
@@ -4022,6 +4045,13 @@ export const hubGroupEventsRelations = relations(hubGroupEvents, ({one}) => ({
 	}),
 }));
 
+export const priceWatchListRelations = relations(priceWatchList, ({one}) => ({
+	chef: one(chefs, {
+		fields: [priceWatchList.chefId],
+		references: [chefs.id]
+	}),
+}));
+
 export const hubAvailabilityRelations = relations(hubAvailability, ({one, many}) => ({
 	hubGuestProfile: one(hubGuestProfiles, {
 		fields: [hubAvailability.createdByProfileId],
@@ -4074,6 +4104,25 @@ export const hubChefRecommendationsRelations = relations(hubChefRecommendations,
 		references: [hubGuestProfiles.id],
 		relationName: "hubChefRecommendations_toProfileId_hubGuestProfiles_id"
 	}),
+}));
+
+export const ingredientAliasesRelations = relations(ingredientAliases, ({one}) => ({
+	ingredient: one(ingredients, {
+		fields: [ingredientAliases.ingredientId],
+		references: [ingredients.id]
+	}),
+	systemIngredient: one(systemIngredients, {
+		fields: [ingredientAliases.systemIngredientId],
+		references: [systemIngredients.id]
+	}),
+	chef: one(chefs, {
+		fields: [ingredientAliases.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const systemIngredientsRelations = relations(systemIngredients, ({many}) => ({
+	ingredientAliases: many(ingredientAliases),
 }));
 
 export const betaSurveyInvitesRelations = relations(betaSurveyInvites, ({one}) => ({
@@ -4624,6 +4673,29 @@ export const permitsRelations = relations(permits, ({one}) => ({
 	}),
 }));
 
+export const hubMealBoardRelations = relations(hubMealBoard, ({one, many}) => ({
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [hubMealBoard.authorProfileId],
+		references: [hubGuestProfiles.id]
+	}),
+	dish: one(dishes, {
+		fields: [hubMealBoard.dishId],
+		references: [dishes.id]
+	}),
+	hubGroup: one(hubGroups, {
+		fields: [hubMealBoard.groupId],
+		references: [hubGroups.id]
+	}),
+	menu: one(menus, {
+		fields: [hubMealBoard.menuId],
+		references: [menus.id]
+	}),
+	hubMealFeedbacks: many(hubMealFeedback),
+	hubMealAttendances: many(hubMealAttendance),
+	hubMealComments: many(hubMealComments),
+	hubMealRequests: many(hubMealRequests),
+}));
+
 export const bakeScheduleRelations = relations(bakeSchedule, ({one, many}) => ({
 	bakeryOven: one(bakeryOvens, {
 		fields: [bakeSchedule.ovenId],
@@ -4704,6 +4776,17 @@ export const feedbackRequestsRelations = relations(feedbackRequests, ({one, many
 	}),
 }));
 
+export const hubMealFeedbackRelations = relations(hubMealFeedback, ({one}) => ({
+	hubMealBoard: one(hubMealBoard, {
+		fields: [hubMealFeedback.mealEntryId],
+		references: [hubMealBoard.id]
+	}),
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [hubMealFeedback.profileId],
+		references: [hubGuestProfiles.id]
+	}),
+}));
+
 export const giftCardTransactionsRelations = relations(giftCardTransactions, ({one}) => ({
 	giftCard: one(giftCards, {
 		fields: [giftCardTransactions.giftCardId],
@@ -4744,6 +4827,14 @@ export const communicationLogRelations = relations(communicationLog, ({one}) => 
 		fields: [communicationLog.tenantId],
 		references: [chefs.id]
 	}),
+}));
+
+export const hubHouseholdMembersRelations = relations(hubHouseholdMembers, ({one, many}) => ({
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [hubHouseholdMembers.profileId],
+		references: [hubGuestProfiles.id]
+	}),
+	hubMealAttendances: many(hubMealAttendance),
 }));
 
 export const complianceCleaningLogsRelations = relations(complianceCleaningLogs, ({one}) => ({
@@ -4796,12 +4887,12 @@ export const vendorsRelations = relations(vendors, ({one, many}) => ({
 	vendorPreferredIngredients: many(vendorPreferredIngredients),
 	vendorPriceEntries: many(vendorPriceEntries),
 	vendorPricePoints: many(vendorPricePoints),
+	vendorPriceAlertSettings: many(vendorPriceAlertSettings),
+	vendorDocumentUploads: many(vendorDocumentUploads),
 	chef: one(chefs, {
 		fields: [vendors.chefId],
 		references: [chefs.id]
 	}),
-	vendorPriceAlertSettings: many(vendorPriceAlertSettings),
-	vendorDocumentUploads: many(vendorDocumentUploads),
 }));
 
 export const documentIntelligenceJobsRelations = relations(documentIntelligenceJobs, ({one, many}) => ({
@@ -4872,6 +4963,17 @@ export const chefFoldersRelations = relations(chefFolders, ({one, many}) => ({
 	}),
 }));
 
+export const hubMealTemplatesRelations = relations(hubMealTemplates, ({one}) => ({
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [hubMealTemplates.createdByProfileId],
+		references: [hubGuestProfiles.id]
+	}),
+	hubGroup: one(hubGroups, {
+		fields: [hubMealTemplates.groupId],
+		references: [hubGroups.id]
+	}),
+}));
+
 export const entityPhotosRelations = relations(entityPhotos, ({one}) => ({
 	chef: one(chefs, {
 		fields: [entityPhotos.tenantId],
@@ -4925,6 +5027,23 @@ export const eventTemplatesRelations = relations(eventTemplates, ({one}) => ({
 	chef: one(chefs, {
 		fields: [eventTemplates.tenantId],
 		references: [chefs.id]
+	}),
+}));
+
+export const hubScheduleChangesRelations = relations(hubScheduleChanges, ({one}) => ({
+	hubGuestProfile_acknowledgedByProfileId: one(hubGuestProfiles, {
+		fields: [hubScheduleChanges.acknowledgedByProfileId],
+		references: [hubGuestProfiles.id],
+		relationName: "hubScheduleChanges_acknowledgedByProfileId_hubGuestProfiles_id"
+	}),
+	hubGroup: one(hubGroups, {
+		fields: [hubScheduleChanges.groupId],
+		references: [hubGroups.id]
+	}),
+	hubGuestProfile_postedByProfileId: one(hubGuestProfiles, {
+		fields: [hubScheduleChanges.postedByProfileId],
+		references: [hubGuestProfiles.id],
+		relationName: "hubScheduleChanges_postedByProfileId_hubGuestProfiles_id"
 	}),
 }));
 
@@ -4983,6 +5102,17 @@ export const chefEquipmentMasterRelations = relations(chefEquipmentMaster, ({one
 	}),
 }));
 
+export const hubRecurringMealsRelations = relations(hubRecurringMeals, ({one}) => ({
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [hubRecurringMeals.createdByProfileId],
+		references: [hubGuestProfiles.id]
+	}),
+	hubGroup: one(hubGroups, {
+		fields: [hubRecurringMeals.groupId],
+		references: [hubGroups.id]
+	}),
+}));
+
 export const chefDepositSettingsRelations = relations(chefDepositSettings, ({one}) => ({
 	chef: one(chefs, {
 		fields: [chefDepositSettings.chefId],
@@ -5020,6 +5150,17 @@ export const chefSeasonalAvailabilityRelations = relations(chefSeasonalAvailabil
 	}),
 }));
 
+export const hubMealAttendanceRelations = relations(hubMealAttendance, ({one}) => ({
+	hubHouseholdMember: one(hubHouseholdMembers, {
+		fields: [hubMealAttendance.householdMemberId],
+		references: [hubHouseholdMembers.id]
+	}),
+	hubMealBoard: one(hubMealBoard, {
+		fields: [hubMealAttendance.mealEntryId],
+		references: [hubMealBoard.id]
+	}),
+}));
+
 export const groceryTripItemsRelations = relations(groceryTripItems, ({one, many}) => ({
 	groceryTrip: one(groceryTrips, {
 		fields: [groceryTripItems.tripId],
@@ -5053,6 +5194,17 @@ export const groceryTripSplitsRelations = relations(groceryTripSplits, ({one}) =
 	groceryTrip: one(groceryTrips, {
 		fields: [groceryTripSplits.tripId],
 		references: [groceryTrips.id]
+	}),
+}));
+
+export const hubMealCommentsRelations = relations(hubMealComments, ({one}) => ({
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [hubMealComments.authorProfileId],
+		references: [hubGuestProfiles.id]
+	}),
+	hubMealBoard: one(hubMealBoard, {
+		fields: [hubMealComments.mealEntryId],
+		references: [hubMealBoard.id]
 	}),
 }));
 
@@ -5100,6 +5252,21 @@ export const emailSequencesRelations = relations(emailSequences, ({one, many}) =
 	chef: one(chefs, {
 		fields: [emailSequences.chefId],
 		references: [chefs.id]
+	}),
+}));
+
+export const hubMealRequestsRelations = relations(hubMealRequests, ({one}) => ({
+	hubGroup: one(hubGroups, {
+		fields: [hubMealRequests.groupId],
+		references: [hubGroups.id]
+	}),
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [hubMealRequests.requestedByProfileId],
+		references: [hubGuestProfiles.id]
+	}),
+	hubMealBoard: one(hubMealBoard, {
+		fields: [hubMealRequests.resolvedMealId],
+		references: [hubMealBoard.id]
 	}),
 }));
 
@@ -7199,61 +7366,6 @@ export const ingredientSubstitutionsRelations = relations(ingredientSubstitution
 	}),
 }));
 
-export const responseTemplatesRelations = relations(responseTemplates, ({one, many}) => ({
-	inquiries: many(inquiries),
-	chef_chefId: one(chefs, {
-		fields: [responseTemplates.chefId],
-		references: [chefs.id],
-		relationName: "responseTemplates_chefId_chefs_id"
-	}),
-	chef_tenantId: one(chefs, {
-		fields: [responseTemplates.tenantId],
-		references: [chefs.id],
-		relationName: "responseTemplates_tenantId_chefs_id"
-	}),
-	scheduledMessages: many(scheduledMessages),
-}));
-
-export const partnerLocationsRelations = relations(partnerLocations, ({one, many}) => ({
-	inquiries: many(inquiries),
-	partnerImages: many(partnerImages),
-	referralPartner: one(referralPartners, {
-		fields: [partnerLocations.partnerId],
-		references: [referralPartners.id]
-	}),
-	chef: one(chefs, {
-		fields: [partnerLocations.tenantId],
-		references: [chefs.id]
-	}),
-	events: many(events),
-}));
-
-export const referralPartnersRelations = relations(referralPartners, ({one, many}) => ({
-	inquiries: many(inquiries),
-	partnerImages: many(partnerImages),
-	partnerLocations: many(partnerLocations),
-	usersInAuth: one(usersInAuth, {
-		fields: [referralPartners.authUserId],
-		references: [usersInAuth.id]
-	}),
-	client: one(clients, {
-		fields: [referralPartners.originClientId],
-		references: [clients.id]
-	}),
-	event: one(events, {
-		fields: [referralPartners.originEventId],
-		references: [events.id],
-		relationName: "referralPartners_originEventId_events_id"
-	}),
-	chef: one(chefs, {
-		fields: [referralPartners.tenantId],
-		references: [chefs.id]
-	}),
-	events: many(events, {
-		relationName: "events_referralPartnerId_referralPartners_id"
-	}),
-}));
-
 export const inquiryNotesRelations = relations(inquiryNotes, ({one}) => ({
 	inquiry: one(inquiries, {
 		fields: [inquiryNotes.inquiryId],
@@ -7410,13 +7522,6 @@ export const kitchenRentalsRelations = relations(kitchenRentals, ({one}) => ({
 export const learningGoalsRelations = relations(learningGoals, ({one}) => ({
 	chef: one(chefs, {
 		fields: [learningGoals.chefId],
-		references: [chefs.id]
-	}),
-}));
-
-export const loyaltyConfigRelations = relations(loyaltyConfig, ({one}) => ({
-	chef: one(chefs, {
-		fields: [loyaltyConfig.tenantId],
 		references: [chefs.id]
 	}),
 }));
@@ -7651,10 +7756,72 @@ export const recurringServicesRelations = relations(recurringServices, ({one, ma
 	}),
 }));
 
+export const loyaltyConfigRelations = relations(loyaltyConfig, ({one}) => ({
+	chef: one(chefs, {
+		fields: [loyaltyConfig.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
 export const marketingSpendLogRelations = relations(marketingSpendLog, ({one}) => ({
 	chef: one(chefs, {
 		fields: [marketingSpendLog.chefId],
 		references: [chefs.id]
+	}),
+}));
+
+export const responseTemplatesRelations = relations(responseTemplates, ({one, many}) => ({
+	inquiries: many(inquiries),
+	chef_chefId: one(chefs, {
+		fields: [responseTemplates.chefId],
+		references: [chefs.id],
+		relationName: "responseTemplates_chefId_chefs_id"
+	}),
+	chef_tenantId: one(chefs, {
+		fields: [responseTemplates.tenantId],
+		references: [chefs.id],
+		relationName: "responseTemplates_tenantId_chefs_id"
+	}),
+	scheduledMessages: many(scheduledMessages),
+}));
+
+export const partnerLocationsRelations = relations(partnerLocations, ({one, many}) => ({
+	inquiries: many(inquiries),
+	partnerImages: many(partnerImages),
+	referralPartner: one(referralPartners, {
+		fields: [partnerLocations.partnerId],
+		references: [referralPartners.id]
+	}),
+	chef: one(chefs, {
+		fields: [partnerLocations.tenantId],
+		references: [chefs.id]
+	}),
+	events: many(events),
+}));
+
+export const referralPartnersRelations = relations(referralPartners, ({one, many}) => ({
+	inquiries: many(inquiries),
+	partnerImages: many(partnerImages),
+	partnerLocations: many(partnerLocations),
+	usersInAuth: one(usersInAuth, {
+		fields: [referralPartners.authUserId],
+		references: [usersInAuth.id]
+	}),
+	client: one(clients, {
+		fields: [referralPartners.originClientId],
+		references: [clients.id]
+	}),
+	event: one(events, {
+		fields: [referralPartners.originEventId],
+		references: [events.id],
+		relationName: "referralPartners_originEventId_events_id"
+	}),
+	chef: one(chefs, {
+		fields: [referralPartners.tenantId],
+		references: [chefs.id]
+	}),
+	events: many(events, {
+		relationName: "events_referralPartnerId_referralPartners_id"
 	}),
 }));
 
@@ -9527,13 +9694,6 @@ export const taxSettingsRelations = relations(taxSettings, ({one}) => ({
 	}),
 }));
 
-export const tenantSettingsRelations = relations(tenantSettings, ({one}) => ({
-	chef: one(chefs, {
-		fields: [tenantSettings.tenantId],
-		references: [chefs.id]
-	}),
-}));
-
 export const timeBlocksRelations = relations(timeBlocks, ({one}) => ({
 	usersInAuth: one(usersInAuth, {
 		fields: [timeBlocks.createdBy],
@@ -9821,6 +9981,13 @@ export const wixSubmissionsRelations = relations(wixSubmissions, ({one}) => ({
 	}),
 	chef: one(chefs, {
 		fields: [wixSubmissions.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const tenantSettingsRelations = relations(tenantSettings, ({one}) => ({
+	chef: one(chefs, {
+		fields: [tenantSettings.tenantId],
 		references: [chefs.id]
 	}),
 }));

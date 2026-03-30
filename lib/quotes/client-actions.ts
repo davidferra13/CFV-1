@@ -152,6 +152,19 @@ export async function acceptQuote(quoteId: string) {
     } catch {}
   }
 
+  // Loyalty trigger: quote accepted (non-blocking)
+  if (quote.tenant_id) {
+    try {
+      const { fireTrigger } = await import('@/lib/loyalty/triggers')
+      await fireTrigger('quote_accepted', quote.tenant_id, user.entityId, {
+        eventId: quote.event_id || undefined,
+        description: 'Quote accepted',
+      })
+    } catch (err) {
+      console.error('[acceptQuote] Loyalty trigger failed (non-blocking):', err)
+    }
+  }
+
   // Notify chef that quote was accepted (non-blocking)
   if (quote.tenant_id) {
     notifyChefOfQuoteAccepted(quote.tenant_id, quoteId, quote, user.entityId).catch(async (err) => {

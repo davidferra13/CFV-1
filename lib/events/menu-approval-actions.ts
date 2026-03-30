@@ -252,6 +252,17 @@ export async function approveMenu(requestId: string) {
     })
   }
 
+  // Loyalty trigger: menu approved (non-blocking)
+  try {
+    const { fireTrigger } = await import('@/lib/loyalty/triggers')
+    await fireTrigger('menu_approved', request.chef_id, user.entityId, {
+      eventId: request.event_id,
+      description: 'Menu approved',
+    })
+  } catch (err) {
+    console.error('[approveMenu] Loyalty trigger failed (non-blocking):', err)
+  }
+
   return { success: true }
 }
 

@@ -2676,6 +2676,25 @@ export async function submitRSVP(input: SubmitRSVPInput) {
     console.error('[submitRSVP] Non-blocking hub sync failed:', err)
   }
 
+  // Loyalty trigger: RSVP collected (awards points to event OWNER, not guest)
+  // Non-blocking, public context, admin client
+  try {
+    const { data: eventForLoyalty } = await db
+      .from('events')
+      .select('client_id, tenant_id')
+      .eq('id', share.event_id)
+      .single()
+    if (eventForLoyalty?.client_id && eventForLoyalty?.tenant_id) {
+      const { fireTrigger } = await import('@/lib/loyalty/triggers')
+      await fireTrigger('rsvp_collected', eventForLoyalty.tenant_id, eventForLoyalty.client_id, {
+        eventId: share.event_id,
+        description: `RSVP collected from ${validated.full_name}`,
+      })
+    }
+  } catch (err) {
+    console.error('[submitRSVP] Loyalty trigger failed (non-blocking):', err)
+  }
+
   revalidatePath(`/events/${share.event_id}`)
   revalidatePath(`/my-events/${share.event_id}`)
 

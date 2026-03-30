@@ -119,6 +119,25 @@ export async function recordPayment(input: RecordPaymentInput) {
       .eq('tenant_id', user.tenantId!)
   }
 
+  // Loyalty triggers: payment + tip (non-blocking, chef context)
+  try {
+    if ((sale as any).client_id && (sale as any).event_id) {
+      const { fireTrigger } = await import('@/lib/loyalty/triggers')
+      await fireTrigger('payment_on_time', user.tenantId!, (sale as any).client_id, {
+        eventId: (sale as any).event_id,
+        description: 'Payment recorded',
+      })
+      if (input.tipCents && input.tipCents > 0) {
+        await fireTrigger('tip_added', user.tenantId!, (sale as any).client_id, {
+          eventId: (sale as any).event_id,
+          description: 'Tip added',
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[recordPayment] Loyalty trigger failed (non-blocking):', err)
+  }
+
   revalidatePath('/commerce')
   return payment
 }

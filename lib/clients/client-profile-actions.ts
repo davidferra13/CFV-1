@@ -154,7 +154,7 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
   // Fetch current profile to detect allergy/dietary changes (food safety)
   const { data: oldProfile } = await db
     .from('clients')
-    .select('allergies, dietary_restrictions, tenant_id')
+    .select('allergies, dietary_restrictions, tenant_id, email, phone, full_name')
     .eq('id', user.entityId)
     .single()
 
@@ -202,6 +202,22 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
     }
   } catch (err) {
     console.error('[updateMyProfile] Non-blocking allergy notification failed:', err)
+  }
+
+  // Loyalty trigger: profile completion (non-blocking)
+  // Profile is "complete" when full_name + email + phone are all populated
+  try {
+    const hasName = !!validated.full_name?.trim()
+    const hasPhone = !!validated.phone?.trim()
+    const hasEmail = !!(oldProfile?.email as string)?.trim()
+    if (hasName && hasPhone && hasEmail && oldProfile?.tenant_id) {
+      const { fireTrigger } = await import('@/lib/loyalty/triggers')
+      await fireTrigger('profile_completed', oldProfile.tenant_id, user.entityId, {
+        description: 'Profile completed',
+      })
+    }
+  } catch (err) {
+    console.error('[updateMyProfile] Loyalty trigger failed (non-blocking):', err)
   }
 
   return { success: true }
@@ -505,6 +521,23 @@ export async function updateMyServedDishFeedback(input: {
     console.error('[updateMyServedDishFeedback] Notification failed (non-blocking):', notifyErr)
   }
 
+  // Loyalty trigger: meal feedback (non-blocking)
+  try {
+    const { data: feedbackClient } = await db
+      .from('clients')
+      .select('tenant_id')
+      .eq('id', user.entityId)
+      .single()
+    if (feedbackClient?.tenant_id) {
+      const { fireTrigger } = await import('@/lib/loyalty/triggers')
+      await fireTrigger('meal_feedback_given', feedbackClient.tenant_id, user.entityId, {
+        description: `Meal feedback: ${validated.client_reaction}`,
+      })
+    }
+  } catch (err) {
+    console.error('[updateMyServedDishFeedback] Loyalty trigger failed (non-blocking):', err)
+  }
+
   revalidatePath('/my-profile')
   revalidatePath('/clients/recurring')
   revalidatePath(`/clients/${user.entityId}/recurring`)
@@ -557,6 +590,25 @@ export async function updateMyFunQA(answers: FunQAAnswers) {
   if (error) {
     console.error('[updateMyFunQA] Error:', error)
     throw new Error('Failed to save answers')
+  }
+
+  // Loyalty trigger: fun Q&A completed (non-blocking)
+  try {
+    if (Object.keys(cleaned).length > 0) {
+      const { data: client } = await db
+        .from('clients')
+        .select('tenant_id')
+        .eq('id', user.entityId)
+        .single()
+      if (client?.tenant_id) {
+        const { fireTrigger } = await import('@/lib/loyalty/triggers')
+        await fireTrigger('fun_qa_completed', client.tenant_id, user.entityId, {
+          description: 'Fun Q&A answered',
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[updateMyFunQA] Loyalty trigger failed (non-blocking):', err)
   }
 
   revalidatePath('/my-profile')

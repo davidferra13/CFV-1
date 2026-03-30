@@ -50,6 +50,27 @@ export async function createHubGroup(input: z.infer<typeof CreateGroupSchema>): 
     system_metadata: { group_name: validated.name },
   })
 
+  // Loyalty trigger: hub group created (non-blocking)
+  // This is an internal utility with no session; caller must provide tenant_id
+  if (validated.tenant_id && validated.created_by_profile_id) {
+    try {
+      // Resolve profile to client_id
+      const { data: profile } = await db
+        .from('hub_guest_profiles')
+        .select('client_id')
+        .eq('id', validated.created_by_profile_id)
+        .single()
+      if (profile?.client_id) {
+        const { fireTrigger } = await import('@/lib/loyalty/triggers')
+        await fireTrigger('hub_group_created', validated.tenant_id, profile.client_id, {
+          description: `Created group: ${validated.name}`,
+        })
+      }
+    } catch (err) {
+      console.error('[createHubGroup] Loyalty trigger failed (non-blocking):', err)
+    }
+  }
+
   return group as HubGroup
 }
 

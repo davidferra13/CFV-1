@@ -97,6 +97,23 @@ export async function submitClientReview(input: SubmitReviewInput) {
     newReview?.id ?? null
   ).catch((err) => console.error('[submitClientReview] Chef notification failed:', err))
 
+  // Loyalty triggers (non-blocking)
+  try {
+    const { fireTrigger } = await import('@/lib/loyalty/triggers')
+    await fireTrigger('review_submitted', event.tenant_id, user.entityId, {
+      eventId: validated.event_id,
+      description: 'Review submitted',
+    })
+    if (validated.display_consent) {
+      await fireTrigger('public_review_consent', event.tenant_id, user.entityId, {
+        eventId: validated.event_id,
+        description: 'Public review consent given',
+      })
+    }
+  } catch (err) {
+    console.error('[submitClientReview] Loyalty trigger failed (non-blocking):', err)
+  }
+
   return { success: true }
 }
 
@@ -192,6 +209,20 @@ export async function recordGoogleReviewClick(eventId: string) {
 
   // Mark review_link_sent on the event
   await db.from('events').update({ review_link_sent: true }).eq('id', eventId)
+
+  // Loyalty trigger (non-blocking)
+  try {
+    const { data: event } = await db.from('events').select('tenant_id').eq('id', eventId).single()
+    if (event?.tenant_id) {
+      const { fireTrigger } = await import('@/lib/loyalty/triggers')
+      await fireTrigger('google_review_clicked', event.tenant_id, user.entityId, {
+        eventId,
+        description: 'Google review clicked',
+      })
+    }
+  } catch (err) {
+    console.error('[recordGoogleReviewClick] Loyalty trigger failed (non-blocking):', err)
+  }
 
   revalidatePath(`/my-events/${eventId}`)
   return { success: true }
