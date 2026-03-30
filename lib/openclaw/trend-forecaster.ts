@@ -52,10 +52,13 @@ function forecastPrice(history: Array<{ date: string; priceCents: number }>): Fo
   const forecastCents = Math.round(slope * forecastX + intercept)
   const changePct = currentPrice > 0 ? ((forecastCents - currentPrice) / currentPrice) * 100 : 0
 
+  // Clamp to +/- 99% to fit numeric(5,2) and reject wild outliers
+  const clampedPct = Math.max(-99, Math.min(99, changePct))
+
   return {
     forecastCents: Math.max(0, forecastCents),
-    direction: changePct > 2 ? 'rising' : changePct < -2 ? 'falling' : 'stable',
-    changePct: Math.round(changePct * 100) / 100,
+    direction: clampedPct > 2 ? 'rising' : clampedPct < -2 ? 'falling' : 'stable',
+    changePct: Math.round(clampedPct * 100) / 100,
   }
 }
 

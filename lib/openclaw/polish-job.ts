@@ -303,7 +303,7 @@ async function polishUnits(dryRun: boolean): Promise<{ normalized: number }> {
     SELECT count(*) as c FROM ingredient_price_history
     WHERE price_per_unit_cents IS NOT NULL
       AND price_per_unit_cents = price_cents
-      AND updated_at > now() - INTERVAL '1 minute'
+      AND created_at > now() - INTERVAL '2 minutes'
   `)) as unknown as Array<{ c: string }>
 
   return { normalized: parseInt(countResult[0]?.c || '0') }
@@ -378,7 +378,7 @@ async function fillSourceUrls(dryRun: boolean): Promise<{ added: number }> {
     SELECT count(*) as c FROM ingredient_price_history
     WHERE source = 'openclaw_instacart'
       AND source_url IS NOT NULL
-      AND updated_at > now() - INTERVAL '2 minutes'
+      AND created_at > now() - INTERVAL '5 minutes'
   `)) as unknown as Array<{ c: string }>
 
   return { added: parseInt(countResult[0]?.c || '0') }

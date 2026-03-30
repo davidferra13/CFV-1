@@ -32,7 +32,6 @@ export async function computeSubstitutes(options?: {
         AND last_price_cents IS NOT NULL
         AND last_price_cents > 0
         AND category IS NOT NULL
-        AND category != ''
       ORDER BY tenant_id, category, last_price_cents ASC
     `)) as unknown as Array<{
       id: string
