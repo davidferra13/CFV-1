@@ -1,11 +1,11 @@
 # Spec: Menu Cost Estimator (Instant Menu Costing with Gap Detection)
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** `auto-costing-engine.md` (verified)
 > **Estimated complexity:** medium (3-8 files)
 > **Created:** 2026-03-30
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-30
 
 ---
 
