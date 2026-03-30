@@ -1399,7 +1399,7 @@ Data privacy management. Comprehensive data export, privacy controls display, an
 
 **Route:** `/loyalty` — Program dashboard with tier management (points balance, tier progress bar, recent activity feed, reward catalog grid).
 
-**`/loyalty/settings`** — Full config form: program active toggle, earn rates (points per guest, welcome bonus, referral bonus), large party bonus (toggle + threshold/points), milestone bonuses (add/remove), tier thresholds (Silver/Gold/Platinum with dynamic range summary). Save button.
+**`/loyalty/settings`** — Full config form: program active toggle, earn rates (points per guest, welcome bonus, referral bonus), large party bonus (toggle + threshold/points), earning triggers (14 automatic triggers across 4 categories: engagement, event lifecycle, financial, social - each with enable/disable toggle and custom point value), milestone bonuses (add/remove), guest milestones (add/remove), tier thresholds (Silver/Gold/Platinum with dynamic range summary). Changing tier thresholds auto-recalculates all client tiers. Save button.
 
 **`/loyalty/rewards/new`** — Create reward form: name, description, points required, reward type (Free Course/Fixed Discount/Percent Discount/Free Dinner/Upgrade), conditional discount amount input. Submit creates reward.
 
@@ -1813,6 +1813,10 @@ Persistent social space for event guests — group chat, photos, polls, scheduli
 | `/my-events/[id]/contract`      | Contract signing                                                                                                                                                                                                                                                                                                                                                  |
 | `/my-events/[id]/countdown`     | Event countdown                                                                                                                                                                                                                                                                                                                                                   |
 | `/my-events/[id]/event-summary` | Post-event summary                                                                                                                                                                                                                                                                                                                                                |
+
+### Client Rewards Page (client auth required — `/my-rewards`)
+
+**Route:** `/my-rewards` — Full loyalty rewards dashboard. Points balance card, tier badge with progress bar to next tier, next reward preview. Tier benefits/perks list. Milestone progress (events completed, guests served) with bonus amounts. Monthly raffle section (see Raffle subsection above). Available rewards catalog (filtered by affordable), all rewards catalog, pending redemptions with delivery status. Gift cards and vouchers. **"Bonus Ways to Earn" panel** showing all active earning triggers grouped by category (engagement, event lifecycle, financial, social) with emoji icons and point values. Transaction history (last 10). Self-service redemption with atomic double-spend protection.
 
 ### Chef Pages (auth required)
 

@@ -425,6 +425,46 @@ function computeTier(lifetimePoints: number, config: LoyaltyConfig): LoyaltyTier
   return 'bronze'
 }
 
+/**
+ * Recalculate tiers for ALL clients in a tenant after threshold changes.
+ * Non-destructive: only updates clients whose tier actually changed.
+ */
+async function recalculateAllClientTiers(tenantId: string, config: any) {
+  const db: any = createServerClient()
+
+  const silverMin = config.tier_silver_min ?? 100
+  const goldMin = config.tier_gold_min ?? 250
+  const platinumMin = config.tier_platinum_min ?? 500
+
+  // Fetch all clients with loyalty points in this tenant
+  const { data: clients } = await db
+    .from('clients')
+    .select('id, loyalty_points, loyalty_tier')
+    .eq('tenant_id', tenantId)
+
+  if (!clients || clients.length === 0) return
+
+  let updated = 0
+  for (const client of clients) {
+    const points = client.loyalty_points || 0
+    let correctTier: LoyaltyTier = 'bronze'
+    if (points >= platinumMin) correctTier = 'platinum'
+    else if (points >= goldMin) correctTier = 'gold'
+    else if (points >= silverMin) correctTier = 'silver'
+
+    if (client.loyalty_tier !== correctTier) {
+      await db.from('clients').update({ loyalty_tier: correctTier }).eq('id', client.id)
+      updated++
+    }
+  }
+
+  if (updated > 0) {
+    console.info(
+      `[recalculateAllClientTiers] Updated ${updated} client tiers for tenant ${tenantId}`
+    )
+  }
+}
+
 function getNextTier(currentTier: LoyaltyTier): { name: string; key: LoyaltyTier } | null {
   const order: LoyaltyTier[] = ['bronze', 'silver', 'gold', 'platinum']
   const idx = order.indexOf(currentTier)
@@ -703,6 +743,19 @@ export async function updateLoyaltyConfig(input: z.infer<typeof UpdateLoyaltyCon
 
   if (error) {
     throw new Error('Failed to update loyalty configuration')
+  }
+
+  // If tier thresholds changed, recalculate all client tiers in this tenant
+  const tierFieldsChanged =
+    validated.tier_silver_min !== undefined ||
+    validated.tier_gold_min !== undefined ||
+    validated.tier_platinum_min !== undefined
+  if (tierFieldsChanged) {
+    try {
+      await recalculateAllClientTiers(user.tenantId!, config)
+    } catch (err) {
+      console.error('[updateLoyaltyConfig] Bulk tier recalculation failed:', err)
+    }
   }
 
   revalidatePath('/loyalty')

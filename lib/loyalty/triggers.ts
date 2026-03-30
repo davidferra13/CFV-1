@@ -15,7 +15,7 @@ export type {
 export { TRIGGER_REGISTRY, REGISTRY_MAP, TRIGGER_CATEGORY_LABELS } from './trigger-registry'
 
 import { REGISTRY_MAP, TRIGGER_REGISTRY } from './trigger-registry'
-import type { TriggerConfigOverride } from './trigger-registry'
+import type { TriggerConfigOverride, TriggerDefinition } from './trigger-registry'
 
 // ── Core: fireTrigger ────────────────────────────────────────────────────
 
