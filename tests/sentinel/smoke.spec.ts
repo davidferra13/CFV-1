@@ -4,32 +4,50 @@
 // Read-only: Yes (no mutations)
 
 import { test, expect } from '@playwright/test'
-import { signInViaUI } from './helpers/sentinel-utils'
+import { signInViaUI, measurePageLoad } from './helpers/sentinel-utils'
+
+// Response time budgets (ms) - fail if page takes longer
+const BUDGET = {
+  public: 5_000, // Public pages should load within 5s
+  authenticated: 8_000, // Auth pages within 8s (includes server-side data fetch)
+  api: 2_000, // API endpoints within 2s
+}
 
 test.describe('T0: Smoke', () => {
   test('health endpoint responds', async ({ request }) => {
+    const start = Date.now()
     const resp = await request.get('/api/sentinel/health')
+    const elapsed = Date.now() - start
     expect(resp.status()).toBe(200)
     const body = await resp.json()
     expect(body.ok).toBe(true)
     expect(body.buildId).toBeTruthy()
     expect(body.timestamp).toBeTruthy()
+    expect(elapsed).toBeLessThan(BUDGET.api)
   })
 
-  test('homepage loads', async ({ page }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' })
+  test('SSL certificate is valid', async ({ request }) => {
+    // Verify HTTPS works and cert is not expired
+    const resp = await request.get('https://app.cheflowhq.com/api/sentinel/health', {
+      timeout: 10_000,
+    })
+    expect(resp.status()).toBe(200)
+  })
+
+  test('homepage loads within budget', async ({ page }) => {
+    const { durationMs } = await measurePageLoad(page, '/')
     await expect(page.locator('body')).toBeVisible()
-    // Homepage should have ChefFlow branding
     const text = await page.textContent('body')
     expect(text).toContain('ChefFlow')
+    expect(durationMs).toBeLessThan(BUDGET.public)
   })
 
   test('discover page loads with listings', async ({ page }) => {
-    await page.goto('/discover', { waitUntil: 'domcontentloaded' })
+    const { durationMs } = await measurePageLoad(page, '/discover')
     await expect(page.locator('body')).toBeVisible()
-    // Should have content (not a blank page)
     const text = await page.textContent('body')
     expect(text!.length).toBeGreaterThan(100)
+    expect(durationMs).toBeLessThan(BUDGET.public)
   })
 
   test('sign-in page renders', async ({ page }) => {

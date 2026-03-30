@@ -1,78 +1,53 @@
 // T1: Critical Paths - Core user journeys that must always work
 // Schedule: Daily 6 AM on Pi
 // Target time: < 5 minutes
-// Mutations: Creates one test inquiry (safe, agent account only)
+// Mutations: None (read-only navigation checks)
 
 import { test, expect } from '@playwright/test'
 import { signInViaUI } from './helpers/sentinel-utils'
 
 test.describe('T1: Critical Paths', () => {
   test.describe('Chef Portal', () => {
-    test.beforeEach(async ({ page }) => {
+    test('dashboard widgets render after sign-in', async ({ page }) => {
       await signInViaUI(page)
-    })
-
-    test('dashboard widgets render', async ({ page }) => {
-      // Dashboard should have at least some widget content
       await page.waitForLoadState('domcontentloaded')
-      // Look for common dashboard elements
       const body = await page.textContent('body')
-      // Dashboard has greeting or widget content
       expect(body!.length).toBeGreaterThan(200)
     })
 
-    test('events list loads', async ({ page }) => {
-      await page.goto('/events', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-      await expect(page).toHaveURL(/\/(events|onboarding|dashboard)/)
-      await expect(page.locator('body')).toBeVisible()
-    })
+    test('all critical pages load after single sign-in', async ({ page }) => {
+      await signInViaUI(page)
 
-    test('recipes page loads', async ({ page }) => {
-      await page.goto('/recipes', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-      await expect(page).toHaveURL(/\/(recipes|onboarding|dashboard)/)
-      await expect(page.locator('body')).toBeVisible()
-    })
+      const criticalPages = [
+        { path: '/events', urlPattern: /\/(events|onboarding|dashboard)/ },
+        { path: '/recipes', urlPattern: /\/(recipes|onboarding|dashboard)/ },
+        { path: '/financials', urlPattern: /\/(financials|onboarding|dashboard)/ },
+        { path: '/finance', urlPattern: /\/(finance|onboarding|dashboard)/ },
+        { path: '/calendar', urlPattern: /\/(calendar|onboarding|dashboard)/ },
+        { path: '/settings', urlPattern: /\/(settings|onboarding|dashboard)/ },
+        { path: '/culinary', urlPattern: /\/(culinary|onboarding|dashboard)/ },
+        { path: '/analytics', urlPattern: /\/(analytics|onboarding|dashboard)/ },
+        { path: '/inquiries/new', urlPattern: /\/(inquiries|onboarding|dashboard)/ },
+      ]
 
-    test('financials page loads', async ({ page }) => {
-      await page.goto('/financials', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-      await expect(page).toHaveURL(/\/(financials|onboarding|dashboard)/)
-      await expect(page.locator('body')).toBeVisible()
-    })
+      const failures: string[] = []
+      for (const { path, urlPattern } of criticalPages) {
+        try {
+          await page.goto(path, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+          const url = page.url()
+          if (!urlPattern.test(url)) {
+            failures.push(`${path}: unexpected URL ${url}`)
+            continue
+          }
+          await expect(page.locator('body')).toBeVisible({ timeout: 10_000 })
+        } catch (err) {
+          failures.push(`${path}: ${(err as Error).message}`)
+        }
+      }
 
-    test('finance hub loads', async ({ page }) => {
-      await page.goto('/finance', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-      await expect(page).toHaveURL(/\/(finance|onboarding|dashboard)/)
-      await expect(page.locator('body')).toBeVisible()
-    })
-
-    test('calendar page loads', async ({ page }) => {
-      await page.goto('/calendar', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-      await expect(page).toHaveURL(/\/(calendar|onboarding|dashboard)/)
-      await expect(page.locator('body')).toBeVisible()
-    })
-
-    test('settings page loads', async ({ page }) => {
-      await page.goto('/settings', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-      await expect(page).toHaveURL(/\/(settings|onboarding|dashboard)/)
-      await expect(page.locator('body')).toBeVisible()
-    })
-
-    test('culinary hub loads', async ({ page }) => {
-      await page.goto('/culinary', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-      await expect(page).toHaveURL(/\/(culinary|onboarding|dashboard)/)
-      await expect(page.locator('body')).toBeVisible()
-    })
-
-    test('analytics page loads', async ({ page }) => {
-      await page.goto('/analytics', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-      await expect(page).toHaveURL(/\/(analytics|onboarding|dashboard)/)
-      await expect(page.locator('body')).toBeVisible()
-    })
-
-    test('inquiry form loads', async ({ page }) => {
-      await page.goto('/inquiries/new', { waitUntil: 'domcontentloaded', timeout: 60_000 })
-      await expect(page).toHaveURL(/\/(inquiries|onboarding|dashboard)/)
-      await expect(page.locator('body')).toBeVisible()
+      if (failures.length > 0) {
+        throw new Error(`Critical pages failed:\n${failures.join('\n')}`)
+      }
     })
   })
 

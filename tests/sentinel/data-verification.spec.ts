@@ -29,32 +29,34 @@ test.describe('T2: Data Verification', () => {
     }
   })
 
-  test('ingredients page shows prices', async ({ page }) => {
+  test('authenticated data pages load with content', async ({ page }) => {
     await signInViaUI(page)
+
+    // Ingredients page
     await page.goto('/culinary/ingredients', {
       waitUntil: 'domcontentloaded',
       timeout: 60_000,
     })
     await expect(page).toHaveURL(/\/(culinary\/ingredients|onboarding|dashboard)/)
     await expect(page.locator('body')).toBeVisible()
-
-    // Page should have content (not blank)
-    const text = await page.textContent('body')
+    let text = await page.textContent('body')
     expect(text!.length).toBeGreaterThan(100)
-  })
 
-  test('price catalog loads with data', async ({ page }) => {
-    await signInViaUI(page)
+    // Price catalog
     await page.goto('/culinary/price-catalog', {
       waitUntil: 'domcontentloaded',
       timeout: 60_000,
     })
     await expect(page).toHaveURL(/\/(culinary\/price-catalog|onboarding|dashboard)/)
     await expect(page.locator('body')).toBeVisible()
-
-    // Should have content (catalog data or empty state)
-    const text = await page.textContent('body')
+    text = await page.textContent('body')
     expect(text!.length).toBeGreaterThan(50)
+
+    // Dashboard price widgets
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded', timeout: 60_000 })
+    await expect(page.locator('body')).toBeVisible()
+    text = await page.textContent('body')
+    expect(text!.length).toBeGreaterThan(200)
   })
 
   test('discover directory has listings', async ({ page }) => {
@@ -82,16 +84,5 @@ test.describe('T2: Data Verification', () => {
       const text = await page.textContent('body')
       expect(text!.length).toBeGreaterThan(100)
     }
-  })
-
-  test('dashboard price widgets render', async ({ page }) => {
-    await signInViaUI(page)
-    await page.waitForLoadState('domcontentloaded')
-
-    // Dashboard should load without crashing
-    // Price widgets may or may not have data, but the page should render
-    await expect(page.locator('body')).toBeVisible()
-    const body = await page.textContent('body')
-    expect(body!.length).toBeGreaterThan(200)
   })
 })
