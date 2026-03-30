@@ -7,10 +7,17 @@ const AGENT_EMAIL = 'agent@local.chefflow'
 const AGENT_PASSWORD = 'CHEF.jdgyuegf9924092.FLOW'
 const BASE = 'http://localhost:3100'
 
+// Auth timeout needs to be generous for cold starts
+test.describe.configure({ timeout: 120_000 })
+
 async function signIn(page: any) {
   const res = await page.request.post(`${BASE}/api/e2e/auth`, {
     data: { email: AGENT_EMAIL, password: AGENT_PASSWORD },
+    timeout: 60_000,
   })
+  if (!res.ok()) {
+    throw new Error(`E2E auth failed with status ${res.status()}`)
+  }
   const body = await res.json()
   expect(body.ok).toBe(true)
 }
@@ -18,7 +25,7 @@ async function signIn(page: any) {
 test.describe('Critical Path & Dinner Circle E2E', () => {
   test('inquiry page shows critical path card', async ({ page }) => {
     await signIn(page)
-    await page.goto(`${BASE}/inquiries`)
+    await page.goto(`${BASE}/inquiries`, { timeout: 60_000 })
     await page.waitForLoadState('networkidle')
 
     // Find any existing inquiry to check
@@ -57,7 +64,7 @@ test.describe('Critical Path & Dinner Circle E2E', () => {
     await signIn(page)
 
     // Try to access a known test circle or find one via the inquiries page
-    await page.goto(`${BASE}/inquiries`)
+    await page.goto(`${BASE}/inquiries`, { timeout: 60_000 })
     await page.waitForLoadState('networkidle')
 
     const inquiryLinks = page.locator('a[href*="/inquiries/"]')
@@ -120,7 +127,7 @@ test.describe('Critical Path & Dinner Circle E2E', () => {
 
   test('reply composer has dinner circle toggle', async ({ page }) => {
     await signIn(page)
-    await page.goto(`${BASE}/inquiries`)
+    await page.goto(`${BASE}/inquiries`, { timeout: 60_000 })
     await page.waitForLoadState('networkidle')
 
     const inquiryLinks = page.locator('a[href*="/inquiries/"]')

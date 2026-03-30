@@ -1,6 +1,6 @@
 # Spec: Email Snapshot Footer & Portal Transition Strategy
 
-> **Status:** built
+> **Status:** verified
 > **Built by:** Claude Code session 2026-03-30
 > **Priority:** P1
 > **Depends on:** critical-path-and-dinner-circle-onboarding (verified)
