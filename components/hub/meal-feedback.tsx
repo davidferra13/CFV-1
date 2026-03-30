@@ -4,6 +4,14 @@ import { useState, useTransition } from 'react'
 import type { MealReaction, MealFeedbackSummary } from '@/lib/hub/types'
 import { submitMealFeedback, removeMealFeedback } from '@/lib/hub/meal-feedback-actions'
 
+const QUICK_NOTES = [
+  'Loved it!',
+  'More of this please',
+  'Too spicy for the kids',
+  'Can we have this again?',
+  'Not a favorite',
+]
+
 interface MealFeedbackProps {
   mealEntryId: string
   profileToken: string | null
@@ -181,30 +189,50 @@ export function MealFeedbackInline({
         )}
       </div>
 
-      {/* Note input */}
+      {/* Note input with quick presets */}
       {showNote && profileToken && (
-        <div className="mt-1.5 flex gap-1">
-          <input
-            type="text"
-            value={noteText}
-            onChange={(e) => setNoteText(e.target.value)}
-            placeholder="Quick note..."
-            maxLength={200}
-            className="flex-1 rounded bg-stone-700 px-2 py-0.5 text-[10px] text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-[var(--hub-primary,#e88f47)]"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && noteText.trim()) submitNote()
-              if (e.key === 'Escape') setShowNote(false)
-            }}
-            autoFocus
-          />
-          <button
-            type="button"
-            onClick={submitNote}
-            disabled={!noteText.trim() || isPending}
-            className="rounded bg-[var(--hub-primary,#e88f47)] px-2 py-0.5 text-[10px] font-medium text-white disabled:opacity-50"
-          >
-            Save
-          </button>
+        <div className="mt-1.5 space-y-1">
+          {/* Quick presets */}
+          <div className="flex flex-wrap gap-1">
+            {QUICK_NOTES.map((qn) => (
+              <button
+                key={qn}
+                type="button"
+                onClick={() => setNoteText(qn)}
+                className={`rounded-full px-2 py-0.5 text-[10px] transition-colors ${
+                  noteText === qn
+                    ? 'bg-[var(--hub-primary,#e88f47)] text-white'
+                    : 'bg-stone-700 text-stone-400 hover:bg-stone-600'
+                }`}
+              >
+                {qn}
+              </button>
+            ))}
+          </div>
+          {/* Custom input */}
+          <div className="flex gap-1">
+            <input
+              type="text"
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Or type your own..."
+              maxLength={200}
+              className="flex-1 rounded bg-stone-700 px-2 py-0.5 text-[10px] text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-[var(--hub-primary,#e88f47)]"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && noteText.trim()) submitNote()
+                if (e.key === 'Escape') setShowNote(false)
+              }}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={submitNote}
+              disabled={!noteText.trim() || isPending}
+              className="rounded bg-[var(--hub-primary,#e88f47)] px-2 py-0.5 text-[10px] font-medium text-white disabled:opacity-50"
+            >
+              Save
+            </button>
+          </div>
         </div>
       )}
 

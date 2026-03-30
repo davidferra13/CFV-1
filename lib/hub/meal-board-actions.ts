@@ -82,6 +82,8 @@ const UpsertMealSchema = z.object({
   allergenFlags: z.array(z.string()).optional(),
   menuId: z.string().uuid().optional().nullable(),
   dishId: z.string().uuid().optional().nullable(),
+  headCount: z.number().int().min(0).max(100).optional().nullable(),
+  prepNotes: z.string().max(1000).optional().nullable(),
   status: z.enum(['planned', 'confirmed', 'served', 'cancelled']).optional(),
 })
 
@@ -104,7 +106,7 @@ export async function upsertMealEntry(
       .eq('meal_type', validated.mealType)
       .single()
 
-    const entryData = {
+    const entryData: Record<string, unknown> = {
       group_id: validated.groupId,
       author_profile_id: profile.id,
       meal_date: validated.mealDate,
@@ -118,6 +120,9 @@ export async function upsertMealEntry(
       status: validated.status ?? 'planned',
       updated_at: new Date().toISOString(),
     }
+    // Only include head_count and prep_notes if explicitly provided
+    if (validated.headCount !== undefined) entryData.head_count = validated.headCount
+    if (validated.prepNotes !== undefined) entryData.prep_notes = validated.prepNotes
 
     let entry: MealBoardEntry
 
@@ -734,4 +739,413 @@ export async function resolveScheduleChange(input: {
   } catch (err: any) {
     return { success: false, error: err.message }
   }
+}
+
+// ===========================================================================
+// RECURRING MEALS
+// ===========================================================================
+
+export interface RecurringMealInput {
+  groupId: string
+  profileToken: string
+  mealType: string
+  title: string
+  description?: string | null
+  dietaryTags?: string[]
+  allergenFlags?: string[]
+  headCount?: number | null
+  prepNotes?: string | null
+  pattern: string
+  dayOfWeek?: number | null
+  activeFrom?: string
+  activeUntil?: string | null
+}
+
+export async function createRecurringMeal(
+  input: RecurringMealInput
+): Promise<{ success: boolean; recurring?: any; error?: string }> {
+  try {
+    const db: any = createServerClient({ admin: true })
+    const profile = await resolveProfile(db, input.profileToken)
+    await requireChefOrAdmin(db, input.groupId, profile.id)
+
+    const { data, error } = await db
+      .from('hub_recurring_meals')
+      .insert({
+        group_id: input.groupId,
+        created_by_profile_id: profile.id,
+        meal_type: input.mealType,
+        title: input.title,
+        description: input.description ?? null,
+        dietary_tags: input.dietaryTags ?? [],
+        allergen_flags: input.allergenFlags ?? [],
+        head_count: input.headCount ?? null,
+        prep_notes: input.prepNotes ?? null,
+        pattern: input.pattern,
+        day_of_week: input.dayOfWeek ?? null,
+        active_from: input.activeFrom ?? new Date().toISOString().split('T')[0],
+        active_until: input.activeUntil ?? null,
+      })
+      .select('*')
+      .single()
+
+    if (error) throw new Error(error.message)
+    return { success: true, recurring: data }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+}
+
+export async function getRecurringMeals(groupId: string): Promise<any[]> {
+  const db: any = createServerClient({ admin: true })
+  const { data, error } = await db
+    .from('hub_recurring_meals')
+    .select('*')
+    .eq('group_id', groupId)
+    .eq('is_active', true)
+    .order('meal_type', { ascending: true })
+
+  if (error) throw new Error(`Failed to load recurring meals: ${error.message}`)
+  return data ?? []
+}
+
+export async function deleteRecurringMeal(input: {
+  recurringId: string
+  profileToken: string
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db: any = createServerClient({ admin: true })
+    await resolveProfile(db, input.profileToken)
+
+    const { error } = await db
+      .from('hub_recurring_meals')
+      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .eq('id', input.recurringId)
+
+    if (error) throw new Error(error.message)
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+}
+
+export async function applyRecurringMeals(input: {
+  groupId: string
+  profileToken: string
+  weekStart: string
+}): Promise<{ success: boolean; filled: number; error?: string }> {
+  try {
+    const db: any = createServerClient({ admin: true })
+    const profile = await resolveProfile(db, input.profileToken)
+    await requireChefOrAdmin(db, input.groupId, profile.id)
+
+    const recurrings = await getRecurringMeals(input.groupId)
+    if (recurrings.length === 0) return { success: true, filled: 0 }
+
+    const weekEnd = new Date(input.weekStart)
+    weekEnd.setDate(weekEnd.getDate() + 6)
+    const weekEndStr = weekEnd.toISOString().split('T')[0]
+
+    const existing = await getMealBoard({
+      groupId: input.groupId,
+      startDate: input.weekStart,
+      endDate: weekEndStr,
+    })
+
+    const occupiedSlots = new Set(existing.map((e: any) => `${e.meal_date}:${e.meal_type}`))
+
+    const toInsert: any[] = []
+    const monday = new Date(input.weekStart)
+
+    for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+      const date = new Date(monday)
+      date.setDate(date.getDate() + dayOffset)
+      const dateStr = date.toISOString().split('T')[0]
+      const isWeekday = dayOffset < 5
+      const dayOfWeek = dayOffset
+
+      for (const r of recurrings) {
+        const applies =
+          r.pattern === 'daily' ||
+          (r.pattern === 'weekdays' && isWeekday) ||
+          (r.pattern === 'weekends' && !isWeekday) ||
+          (r.pattern === 'weekly' && r.day_of_week === dayOfWeek)
+
+        if (!applies) continue
+        if (r.active_from && dateStr < r.active_from) continue
+        if (r.active_until && dateStr > r.active_until) continue
+
+        const slotKey = `${dateStr}:${r.meal_type}`
+        if (occupiedSlots.has(slotKey)) continue
+
+        toInsert.push({
+          group_id: input.groupId,
+          author_profile_id: profile.id,
+          meal_date: dateStr,
+          meal_type: r.meal_type,
+          title: r.title,
+          description: r.description,
+          dietary_tags: r.dietary_tags,
+          allergen_flags: r.allergen_flags,
+          head_count: r.head_count,
+          prep_notes: r.prep_notes,
+          status: 'planned',
+        })
+        occupiedSlots.add(slotKey)
+      }
+    }
+
+    if (toInsert.length > 0) {
+      const { error } = await db.from('hub_meal_board').insert(toInsert)
+      if (error) throw new Error(error.message)
+    }
+
+    return { success: true, filled: toInsert.length }
+  } catch (err: any) {
+    return { success: false, filled: 0, error: err.message }
+  }
+}
+
+// ===========================================================================
+// FEEDBACK INTELLIGENCE (chef-only, pure formula)
+// ===========================================================================
+
+export interface FeedbackInsight {
+  totalMeals: number
+  totalFeedback: number
+  overallScore: number
+  topDishes: { title: string; score: number; count: number }[]
+  bottomDishes: { title: string; score: number; count: number }[]
+  categoryBreakdown: { category: string; avgScore: number; count: number }[]
+  recentTrend: 'improving' | 'stable' | 'declining'
+}
+
+export async function getFeedbackInsights(input: {
+  groupId: string
+  lookbackDays?: number
+}): Promise<FeedbackInsight> {
+  const db: any = createServerClient({ admin: true })
+  const lookback = input.lookbackDays ?? 30
+
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - lookback)
+  const cutoffStr = cutoffDate.toISOString().split('T')[0]
+
+  const { data: meals } = await db
+    .from('hub_meal_board')
+    .select('id, title, meal_type, meal_date, dietary_tags')
+    .eq('group_id', input.groupId)
+    .gte('meal_date', cutoffStr)
+    .neq('status', 'cancelled')
+    .order('meal_date', { ascending: false })
+
+  if (!meals || meals.length === 0) {
+    return {
+      totalMeals: 0,
+      totalFeedback: 0,
+      overallScore: 0,
+      topDishes: [],
+      bottomDishes: [],
+      categoryBreakdown: [],
+      recentTrend: 'stable',
+    }
+  }
+
+  const mealIds = meals.map((m: any) => m.id)
+  const { data: feedback } = await db
+    .from('hub_meal_feedback')
+    .select('meal_entry_id, reaction')
+    .in('meal_entry_id', mealIds)
+
+  const feedbackList = feedback ?? []
+  const scoreMap: Record<string, number> = { loved: 100, liked: 75, neutral: 50, disliked: 0 }
+
+  const mealScores: Record<
+    string,
+    { title: string; scores: number[]; mealType: string; date: string }
+  > = {}
+  for (const m of meals) {
+    mealScores[m.id] = { title: m.title, scores: [], mealType: m.meal_type, date: m.meal_date }
+  }
+
+  let totalScore = 0
+  for (const fb of feedbackList) {
+    const s = scoreMap[fb.reaction] ?? 50
+    totalScore += s
+    if (mealScores[fb.meal_entry_id]) mealScores[fb.meal_entry_id].scores.push(s)
+  }
+
+  // Aggregate per dish title
+  const dishAgg: Record<string, { title: string; totalScore: number; count: number }> = {}
+  for (const ms of Object.values(mealScores)) {
+    if (ms.scores.length === 0) continue
+    const key = ms.title.toLowerCase().trim()
+    if (!dishAgg[key]) dishAgg[key] = { title: ms.title, totalScore: 0, count: 0 }
+    const avg = ms.scores.reduce((a, b) => a + b, 0) / ms.scores.length
+    dishAgg[key].totalScore += avg
+    dishAgg[key].count += 1
+  }
+
+  const dishList = Object.values(dishAgg)
+    .map((d) => ({ title: d.title, score: Math.round(d.totalScore / d.count), count: d.count }))
+    .sort((a, b) => b.score - a.score)
+
+  // Category breakdown
+  const catAgg: Record<string, { totalScore: number; count: number }> = {}
+  for (const ms of Object.values(mealScores)) {
+    if (ms.scores.length === 0) continue
+    if (!catAgg[ms.mealType]) catAgg[ms.mealType] = { totalScore: 0, count: 0 }
+    const avg = ms.scores.reduce((a, b) => a + b, 0) / ms.scores.length
+    catAgg[ms.mealType].totalScore += avg
+    catAgg[ms.mealType].count += 1
+  }
+
+  const categoryBreakdown = Object.entries(catAgg).map(([cat, a]) => ({
+    category: cat,
+    avgScore: Math.round(a.totalScore / a.count),
+    count: a.count,
+  }))
+
+  // Trend: first half vs second half
+  const midDate = new Date()
+  midDate.setDate(midDate.getDate() - Math.floor(lookback / 2))
+  const midStr = midDate.toISOString().split('T')[0]
+  let fTotal = 0,
+    fCount = 0,
+    sTotal = 0,
+    sCount = 0
+  for (const ms of Object.values(mealScores)) {
+    if (ms.scores.length === 0) continue
+    const avg = ms.scores.reduce((a, b) => a + b, 0) / ms.scores.length
+    if (ms.date < midStr) {
+      fTotal += avg
+      fCount++
+    } else {
+      sTotal += avg
+      sCount++
+    }
+  }
+  const diff = (sCount > 0 ? sTotal / sCount : 50) - (fCount > 0 ? fTotal / fCount : 50)
+  const recentTrend: 'improving' | 'stable' | 'declining' =
+    diff > 5 ? 'improving' : diff < -5 ? 'declining' : 'stable'
+
+  return {
+    totalMeals: meals.length,
+    totalFeedback: feedbackList.length,
+    overallScore: feedbackList.length > 0 ? Math.round(totalScore / feedbackList.length) : 0,
+    topDishes: dishList.slice(0, 5),
+    bottomDishes: dishList.filter((d) => d.score < 50).slice(0, 3),
+    categoryBreakdown,
+    recentTrend,
+  }
+}
+
+// ===========================================================================
+// MEAL HISTORY + FAVORITES
+// ===========================================================================
+
+export interface MealHistoryEntry {
+  title: string
+  meal_type: string
+  times_served: number
+  last_served: string
+  avg_score: number
+  total_feedback: number
+  loved_pct: number
+}
+
+export async function getMealHistory(input: {
+  groupId: string
+  limit?: number
+}): Promise<MealHistoryEntry[]> {
+  const db: any = createServerClient({ admin: true })
+
+  const { data: meals } = await db
+    .from('hub_meal_board')
+    .select('id, title, meal_type, meal_date')
+    .eq('group_id', input.groupId)
+    .neq('status', 'cancelled')
+    .order('meal_date', { ascending: false })
+
+  if (!meals || meals.length === 0) return []
+
+  const mealIds = meals.map((m: any) => m.id)
+  const { data: feedback } = await db
+    .from('hub_meal_feedback')
+    .select('meal_entry_id, reaction')
+    .in('meal_entry_id', mealIds)
+
+  const feedbackList = feedback ?? []
+  const scoreMap: Record<string, number> = { loved: 100, liked: 75, neutral: 50, disliked: 0 }
+
+  const fbByMeal: Record<string, { reaction: string }[]> = {}
+  for (const fb of feedbackList) {
+    if (!fbByMeal[fb.meal_entry_id]) fbByMeal[fb.meal_entry_id] = []
+    fbByMeal[fb.meal_entry_id].push(fb)
+  }
+
+  const agg: Record<
+    string,
+    { title: string; mealType: string; dates: string[]; scores: number[]; lovedCount: number }
+  > = {}
+  for (const m of meals) {
+    const key = m.title.toLowerCase().trim()
+    if (!agg[key])
+      agg[key] = { title: m.title, mealType: m.meal_type, dates: [], scores: [], lovedCount: 0 }
+    agg[key].dates.push(m.meal_date)
+    for (const fb of fbByMeal[m.id] ?? []) {
+      agg[key].scores.push(scoreMap[fb.reaction] ?? 50)
+      if (fb.reaction === 'loved') agg[key].lovedCount++
+    }
+  }
+
+  const results: MealHistoryEntry[] = Object.values(agg).map((a) => ({
+    title: a.title,
+    meal_type: a.mealType,
+    times_served: a.dates.length,
+    last_served: a.dates.sort().reverse()[0],
+    avg_score:
+      a.scores.length > 0 ? Math.round(a.scores.reduce((x, y) => x + y, 0) / a.scores.length) : 0,
+    total_feedback: a.scores.length,
+    loved_pct: a.scores.length > 0 ? Math.round((a.lovedCount / a.scores.length) * 100) : 0,
+  }))
+
+  results.sort((a, b) => b.avg_score - a.avg_score)
+  return results.slice(0, input.limit ?? 50)
+}
+
+// ===========================================================================
+// DEFAULT HEAD COUNT
+// ===========================================================================
+
+export async function updateGroupDefaultHeadCount(input: {
+  groupId: string
+  profileToken: string
+  defaultHeadCount: number
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const db: any = createServerClient({ admin: true })
+    const profile = await resolveProfile(db, input.profileToken)
+    await requireChefOrAdmin(db, input.groupId, profile.id)
+
+    const { error } = await db
+      .from('hub_groups')
+      .update({ default_head_count: input.defaultHeadCount, updated_at: new Date().toISOString() })
+      .eq('id', input.groupId)
+
+    if (error) throw new Error(error.message)
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message }
+  }
+}
+
+export async function getGroupDefaultHeadCount(groupId: string): Promise<number | null> {
+  const db: any = createServerClient({ admin: true })
+  const { data } = await db
+    .from('hub_groups')
+    .select('default_head_count')
+    .eq('id', groupId)
+    .single()
+  return data?.default_head_count ?? null
 }

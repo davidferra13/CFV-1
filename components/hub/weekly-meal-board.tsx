@@ -11,12 +11,16 @@ import {
   getTemplates,
   loadTemplate,
   getScheduleChanges,
+  getGroupDefaultHeadCount,
   type MealTemplate,
   type ScheduleChange,
 } from '@/lib/hub/meal-board-actions'
 import { getBatchMealFeedback } from '@/lib/hub/meal-feedback-actions'
 import { MealFeedbackInline } from './meal-feedback'
 import { ScheduleChangeBadge } from './schedule-change-flag'
+import { WeekSummaryCard } from './week-summary-card'
+import { FeedbackInsightsPanel } from './feedback-insights-panel'
+import { RecurringMealsManager } from './recurring-meals-manager'
 
 // ---------------------------------------------------------------------------
 // Date helpers (ISO weeks: Monday = start)
@@ -118,6 +122,16 @@ export function WeeklyMealBoard({
   const [templateName, setTemplateName] = useState('')
   const [templates, setTemplates] = useState<MealTemplate[]>([])
   const [scheduleChanges, setScheduleChanges] = useState<ScheduleChange[]>([])
+  const [defaultHeadCount, setDefaultHeadCount] = useState<number | null>(null)
+  const [editHeadCount, setEditHeadCount] = useState<string>('')
+  const [editPrepNotes, setEditPrepNotes] = useState<string>('')
+
+  // Load default head count
+  useEffect(() => {
+    getGroupDefaultHeadCount(groupId)
+      .then(setDefaultHeadCount)
+      .catch(() => {})
+  }, [groupId])
 
   // Current week's Monday
   const currentMonday = getMonday(addDays(new Date(), weekOffset * 7))
@@ -166,6 +180,8 @@ export function WeeklyMealBoard({
     setEditingSlot({ date, mealType })
     setEditTitle(existing?.title ?? '')
     setEditDescription(existing?.description ?? '')
+    setEditHeadCount(existing?.head_count?.toString() ?? '')
+    setEditPrepNotes(existing?.prep_notes ?? '')
     setError(null)
   }
 
@@ -181,6 +197,8 @@ export function WeeklyMealBoard({
     if (!profileToken || !editTitle.trim()) return
 
     const existing = getEntry(date, mealType)
+    const parsedHeadCount = editHeadCount ? parseInt(editHeadCount, 10) : null
+
     const optimisticEntry: MealBoardEntry = {
       id: existing?.id ?? `temp-${Date.now()}`,
       group_id: groupId,
@@ -193,6 +211,8 @@ export function WeeklyMealBoard({
       allergen_flags: existing?.allergen_flags ?? [],
       menu_id: null,
       dish_id: null,
+      head_count: parsedHeadCount,
+      prep_notes: editPrepNotes.trim() || null,
       status: 'planned',
       created_at: existing?.created_at ?? new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -217,6 +237,8 @@ export function WeeklyMealBoard({
           mealType,
           title: editTitle.trim(),
           description: editDescription.trim() || null,
+          headCount: parsedHeadCount,
+          prepNotes: editPrepNotes.trim() || null,
         })
         if (!result.success) {
           setEntries(previous)
@@ -509,6 +531,27 @@ export function WeeklyMealBoard({
         </div>
       )}
 
+      {/* Week summary card */}
+      <WeekSummaryCard
+        weekEntries={weekEntries}
+        scheduleChanges={scheduleChanges}
+        defaultHeadCount={defaultHeadCount}
+        feedbackData={feedbackData}
+      />
+
+      {/* Recurring meals manager (chef edit mode) */}
+      {editMode && isChefOrAdmin && profileToken && (
+        <RecurringMealsManager
+          groupId={groupId}
+          profileToken={profileToken}
+          currentWeekStart={weekStart}
+          onMealsApplied={async () => {
+            const fresh = await getMealBoard({ groupId })
+            setEntries(fresh)
+          }}
+        />
+      )}
+
       {/* Error banner */}
       {error && (
         <div className="rounded-lg border border-red-800 bg-red-900/30 px-3 py-2 text-xs text-red-300">
@@ -631,6 +674,25 @@ export function WeeklyMealBoard({
                               if (e.key === 'Escape') cancelEditing()
                             }}
                           />
+                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              value={editHeadCount}
+                              onChange={(e) => setEditHeadCount(e.target.value)}
+                              placeholder="👥 Head count"
+                              min={0}
+                              max={100}
+                              className="w-24 rounded bg-stone-700 px-2 py-1 text-xs text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-[var(--hub-primary,#e88f47)]"
+                            />
+                            <input
+                              type="text"
+                              value={editPrepNotes}
+                              onChange={(e) => setEditPrepNotes(e.target.value)}
+                              placeholder="Prep notes (chef only)..."
+                              className="flex-1 rounded bg-stone-700 px-2 py-1 text-xs text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-[var(--hub-primary,#e88f47)]"
+                              maxLength={1000}
+                            />
+                          </div>
                           <div className="flex gap-1">
                             <button
                               onClick={() => saveEntry(dateStr, mealType)}
@@ -650,12 +712,28 @@ export function WeeklyMealBoard({
                       ) : entry ? (
                         /* Populated slot */
                         <div>
-                          <p className="text-xs font-medium text-stone-200 leading-tight">
-                            {entry.title}
-                          </p>
+                          <div className="flex items-start justify-between gap-1">
+                            <p className="text-xs font-medium text-stone-200 leading-tight">
+                              {entry.title}
+                            </p>
+                            {(entry.head_count ?? defaultHeadCount) && (
+                              <span
+                                className="shrink-0 text-[10px] text-stone-500"
+                                title="Head count"
+                              >
+                                👥{entry.head_count ?? defaultHeadCount}
+                              </span>
+                            )}
+                          </div>
                           {entry.description && (
                             <p className="mt-0.5 text-xs text-stone-500 leading-tight">
                               {entry.description}
+                            </p>
+                          )}
+                          {/* Chef prep notes (chef only) */}
+                          {isChefOrAdmin && entry.prep_notes && (
+                            <p className="mt-0.5 text-[10px] text-amber-600 leading-tight italic">
+                              {entry.prep_notes}
                             </p>
                           )}
                           {/* Dietary tags */}
@@ -720,6 +798,9 @@ export function WeeklyMealBoard({
           )
         })}
       </div>
+
+      {/* Feedback intelligence (chef only, below the grid) */}
+      <FeedbackInsightsPanel groupId={groupId} isChefOrAdmin={isChefOrAdmin} />
 
       {/* Empty state */}
       {weekEntries.length === 0 && !editMode && (

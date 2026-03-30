@@ -313,6 +313,8 @@ export interface MealBoardEntry {
   allergen_flags: string[]
   menu_id: string | null
   dish_id: string | null
+  head_count: number | null
+  prep_notes: string | null
   status: MealStatus
   created_at: string
   updated_at: string
@@ -320,6 +322,28 @@ export interface MealBoardEntry {
   author?: HubGuestProfile
   feedback_summary?: MealFeedbackSummary
   my_feedback?: MealFeedback | null
+}
+
+export type RecurringPattern = 'daily' | 'weekdays' | 'weekends' | 'weekly'
+
+export interface RecurringMeal {
+  id: string
+  group_id: string
+  created_by_profile_id: string
+  meal_type: MealType
+  title: string
+  description: string | null
+  dietary_tags: string[]
+  allergen_flags: string[]
+  head_count: number | null
+  prep_notes: string | null
+  pattern: RecurringPattern
+  day_of_week: number | null
+  active_from: string
+  active_until: string | null
+  is_active: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface MealBoardWeek {
