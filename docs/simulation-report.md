@@ -1,25 +1,37 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated - last run: 2026-03-28T06:56:11.779Z_
-_Run ID: 2dbd046a-a3b8-48c6-a0a5-26a7965f2d93_
+_Auto-generated - last run: 2026-03-30T01:32:41.955Z_
+_Run ID: 5250dcab-8e1e-4343-a3ec-bf8c41070f2a_
 
 ---
 
 ## Summary
 
-All modules are currently passing with 100% success rate. The system shows strong stability with no recent regressions. The consistent performance indicates recent fixes have resolved prior issues.
+The system is currently failing at 80% pass rate due to two modules failing completely. The inquiry_parse module is entirely non-functional, while client_parse is failing on validation despite correct extractions. The allergen_risk module has improved from previous runs where it was also failing, and is now passing consistently.
 
 ## Failures & Root Causes
 
-No modules are currently failing. All modules (inquiry_parse, client_parse, allergen_risk, correspondence, menu_suggestions, quote_draft) are operating correctly.
+### inquiry_parse
+
+The module is completely failing with 0% pass rate. The system cannot process any inquiry text into structured data. This appears to be a fundamental parsing failure where the module is not recognizing valid input patterns or is crashing during processing. The module likely lacks proper error handling or input validation logic.
+
+### client_parse
+
+The module is failing validation despite correctly extracting name and email. The error messages indicate the system is rejecting valid extractions, suggesting a problem with the validation logic or the expected output format. The module may be expecting specific formatting or data types that don't match the actual extracted values, or the validation rules have been updated without corresponding prompt adjustments.
 
 ## Prompt Fix Recommendations
 
-No recommendations needed. All modules are passing successfully.
+### inquiry_parse
+
+Update the prompt to include explicit examples of valid inquiry formats and clear output schema requirements. Add error handling instructions to guide the module on how to process ambiguous or malformed inputs. Include specific instructions for handling edge cases like empty fields or unusual inquiry structures.
+
+### client_parse
+
+Revise the prompt to clearly define the expected output format for client data. Ensure the validation criteria match the actual extraction capabilities. Add examples showing exactly how the extracted data should be formatted for validation to pass. Clarify any specific requirements for name or email formatting that might be causing rejections.
 
 ## What's Working Well
 
-All modules demonstrate reliable performance. The system shows consistent behavior across multiple test runs. Previously problematic modules (inquiry_parse, client_parse, allergen_risk) have stabilized and now maintain 100% pass rates. The recent improvements in module stability confirm that prior fixes have been effective. No regression detected in any module functionality.
+The allergen_risk module has shown consistent improvement, now passing 100% of tests after previous failures. The correspondence, menu_suggestions, and quote_draft modules are all performing well with 100% pass rates. These modules demonstrate stable functionality and proper handling of their respective data processing tasks.
 
 ---
 

@@ -150,3 +150,8 @@ Failing: none - all modules passed
 
 Passing: inquiry_parse, client_parse, allergen_risk, correspondence, menu_suggestions, quote_draft
 Failing: none - all modules passed
+
+## 2026-03-30 01:32 UTC - 80% pass rate - Run 5250dcab
+
+Passing: allergen_risk, correspondence, menu_suggestions, quote_draft
+Failing: inquiry_parse (0%), client_parse (0%)

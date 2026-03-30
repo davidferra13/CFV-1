@@ -1,11 +1,11 @@
 # Spec: OpenClaw Directory Images Cartridge
 
-> **Status:** ready
+> **Status:** built (ChefFlow side complete; Pi-side cartridge pending)
 > **Priority:** P2 (queued)
 > **Depends on:** visual-representation-strategy.md (Phase 3A), openclaw-cartridge-infrastructure.md (verified)
 > **Estimated complexity:** medium (Pi-side cartridge + ChefFlow sync handler)
 > **Created:** 2026-03-29
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-30
 
 ---
 

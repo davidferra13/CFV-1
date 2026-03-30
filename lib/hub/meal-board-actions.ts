@@ -373,26 +373,51 @@ export async function cloneWeekMeals(
       (targetStart.getTime() - sourceStart.getTime()) / (1000 * 60 * 60 * 24)
     )
 
-    // Remap entries to target dates
-    const remappedEntries = sourceEntries.map((e: any) => {
+    // Remap entries to target dates (preserve per-meal serving times)
+    let clonedCount = 0
+    for (const e of sourceEntries) {
       const sourceDate = new Date(e.meal_date)
       sourceDate.setDate(sourceDate.getDate() + dayOffset)
-      return {
-        mealDate: sourceDate.toISOString().split('T')[0],
+      const targetDate = sourceDate.toISOString().split('T')[0]
+
+      const result = await upsertMealEntry({
+        groupId: validated.groupId,
+        profileToken: validated.profileToken,
+        mealDate: targetDate,
         mealType: e.meal_type,
         title: e.title,
         description: e.description,
         dietaryTags: e.dietary_tags,
         allergenFlags: e.allergen_flags,
-      }
-    })
+        headCount: e.head_count,
+        prepNotes: e.prep_notes,
+        servingTime: e.serving_time ?? undefined,
+      })
+      if (result.success) clonedCount++
+    }
 
-    // Use bulk upsert
-    return await bulkUpsertMealEntries({
-      groupId: validated.groupId,
-      profileToken: validated.profileToken,
-      entries: remappedEntries,
-    })
+    // Post system message (non-blocking)
+    try {
+      const dates = sourceEntries.map((e: any) => e.meal_date).sort()
+      const startDate = dates[0]
+      const endDate = dates[dates.length - 1]
+      const dateRange =
+        startDate === endDate
+          ? new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+          : `${new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+      const db2: any = createServerClient({ admin: true })
+      await db2.from('hub_messages').insert({
+        group_id: validated.groupId,
+        author_profile_id: profile.id,
+        message_type: 'system',
+        body: `Week cloned to ${dateRange} (${clonedCount} meals)`,
+        system_event_type: 'menu_update',
+      })
+    } catch {
+      console.error('[non-blocking] Failed to post clone system message')
+    }
+
+    return { success: true, count: clonedCount }
   } catch (err: any) {
     return { success: false, error: err.message }
   }
@@ -462,6 +487,9 @@ export async function saveWeekAsTemplate(
         description: e.description,
         dietaryTags: e.dietary_tags,
         allergenFlags: e.allergen_flags,
+        headCount: e.head_count,
+        prepNotes: e.prep_notes,
+        servingTime: e.serving_time,
       }
     })
 
@@ -536,26 +564,28 @@ export async function loadTemplate(
       return { success: false, error: 'Template has no entries' }
     }
 
-    // Map day offsets to actual dates
+    // Map day offsets to actual dates and upsert individually (preserves all fields)
     const targetMonday = new Date(validated.targetWeekStart)
-    const remappedEntries = entries.map((e: any) => {
+    let loadedCount = 0
+    for (const e of entries) {
       const entryDate = new Date(targetMonday)
       entryDate.setDate(entryDate.getDate() + (e.dayOffset ?? 0))
-      return {
+      const result = await upsertMealEntry({
+        groupId: validated.groupId,
+        profileToken: validated.profileToken,
         mealDate: entryDate.toISOString().split('T')[0],
         mealType: e.mealType,
         title: e.title,
         description: e.description,
         dietaryTags: e.dietaryTags,
         allergenFlags: e.allergenFlags,
-      }
-    })
-
-    return await bulkUpsertMealEntries({
-      groupId: validated.groupId,
-      profileToken: validated.profileToken,
-      entries: remappedEntries,
-    })
+        headCount: e.headCount ?? undefined,
+        prepNotes: e.prepNotes ?? undefined,
+        servingTime: e.servingTime ?? undefined,
+      })
+      if (result.success) loadedCount++
+    }
+    return { success: true, count: loadedCount }
   } catch (err: any) {
     return { success: false, error: err.message }
   }
@@ -1230,6 +1260,26 @@ export async function updateDefaultMealTimes(input: {
 // ===========================================================================
 // MEAL COMMENTS
 // ===========================================================================
+
+export async function getBatchCommentCounts(
+  mealEntryIds: string[]
+): Promise<Record<string, number>> {
+  if (mealEntryIds.length === 0) return {}
+  const db: any = createServerClient({ admin: true })
+
+  const { data, error } = await db
+    .from('hub_meal_comments')
+    .select('meal_entry_id')
+    .in('meal_entry_id', mealEntryIds)
+
+  if (error || !data) return {}
+
+  const counts: Record<string, number> = {}
+  for (const row of data) {
+    counts[row.meal_entry_id] = (counts[row.meal_entry_id] ?? 0) + 1
+  }
+  return counts
+}
 
 export async function getMealComments(mealEntryId: string): Promise<MealComment[]> {
   const db: any = createServerClient({ admin: true })

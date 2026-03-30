@@ -1757,6 +1757,22 @@ export async function backfillLoyaltyForHistoricalImports(): Promise<BackfillLoy
           runningPointsBalance += basePoints
           clientPointsAwarded += basePoints
 
+          // Base event bonus (hybrid: flat bonus stacked on top of any earn mode)
+          const basePerEvent = config.base_points_per_event || 0
+          if (basePerEvent > 0) {
+            await db.from('loyalty_transactions').insert({
+              tenant_id: user.tenantId!,
+              client_id: clientId,
+              event_id: event.id,
+              type: 'earned',
+              points: basePerEvent,
+              description: `Base event bonus: ${basePerEvent} pts (historical import)`,
+              created_by: user.id,
+            })
+            runningPointsBalance += basePerEvent
+            clientPointsAwarded += basePerEvent
+          }
+
           // Large party bonus
           if (
             config.bonus_large_party_threshold &&

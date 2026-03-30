@@ -58,6 +58,19 @@ registerCartridge({
   },
 })
 
+// Directory Images: sources photos for food directory listings
+registerCartridge({
+  codename: 'directory-images',
+  name: 'Directory Images',
+  port: 8085,
+  pullEndpoint: '/api/images/unsynced',
+  targetType: 'database',
+  syncHandler: async (): Promise<CartridgeSyncResult> => {
+    const { handleDirectoryImagesSync } = await import('./directory-images-handler')
+    return handleDirectoryImagesSync(null)
+  },
+})
+
 // Future cartridges register here as they are built:
 // registerCartridge({ codename: 'market-intel', ... })
 // registerCartridge({ codename: 'trend-watch', ... })

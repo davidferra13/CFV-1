@@ -153,7 +153,7 @@ export function upsertProduct(db, { name, brand, upc, size, sizeValue, sizeUnit,
         size_value = COALESCE(?, size_value), size_unit = COALESCE(?, size_unit),
         updated_at = datetime('now')
       WHERE id = ?
-    `).run(upc, category, department, isFood, imageUrl, isOrganic ? 1 : 0, isStoreBrand ? 1 : 0, sizeValue, sizeUnit, existing.id);
+    `).run(upc, category, department, isFood ? 1 : 0, imageUrl, isOrganic ? 1 : 0, isStoreBrand ? 1 : 0, sizeValue, sizeUnit, existing.id);
     return { id: existing.id, isNew: false };
   }
 
