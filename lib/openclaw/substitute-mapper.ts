@@ -77,11 +77,13 @@ export async function computeSubstitutes(options?: {
 
         for (let rank = 0; rank < alternatives.length; rank++) {
           const alt = alternatives[rank]
+          // Clamp to +/- 999% to fit numeric(5,2)
+          const clampedDiff = Math.max(-999, Math.min(999, alt.diffPct))
           const reason =
-            alt.diffPct < -5
-              ? `Same category, ${Math.abs(Math.round(alt.diffPct))}% cheaper`
-              : alt.diffPct > 5
-                ? `Same category, ${Math.round(alt.diffPct)}% more expensive`
+            clampedDiff < -5
+              ? `Same category, ${Math.abs(Math.round(clampedDiff))}% cheaper`
+              : clampedDiff > 5
+                ? `Same category, ${Math.round(clampedDiff)}% more expensive`
                 : 'Same category, similar price'
 
           if (!dryRun) {
@@ -92,7 +94,7 @@ export async function computeSubstitutes(options?: {
                   rank, reason, price_difference_pct, updated_at
                 ) VALUES (
                   ${ing.id}, ${ing.tenant_id}, ${alt.id},
-                  ${rank + 1}, ${reason}, ${Math.round(alt.diffPct * 100) / 100},
+                  ${rank + 1}, ${reason}, ${Math.round(clampedDiff * 100) / 100},
                   now()
                 )
                 ON CONFLICT (ingredient_id, tenant_id, substitute_ingredient_id) DO UPDATE SET
