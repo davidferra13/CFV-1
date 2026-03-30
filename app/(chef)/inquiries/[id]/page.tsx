@@ -70,6 +70,7 @@ import { InquiryIntelligencePanel } from '@/components/intelligence/inquiry-inte
 import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
 import { getCriticalPath } from '@/lib/lifecycle/critical-path'
 import { CriticalPathCard } from '@/components/lifecycle/critical-path-card'
+import { getEmailSnapshot } from '@/lib/lifecycle/email-snapshot'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -172,6 +173,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     timelineEntries,
     circleToken,
     criticalPath,
+    snapshotData,
   ] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
@@ -186,6 +188,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     getEntityActivityTimeline('inquiry', params.id),
     getInquiryCircleToken(params.id).catch(() => null),
     getCriticalPath({ inquiryId: params.id }).catch(() => null),
+    getEmailSnapshot(params.id).catch(() => null),
   ])
 
   if (!inquiry) {
@@ -811,6 +814,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           circleToken={circleToken}
           chefName={null}
           isFirstResponse={!(inquiry as any).first_response_at}
+          snapshotData={snapshotData}
         />
       )}
 

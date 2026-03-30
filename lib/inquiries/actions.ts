@@ -122,6 +122,8 @@ const UpdateInquirySchema = z.object({
   next_action_required: z.string().nullable().optional(),
   next_action_by: z.string().nullable().optional(),
   follow_up_due_at: z.string().nullable().optional(),
+  discussed_dishes: z.array(z.string()).nullable().optional(),
+  selected_tier: z.string().nullable().optional(),
   expected_updated_at: z.string().optional(),
   idempotency_key: z.string().optional(),
 })

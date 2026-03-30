@@ -105,6 +105,25 @@ export function CircleClientStatus({ status }: CircleClientStatusProps) {
         </div>
       )}
 
+      {/* Discussed dishes */}
+      {status.discussedDishes && status.discussedDishes.length > 0 && (
+        <div className="px-4 py-2 border-t border-stone-700/50">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-stone-600 mb-1.5">
+            Dishes discussed
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {status.discussedDishes.map((dish, i) => (
+              <span
+                key={i}
+                className="text-xs bg-stone-700/50 text-stone-300 px-2 py-0.5 rounded-full"
+              >
+                {dish}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
       {missing.length > 0 && (
         <div className="px-4 py-2.5 bg-stone-800/40 border-t border-stone-700/50">

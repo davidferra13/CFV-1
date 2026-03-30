@@ -38,6 +38,7 @@ export interface GuestCriticalPathResult {
   missing: GuestCriticalPathItem[]
   groupName: string | null
   chefName: string | null
+  discussedDishes: string[] | null
 }
 
 // ---------------------------------------------------------------------------
@@ -390,10 +391,15 @@ export async function getCriticalPathForGuest(
       : null
   )
 
+  // Include discussed dishes if available (informational, not a blocking item)
+  const dishes = (inquiry as any)?.discussed_dishes as string[] | null
+  const discussedDishes = Array.isArray(dishes) && dishes.length > 0 ? dishes : null
+
   return {
     confirmed,
     missing,
     groupName: group.name,
     chefName,
+    discussedDishes,
   }
 }

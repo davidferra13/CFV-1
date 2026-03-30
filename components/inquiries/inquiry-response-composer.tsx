@@ -13,6 +13,7 @@ import { Alert } from '@/components/ui/alert'
 import { draftResponseForInquiry } from '@/lib/ai/correspondence'
 import { createDraftMessage, approveAndSendMessage, updateDraftMessage } from '@/lib/gmail/actions'
 import { getDinnerCircleInvitation } from '@/lib/lifecycle/dinner-circle-templates'
+import type { EmailSnapshotResult } from '@/lib/lifecycle/email-snapshot'
 
 interface InquiryResponseComposerProps {
   inquiryId: string
@@ -22,6 +23,7 @@ interface InquiryResponseComposerProps {
   circleToken?: string | null
   chefName?: string | null
   isFirstResponse?: boolean
+  snapshotData?: EmailSnapshotResult | null
 }
 
 interface DraftState {
@@ -44,6 +46,7 @@ export function InquiryResponseComposer({
   circleToken,
   chefName,
   isFirstResponse,
+  snapshotData,
 }: InquiryResponseComposerProps) {
   const router = useRouter()
   const [generating, setGenerating] = useState(false)
@@ -56,6 +59,7 @@ export function InquiryResponseComposer({
   const [isEditing, setIsEditing] = useState(false)
   const [savedMessageId, setSavedMessageId] = useState<string | null>(null)
   const [includeCircleLink, setIncludeCircleLink] = useState(!!circleToken && !!isFirstResponse)
+  const [includeSnapshot, setIncludeSnapshot] = useState(!!snapshotData)
 
   // ── Generate AI Draft ──────────────────────────────────────────────────────
 
@@ -87,6 +91,11 @@ export function InquiryResponseComposer({
           circleUrl,
         })
         finalBody = body + '\n\n' + invitation.paragraph
+      }
+
+      // Auto-append email snapshot ("at a glance") after sign-off
+      if (includeSnapshot && snapshotData?.formatted) {
+        finalBody = finalBody + '\n\n' + snapshotData.formatted
       }
 
       setDraftState({
@@ -319,18 +328,34 @@ export function InquiryResponseComposer({
             )}
           </div>
 
-          {/* Dinner Circle toggle */}
-          {circleToken && (
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={includeCircleLink}
-                onChange={(e) => setIncludeCircleLink(e.target.checked)}
-                className="h-4 w-4 rounded border-stone-600 bg-stone-800 text-[#e88f47] focus:ring-[#e88f47]"
-              />
-              <span className="text-xs text-stone-400">Include Dinner Circle link</span>
-            </label>
-          )}
+          {/* Email options */}
+          <div className="flex flex-wrap gap-4">
+            {/* Dinner Circle toggle */}
+            {circleToken && (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeCircleLink}
+                  onChange={(e) => setIncludeCircleLink(e.target.checked)}
+                  className="h-4 w-4 rounded border-stone-600 bg-stone-800 text-[#e88f47] focus:ring-[#e88f47]"
+                />
+                <span className="text-xs text-stone-400">Include Dinner Circle link</span>
+              </label>
+            )}
+
+            {/* Snapshot footer toggle */}
+            {snapshotData && (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={includeSnapshot}
+                  onChange={(e) => setIncludeSnapshot(e.target.checked)}
+                  className="h-4 w-4 rounded border-stone-600 bg-stone-800 text-[#e88f47] focus:ring-[#e88f47]"
+                />
+                <span className="text-xs text-stone-400">Include dinner summary</span>
+              </label>
+            )}
+          </div>
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">

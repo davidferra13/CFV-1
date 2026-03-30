@@ -564,7 +564,7 @@
 
 **`/inquiries/new` — Form:** Smart Fill (paste text → AI parse via Ollama), channel select, client link, contact info, event details (date/guests/occasion/location/budget/dietary/service/cannabis), original message textarea, internal notes. Submit creates inquiry.
 
-**`/inquiries/[id]` — Detail:** Full inquiry dossier with contact card, confirmed facts, pipeline card (next action/follow-up due with inline edit), quotes card ("+ Create Quote" → `/quotes/new`), AI response composer (generate draft → edit → "Approve & Send" via Gmail), communication log, transition buttons by status (with decline modal), notes section, recipe ideas linker, printed documents section, metadata.
+**`/inquiries/[id]` — Detail:** Full inquiry dossier with contact card, confirmed facts, pipeline card (next action/follow-up due with inline edit), quotes card ("+ Create Quote" → `/quotes/new`), **Critical Path card** (10-item progress tracker with status icons, progress bar, blockers grouped by stage, Dinner Circle link), AI response composer (generate draft → edit → "Approve & Send" via Gmail, toggles: "Include Dinner Circle link", "Include dinner summary" for email snapshot footer), communication log, transition buttons by status (with decline modal), notes section, recipe ideas linker, printed documents section, metadata.
 
 ### 4.2 Quotes
 
