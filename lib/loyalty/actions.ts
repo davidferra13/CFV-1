@@ -2244,3 +2244,114 @@ export async function getMyLoyaltyStatus() {
     },
   }
 }
+
+// =====================================================================================
+// CLIENT TRIGGER COMPLETION STATUS (Quest Board data source)
+// =====================================================================================
+
+export type TriggerCompletionStatus = {
+  triggerKey: string
+  label: string
+  description: string
+  points: number
+  completed: boolean
+  category: string
+  frequency: string
+}
+
+export async function getClientTriggerCompletionStatus(): Promise<TriggerCompletionStatus[]> {
+  const user = await requireClient()
+  const db: any = createServerClient()
+
+  // Get client's tenant
+  const { data: client } = await db
+    .from('clients')
+    .select('id, tenant_id, loyalty_profile_complete_awarded, loyalty_fun_qa_awarded')
+    .eq('id', user.entityId)
+    .single()
+
+  if (!client?.tenant_id) return []
+
+  // Get trigger config from chef's loyalty settings
+  const { data: config } = await db
+    .from('loyalty_config')
+    .select('trigger_config, program_mode')
+    .eq('tenant_id', client.tenant_id)
+    .maybeSingle()
+
+  if (!config || config.program_mode !== 'full') return []
+
+  const { TRIGGER_REGISTRY } = await import('./trigger-registry')
+  const overrides = (config.trigger_config || {}) as Record<
+    string,
+    { enabled: boolean; points: number }
+  >
+
+  // Get client's most recent completed event for per-event guard checks
+  const { data: recentEvent } = await db
+    .from('events')
+    .select(
+      'id, loyalty_review_awarded, loyalty_quote_accepted_awarded, loyalty_menu_approved_awarded, loyalty_ontime_payment_awarded, loyalty_tip_awarded, loyalty_google_review_awarded, loyalty_public_consent_awarded, loyalty_chat_engagement_awarded'
+    )
+    .eq('client_id', client.id)
+    .eq('status', 'completed')
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  // For per-action triggers, check if client has any matching transactions
+  const { data: transactions } = await db
+    .from('loyalty_transactions')
+    .select('description')
+    .eq('client_id', client.id)
+    .eq('type', 'earned')
+
+  const txDescriptions = (transactions || []).map((t: any) => (t.description || '').toLowerCase())
+
+  return TRIGGER_REGISTRY.map((def) => {
+    const override = overrides[def.key]
+    const enabled = override ? override.enabled : true
+    const points = override ? override.points : def.defaultPoints
+
+    if (!enabled || points <= 0) return null
+
+    let completed = false
+
+    // One-time triggers: check client row guard columns
+    if (
+      def.frequency === 'one_time' &&
+      def.idempotencyTable === 'clients' &&
+      def.idempotencyColumn
+    ) {
+      completed = !!client[def.idempotencyColumn]
+    }
+
+    // Per-event triggers: check most recent completed event
+    if (
+      def.frequency === 'per_event' &&
+      def.idempotencyTable === 'events' &&
+      def.idempotencyColumn &&
+      recentEvent
+    ) {
+      completed = !!recentEvent[def.idempotencyColumn]
+    }
+
+    // Per-action triggers: check if any matching transaction exists
+    if (def.frequency === 'per_action') {
+      const keyWords = def.key.replace(/_/g, ' ')
+      completed = txDescriptions.some(
+        (d: string) => d.includes(keyWords) || d.includes(def.label.toLowerCase())
+      )
+    }
+
+    return {
+      triggerKey: def.key,
+      label: def.label,
+      description: def.description,
+      points,
+      completed,
+      category: def.category,
+      frequency: def.frequency,
+    }
+  }).filter(Boolean) as TriggerCompletionStatus[]
+}

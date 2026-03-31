@@ -37,7 +37,7 @@ const navItems = [
   { href: '/my-hub', label: 'Friends & Groups', icon: Users, badge: 'hub', mobileTab: true },
   { href: '/my-profile', label: 'Profile', icon: User, dividerBefore: true, mobileTab: true },
   { href: '/my-spending', label: 'Payments', icon: DollarSign },
-  { href: '/my-rewards', label: 'Rewards', icon: Gift },
+  { href: '/my-rewards', label: 'Rewards', icon: Gift, mobileTab: true },
 ]
 
 type ClientSidebarContextType = {

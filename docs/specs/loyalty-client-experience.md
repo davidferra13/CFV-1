@@ -1,11 +1,11 @@
 # Spec: Loyalty Client Experience Layer
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** loyalty-trigger-expansion.md (triggers must exist before quest board can show them)
 > **Estimated complexity:** medium (3-8 files)
 > **Created:** 2026-03-30
-> **Built by:** not started
+> **Built by:** Claude Code (2026-03-30)
 
 ---
 

@@ -18,6 +18,9 @@ import { HowToEarnPanel } from '@/components/loyalty/how-to-earn-panel'
 import { getActiveTriggers } from '@/lib/loyalty/triggers'
 import { NextRewardCard } from '@/components/loyalty/next-reward-card'
 import { TierPerksDisplay } from '@/components/loyalty/tier-perks-display'
+import { LoyaltyLiveBalance } from '@/components/loyalty/loyalty-live-balance'
+import { LoyaltyCelebrationToast } from '@/components/loyalty/loyalty-celebration-toast'
+import { EarningQuestBoard } from '@/components/loyalty/earning-quest-board'
 
 export const metadata: Metadata = { title: 'My Rewards - ChefFlow' }
 
@@ -216,9 +219,11 @@ export default async function MyRewardsPage() {
                   {TIER_LABELS[status.tier]} Member
                 </span>
                 {status.programMode === 'full' && (
-                  <p className="text-2xl font-bold text-stone-100">
-                    {status.pointsBalance.toLocaleString()} points
-                  </p>
+                  <LoyaltyLiveBalance
+                    initialBalance={status.pointsBalance}
+                    tenantId={client?.tenant_id || ''}
+                    clientId={user.entityId}
+                  />
                 )}
               </div>
               <p className="text-sm text-stone-400">
@@ -430,27 +435,31 @@ export default async function MyRewardsPage() {
       {status.programMode === 'full' && (
         <>
           {configData && (
-            <HowToEarnPanel
-              config={{
-                points_per_guest: configData.points_per_guest ?? 10,
-                bonus_large_party_threshold: configData.bonus_large_party_threshold ?? null,
-                bonus_large_party_points: configData.bonus_large_party_points ?? null,
-                milestone_bonuses: (configData.milestone_bonuses ?? []) as {
-                  events: number
-                  bonus: number
-                }[],
-                guest_milestones: (configData.guest_milestones ?? []) as {
-                  guests: number
-                  bonus: number
-                }[],
-                welcome_points: configData.welcome_points ?? 25,
-                referral_points: configData.referral_points ?? 100,
-                earn_mode: configData.earn_mode ?? 'per_guest',
-                points_per_dollar: configData.points_per_dollar ?? 1,
-                points_per_event: configData.points_per_event ?? 100,
-                base_points_per_event: configData.base_points_per_event ?? 0,
-              }}
-              activeTriggers={activeTriggers}
+            <EarningQuestBoard
+              fallback={
+                <HowToEarnPanel
+                  config={{
+                    points_per_guest: configData.points_per_guest ?? 10,
+                    bonus_large_party_threshold: configData.bonus_large_party_threshold ?? null,
+                    bonus_large_party_points: configData.bonus_large_party_points ?? null,
+                    milestone_bonuses: (configData.milestone_bonuses ?? []) as {
+                      events: number
+                      bonus: number
+                    }[],
+                    guest_milestones: (configData.guest_milestones ?? []) as {
+                      guests: number
+                      bonus: number
+                    }[],
+                    welcome_points: configData.welcome_points ?? 25,
+                    referral_points: configData.referral_points ?? 100,
+                    earn_mode: configData.earn_mode ?? 'per_guest',
+                    points_per_dollar: configData.points_per_dollar ?? 1,
+                    points_per_event: configData.points_per_event ?? 100,
+                    base_points_per_event: configData.base_points_per_event ?? 0,
+                  }}
+                  activeTriggers={activeTriggers}
+                />
+              }
             />
           )}
 
@@ -496,6 +505,10 @@ export default async function MyRewardsPage() {
           available_rewards_count: status.availableRewards.length,
         }}
       />
+
+      {status.programMode === 'full' && client?.tenant_id && (
+        <LoyaltyCelebrationToast tenantId={client.tenant_id} clientId={user.entityId} />
+      )}
     </div>
   )
 }
