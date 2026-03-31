@@ -119,8 +119,9 @@
 - **Layout:** Responsive grid (2 cols mobile, 3 cols tablet, 4 cols desktop)
 - **Collapse/Expand toggle:** Collapses to compact tag strip, expands to full card grid
 - **24 feature area cards**, each showing: colored icon, label, description, live count from DB, hover-revealed quick links
-- Feature areas: Inbox, Events, Inquiries, Clients, Quotes, Leads, Calls, Contracts, Culinary, Finance, Operations, Staff, Inventory, Vendors, Commerce, Marketing, Growth, Analytics, Goals, Loyalty, Safety, Remy AI, Settings
-- 103 unique URLs reachable from cards + quick links (covers Guests, Partners, Circles, Consulting, Marketplace, Travel, Payroll, Import, Help, Activity Log, and more)
+- Feature areas: Inbox, Events, Inquiries, Clients, **Dinner Circles**, Quotes, Leads, Calls, Contracts, Culinary, Finance, Operations, Staff, Inventory, Vendors, Commerce, Marketing, Growth, Analytics, Goals, Loyalty, Safety, Remy AI, Settings
+- Dinner Circles card (orange, Row 1 after Clients): count of active circles, quick links to All Circles + Social Feed
+- 103+ unique URLs reachable from cards + quick links (covers Guests, Partners, Circles, Consulting, Marketplace, Travel, Payroll, Import, Help, Activity Log, and more)
 - Replaces the former 8-item ShortcutStrip
 - Wrapped in Suspense + WidgetErrorBoundary (non-blocking, shows skeleton on load)
 
@@ -183,6 +184,15 @@
 - 7-day grid showing events, prep days, free days with color-coded prep-status dots (green/amber/grey)
 - "Full Schedule" link → `/schedule`
 - Burnout warnings (amber boxes)
+
+#### Dinner Circles
+
+- **Component:** `DinnerCirclesSection` (`app/(chef)/dashboard/_sections/dinner-circles-cards.tsx`)
+- Shows top 4 most recent circles sorted by last_message_at, with emoji, name, member count, unread badge, last message preview, time ago
+- "+ New Circle" link → `/circles`, "View All" link → `/circles`
+- Empty state: CTA to create first circle with "Create Circle" button → `/circles`
+- Uses `getChefCircles({ limit: 4 })` with fast boolean unread check (no N+1 queries)
+- Wrapped in `WidgetErrorBoundary` + `Suspense` (non-blocking)
 
 #### Priority Queue
 
@@ -1563,22 +1573,22 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 
 ## GLOBAL ELEMENTS (present on every page)
 
-| Element                         | Description                                                                                                                                                                                                                                   |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sidebar Navigation**          | 5 groups (Pipeline, Events, Clients, Finance, More) + customizable top shortcuts + bottom shortcuts (Settings). Curated per-archetype presets. "Recent" section shows last 8 visited pages with relative timestamps, collapsible + clearable. |
-| **Archetype Selector**          | Full-screen onboarding gate for new chefs — pick from 6 archetypes (Private Chef, Caterer, Meal Prep, Restaurant, Food Truck, Bakery) to set nav defaults. Nothing locked out.                                                                |
-| **Mobile Tab Bar**              | Home, Inbox, Events, Clients (customizable per archetype)                                                                                                                                                                                     |
-| **Remy Floating Widget**        | Draggable/resizable concierge on all pages. 5-view drawer (Chat, List, Search, Actions, Templates). Projects, bookmarks, pin/archive. All data in browser IndexedDB.                                                                          |
-| **Breadcrumbs**                 | Every sub-page has "← Parent" navigation                                                                                                                                                                                                      |
-| **Breadcrumb Bar**              | `components/navigation/breadcrumb-bar.tsx` — clickable path trail (Dashboard / Section / Detail) rendered above main content. Mobile: truncates to last 2 segments                                                                            |
-| **Auth Gate**                   | Every page calls `requireChef()` — unauthenticated users redirected to sign-in                                                                                                                                                                |
-| **Tenant Scoping**              | Every query scoped to session `tenant_id`                                                                                                                                                                                                     |
-| **Pro Feature Gating**          | Pro features gated via `requirePro()` server-side + `<UpgradeGate>` client-side                                                                                                                                                               |
-| **Admin Bypass**                | Admins always have full Pro access                                                                                                                                                                                                            |
-| **Mobile Card Layout**          | `components/ui/responsive-table.tsx` — generic responsive wrapper renders tables on desktop, stacked cards on mobile (used across Events, Clients, Inquiries lists)                                                                           |
-| **Inline Form Validation**      | `hooks/use-field-validation.ts` + `lib/validation/form-rules.ts` — validates on blur, shows inline errors via Input `error` prop                                                                                                              |
-| **Draft Save Indicator**        | `components/ui/draft-save-indicator.tsx` — floating badge on forms using `useDurableDraft` hook. Shows "Saving..."/"Draft saved" state                                                                                                        |
-| **Undo on Destructive Actions** | `hooks/use-deferred-action.ts` — delays destructive actions (delete, archive) by 5s with undo toast. User can click "Undo" to cancel                                                                                                          |
+| Element                         | Description                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sidebar Navigation**          | Primary standalone items (Inbox, Notifications, Calendar, Events, Inquiries, Clients, **Circles**, Menus, Recipes, Money, Prep, Tasks, Food Catalog, Store Prices, Rewards) + collapsible "All Features" directory + bottom shortcuts (Settings). Curated per-archetype presets. "Recent" section shows last 8 visited pages with relative timestamps, collapsible + clearable. |
+| **Archetype Selector**          | Full-screen onboarding gate for new chefs — pick from 6 archetypes (Private Chef, Caterer, Meal Prep, Restaurant, Food Truck, Bakery) to set nav defaults. Nothing locked out.                                                                                                                                                                                                  |
+| **Mobile Tab Bar**              | Home, Inbox, Events, Clients (customizable per archetype)                                                                                                                                                                                                                                                                                                                       |
+| **Remy Floating Widget**        | Draggable/resizable concierge on all pages. 5-view drawer (Chat, List, Search, Actions, Templates). Projects, bookmarks, pin/archive. All data in browser IndexedDB.                                                                                                                                                                                                            |
+| **Breadcrumbs**                 | Every sub-page has "← Parent" navigation                                                                                                                                                                                                                                                                                                                                        |
+| **Breadcrumb Bar**              | `components/navigation/breadcrumb-bar.tsx` — clickable path trail (Dashboard / Section / Detail) rendered above main content. Mobile: truncates to last 2 segments                                                                                                                                                                                                              |
+| **Auth Gate**                   | Every page calls `requireChef()` — unauthenticated users redirected to sign-in                                                                                                                                                                                                                                                                                                  |
+| **Tenant Scoping**              | Every query scoped to session `tenant_id`                                                                                                                                                                                                                                                                                                                                       |
+| **Pro Feature Gating**          | Pro features gated via `requirePro()` server-side + `<UpgradeGate>` client-side                                                                                                                                                                                                                                                                                                 |
+| **Admin Bypass**                | Admins always have full Pro access                                                                                                                                                                                                                                                                                                                                              |
+| **Mobile Card Layout**          | `components/ui/responsive-table.tsx` — generic responsive wrapper renders tables on desktop, stacked cards on mobile (used across Events, Clients, Inquiries lists)                                                                                                                                                                                                             |
+| **Inline Form Validation**      | `hooks/use-field-validation.ts` + `lib/validation/form-rules.ts` — validates on blur, shows inline errors via Input `error` prop                                                                                                                                                                                                                                                |
+| **Draft Save Indicator**        | `components/ui/draft-save-indicator.tsx` — floating badge on forms using `useDurableDraft` hook. Shows "Saving..."/"Draft saved" state                                                                                                                                                                                                                                          |
+| **Undo on Destructive Actions** | `hooks/use-deferred-action.ts` — delays destructive actions (delete, archive) by 5s with undo toast. User can click "Undo" to cancel                                                                                                                                                                                                                                            |
 
 ---
 
@@ -1829,9 +1839,9 @@ Persistent social space for event guests — group chat, photos, polls, scheduli
 
 ### Chef Pages (auth required)
 
-| Route                  | Content                                                                                                                              |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `/social/hub-overview` | Admin-only dashboard — 6 stat cards (profiles, groups, messages, photos, stubs, seeking chef), stubs pipeline, recent activity feed. |
+| Route                  | Content                                                                                                                                                                    |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/social/hub-overview` | Admin-only dashboard titled "Dinner Circle Admin" — 6 stat cards (profiles, groups, messages, photos, stubs, seeking chef), stubs pipeline, "Recent Circle Activity" feed. |
 
 ### Guest Experience Portal (public, token-gated)
 
