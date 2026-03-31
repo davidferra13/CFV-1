@@ -78,6 +78,20 @@ The current product already has menus, client menu intake, templates, showcase m
 
 ---
 
+## Builder Quick Start
+
+Start here before touching UI:
+
+1. Fix the existing `createMenu()` context persistence bug so `season`, `client_id`, and `target_date` stop being dropped.
+2. Land the additive schema first: standalone workflow notes, draft note links, canonical dish components, and menu source metadata.
+3. Add workflow-note server actions before any menu-page UI so note capture, attach-later, and promotion paths exist as real actions.
+4. Extend `dish_index` into the canonical reusable dish source, then add explicit `Reference` vs `Copy` menu-ingest actions.
+5. Preserve `menus -> dishes -> components` as the live editor compatibility model. Do not normalize the editor around canonical dishes in this spec.
+6. Only after the data/actions are stable should menu landing, create-menu, detail, and assembly UI surfaces be updated.
+7. Keep downstream readers compatible: history, revisions, PDF/doc export, repeat detection, approval, and commerce should keep reading menu-owned compatibility rows unless the spec explicitly says otherwise.
+
+---
+
 ## Files to Create
 
 | File                                                                 | Purpose                                                                                                                   |
@@ -462,6 +476,33 @@ Behavior rules:
 12. Confirm existing client choose-menu flow still works from `/my-events/[id]/choose-menu`.
 
 ---
+
+## Rollout and Backout
+
+### Rollout Order
+
+1. Schema only: additive migration, no destructive backfill.
+2. Server actions: workflow notes, canonical dish source actions, explicit unlock, and `createMenu()` bug fix.
+3. Compatibility preservation: update clone/template/showcase/history/revision/export readers so new source metadata is carried through safely.
+4. UI entry points: menus landing page, create-menu form, menu detail, and assembly browser.
+5. AI intake: persist approved extracted notes into workflow notes after the core note model is already live.
+
+### Backout Strategy
+
+- If UI work causes confusion, disable the new note entry points and canonical-dish add controls first. Existing menus still run on `menus -> dishes -> components`.
+- If reference sync behavior is unstable, force the new dish-add path temporarily to `copy` while preserving canonical dish creation and note promotion.
+- Do not roll back by deleting new tables or columns once real data exists. Back out behavior by hiding entry points and stopping new writes.
+
+---
+
+## Builder Stop Signs
+
+Stop and update this spec before proceeding if any of the following happens:
+
+- You find a hidden menu/admin/history surface that needs workflow-note visibility and is not already covered here.
+- You discover the editor cannot preserve `reference` semantics without a deeper storage rewrite.
+- Clone/template/showcase flows cannot preserve `source_mode`, `dish_index_id`, and `copied_from_dish_index_id` cleanly.
+- Approval, revision, or export surfaces would become ambiguous unless they snapshot source metadata in a more explicit way than this spec currently describes.
 
 ## Out of Scope
 

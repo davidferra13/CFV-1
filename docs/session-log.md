@@ -100,3 +100,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/notes-dishes-menus-client-event-pipeline.md, docs/session-log.md
 - Build state on departure: unchanged (planner-only docs, no build run)
 - Notes: Added explicit coverage for revision/history/export/clone/commerce compatibility and clarified what remains verified vs unverified. No product code changed.
+
+## 2026-03-31 ~19:02 EST
+
+- Agent: Planner
+- Task: Builder handoff tightening for the notes -> dishes -> menus -> client/event spec
+- Status: started
+- Build state on arrival: unchanged (planner-only docs, no build run)
+- Files in focus: docs/specs/notes-dishes-menus-client-event-pipeline.md, docs/session-log.md
+- Notes: Adding only the smallest high-value builder aids inside the existing spec: quick-start order, rollout/backout, and stop-sign guidance. No new spec file.
+
+## 2026-03-31 ~19:10 EST
+
+- Agent: Planner
+- Task: Builder handoff tightening for the notes -> dishes -> menus -> client/event spec
+- Status: completed
+- Files touched: docs/specs/notes-dishes-menus-client-event-pipeline.md, docs/session-log.md
+- Build state on departure: unchanged (planner-only docs, no build run)
+- Notes: Existing spec tightened in place for builder clarity. Added quick-start order, rollout/backout guidance, and explicit stop signs without expanding scope or changing product code.
