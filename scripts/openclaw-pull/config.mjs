@@ -12,7 +12,7 @@ export default {
   pg: {
     connectionString:
       process.env.DATABASE_URL ||
-      'postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres',
+      'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
   },
   tempDir: 'C:/Users/david/Documents/CFv1/.openclaw-temp',
   logFile: 'C:/Users/david/Documents/CFv1/logs/openclaw-pull.log',

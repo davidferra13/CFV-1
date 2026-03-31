@@ -3,50 +3,41 @@
 /**
  * OpenClaw Pull Service
  *
- * Standalone Node.js script that:
- * 1. Downloads the full SQLite database from the Pi
- * 2. Parses stores, products, and store_products tables
- * 3. Upserts everything into PostgreSQL's openclaw schema
- * 4. Logs the sync run
+ * Downloads the full SQLite database from the Pi, then upserts:
+ *   catalog_stores   -> openclaw.stores
+ *   catalog_products  -> openclaw.products
+ *   catalog_store_products -> openclaw.store_products
  *
  * Run manually: node scripts/openclaw-pull/pull.mjs
  * Or via Windows Scheduled Task (hourly).
- *
- * Dependencies: better-sqlite3, postgres (both in devDependencies)
- * If better-sqlite3 fails to install on Windows, use sql.js as fallback.
  */
 
 import { writeFileSync, mkdirSync, statSync } from 'fs'
 import config from './config.mjs'
 
-// Dynamic import for better-sqlite3 (native module, may fail on some systems)
 let Database
 try {
   const mod = await import('better-sqlite3')
   Database = mod.default
 } catch {
-  console.error('[openclaw-pull] better-sqlite3 not available. Install it or use sql.js as fallback.')
+  console.error('[openclaw-pull] better-sqlite3 not available.')
   console.error('  npm install --save-dev better-sqlite3')
   process.exit(1)
 }
 
-// Import postgres
 import postgres from 'postgres'
 
-const log = (msg) => {
-  const ts = new Date().toISOString()
-  const line = `[${ts}] ${msg}`
-  console.log(line)
-}
+const BATCH_SIZE = 500
+
+const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`)
 
 async function main() {
   const startedAt = new Date()
   log('Starting OpenClaw pull...')
 
-  // Ensure temp directory exists
   mkdirSync(config.tempDir, { recursive: true })
 
-  // Step 1: Download SQLite from Pi
+  // ── Step 1: Download SQLite ────────────────────────────────────────────
   log(`Fetching SQLite from http://${config.pi.host}:${config.pi.port}${config.pi.dbEndpoint}`)
   let buffer
   try {
@@ -66,23 +57,20 @@ async function main() {
   const fileSize = statSync(dbPath).size
   log(`Downloaded ${(fileSize / 1024 / 1024).toFixed(1)}MB SQLite database`)
 
-  // Validate SQLite header
   if (buffer.length < 100 || buffer.toString('utf8', 0, 16) !== 'SQLite format 3\0') {
     log('ERROR: Downloaded file is not a valid SQLite database')
     process.exit(1)
   }
 
-  // Step 2: Open SQLite
+  // ── Step 2: Open SQLite ────────────────────────────────────────────────
   const sqlite = new Database(dbPath, { readonly: true })
-
-  // Check what tables exist
   const tables = sqlite
     .prepare("SELECT name FROM sqlite_master WHERE type='table'")
     .all()
     .map((r) => r.name)
   log(`SQLite tables: ${tables.join(', ')}`)
 
-  // Step 3: Connect to PostgreSQL
+  // ── Step 3: Connect to PostgreSQL ──────────────────────────────────────
   const sql = postgres(config.pg.connectionString)
 
   let storesSynced = 0
@@ -91,135 +79,259 @@ async function main() {
   let errors = 0
   const errorDetails = []
 
-  // Step 4: Sync stores (if table exists)
-  if (tables.includes('stores')) {
-    try {
-      const stores = sqlite.prepare('SELECT * FROM stores').all()
-      log(`Found ${stores.length} stores in SQLite`)
+  // ID maps: SQLite integer ID -> PostgreSQL UUID
+  const storeIdMap = new Map()   // sqlite store.id -> pg store uuid
+  const productIdMap = new Map() // sqlite product.id -> pg product uuid
 
-      for (const store of stores) {
-        try {
-          // Look up chain_id from slug
-          const chainRows = await sql`
-            SELECT id FROM openclaw.chains WHERE slug = ${store.chain_slug} LIMIT 1
-          `
-          if (chainRows.length === 0) {
-            log(`  WARN: Unknown chain slug "${store.chain_slug}", skipping store "${store.name}"`)
-            continue
-          }
-          const chainId = chainRows[0].id
+  // ── Step 4: Sync chains from source_registry ───────────────────────────
+  // Load chain slug -> PG UUID mapping (seeded by migration)
+  const pgChains = await sql`SELECT id, slug FROM openclaw.chains`
+  const chainSlugToUuid = new Map()
+  for (const c of pgChains) chainSlugToUuid.set(c.slug, c.id)
+  log(`PG chains loaded: ${chainSlugToUuid.size}`)
 
-          await sql`
-            INSERT INTO openclaw.stores (
-              chain_id, external_store_id, name, address, city, state, zip,
-              lat, lng, phone, last_cataloged_at
-            ) VALUES (
-              ${chainId}, ${store.external_store_id}, ${store.name}, ${store.address},
-              ${store.city}, ${store.state}, ${store.zip},
-              ${store.lat}, ${store.lng}, ${store.phone},
-              ${store.last_scraped_at ? new Date(store.last_scraped_at) : null}
-            )
-            ON CONFLICT (chain_id, external_store_id) DO UPDATE SET
-              name = EXCLUDED.name,
-              address = EXCLUDED.address,
-              city = EXCLUDED.city,
-              state = EXCLUDED.state,
-              zip = EXCLUDED.zip,
-              lat = EXCLUDED.lat,
-              lng = EXCLUDED.lng,
-              phone = EXCLUDED.phone,
-              last_cataloged_at = EXCLUDED.last_cataloged_at,
-              updated_at = now()
-          `
-          storesSynced++
-        } catch (err) {
-          errors++
-          errorDetails.push(`Store "${store.name}": ${err.message}`)
+  // ── Step 5: Sync stores ────────────────────────────────────────────────
+  if (tables.includes('catalog_stores')) {
+    const stores = sqlite.prepare('SELECT * FROM catalog_stores WHERE is_active = 1').all()
+    log(`Found ${stores.length} active stores in SQLite`)
+
+    for (const store of stores) {
+      try {
+        const chainId = chainSlugToUuid.get(store.chain_slug)
+        if (!chainId) {
+          log(`  WARN: Unknown chain "${store.chain_slug}", skipping "${store.name}"`)
+          continue
         }
+
+        const rows = await sql`
+          INSERT INTO openclaw.stores (
+            chain_id, external_store_id, name, address, city, state, zip,
+            lat, lng, phone, hours_json, last_cataloged_at
+          ) VALUES (
+            ${chainId}, ${store.external_store_id || String(store.id)},
+            ${store.name}, ${store.address},
+            ${store.city || 'Unknown'}, ${store.state || 'MA'}, ${store.zip || '00000'},
+            ${store.lat}, ${store.lng}, ${store.phone},
+            ${store.hours_json ? JSON.parse(store.hours_json) : null},
+            ${store.last_cataloged_at ? new Date(store.last_cataloged_at) : null}
+          )
+          ON CONFLICT (chain_id, external_store_id) DO UPDATE SET
+            name = EXCLUDED.name,
+            address = EXCLUDED.address,
+            city = EXCLUDED.city,
+            state = EXCLUDED.state,
+            zip = EXCLUDED.zip,
+            lat = EXCLUDED.lat,
+            lng = EXCLUDED.lng,
+            phone = EXCLUDED.phone,
+            hours_json = EXCLUDED.hours_json,
+            last_cataloged_at = EXCLUDED.last_cataloged_at,
+            updated_at = now()
+          RETURNING id
+        `
+        storeIdMap.set(store.id, rows[0].id)
+        storesSynced++
+      } catch (err) {
+        errors++
+        if (errorDetails.length < 20) errorDetails.push(`Store "${store.name}": ${err.message}`)
       }
-      log(`Synced ${storesSynced} stores`)
-    } catch (err) {
-      log(`ERROR reading stores: ${err.message}`)
-      errors++
     }
+    log(`Synced ${storesSynced} stores, mapped ${storeIdMap.size} IDs`)
+  } else {
+    log('WARN: No catalog_stores table in SQLite')
   }
 
-  // Step 5: Sync products (if table exists)
-  if (tables.includes('products')) {
-    try {
-      const products = sqlite.prepare('SELECT * FROM products').all()
-      log(`Found ${products.length} products in SQLite`)
+  // ── Step 6: Sync products ──────────────────────────────────────────────
+  if (tables.includes('catalog_products')) {
+    const total = sqlite.prepare('SELECT COUNT(*) as cnt FROM catalog_products').get().cnt
+    log(`Found ${total} products in SQLite, syncing in batches of ${BATCH_SIZE}...`)
 
-      // Batch upsert products
+    // Category cache: slug -> PG UUID
+    const categoryCache = new Map()
+
+    let offset = 0
+    while (offset < total) {
+      const products = sqlite
+        .prepare(`SELECT * FROM catalog_products LIMIT ${BATCH_SIZE} OFFSET ${offset}`)
+        .all()
+
       for (const product of products) {
         try {
-          // Find or create category
+          // Resolve category
           let categoryId = null
           if (product.category) {
-            const catSlug = product.category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')
-            const catRows = await sql`
-              INSERT INTO openclaw.product_categories (name, slug, department, is_food)
-              VALUES (${product.category}, ${catSlug}, ${product.category}, true)
-              ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name
+            const catSlug = product.category
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/-+/g, '-')
+              .replace(/^-|-$/g, '')
+
+            if (categoryCache.has(catSlug)) {
+              categoryId = categoryCache.get(catSlug)
+            } else {
+              const catRows = await sql`
+                INSERT INTO openclaw.product_categories (name, slug, department, is_food)
+                VALUES (${product.category}, ${catSlug}, ${product.department || product.category}, ${product.is_food === 1})
+                ON CONFLICT (slug) DO UPDATE SET
+                  name = EXCLUDED.name,
+                  department = EXCLUDED.department
+                RETURNING id
+              `
+              categoryId = catRows[0]?.id ?? null
+              if (categoryId) categoryCache.set(catSlug, categoryId)
+            }
+          }
+
+          // Upsert product. Use UPC as conflict key when available, else name+brand.
+          let pgProductId = null
+
+          if (product.upc) {
+            const rows = await sql`
+              INSERT INTO openclaw.products (
+                name, brand, upc, size, size_value, size_unit,
+                category_id, image_url, is_organic, is_store_brand
+              ) VALUES (
+                ${product.name}, ${product.brand}, ${product.upc},
+                ${product.size}, ${product.size_value}, ${product.size_unit},
+                ${categoryId}, ${product.image_url},
+                ${product.is_organic === 1}, ${product.is_store_brand === 1}
+              )
+              ON CONFLICT (upc) WHERE upc IS NOT NULL DO UPDATE SET
+                name = EXCLUDED.name,
+                brand = EXCLUDED.brand,
+                size = EXCLUDED.size,
+                size_value = EXCLUDED.size_value,
+                size_unit = EXCLUDED.size_unit,
+                category_id = EXCLUDED.category_id,
+                image_url = EXCLUDED.image_url,
+                is_organic = EXCLUDED.is_organic,
+                is_store_brand = EXCLUDED.is_store_brand,
+                updated_at = now()
               RETURNING id
             `
-            categoryId = catRows[0]?.id ?? null
+            pgProductId = rows[0]?.id
           }
 
-          await sql`
-            INSERT INTO openclaw.products (
-              name, brand, upc, size, size_value, size_unit,
-              category_id, image_url, is_organic, is_store_brand
-            ) VALUES (
-              ${product.name}, ${product.brand}, ${product.upc},
-              ${product.size}, ${product.size_value}, ${product.size_unit},
-              ${categoryId}, ${product.image_url},
-              ${product.is_organic === 1}, ${product.is_store_brand === 1}
-            )
-            ON CONFLICT DO NOTHING
-          `
-          productsSynced++
+          if (!pgProductId) {
+            // No UPC or conflict on UPC didn't fire. Insert with gen UUID.
+            const rows = await sql`
+              INSERT INTO openclaw.products (
+                name, brand, upc, size, size_value, size_unit,
+                category_id, image_url, is_organic, is_store_brand
+              ) VALUES (
+                ${product.name}, ${product.brand}, ${product.upc},
+                ${product.size}, ${product.size_value}, ${product.size_unit},
+                ${categoryId}, ${product.image_url},
+                ${product.is_organic === 1}, ${product.is_store_brand === 1}
+              )
+              ON CONFLICT DO NOTHING
+              RETURNING id
+            `
+            pgProductId = rows[0]?.id
+
+            // If DO NOTHING fired (duplicate), look it up
+            if (!pgProductId && product.upc) {
+              const existing = await sql`
+                SELECT id FROM openclaw.products WHERE upc = ${product.upc} LIMIT 1
+              `
+              pgProductId = existing[0]?.id
+            }
+            if (!pgProductId) {
+              // Last resort: match by name+brand
+              const existing = await sql`
+                SELECT id FROM openclaw.products
+                WHERE name = ${product.name}
+                  AND (brand = ${product.brand} OR (brand IS NULL AND ${product.brand} IS NULL))
+                LIMIT 1
+              `
+              pgProductId = existing[0]?.id
+            }
+          }
+
+          if (pgProductId) {
+            productIdMap.set(product.id, pgProductId)
+            productsSynced++
+          }
         } catch (err) {
           errors++
-          if (errorDetails.length < 10) {
-            errorDetails.push(`Product "${product.name}": ${err.message}`)
-          }
+          if (errorDetails.length < 20) errorDetails.push(`Product "${product.name}": ${err.message}`)
         }
       }
-      log(`Synced ${productsSynced} products`)
-    } catch (err) {
-      log(`ERROR reading products: ${err.message}`)
-      errors++
+
+      offset += BATCH_SIZE
+      if (offset % 5000 === 0) log(`  Products: ${offset}/${total}...`)
     }
+    log(`Synced ${productsSynced} products, mapped ${productIdMap.size} IDs`)
+  } else {
+    log('WARN: No catalog_products table in SQLite')
   }
 
-  // Step 6: Sync store_products (prices) if table exists
-  if (tables.includes('store_products')) {
-    try {
-      const prices = sqlite.prepare('SELECT * FROM store_products').all()
-      log(`Found ${prices.length} store_products in SQLite`)
+  // ── Step 7: Sync store_products (prices) ───────────────────────────────
+  if (tables.includes('catalog_store_products')) {
+    const total = sqlite.prepare('SELECT COUNT(*) as cnt FROM catalog_store_products').get().cnt
+    log(`Found ${total} store_products in SQLite, syncing...`)
 
-      for (const sp of prices) {
-        if (sp.price_cents === 0) continue // Skip $0 prices (scraper error)
+    let skippedNoMap = 0
+    let skippedZero = 0
+    let offset = 0
+
+    while (offset < total) {
+      const rows = sqlite
+        .prepare(`SELECT * FROM catalog_store_products LIMIT ${BATCH_SIZE} OFFSET ${offset}`)
+        .all()
+
+      for (const sp of rows) {
+        if (!sp.price_cents || sp.price_cents <= 0) {
+          skippedZero++
+          continue
+        }
+
+        const pgStoreId = storeIdMap.get(sp.store_id)
+        const pgProductId = productIdMap.get(sp.product_id)
+
+        if (!pgStoreId || !pgProductId) {
+          skippedNoMap++
+          continue
+        }
 
         try {
-          // Look up PostgreSQL store_id and product_id
-          // This requires matching Pi's integer IDs to PG UUIDs via the upserted data
-          // For now, skip if we can't resolve the IDs
-          // TODO: Build a mapping table during store/product sync phases above
+          await sql`
+            INSERT INTO openclaw.store_products (
+              store_id, product_id, price_cents, sale_price_cents, sale_ends_at,
+              in_stock, aisle, source, last_seen_at
+            ) VALUES (
+              ${pgStoreId}, ${pgProductId}, ${sp.price_cents},
+              ${sp.sale_price_cents || null},
+              ${sp.sale_ends_at ? new Date(sp.sale_ends_at) : null},
+              ${sp.in_stock === 1}, ${sp.aisle}, ${sp.source || 'pull'},
+              ${sp.last_seen_at ? new Date(sp.last_seen_at) : new Date()}
+            )
+            ON CONFLICT (store_id, product_id) DO UPDATE SET
+              price_cents = EXCLUDED.price_cents,
+              sale_price_cents = EXCLUDED.sale_price_cents,
+              sale_ends_at = EXCLUDED.sale_ends_at,
+              in_stock = EXCLUDED.in_stock,
+              aisle = EXCLUDED.aisle,
+              source = EXCLUDED.source,
+              last_seen_at = EXCLUDED.last_seen_at
+          `
           pricesSynced++
         } catch (err) {
           errors++
+          if (errorDetails.length < 20) errorDetails.push(`Price store=${sp.store_id} prod=${sp.product_id}: ${err.message}`)
         }
       }
-      log(`Processed ${pricesSynced} prices`)
-    } catch (err) {
-      log(`ERROR reading store_products: ${err.message}`)
-      errors++
+
+      offset += BATCH_SIZE
+      if (offset % 10000 === 0) log(`  Prices: ${offset}/${total}...`)
     }
+
+    log(`Synced ${pricesSynced} prices (skipped: ${skippedNoMap} unmapped, ${skippedZero} zero-price)`)
+  } else {
+    log('WARN: No catalog_store_products table in SQLite')
   }
 
-  // Step 7: Log sync run
+  // ── Step 8: Log sync run ───────────────────────────────────────────────
   const finishedAt = new Date()
   const durationSeconds = Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)
 
@@ -236,7 +348,15 @@ async function main() {
     )
   `
 
-  log(`Done in ${durationSeconds}s. Stores: ${storesSynced}, Products: ${productsSynced}, Prices: ${pricesSynced}, Errors: ${errors}`)
+  log(`\nDone in ${durationSeconds}s`)
+  log(`  Stores:   ${storesSynced}`)
+  log(`  Products: ${productsSynced}`)
+  log(`  Prices:   ${pricesSynced}`)
+  log(`  Errors:   ${errors}`)
+  if (errorDetails.length > 0) {
+    log(`  First errors:`)
+    errorDetails.slice(0, 5).forEach((e) => log(`    ${e}`))
+  }
 
   await sql.end()
   sqlite.close()
