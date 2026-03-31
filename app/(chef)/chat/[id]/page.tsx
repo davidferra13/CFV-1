@@ -23,7 +23,7 @@ export async function generateMetadata({
   const { id } = await params
   const conversation = await getConversation(id)
   return {
-    title: conversation ? `Chat | ChefFlow` : 'Chat | ChefFlow',
+    title: conversation ? `Chat | ChefFlow` : 'Chat',
   }
 }
 

@@ -16,7 +16,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, subMonths, startOfMonth } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Revenue by Month - ChefFlow' }
+export const metadata: Metadata = { title: 'Revenue by Month' }
 
 export default async function RevenueByMonthPage() {
   await requireChef()

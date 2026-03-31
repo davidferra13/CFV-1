@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { format, differenceInDays } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Upcoming Touchpoints - ChefFlow' }
+export const metadata: Metadata = { title: 'Upcoming Touchpoints' }
 
 const STATUS_STYLES: Record<string, string> = {
   confirmed: 'bg-teal-900 text-teal-700',

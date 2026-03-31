@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { VendorDirectoryClient } from './vendor-directory-client'
 
-export const metadata: Metadata = { title: 'Vendors | ChefFlow' }
+export const metadata: Metadata = { title: 'Vendors' }
 
 export default async function VendorsPage() {
   await requireChef()

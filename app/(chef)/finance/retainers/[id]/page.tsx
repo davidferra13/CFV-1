@@ -9,7 +9,7 @@ import { RetainerDetailActions } from './detail-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { BILLING_CYCLE_LABELS } from '@/lib/retainers/constants'
 
-export const metadata: Metadata = { title: 'Retainer Detail - ChefFlow' }
+export const metadata: Metadata = { title: 'Retainer Detail' }
 
 export default async function RetainerDetailPage({ params }: { params: { id: string } }) {
   await requireChef()

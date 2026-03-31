@@ -8,7 +8,7 @@ import { getDemandForecast } from '@/lib/inventory/demand-forecast-actions'
 import { DemandClient } from './demand-client'
 import { AutoReorderPanel } from '@/components/inventory/auto-reorder-panel'
 
-export const metadata: Metadata = { title: 'Demand Forecast - ChefFlow' }
+export const metadata: Metadata = { title: 'Demand Forecast' }
 
 export default async function DemandPage() {
   await requireChef()

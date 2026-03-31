@@ -20,7 +20,7 @@ const WasteDashboard = dynamic(
   }
 )
 
-export const metadata: Metadata = { title: 'Waste Tracking - ChefFlow' }
+export const metadata: Metadata = { title: 'Waste Tracking' }
 
 export default async function WasteTrackingPage() {
   const user = await requireChef()

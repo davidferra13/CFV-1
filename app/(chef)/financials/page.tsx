@@ -14,7 +14,7 @@ import { getMarketIncomeSummary } from '@/lib/calendar/entry-actions'
 import { FinancialsClient } from './financials-client'
 import { Card, CardContent } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Finance - ChefFlow' }
+export const metadata: Metadata = { title: 'Finance' }
 
 const sections = [
   {

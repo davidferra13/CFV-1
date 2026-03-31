@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button'
 import type { SaleChannel } from '@/lib/commerce/constants'
 import { ReportsDatePicker } from '@/components/commerce/reports-page-client'
 
-export const metadata: Metadata = { title: 'Commerce Reports | ChefFlow' }
+export const metadata: Metadata = { title: 'Commerce Reports' }
 
 export default async function CommerceReportsPage({
   searchParams,

@@ -25,7 +25,7 @@ import { getSalesTaxRate } from '@/lib/tax/api-ninjas'
 import { listPromotions } from '@/lib/commerce/promotion-actions'
 import { listOpenDiningChecks } from '@/lib/commerce/table-service-actions'
 
-export const metadata: Metadata = { title: 'POS Register - ChefFlow' }
+export const metadata: Metadata = { title: 'POS Register' }
 
 function readPositiveInt(value: string | undefined, fallback: number) {
   if (value == null) return fallback

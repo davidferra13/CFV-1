@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
-export const metadata: Metadata = { title: 'Daily Revenue | ChefFlow' }
+export const metadata: Metadata = { title: 'Daily Revenue' }
 
 export default async function DailyRevenuePage() {
   const user = await requireChef()

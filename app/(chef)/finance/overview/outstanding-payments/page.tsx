@@ -14,7 +14,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, differenceInDays } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Outstanding Payments - ChefFlow' }
+export const metadata: Metadata = { title: 'Outstanding Payments' }
 
 export default async function OutstandingPaymentsPage() {
   await requireChef()

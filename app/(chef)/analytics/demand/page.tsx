@@ -9,7 +9,7 @@ import { getHolidayYearOverYear } from '@/lib/analytics/seasonality'
 import { DemandHeatmap } from '@/components/analytics/demand-heatmap'
 import { HolidayYoYTable } from '@/components/analytics/holiday-yoy-table'
 
-export const metadata: Metadata = { title: 'Demand Forecast - ChefFlow' }
+export const metadata: Metadata = { title: 'Demand Forecast' }
 
 export default async function DemandForecastPage() {
   const user = await requireChef()

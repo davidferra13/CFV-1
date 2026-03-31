@@ -3,7 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getStoreCatalogStats, getChains } from '@/lib/openclaw/store-catalog-actions'
 import { PricesCatalogClient } from './prices-client'
 
-export const metadata: Metadata = { title: 'Store Prices - ChefFlow' }
+export const metadata: Metadata = { title: 'Store Prices' }
 
 export default async function PricesPage() {
   await requireChef()

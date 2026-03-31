@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { GdprTools } from '@/components/settings/gdpr-tools'
 
-export const metadata: Metadata = { title: 'GDPR & Privacy - ChefFlow' }
+export const metadata: Metadata = { title: 'GDPR & Privacy' }
 
 export default async function GdprPage() {
   await requireChef()

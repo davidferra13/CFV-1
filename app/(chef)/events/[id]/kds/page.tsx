@@ -8,7 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getServiceCourses } from '@/lib/operations/kds-actions'
 import { KDSView } from '@/components/operations/kds-view'
 
-export const metadata: Metadata = { title: 'Kitchen Display - ChefFlow' }
+export const metadata: Metadata = { title: 'Kitchen Display' }
 
 // Mobile standalone viewport for KDS (prevents accidental zoom while cooking)
 export const viewport: Viewport = {

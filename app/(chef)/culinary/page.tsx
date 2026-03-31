@@ -12,7 +12,7 @@ import { listVendors } from '@/lib/vendors/actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { PriceAlertsWidget } from '@/components/culinary/price-alerts-widget'
 
-export const metadata: Metadata = { title: 'Culinary | ChefFlow' }
+export const metadata: Metadata = { title: 'Culinary' }
 
 const tiles = [
   {

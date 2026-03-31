@@ -21,7 +21,7 @@ import { RecurringServiceForm } from './recurring-service-form'
 import { RecommendationDraftCard } from './recommendation-draft-card'
 import { ClientMealRequestsPanel } from './client-meal-requests-panel'
 
-export const metadata: Metadata = { title: 'Recurring Service - ChefFlow' }
+export const metadata: Metadata = { title: 'Recurring Service' }
 
 export default async function ClientRecurringPage({ params }: { params: { id: string } }) {
   await requireChef()

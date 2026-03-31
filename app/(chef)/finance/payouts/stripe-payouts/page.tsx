@@ -15,7 +15,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Stripe Payouts - ChefFlow' }
+export const metadata: Metadata = { title: 'Stripe Payouts' }
 
 export default async function StripePayoutsPage() {
   await requireChef()

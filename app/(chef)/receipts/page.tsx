@@ -12,7 +12,7 @@ import { ReceiptLibraryClient } from '@/components/receipts/receipt-library-clie
 import { StandaloneUpload } from '@/components/receipts/standalone-upload'
 import { Card } from '@/components/ui/card'
 
-export const metadata = { title: 'Receipt Library | ChefFlow' }
+export const metadata = { title: 'Receipt Library' }
 
 export default async function ReceiptLibraryPage() {
   await requireChef()

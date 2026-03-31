@@ -9,7 +9,7 @@ import { RevenuePathPanel } from '@/components/goals/revenue-path-panel'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Revenue Path | ChefFlow' }
+export const metadata: Metadata = { title: 'Revenue Path' }
 
 export default async function RevenuePathPage() {
   await requireChef()

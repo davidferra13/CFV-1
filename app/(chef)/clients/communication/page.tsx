@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats } from '@/lib/clients/actions'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Client Communication - ChefFlow' }
+export const metadata: Metadata = { title: 'Client Communication' }
 
 const TOOLS = [
   {

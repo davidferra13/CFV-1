@@ -18,7 +18,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { NoRecipesIllustration } from '@/components/ui/branded-illustrations'
 
-export const metadata: Metadata = { title: 'Recipe Book - ChefFlow' }
+export const metadata: Metadata = { title: 'Recipe Book' }
 
 const CATEGORY_STYLES: Record<string, string> = {
   sauce: 'bg-orange-900 text-orange-700',

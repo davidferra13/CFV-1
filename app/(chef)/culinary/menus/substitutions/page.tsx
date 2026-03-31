@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Substitutions & Adaptations - ChefFlow' }
+export const metadata: Metadata = { title: 'Substitutions & Adaptations' }
 
 export default async function SubstitutionsPage() {
   await requireChef()

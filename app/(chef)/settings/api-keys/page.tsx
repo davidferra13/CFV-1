@@ -3,7 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { ApiKeyManager } from '@/components/settings/api-key-manager'
 
-export const metadata: Metadata = { title: 'API Keys - ChefFlow' }
+export const metadata: Metadata = { title: 'API Keys' }
 
 async function getApiKeys(tenantId: string) {
   const db: any = createServerClient()

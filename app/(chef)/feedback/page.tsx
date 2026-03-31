@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Client Feedback | ChefFlow' }
+export const metadata: Metadata = { title: 'Client Feedback' }
 
 export default async function FeedbackPage() {
   const chef = await requireChef()

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { ChevronLeft } from '@/components/ui/icons'
 import { CallForm } from '@/components/calls/call-form'
 
-export const metadata: Metadata = { title: 'Schedule Call - ChefFlow' }
+export const metadata: Metadata = { title: 'Schedule Call' }
 
 type Props = {
   searchParams: {

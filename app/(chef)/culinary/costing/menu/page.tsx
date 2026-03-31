@@ -15,7 +15,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 
-export const metadata: Metadata = { title: 'Menu Cost - ChefFlow' }
+export const metadata: Metadata = { title: 'Menu Cost' }
 
 export default async function MenuCostPage() {
   await requireChef()

@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Claim Documents | ChefFlow' }
+export const metadata: Metadata = { title: 'Claim Documents' }
 
 export default async function ClaimDocumentsPage() {
   const chef = await requireChef()

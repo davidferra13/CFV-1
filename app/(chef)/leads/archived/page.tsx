@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Archived Leads - ChefFlow' }
+export const metadata: Metadata = { title: 'Archived Leads' }
 
 const STATUS_STYLES: Record<string, string> = {
   declined: 'bg-red-900 text-red-600',

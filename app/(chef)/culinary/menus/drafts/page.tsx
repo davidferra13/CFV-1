@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Draft Menus - ChefFlow' }
+export const metadata: Metadata = { title: 'Draft Menus' }
 
 const SERVICE_STYLE_LABELS: Record<string, string> = {
   plated: 'Plated',

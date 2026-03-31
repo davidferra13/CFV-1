@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { ShoppingListGenerator } from '@/components/culinary/ShoppingListGenerator'
 import { generateShoppingList } from '@/lib/culinary/shopping-list-actions'
 
-export const metadata: Metadata = { title: 'Consolidated Shopping - ChefFlow' }
+export const metadata: Metadata = { title: 'Consolidated Shopping' }
 
 function getDefaultWindow() {
   const start = new Date()

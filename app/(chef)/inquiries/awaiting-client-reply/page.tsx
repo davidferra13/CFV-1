@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatDistanceToNow, format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Awaiting Client Reply - ChefFlow' }
+export const metadata: Metadata = { title: 'Awaiting Client Reply' }
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null

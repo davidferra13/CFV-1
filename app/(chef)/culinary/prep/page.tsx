@@ -5,7 +5,7 @@ import { getAllComponents } from '@/lib/menus/actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Prep Overview - ChefFlow' }
+export const metadata: Metadata = { title: 'Prep Overview' }
 
 export default async function PrepPage() {
   await requireChef()

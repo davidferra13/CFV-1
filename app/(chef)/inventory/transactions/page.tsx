@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getTransactionHistory } from '@/lib/inventory/transaction-actions'
 import { TransactionLedgerClient } from './transaction-ledger-client'
 
-export const metadata: Metadata = { title: 'Transaction Ledger - ChefFlow' }
+export const metadata: Metadata = { title: 'Transaction Ledger' }
 
 export default async function TransactionsPage() {
   await requireChef()

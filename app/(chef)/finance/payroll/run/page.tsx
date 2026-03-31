@@ -5,7 +5,7 @@ import { listEmployees, getPayrollRecords } from '@/lib/finance/payroll-actions'
 import { PayrollEntryForm } from '@/components/finance/payroll/payroll-entry-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Run Payroll | ChefFlow' }
+export const metadata: Metadata = { title: 'Run Payroll' }
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`

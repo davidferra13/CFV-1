@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getPlateCostSummary } from '@/lib/finance/plate-cost-actions'
 import { PlateCostTable } from '@/components/finance/plate-cost-table'
 
-export const metadata: Metadata = { title: 'Plate Costs - ChefFlow' }
+export const metadata: Metadata = { title: 'Plate Costs' }
 
 export default async function PlateCostsPage() {
   await requireChef()

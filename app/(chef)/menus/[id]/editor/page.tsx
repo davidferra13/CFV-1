@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params
   const context = await getEditorContext(id)
   return {
-    title: context ? `Edit: ${context.menu.name} | ChefFlow` : 'Menu Editor | ChefFlow',
+    title: context ? `Edit: ${context.menu.name} | ChefFlow` : 'Menu Editor',
   }
 }
 

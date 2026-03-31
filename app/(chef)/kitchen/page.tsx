@@ -7,7 +7,7 @@ import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { KitchenModeLauncher } from './kitchen-mode-launcher'
 
-export const metadata: Metadata = { title: 'Kitchen Mode | ChefFlow' }
+export const metadata: Metadata = { title: 'Kitchen Mode' }
 
 function KitchenLoading() {
   return (

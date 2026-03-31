@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { ClientCreateForm } from './client-create-form'
 
-export const metadata: Metadata = { title: 'Add Client - ChefFlow' }
+export const metadata: Metadata = { title: 'Add Client' }
 
 export default async function NewClientPage() {
   const user = await requireChef()

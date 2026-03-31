@@ -9,7 +9,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { ErrorState } from '@/components/ui/error-state'
 import { FadeIn } from '@/components/ui/fade-in'
 
-export const metadata: Metadata = { title: 'Finance Overview - ChefFlow' }
+export const metadata: Metadata = { title: 'Finance Overview' }
 
 const VIEWS = [
   {

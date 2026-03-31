@@ -5,7 +5,7 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Recipes - ChefFlow' }
+export const metadata: Metadata = { title: 'Recipes' }
 import { getRecipes } from '@/lib/recipes/actions'
 import { getActivePalette } from '@/lib/seasonal/actions'
 import { getActiveMicroWindows, getEndingMicroWindows } from '@/lib/seasonal/helpers'

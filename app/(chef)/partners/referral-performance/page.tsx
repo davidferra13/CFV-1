@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Referral Performance - ChefFlow' }
+export const metadata: Metadata = { title: 'Referral Performance' }
 
 export default async function ReferralPerformancePage() {
   await requireChef()

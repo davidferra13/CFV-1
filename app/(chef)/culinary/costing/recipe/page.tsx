@@ -12,7 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 
-export const metadata: Metadata = { title: 'Recipe Cost - ChefFlow' }
+export const metadata: Metadata = { title: 'Recipe Cost' }
 
 function costBar(costCents: number, maxCents: number) {
   const pct = maxCents > 0 ? Math.min(100, (costCents / maxCents) * 100) : 0

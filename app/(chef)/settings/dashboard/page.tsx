@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { DashboardLayoutForm } from '@/components/settings/dashboard-layout-form'
 
-export const metadata: Metadata = { title: 'Dashboard Layout - ChefFlow' }
+export const metadata: Metadata = { title: 'Dashboard Layout' }
 
 export default async function DashboardLayoutSettingsPage() {
   await requireChef()

@@ -7,7 +7,7 @@ import { formatGoalValue, isRevenueGoal, formatPeriod } from '@/lib/goals/engine
 import { GoalHistorySparkline } from '@/components/goals/goal-history-sparkline'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Goal History - ChefFlow' }
+export const metadata: Metadata = { title: 'Goal History' }
 
 function formatMonth(yyyyMm: string): string {
   const [y, m] = yyyyMm.split('-').map(Number)

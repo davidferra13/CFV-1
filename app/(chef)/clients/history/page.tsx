@@ -5,7 +5,7 @@ import { getClientsWithStats } from '@/lib/clients/actions'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Client History - ChefFlow' }
+export const metadata: Metadata = { title: 'Client History' }
 
 const VIEWS = [
   {

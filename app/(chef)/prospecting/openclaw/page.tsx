@@ -6,7 +6,7 @@ import { OpenClawLeadsBrowser } from '@/components/prospecting/openclaw-leads-br
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'OpenClaw Leads - ChefFlow' }
+export const metadata: Metadata = { title: 'OpenClaw Leads' }
 
 export default async function OpenClawLeadsPage() {
   await requireAdmin()

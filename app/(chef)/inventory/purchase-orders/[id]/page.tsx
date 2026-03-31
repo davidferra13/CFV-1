@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getPurchaseOrder } from '@/lib/inventory/purchase-order-actions'
 import { PODetailClient } from './po-detail-client'
 
-export const metadata: Metadata = { title: 'Purchase Order Detail - ChefFlow' }
+export const metadata: Metadata = { title: 'Purchase Order Detail' }
 
 export default async function PODetailPage({ params }: { params: Promise<{ id: string }> }) {
   await requireChef()

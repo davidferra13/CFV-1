@@ -14,7 +14,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 
-export const metadata: Metadata = { title: 'Components - ChefFlow' }
+export const metadata: Metadata = { title: 'Components' }
 
 const CATEGORY_STYLES: Record<string, string> = {
   sauce: 'bg-orange-900 text-orange-700',

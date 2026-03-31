@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { MenuEngineForm } from '@/components/settings/menu-engine-form'
 
-export const metadata: Metadata = { title: 'Menu Engine - ChefFlow' }
+export const metadata: Metadata = { title: 'Menu Engine' }
 
 export default async function MenuEngineSettingsPage() {
   await requireChef()

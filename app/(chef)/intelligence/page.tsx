@@ -18,7 +18,7 @@ const IntelligenceHubContent = dynamic(
 )
 
 export const metadata: Metadata = {
-  title: 'Intelligence Hub - ChefFlow',
+  title: 'Intelligence Hub',
   description: 'Your business brain - 10 deterministic intelligence engines, zero AI dependency',
 }
 

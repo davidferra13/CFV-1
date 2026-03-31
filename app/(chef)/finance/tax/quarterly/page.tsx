@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getTaxSummaryForYear } from '@/lib/finance/tax-estimate-actions'
 import { TaxEstimateDashboard } from '@/components/finance/tax-estimate-dashboard'
 
-export const metadata: Metadata = { title: 'Quarterly Estimates - ChefFlow' }
+export const metadata: Metadata = { title: 'Quarterly Estimates' }
 
 export default async function QuarterlyEstimatesPage() {
   const currentYear = new Date().getFullYear()

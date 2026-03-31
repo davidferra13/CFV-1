@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getRecipeFamilies } from '@/lib/recipes/actions'
 import { RecipeDumpClient } from './recipe-dump-client'
 
-export const metadata: Metadata = { title: 'Recipe Dump - ChefFlow' }
+export const metadata: Metadata = { title: 'Recipe Dump' }
 
 export default async function RecipeDumpPage() {
   await requireChef()

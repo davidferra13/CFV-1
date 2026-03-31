@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getHighlights } from '@/lib/portfolio/highlight-actions'
 import { HighlightEditor } from '@/components/portfolio/highlight-editor'
 
-export const metadata: Metadata = { title: 'Profile Highlights - ChefFlow' }
+export const metadata: Metadata = { title: 'Profile Highlights' }
 
 export default async function HighlightsPage() {
   const user = await requireChef()

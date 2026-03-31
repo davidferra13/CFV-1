@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatDistanceToNow } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Active Partners - ChefFlow' }
+export const metadata: Metadata = { title: 'Active Partners' }
 
 const TYPE_LABELS: Record<string, string> = {
   airbnb_host: 'Airbnb Host',

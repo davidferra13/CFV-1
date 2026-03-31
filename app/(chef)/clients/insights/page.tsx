@@ -6,7 +6,7 @@ import { getEngagementStats } from '@/lib/activity/actions'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Client Insights - ChefFlow' }
+export const metadata: Metadata = { title: 'Client Insights' }
 
 const VIEWS = [
   {

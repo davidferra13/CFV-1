@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { AddComponentForm } from '@/components/culinary/add-component-form'
 
-export const metadata: Metadata = { title: 'Garnishes - ChefFlow' }
+export const metadata: Metadata = { title: 'Garnishes' }
 
 export default async function GarnishesPage() {
   await requireChef()

@@ -4,7 +4,7 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { listPromotions } from '@/lib/commerce/promotion-actions'
 import { PromotionManager } from '@/components/commerce/promotion-manager'
 
-export const metadata: Metadata = { title: 'Promotions - ChefFlow' }
+export const metadata: Metadata = { title: 'Promotions' }
 
 export default async function PromotionsPage() {
   await requireChef()

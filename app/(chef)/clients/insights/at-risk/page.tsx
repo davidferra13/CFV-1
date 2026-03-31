@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'At-Risk Clients - ChefFlow' }
+export const metadata: Metadata = { title: 'At-Risk Clients' }
 
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000
 

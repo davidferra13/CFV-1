@@ -5,7 +5,7 @@ import { getUserCulinaryWords } from '@/lib/culinary-words/actions'
 import { CulinaryBoard } from '@/components/culinary/culinary-board'
 
 export const metadata: Metadata = {
-  title: 'Culinary Board - ChefFlow',
+  title: 'Culinary Board',
   description:
     'The ultimate culinary composition cheat sheet - every word to inspire your next dish.',
 }

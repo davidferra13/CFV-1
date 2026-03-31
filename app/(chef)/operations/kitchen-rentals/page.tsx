@@ -9,7 +9,7 @@ import { format } from 'date-fns'
 import { KitchenRentalForm } from './kitchen-rental-form'
 import { DeleteKitchenRentalButton } from './delete-kitchen-rental-button'
 
-export const metadata: Metadata = { title: 'Kitchen Rentals | ChefFlow' }
+export const metadata: Metadata = { title: 'Kitchen Rentals' }
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`

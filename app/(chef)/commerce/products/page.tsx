@@ -10,7 +10,7 @@ import Link from 'next/link'
 import { Plus } from '@/components/ui/icons'
 import { ProductCatalog } from '@/components/commerce/product-catalog'
 
-export const metadata: Metadata = { title: 'Products | ChefFlow' }
+export const metadata: Metadata = { title: 'Products' }
 
 export default async function ProductsPage() {
   await requireChef()

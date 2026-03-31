@@ -8,7 +8,7 @@ import { StageConversionFunnel } from '@/components/analytics/stage-conversion-f
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Reporting - ChefFlow' }
+export const metadata: Metadata = { title: 'Reporting' }
 
 const REPORTS = [
   {

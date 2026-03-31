@@ -15,7 +15,7 @@ const GoalsPageClient = dynamic(
   }
 )
 
-export const metadata: Metadata = { title: 'Goals - ChefFlow' }
+export const metadata: Metadata = { title: 'Goals' }
 
 export default async function GoalsPage() {
   await requireChef()

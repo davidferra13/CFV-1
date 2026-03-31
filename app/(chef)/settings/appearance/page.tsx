@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { ColorPalettePicker } from '@/components/settings/color-palette-picker'
 
-export const metadata: Metadata = { title: 'Appearance - ChefFlow' }
+export const metadata: Metadata = { title: 'Appearance' }
 
 export default async function AppearancePage() {
   await requireChef()

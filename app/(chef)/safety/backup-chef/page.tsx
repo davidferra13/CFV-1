@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { BackupChefList } from '@/components/safety/backup-chef-list'
 
-export const metadata: Metadata = { title: 'Backup Chef Protocol | ChefFlow' }
+export const metadata: Metadata = { title: 'Backup Chef Protocol' }
 
 export default async function BackupChefPage() {
   const chef = await requireChef()

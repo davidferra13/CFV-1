@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { IncidentForm } from '@/components/safety/incident-form'
 
-export const metadata: Metadata = { title: 'Report an Incident | ChefFlow' }
+export const metadata: Metadata = { title: 'Report an Incident' }
 
 export default async function NewIncidentPage() {
   await requireChef()

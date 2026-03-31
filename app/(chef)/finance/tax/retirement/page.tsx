@@ -6,7 +6,7 @@ import {
 } from '@/lib/tax/retirement-actions'
 import { RetirementHealthPanel } from '@/components/finance/retirement-health-panel'
 
-export const metadata: Metadata = { title: 'Retirement & Health Deductions - ChefFlow' }
+export const metadata: Metadata = { title: 'Retirement & Health Deductions' }
 
 export default async function RetirementPage({
   searchParams,

@@ -8,7 +8,7 @@ import { getGuestLeads, getGuestLeadStats } from '@/lib/guest-leads/actions'
 import { GuestLeadsList } from '@/components/guest-leads/guest-leads-list'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Guest Leads - ChefFlow' }
+export const metadata: Metadata = { title: 'Guest Leads' }
 
 export default async function GuestLeadsPage() {
   await requireChef()

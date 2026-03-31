@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { startOfYear, format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Year-to-Date Summary - ChefFlow' }
+export const metadata: Metadata = { title: 'Year-to-Date Summary' }
 
 export default async function YearToDateSummaryPage() {
   await requireChef()

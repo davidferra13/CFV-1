@@ -19,7 +19,7 @@ const BenchmarkDashboard = dynamic(
   }
 )
 
-export const metadata: Metadata = { title: 'Benchmarks - ChefFlow' }
+export const metadata: Metadata = { title: 'Benchmarks' }
 
 export default async function BenchmarksPage() {
   const user = await requireChef()

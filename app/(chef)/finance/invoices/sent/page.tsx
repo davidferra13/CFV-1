@@ -17,7 +17,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { InvoicePaymentLinkButton } from '@/components/finance/invoice-payment-link-button'
 
-export const metadata: Metadata = { title: 'Sent Invoices - ChefFlow' }
+export const metadata: Metadata = { title: 'Sent Invoices' }
 
 function paymentStatusBadgeVariant(status: string): 'default' | 'warning' | 'success' | 'error' {
   if (status === 'paid') return 'success'

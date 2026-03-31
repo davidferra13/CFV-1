@@ -3,7 +3,7 @@ import { MenuEngineeringDashboard } from '@/components/menus/menu-engineering-da
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
-export const metadata = { title: 'Menu Engineering - ChefFlow' }
+export const metadata = { title: 'Menu Engineering' }
 
 export default async function MenuEngineeringPage() {
   await requireChef()

@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Reconciliation - ChefFlow' }
+export const metadata: Metadata = { title: 'Reconciliation' }
 
 export default async function ReconciliationPage() {
   await requireChef()

@@ -12,7 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 
-export const metadata: Metadata = { title: 'Dietary Flags - ChefFlow' }
+export const metadata: Metadata = { title: 'Dietary Flags' }
 
 const DIETARY_COLORS: Record<string, string> = {
   vegan: 'bg-green-900 text-green-700',

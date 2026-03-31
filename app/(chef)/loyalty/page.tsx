@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Loyalty Program - ChefFlow' }
+export const metadata: Metadata = { title: 'Loyalty Program' }
 import {
   getLoyaltyOverview,
   getRewards,

@@ -11,7 +11,7 @@ import { getCalendarConnection } from '@/lib/scheduling/calendar-sync-actions'
 import { Card } from '@/components/ui/card'
 import { formatDistanceToNow } from 'date-fns'
 
-export const metadata: Metadata = { title: 'System Health - ChefFlow' }
+export const metadata: Metadata = { title: 'System Health' }
 
 type StatusLevel = 'ok' | 'warning' | 'error' | 'unknown'
 

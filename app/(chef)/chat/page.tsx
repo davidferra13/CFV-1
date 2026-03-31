@@ -8,7 +8,7 @@ import { ChatInbox } from '@/components/chat/chat-inbox'
 import { NeedsFirstContact } from '@/components/chat/needs-first-contact'
 import { NewConversationButton } from '@/components/chat/new-conversation-button'
 
-export const metadata: Metadata = { title: 'Messages - ChefFlow' }
+export const metadata: Metadata = { title: 'Messages' }
 
 export default async function ChefChatInboxPage() {
   const user = await requireChef()

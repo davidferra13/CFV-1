@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getActiveClientsWithContext, getRecentClientActivity } from '@/lib/activity/actions'
 import { ClientPresenceMonitor } from '@/components/activity/client-presence-monitor'
 
-export const metadata: Metadata = { title: 'Client Portal Monitoring - ChefFlow' }
+export const metadata: Metadata = { title: 'Client Portal Monitoring' }
 
 export default async function ClientPresencePage() {
   const user = await requireChef()

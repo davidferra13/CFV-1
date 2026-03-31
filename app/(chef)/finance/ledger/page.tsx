@@ -6,7 +6,7 @@ import { getTenantFinancialSummary } from '@/lib/ledger/compute'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Ledger - ChefFlow' }
+export const metadata: Metadata = { title: 'Ledger' }
 
 const VIEWS = [
   {

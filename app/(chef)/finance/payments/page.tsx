@@ -5,7 +5,7 @@ import { getLedgerEntries } from '@/lib/ledger/actions'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Payments - ChefFlow' }
+export const metadata: Metadata = { title: 'Payments' }
 
 const VIEWS = [
   {

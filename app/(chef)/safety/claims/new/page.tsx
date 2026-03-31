@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'New Insurance Claim | ChefFlow' }
+export const metadata: Metadata = { title: 'New Insurance Claim' }
 
 export default async function NewInsuranceClaimPage() {
   await requireChef()

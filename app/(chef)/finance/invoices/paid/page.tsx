@@ -14,7 +14,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Paid Invoices - ChefFlow' }
+export const metadata: Metadata = { title: 'Paid Invoices' }
 
 const STATUS_STYLES: Record<string, string> = {
   paid: 'bg-green-900 text-green-700',

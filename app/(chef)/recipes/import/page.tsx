@@ -10,7 +10,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { RecipeImportHubClient } from './import-hub-client'
 
-export const metadata: Metadata = { title: 'Import Recipes - ChefFlow' }
+export const metadata: Metadata = { title: 'Import Recipes' }
 
 export default async function RecipeImportPage() {
   await requireChef()

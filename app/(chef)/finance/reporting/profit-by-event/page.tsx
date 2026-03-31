@@ -15,7 +15,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Profit by Event - ChefFlow' }
+export const metadata: Metadata = { title: 'Profit by Event' }
 
 export default async function ProfitByEventPage() {
   await requireChef()

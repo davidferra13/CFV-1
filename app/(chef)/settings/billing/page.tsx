@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getSubscriptionStatus } from '@/lib/stripe/subscription'
 import { SupportClient } from './billing-client'
 
-export const metadata = { title: 'Support ChefFlow | ChefFlow' }
+export const metadata = { title: 'Support ChefFlow' }
 
 export default async function SupportPage({
   searchParams,

@@ -10,7 +10,7 @@ import {
 } from '@/lib/contracts/advanced-contracts'
 import { ContractHistory } from '@/components/contracts/contract-history'
 
-export const metadata: Metadata = { title: 'Contract History - ChefFlow' }
+export const metadata: Metadata = { title: 'Contract History' }
 
 interface ContractHistoryPageProps {
   params: {

@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { AvailabilityChecklist } from '@/components/availability/availability-checklist'
 
 export const metadata: Metadata = {
-  title: 'Availability Broadcaster - ChefFlow',
+  title: 'Availability Broadcaster',
 }
 
 const PLATFORMS = [

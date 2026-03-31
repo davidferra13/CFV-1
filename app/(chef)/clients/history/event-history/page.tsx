@@ -14,7 +14,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Event History - ChefFlow' }
+export const metadata: Metadata = { title: 'Event History' }
 
 const STATUS_STYLES: Record<string, string> = {
   completed: 'bg-green-900 text-green-700',

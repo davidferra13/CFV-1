@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getContentReadyEvents } from '@/lib/content/post-event-content-actions'
 import { ContentReadyEvents } from '@/components/marketing/content-ready-events'
 
-export const metadata: Metadata = { title: 'Content Pipeline | ChefFlow' }
+export const metadata: Metadata = { title: 'Content Pipeline' }
 
 export default async function ContentPipelinePage() {
   await requireChef()

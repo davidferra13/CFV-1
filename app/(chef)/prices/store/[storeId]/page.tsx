@@ -6,7 +6,7 @@ import { pgClient } from '@/lib/db'
 import { ArrowLeft } from '@/components/ui/icons'
 import { StoreInventoryBrowser } from './store-inventory-browser'
 
-export const metadata: Metadata = { title: 'Store Inventory - ChefFlow' }
+export const metadata: Metadata = { title: 'Store Inventory' }
 
 export default async function StoreInventoryPage({
   params,

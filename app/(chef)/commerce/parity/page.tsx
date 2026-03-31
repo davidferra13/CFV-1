@@ -8,7 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 import { getCloverParityDashboard } from '@/lib/commerce/parity-dashboard'
 
-export const metadata: Metadata = { title: 'Clover Parity Dashboard - ChefFlow' }
+export const metadata: Metadata = { title: 'Clover Parity Dashboard' }
 
 function progressBarClass(percent: number) {
   if (percent >= 80) return 'bg-emerald-500'

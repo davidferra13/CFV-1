@@ -9,7 +9,7 @@ import {
 import { SupplierDirectory } from '@/components/procurement/SupplierDirectory'
 import { PurchaseOrders } from '@/components/procurement/PurchaseOrders'
 
-export const metadata: Metadata = { title: 'Procurement - ChefFlow' }
+export const metadata: Metadata = { title: 'Procurement' }
 
 export default async function ProcurementPage() {
   await requireChef()

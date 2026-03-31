@@ -16,7 +16,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Cancelled Events - ChefFlow' }
+export const metadata: Metadata = { title: 'Cancelled Events' }
 
 export default async function CancelledEventsPage() {
   await requireChef()

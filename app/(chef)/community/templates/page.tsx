@@ -11,7 +11,7 @@ import { Download, Globe } from '@/components/ui/icons'
 import { CommunityTemplateImport } from '@/components/community/community-template-import'
 import { CommunityTemplateShare } from '@/components/community/community-template-share'
 
-export const metadata: Metadata = { title: 'Community Templates - ChefFlow' }
+export const metadata: Metadata = { title: 'Community Templates' }
 
 export default async function CommunityTemplatesPage() {
   await requireChef()

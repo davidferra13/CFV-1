@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { Card, CardContent } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Growth | ChefFlow' }
+export const metadata: Metadata = { title: 'Growth' }
 
 const sections = [
   {

@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Smart Import - ChefFlow' }
+export const metadata: Metadata = { title: 'Smart Import' }
 import { isAIConfigured } from '@/lib/ai/parse'
 import { createServerClient } from '@/lib/db/server'
 import type { ImportMode } from '@/components/import/smart-import-hub'

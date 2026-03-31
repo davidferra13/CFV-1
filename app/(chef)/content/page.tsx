@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import ContentPipelinePanel from '@/components/content/content-pipeline-panel'
 
-export const metadata: Metadata = { title: 'Content Pipeline | ChefFlow' }
+export const metadata: Metadata = { title: 'Content Pipeline' }
 
 function ContentLoading() {
   return (

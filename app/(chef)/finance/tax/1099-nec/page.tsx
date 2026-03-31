@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { generate1099NECReports, get1099NECFilingSummary } from '@/lib/finance/1099-actions'
 import { Form1099NecPanel } from '@/components/finance/form-1099-nec-panel'
 
-export const metadata: Metadata = { title: '1099-NEC Report - ChefFlow' }
+export const metadata: Metadata = { title: '1099-NEC Report' }
 
 export default async function Form1099NECPage({
   searchParams,

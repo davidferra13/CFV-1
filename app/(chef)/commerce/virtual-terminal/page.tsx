@@ -4,7 +4,7 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { createServerClient } from '@/lib/db/server'
 import { VirtualTerminalForm } from '@/components/commerce/virtual-terminal-form'
 
-export const metadata: Metadata = { title: 'Virtual Terminal - ChefFlow' }
+export const metadata: Metadata = { title: 'Virtual Terminal' }
 
 export default async function VirtualTerminalPage() {
   const user = await requireChef()

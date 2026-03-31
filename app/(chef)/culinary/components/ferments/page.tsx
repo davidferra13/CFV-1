@@ -14,7 +14,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 
-export const metadata: Metadata = { title: 'Ferments - ChefFlow' }
+export const metadata: Metadata = { title: 'Ferments' }
 
 const FERMENT_KEYWORDS = [
   'ferment',

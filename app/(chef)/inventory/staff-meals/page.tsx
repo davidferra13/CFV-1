@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getStaffMeals } from '@/lib/inventory/staff-meal-actions'
 import { StaffMealsClient } from './staff-meals-client'
 
-export const metadata: Metadata = { title: 'Staff Meals - ChefFlow' }
+export const metadata: Metadata = { title: 'Staff Meals' }
 
 export default async function StaffMealsPage() {
   await requireChef()

@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/db/server'
 import { getRecurringInvoices } from '@/lib/finance/recurring-invoice-actions'
 import { RecurringInvoiceForm } from '@/components/finance/recurring-invoice-form'
 
-export const metadata: Metadata = { title: 'Recurring Invoices - ChefFlow' }
+export const metadata: Metadata = { title: 'Recurring Invoices' }
 
 export default async function RecurringInvoicesPage() {
   const user = await requireChef()

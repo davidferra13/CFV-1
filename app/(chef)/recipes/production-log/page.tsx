@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getAllProductionLogs } from '@/lib/recipes/production-log-actions'
 import { ProductionLogClient } from './production-log-client'
 
-export const metadata: Metadata = { title: 'Production Log | ChefFlow' }
+export const metadata: Metadata = { title: 'Production Log' }
 
 export default async function ProductionLogPage() {
   await requireChef()

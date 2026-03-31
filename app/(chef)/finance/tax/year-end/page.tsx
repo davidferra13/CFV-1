@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { TaxPackageExport } from '@/components/finance/tax-package-export'
 
-export const metadata: Metadata = { title: 'Year-End Tax Package - ChefFlow' }
+export const metadata: Metadata = { title: 'Year-End Tax Package' }
 
 export default async function YearEndTaxPage({
   searchParams,

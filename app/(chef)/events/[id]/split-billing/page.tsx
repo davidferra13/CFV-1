@@ -8,7 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { getSplitBilling } from '@/lib/operations/split-billing-actions'
 import { SplitBillingForm } from '@/components/operations/split-billing-form'
 
-export const metadata: Metadata = { title: 'Split Billing - ChefFlow' }
+export const metadata: Metadata = { title: 'Split Billing' }
 
 export default async function SplitBillingPage({ params }: { params: { id: string } }) {
   const user = await requireChef()

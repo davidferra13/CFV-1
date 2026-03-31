@@ -17,7 +17,7 @@ const PriceHistoryChart = dynamic(
 import { VendorComparisonPanel } from '@/components/inventory/vendor-comparison-panel'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 
-export const metadata: Metadata = { title: 'Ingredient Price Detail - ChefFlow' }
+export const metadata: Metadata = { title: 'Ingredient Price Detail' }
 
 export default async function IngredientPriceDetailPage({
   params,

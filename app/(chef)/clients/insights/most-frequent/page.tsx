@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Most Frequent Clients - ChefFlow' }
+export const metadata: Metadata = { title: 'Most Frequent Clients' }
 
 export default async function MostFrequentPage() {
   await requireChef()

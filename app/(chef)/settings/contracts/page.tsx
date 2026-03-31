@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { listContractTemplates } from '@/lib/contracts/actions'
 import { ContractTemplates } from '@/components/contracts/contract-templates'
 
-export const metadata: Metadata = { title: 'Contract Templates - ChefFlow' }
+export const metadata: Metadata = { title: 'Contract Templates' }
 
 export default async function ContractTemplatesPage() {
   const user = await requireChef()

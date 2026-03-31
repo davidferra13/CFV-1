@@ -8,7 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { listProposalTemplates } from '@/lib/proposals/template-actions'
 import { VisualBuilder } from '@/components/proposals/visual-builder'
 
-export const metadata: Metadata = { title: 'Proposal Templates - ChefFlow' }
+export const metadata: Metadata = { title: 'Proposal Templates' }
 
 export default async function ProposalTemplatesPage() {
   const user = await requireChef()

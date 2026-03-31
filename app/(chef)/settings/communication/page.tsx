@@ -8,7 +8,7 @@ import { AutoResponseSettings } from '@/components/communication/auto-response-s
 import { BusinessHoursEditor } from '@/components/communication/business-hours-editor'
 import { TemplateList } from '@/components/communication/template-list'
 
-export const metadata = { title: 'Communication Settings | ChefFlow' }
+export const metadata = { title: 'Communication Settings' }
 
 async function AutoResponseSection() {
   const config = await getAutoResponseConfig()

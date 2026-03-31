@@ -14,7 +14,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Ledger Adjustments - ChefFlow' }
+export const metadata: Metadata = { title: 'Ledger Adjustments' }
 
 export default async function LedgerAdjustmentsPage() {
   await requireChef()

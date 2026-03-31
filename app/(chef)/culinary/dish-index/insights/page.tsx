@@ -7,7 +7,7 @@ import {
 } from '@/lib/menus/dish-index-actions'
 import { DishInsightsClient } from './insights-client'
 
-export const metadata: Metadata = { title: 'Dish Insights - ChefFlow' }
+export const metadata: Metadata = { title: 'Dish Insights' }
 
 export default async function DishInsightsPage() {
   await requireChef()

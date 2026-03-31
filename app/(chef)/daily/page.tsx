@@ -9,7 +9,7 @@ import { format } from 'date-fns'
 import { getDailyPlan } from '@/lib/daily-ops/actions'
 import { DailyPlanView } from '@/components/daily-ops/daily-plan-view'
 
-export const metadata: Metadata = { title: 'Daily Ops - ChefFlow' }
+export const metadata: Metadata = { title: 'Daily Ops' }
 
 export default async function DailyOpsPage() {
   const plan = await getDailyPlan()

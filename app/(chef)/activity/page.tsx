@@ -11,7 +11,7 @@ import { getActivityLogEnabled } from '@/lib/activity/preference-actions'
 import { getBreadcrumbSessions } from '@/lib/activity/breadcrumb-actions'
 import { ActivityPageClient } from './activity-page-client'
 
-export const metadata: Metadata = { title: 'Activity - ChefFlow' }
+export const metadata: Metadata = { title: 'Activity' }
 export const dynamic = 'force-dynamic'
 
 export default async function ActivityPage() {

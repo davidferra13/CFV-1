@@ -7,7 +7,7 @@ import { Plus, Phone } from '@/components/ui/icons'
 import { getCalls, type CallType } from '@/lib/calls/actions'
 import { CallCard } from '@/components/calls/call-card'
 
-export const metadata: Metadata = { title: 'Calls & Meetings - ChefFlow' }
+export const metadata: Metadata = { title: 'Calls & Meetings' }
 
 type Props = {
   searchParams: { status?: string; type?: string }

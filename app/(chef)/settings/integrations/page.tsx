@@ -20,7 +20,7 @@ import { ConnectedAccounts } from '@/components/integrations/connected-accounts'
 import { getTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-settings'
 import { getChefPlatformSettings } from '@/lib/integrations/platform-settings'
 
-export const metadata: Metadata = { title: 'Integrations - ChefFlow' }
+export const metadata: Metadata = { title: 'Integrations' }
 
 export default async function IntegrationsSettingsPage() {
   const user = await requireChef()

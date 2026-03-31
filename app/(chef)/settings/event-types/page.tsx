@@ -8,7 +8,7 @@ import {
 } from '@/lib/event-labels/utils'
 import { EventLabelEditor } from '@/components/settings/event-label-editor'
 
-export const metadata: Metadata = { title: 'Event Types & Labels - ChefFlow' }
+export const metadata: Metadata = { title: 'Event Types & Labels' }
 
 export default async function EventTypesPage() {
   await requireChef()

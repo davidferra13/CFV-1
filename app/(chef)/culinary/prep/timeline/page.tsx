@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getAllComponents } from '@/lib/menus/actions'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Prep Timeline - ChefFlow' }
+export const metadata: Metadata = { title: 'Prep Timeline' }
 
 export default async function PrepTimelinePage() {
   await requireChef()

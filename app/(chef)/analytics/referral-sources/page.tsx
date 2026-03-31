@@ -23,7 +23,7 @@ const ReferralAnalyticsDashboard = dynamic(
   }
 )
 
-export const metadata: Metadata = { title: 'Referral Sources - ChefFlow' }
+export const metadata: Metadata = { title: 'Referral Sources' }
 
 export default async function ReferralSourcesPage() {
   await requireChef()

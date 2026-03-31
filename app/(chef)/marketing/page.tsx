@@ -12,7 +12,7 @@ import { format } from 'date-fns'
 import { CampaignBuilderClient } from './campaign-builder-client'
 import { TestimonialPanel } from '@/components/ai/testimonial-panel'
 
-export const metadata: Metadata = { title: 'Marketing | ChefFlow' }
+export const metadata: Metadata = { title: 'Marketing' }
 
 const STATUS_BADGE: Record<
   string,

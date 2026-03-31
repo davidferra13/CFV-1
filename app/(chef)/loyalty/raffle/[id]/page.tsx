@@ -9,7 +9,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import { RaffleRoundActions } from '../raffle-round-actions'
 
-export const metadata: Metadata = { title: 'Raffle Details - ChefFlow' }
+export const metadata: Metadata = { title: 'Raffle Details' }
 
 const STATUS_BADGE: Record<string, 'success' | 'warning' | 'error' | 'default'> = {
   active: 'success',

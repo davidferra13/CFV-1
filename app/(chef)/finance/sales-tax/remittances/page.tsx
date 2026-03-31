@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getSalesTaxRemittances, getSalesTaxSummary } from '@/lib/finance/sales-tax-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Sales Tax Remittances | ChefFlow' }
+export const metadata: Metadata = { title: 'Sales Tax Remittances' }
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`

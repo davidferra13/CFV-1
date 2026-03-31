@@ -8,7 +8,7 @@ import { getAutomationSettings } from '@/lib/automations/settings-actions'
 import { AutomationsList } from './automations-list'
 import { TemplatePicker } from '@/components/automations/template-picker'
 
-export const metadata: Metadata = { title: 'Automations - ChefFlow' }
+export const metadata: Metadata = { title: 'Automations' }
 
 export default async function AutomationsPage() {
   await requireChef()

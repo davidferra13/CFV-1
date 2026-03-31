@@ -16,7 +16,7 @@ import { getBookingScoresForOpenInquiries } from '@/lib/analytics/booking-score'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
 import { ReadinessScoreBadge } from '@/components/inquiries/readiness-score-badge'
 
-export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
+export const metadata: Metadata = { title: 'Inquiries' }
 import {
   InquiryStatusBadge,
   InquiryChannelBadge,

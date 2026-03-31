@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats } from '@/lib/clients/actions'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Client Loyalty - ChefFlow' }
+export const metadata: Metadata = { title: 'Client Loyalty' }
 
 const TIER_STYLES: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',

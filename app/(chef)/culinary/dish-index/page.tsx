@@ -3,7 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getDishIndex, getDishIndexStats } from '@/lib/menus/dish-index-actions'
 import { DishIndexClient } from './dish-index-client'
 
-export const metadata: Metadata = { title: 'Dish Index - ChefFlow' }
+export const metadata: Metadata = { title: 'Dish Index' }
 
 export default async function DishIndexPage() {
   await requireChef()

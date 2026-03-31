@@ -5,7 +5,7 @@ import { getClients } from '@/lib/clients/actions'
 import { getEvents } from '@/lib/events/actions'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Referrals - ChefFlow' }
+export const metadata: Metadata = { title: 'Referrals' }
 
 const SOURCE_LABELS: Record<string, string> = {
   referral: 'Word of mouth / referral',

@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getPricingConfig } from '@/lib/pricing/config-actions'
 import { RateCardView } from '@/components/pricing/rate-card-view'
 
-export const metadata: Metadata = { title: 'Rate Card - ChefFlow' }
+export const metadata: Metadata = { title: 'Rate Card' }
 
 export default async function RateCardPage() {
   await requireChef()

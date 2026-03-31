@@ -3,7 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getPortfolioPhotos } from '@/lib/events/photo-actions'
 import { PortfolioGallery } from '@/components/photos/portfolio-gallery'
 
-export const metadata: Metadata = { title: 'Portfolio - ChefFlow' }
+export const metadata: Metadata = { title: 'Portfolio' }
 
 export default async function PortfolioPage() {
   await requireChef()

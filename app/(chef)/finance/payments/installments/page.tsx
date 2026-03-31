@@ -14,7 +14,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Installments - ChefFlow' }
+export const metadata: Metadata = { title: 'Installments' }
 
 const INSTALLMENT_TYPES = ['installment', 'final_payment'] as const
 

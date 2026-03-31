@@ -7,7 +7,7 @@ import { TaxDeductionPanel } from '@/components/ai/tax-deduction-panel'
 import { getYearlyMileageSummary, computeQuarterlyEstimate } from '@/lib/tax/actions'
 import { TaxCenterClient, TaxYearSelect } from './tax-center-client'
 
-export const metadata: Metadata = { title: 'Tax Center | ChefFlow' }
+export const metadata: Metadata = { title: 'Tax Center' }
 
 export default async function TaxCenterPage({ searchParams }: { searchParams: { year?: string } }) {
   await requireChef()

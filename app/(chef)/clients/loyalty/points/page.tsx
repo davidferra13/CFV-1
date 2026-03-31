@@ -12,7 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 
-export const metadata: Metadata = { title: 'Loyalty Points - ChefFlow' }
+export const metadata: Metadata = { title: 'Loyalty Points' }
 
 const TIER_STYLES: Record<string, string> = {
   bronze: 'bg-amber-900 text-amber-800',

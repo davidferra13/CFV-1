@@ -12,7 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 
-export const metadata: Metadata = { title: 'Menu Scaling - ChefFlow' }
+export const metadata: Metadata = { title: 'Menu Scaling' }
 
 export default async function MenuScalingPage() {
   await requireChef()

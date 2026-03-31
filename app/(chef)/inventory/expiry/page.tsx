@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getExpiryAlerts } from '@/lib/inventory/batch-actions'
 import { ExpiryClient } from './expiry-client'
 
-export const metadata: Metadata = { title: 'Expiry Alerts - ChefFlow' }
+export const metadata: Metadata = { title: 'Expiry Alerts' }
 
 export default async function ExpiryPage() {
   await requireChef()

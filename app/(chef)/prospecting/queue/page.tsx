@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, Phone } from '@/components/ui/icons'
 import { CallQueueClient } from './call-queue-client'
 
-export const metadata: Metadata = { title: 'Call Queue - Prospecting - ChefFlow' }
+export const metadata: Metadata = { title: 'Call Queue - Prospecting' }
 
 export default async function QueuePage() {
   await requireAdmin()

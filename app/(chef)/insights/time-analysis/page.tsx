@@ -9,7 +9,7 @@ import { ADMIN_TIME_CATEGORIES } from '@/lib/admin-time/constants'
 import { AdminTimeLogForm } from './admin-time-log-form'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Time Analysis | ChefFlow' }
+export const metadata: Metadata = { title: 'Time Analysis' }
 
 function formatMinutes(minutes: number) {
   const h = Math.floor(minutes / 60)

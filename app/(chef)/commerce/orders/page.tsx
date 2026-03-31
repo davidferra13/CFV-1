@@ -5,7 +5,7 @@ import { requirePro } from '@/lib/billing/require-pro'
 import { getActiveOrders } from '@/lib/commerce/order-queue-actions'
 import { OrderQueueBoard } from '@/components/commerce/order-queue-board'
 
-export const metadata: Metadata = { title: 'Order Queue | ChefFlow' }
+export const metadata: Metadata = { title: 'Order Queue' }
 
 export default async function OrdersPage() {
   await requireChef()

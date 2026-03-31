@@ -9,7 +9,7 @@ import { ParAlertPanel } from '@/components/inventory/par-alert-panel'
 import { AutoReorderPanel } from '@/components/inventory/auto-reorder-panel'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Inventory - ChefFlow' }
+export const metadata: Metadata = { title: 'Inventory' }
 
 const SUB_PAGES = [
   {

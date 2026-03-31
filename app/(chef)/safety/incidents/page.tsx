@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { IncidentList } from '@/components/safety/incident-list'
 
-export const metadata: Metadata = { title: 'Incident Documentation | ChefFlow' }
+export const metadata: Metadata = { title: 'Incident Documentation' }
 
 export default async function IncidentsPage() {
   const chef = await requireChef()

@@ -14,7 +14,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { Card, CardContent } from '@/components/ui/card'
 import { GoalSetter } from '@/components/finance/goal-setter'
 
-export const metadata: Metadata = { title: 'Revenue Goals - Finance - ChefFlow' }
+export const metadata: Metadata = { title: 'Revenue Goals - Finance' }
 
 function ProgressBar({ percent }: { percent: number }) {
   const clamped = Math.min(100, Math.max(0, percent))

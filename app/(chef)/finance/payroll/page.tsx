@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Users, DollarSign, FileText, FileCheck } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Payroll | ChefFlow' }
+export const metadata: Metadata = { title: 'Payroll' }
 
 function formatCurrency(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`

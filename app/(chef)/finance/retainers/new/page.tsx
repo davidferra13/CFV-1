@@ -3,7 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { RetainerForm } from '@/components/retainers/retainer-form'
 
-export const metadata: Metadata = { title: 'New Retainer - ChefFlow' }
+export const metadata: Metadata = { title: 'New Retainer' }
 
 export default async function NewRetainerPage() {
   const user = await requireChef()

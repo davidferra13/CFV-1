@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getW2Summaries } from '@/lib/finance/payroll-actions'
 import { W2Panel } from '@/components/finance/payroll/w2-panel'
 
-export const metadata: Metadata = { title: 'W-2 Summaries | ChefFlow' }
+export const metadata: Metadata = { title: 'W-2 Summaries' }
 
 export default async function W2Page({ searchParams }: { searchParams: { year?: string } }) {
   await requireChef()

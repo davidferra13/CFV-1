@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IncidentResolutionTracker } from '@/components/safety/incident-resolution-tracker'
 
-export const metadata: Metadata = { title: 'Incident Detail | ChefFlow' }
+export const metadata: Metadata = { title: 'Incident Detail' }
 
 export default async function IncidentDetailPage({ params }: { params: { id: string } }) {
   const chef = await requireChef()

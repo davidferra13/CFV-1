@@ -11,7 +11,7 @@ import {
 import { ShiftReport } from '@/components/commerce/shift-report'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Shift Reports - ChefFlow' }
+export const metadata: Metadata = { title: 'Shift Reports' }
 
 export default async function ShiftReportsPage() {
   await requireChef()

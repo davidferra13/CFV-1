@@ -5,7 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { GoalWizardSteps } from '@/components/goals/goal-wizard-steps'
 import { Card, CardContent } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'New Goal - ChefFlow' }
+export const metadata: Metadata = { title: 'New Goal' }
 
 export default async function GoalSetupPage() {
   await requireChef()

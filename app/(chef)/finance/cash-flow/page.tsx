@@ -16,7 +16,7 @@ const CashFlowChart = dynamic(
   }
 )
 
-export const metadata: Metadata = { title: 'Cash Flow Forecast - ChefFlow' }
+export const metadata: Metadata = { title: 'Cash Flow Forecast' }
 
 export default async function CashFlowPage() {
   await requireChef()

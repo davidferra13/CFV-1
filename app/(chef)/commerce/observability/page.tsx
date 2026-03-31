@@ -16,7 +16,7 @@ import { POS_SLO_DEFINITIONS } from '@/lib/commerce/slo-definitions'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 
-export const metadata: Metadata = { title: 'POS Observability - ChefFlow' }
+export const metadata: Metadata = { title: 'POS Observability' }
 
 function formatCurrency(cents: number | null | undefined) {
   const value = Number(cents ?? 0)

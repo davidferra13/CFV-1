@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Duplicate Clients - ChefFlow' }
+export const metadata: Metadata = { title: 'Duplicate Clients' }
 
 export default async function DuplicatesPage() {
   await requireChef()

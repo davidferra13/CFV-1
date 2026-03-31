@@ -33,6 +33,7 @@ import {
   getCollabSpaceSummaries,
   getCollabSpacesUnreadCount,
 } from '@/lib/network/collab-space-actions'
+import { getChefIntroBridges, type IntroBridgeSummary } from '@/lib/network/intro-bridge-actions'
 import { createServerClient } from '@/lib/db/server'
 import { SocialFeedClient } from '@/components/social/social-feed-client'
 import { SocialChannelGrid } from '@/components/social/social-channel-card'
@@ -59,7 +60,7 @@ import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { NetworkReferralBar } from '@/components/intelligence/network-referral-bar'
 
-export const metadata: Metadata = { title: 'Chef Community - ChefFlow' }
+export const metadata: Metadata = { title: 'Chef Community' }
 
 type Tab = 'feed' | 'channels' | 'discover' | 'connections' | 'collab'
 
@@ -434,13 +435,14 @@ async function ConnectionsTab({ chefId }: { chefId: string }) {
 
 // -- Collaboration Tab --------------------------------------------
 async function CollabTab({ focusHandoffId }: { focusHandoffId: string | null }) {
-  const [trustedCircle, collabInbox, availabilitySignals, collabMetrics, spaces] =
+  const [trustedCircle, collabInbox, availabilitySignals, collabMetrics, spaces, bridges] =
     await Promise.all([
       getTrustedCircle(),
       getCollabInbox(80),
       getCollabAvailabilitySignals(),
       getCollabMetrics(90),
       getCollabSpaceSummaries(5),
+      getChefIntroBridges(),
     ])
 
   return (
@@ -456,6 +458,50 @@ async function CollabTab({ focusHandoffId }: { focusHandoffId: string | null }) 
         initialMetrics={collabMetrics}
         initialFocusHandoffId={focusHandoffId}
       />
+
+      {/* Active Introductions section */}
+      {bridges.length > 0 && (
+        <div className="mt-6 pt-6 border-t border-stone-700">
+          <h3 className="text-sm font-semibold text-stone-200 mb-3">Active Introductions</h3>
+          <div className="space-y-2">
+            {bridges
+              .filter((b: IntroBridgeSummary) => b.status === 'active')
+              .map((bridge: IntroBridgeSummary) => (
+                <Link
+                  key={bridge.id}
+                  href={`/network/bridges/${bridge.id}`}
+                  className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-800/50 px-3 py-2.5 hover:border-amber-700/50 transition-colors"
+                >
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-stone-200 font-medium truncate">
+                        {bridge.client_display_name}
+                      </span>
+                      <span
+                        className={`text-xxs border rounded-full px-1.5 py-0.5 ${
+                          bridge.intro_mode === 'transfer'
+                            ? 'bg-red-900/40 text-red-300 border-red-700/50'
+                            : bridge.intro_mode === 'observer'
+                              ? 'bg-blue-900/40 text-blue-300 border-blue-700/50'
+                              : 'bg-amber-900/40 text-amber-300 border-amber-700/50'
+                        }`}
+                      >
+                        {bridge.intro_mode}
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-500 mt-0.5 truncate">
+                      with {bridge.counterpart_chef_name}
+                      {bridge.last_message_preview ? ` - ${bridge.last_message_preview}` : ''}
+                    </p>
+                  </div>
+                  {bridge.target_circle_token && (
+                    <span className="text-xs text-amber-500 flex-shrink-0 ml-2">Circle ready</span>
+                  )}
+                </Link>
+              ))}
+          </div>
+        </div>
+      )}
 
       {/* Private Spaces section */}
       <div className="mt-6 pt-6 border-t border-stone-700">

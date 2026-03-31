@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { listAddons } from '@/lib/proposals/addon-actions'
 import { AddonSelector } from '@/components/proposals/addon-selector'
 
-export const metadata: Metadata = { title: 'Proposal Add-Ons - ChefFlow' }
+export const metadata: Metadata = { title: 'Proposal Add-Ons' }
 
 export default async function ProposalAddonsPage() {
   const user = await requireChef()

@@ -5,7 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getClientById } from '@/lib/clients/actions'
 import { ClientPreferences } from '@/components/clients/client-preferences'
 
-export const metadata: Metadata = { title: 'Client Preferences - ChefFlow' }
+export const metadata: Metadata = { title: 'Client Preferences' }
 
 interface ClientPreferencesPageProps {
   params: {

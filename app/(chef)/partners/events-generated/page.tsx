@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Events Generated - ChefFlow' }
+export const metadata: Metadata = { title: 'Events Generated' }
 
 export default async function EventsGeneratedPage() {
   await requireChef()

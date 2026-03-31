@@ -5,7 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getThreadWithEvents, markThreadRead } from '@/lib/communication/actions'
 import { ThreadDetailClient } from '@/components/communication/thread-detail-client'
 
-export const metadata: Metadata = { title: 'Thread | ChefFlow' }
+export const metadata: Metadata = { title: 'Thread' }
 
 export default async function ThreadDetailPage({ params }: { params: { threadId: string } }) {
   await requireChef()

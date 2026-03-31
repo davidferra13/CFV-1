@@ -9,7 +9,7 @@ import { RecipeSprintClient } from '@/components/recipes/recipe-sprint-client'
 import Link from 'next/link'
 import { BookOpen } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Recipe Sprint | ChefFlow' }
+export const metadata: Metadata = { title: 'Recipe Sprint' }
 
 export default async function RecipeSprintPage() {
   await requireChef()

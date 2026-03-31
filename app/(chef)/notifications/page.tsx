@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { NotificationListClient } from './notification-list-client'
 
 export const metadata: Metadata = {
-  title: 'Notifications - ChefFlow',
+  title: 'Notifications',
 }
 
 export default async function NotificationsPage() {

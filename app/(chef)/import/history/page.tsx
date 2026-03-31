@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Import History | ChefFlow' }
+export const metadata: Metadata = { title: 'Import History' }
 
 export default async function ImportHistoryPage() {
   const chef = await requireChef()

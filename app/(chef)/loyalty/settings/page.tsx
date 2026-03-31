@@ -8,7 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getLoyaltyConfig } from '@/lib/loyalty/actions'
 import { LoyaltySettingsForm } from './loyalty-settings-form'
 
-export const metadata: Metadata = { title: 'Loyalty Settings - ChefFlow' }
+export const metadata: Metadata = { title: 'Loyalty Settings' }
 
 export default async function LoyaltySettingsPage() {
   const user = await requireChef()

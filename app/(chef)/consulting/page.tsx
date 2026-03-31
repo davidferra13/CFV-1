@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PricingCalculator } from './pricing-calculator'
 
-export const metadata: Metadata = { title: 'Consulting - ChefFlow' }
+export const metadata: Metadata = { title: 'Consulting' }
 
 const PRICING_PILLARS = [
   {

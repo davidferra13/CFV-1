@@ -7,7 +7,7 @@ import { MealPrepDashboard } from '@/components/meal-prep/meal-prep-dashboard'
 import { Button } from '@/components/ui/button'
 import { Plus } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Meal Prep - ChefFlow' }
+export const metadata: Metadata = { title: 'Meal Prep' }
 
 export default async function MealPrepPage() {
   await requireChef()

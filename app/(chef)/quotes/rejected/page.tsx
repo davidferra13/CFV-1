@@ -8,7 +8,7 @@ import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { formatDistanceToNow } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Rejected Quotes - ChefFlow' }
+export const metadata: Metadata = { title: 'Rejected Quotes' }
 
 export default async function RejectedQuotesPage() {
   await requireChef()

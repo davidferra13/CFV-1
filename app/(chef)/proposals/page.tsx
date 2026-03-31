@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { listProposalTemplates } from '@/lib/proposals/template-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Proposals - ChefFlow' }
+export const metadata: Metadata = { title: 'Proposals' }
 
 export default async function ProposalsPage() {
   const user = await requireChef()

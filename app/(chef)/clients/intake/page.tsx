@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getIntakeForms } from '@/lib/clients/intake-actions'
 import { IntakeFormsClient } from './intake-forms-client'
 
-export const metadata: Metadata = { title: 'Intake Forms - ChefFlow' }
+export const metadata: Metadata = { title: 'Intake Forms' }
 
 export default async function IntakeFormsPage() {
   await requireChef()

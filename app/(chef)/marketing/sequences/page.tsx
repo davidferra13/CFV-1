@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { SequenceBuilderClient } from './sequence-builder-client'
 import { SequenceToggleButton } from './sequence-toggle-button'
 
-export const metadata: Metadata = { title: 'Sequences | ChefFlow' }
+export const metadata: Metadata = { title: 'Sequences' }
 
 const TRIGGER_LABELS: Record<string, string> = {
   birthday: 'Birthday',

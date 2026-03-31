@@ -23,7 +23,7 @@ import { CallTypeBadge } from '@/components/calls/call-type-badge'
 type Props = { params: { id: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  return { title: 'Call Detail - ChefFlow' }
+  return { title: 'Call Detail' }
 }
 
 function getContactLabel(call: Awaited<ReturnType<typeof getCall>>): string {

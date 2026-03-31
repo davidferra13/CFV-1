@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Clock, TrendingUp, Ghost, XCircle } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
-  title: 'Conversion Funnel - ChefFlow',
+  title: 'Conversion Funnel',
 }
 
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {

@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { TemplateActionsClient } from './template-actions-client'
 import { CreateTemplateClient } from './create-template-client'
 
-export const metadata: Metadata = { title: 'Templates | ChefFlow' }
+export const metadata: Metadata = { title: 'Templates' }
 
 export default async function TemplatesPage() {
   await requireChef()

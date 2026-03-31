@@ -8,7 +8,7 @@ import { getMaintenanceSchedule, getOverdueCount } from '@/lib/equipment/mainten
 import MaintenanceAlertBadge from '@/components/equipment/maintenance-alert-badge'
 import { EquipmentInventoryClient } from './equipment-inventory-client'
 
-export const metadata: Metadata = { title: 'Equipment | ChefFlow' }
+export const metadata: Metadata = { title: 'Equipment' }
 
 export default async function EquipmentPage() {
   await requireChef()

@@ -5,7 +5,7 @@ import { getPreferredStores } from '@/lib/grocery/store-shopping-actions'
 import { getAvailableOpenClawStores } from '@/lib/openclaw/store-preference-actions'
 import { SalesPageClient } from './sales-client'
 
-export const metadata: Metadata = { title: 'On Sale This Week - ChefFlow' }
+export const metadata: Metadata = { title: 'On Sale This Week' }
 
 export default async function SalesPage() {
   await requireChef()

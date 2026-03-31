@@ -6,7 +6,7 @@ import { getExpenses } from '@/lib/expenses/actions'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Food Cost % - ChefFlow' }
+export const metadata: Metadata = { title: 'Food Cost %' }
 
 function pctColor(pct: number) {
   if (pct <= 28) return 'text-green-700'

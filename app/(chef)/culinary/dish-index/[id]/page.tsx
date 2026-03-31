@@ -9,7 +9,7 @@ import {
 import { DishDetailClient } from './dish-detail-client'
 import { getRecipes } from '@/lib/recipes/actions'
 
-export const metadata: Metadata = { title: 'Dish Detail - ChefFlow' }
+export const metadata: Metadata = { title: 'Dish Detail' }
 
 export default async function DishDetailPage({ params }: { params: { id: string } }) {
   await requireChef()

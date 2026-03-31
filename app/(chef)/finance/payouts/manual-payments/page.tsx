@@ -14,7 +14,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Manual Payments - ChefFlow' }
+export const metadata: Metadata = { title: 'Manual Payments' }
 
 // Manual payments are ledger entries with description containing offline method keywords,
 // or all payment-type entries that weren't processed via Stripe (tip-off: no stripe metadata)

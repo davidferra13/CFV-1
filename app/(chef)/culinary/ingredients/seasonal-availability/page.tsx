@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getIngredients } from '@/lib/recipes/actions'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Seasonal Availability - ChefFlow' }
+export const metadata: Metadata = { title: 'Seasonal Availability' }
 
 // Rough northern-hemisphere season months for reference display
 const SEASONS = [

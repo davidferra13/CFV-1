@@ -9,7 +9,7 @@ import { getWeatherForDateRange } from '@/lib/weather/weather-actions'
 import { DayViewClient } from './day-view-client'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Day View | ChefFlow' }
+export const metadata: Metadata = { title: 'Day View' }
 
 export default async function DayViewPage({ searchParams }: { searchParams: { date?: string } }) {
   const user = await requireChef()

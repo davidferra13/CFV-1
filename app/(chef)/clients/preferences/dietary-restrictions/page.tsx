@@ -12,7 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 
-export const metadata: Metadata = { title: 'Dietary Restrictions - ChefFlow' }
+export const metadata: Metadata = { title: 'Dietary Restrictions' }
 
 export default async function DietaryRestrictionsPage() {
   await requireChef()

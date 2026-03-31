@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { UploadVendorInvoiceForm } from '@/components/inventory/upload-vendor-invoice-form'
 
-export const metadata: Metadata = { title: 'Vendor Invoices - ChefFlow' }
+export const metadata: Metadata = { title: 'Vendor Invoices' }
 
 function formatMoney(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`

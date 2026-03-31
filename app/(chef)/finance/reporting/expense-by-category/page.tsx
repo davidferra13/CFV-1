@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Expense by Category - ChefFlow' }
+export const metadata: Metadata = { title: 'Expense by Category' }
 
 export default async function ExpenseByCategoryPage() {
   await requireChef()

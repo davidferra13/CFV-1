@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Settlements | ChefFlow' }
+export const metadata: Metadata = { title: 'Settlements' }
 
 export default async function SettlementsPage() {
   await requireChef()

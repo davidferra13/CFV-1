@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { LoyaltyGuideContent } from './loyalty-guide-content'
 
 export const metadata: Metadata = {
-  title: 'Loyalty Program Guide - ChefFlow',
+  title: 'Loyalty Program Guide',
 }
 
 export default function LoyaltyLearnPage() {

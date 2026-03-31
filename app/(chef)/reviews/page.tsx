@@ -10,7 +10,7 @@ import { ImportPlatformReview } from '@/components/reviews/import-platform-revie
 import { ExternalReviewSources } from '@/components/reviews/external-review-sources'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Reviews - ChefFlow' }
+export const metadata: Metadata = { title: 'Reviews' }
 
 export default async function ReviewsPage() {
   await requireChef()

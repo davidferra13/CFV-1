@@ -78,7 +78,7 @@ import {
   getMenuApprovalStats,
 } from '@/lib/analytics/culinary-analytics'
 
-export const metadata: Metadata = { title: 'Analytics Hub - ChefFlow' }
+export const metadata: Metadata = { title: 'Analytics Hub' }
 
 // Date helpers
 function periodDates(monthsBack: number = 12): { start: string; end: string } {

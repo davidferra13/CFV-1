@@ -16,7 +16,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Awaiting Deposit - ChefFlow' }
+export const metadata: Metadata = { title: 'Awaiting Deposit' }
 
 export default async function AwaitingDepositPage() {
   await requireChef()

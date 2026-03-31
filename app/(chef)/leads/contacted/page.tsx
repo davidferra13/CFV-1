@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Contacted Leads - ChefFlow' }
+export const metadata: Metadata = { title: 'Contacted Leads' }
 
 const STATUS_LABELS: Record<string, string> = {
   new: 'Awaiting Response',

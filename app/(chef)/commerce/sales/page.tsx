@@ -6,7 +6,7 @@ import { listSales } from '@/lib/commerce/sale-actions'
 import { SalesTable } from '@/components/commerce/sales-table'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = { title: 'Sales | ChefFlow' }
+export const metadata: Metadata = { title: 'Sales' }
 
 export default async function SalesPage() {
   await requireChef()

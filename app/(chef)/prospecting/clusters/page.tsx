@@ -9,7 +9,7 @@ import { GeoClusterView } from '@/components/prospecting/geo-cluster-view'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Prospect Clusters - ChefFlow' }
+export const metadata: Metadata = { title: 'Prospect Clusters' }
 
 export default async function ClustersPage() {
   await requireAdmin()

@@ -12,7 +12,7 @@ import { QuoteAcceptanceInsightsPanel } from '@/components/analytics/quote-accep
 import { QuoteIntelligenceBar } from '@/components/intelligence/quote-intelligence-bar'
 import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 
-export const metadata: Metadata = { title: 'Quotes - ChefFlow' }
+export const metadata: Metadata = { title: 'Quotes' }
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'

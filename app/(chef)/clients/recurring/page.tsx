@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { RecurringBoardRowActions } from './recurring-board-row-actions'
 
-export const metadata: Metadata = { title: 'Recurring Board - ChefFlow' }
+export const metadata: Metadata = { title: 'Recurring Board' }
 
 const RECOMMENDATION_STATUS_BADGES: Record<
   'not_sent' | 'sent' | 'approved' | 'revision_requested',

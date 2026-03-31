@@ -19,7 +19,7 @@ import { PriceWatchList } from '@/components/pricing/price-watch-list'
 import { ImageWithFallback } from '@/components/pricing/image-with-fallback'
 import { EnrichImagesButton } from '@/components/culinary/enrich-images-button'
 
-export const metadata: Metadata = { title: 'Ingredients - ChefFlow' }
+export const metadata: Metadata = { title: 'Ingredients' }
 
 const CATEGORY_STYLES: Record<string, string> = {
   protein: 'bg-red-900 text-red-700',

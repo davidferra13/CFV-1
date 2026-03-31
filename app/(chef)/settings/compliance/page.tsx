@@ -35,7 +35,7 @@ import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { CertForm } from './cert-form'
 
-export const metadata: Metadata = { title: 'Compliance | ChefFlow' }
+export const metadata: Metadata = { title: 'Compliance' }
 
 const CERT_LABELS: Record<string, string> = {
   food_handler: 'Food Handler Card',

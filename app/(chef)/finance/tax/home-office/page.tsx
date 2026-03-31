@@ -5,7 +5,7 @@ import { HomeOfficeForm } from '@/components/finance/home-office-form'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Home Office Deduction - ChefFlow' }
+export const metadata: Metadata = { title: 'Home Office Deduction' }
 
 export default async function HomeOfficePage({
   searchParams,

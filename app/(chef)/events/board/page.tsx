@@ -8,7 +8,7 @@ import { getEvents } from '@/lib/events/actions'
 import { EventKanbanBoard } from '@/components/events/event-kanban-board'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Event Board - ChefFlow' }
+export const metadata: Metadata = { title: 'Event Board' }
 
 export default async function EventBoardPage() {
   await requireChef()

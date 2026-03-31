@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getAudits } from '@/lib/inventory/audit-actions'
 import { AuditsClient } from './audits-client'
 
-export const metadata: Metadata = { title: 'Inventory Audits - ChefFlow' }
+export const metadata: Metadata = { title: 'Inventory Audits' }
 
 export default async function AuditsPage() {
   await requireChef()

@@ -34,7 +34,7 @@ const InsightsClient = dynamic(
   }
 )
 
-export const metadata: Metadata = { title: 'Clientele Insights - ChefFlow' }
+export const metadata: Metadata = { title: 'Clientele Insights' }
 
 export default async function InsightsPage() {
   await requireChef()

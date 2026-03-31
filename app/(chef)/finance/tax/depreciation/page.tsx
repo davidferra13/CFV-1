@@ -9,7 +9,7 @@ import { DepreciationSchedulePanel } from '@/components/equipment/depreciation-s
 import { Card, CardContent } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Depreciation (Form 4562) - ChefFlow' }
+export const metadata: Metadata = { title: 'Depreciation (Form 4562)' }
 
 export default async function DepreciationPage({
   searchParams,

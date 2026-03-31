@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { SegmentBuilder } from '@/components/clients/segment-builder'
 
-export const metadata: Metadata = { title: 'Client Segments - ChefFlow' }
+export const metadata: Metadata = { title: 'Client Segments' }
 
 export default async function SegmentsPage() {
   await requireChef()

@@ -8,7 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Proposal Builder | ChefFlow' }
+export const metadata: Metadata = { title: 'Proposal Builder' }
 
 export default async function ProposalBuilderPage() {
   const chef = await requireChef()

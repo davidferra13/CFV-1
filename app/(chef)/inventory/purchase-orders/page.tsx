@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getPurchaseOrders } from '@/lib/inventory/purchase-order-actions'
 import { POListClient } from './po-list-client'
 
-export const metadata: Metadata = { title: 'Purchase Orders - ChefFlow' }
+export const metadata: Metadata = { title: 'Purchase Orders' }
 
 export default async function PurchaseOrdersPage() {
   await requireChef()

@@ -17,7 +17,7 @@ import { isFounderEmail } from '@/lib/platform/owner-account'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 
 export const metadata = {
-  title: 'Admin | ChefFlow',
+  title: 'Admin',
 }
 
 const RemyWrapper = dynamic(

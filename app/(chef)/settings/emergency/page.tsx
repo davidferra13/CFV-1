@@ -7,7 +7,7 @@ import { listEmergencyContacts } from '@/lib/contingency/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { EmergencyContactsClient } from './emergency-contacts-client'
 
-export const metadata: Metadata = { title: 'Emergency Contacts | ChefFlow' }
+export const metadata: Metadata = { title: 'Emergency Contacts' }
 
 export default async function EmergencyPage() {
   await requireChef()

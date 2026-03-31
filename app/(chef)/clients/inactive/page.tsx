@@ -6,7 +6,7 @@ import { ClientsTable } from '../clients-table'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Inactive Clients - ChefFlow' }
+export const metadata: Metadata = { title: 'Inactive Clients' }
 
 export default async function InactiveClientsPage() {
   await requireChef()

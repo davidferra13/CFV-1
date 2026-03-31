@@ -7,7 +7,7 @@ import { ChevronLeft } from '@/components/ui/icons'
 import { getCall } from '@/lib/calls/actions'
 import { CallForm } from '@/components/calls/call-form'
 
-export const metadata: Metadata = { title: 'Edit Call - ChefFlow' }
+export const metadata: Metadata = { title: 'Edit Call' }
 
 type Props = { params: { id: string } }
 

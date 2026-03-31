@@ -11,7 +11,7 @@ import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 import { ReconciliationActions } from '@/components/commerce/reconciliation-actions-client'
 
-export const metadata: Metadata = { title: 'Reconciliation Detail | ChefFlow' }
+export const metadata: Metadata = { title: 'Reconciliation Detail' }
 
 export default async function ReconciliationDetailPage({
   params,

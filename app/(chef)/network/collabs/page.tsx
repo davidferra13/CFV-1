@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Users, MessageSquare, Lock, Plus } from '@/components/ui/icons'
 import { CreateSpaceForm } from './create-space-form'
 
-export const metadata: Metadata = { title: 'Private Spaces - ChefFlow' }
+export const metadata: Metadata = { title: 'Private Spaces' }
 
 export default async function CollabSpacesPage() {
   const user = await requireChef()

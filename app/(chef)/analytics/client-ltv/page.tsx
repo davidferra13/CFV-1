@@ -19,7 +19,7 @@ const ClientLTVChart = dynamic(
   }
 )
 
-export const metadata: Metadata = { title: 'Client Value - ChefFlow' }
+export const metadata: Metadata = { title: 'Client Value' }
 
 export default async function ClientLTVPage() {
   const user = await requireChef()

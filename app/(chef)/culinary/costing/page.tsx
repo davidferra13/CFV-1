@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Costing - ChefFlow' }
+export const metadata: Metadata = { title: 'Costing' }
 
 function priceFreshness(dateStr: string | null): { text: string; color: string } {
   if (!dateStr) return { text: 'No data', color: 'text-stone-600' }

@@ -8,7 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getHistoricalFindings, getHistoricalScanStatus } from '@/lib/gmail/historical-scan-actions'
 import { HistoricalFindingsList } from '@/components/gmail/historical-findings-list'
 
-export const metadata: Metadata = { title: 'Email History Scan | ChefFlow' }
+export const metadata: Metadata = { title: 'Email History Scan' }
 
 export default async function HistoryScanPage() {
   await requireChef()

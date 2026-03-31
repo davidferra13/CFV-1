@@ -9,7 +9,7 @@ import {
 import { BankFeedPanel } from '@/components/finance/bank-feed-panel'
 import { AddManualTransactionForm } from '@/components/finance/add-manual-transaction-form'
 
-export const metadata: Metadata = { title: 'Bank Feed - ChefFlow' }
+export const metadata: Metadata = { title: 'Bank Feed' }
 
 export default async function BankFeedPage() {
   await requireChef()

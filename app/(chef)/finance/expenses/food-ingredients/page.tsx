@@ -15,7 +15,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Food & Ingredients Expenses - ChefFlow' }
+export const metadata: Metadata = { title: 'Food & Ingredients Expenses' }
 
 const CATEGORIES = ['groceries', 'alcohol', 'specialty_items'] as const
 

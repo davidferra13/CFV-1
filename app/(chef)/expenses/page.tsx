@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getExpenses } from '@/lib/expenses/actions'
 
-export const metadata: Metadata = { title: 'Expenses - ChefFlow' }
+export const metadata: Metadata = { title: 'Expenses' }
 import { getMonthlyFinancialSummary } from '@/lib/expenses/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'

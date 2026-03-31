@@ -15,7 +15,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { YearEndClientControls } from './year-end-client'
 
-export const metadata: Metadata = { title: 'Year-End Summary - ChefFlow' }
+export const metadata: Metadata = { title: 'Year-End Summary' }
 
 const MONTH_NAMES = [
   'January',

@@ -16,7 +16,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { startOfYear } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Tax Summary - ChefFlow' }
+export const metadata: Metadata = { title: 'Tax Summary' }
 
 export default async function TaxSummaryPage() {
   await requireChef()

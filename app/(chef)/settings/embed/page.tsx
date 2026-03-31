@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 import { EmbedCodePanel } from '@/components/settings/embed-code-panel'
 
-export const metadata: Metadata = { title: 'Website Widget - ChefFlow' }
+export const metadata: Metadata = { title: 'Website Widget' }
 
 export default async function EmbedSettingsPage() {
   const user = await requireChef()

@@ -2,7 +2,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
 import { CatalogBrowser } from './catalog-browser'
 
-export const metadata = { title: 'Food Catalog | ChefFlow' }
+export const metadata = { title: 'Food Catalog' }
 
 export default async function PriceCatalogPage() {
   try {

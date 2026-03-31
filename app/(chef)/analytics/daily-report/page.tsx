@@ -8,7 +8,7 @@ import {
 import { DailyReportView } from '@/components/reports/daily-report-view'
 
 export const metadata = {
-  title: 'Daily Report | ChefFlow',
+  title: 'Daily Report',
 }
 
 export default async function DailyReportPage() {

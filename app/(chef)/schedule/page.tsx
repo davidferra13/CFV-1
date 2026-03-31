@@ -9,7 +9,7 @@ import { getCalendarEvents } from '@/lib/scheduling/actions'
 import { getActivePalette, getSeasonalPalettes } from '@/lib/seasonal/actions'
 import { SeasonalSidebar } from '@/components/seasonal/seasonal-sidebar'
 
-export const metadata: Metadata = { title: 'Schedule - ChefFlow' }
+export const metadata: Metadata = { title: 'Schedule' }
 
 const CalendarView = dynamic(
   () => import('@/components/scheduling/calendar-view').then((m) => m.CalendarView),

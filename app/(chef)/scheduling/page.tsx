@@ -24,7 +24,7 @@ const CalendarView = dynamic(
 )
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Scheduling - ChefFlow' }
+export const metadata: Metadata = { title: 'Scheduling' }
 
 type SchedulingPageProps = {
   searchParams?: {

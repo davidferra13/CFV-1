@@ -9,7 +9,7 @@ import { getUnclaimedSubmissions } from '@/lib/contact/claim'
 import { LeadsList } from '@/components/leads/leads-list'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Leads - ChefFlow' }
+export const metadata: Metadata = { title: 'Leads' }
 
 export default async function LeadsPage() {
   await requireChef()

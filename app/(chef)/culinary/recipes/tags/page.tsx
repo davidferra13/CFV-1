@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Recipe Tags - ChefFlow' }
+export const metadata: Metadata = { title: 'Recipe Tags' }
 
 export default async function RecipeTagsPage() {
   await requireChef()

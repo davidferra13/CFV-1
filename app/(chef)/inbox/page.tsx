@@ -16,7 +16,7 @@ import { getCalendarEvents } from '@/lib/scheduling/actions'
 import { getGoogleConnection } from '@/lib/google/auth'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Inbox - ChefFlow' }
+export const metadata: Metadata = { title: 'Inbox' }
 
 const VALID_TABS: CommunicationTab[] = ['unlinked', 'needs_attention', 'snoozed', 'resolved']
 

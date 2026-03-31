@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/icons'
 import { getOpenClawLeadCount } from '@/lib/prospecting/openclaw-import'
 
-export const metadata: Metadata = { title: 'Prospecting - ChefFlow' }
+export const metadata: Metadata = { title: 'Prospecting' }
 
 export default async function ProspectingPage({
   searchParams,

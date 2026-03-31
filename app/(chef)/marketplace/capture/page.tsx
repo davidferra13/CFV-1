@@ -5,7 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { TakeAChefCaptureTool } from '@/components/marketplace/take-a-chef-capture-tool'
 
 export const metadata: Metadata = {
-  title: 'Marketplace Capture - ChefFlow',
+  title: 'Marketplace Capture',
 }
 
 export default async function MarketplaceCapturePage() {

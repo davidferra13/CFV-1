@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getChefFullProfile } from '@/lib/chef/profile-actions'
 import { ChefProfileForm } from './chef-profile-form'
 
-export const metadata: Metadata = { title: 'My Profile - ChefFlow' }
+export const metadata: Metadata = { title: 'My Profile' }
 
 export default async function ChefMyProfilePage() {
   const user = await requireChef()

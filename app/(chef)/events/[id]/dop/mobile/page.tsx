@@ -11,7 +11,7 @@ import { DopMobileView } from '@/components/scheduling/dop-mobile-view'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Day-Of Protocol | ChefFlow',
+  title: 'Day-Of Protocol',
   // Prevent zoom on double-tap for touch-friendly UI
   other: {
     viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',

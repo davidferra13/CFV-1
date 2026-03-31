@@ -22,7 +22,7 @@ import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 import { listSales } from '@/lib/commerce/sale-actions'
 import { listProducts } from '@/lib/commerce/product-actions'
 
-export const metadata: Metadata = { title: 'Commerce | ChefFlow' }
+export const metadata: Metadata = { title: 'Commerce' }
 
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
   try {

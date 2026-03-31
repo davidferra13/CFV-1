@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'AI Scrub - Prospecting - ChefFlow' }
+export const metadata: Metadata = { title: 'AI Scrub - Prospecting' }
 
 export default async function ScrubPage() {
   await requireAdmin()

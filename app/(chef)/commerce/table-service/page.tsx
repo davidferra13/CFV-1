@@ -17,7 +17,7 @@ import {
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 import type { DiningTableStatus } from '@/lib/commerce/table-service-types'
 
-export const metadata: Metadata = { title: 'Table Service - ChefFlow' }
+export const metadata: Metadata = { title: 'Table Service' }
 
 function statusVariant(status: DiningTableStatus): 'default' | 'success' | 'warning' | 'error' {
   if (status === 'available') return 'success'

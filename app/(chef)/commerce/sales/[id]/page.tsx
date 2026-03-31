@@ -19,7 +19,7 @@ import {
 import type { SaleStatus, SaleChannel } from '@/lib/commerce/constants'
 import { SaleDetailActions } from '@/components/commerce/sale-detail-actions'
 
-export const metadata: Metadata = { title: 'Sale Detail - ChefFlow' }
+export const metadata: Metadata = { title: 'Sale Detail' }
 
 function readBooleanFlag(value: string | undefined) {
   const normalized = String(value ?? '')

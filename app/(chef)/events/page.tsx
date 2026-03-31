@@ -24,7 +24,7 @@ import { format } from 'date-fns'
 import { isDemoEvent } from '@/lib/onboarding/demo-data-utils'
 import { createServerClient } from '@/lib/db/server'
 
-export const metadata: Metadata = { title: 'Events - ChefFlow' }
+export const metadata: Metadata = { title: 'Events' }
 
 const hubSections = [
   {

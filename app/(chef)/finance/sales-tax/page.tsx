@@ -11,7 +11,7 @@ import { SalesTaxPanel } from '@/components/finance/sales-tax-panel'
 import { Badge } from '@/components/ui/badge'
 import { Settings } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Sales Tax | ChefFlow' }
+export const metadata: Metadata = { title: 'Sales Tax' }
 
 export default async function SalesTaxPage() {
   await requireChef()

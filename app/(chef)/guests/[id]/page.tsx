@@ -14,7 +14,7 @@ import { VisitLog } from '@/components/guests/visit-log'
 import { ReservationForm } from '@/components/guests/reservation-form'
 import { redirect } from 'next/navigation'
 
-export const metadata: Metadata = { title: 'Guest Profile | ChefFlow' }
+export const metadata: Metadata = { title: 'Guest Profile' }
 
 export default async function GuestProfilePage({ params }: { params: { id: string } }) {
   await requireChef()

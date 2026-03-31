@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getDisputes } from '@/lib/finance/dispute-actions'
 import { DisputeTracker } from '@/components/finance/dispute-tracker'
 
-export const metadata: Metadata = { title: 'Payment Disputes - ChefFlow' }
+export const metadata: Metadata = { title: 'Payment Disputes' }
 
 export default async function DisputesPage() {
   await requireChef()

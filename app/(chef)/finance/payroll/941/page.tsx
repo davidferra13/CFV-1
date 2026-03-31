@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { get941Summaries } from '@/lib/finance/payroll-actions'
 import { Form941Panel } from '@/components/finance/payroll/form-941-panel'
 
-export const metadata: Metadata = { title: 'Form 941 | ChefFlow' }
+export const metadata: Metadata = { title: 'Form 941' }
 
 export default async function Form941Page({ searchParams }: { searchParams: { year?: string } }) {
   await requireChef()

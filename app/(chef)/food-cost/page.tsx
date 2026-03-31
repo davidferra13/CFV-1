@@ -13,7 +13,7 @@ import { DailyRevenueForm } from '@/components/vendors/daily-revenue-form'
 import { InvoiceForm } from '@/components/vendors/invoice-form'
 import { InvoiceCsvUpload } from '@/components/vendors/invoice-csv-upload'
 
-export const metadata: Metadata = { title: 'Food Cost Dashboard | ChefFlow' }
+export const metadata: Metadata = { title: 'Food Cost Dashboard' }
 
 function getWeekRange(): { start: string; end: string } {
   const now = new Date()

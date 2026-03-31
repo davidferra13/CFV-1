@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getIngredients } from '@/lib/recipes/actions'
 import { Card } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Vendor Notes - ChefFlow' }
+export const metadata: Metadata = { title: 'Vendor Notes' }
 
 export default async function VendorNotesPage() {
   await requireChef()

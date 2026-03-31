@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { GuestSearch } from '@/components/guests/guest-search'
 import { GuestForm } from '@/components/guests/guest-form'
 
-export const metadata: Metadata = { title: 'Guests | ChefFlow' }
+export const metadata: Metadata = { title: 'Guests' }
 
 const TAG_STYLES: Record<string, string> = {
   gold: 'bg-amber-950 text-amber-400 ring-1 ring-inset ring-amber-800',

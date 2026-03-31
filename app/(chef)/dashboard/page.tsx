@@ -33,7 +33,7 @@ import { isAdmin } from '@/lib/auth/admin'
 import { CoverageHealthWidget } from '@/components/pricing/coverage-health-widget'
 import { DinnerCirclesSection } from './_sections/dinner-circles-cards'
 
-export const metadata: Metadata = { title: 'Dashboard - ChefFlow' }
+export const metadata: Metadata = { title: 'Dashboard' }
 
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
   try {

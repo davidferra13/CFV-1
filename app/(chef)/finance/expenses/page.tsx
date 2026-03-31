@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Expenses - ChefFlow' }
+export const metadata: Metadata = { title: 'Expenses' }
 
 const SECTIONS = [
   {

@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button'
 import { CharitySection } from '@/components/charity/charity-section'
 import { Clock } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Charity Hub - ChefFlow' }
+export const metadata: Metadata = { title: 'Charity Hub' }
 
 // ─── Status badge variant helper ──────────────────────────────────────────────
 

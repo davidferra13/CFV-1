@@ -62,7 +62,7 @@ async function MonthlyPLSnapshot() {
   )
 }
 
-export const metadata: Metadata = { title: 'Finance - ChefFlow' }
+export const metadata: Metadata = { title: 'Finance' }
 
 const SECTIONS = [
   {

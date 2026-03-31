@@ -5,7 +5,7 @@ import { createServerClient } from '@/lib/db/server'
 import { get1099Summary, getContractorPayments } from '@/lib/finance/contractor-actions'
 import { Contractor1099Panel } from '@/components/finance/contractor-1099-panel'
 
-export const metadata: Metadata = { title: '1099 Contractors - ChefFlow' }
+export const metadata: Metadata = { title: '1099 Contractors' }
 
 export default async function ContractorsPage() {
   const user = await requireChef()

@@ -8,7 +8,7 @@ import { getStorageLocations } from '@/lib/inventory/location-actions'
 import { getStockByLocation } from '@/lib/inventory/transaction-actions'
 import { LocationsClient } from './locations-client'
 
-export const metadata: Metadata = { title: 'Storage Locations - ChefFlow' }
+export const metadata: Metadata = { title: 'Storage Locations' }
 
 export default async function LocationsPage() {
   await requireChef()

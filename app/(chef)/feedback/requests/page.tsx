@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 
-export const metadata: Metadata = { title: 'Send Feedback Requests | ChefFlow' }
+export const metadata: Metadata = { title: 'Send Feedback Requests' }
 
 export default async function FeedbackRequestsPage() {
   const chef = await requireChef()

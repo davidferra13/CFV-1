@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Qualified Leads - ChefFlow' }
+export const metadata: Metadata = { title: 'Qualified Leads' }
 
 export default async function QualifiedLeadsPage() {
   await requireChef()

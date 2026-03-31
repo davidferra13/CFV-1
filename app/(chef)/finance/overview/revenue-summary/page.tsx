@@ -16,7 +16,7 @@ import { format } from 'date-fns'
 import { ErrorState } from '@/components/ui/error-state'
 import { FadeIn } from '@/components/ui/fade-in'
 
-export const metadata: Metadata = { title: 'Revenue Summary - ChefFlow' }
+export const metadata: Metadata = { title: 'Revenue Summary' }
 
 const STATUS_STYLES: Record<string, string> = {
   completed: 'bg-green-900 text-green-700',

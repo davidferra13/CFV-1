@@ -21,7 +21,7 @@ import { getMarketplaceScorecard } from '@/lib/marketplace/scorecard-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = {
-  title: 'Marketplace Command Center - ChefFlow',
+  title: 'Marketplace Command Center',
 }
 
 function formatLeadAge(hours: number): string {

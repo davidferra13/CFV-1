@@ -3,7 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getAllCustomFieldDefinitions } from '@/lib/custom-fields/actions'
 import { CustomFieldBuilder } from '@/components/settings/custom-field-builder'
 
-export const metadata: Metadata = { title: 'Custom Fields - ChefFlow' }
+export const metadata: Metadata = { title: 'Custom Fields' }
 
 export default async function CustomFieldsPage() {
   await requireChef()

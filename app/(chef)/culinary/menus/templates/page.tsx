@@ -5,7 +5,7 @@ import { getMenus } from '@/lib/menus/actions'
 import { Card } from '@/components/ui/card'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Menu Templates - ChefFlow' }
+export const metadata: Metadata = { title: 'Menu Templates' }
 
 const SERVICE_STYLE_LABELS: Record<string, string> = {
   plated: 'Plated',

@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getFavoriteChefs } from '@/lib/favorite-chefs/actions'
 import { FavoriteChefEditor } from '@/components/favorite-chefs/favorite-chef-editor'
 
-export const metadata: Metadata = { title: 'Favorite Chefs - ChefFlow' }
+export const metadata: Metadata = { title: 'Favorite Chefs' }
 
 export default async function FavoriteChefsPage() {
   await requireChef()

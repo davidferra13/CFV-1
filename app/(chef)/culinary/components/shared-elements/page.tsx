@@ -13,7 +13,7 @@ import {
   TableCell,
 } from '@/components/ui/table'
 
-export const metadata: Metadata = { title: 'Shared Elements - ChefFlow' }
+export const metadata: Metadata = { title: 'Shared Elements' }
 
 export default async function SharedElementsPage() {
   await requireChef()

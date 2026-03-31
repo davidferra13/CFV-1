@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 
 export const metadata: Metadata = {
-  title: 'Ingredient Library | ChefFlow',
+  title: 'Ingredient Library',
 }
 import { getIngredients } from '@/lib/recipes/actions'
 import { IngredientsClient } from './ingredients-client'

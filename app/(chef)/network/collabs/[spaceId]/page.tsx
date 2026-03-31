@@ -9,7 +9,7 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props) {
-  return { title: 'Private Space - ChefFlow' }
+  return { title: 'Private Space' }
 }
 
 export default async function CollabSpacePage({ params, searchParams }: Props) {

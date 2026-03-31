@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { PaymentScheduleClient } from '@/components/commerce/payment-schedule-client'
 
-export const metadata: Metadata = { title: 'Payment Schedules | ChefFlow' }
+export const metadata: Metadata = { title: 'Payment Schedules' }
 
 export default async function PaymentSchedulesPage() {
   await requireChef()

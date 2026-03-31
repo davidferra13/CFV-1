@@ -19,7 +19,7 @@ const PipelineForecast = dynamic(
   }
 )
 
-export const metadata: Metadata = { title: 'Pipeline Forecast - ChefFlow' }
+export const metadata: Metadata = { title: 'Pipeline Forecast' }
 
 export default async function PipelineForecastPage() {
   const user = await requireChef()

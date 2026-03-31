@@ -8,7 +8,7 @@ import { CSVImportForm } from '@/components/prospecting/csv-import-form'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Import Prospects - ChefFlow' }
+export const metadata: Metadata = { title: 'Import Prospects' }
 
 export default async function ImportPage() {
   await requireAdmin()

@@ -11,7 +11,7 @@ import { FileAARButton } from '@/components/aar/file-aar-button'
 import { format } from 'date-fns'
 import { NoReviewsIllustration } from '@/components/ui/branded-illustrations'
 
-export const metadata: Metadata = { title: 'Event Reviews - ChefFlow' }
+export const metadata: Metadata = { title: 'Event Reviews' }
 
 export default async function AARHistoryPage() {
   await requireChef()

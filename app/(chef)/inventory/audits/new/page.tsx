@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { CreateAuditClient } from './create-audit-client'
 
-export const metadata: Metadata = { title: 'New Audit - ChefFlow' }
+export const metadata: Metadata = { title: 'New Audit' }
 
 export default async function NewAuditPage() {
   await requireChef()

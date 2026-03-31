@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { CreatePOClient } from './create-po-client'
 
-export const metadata: Metadata = { title: 'Create Purchase Order - ChefFlow' }
+export const metadata: Metadata = { title: 'Create Purchase Order' }
 
 export default async function CreatePOPage() {
   await requireChef()

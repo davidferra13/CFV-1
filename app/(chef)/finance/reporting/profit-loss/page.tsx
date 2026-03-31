@@ -7,7 +7,7 @@ import {
 } from '@/lib/finance/profit-loss-report-actions'
 import { ProfitAndLossReport } from '@/components/finance/ProfitAndLossReport'
 
-export const metadata: Metadata = { title: 'Profit & Loss Statement - ChefFlow' }
+export const metadata: Metadata = { title: 'Profit & Loss Statement' }
 
 export default async function ProfitLossPage() {
   await requireChef()

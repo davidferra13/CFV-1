@@ -8,7 +8,7 @@ import { RetainerStatusBadge } from '@/components/retainers/retainer-status-badg
 import { formatCurrency } from '@/lib/utils/currency'
 import { BILLING_CYCLE_LABELS } from '@/lib/retainers/constants'
 
-export const metadata: Metadata = { title: 'Retainers - ChefFlow' }
+export const metadata: Metadata = { title: 'Retainers' }
 
 export default async function RetainersPage() {
   await requireChef()

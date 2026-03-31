@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Feedback Dashboard | ChefFlow' }
+export const metadata: Metadata = { title: 'Feedback Dashboard' }
 
 export default async function FeedbackDashboardPage() {
   const chef = await requireChef()

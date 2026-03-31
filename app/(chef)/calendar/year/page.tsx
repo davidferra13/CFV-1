@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 
 export const metadata: Metadata = {
-  title: 'Year Planner | ChefFlow',
+  title: 'Year Planner',
 }
 import { getYearSummary } from '@/lib/scheduling/prep-block-actions'
 import { YearViewClient } from './year-view-client'

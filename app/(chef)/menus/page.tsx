@@ -6,7 +6,7 @@ import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 
-export const metadata: Metadata = { title: 'Menus - ChefFlow' }
+export const metadata: Metadata = { title: 'Menus' }
 import { getMenuCostSummaries, getMenus } from '@/lib/menus/actions'
 import { MenusClientWrapper } from './menus-client-wrapper'
 import { DietaryTrendsBar } from '@/components/intelligence/dietary-trends-bar'

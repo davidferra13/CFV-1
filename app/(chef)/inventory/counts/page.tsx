@@ -8,7 +8,7 @@ import { getInventoryCounts } from '@/lib/inventory/count-actions'
 import { InventoryCountForm } from '@/components/inventory/count-form'
 import { AddInventoryItemForm } from '@/components/inventory/add-inventory-item-form'
 
-export const metadata: Metadata = { title: 'Inventory Counts - ChefFlow' }
+export const metadata: Metadata = { title: 'Inventory Counts' }
 
 export default async function InventoryCountsPage() {
   await requireChef()

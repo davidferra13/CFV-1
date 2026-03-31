@@ -14,7 +14,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Pipeline - ChefFlow' }
+export const metadata: Metadata = { title: 'Pipeline' }
 
 export default async function PipelinePage() {
   await requireAdmin()

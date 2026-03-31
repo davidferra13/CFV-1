@@ -6,7 +6,7 @@ import { getICalFeedStatus } from '@/lib/integrations/ical/ical-actions'
 import { ICalFeedSettings } from '@/components/settings/ical-feed-settings'
 import { UpgradeGate } from '@/components/billing/upgrade-gate'
 
-export const metadata: Metadata = { title: 'Calendar Sync - ChefFlow' }
+export const metadata: Metadata = { title: 'Calendar Sync' }
 
 async function CalendarSyncContent() {
   const feedStatus = await getICalFeedStatus()

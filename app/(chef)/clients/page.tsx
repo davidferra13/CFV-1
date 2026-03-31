@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats, getPendingInvitations } from '@/lib/clients/actions'
 
-export const metadata: Metadata = { title: 'Clients - ChefFlow' }
+export const metadata: Metadata = { title: 'Clients' }
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'

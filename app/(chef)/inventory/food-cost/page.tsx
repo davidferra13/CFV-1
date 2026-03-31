@@ -9,7 +9,7 @@ import { getEventFinancialSummaryFull } from '@/lib/events/financial-summary-act
 import { FoodCostVariance } from '@/components/inventory/food-cost-variance'
 import { VarianceAlertSettings } from '@/components/inventory/variance-alert-settings'
 
-export const metadata: Metadata = { title: 'Food Cost Analysis - ChefFlow' }
+export const metadata: Metadata = { title: 'Food Cost Analysis' }
 
 export default async function FoodCostAnalysisPage() {
   const user = await requireChef()

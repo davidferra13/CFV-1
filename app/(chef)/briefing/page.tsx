@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { ShiftNotesSection } from '@/components/briefing/shift-notes-section'
 import { PrepTimersSection } from '@/components/briefing/prep-timers-section'
 
-export const metadata: Metadata = { title: 'Morning Briefing - ChefFlow' }
+export const metadata: Metadata = { title: 'Morning Briefing' }
 
 // ============================================
 // HELPERS

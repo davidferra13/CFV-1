@@ -7,7 +7,7 @@ import { PaymentReminders } from '@/components/payments/payment-reminders'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Payment Splitting - ChefFlow' }
+export const metadata: Metadata = { title: 'Payment Splitting' }
 
 type PaymentSplittingPageProps = {
   searchParams?: {

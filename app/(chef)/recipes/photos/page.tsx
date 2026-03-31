@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Step Photos | ChefFlow' }
+export const metadata: Metadata = { title: 'Step Photos' }
 
 export default async function RecipePhotosPage() {
   const chef = await requireChef()

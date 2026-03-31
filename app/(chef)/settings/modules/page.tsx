@@ -6,7 +6,7 @@ import { isFocusModeEnabled } from '@/lib/billing/focus-mode-actions'
 import { isEffectiveAdmin } from '@/lib/auth/admin-preview'
 import { ModulesClient } from './modules-client'
 
-export const metadata: Metadata = { title: 'Modules - ChefFlow' }
+export const metadata: Metadata = { title: 'Modules' }
 
 export default async function ModulesPage() {
   const user = await requireChef()

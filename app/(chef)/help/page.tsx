@@ -9,7 +9,7 @@ import { HelpSearch } from '@/components/help/help-search'
 import { BookOpen, Calendar, DollarSign, Users, Settings, ChefHat } from '@/components/ui/icons'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Help Center | ChefFlow' }
+export const metadata: Metadata = { title: 'Help Center' }
 
 const HELP_CATEGORIES = [
   {

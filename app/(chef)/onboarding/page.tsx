@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
 
-export const metadata = { title: 'Setup | ChefFlow' }
+export const metadata = { title: 'Setup' }
 
 export default async function OnboardingPage() {
   const user = await requireChef()

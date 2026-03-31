@@ -8,7 +8,7 @@ import { getChefSlug, getPublicChefProfile } from '@/lib/profile/actions'
 import { getPreviewClients } from '@/lib/preview/client-portal-preview-actions'
 import { ClientPreviewTabs } from './client-preview-tabs'
 
-export const metadata: Metadata = { title: 'Client Preview - ChefFlow' }
+export const metadata: Metadata = { title: 'Client Preview' }
 
 export default async function ClientPreviewPage() {
   // requireChef() is invoked internally by both getChefSlug() and getPreviewClients()

@@ -14,7 +14,7 @@ const CustomReportBuilder = dynamic(
   }
 )
 
-export const metadata: Metadata = { title: 'Custom Reports - ChefFlow' }
+export const metadata: Metadata = { title: 'Custom Reports' }
 
 export default async function ReportsPage() {
   await requireChef()

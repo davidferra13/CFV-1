@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 import { getIncidentDashboard } from '@/lib/incidents/reader'
 import { IncidentsDashboard } from '@/components/settings/incidents-dashboard'
 
-export const metadata: Metadata = { title: 'System Incidents - ChefFlow' }
+export const metadata: Metadata = { title: 'System Incidents' }
 
 export default async function IncidentsPage({
   searchParams,

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
-export const metadata: Metadata = { title: 'Stocks & Broths - ChefFlow' }
+export const metadata: Metadata = { title: 'Stocks & Broths' }
 
 const STOCK_KEYWORDS = [
   'stock',
