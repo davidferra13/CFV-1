@@ -297,6 +297,17 @@ interface ProductPriceRow {
   distance_miles: number | null
 }
 
+// Non-food categories to exclude from ingredient price searches.
+// These pollute results (e.g., "chicken breast" matching dog treats).
+const NON_FOOD_CATEGORIES = [
+  'Personal_care',
+  'Household',
+  'Pets',
+  'Pet',
+  'Health Care',
+  'Kitchen Supplies',
+]
+
 async function searchProductPrices(
   text: string,
   storeIds: string[] | null,
@@ -318,10 +329,12 @@ async function searchProductPrices(
       FROM openclaw.products p
       JOIN openclaw.store_products sp ON sp.product_id = p.id
       JOIN openclaw.stores s ON s.id = sp.store_id
+      LEFT JOIN openclaw.product_categories pc ON pc.id = p.category_id
       WHERE to_tsvector('english', p.name) @@ plainto_tsquery('english', ${text})
         AND sp.store_id = ANY(${storeIds})
         AND sp.price_cents > 0
         AND sp.price_cents < 50000
+        AND (pc.name IS NULL OR pc.name != ALL(${NON_FOOD_CATEGORIES}))
       ORDER BY ts_rank(to_tsvector('english', p.name), plainto_tsquery('english', ${text})) DESC,
                sp.price_cents ASC
       LIMIT ${limit}
@@ -342,9 +355,11 @@ async function searchProductPrices(
     FROM openclaw.products p
     JOIN openclaw.store_products sp ON sp.product_id = p.id
     JOIN openclaw.stores s ON s.id = sp.store_id
+    LEFT JOIN openclaw.product_categories pc ON pc.id = p.category_id
     WHERE to_tsvector('english', p.name) @@ plainto_tsquery('english', ${text})
       AND sp.price_cents > 0
       AND sp.price_cents < 50000
+      AND (pc.name IS NULL OR pc.name != ALL(${NON_FOOD_CATEGORIES}))
     ORDER BY ts_rank(to_tsvector('english', p.name), plainto_tsquery('english', ${text})) DESC,
              sp.last_seen_at DESC
     LIMIT ${limit}
