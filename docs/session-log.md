@@ -49,6 +49,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: green (5511b1e9)
 - Notes: Catalog UX overhaul complete. Store picker entry point, removed dev jargon (tier/confidence/source filters), added chef-friendly confidence icons, image thumbnails in table, On Sale filter, out-of-stock graying. Default view changed to grid. Preferred stores integrated via existing getPreferredStores(). Spec queue now empty (no remaining website-facing ready specs).
 
+## 2026-04-01 ~04:00 EST
+
+- Agent: Planner (Claude Opus 4.6)
+- Task: OpenClaw Pipeline Stabilization + Hybrid Swarm spec. Prove current free system works, plan Codex integration as on-demand fixer.
+- Status: started
+- Build state on arrival: green (e740aa53) - price engine commit pushed earlier this session
+
 ## 2026-03-31 ~17:36 EST
 
 - Agent: Planner
@@ -57,3 +64,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on arrival: green (09b2cc4b)
 - Files in focus: menus, notes, inquiries, culinary assembly, related schema and specs
 - Notes: Developer asked for planner-gate spec work, deep inspection, developer-notes capture, and validated findings before build work
+
+## 2026-03-31 ~18:10 EST
+
+- Agent: Planner
+- Task: Audit and spec the notes -> dishes -> menus -> client/event workflow without rebuilding it
+- Status: completed
+- Files touched: docs/specs/notes-dishes-menus-client-event-pipeline.md, docs/session-log.md
+- Build state on departure: unchanged (planner-only docs, no build run)
+- Notes: Spec marked ready with cited validation, developer-notes capture, explicit minimal fix plan, and builder pitfalls. Worktree already had unrelated dirty files on arrival.
