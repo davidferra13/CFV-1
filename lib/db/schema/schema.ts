@@ -7027,7 +7027,7 @@ export const raffleEntries = pgTable("raffle_entries", {
 	source: raffleEntrySource().default('pan_catch').notNull(),
 	entryDate: date("entry_date").default(sql`CURRENT_DATE`).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_raffle_entries_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
 	index("idx_raffle_entries_round").using("btree", table.roundId.asc().nullsLast().op("uuid_ops")),
 	index("idx_raffle_entries_round_client").using("btree", table.roundId.asc().nullsLast().op("uuid_ops"), table.clientId.asc().nullsLast().op("uuid_ops")),
@@ -7338,7 +7338,7 @@ export const raffleRounds = pgTable("raffle_rounds", {
 	prizeTopScorerDeliveredAt: timestamp("prize_top_scorer_delivered_at", { withTimezone: true, mode: 'string' }),
 	prizeMostDedicatedDelivered: boolean("prize_most_dedicated_delivered").default(false).notNull(),
 	prizeMostDedicatedDeliveredAt: timestamp("prize_most_dedicated_delivered_at", { withTimezone: true, mode: 'string' }),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_raffle_rounds_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
 	index("idx_raffle_rounds_tenant_month").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.monthStart.asc().nullsLast().op("uuid_ops")),
 	index("idx_raffle_rounds_tenant_status").using("btree", table.tenantId.asc().nullsLast().op("enum_ops"), table.status.asc().nullsLast().op("uuid_ops")),
@@ -9872,7 +9872,7 @@ export const chefBackupContacts = pgTable("chef_backup_contacts", {
 	isActive: boolean("is_active").default(true),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow(),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_chef_backup_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.tenantId],
@@ -11764,7 +11764,7 @@ export const menus = pgTable("menus", {
 	isShowcase: boolean("is_showcase").default(false).notNull(),
 	timesUsed: integer("times_used").default(0).notNull(),
 	sceneType: text("scene_type"),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_menus_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
 	index("idx_menus_event_id").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
 	index("idx_menus_is_template").using("btree", table.isTemplate.asc().nullsLast().op("bool_ops")),
@@ -14319,8 +14319,8 @@ export const socialPosts = pgTable("social_posts", {
 	seasonalFlag: boolean("seasonal_flag").default(false).notNull(),
 	hotSwapReady: boolean("hot_swap_ready").default(false).notNull(),
 	notes: text().default('').notNull(),
-	queuedToPlatforms: socialPlatform("queued_to_platforms").array().default([""]).notNull(),
-	publishedToPlatforms: socialPlatform("published_to_platforms").array().default([""]).notNull(),
+	queuedToPlatforms: socialPlatform("queued_to_platforms").array().default(sql`ARRAY[]::social_platform[]`).notNull(),
+	publishedToPlatforms: socialPlatform("published_to_platforms").array().default(sql`ARRAY[]::social_platform[]`).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	mentionHandles: text("mention_handles").array().default([""]).notNull(),
@@ -14747,7 +14747,7 @@ export const hubGroups = pgTable("hub_groups", {
 	closesAt: timestamp("closes_at", { withTimezone: true, mode: 'string' }),
 	chefApprovalRequired: boolean("chef_approval_required").default(true).notNull(),
 	consentStatus: text("consent_status").default('pending'),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_hub_groups_creator").using("btree", table.createdByProfileId.asc().nullsLast().op("uuid_ops")),
 	index("idx_hub_groups_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")).where(sql`(event_id IS NOT NULL)`),
 	index("idx_hub_groups_inquiry").using("btree", table.inquiryId.asc().nullsLast().op("uuid_ops")).where(sql`(inquiry_id IS NOT NULL)`),
@@ -14817,7 +14817,7 @@ export const hubGuestProfiles = pgTable("hub_guest_profiles", {
 	openTablesIntroSeen: boolean("open_tables_intro_seen").default(false).notNull(),
 	openTablesInterested: boolean("open_tables_interested"),
 	openTablesNotify: boolean("open_tables_notify").default(false).notNull(),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_hub_guest_profiles_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")).where(sql`(auth_user_id IS NOT NULL)`),
 	index("idx_hub_guest_profiles_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")).where(sql`(client_id IS NOT NULL)`),
 	uniqueIndex("idx_hub_guest_profiles_email").using("btree", table.emailNormalized.asc().nullsLast().op("text_ops")).where(sql`(email_normalized IS NOT NULL)`),
@@ -15316,7 +15316,7 @@ export const eventContracts = pgTable("event_contracts", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	proposalTokenId: uuid("proposal_token_id"),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_event_contracts_chef").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops")),
 	index("idx_event_contracts_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
 	index("idx_event_contracts_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
@@ -15367,7 +15367,7 @@ export const proposalTokens = pgTable("proposal_tokens", {
 	lastViewedAt: timestamp("last_viewed_at", { withTimezone: true, mode: 'string' }),
 	viewCount: integer("view_count").default(0).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_proposal_tokens_quote").using("btree", table.quoteId.asc().nullsLast().op("uuid_ops")),
 	index("idx_proposal_tokens_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
 	index("idx_proposal_tokens_token").using("btree", table.token.asc().nullsLast().op("text_ops")),
@@ -15902,7 +15902,7 @@ export const quotes = pgTable("quotes", {
 	effectiveTotalCents: integer("effective_total_cents"),
 	coverPhotoUrl: text("cover_photo_url"),
 	chefMessage: text("chef_message"),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_quotes_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
 	index("idx_quotes_client_id").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
 	index("idx_quotes_event_id").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
@@ -19526,7 +19526,7 @@ export const guestEventProfile = pgTable("guest_event_profile", {
 	accessibilityNotes: text("accessibility_notes"),
 	cannabisParticipation: guestCannabisParticipation("cannabis_participation").default('undecided').notNull(),
 	familiarityLevel: guestFamiliarityLevel("familiarity_level"),
-	consumptionStyle: guestConsumptionStyle("consumption_style").array().default([""]),
+	consumptionStyle: guestConsumptionStyle("consumption_style").array().default(sql`ARRAY[]::guest_consumption_style[]`),
 	edibleFamiliarity: guestEdibleFamiliarity("edible_familiarity"),
 	preferredDoseNote: text("preferred_dose_note"),
 	comfortNotes: text("comfort_notes"),
@@ -19752,7 +19752,7 @@ export const chefs = pgTable("chefs", {
 	icalFeedExpiresAt: timestamp("ical_feed_expires_at", { withTimezone: true, mode: 'string' }).default(sql`(now() + '90 days'::interval)`),
 	icalFeedLastAccessedAt: timestamp("ical_feed_last_accessed_at", { withTimezone: true, mode: 'string' }),
 	kdsPin: text("kds_pin"),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_chefs_account_status").using("btree", table.accountStatus.asc().nullsLast().op("text_ops")),
 	index("idx_chefs_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
 	uniqueIndex("idx_chefs_booking_slug").using("btree", table.bookingSlug.asc().nullsLast().op("text_ops")).where(sql`(booking_slug IS NOT NULL)`),
@@ -22607,7 +22607,7 @@ export const clients = pgTable("clients", {
 	onboardingCompletedAt: timestamp("onboarding_completed_at", { withTimezone: true, mode: 'string' }),
 	onboardingToken: text("onboarding_token"),
 	communicationPreference: jsonb("communication_preference").default({}),
-}, (table) => [
+}, (table): any[] => [
 	index("idx_clients_account_deletion_scheduled_for").using("btree", table.accountDeletionScheduledFor.asc().nullsLast().op("timestamptz_ops")).where(sql`(account_deletion_requested_at IS NOT NULL)`),
 	index("idx_clients_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`(deleted_at IS NULL)`),
 	index("idx_clients_anniversary").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.anniversary.asc().nullsLast().op("uuid_ops")).where(sql`(anniversary IS NOT NULL)`),
@@ -22819,7 +22819,7 @@ export const events = pgTable("events", {
 	menuRevisionCount: integer("menu_revision_count").default(0),
 	menuLastClientFeedbackAt: timestamp("menu_last_client_feedback_at", { withTimezone: true, mode: 'string' }),
 	guestCountChangeLog: jsonb("guest_count_change_log").default([]),
-}, (table) => [
+}, (table): any[] => [
 	index("events_inquiry_received_at_idx").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.inquiryReceivedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(inquiry_received_at IS NOT NULL)`),
 	index("idx_events_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
 	index("idx_events_client_id").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
