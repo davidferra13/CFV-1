@@ -237,13 +237,13 @@ export function HubGroupView({
               </div>
             )}
 
-            {/* My Hub link */}
+            {/* My Profile link */}
             {profileToken && currentMember?.profile?.profile_token && (
               <Link
                 href={`/hub/me/${currentMember.profile.profile_token}`}
                 className="rounded-full bg-stone-800 px-3 py-1 text-xs text-stone-400 hover:bg-stone-700 hover:text-stone-200"
               >
-                My Hub
+                My Profile
               </Link>
             )}
 

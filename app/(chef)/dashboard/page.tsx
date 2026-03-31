@@ -31,6 +31,7 @@ import { getWeeklyPriceBriefing } from '@/lib/openclaw/weekly-briefing-actions'
 import { WeeklyBriefingCard } from '@/components/pricing/weekly-briefing-card'
 import { isAdmin } from '@/lib/auth/admin'
 import { CoverageHealthWidget } from '@/components/pricing/coverage-health-widget'
+import { DinnerCirclesSection } from './_sections/dinner-circles-cards'
 
 export const metadata: Metadata = { title: 'Dashboard - ChefFlow' }
 
@@ -367,6 +368,13 @@ export default async function ChefDashboard() {
       <WidgetErrorBoundary name="Respond Next" compact>
         <Suspense fallback={null}>
           <RespondNextCard />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      {/* Dinner Circles - active circles with unread badges */}
+      <WidgetErrorBoundary name="Dinner Circles" compact>
+        <Suspense fallback={null}>
+          <DinnerCirclesSection />
         </Suspense>
       </WidgetErrorBoundary>
 

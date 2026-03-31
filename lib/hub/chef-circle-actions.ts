@@ -27,9 +27,11 @@ export interface ChefCircleSummary {
 }
 
 /**
- * Get all Dinner Circles for the current chef, with unread counts.
+ * Get Dinner Circles for the current chef, with unread counts.
+ * When limit is set, caps results and uses a fast boolean has_unread check
+ * instead of per-circle COUNT queries (avoids N+1 for dashboard preview).
  */
-export async function getChefCircles(): Promise<ChefCircleSummary[]> {
+export async function getChefCircles(options?: { limit?: number }): Promise<ChefCircleSummary[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient({ admin: true })
@@ -41,8 +43,8 @@ export async function getChefCircles(): Promise<ChefCircleSummary[]> {
     .eq('auth_user_id', user.userId)
     .maybeSingle()
 
-  // Get all groups for this tenant
-  const { data: groups } = await db
+  // Get groups for this tenant
+  let groupQuery = db
     .from('hub_groups')
     .select(
       'id, name, emoji, group_token, group_type, event_id, inquiry_id, last_message_at, last_message_preview, message_count, is_active, created_at'
@@ -50,6 +52,12 @@ export async function getChefCircles(): Promise<ChefCircleSummary[]> {
     .eq('tenant_id', tenantId)
     .eq('is_active', true)
     .order('last_message_at', { ascending: false, nullsFirst: false })
+
+  if (options?.limit) {
+    groupQuery = groupQuery.limit(options.limit)
+  }
+
+  const { data: groups } = await groupQuery
 
   if (!groups || groups.length === 0) return []
 
@@ -80,25 +88,39 @@ export async function getChefCircles(): Promise<ChefCircleSummary[]> {
     }
   }
 
+  const useFastUnread = !!options?.limit
+
   // Count unread messages per group
   const results: ChefCircleSummary[] = []
   for (const group of groups) {
     let unreadCount = 0
     const lastRead = readMap[group.id]
-    if (lastRead && group.last_message_at) {
-      if (new Date(group.last_message_at) > new Date(lastRead)) {
-        // Count messages after last_read_at
-        const { count } = await db
-          .from('hub_messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('group_id', group.id)
-          .is('deleted_at', null)
-          .gt('created_at', lastRead)
 
-        unreadCount = count ?? 0
+    if (useFastUnread) {
+      // Fast path: boolean check only (no per-circle COUNT query)
+      if (!lastRead && group.message_count > 0) {
+        unreadCount = group.message_count
+      } else if (lastRead && group.last_message_at) {
+        if (new Date(group.last_message_at) > new Date(lastRead)) {
+          unreadCount = 1 // Signal "has unread" without exact count
+        }
       }
-    } else if (!lastRead && group.message_count > 0) {
-      unreadCount = group.message_count
+    } else {
+      // Full path: exact unread count per circle
+      if (lastRead && group.last_message_at) {
+        if (new Date(group.last_message_at) > new Date(lastRead)) {
+          const { count } = await db
+            .from('hub_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('group_id', group.id)
+            .is('deleted_at', null)
+            .gt('created_at', lastRead)
+
+          unreadCount = count ?? 0
+        }
+      } else if (!lastRead && group.message_count > 0) {
+        unreadCount = group.message_count
+      }
     }
 
     results.push({

@@ -40,7 +40,7 @@ export function HubOverviewClient({ stats, stubs }: HubOverviewClientProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-100">Social Event Hub</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Dinner Circle Admin</h1>
         <p className="mt-1 text-sm text-stone-400">
           Overview of guest activity, groups, and event planning
         </p>
@@ -108,10 +108,10 @@ export function HubOverviewClient({ stats, stubs }: HubOverviewClientProps) {
 
       {/* Recent Activity */}
       <div>
-        <h2 className="mb-3 text-lg font-semibold text-stone-200">Recent Hub Activity</h2>
+        <h2 className="mb-3 text-lg font-semibold text-stone-200">Recent Circle Activity</h2>
         {stats.recentActivity.length === 0 ? (
           <Card className="border-stone-800 bg-stone-900/50 p-8 text-center">
-            <p className="text-sm text-stone-500">No hub activity yet</p>
+            <p className="text-sm text-stone-500">No circle activity yet</p>
           </Card>
         ) : (
           <Card className="divide-y divide-stone-800 border-stone-800 bg-stone-900/50">

@@ -16,6 +16,7 @@ import {
   Handshake,
   Inbox,
   Megaphone,
+  MessagesSquare,
   Package,
   Phone,
   ScrollText,
@@ -64,6 +65,7 @@ type CommandCenterProps = {
     campaigns: number
     unreadMessages: number
     calls: number
+    circles: number
   }
 }
 
@@ -127,7 +129,19 @@ function getFeatureAreas(counts: CommandCenterProps['counts']): FeatureArea[] {
         { label: 'Top Clients', href: '/clients/insights/top-clients' },
         { label: 'Guests', href: '/guests' },
         { label: 'Partners', href: '/partners' },
-        { label: 'Circles', href: '/circles' },
+      ],
+    },
+    {
+      label: 'Dinner Circles',
+      href: '/circles',
+      icon: MessagesSquare,
+      color: '#f97316',
+      description: 'Guest groups, chat, and event coordination',
+      count: counts.circles,
+      countLabel: 'active',
+      quickLinks: [
+        { label: 'All Circles', href: '/circles' },
+        { label: 'Social Feed', href: '/circles?tab=feed' },
       ],
     },
 

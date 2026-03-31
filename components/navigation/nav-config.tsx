@@ -165,6 +165,17 @@ export const standaloneTop: NavItem[] = [
     ],
   },
   {
+    href: '/circles',
+    label: 'Dinner Circles',
+    icon: MessagesSquare,
+    coreFeature: true,
+    tier: 'primary',
+    subMenu: [
+      { href: '/circles', label: 'All Circles' },
+      { href: '/circles?tab=feed', label: 'Social Feed' },
+    ],
+  },
+  {
     href: '/culinary',
     label: 'Culinary',
     icon: ChefHat,
@@ -457,11 +468,6 @@ export const navGroups: NavGroup[] = [
         href: '/clients/recurring',
         label: 'Recurring Clients',
         icon: RefreshCw,
-      },
-      {
-        href: '/circles',
-        label: 'Dinner Circles',
-        icon: MessagesSquare,
       },
       {
         href: '/clients/preferences',
@@ -1144,11 +1150,6 @@ export const navGroups: NavGroup[] = [
         children: [{ href: '/charity/hours', label: 'Volunteer Hours' }],
       },
       {
-        href: '/circles',
-        label: 'Dinner Circles',
-        icon: MessagesSquare,
-      },
-      {
         href: '/community/templates',
         label: 'Community Templates',
         icon: FileText,
@@ -1277,7 +1278,7 @@ export const navGroups: NavGroup[] = [
         label: 'Social Media',
         icon: MessagesSquare,
         children: [
-          { href: '/social/hub-overview', label: 'Hub Overview' },
+          { href: '/social/hub-overview', label: 'Dinner Circle Overview' },
           { href: '/social/posts', label: 'Posts' },
         ],
       },
@@ -1516,7 +1517,7 @@ export const navGroups: NavGroup[] = [
       { href: '/admin/flags', label: 'Feature Flags', icon: FlagBanner, adminOnly: true },
       { href: '/admin/feedback', label: 'Feedback', icon: Star, adminOnly: true },
       { href: '/admin/financials', label: 'Financials', icon: DollarSign, adminOnly: true },
-      { href: '/admin/hub', label: 'Hub Groups', icon: Users, adminOnly: true },
+      { href: '/admin/hub', label: 'Dinner Circle Groups', icon: Users, adminOnly: true },
       { href: '/admin/presence', label: 'Live Presence', icon: WifiHigh, adminOnly: true },
       { href: '/admin/price-catalog', label: 'Price Catalog', icon: Store, adminOnly: true },
       {
@@ -1972,7 +1973,7 @@ export const actionBarItems: NavItem[] = [
   { href: '/financials', label: 'Money', icon: DollarSign },
   { href: '/culinary/prep', label: 'Prep', icon: Timer },
   { href: '/tasks', label: 'Tasks', icon: ListChecks },
-  { href: '/circles', label: 'Community', icon: MessagesSquare },
+  { href: '/circles', label: 'Circles', icon: MessagesSquare },
   { href: '/culinary/price-catalog', label: 'Food Catalog', icon: Store },
   { href: '/prices', label: 'Store Prices', icon: ShoppingCart },
   { href: '/loyalty', label: 'Rewards', icon: Gift },

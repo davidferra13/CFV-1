@@ -14,7 +14,7 @@ export default async function CirclesPage() {
     <div className="mx-auto max-w-4xl space-y-6 p-6">
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Dinner Circles</h1>
-        <p className="mt-1 text-sm text-stone-400">All your client conversations in one place</p>
+        <p className="mt-1 text-sm text-stone-400">Every dinner, every guest, one place</p>
       </div>
 
       <CirclesPageTabs

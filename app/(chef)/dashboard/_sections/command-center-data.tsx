@@ -49,6 +49,7 @@ export async function CommandCenterSection() {
     campaigns,
     unreadMessages,
     calls,
+    circles,
   ] = await Promise.all([
     // Events: active (not completed, not cancelled)
     safeCount(db, 'events', 'tenant_id', tid, (q: any) =>
@@ -92,6 +93,8 @@ export async function CommandCenterSection() {
     safeCount(db, 'scheduled_calls', 'tenant_id', tid, (q: any) =>
       q.eq('status', 'scheduled').gte('scheduled_at', today)
     ),
+    // Dinner Circles: active groups
+    safeCount(db, 'hub_groups', 'tenant_id', tid, (q: any) => q.eq('is_active', true)),
   ])
 
   return (
@@ -115,6 +118,7 @@ export async function CommandCenterSection() {
         campaigns,
         unreadMessages,
         calls,
+        circles,
       }}
     />
   )
