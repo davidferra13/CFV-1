@@ -12,13 +12,13 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                         | Status | Last Verified    | Commit  | Agent   |
-| ----------------------------- | ------ | ---------------- | ------- | ------- |
-| `tsc --noEmit --skipLibCheck` | green  | 2026-04-01 02:00 | pending | Builder |
-| `next build --no-lint`        | green  | 2026-04-01 02:00 | pending | Builder |
+| Check                         | Status | Last Verified    | Commit   | Agent   |
+| ----------------------------- | ------ | ---------------- | -------- | ------- |
+| `tsc --noEmit --skipLibCheck` | green  | 2026-04-01 02:00 | 5511b1e9 | Builder |
+| `next build --no-lint`        | green  | 2026-04-01 02:00 | 5511b1e9 | Builder |
 
-**Last green build:** pending (2026-04-01 02:00 EST)
-**Last commit on main:** pending - feat(catalog-ux-overhaul): store-first shopping experience
+**Last green build:** 5511b1e9 (2026-04-01 02:00 EST)
+**Last commit on main:** 5511b1e9 - feat(catalog-ux-overhaul): store-first shopping experience
 
 ## History
 

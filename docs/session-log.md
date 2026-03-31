@@ -42,8 +42,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 
 - Agent: Builder (Claude Opus 4.6)
 - Task: Continue spec queue - catalog-ux-overhaul build
-- Status: started
+- Status: completed
 - Build state on arrival: green (09b2cc4b)
+- Files touched: components/pricing/catalog-store-picker.tsx (new), app/(chef)/culinary/price-catalog/catalog-browser.tsx (rewrite), app/(chef)/culinary/price-catalog/page.tsx, docs/specs/catalog-ux-overhaul.md
+- Commits: e740aa53, 5511b1e9
+- Build state on departure: green (5511b1e9)
+- Notes: Catalog UX overhaul complete. Store picker entry point, removed dev jargon (tier/confidence/source filters), added chef-friendly confidence icons, image thumbnails in table, On Sale filter, out-of-stock graying. Default view changed to grid. Preferred stores integrated via existing getPreferredStores(). Spec queue now empty (no remaining website-facing ready specs).
 
 ## 2026-03-31 ~17:36 EST
 
