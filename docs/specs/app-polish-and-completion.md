@@ -1,11 +1,28 @@
 # Spec: App Polish & Completion
 
-> **Status:** draft
-> **Priority:** P0 (blocking)
+> **Status:** superseded
+> **Priority:** was P0
 > **Depends on:** none
-> **Estimated complexity:** large (50+ files across all workstreams)
+> **Estimated complexity:** was large (50+ files) - see supersession note
 > **Created:** 2026-03-28
-> **Built by:** not started
+> **Built by:** not started (superseded before build)
+> **Superseded:** 2026-03-30 - Planner Gate validation found 5 of 7 workstreams already completed by other specs
+>
+> ### Supersession Notes (2026-03-30 Planner Gate Audit)
+>
+> This spec was drafted 2026-03-28 but massive work happened in the following 2 days:
+>
+> | Workstream             | Status                                                                                                                 | Evidence                                            |
+> | ---------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+> | 1. Navigation          | **Partially done** - Action Bar spec (verified 3/28) solved discoverability. Alphabetical sort still pending.          | `docs/specs/navigation-action-bar.md` (verified)    |
+> | 2. Visual Personality  | **Done** - globals.css has warm brand tokens, card hover effects, glass morphism, DM Serif Display, success animations | `app/globals.css` (1245 lines of brand styling)     |
+> | 3. Onboarding          | **Done** - 6-step wizard with First Menu + inline First Booking. Copy already generic.                                 | `docs/specs/onboarding-overhaul.md` (verified 3/27) |
+> | 4. Platform Liability  | **Done** - All platform names replaced with "your inbox"/"email notifications". No liability risk.                     | Verified in actual files 3/30                       |
+> | 5. Wiring Verification | **Done** - 25 routes tested, 25 PASS                                                                                   | `docs/wiring-verification-report.md` (3/28)         |
+> | 6. Client Portal       | **Built** - Routes, nav, auth all exist. Polish-level only.                                                            | All `/my-*` routes verified                         |
+> | 7. Public Pages        | **Built** - All routes exist, header + footer wired. Polish-level only.                                                | All public routes verified                          |
+>
+> **Remaining work extracted to:** `docs/specs/app-final-touches.md` (small scope, 1-2 sessions)
 
 ---
 
