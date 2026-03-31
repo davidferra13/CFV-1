@@ -51,6 +51,10 @@ _This section preserves the developer's original conversation and intent. It is 
 - "Return what currently exists, where it breaks, data model gaps, API gaps, UI gaps, and the minimal changes required to fix it."
 - "Capture this conversation and attach it to the spec."
 - "Do NOT compress away important nuance. The builder must understand WHY things exist, not just WHAT to build."
+- "Confirm full alignment before proceeding."
+- "What is verified vs unverified?"
+- "What is necessary vs noise?"
+- "Will anything we do cause regression or break existing systems?"
 
 ### Developer Intent
 
@@ -58,6 +62,7 @@ _This section preserves the developer's original conversation and intent. It is 
 - **Key constraints:** no rebuild, no destructive migrations, no forced early structure, no silent duplication, no data loss on note promotion, no regression to current menu creation, and no third disconnected workflow.
 - **Motivation:** the chef's real work starts as idea capture and partial dish thinking, but the current code only becomes structured after a menu record already exists. That mismatch is the source of fragility.
 - **Success from the developer's perspective:** the chef can write ideas instantly, leave them global or attach them later, promote the right note into a reusable dish, add that dish to menus by reference or copy on purpose, keep menus incomplete while building, and lock a final menu without silent reopen behavior.
+- **Working style requirement:** every recommendation must separate verified current behavior from design inference, and the spec should stay tightly scoped to required changes rather than broad architecture cleanup.
 
 ---
 
@@ -92,7 +97,10 @@ The current product already has menus, client menu intake, templates, showcase m
 | `lib/menus/editor-actions.ts`                   | Load workflow notes, dish source metadata, and ownership scope into editor context; persist menu ownership scope when client/event context changes                           |
 | `lib/menus/dish-index-actions.ts`               | Extend canonical dish CRUD to manage ownership scope, canonical components, and note lineage; expose canonical dish picker data for menu assembly                            |
 | `lib/menus/dish-index-bridge.ts`                | When locking menus, attach appearances to canonical dishes without creating duplicate canonical records for already linked reference/copy rows                               |
+| `lib/menus/approval-portal.ts`                  | Keep client approval snapshots stable, but include enough source metadata for chef-side audit/debug so reference/copy behavior is not invisible in revision history          |
+| `lib/communication/menu-revision-actions.ts`    | Preserve revision compatibility with new dish source metadata; do not assume every dish is purely menu-local                                                                 |
 | `lib/menus/menu-intelligence-actions.ts`        | Add source queries for workflow notes and canonical dishes; add note attachment helpers used by menu creation and editor flows                                               |
+| `lib/menus/menu-history-actions.ts`             | Keep service-history and repeat-analysis compatibility with source-backed dishes; do not force those readers to switch to canonical-only queries                             |
 | `lib/ai/agent-actions/intake-actions.ts`        | On approved transcript/brain-dump intake, commit extracted notes into workflow notes instead of leaving them only in chat preview                                            |
 | `components/culinary/menu-assembly-browser.tsx` | Add a canonical dish tab; require explicit `Reference` or `Copy` choice when adding a dish to a menu; keep existing template/past-menu/recipe/quick-add tabs                 |
 | `app/(chef)/menus/new/create-menu-form.tsx`     | Generate a draft menu key, allow workflow note linking before save, attach notes during create flow, and continue collecting menu metadata without requiring prior structure |
@@ -472,6 +480,8 @@ Behavior rules:
 - Fix the existing `createMenu()` persistence bug before adding new workflow behavior.
 - Treat `client_notes` and `inquiry_notes` as preserved legacy/general note systems. This spec adds a culinary workflow note layer; it does not delete or merge the existing note tables.
 - Keep all new writes chef-scoped through existing auth/RLS patterns.
+- Preserve `source_mode`, `dish_index_id`, and `copied_from_dish_index_id` through `duplicateMenu()`, `cloneMenu()`, template instantiation, and showcase application. Do not silently strip or rewrite those semantics.
+- Leave PDF/doc export, repeat detection, service history, and most client-facing reads on menu-owned compatibility rows. Those downstream readers are the reason this spec does not replace `dishes` and `components`.
 
 ---
 
@@ -487,10 +497,14 @@ Behavior rules:
 - Locking a menu indexes dishes into `dish_index`, which confirms the index is downstream of the menu flow today (`lib/menus/actions.ts:892-895`, `lib/menus/dish-index-bridge.ts:20-176`).
 - Menu assembly currently copies from templates or past menus and hides the panel entirely when locked (`components/culinary/menu-assembly-browser.tsx:23-36`, `components/culinary/menu-assembly-browser.tsx:49`, `components/culinary/menu-assembly-browser.tsx:59`, `components/culinary/menu-assembly-browser.tsx:312`).
 - Template and showcase flows are copy/snapshot-based (`lib/menus/template-actions.ts:249-351`, `lib/menus/template-actions.ts:364-445`, `lib/menus/showcase-actions.ts:42-104`, `lib/menus/actions.ts:1689-1739`).
+- Clone/duplicate flows already deep-copy menu rows, which means source semantics can be lost or rewritten if builders do not preserve them explicitly (`lib/menus/actions.ts:1293-1430`, `components/menus/clone-menu-button.tsx:6-24`).
 - Client preference intake already exists as a four-path flow feeding `menu_preferences` (`app/(client)/my-events/[id]/choose-menu/page.tsx:2-30`, `app/(client)/my-events/[id]/choose-menu/choose-menu-client.tsx:66-70`, `app/(client)/my-events/[id]/choose-menu/choose-menu-client.tsx:170-255`, `lib/menus/preference-actions.ts:25-27`, `lib/menus/preference-actions.ts:40-71`).
 - Menu finalization exists but the UI and transition rules still allow indirect reopen via archive/restore (`lib/menus/actions.ts:761-765`, `app/(chef)/menus/menus-client-wrapper.tsx:71-72`, `app/(chef)/menus/menus-client-wrapper.tsx:388`, `app/(chef)/menus/[id]/menu-detail-client.tsx:296-298`, `app/(chef)/menus/[id]/menu-detail-client.tsx:642`).
 - API v2 is stale and still uses `menu_name` instead of the live schema's `name` (`app/api/v2/menus/route.ts:19`, `app/api/v2/menus/route.ts:91`, `app/api/v2/menus/[id]/route.ts:19`).
 - Brain-dump intake already parses notes, recipes, and clients, but commit logic only creates clients/inquiries and leaves notes in chat output (`lib/ai/parse-brain-dump.ts:35-37`, `lib/ai/agent-actions/intake-actions.ts:410-430`, `lib/ai/agent-actions/intake-actions.ts:492-527`).
+- Menu history and repeat-detection flows snapshot or derive dishes from menu-owned rows rather than canonical dishes (`database/migrations/20260401000029_menu_history.sql:5-21`, `lib/menus/menu-history-actions.ts:114-177`, `lib/menus/repeat-detection.ts:47-239`).
+- Approval and revision flows snapshot menu dishes from the live menu rows, not from a canonical reusable dish source (`database/migrations/20260303000004_menu_approval_workflow.sql:41-57`, `lib/menus/approval-portal.ts:31-123`, `lib/menus/revisions.ts:56-68`, `lib/communication/menu-revision-actions.ts:84-117`).
+- PDF export already reads menu-owned dishes/components, and commerce event bridging already reads `dish_appearances.dish_index_id`, so downstream consumers are split between compatibility rows and canonical appearances today (`lib/documents/generate-menu-pdf.ts:62-233`, `lib/commerce/event-bridge-actions.ts:88-112`).
 
 ### 2. What exactly changes?
 
@@ -538,6 +552,9 @@ Behavior rules:
 - Dish indexing on lock currently creates or updates canonical dish records from menu rows (`lib/menus/dish-index-bridge.ts:12-176`). That bridge must respect new source metadata or it will double-count canonical dishes.
 - Menu context sidebar and intelligence helpers assume menus become meaningful after event/client linkage (`components/culinary/menu-context-sidebar.tsx:265`, `lib/menus/menu-intelligence-actions.ts:1000-1133`). New global notes must not break those assumptions.
 - Client preference flow already writes to `menu_preferences` and notifies the chef (`lib/menus/preference-actions.ts:40-107`, `components/events/menu-library-picker.tsx:118-215`). This spec must not replace that table.
+- `cloneMenu()` and `duplicateMenu()` already deep-copy menu rows (`lib/menus/actions.ts:1293-1430`, `components/menus/clone-menu-button.tsx:6-24`). If builders drop or rewrite source metadata there, cloned menus will silently change from reference to copy or vice versa.
+- Menu history and repeat detection still infer meaning from menu-owned dishes and `dishes_served` snapshots (`lib/menus/menu-history-actions.ts:114-418`, `lib/menus/repeat-detection.ts:47-239`, `database/migrations/20260401000029_menu_history.sql:5-21`). The compatibility-row contract must stay intact.
+- Approval/revision snapshots currently serialize dishes and linked recipe context from menu rows (`lib/menus/approval-portal.ts:31-123`, `lib/menus/revisions.ts:56-68`, `lib/communication/menu-revision-actions.ts:84-117`). Builders can accidentally make reference/copy behavior invisible there unless snapshot enrichment is explicit.
 
 ### 8. What is the end-to-end data flow?
 
@@ -591,6 +608,7 @@ Behavior rules:
 - Do not replace `menu_preferences`, `menu_approval_requests`, or approval RPCs (`database/migrations/20260330000013_menu_preferences_and_showcase.sql:14-35`, `lib/events/menu-approval-actions.ts:40-277`).
 - Do not delete or repurpose `client_notes` or `inquiry_notes`.
 - Do not rebuild the menu editor around a new data model in this spec.
+- Do not rebuild PDF/doc export, repeat detection, or service-history readers around canonical dishes. Their compatibility with menu-owned rows is a deliberate part of this design (`lib/documents/generate-menu-pdf.ts:62-233`, `lib/menus/menu-history-actions.ts:114-418`, `lib/menus/repeat-detection.ts:47-239`).
 
 ### 13. Is this the simplest complete version?
 
@@ -622,11 +640,14 @@ Anything smaller fails one of the required truths:
 - They would leave `locked -> archived -> draft` intact and claim finalization is fixed.
 - They would add a brand new notes app instead of inserting note capture into the existing menu surfaces.
 - They would skip the `createMenu()` context bug because it looks unrelated, even though it already breaks attach-later context.
+- They would forget that duplicate/clone/template flows must preserve source metadata and would silently strip `reference` vs `copy` semantics when cloning menus.
+- They would move history, revision, or export readers onto canonical dishes and accidentally break the compatibility contract that keeps current downstream surfaces working.
 
 ### Is anything assumed but not verified?
 
 - Verified: current menu creation, dish index, template, showcase, approval, menu preferences, note actions, AI intake, and menu assembly surfaces were all inspected directly in code and migrations cited above.
-- Unverified: whether there are low-traffic internal admin screens outside the inspected menu/note/inquiry/AI surfaces that should also expose workflow notes. I did not find them in the inspected paths, so this is flagged rather than assumed solved.
+- Verified: menu history, repeat detection, clone/duplicate flows, revision snapshots, PDF export, and commerce event-bridge surfaces were also inspected and accounted for in this spec.
+- Unverified: whether there are low-traffic internal admin or analytics screens outside the inspected menu/note/inquiry/AI/history/revision/export/commerce surfaces that should also expose workflow notes. I did not find them in the inspected paths, so this is flagged rather than assumed solved.
 
 ---
 

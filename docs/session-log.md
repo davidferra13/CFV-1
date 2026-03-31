@@ -82,3 +82,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/notes-dishes-menus-client-event-pipeline.md, docs/session-log.md
 - Build state on departure: unchanged (planner-only docs, no build run)
 - Notes: Spec marked ready with cited validation, developer-notes capture, explicit minimal fix plan, and builder pitfalls. Worktree already had unrelated dirty files on arrival.
+
+## 2026-03-31 ~18:28 EST
+
+- Agent: Planner
+- Task: Follow-up forgotten-surfaces pass for the notes -> dishes -> menus -> client/event spec
+- Status: started
+- Build state on arrival: unchanged (spec-only follow-up, no build run)
+- Files in focus: menu history, repeat detection, revision snapshots, clone flows, PDF/export, commerce event bridge
+- Notes: Tightening the existing spec only. Goal is to verify peripheral downstream surfaces and call out builder pitfalls without expanding scope.
+
+## 2026-03-31 ~18:37 EST
+
+- Agent: Planner
+- Task: Follow-up forgotten-surfaces pass for the notes -> dishes -> menus -> client/event spec
+- Status: completed
+- Files touched: docs/specs/notes-dishes-menus-client-event-pipeline.md, docs/session-log.md
+- Build state on departure: unchanged (planner-only docs, no build run)
+- Notes: Added explicit coverage for revision/history/export/clone/commerce compatibility and clarified what remains verified vs unverified. No product code changed.
