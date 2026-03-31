@@ -25,6 +25,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   campaigns: 'Campaigns',
   reports: 'Reports',
 
+  onboarding: 'Setup',
+
   // Sub-paths
   new: 'New',
   edit: 'Edit',
