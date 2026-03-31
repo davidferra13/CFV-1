@@ -138,17 +138,22 @@ async function findNearbyStores(
   radiusMiles: number,
   limit = 50
 ): Promise<NearbyStore[]> {
+  // Use a subquery to filter by distance (can't use HAVING without GROUP BY,
+  // and can't reference aliases in WHERE)
   const rows = (await db.execute(sql`
-    SELECT
-      s.id as store_id,
-      s.name,
-      s.zip,
-      c.slug as chain_slug,
-      ${haversineSQL(lat, lng)} as distance_miles
-    FROM openclaw.stores s
-    LEFT JOIN openclaw.chains c ON c.id = s.chain_id
-    WHERE s.lat IS NOT NULL AND s.lng IS NOT NULL
-    HAVING ${haversineSQL(lat, lng)} <= ${radiusMiles}
+    SELECT store_id, name, zip, chain_slug, distance_miles
+    FROM (
+      SELECT
+        s.id as store_id,
+        s.name,
+        s.zip,
+        c.slug as chain_slug,
+        ${haversineSQL(lat, lng)} as distance_miles
+      FROM openclaw.stores s
+      LEFT JOIN openclaw.chains c ON c.id = s.chain_id
+      WHERE s.lat IS NOT NULL AND s.lng IS NOT NULL
+    ) sub
+    WHERE distance_miles <= ${radiusMiles}
     ORDER BY distance_miles ASC
     LIMIT ${limit}
   `)) as unknown as NearbyStore[]

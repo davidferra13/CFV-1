@@ -98,8 +98,8 @@ Every response includes:
 ### New Files
 
 - `lib/pricing/universal-price-lookup.ts` - Universal price lookup with all 5 capabilities
-- `scripts/test-universal-price-lookup.mjs` - Standalone test runner for validation
-- `scripts/check-data-foundations.mjs` - Data quality diagnostic script
+- `scripts/test-universal-price-lookup.mjs` - Standalone test runner for validation (postgres.js direct)
+- `scripts/verify-ts-module.ts` - Verification that the real TS module works through Drizzle ORM
 
 ### Architecture
 
