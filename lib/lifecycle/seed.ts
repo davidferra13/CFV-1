@@ -2159,25 +2159,24 @@ export async function ensureTemplateSeeded(
     return { success: true, checkpointCount: ALL_CHECKPOINTS.length }
   }
 
-  // Seed all checkpoints with ON CONFLICT DO NOTHING for idempotency
-  for (const cp of ALL_CHECKPOINTS) {
-    await db.from('service_lifecycle_templates').upsert(
-      {
-        chef_id: chefId,
-        stage_number: cp.stage_number,
-        stage_name: cp.stage_name,
-        checkpoint_key: cp.checkpoint_key,
-        checkpoint_label: cp.checkpoint_label,
-        sort_order: cp.sort_order,
-        is_active: true,
-        is_required: cp.is_required,
-        auto_detect_rule: cp.auto_detect_rule,
-        client_visible: cp.client_visible,
-        client_label: cp.client_label,
-      },
-      { onConflict: 'chef_id,checkpoint_key' }
-    )
-  }
+  // Seed all checkpoints in a single batch INSERT for performance (~150 rows, one round-trip)
+  const rows = ALL_CHECKPOINTS.map((cp) => ({
+    chef_id: chefId,
+    stage_number: cp.stage_number,
+    stage_name: cp.stage_name,
+    checkpoint_key: cp.checkpoint_key,
+    checkpoint_label: cp.checkpoint_label,
+    sort_order: cp.sort_order,
+    is_active: true,
+    is_required: cp.is_required,
+    auto_detect_rule: cp.auto_detect_rule,
+    client_visible: cp.client_visible,
+    client_label: cp.client_label,
+  }))
+
+  await db.from('service_lifecycle_templates').upsert(rows, {
+    onConflict: 'chef_id,checkpoint_key',
+  })
 
   return { success: true, checkpointCount: ALL_CHECKPOINTS.length }
 }
