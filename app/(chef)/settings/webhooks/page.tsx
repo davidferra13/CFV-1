@@ -3,7 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { listWebhookSubscriptions } from '@/lib/webhooks/actions'
 import { WebhookSettings } from '@/components/settings/webhook-settings'
 
-export const metadata: Metadata = { title: 'Webhooks - ChefFlow' }
+export const metadata: Metadata = { title: 'Webhooks' }
 
 export default async function WebhooksPage() {
   await requireChef()

@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { InsuranceList } from '@/components/protection/insurance-list'
 
-export const metadata: Metadata = { title: 'Insurance Policies | ChefFlow' }
+export const metadata: Metadata = { title: 'Insurance Policies' }
 
 export default async function InsurancePoliciesPage() {
   const chef = await requireChef()

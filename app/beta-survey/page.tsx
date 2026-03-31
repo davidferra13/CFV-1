@@ -9,7 +9,7 @@ import { getActiveSurvey, getMyBetaSurveyStatus } from '@/lib/beta-survey/action
 import { BetaSurveyForm } from '@/components/beta-survey/beta-survey-form'
 
 export const metadata: Metadata = {
-  title: 'Beta Survey - ChefFlow',
+  title: 'Beta Survey',
 }
 
 export default async function BetaSurveyPage() {

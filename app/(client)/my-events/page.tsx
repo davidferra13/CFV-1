@@ -34,7 +34,7 @@ import {
 } from '@/components/client-dashboard/collapse-controls'
 import { ClientCollapsibleWidget } from '@/components/client-dashboard/collapsible-widget'
 
-export const metadata: Metadata = { title: 'My Events - ChefFlow' }
+export const metadata: Metadata = { title: 'My Events' }
 
 type EventStatus = Database['public']['Enums']['event_status']
 

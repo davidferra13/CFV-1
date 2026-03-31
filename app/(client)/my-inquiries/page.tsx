@@ -11,7 +11,7 @@ import { format } from 'date-fns'
 import { ChevronRight, ClipboardList } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
-  title: 'My Inquiries - ChefFlow',
+  title: 'My Inquiries',
   description: 'Track the status of your catering inquiries.',
 }
 

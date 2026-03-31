@@ -5,8 +5,8 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 export const metadata: Metadata = {
   title: {
-    template: '%s - ChefFlow',
-    default: 'Authentication - ChefFlow',
+    template: '%s',
+    default: 'Authentication',
   },
 }
 

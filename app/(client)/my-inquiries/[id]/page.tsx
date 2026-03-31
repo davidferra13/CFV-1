@@ -17,7 +17,7 @@ import { buildJourneySteps } from '@/lib/events/journey-steps'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = {
-  title: 'Inquiry Details - ChefFlow',
+  title: 'Inquiry Details',
 }
 
 function getBudgetRangeLabel(rawValue: unknown): string | null {

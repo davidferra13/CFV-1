@@ -9,7 +9,7 @@ import { createServerClient } from '@/lib/db/server'
 import { PrintableDocument } from '@/components/print/printable-document'
 import { getDocumentContext } from '@/lib/print/actions'
 
-export const metadata: Metadata = { title: 'Print Clipboard | ChefFlow' }
+export const metadata: Metadata = { title: 'Print Clipboard' }
 
 export default async function PrintClipboardPage({
   params,

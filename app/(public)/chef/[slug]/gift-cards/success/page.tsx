@@ -6,7 +6,7 @@ import { getGiftCardPurchaseBySession } from '@/lib/loyalty/gift-card-purchase-a
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Gift Card Sent | ChefFlow' }
+export const metadata: Metadata = { title: 'Gift Card Sent' }
 
 export default async function GiftCardSuccessPage({
   params,

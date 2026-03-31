@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getPortfolio } from '@/lib/portfolio/actions'
 import { GridEditor } from '@/components/portfolio/grid-editor'
 
-export const metadata: Metadata = { title: 'Portfolio - ChefFlow' }
+export const metadata: Metadata = { title: 'Portfolio' }
 
 export default async function PortfolioPage() {
   const user = await requireChef()

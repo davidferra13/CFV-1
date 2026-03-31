@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
-  title: 'My Bookings - ChefFlow',
+  title: 'My Bookings',
   description: 'Your events, quotes, and inquiries in one place.',
 }
 

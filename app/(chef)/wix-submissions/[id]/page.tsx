@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getWixSubmission, retryWixSubmission } from '@/lib/wix/submission-actions'
 
-export const metadata: Metadata = { title: 'Wix Submission - ChefFlow' }
+export const metadata: Metadata = { title: 'Wix Submission' }
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-900 text-amber-800',

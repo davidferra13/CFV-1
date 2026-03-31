@@ -12,7 +12,7 @@ import { getNotificationTierMap } from '@/lib/notifications/tier-actions'
 import { NotificationSettings } from '@/components/notifications/notification-settings'
 import { NotificationTierSettings } from '@/components/settings/notification-tier-settings'
 
-export const metadata: Metadata = { title: 'Notification Settings - ChefFlow' }
+export const metadata: Metadata = { title: 'Notification Settings' }
 
 export default async function NotificationSettingsPage() {
   await requireChef()

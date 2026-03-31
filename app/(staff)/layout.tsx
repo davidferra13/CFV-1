@@ -12,8 +12,8 @@ import { StaffTourWrapper } from '@/components/onboarding/staff-tour-wrapper'
 
 export const metadata = {
   title: {
-    template: '%s - Staff Portal - ChefFlow',
-    default: 'Staff Portal - ChefFlow',
+    template: '%s - Staff Portal',
+    default: 'Staff Portal',
   },
 }
 

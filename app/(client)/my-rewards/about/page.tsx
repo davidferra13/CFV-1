@@ -8,7 +8,7 @@ import { requireClient } from '@/lib/auth/get-user'
 import { LoyaltyAboutContent } from './loyalty-about-content'
 
 export const metadata: Metadata = {
-  title: 'About Your Rewards - ChefFlow',
+  title: 'About Your Rewards',
 }
 
 export default async function LoyaltyAboutPage() {

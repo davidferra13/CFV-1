@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Content Calendar | ChefFlow' }
+export const metadata: Metadata = { title: 'Content Calendar' }
 
 export default async function SocialCalendarPage({
   searchParams,

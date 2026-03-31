@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Partner Sign Up | ChefFlow',
+  title: 'Partner Sign Up',
   description:
     'Join ChefFlow as a venue partner. Connect with vetted private chefs and offer your space for private dining events.',
   alternates: {

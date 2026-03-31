@@ -13,7 +13,7 @@ import { Alert } from '@/components/ui/alert'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { Bell, CalendarPlus, Users, Utensils, Share2 } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'My Dinner Circle - ChefFlow' }
+export const metadata: Metadata = { title: 'My Dinner Circle' }
 
 export default async function MyHubPage() {
   await requireClient()

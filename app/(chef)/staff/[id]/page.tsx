@@ -12,7 +12,7 @@ import { StaffMemberForm } from '@/components/staff/staff-member-form'
 import { CreateStaffLoginForm } from '@/components/staff/create-staff-login-form'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 
-export const metadata: Metadata = { title: 'Staff Profile | ChefFlow' }
+export const metadata: Metadata = { title: 'Staff Profile' }
 
 const ROLE_LABELS: Record<string, string> = {
   sous_chef: 'Sous Chef',

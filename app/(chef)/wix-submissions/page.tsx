@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getWixSubmissions } from '@/lib/wix/actions'
 
-export const metadata: Metadata = { title: 'Wix Submissions - ChefFlow' }
+export const metadata: Metadata = { title: 'Wix Submissions' }
 
 const STATUS_STYLES: Record<string, string> = {
   pending: 'bg-amber-900 text-amber-300',

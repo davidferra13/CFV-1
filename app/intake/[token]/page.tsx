@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const metadata: Metadata = {
-  title: 'Client Intake Form - ChefFlow',
+  title: 'Client Intake Form',
   robots: { index: false, follow: false },
 }
 

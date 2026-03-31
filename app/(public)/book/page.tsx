@@ -4,11 +4,11 @@ import { BookDinnerForm } from './_components/book-dinner-form'
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Book a Private Chef - ChefFlow',
+  title: 'Book a Private Chef',
   description:
     'Tell us about your event and we will connect you with vetted private chefs in your area. No middleman, no hidden fees.',
   openGraph: {
-    title: 'Book a Private Chef | ChefFlow',
+    title: 'Book a Private Chef',
     description: 'Describe your event and get matched with vetted private chefs near you.',
     url: `${BASE_URL}/book`,
     type: 'website',

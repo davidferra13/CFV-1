@@ -6,7 +6,7 @@ import { getClientSpendingSummary } from '@/lib/clients/spending-actions'
 import { SpendingDashboardClient } from '@/components/clients/spending-dashboard-client'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 
-export const metadata: Metadata = { title: 'My Spending - ChefFlow' }
+export const metadata: Metadata = { title: 'My Spending' }
 
 export default async function MySpendingPage() {
   await requireClient()

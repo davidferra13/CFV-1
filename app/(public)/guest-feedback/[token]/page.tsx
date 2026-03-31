@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { getGuestFeedbackByToken } from '@/lib/sharing/actions'
 import { GuestFeedbackForm } from './guest-feedback-form'
 
-export const metadata = { title: 'Guest Feedback - ChefFlow' }
+export const metadata = { title: 'Guest Feedback' }
 
 export default async function GuestFeedbackPage({ params }: { params: { token: string } }) {
   const feedback = await getGuestFeedbackByToken(params.token)

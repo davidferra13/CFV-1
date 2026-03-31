@@ -10,7 +10,7 @@ import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ArrowLeft, ChefHat } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Share a Chef - ChefFlow' }
+export const metadata: Metadata = { title: 'Share a Chef' }
 
 export default async function ShareChefPage() {
   await requireClient()

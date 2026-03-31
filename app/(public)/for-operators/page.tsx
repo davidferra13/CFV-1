@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description:
     'The operating system for private chefs. Manage clients, events, menus, finances, and your entire business from one place.',
   openGraph: {
-    title: 'For Operators | ChefFlow',
+    title: 'For Operators',
     description:
       'The operating system for private chefs. Manage clients, events, menus, finances, and your entire business from one place.',
     url: `${BASE_URL}/for-operators`,

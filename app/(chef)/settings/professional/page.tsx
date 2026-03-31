@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { ProfessionalDevelopmentClient } from './professional-development-client'
 
-export const metadata: Metadata = { title: 'Professional Development | ChefFlow' }
+export const metadata: Metadata = { title: 'Professional Development' }
 
 export default async function ProfessionalDevelopmentPage() {
   await requireChef()

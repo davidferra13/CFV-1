@@ -8,7 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export const metadata: Metadata = { title: 'Social Templates | ChefFlow' }
+export const metadata: Metadata = { title: 'Social Templates' }
 
 export default async function SocialTemplatesPage() {
   const chef = await requireChef()

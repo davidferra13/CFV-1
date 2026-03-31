@@ -12,7 +12,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Stations | ChefFlow' }
+export const metadata: Metadata = { title: 'Stations' }
 
 export default async function StationsPage() {
   await requireChef()

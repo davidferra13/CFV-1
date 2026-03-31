@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Daily Ops | ChefFlow' }
+export const metadata: Metadata = { title: 'Daily Ops' }
 
 // ============================================
 // HELPERS

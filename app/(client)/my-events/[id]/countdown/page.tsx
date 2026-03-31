@@ -7,7 +7,7 @@ import { requireClient } from '@/lib/auth/get-user'
 import { getEventCountdown } from '@/lib/events/countdown-actions'
 import { EventCountdown } from '@/components/clients/event-countdown'
 
-export const metadata: Metadata = { title: 'Event Countdown - ChefFlow' }
+export const metadata: Metadata = { title: 'Event Countdown' }
 
 export default async function CountdownPage({ params }: { params: { id: string } }) {
   await requireClient()

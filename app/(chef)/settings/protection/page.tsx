@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Shield, FileCheck, Award, FileText, Layers, AlertTriangle } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Protection Hub | ChefFlow' }
+export const metadata: Metadata = { title: 'Protection Hub' }
 
 export default async function ProtectionHubPage() {
   const chef = await requireChef()

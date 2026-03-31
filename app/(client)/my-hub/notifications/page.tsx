@@ -7,7 +7,7 @@ import { getHubUnreadCounts } from '@/lib/hub/notification-actions'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { NotificationsPanel } from './notifications-panel'
 
-export const metadata: Metadata = { title: 'Dinner Circle Notifications - ChefFlow' }
+export const metadata: Metadata = { title: 'Dinner Circle Notifications' }
 
 export default async function MyHubNotificationsPage() {
   await requireClient()

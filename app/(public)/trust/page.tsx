@@ -46,7 +46,7 @@ const TRUST_SECTIONS = [
 ]
 
 export const metadata: Metadata = {
-  title: 'Trust Center | ChefFlow',
+  title: 'Trust Center',
   description:
     'Security baseline, data handling practices, directory standards, and support commitments for ChefFlow.',
   openGraph: {

@@ -7,7 +7,7 @@ import { StaffEventView } from '@/components/staff/staff-event-view'
 import { Card, CardContent } from '@/components/ui/card'
 
 export const metadata: Metadata = {
-  title: 'Event Briefing - ChefFlow',
+  title: 'Event Briefing',
   description: 'Staff event briefing portal.',
   robots: { index: false, follow: false, nocache: true },
 }

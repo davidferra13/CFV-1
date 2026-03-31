@@ -12,7 +12,7 @@ import { generateRecurringTasks } from '@/lib/tasks/recurring-engine'
 import { Button } from '@/components/ui/button'
 import { TaskPageClient } from '@/components/tasks/task-page-client'
 
-export const metadata: Metadata = { title: 'Tasks - ChefFlow' }
+export const metadata: Metadata = { title: 'Tasks' }
 
 export default async function TasksPage({ searchParams }: { searchParams: { date?: string } }) {
   const user = await requireChef()

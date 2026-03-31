@@ -11,7 +11,7 @@ import { VendorPriceInsights } from '@/components/vendors/vendor-price-insights'
 import { getVendorPriceInsights } from '@/lib/vendors/price-insights-actions'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'Price Comparison - ChefFlow' }
+export const metadata: Metadata = { title: 'Price Comparison' }
 
 export default async function PriceComparisonPage() {
   await requireChef()

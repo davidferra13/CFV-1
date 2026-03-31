@@ -4,7 +4,7 @@ import { getAvailableOpenClawStores } from '@/lib/openclaw/store-preference-acti
 import { getPreferredStores } from '@/lib/grocery/store-shopping-actions'
 import { StorePreferencesClient } from './store-preferences-client'
 
-export const metadata: Metadata = { title: 'Store Preferences - ChefFlow' }
+export const metadata: Metadata = { title: 'Store Preferences' }
 
 export default async function StorePreferencesPage() {
   await requireChef()

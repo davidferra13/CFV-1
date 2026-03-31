@@ -6,7 +6,7 @@ import { YelpSettings } from '@/components/settings/yelp-settings'
 import { requireChef } from '@/lib/auth/get-user'
 import { UpgradeGate } from '@/components/billing/upgrade-gate'
 
-export const metadata: Metadata = { title: 'Yelp Reviews - ChefFlow' }
+export const metadata: Metadata = { title: 'Yelp Reviews' }
 
 async function YelpSettingsContent() {
   const [connection, reviewCount] = await Promise.all([getYelpConnection(), getYelpReviewCount()])

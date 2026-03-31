@@ -4,7 +4,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Book a Private Chef - ChefFlow',
+  title: 'Book a Private Chef',
   robots: { index: false, follow: false }, // Don't index embed pages
 }
 

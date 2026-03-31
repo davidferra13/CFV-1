@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = { title: 'Staff Roster | ChefFlow' }
+export const metadata: Metadata = { title: 'Staff Roster' }
 
 const ROLE_LABELS: Record<string, string> = {
   sous_chef: 'Sous Chef',

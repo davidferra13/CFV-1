@@ -3,7 +3,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'My Quotes - ChefFlow' }
+export const metadata: Metadata = { title: 'My Quotes' }
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientQuotes } from '@/lib/quotes/client-actions'
 import { Card } from '@/components/ui/card'

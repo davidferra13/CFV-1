@@ -9,7 +9,7 @@ import { getOpsLog } from '@/lib/stations/ops-log-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = { title: 'Operations Log | ChefFlow' }
+export const metadata: Metadata = { title: 'Operations Log' }
 
 const ACTION_LABELS: Record<string, string> = {
   check_in: 'Check In',

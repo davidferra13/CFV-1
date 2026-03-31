@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getPrintPreferences } from '@/lib/print/actions'
 import { PrintSettingsForm } from '@/components/settings/print-settings-form'
 
-export const metadata: Metadata = { title: 'Print & Documents | ChefFlow' }
+export const metadata: Metadata = { title: 'Print & Documents' }
 
 export default async function PrintSettingsPage() {
   await requireChef()

@@ -52,7 +52,7 @@ function getSearchParamValue(value?: string | string[]) {
 }
 
 export const metadata: Metadata = {
-  title: 'Request Early Access | ChefFlow',
+  title: 'Request Early Access',
   description:
     'Apply for early access to ChefFlow, the operating system for private chefs and chef-led teams. Limited spots available.',
   openGraph: {

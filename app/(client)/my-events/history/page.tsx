@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Past Events History - ChefFlow' }
+export const metadata: Metadata = { title: 'Past Events History' }
 
 export default async function MyEventsHistoryPage() {
   await requireClient()

@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { ContinuityPlanForm } from '@/components/protection/continuity-plan-form'
 
-export const metadata: Metadata = { title: 'Business Continuity | ChefFlow' }
+export const metadata: Metadata = { title: 'Business Continuity' }
 
 export default async function BusinessContinuityPage() {
   const chef = await requireChef()

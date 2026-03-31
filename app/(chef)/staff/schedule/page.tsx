@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { StaffScheduler } from '@/components/staffing/StaffScheduler'
 import { getDefaultStaffingWindow, getStaffSchedulerData } from '@/lib/staffing/actions'
 
-export const metadata: Metadata = { title: 'Staff Schedule - ChefFlow' }
+export const metadata: Metadata = { title: 'Staff Schedule' }
 
 export default async function StaffSchedulePage() {
   await requireChef()

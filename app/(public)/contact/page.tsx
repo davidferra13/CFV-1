@@ -7,10 +7,10 @@ export const revalidate = 60
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Contact Us | ChefFlow',
+  title: 'Contact Us',
   description: 'Have questions about ChefFlow? Get in touch with our team.',
   openGraph: {
-    title: 'Contact Us | ChefFlow',
+    title: 'Contact Us',
     description: 'Have questions about ChefFlow? Get in touch with our team.',
     url: `${BASE_URL}/contact`,
     siteName: 'ChefFlow',

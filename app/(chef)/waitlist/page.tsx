@@ -14,7 +14,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { format } from 'date-fns'
 import { WaitlistAddForm } from './waitlist-add-form'
 
-export const metadata: Metadata = { title: 'Waitlist | ChefFlow' }
+export const metadata: Metadata = { title: 'Waitlist' }
 
 const STATUS_BADGE: Record<
   string,

@@ -8,7 +8,7 @@ import { listStaffMembers } from '@/lib/staff/actions'
 import { getStaffAvailabilityGrid } from '@/lib/staff/availability-actions'
 import { AvailabilityGrid } from '@/components/staff/availability-grid'
 
-export const metadata: Metadata = { title: 'Staff Availability - ChefFlow' }
+export const metadata: Metadata = { title: 'Staff Availability' }
 
 function addDays(dateStr: string, days: number): string {
   const d = new Date(dateStr + 'T00:00:00')

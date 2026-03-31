@@ -11,7 +11,7 @@ import { ClientWorksheetForm } from './worksheet-form'
 type Props = { params: { token: string } }
 
 export const metadata: Metadata = {
-  title: 'Pre-Dinner Details - ChefFlow',
+  title: 'Pre-Dinner Details',
   description: 'Share your preferences and dietary needs with your chef before your dinner.',
 }
 

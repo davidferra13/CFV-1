@@ -8,7 +8,7 @@ import { CreateEventForm } from '@/components/hub/create-event-form'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Plan a Dinner - ChefFlow' }
+export const metadata: Metadata = { title: 'Plan a Dinner' }
 
 export default async function CreateDinnerPage() {
   await requireClient()

@@ -4,7 +4,7 @@ import Link from 'next/link'
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | ChefFlow',
+  title: 'Privacy Policy',
   description: 'Learn how ChefFlow collects, uses, and protects your personal information.',
   alternates: {
     canonical: `${BASE_URL}/privacy`,

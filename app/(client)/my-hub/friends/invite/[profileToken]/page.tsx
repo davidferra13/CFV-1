@@ -10,7 +10,7 @@ interface Props {
   params: Promise<{ profileToken: string }>
 }
 
-export const metadata: Metadata = { title: 'Join Dinner Circle - ChefFlow' }
+export const metadata: Metadata = { title: 'Join Dinner Circle' }
 
 export default async function DinnerCircleInvitePage({ params }: Props) {
   await requireClient()

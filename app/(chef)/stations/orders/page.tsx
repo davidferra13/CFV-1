@@ -8,7 +8,7 @@ import { OrderHandoff } from '@/components/stations/order-handoff'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Order Sheet | ChefFlow' }
+export const metadata: Metadata = { title: 'Order Sheet' }
 
 export default async function OrdersPage({
   searchParams,

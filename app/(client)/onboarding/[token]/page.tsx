@@ -1,7 +1,7 @@
 import { getOnboardingData } from '@/lib/clients/onboarding'
 import { OnboardingForm } from '@/components/clients/onboarding-form'
 
-export const metadata = { title: 'Welcome | ChefFlow' }
+export const metadata = { title: 'Welcome' }
 
 export default async function OnboardingPage({ params }: { params: { token: string } }) {
   const data = await getOnboardingData(params.token)

@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     'catering chef',
   ],
   openGraph: {
-    title: 'Hire a Private Chef | ChefFlow',
+    title: 'Hire a Private Chef',
     description: 'Browse vetted chefs by cuisine, service type, and availability.',
     url: `${APP_URL}/chefs`,
     type: 'website',

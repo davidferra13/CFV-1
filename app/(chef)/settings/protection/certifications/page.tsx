@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { CertificationList } from '@/components/protection/certification-list'
 
-export const metadata: Metadata = { title: 'Certifications | ChefFlow' }
+export const metadata: Metadata = { title: 'Certifications' }
 
 export default async function ProtectionCertificationsPage() {
   const chef = await requireChef()

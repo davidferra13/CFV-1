@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { Button } from '@/components/ui/button'
 
-export const metadata: Metadata = { title: 'VA Tasks | ChefFlow' }
+export const metadata: Metadata = { title: 'VA Tasks' }
 
 export default async function VATasksPage() {
   const chef = await requireChef()

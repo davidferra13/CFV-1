@@ -9,7 +9,7 @@ import { getWasteLog, getWasteSummary } from '@/lib/stations/waste-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-export const metadata: Metadata = { title: 'Waste Log | ChefFlow' }
+export const metadata: Metadata = { title: 'Waste Log' }
 
 const REASON_LABELS: Record<string, string> = {
   expired: 'Expired',

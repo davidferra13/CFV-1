@@ -3,7 +3,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { TAXONOMY_CATEGORIES } from '@/lib/taxonomy/types'
 import TaxonomySettings from '@/components/settings/taxonomy-settings'
 
-export const metadata: Metadata = { title: 'Taxonomy & Categories - ChefFlow' }
+export const metadata: Metadata = { title: 'Taxonomy & Categories' }
 
 export default async function TaxonomySettingsPage() {
   await requireChef()

@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { TimeTracker } from '@/components/staffing/TimeTracker'
 import { getDefaultStaffingWindow, getTimeTrackerData } from '@/lib/staffing/actions'
 
-export const metadata: Metadata = { title: 'Clock In/Out - ChefFlow' }
+export const metadata: Metadata = { title: 'Clock In/Out' }
 
 export default async function StaffClockPage() {
   await requireChef()

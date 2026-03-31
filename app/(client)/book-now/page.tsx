@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/db/server'
 import { PublicInquiryForm } from '@/components/public/public-inquiry-form'
 
 export const metadata: Metadata = {
-  title: 'Book Now - ChefFlow',
+  title: 'Book Now',
 }
 
 export default async function BookNowPage() {

@@ -14,7 +14,7 @@ import { getAiPreferences } from '@/lib/ai/privacy-actions'
 import { RemyControlClient } from './remy-control-client'
 import { isFounderEmail } from '@/lib/platform/owner-account'
 
-export const metadata: Metadata = { title: 'Remy Control Center - ChefFlow' }
+export const metadata: Metadata = { title: 'Remy Control Center' }
 
 export default async function RemySettingsPage() {
   const admin = await requireAdmin()

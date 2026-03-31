@@ -8,7 +8,7 @@ import { ProfileForm } from './profile-form'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Network Profile - ChefFlow' }
+export const metadata: Metadata = { title: 'Network Profile' }
 
 export default async function ProfileSettingsPage() {
   await requireChef()

@@ -4,7 +4,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { getMobileClientEventsData } from '@/lib/mobile/mobile-service'
 import { MobileNavigation } from '@/components/mobile/mobile-navigation'
 
-export const metadata: Metadata = { title: 'Client Mobile Events - ChefFlow' }
+export const metadata: Metadata = { title: 'Client Mobile Events' }
 
 interface MobileClientEventsPageProps {
   params: {

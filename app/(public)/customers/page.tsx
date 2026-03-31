@@ -7,7 +7,7 @@ import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Customer Stories | ChefFlow',
+  title: 'Customer Stories',
   description:
     'Customer stories are not yet published. ChefFlow only publishes verified and approved customer testimonials.',
   robots: {

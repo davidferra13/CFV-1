@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { getSurveyByToken } from '@/lib/surveys/actions'
 import { SurveyForm } from './survey-form'
 
-export const metadata = { title: 'Event Feedback | ChefFlow' }
+export const metadata = { title: 'Event Feedback' }
 
 export default async function SurveyPage({ params }: { params: { token: string } }) {
   const survey = await getSurveyByToken(params.token)

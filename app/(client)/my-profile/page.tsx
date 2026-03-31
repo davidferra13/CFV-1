@@ -15,7 +15,7 @@ import type { Metadata } from 'next'
 import { MealCollaborationPanel } from './meal-collaboration-panel'
 
 export const metadata: Metadata = {
-  title: 'My Profile - ChefFlow',
+  title: 'My Profile',
 }
 
 export default async function MyProfilePage() {

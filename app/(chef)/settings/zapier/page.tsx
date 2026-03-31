@@ -6,7 +6,7 @@ import { ZapierSettings } from '@/components/settings/zapier-settings'
 import { requireChef } from '@/lib/auth/get-user'
 import { UpgradeGate } from '@/components/billing/upgrade-gate'
 
-export const metadata: Metadata = { title: 'Zapier & Webhooks - ChefFlow' }
+export const metadata: Metadata = { title: 'Zapier & Webhooks' }
 
 async function ZapierSettingsContent() {
   const subscriptions = await listWebhookSubscriptions()

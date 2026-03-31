@@ -6,7 +6,7 @@ import { getPaymentMethodSettings } from '@/lib/integrations/payments/payment-me
 import { PaymentMethodsSettings } from '@/components/settings/payment-methods-settings'
 import { UpgradeGate } from '@/components/billing/upgrade-gate'
 
-export const metadata: Metadata = { title: 'Payment Methods - ChefFlow' }
+export const metadata: Metadata = { title: 'Payment Methods' }
 
 async function PaymentMethodsContent() {
   const settings = await getPaymentMethodSettings()

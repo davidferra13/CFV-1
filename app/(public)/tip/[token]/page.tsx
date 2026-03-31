@@ -7,7 +7,7 @@ import { checkRateLimit } from '@/lib/rateLimit'
 import { getTipRequestByToken } from '@/lib/finance/tip-actions'
 import { TipForm } from './tip-form'
 
-export const metadata = { title: 'Leave a Tip - ChefFlow' }
+export const metadata = { title: 'Leave a Tip' }
 
 export default async function TipPage({ params }: { params: { token: string } }) {
   const headersList = await headers()

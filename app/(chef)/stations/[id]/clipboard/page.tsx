@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-export const metadata: Metadata = { title: 'Daily Clipboard | ChefFlow' }
+export const metadata: Metadata = { title: 'Daily Clipboard' }
 
 export default async function ClipboardPage({
   params,

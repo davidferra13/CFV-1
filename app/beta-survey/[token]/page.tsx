@@ -6,7 +6,7 @@ import { getSurveyByInviteToken } from '@/lib/beta-survey/actions'
 import { BetaSurveyForm } from '@/components/beta-survey/beta-survey-form'
 
 export const metadata: Metadata = {
-  title: 'Beta Survey - ChefFlow',
+  title: 'Beta Survey',
 }
 
 export default async function PublicBetaSurveyPage({ params }: { params: { token: string } }) {

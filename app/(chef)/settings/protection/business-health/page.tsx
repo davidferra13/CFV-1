@@ -6,7 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { BusinessHealthChecklist } from '@/components/protection/business-health-checklist'
 
-export const metadata: Metadata = { title: 'Business Health | ChefFlow' }
+export const metadata: Metadata = { title: 'Business Health' }
 
 export default async function BusinessHealthPage() {
   const chef = await requireChef()

@@ -6,7 +6,7 @@ import { PricingConfigForm } from '@/components/settings/pricing-config-form'
 import { getChefArchetype } from '@/lib/archetypes/actions'
 import { GuidedPricingSetup } from '@/components/settings/guided-pricing-setup'
 
-export const metadata: Metadata = { title: 'Pricing Configuration - ChefFlow' }
+export const metadata: Metadata = { title: 'Pricing Configuration' }
 
 function hasAnyRatesConfigured(config: Record<string, unknown>): boolean {
   const rateKeys = [

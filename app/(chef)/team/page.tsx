@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { listTeamMembers } from '@/lib/team/team-management'
 import { TeamMembers } from '@/components/team/team-members'
 
-export const metadata: Metadata = { title: 'Team - ChefFlow' }
+export const metadata: Metadata = { title: 'Team' }
 
 export default async function TeamPage() {
   await requireChef()

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 
-export const metadata = { title: 'Share Your Feedback | ChefFlow' }
+export const metadata = { title: 'Share Your Feedback' }
 
 export default async function FeedbackPage({ params }: { params: { token: string } }) {
   const headersList = await headers()

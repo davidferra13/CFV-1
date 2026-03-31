@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { PayrollReport } from '@/components/staffing/PayrollReport'
 import { getPayrollReportForPeriod } from '@/lib/staffing/actions'
 
-export const metadata: Metadata = { title: 'Labor Dashboard - ChefFlow' }
+export const metadata: Metadata = { title: 'Labor Dashboard' }
 
 function getCurrentMonthWindow() {
   const now = new Date()

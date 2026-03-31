@@ -7,7 +7,7 @@ import { MobileTabForm } from '@/components/settings/mobile-tab-form'
 import { ArchetypePicker } from '@/components/settings/archetype-picker'
 import { getChefArchetype, hasCustomNavDefault } from '@/lib/archetypes/actions'
 
-export const metadata: Metadata = { title: 'Navigation Settings - ChefFlow' }
+export const metadata: Metadata = { title: 'Navigation Settings' }
 
 export default async function NavigationSettingsPage() {
   await requireChef()

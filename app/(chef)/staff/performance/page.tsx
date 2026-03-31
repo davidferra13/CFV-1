@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getStaffPerformanceBoard } from '@/lib/staff/performance-actions'
 import { PerformanceBoard } from '@/components/staff/performance-board'
 
-export const metadata: Metadata = { title: 'Staff Performance - ChefFlow' }
+export const metadata: Metadata = { title: 'Staff Performance' }
 
 export default async function StaffPerformancePage() {
   await requireChef()

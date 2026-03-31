@@ -22,7 +22,7 @@ import { LoyaltyLiveBalance } from '@/components/loyalty/loyalty-live-balance'
 import { LoyaltyCelebrationToast } from '@/components/loyalty/loyalty-celebration-toast'
 import { EarningQuestBoard } from '@/components/loyalty/earning-quest-board'
 
-export const metadata: Metadata = { title: 'My Rewards - ChefFlow' }
+export const metadata: Metadata = { title: 'My Rewards' }
 
 const TIER_ORDER = ['bronze', 'silver', 'gold', 'platinum'] as const
 

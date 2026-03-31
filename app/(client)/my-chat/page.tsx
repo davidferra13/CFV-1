@@ -5,7 +5,7 @@ import { requireClient } from '@/lib/auth/get-user'
 import { getConversationInbox } from '@/lib/chat/actions'
 import { ChatInbox } from '@/components/chat/chat-inbox'
 
-export const metadata: Metadata = { title: 'Messages - ChefFlow' }
+export const metadata: Metadata = { title: 'Messages' }
 
 export default async function ClientChatInboxPage() {
   const user = await requireClient()

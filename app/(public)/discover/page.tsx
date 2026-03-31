@@ -14,11 +14,11 @@ import { NominationForm } from './_components/nomination-form'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'Discover Restaurants, Chefs & Food Near You - ChefFlow',
+  title: 'Discover Restaurants, Chefs & Food Near You',
   description:
     'Browse restaurants, private chefs, caterers, food trucks, bakeries, and more. Find great food in your area and connect directly.',
   openGraph: {
-    title: 'Discover Food Near You | ChefFlow',
+    title: 'Discover Food Near You',
     description:
       'Browse restaurants, private chefs, caterers, food trucks, bakeries, and more near you.',
     url: `${APP_URL}/discover`,

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { SocialLayoutTabs } from '@/components/social/social-layout-tabs'
 
 export const metadata: Metadata = {
-  title: 'Content Planner - ChefFlow',
+  title: 'Content Planner',
 }
 
 export default function SocialLayout({ children }: { children: React.ReactNode }) {

@@ -18,7 +18,7 @@ import {
   removeComponent,
 } from '@/lib/stations/actions'
 
-export const metadata: Metadata = { title: 'Station Detail | ChefFlow' }
+export const metadata: Metadata = { title: 'Station Detail' }
 
 export default async function StationDetailPage({ params }: { params: { id: string } }) {
   await requireChef()

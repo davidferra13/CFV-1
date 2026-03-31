@@ -7,7 +7,7 @@ import { requireClient } from '@/lib/auth/get-user'
 import { PaymentPlanCalculator } from '@/components/clients/payment-plan-calculator'
 import { createServerClient } from '@/lib/db/server'
 
-export const metadata: Metadata = { title: 'Payment Plan - ChefFlow' }
+export const metadata: Metadata = { title: 'Payment Plan' }
 
 export default async function PaymentPlanPage({ params }: { params: { id: string } }) {
   await requireClient()

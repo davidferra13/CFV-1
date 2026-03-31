@@ -7,7 +7,7 @@ import { checkRateLimit } from '@/lib/rateLimit'
 import { getReviewRequestByToken } from '@/lib/testimonials/submit-testimonial'
 import { ReviewForm } from './review-form'
 
-export const metadata = { title: 'Leave a Review - ChefFlow' }
+export const metadata = { title: 'Leave a Review' }
 
 export default async function ReviewPage({ params }: { params: { token: string } }) {
   const headersList = await headers()

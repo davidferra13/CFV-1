@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { getMobileChefDashboardData } from '@/lib/mobile/mobile-service'
 import { MobileNavigation } from '@/components/mobile/mobile-navigation'
 
-export const metadata: Metadata = { title: 'Chef Mobile Dashboard - ChefFlow' }
+export const metadata: Metadata = { title: 'Chef Mobile Dashboard' }
 
 interface MobileChefDashboardPageProps {
   params: {

@@ -5,7 +5,7 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Settings - ChefFlow' }
+export const metadata: Metadata = { title: 'Settings' }
 import { getChefPreferences } from '@/lib/chef/actions'
 import { getGoogleConnection } from '@/lib/google/auth'
 import { getGmailSyncHistory } from '@/lib/gmail/actions'

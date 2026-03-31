@@ -9,7 +9,7 @@ import { FriendsList } from '@/components/hub/friends-list'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Dinner Circle - ChefFlow' }
+export const metadata: Metadata = { title: 'Dinner Circle' }
 
 export default async function MyFriendsPage() {
   await requireClient()

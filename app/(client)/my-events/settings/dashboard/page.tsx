@@ -4,7 +4,7 @@ import { requireClient } from '@/lib/auth/get-user'
 import { getClientDashboardPreferences } from '@/lib/client-dashboard/actions'
 import { ClientDashboardLayoutForm } from '@/components/settings/client-dashboard-layout-form'
 
-export const metadata: Metadata = { title: 'My Dashboard Layout - ChefFlow' }
+export const metadata: Metadata = { title: 'My Dashboard Layout' }
 
 export default async function ClientDashboardLayoutSettingsPage() {
   await requireClient()

@@ -22,7 +22,7 @@ import { VendorComparisonPanel } from '@/components/inventory/vendor-comparison-
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 import Link from 'next/link'
 
-export const metadata: Metadata = { title: 'Vendor Detail | ChefFlow' }
+export const metadata: Metadata = { title: 'Vendor Detail' }
 
 const DAY_LABELS: Record<string, string> = {
   monday: 'Monday',
