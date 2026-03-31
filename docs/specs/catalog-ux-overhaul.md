@@ -1,11 +1,11 @@
 # Spec: Chef Catalog UX Overhaul (Store-First Shopping Experience)
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** openclaw-scraper-enrichment.md (for images, stock status, locations)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-29
-> **Built by:** not started
+> **Built by:** Claude Opus 4.6 session 2026-04-01
 
 ---
 
