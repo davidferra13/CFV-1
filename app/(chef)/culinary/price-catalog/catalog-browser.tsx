@@ -10,41 +10,80 @@ import {
   type CatalogItemV2,
   type CatalogDetailResult,
   type CatalogDetailPrice,
+  type CatalogStore,
 } from '@/lib/openclaw/catalog-actions'
 import { getPriceHistory } from '@/lib/openclaw/price-intelligence-actions'
+import { getPreferredStores } from '@/lib/grocery/store-shopping-actions'
 import { StockBadge } from '@/components/pricing/stock-badge'
 import { FreshnessDot } from '@/components/pricing/freshness-dot'
+import { ImageWithFallback } from '@/components/pricing/image-with-fallback'
 import { PriceSparkline } from '@/components/pricing/price-sparkline'
 import { ProductCard } from '@/components/pricing/product-card'
 import { StoreAisleBrowser } from '@/components/pricing/store-aisle-browser'
 import { ShoppingCartSidebar } from '@/components/pricing/shopping-cart-sidebar'
 import { CartSummaryBar } from '@/components/pricing/cart-summary-bar'
-import {
-  getCarts,
-  getCartWithItems,
-  createCart,
-  addToCart,
-  type ShoppingCart,
-} from '@/lib/openclaw/cart-actions'
+import { CatalogStorePicker } from '@/components/pricing/catalog-store-picker'
+import { getCarts, getCartWithItems, createCart, addToCart } from '@/lib/openclaw/cart-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import {
   ChevronDown,
   ChevronUp,
   Search,
   X,
-  Filter,
-  Store,
-  ArrowUpDown,
   Plus,
   ExternalLink,
   Loader2,
   LayoutGrid,
   List,
   ShoppingBag,
+  ArrowLeft,
+  Check,
+  Tag,
+  Info,
 } from 'lucide-react'
 import type { PriceHistoryPoint } from '@/lib/openclaw/price-intelligence-actions'
 
 type ViewMode = 'table' | 'grid' | 'store-aisle'
+type CatalogView = 'store-picker' | 'browsing'
+
+// ---------------------------------------------------------------------------
+// Confidence display (chef-friendly)
+// ---------------------------------------------------------------------------
+
+function ConfidenceIcon({ confidence }: { confidence: string }) {
+  const c = confidence.toLowerCase()
+  let icon: React.ReactNode
+  let label: string
+  let colorClass: string
+
+  if (c === 'exact_receipt' || c === 'receipt') {
+    label = 'Verified price'
+    colorClass = 'text-emerald-400'
+    icon = <Check className="w-3 h-3" />
+  } else if (c === 'direct_scrape' || c === 'store_api') {
+    label = 'Current price'
+    colorClass = 'text-blue-400'
+    icon = <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />
+  } else if (c === 'instacart_adjusted' || c === 'instacart_catalog') {
+    label = 'Estimated price'
+    colorClass = 'text-amber-400'
+    icon = <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />
+  } else if (c === 'flyer_scrape' || c === 'flyer') {
+    label = 'Sale price'
+    colorClass = 'text-rose-400'
+    icon = <Tag className="w-3 h-3" />
+  } else {
+    label = 'Average price'
+    colorClass = 'text-stone-400'
+    icon = <span className="w-1.5 h-1.5 rounded-full bg-stone-400 inline-block" />
+  }
+
+  return (
+    <span className={`inline-flex items-center gap-1 ${colorClass}`} title={label}>
+      {icon}
+    </span>
+  )
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -61,27 +100,16 @@ function relativeTime(dateStr: string | null): string {
   return `${days}d ago`
 }
 
-function confidenceBadge(confidence: string) {
-  const c = confidence.toLowerCase()
-  let bg = 'bg-stone-700 text-stone-300'
-  if (c === 'exact_receipt' || c === 'direct_scrape') bg = 'bg-emerald-900/60 text-emerald-300'
-  else if (c === 'instacart_adjusted' || c === 'instacart_catalog')
-    bg = 'bg-blue-900/60 text-blue-300'
-  else if (c === 'flyer_scrape') bg = 'bg-amber-900/60 text-amber-300'
-  else if (c === 'government_baseline') bg = 'bg-stone-800 text-stone-400'
-
-  return (
-    <span className={`text-xs px-2 py-0.5 rounded-full capitalize whitespace-nowrap ${bg}`}>
-      {confidence.replace(/_/g, ' ')}
-    </span>
-  )
-}
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function CatalogBrowser() {
+  // View state
+  const [catalogView, setCatalogView] = useState<CatalogView>('store-picker')
+  const [activeStoreName, setActiveStoreName] = useState<string | null>(null)
+  const [activeStoreId, setActiveStoreId] = useState<string | null>(null)
+
   // Data
   const [items, setItems] = useState<CatalogItemV2[]>([])
   const [total, setTotal] = useState(0)
@@ -91,15 +119,13 @@ export function CatalogBrowser() {
   // Filters
   const [search, setSearch] = useState('')
   const [categories, setCategories] = useState<string[]>([])
-  const [stores, setStores] = useState<
-    { id: string; name: string; tier: string; status: string }[]
-  >([])
+  const [allStores, setAllStores] = useState<CatalogStore[]>([])
+  const [preferredStoreNames, setPreferredStoreNames] = useState<string[]>([])
   const [category, setCategory] = useState<string | null>(null)
   const [selectedStore, setSelectedStore] = useState<string | null>(null)
   const [inStockOnly, setInStockOnly] = useState(false)
-  const [tier, setTier] = useState<string | null>(null)
   const [sort, setSort] = useState<'name' | 'price' | 'stores' | 'updated'>('name')
-  const [pricedOnly, setPricedOnly] = useState(false)
+  const [onSaleOnly, setOnSaleOnly] = useState(false)
 
   // Expansion / detail
   const [expandedId, setExpandedId] = useState<string | null>(null)
@@ -112,9 +138,10 @@ export function CatalogBrowser() {
   const [error, setError] = useState<string | null>(null)
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set())
   const [addingId, setAddingId] = useState<string | null>(null)
+  const [storesLoading, setStoresLoading] = useState(true)
 
   // View mode
-  const [viewMode, setViewMode] = useState<ViewMode>('table')
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
 
   // Cart state
   const [cartOpen, setCartOpen] = useState(false)
@@ -124,28 +151,30 @@ export function CatalogBrowser() {
   const [cartItemIds, setCartItemIds] = useState<Set<string>>(new Set())
 
   // Dropdowns
-  const [showStoreDropdown, setShowStoreDropdown] = useState(false)
-  const [storeSearch, setStoreSearch] = useState('')
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [categorySearch, setCategorySearch] = useState('')
 
   // Refs
   const sentinelRef = useRef<HTMLDivElement>(null)
-  const storeDropdownRef = useRef<HTMLDivElement>(null)
   const categoryDropdownRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // ---------------------------------------------------------------------------
-  // Fetch categories and stores on mount
+  // Fetch categories, stores, and preferred stores on mount
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    getCatalogCategories()
-      .then(setCategories)
-      .catch(() => {})
-    getCatalogStores()
-      .then(setStores)
-      .catch(() => {})
+    setStoresLoading(true)
+    Promise.all([
+      getCatalogCategories().catch(() => []),
+      getCatalogStores().catch(() => []),
+      getPreferredStores().catch(() => []),
+    ]).then(([cats, stores, preferred]) => {
+      setCategories(cats.filter((c: string) => c && c !== 'uncategorized' && c !== 'suggested'))
+      setAllStores(stores)
+      setPreferredStoreNames(preferred.map((p: { store_name: string }) => p.store_name))
+      setStoresLoading(false)
+    })
   }, [])
 
   // ---------------------------------------------------------------------------
@@ -161,12 +190,10 @@ export function CatalogBrowser() {
         search: search || undefined,
         category: category || undefined,
         store: selectedStore || undefined,
-        pricedOnly: pricedOnly || undefined,
+        pricedOnly: true,
         inStockOnly: inStockOnly || undefined,
-        tier: tier || undefined,
         sort,
         limit: 50,
-        // For sorts other than 'name', skip cursor pagination
         after: sort === 'name' ? cursor : undefined,
       }
 
@@ -186,7 +213,9 @@ export function CatalogBrowser() {
           setError(null)
         } catch (err) {
           if (controller.signal.aborted) return
-          setError('Failed to load catalog. Check that the Pi is reachable.')
+          setError(
+            'Ingredient catalog is temporarily unavailable. Our pricing service is being updated.'
+          )
         }
       }
 
@@ -197,11 +226,12 @@ export function CatalogBrowser() {
         action().finally(() => setIsLoadingMore(false))
       }
     },
-    [search, category, selectedStore, pricedOnly, inStockOnly, tier, sort]
+    [search, category, selectedStore, inStockOnly, sort]
   )
 
   // Trigger search on filter changes (debounced for search input)
   useEffect(() => {
+    if (catalogView !== 'browsing') return
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setExpandedId(null)
@@ -212,7 +242,7 @@ export function CatalogBrowser() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [search, category, selectedStore, pricedOnly, inStockOnly, tier, sort, doSearch])
+  }, [search, category, selectedStore, inStockOnly, sort, catalogView, doSearch])
 
   // ---------------------------------------------------------------------------
   // Infinite scroll
@@ -239,9 +269,6 @@ export function CatalogBrowser() {
   // ---------------------------------------------------------------------------
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (storeDropdownRef.current && !storeDropdownRef.current.contains(e.target as Node)) {
-        setShowStoreDropdown(false)
-      }
       if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target as Node)) {
         setShowCategoryDropdown(false)
       }
@@ -290,13 +317,8 @@ export function CatalogBrowser() {
         priceCents: item.bestPriceCents ?? undefined,
         priceStore: item.bestPriceStore ?? undefined,
       })
-      if (result.success) {
+      if (result.success || result.error === 'Already in your library') {
         setAddedIds((prev) => new Set(prev).add(item.id))
-      } else {
-        // Already exists counts as success for UI
-        if (result.error === 'Already in your library') {
-          setAddedIds((prev) => new Set(prev).add(item.id))
-        }
       }
     } catch {
       // Silent - non-blocking
@@ -311,11 +333,9 @@ export function CatalogBrowser() {
   const clearAllFilters = useCallback(() => {
     setSearch('')
     setCategory(null)
-    setSelectedStore(null)
     setInStockOnly(false)
-    setTier(null)
     setSort('name')
-    setPricedOnly(false)
+    setOnSaleOnly(false)
   }, [])
 
   // Load default cart on mount
@@ -344,7 +364,6 @@ export function CatalogBrowser() {
 
   const handleAddToCart = useCallback(
     async (item: CatalogItemV2) => {
-      // Auto-create a cart if none exists
       let cartId = activeCartId
       if (!cartId) {
         try {
@@ -394,13 +413,33 @@ export function CatalogBrowser() {
     setCartItemCount(count)
   }, [])
 
-  const hasActiveFilters =
-    search || category || selectedStore || inStockOnly || tier || pricedOnly || sort !== 'name'
+  // Store picker handlers
+  const handleSelectStore = useCallback((storeId: string, storeName: string) => {
+    setSelectedStore(storeId)
+    setActiveStoreName(storeName)
+    setActiveStoreId(storeId)
+    setCatalogView('browsing')
+  }, [])
 
-  // Filtered lists for searchable dropdowns
-  const filteredStores = stores.filter((s) =>
-    s.name.toLowerCase().includes(storeSearch.toLowerCase())
-  )
+  const handleBrowseAll = useCallback(() => {
+    setSelectedStore(null)
+    setActiveStoreName(null)
+    setActiveStoreId(null)
+    setCatalogView('browsing')
+  }, [])
+
+  const handleBackToStores = useCallback(() => {
+    setCatalogView('store-picker')
+    setItems([])
+    setTotal(0)
+    setSelectedStore(null)
+    setActiveStoreName(null)
+    setActiveStoreId(null)
+    clearAllFilters()
+  }, [clearAllFilters])
+
+  const hasActiveFilters = search || category || inStockOnly || onSaleOnly || sort !== 'name'
+
   const filteredCategories = categories.filter((c) =>
     c.toLowerCase().includes(categorySearch.toLowerCase())
   )
@@ -410,53 +449,118 @@ export function CatalogBrowser() {
   if (search) activeFilters.push({ label: `Search: "${search}"`, onClear: () => setSearch('') })
   if (category)
     activeFilters.push({ label: `Category: ${category}`, onClear: () => setCategory(null) })
-  if (selectedStore) {
-    const storeName = stores.find((s) => s.id === selectedStore)?.name || selectedStore
-    activeFilters.push({ label: `Store: ${storeName}`, onClear: () => setSelectedStore(null) })
-  }
   if (inStockOnly)
     activeFilters.push({ label: 'In Stock Only', onClear: () => setInStockOnly(false) })
-  if (tier) activeFilters.push({ label: `Tier: ${tier}`, onClear: () => setTier(null) })
-  if (pricedOnly) activeFilters.push({ label: 'Priced Only', onClear: () => setPricedOnly(false) })
+  if (onSaleOnly) activeFilters.push({ label: 'On Sale', onClear: () => setOnSaleOnly(false) })
   if (sort !== 'name')
     activeFilters.push({ label: `Sort: ${sort}`, onClear: () => setSort('name') })
 
   // ---------------------------------------------------------------------------
-  // Render
+  // Render: Store Picker View
+  // ---------------------------------------------------------------------------
+  if (catalogView === 'store-picker') {
+    return (
+      <div>
+        <CatalogStorePicker
+          stores={allStores}
+          preferredStoreNames={preferredStoreNames}
+          onSelectStore={handleSelectStore}
+          onBrowseAll={handleBrowseAll}
+          isLoading={storesLoading}
+        />
+
+        {/* Cart summary bar (always visible) */}
+        <CartSummaryBar
+          itemCount={cartItemCount}
+          totalCents={cartTotalCents}
+          onOpen={() => setCartOpen(true)}
+        />
+        <ShoppingCartSidebar
+          open={cartOpen}
+          onClose={() => {
+            setCartOpen(false)
+            if (activeCartId) {
+              getCartWithItems(activeCartId)
+                .then((full) => {
+                  if (full) {
+                    setCartItemCount(full.items.length)
+                    setCartTotalCents(full.totalCents)
+                    setCartItemIds(
+                      new Set(
+                        full.items.map((i) => i.canonicalIngredientId).filter(Boolean) as string[]
+                      )
+                    )
+                  }
+                })
+                .catch(() => {})
+            }
+          }}
+          onCartCountChange={handleCartCountChange}
+        />
+      </div>
+    )
+  }
+
+  // ---------------------------------------------------------------------------
+  // Render: Browsing View
   // ---------------------------------------------------------------------------
   return (
     <div className="space-y-3">
+      {/* ---- Store context bar ---- */}
+      <div className="flex items-center gap-3 bg-stone-900 rounded-lg border border-stone-800 px-4 py-2.5">
+        <button
+          onClick={handleBackToStores}
+          className="flex items-center gap-1.5 text-sm text-stone-400 hover:text-stone-200 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Stores
+        </button>
+        <div className="h-4 w-px bg-stone-700" />
+        <span className="text-sm font-medium text-stone-100">
+          {activeStoreName || 'All Stores'}
+        </span>
+        <span className="text-xs text-stone-500">
+          {isPending ? 'Searching...' : `${total.toLocaleString()} items`}
+        </span>
+      </div>
+
       {/* ---- View Toggle ---- */}
-      <div className="flex items-center gap-1 bg-stone-800 rounded-lg p-1 w-fit">
-        <button
-          onClick={() => setViewMode('table')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-            viewMode === 'table' ? 'bg-stone-700 text-white' : 'text-stone-400 hover:text-stone-300'
-          }`}
-        >
-          <List className="w-3.5 h-3.5" />
-          Table
-        </button>
-        <button
-          onClick={() => setViewMode('grid')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-            viewMode === 'grid' ? 'bg-stone-700 text-white' : 'text-stone-400 hover:text-stone-300'
-          }`}
-        >
-          <LayoutGrid className="w-3.5 h-3.5" />
-          Grid
-        </button>
-        <button
-          onClick={() => setViewMode('store-aisle')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-            viewMode === 'store-aisle'
-              ? 'bg-stone-700 text-white'
-              : 'text-stone-400 hover:text-stone-300'
-          }`}
-        >
-          <ShoppingBag className="w-3.5 h-3.5" />
-          Store Aisle
-        </button>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1 bg-stone-800 rounded-lg p-1 w-fit">
+          <button
+            onClick={() => setViewMode('table')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              viewMode === 'table'
+                ? 'bg-stone-700 text-white'
+                : 'text-stone-400 hover:text-stone-300'
+            }`}
+          >
+            <List className="w-3.5 h-3.5" />
+            Table
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              viewMode === 'grid'
+                ? 'bg-stone-700 text-white'
+                : 'text-stone-400 hover:text-stone-300'
+            }`}
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+            Grid
+          </button>
+          <button
+            onClick={() => setViewMode('store-aisle')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              viewMode === 'store-aisle'
+                ? 'bg-stone-700 text-white'
+                : 'text-stone-400 hover:text-stone-300'
+            }`}
+          >
+            <ShoppingBag className="w-3.5 h-3.5" />
+            Store Aisle
+          </button>
+        </div>
       </div>
 
       {/* Store Aisle view is self-contained */}
@@ -481,6 +585,7 @@ export function CatalogBrowser() {
                 {search && (
                   <button
                     onClick={() => setSearch('')}
+                    title="Clear search"
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -491,13 +596,9 @@ export function CatalogBrowser() {
               {/* Category dropdown */}
               <div className="relative" ref={categoryDropdownRef}>
                 <button
-                  onClick={() => {
-                    setShowCategoryDropdown(!showCategoryDropdown)
-                    setShowStoreDropdown(false)
-                  }}
+                  onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 hover:bg-stone-700"
                 >
-                  <Filter className="w-3.5 h-3.5" />
                   {category || 'Category'}
                   <ChevronDown className="w-3.5 h-3.5" />
                 </button>
@@ -545,66 +646,6 @@ export function CatalogBrowser() {
                 )}
               </div>
 
-              {/* Store dropdown */}
-              <div className="relative" ref={storeDropdownRef}>
-                <button
-                  onClick={() => {
-                    setShowStoreDropdown(!showStoreDropdown)
-                    setShowCategoryDropdown(false)
-                  }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 hover:bg-stone-700"
-                >
-                  <Store className="w-3.5 h-3.5" />
-                  {selectedStore
-                    ? stores.find((s) => s.id === selectedStore)?.name || 'Store'
-                    : 'Store'}
-                  <ChevronDown className="w-3.5 h-3.5" />
-                </button>
-                {showStoreDropdown && (
-                  <div className="absolute z-40 mt-1 w-64 bg-stone-800 border border-stone-700 rounded-md shadow-xl overflow-hidden">
-                    <div className="p-2 border-b border-stone-700">
-                      <input
-                        type="text"
-                        value={storeSearch}
-                        onChange={(e) => setStoreSearch(e.target.value)}
-                        placeholder="Search stores..."
-                        className="w-full px-2 py-1 text-sm bg-stone-900 border border-stone-600 rounded text-stone-100 placeholder:text-stone-500 focus:outline-none"
-                        autoFocus
-                      />
-                    </div>
-                    <div className="max-h-60 overflow-y-auto">
-                      <button
-                        onClick={() => {
-                          setSelectedStore(null)
-                          setShowStoreDropdown(false)
-                          setStoreSearch('')
-                        }}
-                        className={`w-full text-left px-3 py-1.5 text-sm hover:bg-stone-700 ${!selectedStore ? 'text-brand-400' : 'text-stone-300'}`}
-                      >
-                        All Stores
-                      </button>
-                      {filteredStores.map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={() => {
-                            setSelectedStore(s.id)
-                            setShowStoreDropdown(false)
-                            setStoreSearch('')
-                          }}
-                          className={`w-full text-left px-3 py-1.5 text-sm hover:bg-stone-700 ${selectedStore === s.id ? 'text-brand-400' : 'text-stone-300'}`}
-                        >
-                          <span>{s.name}</span>
-                          <span className="ml-2 text-xs text-stone-500 capitalize">{s.tier}</span>
-                        </button>
-                      ))}
-                      {filteredStores.length === 0 && (
-                        <div className="px-3 py-2 text-xs text-stone-500">No stores match</div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {/* In-stock toggle */}
               <button
                 onClick={() => setInStockOnly(!inStockOnly)}
@@ -617,43 +658,31 @@ export function CatalogBrowser() {
                 In Stock
               </button>
 
-              {/* Tier dropdown */}
-              <select
-                value={tier || ''}
-                onChange={(e) => setTier(e.target.value || null)}
-                className="px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 focus:outline-none focus:ring-1 focus:ring-brand-600"
-              >
-                <option value="">All Tiers</option>
-                <option value="retail">Retail</option>
-                <option value="wholesale">Wholesale</option>
-              </select>
-
-              {/* Sort dropdown */}
-              <div className="flex items-center gap-1.5">
-                <ArrowUpDown className="w-3.5 h-3.5 text-stone-500" />
-                <select
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value as typeof sort)}
-                  className="px-2 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 focus:outline-none focus:ring-1 focus:ring-brand-600"
-                >
-                  <option value="name">Name</option>
-                  <option value="price">Price</option>
-                  <option value="stores">Stores</option>
-                  <option value="updated">Updated</option>
-                </select>
-              </div>
-
-              {/* Priced only */}
+              {/* On Sale toggle */}
               <button
-                onClick={() => setPricedOnly(!pricedOnly)}
-                className={`px-3 py-1.5 text-sm border rounded-md ${
-                  pricedOnly
-                    ? 'bg-blue-900/40 border-blue-700 text-blue-300'
+                onClick={() => setOnSaleOnly(!onSaleOnly)}
+                className={`flex items-center gap-1 px-3 py-1.5 text-sm border rounded-md ${
+                  onSaleOnly
+                    ? 'bg-rose-900/40 border-rose-700 text-rose-300'
                     : 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700'
                 }`}
               >
-                Priced
+                <Tag className="w-3 h-3" />
+                On Sale
               </button>
+
+              {/* Sort dropdown */}
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as typeof sort)}
+                aria-label="Sort order"
+                className="px-3 py-1.5 text-sm bg-stone-800 border border-stone-700 rounded-md text-stone-300 focus:outline-none focus:ring-1 focus:ring-brand-600"
+              >
+                <option value="name">Sort: Name</option>
+                <option value="price">Sort: Price</option>
+                <option value="stores">Sort: Most Stores</option>
+                <option value="updated">Sort: Recently Updated</option>
+              </select>
             </div>
 
             {/* Row 2: result count + clear */}
@@ -683,7 +712,11 @@ export function CatalogBrowser() {
                     className="inline-flex items-center gap-1 px-2 py-0.5 text-xs bg-stone-800 border border-stone-700 rounded-full text-stone-300"
                   >
                     {f.label}
-                    <button onClick={f.onClear} className="text-stone-500 hover:text-stone-200">
+                    <button
+                      onClick={f.onClear}
+                      title="Remove filter"
+                      className="text-stone-500 hover:text-stone-200"
+                    >
                       <X className="w-3 h-3" />
                     </button>
                   </span>
@@ -717,12 +750,22 @@ export function CatalogBrowser() {
               <Search className="w-8 h-8 text-stone-600 mx-auto mb-2" />
               <p className="text-sm text-stone-400">No ingredients found</p>
               <p className="text-xs text-stone-500 mt-1">
-                Try adjusting your filters or search term
+                {activeStoreName
+                  ? `No catalog data for ${activeStoreName} yet. Data is collected daily.`
+                  : 'Try adjusting your filters or search term'}
               </p>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearAllFilters}
+                  className="mt-3 text-xs text-brand-400 hover:text-brand-300 underline"
+                >
+                  Clear all filters
+                </button>
+              )}
             </div>
           )}
 
-          {/* ---- Desktop table ---- */}
+          {/* ---- Table view ---- */}
           {viewMode === 'table' && items.length > 0 && (
             <>
               {/* Desktop */}
@@ -730,10 +773,13 @@ export function CatalogBrowser() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-stone-800 text-stone-500 text-xs uppercase tracking-wider">
+                      <th className="text-left px-4 py-2 font-medium w-10">
+                        <span className="sr-only">Image</span>
+                      </th>
                       <th className="text-left px-4 py-2 font-medium">Name</th>
                       <th className="text-left px-4 py-2 font-medium">Category</th>
                       <th className="text-right px-4 py-2 font-medium">Best Price</th>
-                      <th className="text-left px-4 py-2 font-medium">Stock</th>
+                      <th className="text-left px-4 py-2 font-medium">Availability</th>
                       <th className="text-center px-4 py-2 font-medium">Stores</th>
                       <th className="text-left px-4 py-2 font-medium">Updated</th>
                     </tr>
@@ -748,8 +794,10 @@ export function CatalogBrowser() {
                         priceHistory={expandedId === item.id ? priceHistory : []}
                         onToggle={() => toggleExpand(item.id)}
                         onAddToPantry={() => handleAddToPantry(item)}
+                        onAddToCart={() => handleAddToCart(item)}
                         isAdded={addedIds.has(item.id)}
                         isAdding={addingId === item.id}
+                        isInCart={cartItemIds.has(item.id)}
                       />
                     ))}
                   </tbody>
@@ -767,12 +815,31 @@ export function CatalogBrowser() {
                     priceHistory={expandedId === item.id ? priceHistory : []}
                     onToggle={() => toggleExpand(item.id)}
                     onAddToPantry={() => handleAddToPantry(item)}
+                    onAddToCart={() => handleAddToCart(item)}
                     isAdded={addedIds.has(item.id)}
                     isAdding={addingId === item.id}
+                    isInCart={cartItemIds.has(item.id)}
                   />
                 ))}
               </div>
             </>
+          )}
+
+          {/* Grid view */}
+          {viewMode === 'grid' && items.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              {items.map((item) => (
+                <ProductCard
+                  key={item.id}
+                  item={item}
+                  onAddToCart={handleAddToCart}
+                  isInCart={cartItemIds.has(item.id)}
+                  onExpand={(item) => {
+                    setExpandedId(expandedId === item.id ? null : item.id)
+                  }}
+                />
+              ))}
+            </div>
           )}
 
           {/* ---- Infinite scroll sentinel ---- */}
@@ -790,23 +857,6 @@ export function CatalogBrowser() {
           {isPending && items.length > 0 && (
             <div className="fixed inset-0 bg-black/10 pointer-events-none z-10" />
           )}
-
-          {/* Grid view renders product cards instead of table rows */}
-          {viewMode === 'grid' && items.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-              {items.map((item) => (
-                <ProductCard
-                  key={item.id}
-                  item={item}
-                  onAddToCart={handleAddToCart}
-                  isInCart={cartItemIds.has(item.id)}
-                  onExpand={(item) => {
-                    setExpandedId(expandedId === item.id ? null : item.id)
-                  }}
-                />
-              ))}
-            </div>
-          )}
         </>
       )}
 
@@ -822,7 +872,6 @@ export function CatalogBrowser() {
         open={cartOpen}
         onClose={() => {
           setCartOpen(false)
-          // Refresh cart state after closing
           if (activeCartId) {
             getCartWithItems(activeCartId)
               .then((full) => {
@@ -846,7 +895,7 @@ export function CatalogBrowser() {
 }
 
 // ---------------------------------------------------------------------------
-// Desktop Table Row
+// Desktop Table Row (with image thumbnail)
 // ---------------------------------------------------------------------------
 
 function DesktopRow({
@@ -856,8 +905,10 @@ function DesktopRow({
   priceHistory,
   onToggle,
   onAddToPantry,
+  onAddToCart,
   isAdded,
   isAdding,
+  isInCart,
 }: {
   item: CatalogItemV2
   isExpanded: boolean
@@ -865,15 +916,31 @@ function DesktopRow({
   priceHistory: PriceHistoryPoint[]
   onToggle: () => void
   onAddToPantry: () => void
+  onAddToCart: () => void
   isAdded: boolean
   isAdding: boolean
+  isInCart: boolean
 }) {
+  const isOutOfStock = item.outOfStockCount > 0 && item.inStockCount === 0
+  const rowOpacity = isOutOfStock ? 'opacity-50' : ''
+
   return (
     <>
       <tr
         onClick={onToggle}
-        className="border-b border-stone-800/50 hover:bg-stone-800/50 cursor-pointer transition-colors"
+        className={`border-b border-stone-800/50 hover:bg-stone-800/50 cursor-pointer transition-colors ${rowOpacity}`}
       >
+        {/* Image thumbnail */}
+        <td className="px-4 py-2">
+          <div className="w-8 h-8 rounded overflow-hidden flex-shrink-0">
+            <ImageWithFallback
+              src={item.imageUrl}
+              alt={item.name}
+              category={item.category}
+              className="w-8 h-8"
+            />
+          </div>
+        </td>
         <td className="px-4 py-2.5">
           <div className="flex items-center gap-2">
             {isExpanded ? (
@@ -881,7 +948,10 @@ function DesktopRow({
             ) : (
               <ChevronDown className="w-3.5 h-3.5 text-stone-500 flex-shrink-0" />
             )}
-            <span className="text-stone-100 font-medium">{item.name}</span>
+            <div>
+              <span className="text-stone-100 font-medium">{item.name}</span>
+              {item.brand && <span className="ml-2 text-xs text-stone-500">{item.brand}</span>}
+            </div>
           </div>
         </td>
         <td className="px-4 py-2.5">
@@ -914,14 +984,16 @@ function DesktopRow({
       {/* Expanded detail */}
       {isExpanded && (
         <tr>
-          <td colSpan={6} className="px-4 py-4 bg-stone-950/60">
+          <td colSpan={7} className="px-4 py-4 bg-stone-950/60">
             <ExpandedDetail
               detail={expandedDetail}
               priceHistory={priceHistory}
               item={item}
               onAddToPantry={onAddToPantry}
+              onAddToCart={onAddToCart}
               isAdded={isAdded}
               isAdding={isAdding}
+              isInCart={isInCart}
             />
           </td>
         </tr>
@@ -941,8 +1013,10 @@ function MobileCard({
   priceHistory,
   onToggle,
   onAddToPantry,
+  onAddToCart,
   isAdded,
   isAdding,
+  isInCart,
 }: {
   item: CatalogItemV2
   isExpanded: boolean
@@ -950,13 +1024,28 @@ function MobileCard({
   priceHistory: PriceHistoryPoint[]
   onToggle: () => void
   onAddToPantry: () => void
+  onAddToCart: () => void
   isAdded: boolean
   isAdding: boolean
+  isInCart: boolean
 }) {
+  const isOutOfStock = item.outOfStockCount > 0 && item.inStockCount === 0
+
   return (
-    <div className="bg-stone-900 rounded-lg border border-stone-800">
+    <div
+      className={`bg-stone-900 rounded-lg border border-stone-800 ${isOutOfStock ? 'opacity-50' : ''}`}
+    >
       <button onClick={onToggle} className="w-full text-left p-3 space-y-2">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-start gap-3">
+          {/* Thumbnail */}
+          <div className="w-10 h-10 rounded overflow-hidden flex-shrink-0">
+            <ImageWithFallback
+              src={item.imageUrl}
+              alt={item.name}
+              category={item.category}
+              className="w-10 h-10"
+            />
+          </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
               {isExpanded ? (
@@ -990,7 +1079,7 @@ function MobileCard({
             )}
           </div>
         </div>
-        <div className="flex items-center justify-between ml-5 text-xs text-stone-500">
+        <div className="flex items-center justify-between ml-[52px] text-xs text-stone-500">
           <span>
             {item.priceCount} store{item.priceCount !== 1 ? 's' : ''}
           </span>
@@ -1008,8 +1097,10 @@ function MobileCard({
             priceHistory={priceHistory}
             item={item}
             onAddToPantry={onAddToPantry}
+            onAddToCart={onAddToCart}
             isAdded={isAdded}
             isAdding={isAdding}
+            isInCart={isInCart}
           />
         </div>
       )}
@@ -1026,15 +1117,19 @@ function ExpandedDetail({
   priceHistory,
   item,
   onAddToPantry,
+  onAddToCart,
   isAdded,
   isAdding,
+  isInCart,
 }: {
   detail: CatalogDetailResult | null
   priceHistory: PriceHistoryPoint[]
   item: CatalogItemV2
   onAddToPantry: () => void
+  onAddToCart: () => void
   isAdded: boolean
   isAdding: boolean
+  isInCart: boolean
 }) {
   if (!detail) {
     return (
@@ -1078,7 +1173,7 @@ function ExpandedDetail({
         )}
       </div>
 
-      {/* Per-store price table */}
+      {/* Per-store price table (chef-friendly) */}
       {prices.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
@@ -1087,10 +1182,10 @@ function ExpandedDetail({
                 <th className="text-left py-1.5 pr-3 font-medium">Store</th>
                 <th className="text-left py-1.5 pr-3 font-medium hidden sm:table-cell">Location</th>
                 <th className="text-right py-1.5 pr-3 font-medium">Price</th>
-                <th className="text-left py-1.5 pr-3 font-medium">Stock</th>
-                <th className="text-left py-1.5 pr-3 font-medium hidden sm:table-cell">Type</th>
-                <th className="text-left py-1.5 pr-3 font-medium hidden lg:table-cell">
-                  Confidence
+                <th className="text-left py-1.5 pr-3 font-medium">Availability</th>
+                <th className="text-center py-1.5 pr-3 font-medium" title="Price reliability">
+                  <span className="sr-only">Reliability</span>
+                  <Info className="w-3 h-3 inline" />
                 </th>
                 <th className="text-left py-1.5 pr-3 font-medium hidden lg:table-cell">
                   Freshness
@@ -1115,14 +1210,11 @@ function ExpandedDetail({
                       {p.inStock ? (
                         <span className="text-emerald-400">In Stock</span>
                       ) : (
-                        <span className="text-red-400">Out</span>
+                        <span className="text-red-400">Out of Stock</span>
                       )}
                     </td>
-                    <td className="py-1.5 pr-3 text-stone-400 capitalize hidden sm:table-cell">
-                      {p.priceType?.replace(/_/g, ' ') || '-'}
-                    </td>
-                    <td className="py-1.5 pr-3 hidden lg:table-cell">
-                      {confidenceBadge(p.confidence)}
+                    <td className="py-1.5 pr-3 text-center">
+                      <ConfidenceIcon confidence={p.confidence} />
                     </td>
                     <td className="py-1.5 pr-3 hidden lg:table-cell">
                       <div className="flex items-center gap-1">
@@ -1163,30 +1255,49 @@ function ExpandedDetail({
         <button
           onClick={(e) => {
             e.stopPropagation()
+            onAddToCart()
+          }}
+          disabled={isInCart}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-colors ${
+            isInCart
+              ? 'bg-emerald-900/40 border border-emerald-700 text-emerald-300 cursor-default'
+              : 'bg-brand-600 hover:bg-brand-500 text-white'
+          }`}
+        >
+          {isInCart ? (
+            <>
+              <Check className="w-3.5 h-3.5" />
+              In Cart
+            </>
+          ) : (
+            <>
+              <Plus className="w-3.5 h-3.5" />
+              Add to Cart
+            </>
+          )}
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
             onAddToPantry()
           }}
           disabled={isAdded || isAdding}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md transition-colors ${
             isAdded
-              ? 'bg-emerald-900/40 border border-emerald-700 text-emerald-300 cursor-default'
+              ? 'bg-stone-800 border border-stone-700 text-stone-400 cursor-default'
               : isAdding
                 ? 'bg-stone-800 border border-stone-700 text-stone-400 cursor-wait'
-                : 'bg-brand-600 hover:bg-brand-500 text-white'
+                : 'bg-stone-800 border border-stone-700 text-stone-300 hover:bg-stone-700'
           }`}
         >
           {isAdding ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : isAdded ? (
+            <Check className="w-3.5 h-3.5" />
           ) : (
             <Plus className="w-3.5 h-3.5" />
           )}
-          {isAdded ? 'Added to Pantry' : isAdding ? 'Adding...' : 'Add to My Pantry'}
-        </button>
-        <button
-          disabled
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-stone-800 border border-stone-700 text-stone-500 rounded-md cursor-not-allowed"
-          title="Coming soon"
-        >
-          Watch Price
+          {isAdded ? 'In Pantry' : isAdding ? 'Adding...' : 'Add to Pantry'}
         </button>
       </div>
     </div>

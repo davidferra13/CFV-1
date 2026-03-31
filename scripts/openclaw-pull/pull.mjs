@@ -31,6 +31,39 @@ const BATCH_SIZE = 500
 
 const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`)
 
+// Categories that are definitively non-food. Used to override the Pi's
+// unreliable is_food flag during ingest.
+const NON_FOOD_CATEGORY_SLUGS = new Set([
+  'personal-care',
+  'household',
+  'pets',
+  'pet',
+  'health-care',
+  'baby',
+  'kitchen-supplies',
+])
+
+// Keyword patterns for non-food products that slip into food categories
+// (e.g., dog treats in "Other", paper towels miscategorized)
+const NON_FOOD_KEYWORDS = [
+  /dog treat/i, /cat treat/i, /dog food/i, /cat food/i,
+  /pet food/i, /cat litter/i, /puppy.chow/i, /kitten.chow/i,
+  /flea /i, /tick.collar/i,
+  /paper towel/i, /toilet paper/i, /trash bag/i, /garbage bag/i,
+  /laundry detergent/i, /fabric softener/i, /dishwasher detergent/i,
+  /dish soap/i, /bleach.cleaner/i, /toilet.cleaner/i,
+  /floor cleaner/i, /all-purpose cleaner/i, /swiffer/i, /windex/i,
+  /toothpaste/i, /toothbrush/i, /shampoo/i, /body wash/i,
+  /deodorant/i, /diaper/i, /baby wipe/i, /bandage/i, /band-aid/i,
+  /ibuprofen/i, /acetaminophen/i, /melatonin/i,
+  /ipad/i, /iphone/i, /battery/i, /charger/i,
+  /light bulb/i, /lawn mower/i,
+]
+
+function isNonFoodProduct(productName) {
+  return NON_FOOD_KEYWORDS.some(pattern => pattern.test(productName))
+}
+
 async function main() {
   const startedAt = new Date()
   log('Starting OpenClaw pull...')
@@ -169,12 +202,15 @@ async function main() {
             if (categoryCache.has(catSlug)) {
               categoryId = categoryCache.get(catSlug)
             } else {
+              // Override Pi's unreliable is_food flag with our known non-food list
+              const isFood = !NON_FOOD_CATEGORY_SLUGS.has(catSlug)
               const catRows = await sql`
                 INSERT INTO openclaw.product_categories (name, slug, department, is_food)
-                VALUES (${product.category}, ${catSlug}, ${product.department || product.category}, ${product.is_food === 1})
+                VALUES (${product.category}, ${catSlug}, ${product.department || product.category}, ${isFood})
                 ON CONFLICT (slug) DO UPDATE SET
                   name = EXCLUDED.name,
-                  department = EXCLUDED.department
+                  department = EXCLUDED.department,
+                  is_food = EXCLUDED.is_food
                 RETURNING id
               `
               categoryId = catRows[0]?.id ?? null
@@ -185,16 +221,23 @@ async function main() {
           // Upsert product. Use UPC as conflict key when available, else name+brand.
           let pgProductId = null
 
+          // Determine if this product is food: check category first, then keyword patterns
+          const categoryIsFood = categoryId ? !NON_FOOD_CATEGORY_SLUGS.has(
+            product.category?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') || ''
+          ) : true
+          const productIsFood = categoryIsFood && !isNonFoodProduct(product.name)
+
           if (product.upc) {
             const rows = await sql`
               INSERT INTO openclaw.products (
                 name, brand, upc, size, size_value, size_unit,
-                category_id, image_url, is_organic, is_store_brand
+                category_id, image_url, is_organic, is_store_brand, is_food
               ) VALUES (
                 ${product.name}, ${product.brand}, ${product.upc},
                 ${product.size}, ${product.size_value}, ${product.size_unit},
                 ${categoryId}, ${product.image_url},
-                ${product.is_organic === 1}, ${product.is_store_brand === 1}
+                ${product.is_organic === 1}, ${product.is_store_brand === 1},
+                ${productIsFood}
               )
               ON CONFLICT (upc) WHERE upc IS NOT NULL DO UPDATE SET
                 name = EXCLUDED.name,
@@ -206,6 +249,7 @@ async function main() {
                 image_url = EXCLUDED.image_url,
                 is_organic = EXCLUDED.is_organic,
                 is_store_brand = EXCLUDED.is_store_brand,
+                is_food = EXCLUDED.is_food,
                 updated_at = now()
               RETURNING id
             `
@@ -217,12 +261,13 @@ async function main() {
             const rows = await sql`
               INSERT INTO openclaw.products (
                 name, brand, upc, size, size_value, size_unit,
-                category_id, image_url, is_organic, is_store_brand
+                category_id, image_url, is_organic, is_store_brand, is_food
               ) VALUES (
                 ${product.name}, ${product.brand}, ${product.upc},
                 ${product.size}, ${product.size_value}, ${product.size_unit},
                 ${categoryId}, ${product.image_url},
-                ${product.is_organic === 1}, ${product.is_store_brand === 1}
+                ${product.is_organic === 1}, ${product.is_store_brand === 1},
+                ${productIsFood}
               )
               ON CONFLICT DO NOTHING
               RETURNING id

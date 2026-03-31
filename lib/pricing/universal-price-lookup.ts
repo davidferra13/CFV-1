@@ -66,6 +66,8 @@ export interface PriceLookupResult {
     nearest_store_miles: number | null
     /** 'local' = stores at ZIP, 'regional' = within radius, 'national' = all data */
     scope: 'local' | 'regional' | 'national'
+    /** Human-readable explanation of coverage quality */
+    coverage_note: string
   }
 
   /** Sources that contributed to this price */
@@ -96,11 +98,12 @@ function haversineSQL(lat: number, lng: number): ReturnType<typeof sql> {
 interface ZipCoords {
   lat: number
   lng: number
-  source: 'exact_zip' | 'nearest_store'
+  region: string | null
+  source: 'exact_zip' | 'zip_centroid'
 }
 
 async function resolveZipCoords(zipCode: string): Promise<ZipCoords | null> {
-  // First: exact ZIP match from our stores
+  // First: exact ZIP match from our stores (gives us store coordinates)
   const exactRows = (await db.execute(sql`
     SELECT AVG(lat) as lat, AVG(lng) as lng, COUNT(*) as cnt
     FROM openclaw.stores
@@ -111,12 +114,25 @@ async function resolveZipCoords(zipCode: string): Promise<ZipCoords | null> {
     return {
       lat: Number(exactRows[0].lat),
       lng: Number(exactRows[0].lng),
+      region: null, // will be resolved if needed
       source: 'exact_zip',
     }
   }
 
-  // No stores at this ZIP. We don't have a centroid table, so we can't resolve.
-  // Return null (caller will use national scope).
+  // Second: ZIP centroid table (42K US ZIPs with coordinates + census region)
+  const centroidRows = (await db.execute(sql`
+    SELECT lat, lng, region FROM openclaw.zip_centroids WHERE zip = ${zipCode} LIMIT 1
+  `)) as unknown as Array<{ lat: number; lng: number; region: string }>
+
+  if (centroidRows.length > 0) {
+    return {
+      lat: Number(centroidRows[0].lat),
+      lng: Number(centroidRows[0].lng),
+      region: centroidRows[0].region,
+      source: 'zip_centroid',
+    }
+  }
+
   return null
 }
 
@@ -297,24 +313,52 @@ interface ProductPriceRow {
   distance_miles: number | null
 }
 
-// Non-food categories to exclude from ingredient price searches.
-// These pollute results (e.g., "chicken breast" matching dog treats).
-const NON_FOOD_CATEGORIES = [
-  'Personal_care',
-  'Household',
-  'Pets',
-  'Pet',
-  'Health Care',
-  'Kitchen Supplies',
-]
+// Non-food keyword patterns for products that slip through category filters
+// (e.g., pet treats in "Other" category, household items miscategorized).
+// Used as a secondary filter alongside the is_food column.
+const NON_FOOD_PRODUCT_PATTERNS = [
+  'dog treat',
+  'cat treat',
+  'dog food',
+  'cat food',
+  'pet food',
+  'cat litter',
+  'flea collar',
+  'tick collar',
+  'paper towel',
+  'toilet paper',
+  'trash bag',
+  'garbage bag',
+  'laundry detergent',
+  'fabric softener',
+  'dishwasher detergent',
+  'toothpaste',
+  'toothbrush',
+  'shampoo',
+  'body wash',
+  'deodorant',
+  'diaper',
+  'baby wipe',
+  'bandage',
+].map((kw) => kw.toLowerCase())
+
+/** Secondary keyword filter for non-food products that slipped through category-level is_food */
+function filterFoodProducts(rows: ProductPriceRow[]): ProductPriceRow[] {
+  return rows.filter((r) => {
+    const nameLower = r.product_name.toLowerCase()
+    return !NON_FOOD_PRODUCT_PATTERNS.some((pattern) => nameLower.includes(pattern))
+  })
+}
 
 async function searchProductPrices(
   text: string,
   storeIds: string[] | null,
   limit = 100
 ): Promise<ProductPriceRow[]> {
-  // Use ts_rank to prefer products where the name closely matches the query
-  // Higher rank = more of the product name is about the search term (not incidental mention)
+  // Rank products by relevance. We heavily boost products where the search term
+  // appears at the start of the name (the product IS the ingredient) vs. products
+  // where it's incidental (e.g., "cilantro lime taco tender" matching "cilantro").
+  // The CASE expression adds 10.0 to ts_rank for primary matches.
   if (storeIds && storeIds.length > 0) {
     // Location-filtered search
     const rows = (await db.execute(sql`
@@ -329,17 +373,22 @@ async function searchProductPrices(
       FROM openclaw.products p
       JOIN openclaw.store_products sp ON sp.product_id = p.id
       JOIN openclaw.stores s ON s.id = sp.store_id
-      LEFT JOIN openclaw.product_categories pc ON pc.id = p.category_id
       WHERE to_tsvector('english', p.name) @@ plainto_tsquery('english', ${text})
         AND sp.store_id = ANY(${storeIds})
         AND sp.price_cents > 0
         AND sp.price_cents < 50000
-        AND (pc.name IS NULL OR pc.name != ALL(${NON_FOOD_CATEGORIES}))
-      ORDER BY ts_rank(to_tsvector('english', p.name), plainto_tsquery('english', ${text})) DESC,
-               sp.price_cents ASC
+        AND p.is_food = true
+      ORDER BY
+        (ts_rank(to_tsvector('english', p.name), plainto_tsquery('english', ${text}))
+         + CASE WHEN LOWER(p.name) LIKE ${text.toLowerCase() + '%'} THEN 10.0
+                WHEN LOWER(p.name) LIKE '% ' || ${text.toLowerCase()} || ' %' THEN 5.0
+                WHEN LOWER(p.name) LIKE '% ' || ${text.toLowerCase()} THEN 5.0
+                ELSE 0.0 END
+        ) DESC,
+        sp.price_cents ASC
       LIMIT ${limit}
     `)) as unknown as ProductPriceRow[]
-    return rows
+    return filterFoodProducts(rows)
   }
 
   // National search (no location filter)
@@ -355,16 +404,21 @@ async function searchProductPrices(
     FROM openclaw.products p
     JOIN openclaw.store_products sp ON sp.product_id = p.id
     JOIN openclaw.stores s ON s.id = sp.store_id
-    LEFT JOIN openclaw.product_categories pc ON pc.id = p.category_id
     WHERE to_tsvector('english', p.name) @@ plainto_tsquery('english', ${text})
       AND sp.price_cents > 0
       AND sp.price_cents < 50000
-      AND (pc.name IS NULL OR pc.name != ALL(${NON_FOOD_CATEGORIES}))
-    ORDER BY ts_rank(to_tsvector('english', p.name), plainto_tsquery('english', ${text})) DESC,
-             sp.last_seen_at DESC
+      AND p.is_food = true
+    ORDER BY
+      (ts_rank(to_tsvector('english', p.name), plainto_tsquery('english', ${text}))
+       + CASE WHEN LOWER(p.name) LIKE ${text.toLowerCase() + '%'} THEN 10.0
+              WHEN LOWER(p.name) LIKE '% ' || ${text.toLowerCase()} || ' %' THEN 5.0
+              WHEN LOWER(p.name) LIKE '% ' || ${text.toLowerCase()} THEN 5.0
+              ELSE 0.0 END
+      ) DESC,
+      sp.last_seen_at DESC
     LIMIT ${limit}
   `)) as unknown as ProductPriceRow[]
-  return rows
+  return filterFoodProducts(rows)
 }
 
 // ---------------------------------------------------------------------------
@@ -379,10 +433,14 @@ const UNIT_TO_GRAMS: Record<string, number> = {
   g: 1,
   fl_oz: 29.5735, // approximate for water-density items
   'fl oz': 29.5735,
+  pt: 473.176,
   pint: 473.176,
+  qt: 946.353,
   quart: 946.353,
+  gal: 3785.41,
   gallon: 3785.41,
   liter: 1000,
+  l: 1000,
   ml: 1,
 }
 
@@ -405,9 +463,20 @@ function normalizeProductPrice(
   // First: check the size text for "per lb" / "per oz" patterns
   // These products are already priced per-unit but lack structured size data
   if (sizeText && (!sizeValue || !sizeUnit)) {
-    const perMatch = sizeText.match(/^per\s+(lb|oz|kg|gallon|quart|pint|liter)$/i)
+    const perMatch = sizeText.match(/^per\s+(lb|pound|oz|kg|gallon|gal|quart|qt|pint|pt|liter)$/i)
     if (perMatch) {
-      const unit = perMatch[1].toLowerCase()
+      // Normalize aliases to canonical unit names
+      const raw = perMatch[1].toLowerCase()
+      const unit =
+        raw === 'pound'
+          ? 'lb'
+          : raw === 'gal'
+            ? 'gallon'
+            : raw === 'qt'
+              ? 'quart'
+              : raw === 'pt'
+                ? 'pint'
+                : raw
       return { price_per_unit_cents: priceCents, unit }
     }
   }
@@ -415,11 +484,26 @@ function normalizeProductPrice(
   // If no structured size data, try parsing size text
   if ((!sizeValue || !sizeUnit) && sizeText) {
     const parsed = sizeText.match(
-      /^([\d.]+)\s*(oz|lb|fl\s*oz|kg|g|gallon|quart|pint|liter|ml|ct|each|bunch)$/i
+      /^([\d.]+)\s*(oz|lb|fl\s*oz|kg|g|gallon|gal|quart|qt|pint|pt|liter|l|ml|ct|each|bunch|container|squash|pepper|item)$/i
     )
     if (parsed) {
       const val = parseFloat(parsed[1])
-      const unit = parsed[2].toLowerCase().trim()
+      let unit = parsed[2].toLowerCase().trim()
+      // Normalize aliases
+      if (unit === 'gal') unit = 'gallon'
+      if (unit === 'qt') unit = 'quart'
+      if (unit === 'pt') unit = 'pint'
+      // Treat container/squash/pepper/item as "each"
+      if (['container', 'squash', 'pepper', 'item'].includes(unit)) unit = 'each'
+      if (val > 0) {
+        return normalizeProductPrice(priceCents, val, unit, null)
+      }
+    }
+    // Handle "X pint container" pattern
+    const compoundMatch = sizeText.match(/^([\d.]+)\s*(pint|quart|gallon)\s+container$/i)
+    if (compoundMatch) {
+      const val = parseFloat(compoundMatch[1])
+      const unit = compoundMatch[2].toLowerCase()
       if (val > 0) {
         return normalizeProductPrice(priceCents, val, unit, null)
       }
@@ -597,6 +681,112 @@ async function getHistoryPrices(
 }
 
 // ---------------------------------------------------------------------------
+// Step 6b: USDA regional baseline lookup
+// ---------------------------------------------------------------------------
+
+interface UsdaBaseline {
+  item_name: string
+  price_cents: number
+  unit: string
+  region: string
+  category: string | null
+  observation_date: string
+}
+
+/**
+ * Look up USDA price baseline for an ingredient + region.
+ * Uses FTS first, then trigram similarity as fallback.
+ */
+async function lookupUsdaBaseline(
+  ingredientText: string,
+  region: string | null
+): Promise<UsdaBaseline | null> {
+  const targetRegion = region || 'us_average'
+
+  // Try FTS match first
+  const ftsRows = (await db.execute(sql`
+    SELECT item_name, price_cents, unit, region, category, observation_date::text as observation_date,
+      ts_rank(to_tsvector('english', item_name), plainto_tsquery('english', ${ingredientText})) as rank
+    FROM openclaw.usda_price_baselines
+    WHERE to_tsvector('english', item_name) @@ plainto_tsquery('english', ${ingredientText})
+      AND region = ${targetRegion}
+    ORDER BY rank DESC
+    LIMIT 1
+  `)) as unknown as Array<UsdaBaseline & { rank: number }>
+
+  if (ftsRows.length > 0 && ftsRows[0].rank > 0.01) {
+    return ftsRows[0]
+  }
+
+  // Try trigram similarity
+  const trigramRows = (await db.execute(sql`
+    SELECT item_name, price_cents, unit, region, category, observation_date::text as observation_date,
+      similarity(item_name, ${ingredientText}) as sim
+    FROM openclaw.usda_price_baselines
+    WHERE region = ${targetRegion}
+      AND similarity(item_name, ${ingredientText}) > 0.2
+    ORDER BY sim DESC
+    LIMIT 1
+  `)) as unknown as Array<UsdaBaseline & { sim: number }>
+
+  if (trigramRows.length > 0) {
+    return trigramRows[0]
+  }
+
+  // Last resort: try us_average if we were looking for a specific region
+  if (targetRegion !== 'us_average') {
+    return lookupUsdaBaseline(ingredientText, null)
+  }
+
+  return null
+}
+
+/**
+ * Resolve the census region for a ZIP code.
+ * Uses zip_centroids table.
+ */
+async function getZipRegion(zipCode: string): Promise<string | null> {
+  const rows = (await db.execute(sql`
+    SELECT region FROM openclaw.zip_centroids WHERE zip = ${zipCode} LIMIT 1
+  `)) as unknown as Array<{ region: string }>
+  return rows.length > 0 ? rows[0].region : null
+}
+
+// ---------------------------------------------------------------------------
+// Coverage note generation
+// ---------------------------------------------------------------------------
+
+function buildCoverageNote(
+  scope: 'local' | 'regional' | 'national',
+  storesInArea: number,
+  nearestMiles: number | null,
+  zipRequested: string | null
+): string {
+  if (scope === 'local' && storesInArea > 0) {
+    return `${storesInArea} store${storesInArea > 1 ? 's' : ''} within 10 miles of ${zipRequested}`
+  }
+  if (scope === 'regional' && storesInArea > 0) {
+    const dist = nearestMiles ? Math.round(nearestMiles) : '?'
+    return `${storesInArea} store${storesInArea > 1 ? 's' : ''} within radius (nearest: ${dist} mi from ${zipRequested})`
+  }
+  // National scope
+  if (zipRequested) {
+    return `No stores near ${zipRequested}. Price based on all available store data (NE United States).`
+  }
+  return 'No ZIP provided. Price based on all available store data (NE United States).'
+}
+
+/**
+ * Confidence multiplier by scope. National is heavily penalized because
+ * "national" currently means "7 stores in MA/NH" - not actual national coverage.
+ */
+function scopeConfidenceMultiplier(scope: 'local' | 'regional' | 'national'): number {
+  if (scope === 'local') return 1.0
+  if (scope === 'regional') return 0.8
+  return 0.35 // national = we have no data near you, price is a rough estimate
+}
+
+// ---------------------------------------------------------------------------
 // Main: lookupPrice
 // ---------------------------------------------------------------------------
 
@@ -621,6 +811,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       stores_in_area: 0,
       nearest_store_miles: null,
       scope: 'national',
+      coverage_note: buildCoverageNote('national', 0, null, zipCode || null),
     },
     sources: [],
   }
@@ -661,9 +852,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       )
 
       if (agg) {
-        // Location confidence adjustment
-        const locationMultiplier =
-          locationScope === 'local' ? 1.0 : locationScope === 'regional' ? 0.85 : 0.7
+        const locationMultiplier = scopeConfidenceMultiplier(locationScope)
         const overallConfidence =
           Math.round(
             match.confidence * locationMultiplier * (Math.min(agg.data_points, 20) / 20) * 100
@@ -687,6 +876,12 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
             stores_in_area: nearbyStores.length,
             nearest_store_miles: nearbyStores[0]?.distance_miles ?? null,
             scope: locationScope,
+            coverage_note: buildCoverageNote(
+              locationScope,
+              nearbyStores.length,
+              nearbyStores[0]?.distance_miles ?? null,
+              zipCode || null
+            ),
           },
           sources: agg.sources,
         }
@@ -717,8 +912,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
     const agg = aggregatePrices(normalized)
 
     if (agg) {
-      const locationMultiplier =
-        locationScope === 'local' ? 1.0 : locationScope === 'regional' ? 0.85 : 0.7
+      const locationMultiplier = scopeConfidenceMultiplier(locationScope)
       const matchConf = match ? match.confidence : 0.6 // product_search default
       const overallConfidence =
         Math.round(matchConf * locationMultiplier * (Math.min(agg.data_points, 20) / 20) * 100) /
@@ -742,6 +936,12 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           stores_in_area: nearbyStores.length,
           nearest_store_miles: nearbyStores[0]?.distance_miles ?? null,
           scope: locationScope,
+          coverage_note: buildCoverageNote(
+            locationScope,
+            nearbyStores.length,
+            nearbyStores[0]?.distance_miles ?? null,
+            zipCode || null
+          ),
         },
         sources: agg.sources,
       }
@@ -772,7 +972,12 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       if (agg) {
         const matchConf = match ? match.confidence : 0.5
         const overallConfidence =
-          Math.round(matchConf * 0.6 * (Math.min(agg.data_points, 20) / 20) * 100) / 100
+          Math.round(
+            matchConf *
+              scopeConfidenceMultiplier('national') *
+              (Math.min(agg.data_points, 20) / 20) *
+              100
+          ) / 100
 
         return {
           matched: true,
@@ -792,10 +997,47 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
             stores_in_area: 0,
             nearest_store_miles: null,
             scope: 'national',
+            coverage_note: buildCoverageNote('national', 0, null, zipCode || null),
           },
           sources: agg.sources,
         }
       }
+    }
+  }
+
+  // --- Strategy D: USDA regional baseline (BLS average prices) ---
+  // This is the safety net: even with zero scraped data near this ZIP,
+  // we can return a regionally-adjusted USDA average price.
+  const region = zipCode ? zipCoords?.region || (await getZipRegion(zipCode)) : null
+  const usda = await lookupUsdaBaseline(ingredient, region)
+
+  if (usda) {
+    const regionLabel = usda.region === 'us_average' ? 'US average' : usda.region
+    const matchConf = match ? Math.min(match.confidence, 0.8) : 0.5
+    // USDA baselines are inherently lower confidence: they're averages, not live prices
+    const overallConfidence = Math.round(matchConf * 0.4 * 100) / 100
+
+    return {
+      matched: true,
+      ingredient_name: match?.name || ingredient,
+      ingredient_id: match?.id || null,
+      match_method: match?.method || 'product_search',
+      match_confidence: matchConf,
+      price_cents: usda.price_cents,
+      price_per_unit_cents: usda.price_cents,
+      unit: usda.unit,
+      range: null, // single data point
+      confidence_score: overallConfidence,
+      data_points: 1,
+      last_updated: usda.observation_date,
+      location: {
+        zip_requested: zipCode || null,
+        stores_in_area: 0,
+        nearest_store_miles: null,
+        scope: 'national',
+        coverage_note: `USDA ${regionLabel} baseline (BLS avg). No live store prices available near ${zipCode || 'unknown location'}.`,
+      },
+      sources: [`USDA BLS (${regionLabel})`],
     }
   }
 

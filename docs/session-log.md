@@ -27,3 +27,29 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Task: Full state audit - review all specs, build state, identify gaps between dev and prod
 - Status: started
 - Build state on arrival: unknown (never verified since tracking started)
+
+## 2026-04-01 ~00:00 EST
+
+- Agent: Builder (Claude Opus 4.6)
+- Task: Title dedup fix (350+ pages), intro-bridge build (migration + actions + UI), session close-out
+- Status: completed
+- Files touched: 350+ page.tsx title fixes, database/migrations/20260401000148_chef_intro_bridges.sql, lib/network/intro-bridge-actions.ts, components/hub/hub-bridge-view.tsx, app/(chef)/network/bridges/[bridgeId]/page.tsx, app/(chef)/network/page.tsx, app/(chef)/network/collab-inbox.tsx, lib/hub/types.ts, lib/hub/group-actions.ts, hub join/group pages
+- Commits: 96b2cd39, 70ac23ec, 09b2cc4b
+- Build state on departure: green (09b2cc4b)
+- Notes: All pushed to main. p1-introduction-bridge status=built (needs Playwright verification). catalog-ux-overhaul is next ready spec.
+
+## 2026-04-01 ~01:00 EST
+
+- Agent: Builder (Claude Opus 4.6)
+- Task: Continue spec queue - catalog-ux-overhaul build
+- Status: started
+- Build state on arrival: green (09b2cc4b)
+
+## 2026-03-31 ~17:36 EST
+
+- Agent: Planner
+- Task: Audit and spec the notes -> dishes -> menus -> client/event workflow without rebuilding it
+- Status: started
+- Build state on arrival: green (09b2cc4b)
+- Files in focus: menus, notes, inquiries, culinary assembly, related schema and specs
+- Notes: Developer asked for planner-gate spec work, deep inspection, developer-notes capture, and validated findings before build work
