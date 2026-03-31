@@ -314,7 +314,9 @@ export async function getMenuBreakdown(menuId: string): Promise<MenuCostBreakdow
       .order('sort_order', { ascending: true })
 
     if (recipeIngredients?.length) {
-      const ingredientIds = [...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id))]
+      const ingredientIds = [
+        ...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id)),
+      ] as string[]
 
       const { data: ingredients } = await db
         .from('ingredients')
@@ -2089,7 +2091,9 @@ export async function getMenuVendorHints(menuId: string): Promise<MenuVendorHint
 
   if (!recipeIngredients?.length) return []
 
-  const ingredientIds = [...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id))]
+  const ingredientIds = [
+    ...new Set(recipeIngredients.map((ri: any) => ri.ingredient_id)),
+  ] as string[]
 
   // Get ingredient names
   const { data: ingredients } = await db

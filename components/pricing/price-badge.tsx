@@ -77,6 +77,8 @@ function sourceLabel(source: PriceSource): string {
       return 'Category est.'
     case 'none':
       return ''
+    default:
+      return ''
   }
 }
 

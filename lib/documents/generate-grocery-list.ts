@@ -285,9 +285,9 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
   }
 
   // Resolve prices via unified 8-tier chain (batch: 3 queries, not N+1)
-  const allIngredientIds = [
+  const allIngredientIds: string[] = [
     ...new Set(recipeIngredients.map((ri: any) => (ri.ingredient as any)?.id).filter(Boolean)),
-  ]
+  ] as string[]
   let resolvedPriceMap = new Map<string, number | null>()
   if (allIngredientIds.length > 0) {
     const { resolvePricesBatch } = await import('@/lib/pricing/resolve-price')

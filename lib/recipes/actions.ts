@@ -595,9 +595,9 @@ export async function getRecipeById(recipeId: string) {
 
   // Summarize cost issues
   const costIssues = {
-    missingPrices: ingredientsMapped.filter((i) => i.costStatus === 'no_price').length,
-    unitMismatches: ingredientsMapped.filter((i) => i.costStatus === 'estimated').length,
-    stalePrices: ingredientsMapped.filter((i) => i.costStatus === 'stale').length,
+    missingPrices: ingredientsMapped.filter((i: any) => i.costStatus === 'no_price').length,
+    unitMismatches: ingredientsMapped.filter((i: any) => i.costStatus === 'estimated').length,
+    stalePrices: ingredientsMapped.filter((i: any) => i.costStatus === 'stale').length,
   }
 
   return {

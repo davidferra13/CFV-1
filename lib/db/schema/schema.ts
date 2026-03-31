@@ -1,5 +1,11 @@
 import { pgTable, index, foreignKey, unique, check, uuid, text, timestamp, pgPolicy, date, integer, numeric, uniqueIndex, boolean, jsonb, bigint, real, type AnyPgColumn, smallint, doublePrecision, bigserial, time, primaryKey, pgView, pgSequence, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
+import { authUsers } from "./auth"
+
+// Alias: FK references in auto-generated code use "users" but the table
+// lives in the auth schema as "authUsers". This re-export satisfies those refs.
+const users = authUsers
+export { authUsers as usersInAuth }
 
 export const bookingServiceMode = pgEnum("booking_service_mode", ['one_off', 'recurring', 'multi_day'])
 export const cancellationInitiator = pgEnum("cancellation_initiator", ['chef', 'client', 'mutual'])

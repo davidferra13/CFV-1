@@ -13,7 +13,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
 type AnyDbClient = ReturnType<typeof createServerClient> & { from: (t: string) => any }
-function db(): AnyDbClient {
+function getDb(): AnyDbClient {
   return createServerClient() as AnyDbClient
 }
 
@@ -74,7 +74,7 @@ function withComputedStatus(policy: InsurancePolicy): InsurancePolicy {
 
 export async function getInsurancePolicies(): Promise<InsurancePolicy[]> {
   const user = await requireChef()
-  const db = db()
+  const db = getDb()
 
   const { data, error } = await db
     .from('insurance_policies')
@@ -88,7 +88,7 @@ export async function getInsurancePolicies(): Promise<InsurancePolicy[]> {
 
 export async function getExpiringPolicies(daysAhead: number = 30): Promise<InsurancePolicy[]> {
   const user = await requireChef()
-  const db = db()
+  const db = getDb()
 
   const futureDate = new Date()
   futureDate.setDate(futureDate.getDate() + daysAhead)
@@ -141,7 +141,7 @@ export interface CreateInsurancePolicyInput {
 
 export async function createPolicy(input: CreateInsurancePolicyInput) {
   const user = await requireChef()
-  const db = db()
+  const db = getDb()
 
   const { data, error } = await db
     .from('insurance_policies')
@@ -170,7 +170,7 @@ export async function createPolicy(input: CreateInsurancePolicyInput) {
 
 export async function updatePolicy(id: string, input: Partial<CreateInsurancePolicyInput>) {
   const user = await requireChef()
-  const db = db()
+  const db = getDb()
 
   const { data, error } = await db
     .from('insurance_policies')
@@ -192,7 +192,7 @@ export async function updatePolicy(id: string, input: Partial<CreateInsurancePol
 
 export async function deletePolicy(id: string) {
   const user = await requireChef()
-  const db = db()
+  const db = getDb()
 
   const { error } = await db
     .from('insurance_policies')

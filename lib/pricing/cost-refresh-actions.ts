@@ -30,7 +30,9 @@ export async function propagatePriceChange(ingredientIds: string[]) {
   if (!riRows || riRows.length === 0) return
 
   // Get tenant from first recipe
-  const recipeIds: string[] = [...new Set(riRows.map((r: any) => r.recipe_id as string))]
+  const recipeIds: string[] = [
+    ...new Set(riRows.map((r: any) => r.recipe_id as string)),
+  ] as string[]
   const { data: firstRecipe } = await db
     .from('recipes')
     .select('tenant_id')
@@ -191,7 +193,7 @@ export async function refreshIngredientCostsAction(
         return { refreshed: 0, matched: 0, unmatched: 0, errors: [] }
       }
 
-      ids = [...new Set(activeRows.map((r: any) => r.ingredient_id as string))]
+      ids = [...new Set(activeRows.map((r: any) => r.ingredient_id as string))] as string[]
     }
 
     // Batch resolve prices

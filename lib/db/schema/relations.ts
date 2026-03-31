@@ -410,7 +410,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	orderRequests: many(orderRequests),
 	hubChefRecommendations: many(hubChefRecommendations),
 	aiPreferences: many(aiPreferences),
-	wasteLogs_chefId: many(wasteLog),
+	wasteLog_chefId: many(wasteLog),
 	opsLogs: many(opsLog),
 	menus: many(menus, {
 		relationName: "menus_tenantId_chefs_id"

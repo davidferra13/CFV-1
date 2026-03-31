@@ -164,7 +164,7 @@ function extractHashtags(content: string): string[] {
 
 async function buildAuthorMap(db: any, chefIds: string[]): Promise<Map<string, SocialPostAuthor>> {
   if (!chefIds.length) return new Map()
-  const { data: chefs } = await db(db)
+  const { data: chefs } = await db
     .from('chefs')
     .select(
       `id, display_name, business_name, profile_image_url,
@@ -195,7 +195,7 @@ async function getMyReactionsForPosts(
   postIds: string[]
 ): Promise<Map<string, ReactionType>> {
   if (!postIds.length) return new Map()
-  const { data } = await db(db)
+  const { data } = await db
     .from('chef_post_reactions')
     .select('post_id, reaction_type')
     .eq('chef_id', chefId)
@@ -210,7 +210,7 @@ async function getMyReactionsForPosts(
 
 async function getMySavedPosts(db: any, chefId: string, postIds: string[]): Promise<Set<string>> {
   if (!postIds.length) return new Set()
-  const { data } = await db(db)
+  const { data } = await db
     .from('chef_post_saves')
     .select('post_id')
     .eq('chef_id', chefId)
@@ -292,7 +292,7 @@ export async function getSocialFeed(input: {
 
   // Global feed: public posts only, no relationship needed
   if (mode === 'global') {
-    let query = db(db)
+    let query = db
       .from('chef_social_posts')
       .select('*')
       .eq('visibility', 'public')
@@ -305,8 +305,8 @@ export async function getSocialFeed(input: {
 
   // Get follow and connection data in parallel
   const [{ data: follows }, { data: connections }] = await Promise.all([
-    db(db).from('chef_follows').select('following_chef_id').eq('follower_chef_id', user.entityId),
-    db(db)
+    db.from('chef_follows').select('following_chef_id').eq('follower_chef_id', user.entityId),
+    db
       .from('chef_connections')
       .select('requester_id, addressee_id')
       .eq('status', 'accepted')
@@ -321,7 +321,7 @@ export async function getSocialFeed(input: {
   if (mode === 'following') {
     if (!followingIds.length) return []
     // Following mode: can only see public + followers-only posts from followed chefs
-    let query = db(db)
+    let query = db
       .from('chef_social_posts')
       .select('*')
       .in('chef_id', followingIds)
@@ -346,7 +346,7 @@ export async function getSocialFeed(input: {
   const queries: Promise<{ data: any[] | null }>[] = [
     // Own posts: all visibilities
     (async () => {
-      let q = db(db)
+      let q = db
         .from('chef_social_posts')
         .select('*')
         .eq('chef_id', user.entityId)
@@ -360,7 +360,7 @@ export async function getSocialFeed(input: {
   if (followOnlyIds.length) {
     queries.push(
       (async () => {
-        let q = db(db)
+        let q = db
           .from('chef_social_posts')
           .select('*')
           .in('chef_id', followOnlyIds)
@@ -376,7 +376,7 @@ export async function getSocialFeed(input: {
   if (connOnlyIds.length) {
     queries.push(
       (async () => {
-        let q = db(db)
+        let q = db
           .from('chef_social_posts')
           .select('*')
           .in('chef_id', connOnlyIds)
@@ -392,7 +392,7 @@ export async function getSocialFeed(input: {
   if (bothIds.length) {
     queries.push(
       (async () => {
-        let q = db(db)
+        let q = db
           .from('chef_social_posts')
           .select('*')
           .in('chef_id', bothIds)
@@ -438,7 +438,7 @@ async function hydratePostList(db: any, posts: any[], chefId: string): Promise<S
 
   let channelMap = new Map<string, any>()
   if (channelIds.length) {
-    const { data: channels } = await db(db)
+    const { data: channels } = await db
       .from('chef_social_channels')
       .select('id, slug, name, icon, color')
       .in('id', channelIds)
@@ -459,7 +459,7 @@ export async function getChannelFeed(input: {
   const db = createServerClient({ admin: true })
 
   // Fetch full channel metadata so hydratePostList can display name/icon/color
-  const { data: channel } = await db(db)
+  const { data: channel } = await db
     .from('chef_social_channels')
     .select('id, slug, name, icon, color')
     .eq('slug', input.channelSlug)
@@ -473,8 +473,8 @@ export async function getChannelFeed(input: {
 
   // Build relationship buckets to enforce visibility rules per author relationship
   const [{ data: follows }, { data: connections }] = await Promise.all([
-    db(db).from('chef_follows').select('following_chef_id').eq('follower_chef_id', user.entityId),
-    db(db)
+    db.from('chef_follows').select('following_chef_id').eq('follower_chef_id', user.entityId),
+    db
       .from('chef_connections')
       .select('requester_id, addressee_id')
       .eq('status', 'accepted')
@@ -493,7 +493,7 @@ export async function getChannelFeed(input: {
   const bothIds = followingIds.filter((id) => connSet.has(id))
   const knownIds = [user.entityId, ...followingIds, ...connIds]
 
-  const baseQ = () => db(db).from('chef_social_posts').select('*').eq('channel_id', ch.id)
+  const baseQ = () => db.from('chef_social_posts').select('*').eq('channel_id', ch.id)
 
   const queries: Promise<{ data: any[] | null }>[] = [
     // Own posts: all visibilities
@@ -588,7 +588,7 @@ export async function getProfilePosts(input: {
 
   if (!isOwn) {
     // Check if following
-    const { data: follow } = await db(db)
+    const { data: follow } = await db
       .from('chef_follows')
       .select('id')
       .eq('follower_chef_id', user.entityId)
@@ -597,7 +597,7 @@ export async function getProfilePosts(input: {
     if (follow) visibilities = [...visibilities, 'followers']
 
     // Check if connected
-    const { data: conn } = await db(db)
+    const { data: conn } = await db
       .from('chef_connections')
       .select('id')
       .eq('status', 'accepted')
@@ -610,7 +610,7 @@ export async function getProfilePosts(input: {
     visibilities = ['public', 'followers', 'connections', 'private']
   }
 
-  let query = db(db)
+  let query = db
     .from('chef_social_posts')
     .select('*')
     .eq('chef_id', input.chefId)
@@ -631,7 +631,7 @@ export async function getTrendingPosts(input: { limit?: number } = {}): Promise<
 
   // Public posts from the last 7 days, sorted by reactions
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-  const { data: posts } = await db(db)
+  const { data: posts } = await db
     .from('chef_social_posts')
     .select('*')
     .eq('visibility', 'public')
@@ -647,7 +647,7 @@ export async function getSavedPosts(input: { limit?: number } = {}): Promise<Soc
   const db = createServerClient({ admin: true })
   const limit = Math.min(input.limit ?? 40, 100)
 
-  const { data: saves } = await db(db)
+  const { data: saves } = await db
     .from('chef_post_saves')
     .select('post_id, created_at')
     .eq('chef_id', user.entityId)
@@ -657,7 +657,7 @@ export async function getSavedPosts(input: { limit?: number } = {}): Promise<Soc
   if (!saves?.length) return []
 
   const postIds = (saves as any[]).map((s) => s.post_id)
-  const { data: posts } = await db(db).from('chef_social_posts').select('*').in('id', postIds)
+  const { data: posts } = await db.from('chef_social_posts').select('*').in('id', postIds)
 
   // Re-sort to match save order (most recently saved first)
   const saveOrder = new Map((saves as any[]).map((s, i) => [s.post_id, i]))
@@ -701,7 +701,7 @@ export async function createSocialPost(input: z.infer<typeof CreatePostSchema>) 
 
   const hashtags = extractHashtags(validated.content)
 
-  const { data: post, error } = await db(db)
+  const { data: post, error } = await db
     .from('chef_social_posts')
     .insert({
       chef_id: user.entityId,
@@ -730,7 +730,7 @@ export async function createSocialPost(input: z.infer<typeof CreatePostSchema>) 
   // Upsert hashtags into registry
   if (hashtags.length) {
     for (const tag of hashtags) {
-      const { data: existing } = await db(db)
+      const { data: existing } = await db
         .from('chef_social_hashtags')
         .select('id')
         .eq('tag', tag)
@@ -740,7 +740,7 @@ export async function createSocialPost(input: z.infer<typeof CreatePostSchema>) 
       if (existing) {
         hashtagId = (existing as any).id
       } else {
-        const { data: newTag } = await db(db)
+        const { data: newTag } = await db
           .from('chef_social_hashtags')
           .insert({ tag })
           .select('id')
@@ -749,11 +749,15 @@ export async function createSocialPost(input: z.infer<typeof CreatePostSchema>) 
       }
 
       if (hashtagId) {
-        await db(db)
-          .from('chef_post_hashtags')
-          .insert({ post_id: (post as any).id, hashtag_id: hashtagId })
-          .onConflict('post_id,hashtag_id')
-          .ignore()
+        try {
+          await db
+            .from('chef_post_hashtags')
+            .insert({ post_id: (post as any).id, hashtag_id: hashtagId })
+        } catch (e: any) {
+          // Ignore duplicate key (unique constraint) errors
+          if (!e?.message?.includes('duplicate key') && !e?.message?.includes('unique constraint'))
+            throw e
+        }
       }
     }
   }
@@ -768,7 +772,7 @@ export async function deleteSocialPost(postId: string) {
   z.string().uuid().parse(postId)
   const db = createServerClient({ admin: true })
 
-  const { data: post } = await db(db)
+  const { data: post } = await db
     .from('chef_social_posts')
     .select('chef_id')
     .eq('id', postId)
@@ -778,7 +782,7 @@ export async function deleteSocialPost(postId: string) {
     throw new Error('Post not found or not yours')
   }
 
-  await db(db).from('chef_social_posts').delete().eq('id', postId)
+  await db.from('chef_social_posts').delete().eq('id', postId)
 
   revalidatePath('/network')
   revalidatePath('/network/feed')
@@ -818,7 +822,7 @@ export async function togglePostReaction(input: { postId: string; reaction: Reac
   z.string().uuid().parse(input.postId)
   const db = createServerClient({ admin: true })
 
-  const { data: existing } = await db(db)
+  const { data: existing } = await db
     .from('chef_post_reactions')
     .select('id, reaction_type')
     .eq('post_id', input.postId)
@@ -829,39 +833,34 @@ export async function togglePostReaction(input: { postId: string; reaction: Reac
     const ex = existing as any
     if (ex.reaction_type === input.reaction) {
       // Same reaction → remove it (toggle off)
-      await db(db).from('chef_post_reactions').delete().eq('id', ex.id)
+      await db.from('chef_post_reactions').delete().eq('id', ex.id)
     } else {
       // Different reaction → update type (count stays same)
-      await db(db)
-        .from('chef_post_reactions')
-        .update({ reaction_type: input.reaction })
-        .eq('id', ex.id)
+      await db.from('chef_post_reactions').update({ reaction_type: input.reaction }).eq('id', ex.id)
     }
   } else {
     // New reaction
-    await db(db).from('chef_post_reactions').insert({
+    await db.from('chef_post_reactions').insert({
       post_id: input.postId,
       chef_id: user.entityId,
       reaction_type: input.reaction,
     })
 
     // Notify post author (if not own post)
-    const { data: postRow } = await db(db)
+    const { data: postRow } = await db
       .from('chef_social_posts')
       .select('chef_id')
       .eq('id', input.postId)
       .single()
 
     if (postRow && (postRow as any).chef_id !== user.entityId) {
-      await db(db)
-        .from('chef_social_notifications')
-        .insert({
-          recipient_chef_id: (postRow as any).chef_id,
-          actor_chef_id: user.entityId,
-          notification_type: 'post_reaction',
-          entity_type: 'post',
-          entity_id: input.postId,
-        })
+      await db.from('chef_social_notifications').insert({
+        recipient_chef_id: (postRow as any).chef_id,
+        actor_chef_id: user.entityId,
+        notification_type: 'post_reaction',
+        entity_type: 'post',
+        entity_id: input.postId,
+      })
     }
   }
 
@@ -874,7 +873,7 @@ export async function toggleCommentReaction(input: { commentId: string; reaction
   z.string().uuid().parse(input.commentId)
   const db = createServerClient({ admin: true })
 
-  const { data: existing } = await db(db)
+  const { data: existing } = await db
     .from('chef_comment_reactions')
     .select('id, reaction_type')
     .eq('comment_id', input.commentId)
@@ -884,15 +883,15 @@ export async function toggleCommentReaction(input: { commentId: string; reaction
   if (existing) {
     const ex = existing as any
     if (ex.reaction_type === input.reaction) {
-      await db(db).from('chef_comment_reactions').delete().eq('id', ex.id)
+      await db.from('chef_comment_reactions').delete().eq('id', ex.id)
     } else {
-      await db(db)
+      await db
         .from('chef_comment_reactions')
         .update({ reaction_type: input.reaction })
         .eq('id', ex.id)
     }
   } else {
-    await db(db).from('chef_comment_reactions').insert({
+    await db.from('chef_comment_reactions').insert({
       comment_id: input.commentId,
       chef_id: user.entityId,
       reaction_type: input.reaction,
@@ -912,7 +911,7 @@ export async function getPostComments(postId: string): Promise<SocialComment[]> 
   z.string().uuid().parse(postId)
   const db = createServerClient({ admin: true })
 
-  const { data: comments } = await db(db)
+  const { data: comments } = await db
     .from('chef_post_comments')
     .select('*')
     .eq('post_id', postId)
@@ -927,7 +926,7 @@ export async function getPostComments(postId: string): Promise<SocialComment[]> 
   const authorIds = Array.from(new Set((comments as any[]).map((c) => c.chef_id)))
 
   // Load top-level replies
-  const { data: replies } = await db(db)
+  const { data: replies } = await db
     .from('chef_post_comments')
     .select('*')
     .in('parent_comment_id', commentIds)
@@ -938,7 +937,7 @@ export async function getPostComments(postId: string): Promise<SocialComment[]> 
   const replyAuthorIds = Array.from(new Set((replies || []).map((r: any) => r.chef_id)))
   const allAuthorIds = Array.from(new Set([...authorIds, ...replyAuthorIds]))
 
-  const { data: myReactionsData } = await db(db)
+  const { data: myReactionsData } = await db
     .from('chef_comment_reactions')
     .select('comment_id, reaction_type')
     .eq('chef_id', user.entityId)
@@ -1013,7 +1012,7 @@ export async function createComment(input: {
   const content = z.string().trim().min(1).max(2000).parse(input.content)
   const db = createServerClient({ admin: true })
 
-  const { data: comment, error } = await db(db)
+  const { data: comment, error } = await db
     .from('chef_post_comments')
     .insert({
       post_id: input.postId,
@@ -1027,22 +1026,20 @@ export async function createComment(input: {
   if (error) throw new Error('Failed to create comment')
 
   // Notify post/comment author
-  const { data: postRow } = await db(db)
+  const { data: postRow } = await db
     .from('chef_social_posts')
     .select('chef_id')
     .eq('id', input.postId)
     .single()
 
   if (postRow && (postRow as any).chef_id !== user.entityId) {
-    await db(db)
-      .from('chef_social_notifications')
-      .insert({
-        recipient_chef_id: (postRow as any).chef_id,
-        actor_chef_id: user.entityId,
-        notification_type: input.parentCommentId ? 'comment_reply' : 'post_comment',
-        entity_type: 'comment',
-        entity_id: (comment as any).id,
-      })
+    await db.from('chef_social_notifications').insert({
+      recipient_chef_id: (postRow as any).chef_id,
+      actor_chef_id: user.entityId,
+      notification_type: input.parentCommentId ? 'comment_reply' : 'post_comment',
+      entity_type: 'comment',
+      entity_id: (comment as any).id,
+    })
   }
 
   revalidatePath('/network')
@@ -1054,7 +1051,7 @@ export async function deleteComment(commentId: string) {
   z.string().uuid().parse(commentId)
   const db = createServerClient({ admin: true })
 
-  const { data: comment } = await db(db)
+  const { data: comment } = await db
     .from('chef_post_comments')
     .select('chef_id')
     .eq('id', commentId)
@@ -1064,7 +1061,7 @@ export async function deleteComment(commentId: string) {
     throw new Error('Comment not found or not yours')
   }
 
-  await db(db)
+  await db
     .from('chef_post_comments')
     .update({ is_deleted: true, deleted_at: new Date().toISOString() })
     .eq('id', commentId)
@@ -1083,12 +1080,12 @@ export async function followChef(targetChefId: string) {
   if (targetChefId === user.entityId) throw new Error('Cannot follow yourself')
   const db = createServerClient({ admin: true })
 
-  await db(db)
+  await db
     .from('chef_follows')
     .insert({ follower_chef_id: user.entityId, following_chef_id: targetChefId })
 
   // Notify target
-  await db(db).from('chef_social_notifications').insert({
+  await db.from('chef_social_notifications').insert({
     recipient_chef_id: targetChefId,
     actor_chef_id: user.entityId,
     notification_type: 'new_follower',
@@ -1105,7 +1102,7 @@ export async function unfollowChef(targetChefId: string) {
   z.string().uuid().parse(targetChefId)
   const db = createServerClient({ admin: true })
 
-  await db(db)
+  await db
     .from('chef_follows')
     .delete()
     .eq('follower_chef_id', user.entityId)
@@ -1123,13 +1120,13 @@ export async function getFollowStatus(targetChefId: string): Promise<{
   const db = createServerClient({ admin: true })
 
   const [{ data: fwd }, { data: rev }] = await Promise.all([
-    db(db)
+    db
       .from('chef_follows')
       .select('id')
       .eq('follower_chef_id', user.entityId)
       .eq('following_chef_id', targetChefId)
       .maybeSingle(),
-    db(db)
+    db
       .from('chef_follows')
       .select('id')
       .eq('follower_chef_id', targetChefId)
@@ -1144,11 +1141,11 @@ export async function getFollowCounts(chefId: string): Promise<FollowCounts> {
   const db = createServerClient({ admin: true })
 
   const [{ count: followers }, { count: following }] = await Promise.all([
-    db(db)
+    db
       .from('chef_follows')
       .select('*', { count: 'exact', head: true })
       .eq('following_chef_id', chefId),
-    db(db)
+    db
       .from('chef_follows')
       .select('*', { count: 'exact', head: true })
       .eq('follower_chef_id', chefId),
@@ -1165,7 +1162,7 @@ export async function listChannels(input: { category?: string } = {}): Promise<S
   const user = await requireChef()
   const db = createServerClient({ admin: true })
 
-  let query = db(db)
+  let query = db
     .from('chef_social_channels')
     .select('*')
     .eq('visibility', 'public')
@@ -1179,7 +1176,7 @@ export async function listChannels(input: { category?: string } = {}): Promise<S
 
   // Get membership status for current chef
   const channelIds = (channels as any[]).map((c) => c.id)
-  const { data: memberships } = await db(db)
+  const { data: memberships } = await db
     .from('chef_channel_memberships')
     .select('channel_id, notifications_enabled')
     .eq('chef_id', user.entityId)
@@ -1212,7 +1209,7 @@ export async function joinChannel(channelId: string) {
   z.string().uuid().parse(channelId)
   const db = createServerClient({ admin: true })
 
-  await db(db)
+  await db
     .from('chef_channel_memberships')
     .upsert({ channel_id: channelId, chef_id: user.entityId }, { onConflict: 'channel_id,chef_id' })
 
@@ -1225,7 +1222,7 @@ export async function leaveChannel(channelId: string) {
   z.string().uuid().parse(channelId)
   const db = createServerClient({ admin: true })
 
-  await db(db)
+  await db
     .from('chef_channel_memberships')
     .delete()
     .eq('channel_id', channelId)
@@ -1239,7 +1236,7 @@ export async function getMyChannels(): Promise<SocialChannel[]> {
   const user = await requireChef()
   const db = createServerClient({ admin: true })
 
-  const { data: memberships } = await db(db)
+  const { data: memberships } = await db
     .from('chef_channel_memberships')
     .select('channel_id, notifications_enabled')
     .eq('chef_id', user.entityId)
@@ -1251,10 +1248,7 @@ export async function getMyChannels(): Promise<SocialChannel[]> {
     (memberships as any[]).map((m) => [m.channel_id, m.notifications_enabled])
   )
 
-  const { data: channels } = await db(db)
-    .from('chef_social_channels')
-    .select('*')
-    .in('id', channelIds)
+  const { data: channels } = await db.from('chef_social_channels').select('*').in('id', channelIds)
 
   return (channels || []).map((ch: any) => ({
     id: ch.id,
@@ -1283,8 +1277,8 @@ export async function getActiveStories(): Promise<StoryGroup[]> {
 
   // Get chefs whose stories we can see: self + following + connections
   const [{ data: follows }, { data: connections }] = await Promise.all([
-    db(db).from('chef_follows').select('following_chef_id').eq('follower_chef_id', user.entityId),
-    db(db)
+    db.from('chef_follows').select('following_chef_id').eq('follower_chef_id', user.entityId),
+    db
       .from('chef_connections')
       .select('requester_id, addressee_id')
       .eq('status', 'accepted')
@@ -1297,7 +1291,7 @@ export async function getActiveStories(): Promise<StoryGroup[]> {
   )
   const visibleChefIds = Array.from(new Set([user.entityId, ...followingIds, ...connIds]))
 
-  const { data: stories } = await db(db)
+  const { data: stories } = await db
     .from('chef_stories')
     .select('*')
     .in('chef_id', visibleChefIds)
@@ -1311,12 +1305,12 @@ export async function getActiveStories(): Promise<StoryGroup[]> {
 
   const [authorMap, { data: myViews }, { data: myReactions }] = await Promise.all([
     buildAuthorMap(db, authorIds),
-    db(db)
+    db
       .from('chef_story_views')
       .select('story_id')
       .eq('viewer_chef_id', user.entityId)
       .in('story_id', storyIds),
-    db(db)
+    db
       .from('chef_story_reactions')
       .select('story_id, emoji')
       .eq('chef_id', user.entityId)
@@ -1384,15 +1378,13 @@ export async function createStory(input: {
   const user = await requireChef()
   const db = createServerClient({ admin: true })
 
-  const { error } = await db(db)
-    .from('chef_stories')
-    .insert({
-      chef_id: user.entityId,
-      media_url: input.media_url,
-      media_type: input.media_type,
-      caption: input.caption ?? null,
-      duration_seconds: input.duration_seconds ?? 5,
-    })
+  const { error } = await db.from('chef_stories').insert({
+    chef_id: user.entityId,
+    media_url: input.media_url,
+    media_type: input.media_type,
+    caption: input.caption ?? null,
+    duration_seconds: input.duration_seconds ?? 5,
+  })
 
   if (error) throw new Error('Failed to create story')
   revalidatePath('/network')
@@ -1404,7 +1396,7 @@ export async function markStoryViewed(storyId: string) {
   z.string().uuid().parse(storyId)
   const db = createServerClient({ admin: true })
 
-  await db(db)
+  await db
     .from('chef_story_views')
     .upsert(
       { story_id: storyId, viewer_chef_id: user.entityId },
@@ -1419,7 +1411,7 @@ export async function reactToStory(input: { storyId: string; emoji: string }) {
   z.string().uuid().parse(input.storyId)
   const db = createServerClient({ admin: true })
 
-  await db(db)
+  await db
     .from('chef_story_reactions')
     .upsert(
       { story_id: input.storyId, chef_id: user.entityId, emoji: input.emoji.slice(0, 10) },
@@ -1427,22 +1419,20 @@ export async function reactToStory(input: { storyId: string; emoji: string }) {
     )
 
   // Notify story owner
-  const { data: story } = await db(db)
+  const { data: story } = await db
     .from('chef_stories')
     .select('chef_id')
     .eq('id', input.storyId)
     .single()
 
   if (story && (story as any).chef_id !== user.entityId) {
-    await db(db)
-      .from('chef_social_notifications')
-      .insert({
-        recipient_chef_id: (story as any).chef_id,
-        actor_chef_id: user.entityId,
-        notification_type: 'story_reaction',
-        entity_type: 'story',
-        entity_id: input.storyId,
-      })
+    await db.from('chef_social_notifications').insert({
+      recipient_chef_id: (story as any).chef_id,
+      actor_chef_id: user.entityId,
+      notification_type: 'story_reaction',
+      entity_type: 'story',
+      entity_id: input.storyId,
+    })
   }
 
   return { success: true }
@@ -1457,7 +1447,7 @@ export async function toggleSavePost(postId: string) {
   z.string().uuid().parse(postId)
   const db = createServerClient({ admin: true })
 
-  const { data: existing } = await db(db)
+  const { data: existing } = await db
     .from('chef_post_saves')
     .select('id')
     .eq('post_id', postId)
@@ -1465,14 +1455,14 @@ export async function toggleSavePost(postId: string) {
     .maybeSingle()
 
   if (existing) {
-    await db(db)
+    await db
       .from('chef_post_saves')
       .delete()
       .eq('id', (existing as any).id)
     revalidatePath('/network')
     return { saved: false }
   } else {
-    await db(db).from('chef_post_saves').insert({ post_id: postId, chef_id: user.entityId })
+    await db.from('chef_post_saves').insert({ post_id: postId, chef_id: user.entityId })
     revalidatePath('/network')
     return { saved: true }
   }
@@ -1489,7 +1479,7 @@ export async function getSocialNotifications(
   const db = createServerClient({ admin: true })
   const limit = Math.min(input.limit ?? 40, 100)
 
-  const { data: notifs } = await db(db)
+  const { data: notifs } = await db
     .from('chef_social_notifications')
     .select('*')
     .eq('recipient_chef_id', user.entityId)
@@ -1519,7 +1509,7 @@ export async function markSocialNotificationsRead(notifIds?: string[]) {
   const user = await requireChef()
   const db = createServerClient({ admin: true })
 
-  let query = db(db)
+  let query = db
     .from('chef_social_notifications')
     .update({ is_read: true, read_at: new Date().toISOString() })
     .eq('recipient_chef_id', user.entityId)
@@ -1537,7 +1527,7 @@ export async function getUnreadSocialNotificationCount(): Promise<number> {
   const user = await requireChef()
   const db = createServerClient({ admin: true })
 
-  const { count } = await db(db)
+  const { count } = await db
     .from('chef_social_notifications')
     .select('*', { count: 'exact', head: true })
     .eq('recipient_chef_id', user.entityId)
@@ -1558,7 +1548,7 @@ export async function getDiscoverChefs(
   const limit = Math.min(input.limit ?? 20, 50)
 
   // Chefs the current user isn't following yet, discoverable, ordered by followers
-  const { data: alreadyFollowing } = await db(db)
+  const { data: alreadyFollowing } = await db
     .from('chef_follows')
     .select('following_chef_id')
     .eq('follower_chef_id', user.entityId)
@@ -1568,7 +1558,7 @@ export async function getDiscoverChefs(
     ...((alreadyFollowing || []) as any[]).map((f) => f.following_chef_id),
   ]
 
-  const { data: chefs } = await db(db)
+  const { data: chefs } = await db
     .from('chefs')
     .select(
       `id, display_name, business_name, profile_image_url,
@@ -1603,7 +1593,7 @@ export async function getTrendingHashtags(
   const db = createServerClient({ admin: true })
   const limit = Math.min(input.limit ?? 20, 50)
 
-  const { data: tags } = await db(db)
+  const { data: tags } = await db
     .from('chef_social_hashtags')
     .select('tag, post_count')
     .gt('post_count', 0)
@@ -1638,7 +1628,7 @@ export async function getPublicChefSocialProfile(chefId: string): Promise<{
 
   const [{ data: chef }, counts, followStatus, { data: conn }, { count: postCount }] =
     await Promise.all([
-      db(db)
+      db
         .from('chefs')
         .select(
           `id, display_name, business_name, bio, profile_image_url,
@@ -1648,7 +1638,7 @@ export async function getPublicChefSocialProfile(chefId: string): Promise<{
         .single(),
       getFollowCounts(chefId),
       getFollowStatus(chefId),
-      db(db)
+      db
         .from('chef_connections')
         .select('id')
         .eq('status', 'accepted')
@@ -1656,7 +1646,7 @@ export async function getPublicChefSocialProfile(chefId: string): Promise<{
           `and(requester_id.eq.${user.entityId},addressee_id.eq.${chefId}),and(requester_id.eq.${chefId},addressee_id.eq.${user.entityId})`
         )
         .maybeSingle(),
-      db(db)
+      db
         .from('chef_social_posts')
         .select('*', { count: 'exact', head: true })
         .eq('chef_id', chefId)

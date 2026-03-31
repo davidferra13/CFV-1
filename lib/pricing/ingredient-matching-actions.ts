@@ -7,6 +7,7 @@ import {
   normalizeIngredientName,
   type MatchSuggestion,
   type SuggestMatchesResult,
+  type UnmatchedIngredient,
 } from './ingredient-matching-utils'
 
 // Re-export types for consumers
