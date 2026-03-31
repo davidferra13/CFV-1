@@ -1,11 +1,11 @@
 # Spec: Featured Chef Links & Conversion Upgrades
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (6 files modified, 1 migration)
 > **Created:** 2026-03-30
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-30
 
 ---
 

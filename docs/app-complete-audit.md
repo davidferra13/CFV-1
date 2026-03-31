@@ -1157,7 +1157,13 @@ Completion state stored in localStorage per event. Progress bar. Critical items 
 
 **Route:** `/reviews` — Unified internal + external reviews feed. Log feedback button (with "Show on public profile" toggle), import platform review button (with "Show on public profile" toggle, default on), external review sources panel, configure Google review link. "Public" badge on reviews marked for public display.
 
-**Route:** `/chef/[slug]` — Public chef profile (no auth). Now includes **Reviews & Testimonials** section showing:
+**Route:** `/chef/[slug]` — Public chef profile (no auth). Profile header includes:
+
+- Chef avatar, display name, tagline, highlight text
+- **Social icons row** (between highlight text and bio): renders conditionally only when `social_links` JSONB has any truthy values. Supported platforms: Instagram, TikTok, Facebook, YouTube, Linktree. Each icon is a TrackedLink (PostHog analytics) opening the social profile in a new tab
+- Bio text, cuisine tags, service types
+
+Now includes **Reviews & Testimonials** section showing:
 
 - Unified stats header: average rating (stars), total review count, platform breakdown pills (e.g., "Google 12 · 4.8★")
 - Review cards: reviewer name, date, star rating, review text, source badge, external link
@@ -1335,6 +1341,17 @@ Intelligence feature configuration for the menu editor's context sidebar. Contro
 | 11 feature toggles   | Each toggle has a label and description. Features: seasonal warnings, prep estimate, client taste profile, menu history, vendor hints, allergen validation, stock alerts, scale mismatch, inquiry link, budget compliance, dietary conflicts |
 | "Enable all" button  | One-click toggle to enable all 11 features at once                                                                                                                                                                                           |
 | "Disable all" button | Opens a confirmation modal (danger variant) warning that disabling all features will turn off allergen validation and other safety checks. Requires explicit confirmation before proceeding                                                  |
+
+### 15.5 My Profile (`/settings/profile`)
+
+Chef profile editor. Three cards in sequence: Chef Profile, Social & External Links, Public Profile Settings.
+
+| Element                          | Description                                                                                                                                         |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Chef Profile card**            | Avatar upload, display name, business name, tagline, highlight text, bio (textarea), cuisine tags, service types                                    |
+| **Social & External Links card** | 5 URL inputs for external profiles: Instagram, TikTok, Facebook, YouTube, Linktree/Link Hub. Stored in `social_links` JSONB column on `chefs` table |
+| **Public Profile Settings card** | Public profile slug, SEO preview, discoverability toggle, availability signal                                                                       |
+| "Save Profile" button            | Saves all three cards (Chef Profile + Social & External Links + Public Profile Settings) in a single server action. Toast on success/failure        |
 
 ### 20.1 Delete Account (`/settings/delete-account`)
 
@@ -1908,14 +1925,14 @@ Public-facing consumer marketplace pages. No auth required. These form the clien
 
 Client-first marketplace landing. Hero with "Find a private chef near you." tagline.
 
-| Element            | Description                                                                                                                                                                                                     |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hero section       | Gradient background, headline, subtitle, "Book a Private Chef" CTA button                                                                                                                                       |
-| Search bar         | `HomepageSearch` component: `LocationAutocomplete` for location + service type dropdown + search button. Passes pre-geocoded lat/lng when available. Navigates to `/chefs?location=X&serviceType=Y&lat=N&lng=N` |
-| Service categories | 6 cards (Private Dining, Meal Prep, Cooking Classes, Corporate Events, Wedding Catering, Special Diets). Each links to `/chefs?serviceType=X`                                                                   |
-| Featured chefs     | Grid of discoverable chefs from `getDiscoverableChefs()`, sorted by `sortDirectoryChefs()`. Chef cards with avatar, name, tagline, rating                                                                       |
-| How it works       | 3-step: Describe Your Event, Get Matched, Enjoy. Icons + descriptions                                                                                                                                           |
-| Operator CTA       | Bottom section targeting chef operators with link to `/for-operators`                                                                                                                                           |
+| Element            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hero section       | Gradient background, headline, subtitle, "Book a Private Chef" CTA button                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Search bar         | `HomepageSearch` component: `LocationAutocomplete` for location + service type dropdown + search button. Passes pre-geocoded lat/lng when available. Navigates to `/chefs?location=X&serviceType=Y&lat=N&lng=N`                                                                                                                                                                                                                                                                                                                  |
+| Service categories | 6 cards (Private Dining, Meal Prep, Cooking Classes, Corporate Events, Wedding Catering, Special Diets). Each links to `/chefs?serviceType=X`                                                                                                                                                                                                                                                                                                                                                                                    |
+| Featured chefs     | Grid of discoverable chefs from `getDiscoverableChefs()`, sorted by `sortDirectoryChefs()`. Chef cards: outer wrapper is a div (not Link), hero image area links to `/chef/[slug]` (Cloudinary-optimized via `getOptimizedImageUrl` for external URLs), social link icons row (conditional, links to chef's social profiles in new tabs), star rating badge overlay (top-right corner, shown when `avg_rating` and `review_count` exist), name, tagline, "Inquire" CTA button at card footer (shown when chef accepts inquiries) |
+| How it works       | 3-step: Describe Your Event, Get Matched, Enjoy. Icons + descriptions                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Operator CTA       | Bottom section targeting chef operators with link to `/for-operators`                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 ### Book a Private Chef (`/book`)
 
