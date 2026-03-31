@@ -5,6 +5,7 @@
 > **Depends on:** none (builds on existing inquiry pipeline, Gmail sync, Hub system)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-30
+> **Reviewed:** 2026-03-30 (Planner Gate passed, 7 builder traps identified and fixed)
 > **Built by:** not started
 
 ---
@@ -58,7 +59,7 @@ Key prediction categories:
 ### New Tables
 
 ```sql
--- Migration: 20260401000136_service_lifecycle_checkpoints.sql
+-- Migration: 20260401000142_service_lifecycle_checkpoints.sql
 
 -- Checkpoint definitions (the blueprint, configurable per chef)
 CREATE TABLE IF NOT EXISTS service_lifecycle_templates (
@@ -137,9 +138,9 @@ CREATE INDEX idx_ldl_created ON lifecycle_detection_log(created_at DESC);
 
 ### Migration Notes
 
-- Next available timestamp: `20260401000136`
+- **Timestamp:** `20260401000142` (highest existing is `20260401000141_reference_libraries.sql`)
 - All additive. No existing tables modified.
-- `service_lifecycle_templates` gets seeded with default checkpoints from the Service Lifecycle Blueprint on first chef login (or via a setup action)
+- `service_lifecycle_templates` gets seeded with default checkpoints from the Service Lifecycle Blueprint on first chef login (or via a setup action). **Seed must use `INSERT ... ON CONFLICT (chef_id, checkpoint_key) DO NOTHING`** to be idempotent (safe to call multiple times).
 - `service_lifecycle_progress` is the live state. One row per checkpoint per inquiry/event.
 - `lifecycle_detection_log` is append-only audit trail of what the AI analyzed.
 
@@ -246,7 +247,14 @@ Stage 10 (client_lifecycle):
 
 ### Auto-Detection Rules
 
-Each checkpoint can have an `auto_detect_rule` that maps to a detection function. These are the rules the Conversation Stage Detector uses:
+Each checkpoint can have an `auto_detect_rule` that maps to a detection function. The `auto_detect_rule` column is a simple string with format `{type}:{key}` where:
+
+- **`field_present:{column_name}`** - Fires when the named column on the `inquiries` or `events` table is non-null and non-empty. The detector reads `inquiry[column_name]` and checks truthiness. No parsing needed; the column name IS the rule.
+- **`inquiry_status:{status}`** - Fires when `inquiry.status` matches the given value.
+- **`event_status:{status}`** - Fires when `event.status` matches the given value.
+- **`text_match:{pattern_name}`** - Fires when a named regex pattern set matches in the conversation text. Each `pattern_name` maps to a hardcoded regex array in `detector.ts` (not configurable via DB). The regex arrays are defined as a `const PATTERNS: Record<string, RegExp[]>` map.
+
+The builder must implement a `parseAutoDetectRule(rule: string): { type: string, key: string }` function that splits on the first `:`. This is trivial but must be explicit.
 
 ```
 -- Rules that fire from existing data (no AI needed):
@@ -289,18 +297,18 @@ text_match:confirmation             -> s6_confirmation_sent
 
 ### New File: `lib/lifecycle/actions.ts`
 
-| Action                                                                  | Auth                | Input                                                              | Output                                                                                             | Side Effects                                                 |
-| ----------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `getLifecycleProgress(inquiryId?, eventId?)`                            | `requireChef()`     | inquiry or event ID                                                | `{ stages: StageProgress[], overallPercent: number, currentStage: number, nextActions: string[] }` | None (read-only)                                             |
-| `getLifecycleProgressForClient(groupToken)`                             | Public (token-auth) | hub group token                                                    | `{ stages: ClientStageView[] }` (filtered, client_visible only)                                    | None                                                         |
-| `updateCheckpoint(inquiryId?, eventId?, checkpointKey, status, notes?)` | `requireChef()`     | checkpoint key + new status                                        | `{ success, progress? }`                                                                           | Revalidates inquiry/event page, broadcasts SSE               |
-| `bulkUpdateCheckpoints(inquiryId?, eventId?, updates[])`                | `requireChef()`     | array of { key, status }                                           | `{ success, updated: number }`                                                                     | Revalidates, broadcasts SSE                                  |
-| `skipCheckpoint(inquiryId?, eventId?, checkpointKey, reason)`           | `requireChef()`     | key + reason                                                       | `{ success }`                                                                                      | Logs skip reason                                             |
-| `analyzeConversation(inquiryId, messageText?, fullThread?)`             | `requireChef()`     | inquiry ID + optional new text                                     | `{ detected: CheckpointDetection[], missing: string[], stageAssessment: number }`                  | Writes to lifecycle_detection_log, auto-updates progress     |
-| `seedDefaultTemplate(chefId)`                                           | `requireChef()`     | chef ID                                                            | `{ success, checkpointCount: number }`                                                             | Creates ~150 template rows from blueprint                    |
-| `updateTemplateCheckpoint(checkpointKey, updates)`                      | `requireChef()`     | key + { is_active?, is_required?, client_visible?, client_label? } | `{ success }`                                                                                      | Chef customizes their template                               |
-| `getNextMissingInfo(inquiryId)`                                         | `requireChef()`     | inquiry ID                                                         | `{ missingCheckpoints: string[], suggestedQuestion: string }`                                      | None (used by email draft assistant)                         |
-| `getMissingInfoDraftEmail(inquiryId)`                                   | `requireChef()`     | inquiry ID                                                         | `{ draft: string, missingItems: string[] }`                                                        | Uses Ollama to draft a natural email asking for missing info |
+| Action                                                                  | Auth                                                | Input                                                              | Output                                                                                             | Side Effects                                                                      |
+| ----------------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `getLifecycleProgress(inquiryId?, eventId?)`                            | `requireChef()`                                     | inquiry or event ID                                                | `{ stages: StageProgress[], overallPercent: number, currentStage: number, nextActions: string[] }` | None (read-only)                                                                  |
+| `getLifecycleProgressForClient(groupToken)`                             | Public (token-auth)                                 | hub group token                                                    | `{ stages: ClientStageView[] }` (filtered, client_visible only)                                    | None                                                                              |
+| `updateCheckpoint(inquiryId?, eventId?, checkpointKey, status, notes?)` | `requireChef()`                                     | checkpoint key + new status                                        | `{ success, progress? }`                                                                           | Revalidates inquiry/event page, broadcasts SSE                                    |
+| `bulkUpdateCheckpoints(inquiryId?, eventId?, updates[])`                | `requireChef()`                                     | array of { key, status }                                           | `{ success, updated: number }`                                                                     | Revalidates, broadcasts SSE                                                       |
+| `skipCheckpoint(inquiryId?, eventId?, checkpointKey, reason)`           | `requireChef()`                                     | key + reason                                                       | `{ success }`                                                                                      | Logs skip reason                                                                  |
+| `analyzeConversation(inquiryId, messageText?, fullThread?)`             | `requireChef()`                                     | inquiry ID + optional new text                                     | `{ detected: CheckpointDetection[], missing: string[], stageAssessment: number }`                  | Writes to lifecycle_detection_log, auto-updates progress                          |
+| `seedDefaultTemplate(chefId)`                                           | `requireChef()` OR direct `chefId` param (see note) | chef ID                                                            | `{ success, checkpointCount: number }`                                                             | Creates ~150 template rows from blueprint (idempotent via ON CONFLICT DO NOTHING) |
+| `updateTemplateCheckpoint(checkpointKey, updates)`                      | `requireChef()`                                     | key + { is_active?, is_required?, client_visible?, client_label? } | `{ success }`                                                                                      | Chef customizes their template                                                    |
+| `getNextMissingInfo(inquiryId)`                                         | `requireChef()`                                     | inquiry ID                                                         | `{ missingCheckpoints: string[], suggestedQuestion: string }`                                      | None (used by email draft assistant)                                              |
+| `getMissingInfoDraftEmail(inquiryId)`                                   | `requireChef()`                                     | inquiry ID                                                         | `{ draft: string, missingItems: string[] }`                                                        | Uses Ollama to draft a natural email asking for missing info                      |
 
 ### New File: `lib/lifecycle/detector.ts` (NOT a server action file)
 
@@ -341,14 +349,38 @@ interface CheckpointDetection {
 
 ### Modified File: `lib/gmail/sync.ts`
 
-**What to change:** After the existing `createInquiry()` call in the sync pipeline, add a call to `runFullDetection()` on the email content, then `bulkUpdateCheckpoints()` with the results. This means every incoming email automatically updates the lifecycle progress.
+**What to change:** Hook `runFullDetection()` into the sync pipeline at TWO points, not just one. Most incoming emails are for EXISTING inquiries (logged as messages, not new inquiries). Detection must run on both new and existing inquiry emails, or 90%+ of detection opportunities are missed.
+
+**IMPORTANT:** Gmail sync runs with `admin: true` DB client (no user session, cron-triggered). Detection functions called from here must NOT use `requireChef()`. Instead, pass `chefId` and `tenantId` directly and use the admin DB client. The `bulkUpdateCheckpointsInternal()` function (see actions.ts) handles this.
 
 ```typescript
-// After existing inquiry creation/update:
+// HOOK 1: After NEW inquiry creation
+// (inside the branch where createInquiry() is called)
+await ensureTemplateSeeded(chefId) // idempotent, uses admin client
 const detection = await runFullDetection(inquiry, emailBody)
 if (detection.detected.length > 0) {
-  await bulkUpdateCheckpoints(
+  await bulkUpdateCheckpointsInternal(
+    chefId,
     inquiryId,
+    null,
+    detection.detected.map((d) => ({
+      key: d.checkpoint_key,
+      status: 'auto_detected',
+      evidence_type: 'email',
+      evidence_source: gmailMessageId,
+      evidence_excerpt: d.excerpt,
+      extracted_data: d.value,
+    }))
+  )
+}
+
+// HOOK 2: After message logged for EXISTING inquiry
+// (inside the branch where the email is added to an existing inquiry's thread)
+const detection = await runFullDetection(existingInquiry, emailBody)
+if (detection.detected.length > 0) {
+  await bulkUpdateCheckpointsInternal(
+    chefId,
+    existingInquiry.id,
     null,
     detection.detected.map((d) => ({
       key: d.checkpoint_key,
@@ -362,11 +394,38 @@ if (detection.detected.length > 0) {
 }
 ```
 
+### New Internal Functions: `lib/lifecycle/actions.ts`
+
+The actions file must expose TWO versions of key functions:
+
+1. **Public server actions** (exported, `'use server'`, use `requireChef()`) - called from UI
+2. **Internal functions** (exported but NOT in `'use server'` file, accept `chefId` directly, use admin DB client) - called from Gmail sync and other server-side pipelines that run without user sessions
+
+```typescript
+// Public (UI-triggered, has session):
+export async function bulkUpdateCheckpoints(inquiryId, eventId, updates) {
+  const user = await requireChef()
+  return bulkUpdateCheckpointsInternal(user.tenantId!, inquiryId, eventId, updates)
+}
+
+// Internal (pipeline-triggered, no session):
+export async function bulkUpdateCheckpointsInternal(chefId, inquiryId, eventId, updates) {
+  const db = createServerClient({ admin: true })
+  // ... actual DB writes, SSE broadcast, cache bust
+}
+
+// Same pattern for ensureTemplateSeeded():
+export async function ensureTemplateSeeded(chefId: string) {
+  const db = createServerClient({ admin: true })
+  // INSERT ... ON CONFLICT (chef_id, checkpoint_key) DO NOTHING
+}
+```
+
 ### Modified File: `lib/inquiries/actions.ts`
 
 **What to change:**
 
-1. In `createInquiry()`: after creating the inquiry, call `seedDefaultTemplate()` (if not already seeded for this chef) and `runFullDetection()` on the source_message to populate initial checkpoints.
+1. In `createInquiry()`: after creating the inquiry, call `ensureTemplateSeeded(chefId)` (idempotent) and `runFullDetection()` on the source_message to populate initial checkpoints. Note: `createInquiry()` is called both from UI (has session) and from Gmail sync (admin client). Use the internal function variants.
 2. In `updateInquiry()`: after updating confirmed fields, call `detectFromFields()` to auto-check any newly satisfied checkpoints.
 3. In `transitionInquiry()`: auto-update stage-transition checkpoints (e.g., status -> quoted triggers s3_quote_sent).
 
@@ -377,6 +436,10 @@ if (detection.detected.length > 0) {
 ### Chef View: Lifecycle Progress Panel
 
 **Location:** New component rendered on the inquiry detail page and event detail page.
+
+**Placement on inquiry detail page (`app/(chef)/inquiries/[id]/page.tsx`):** Render BELOW the existing `CriticalPathCard` (line 327). Do NOT replace it. The critical path card stays (it's the 10-item hard-blocker view). The lifecycle panel is the expanded 200+ checkpoint view. Both are valuable; critical path is the quick-glance, lifecycle is the deep view.
+
+**Placement on event detail page:** Similar position, after event status/header section.
 
 **File:** `components/lifecycle/lifecycle-progress-panel.tsx`
 
@@ -530,12 +593,14 @@ Each inquiry card shows:
 
 ## Out of Scope
 
+- **Prediction Engine (Component 4)** - deferred to follow-up spec. The 50+ prediction rules in `docs/research/predictive-lifecycle-engine.md` require their own DB schema, server actions, and UI. Components 1-3 are the build target for this spec. The prediction engine layer sits on top of the checkpoint data this spec creates.
 - SMS inbound auto-detection (infrastructure exists, will be wired in a follow-up spec)
 - Screenshot OCR to lifecycle detection (will use existing OCR infra, follow-up spec)
 - Automated email sending (this spec drafts emails, chef sends them manually for now)
 - Custom checkpoint creation by chef (they can activate/deactivate defaults, not create new ones yet)
 - Multi-chef coordination on same inquiry (future spec)
 - Calendar integration for Stage 6 timeline building (separate spec)
+- Repeat-client pre-fill from previous engagements (needs its own spec, depends on lifecycle data existing first)
 
 ---
 
@@ -548,3 +613,21 @@ Each inquiry card shows:
 - **Performance:** `getLifecycleProgress()` will be called on every inquiry/event page load. Use a single query that joins templates + progress. Consider `unstable_cache` with tag `lifecycle-{inquiryId}` and bust it on every checkpoint update.
 - **SSE:** Broadcast checkpoint updates so the UI updates in real-time if another tab or the Gmail sync updates progress.
 - **`computeReadinessScore()`** already exists in `lib/inquiries/actions.ts`. The lifecycle progress is a superset of readiness. Eventually, readiness score should be derived from lifecycle progress, but for now they can coexist. Don't break the existing readiness score.
+
+### Builder Traps (Planner Gate Review - 2026-03-30)
+
+These are the 7 mistakes a builder would make if the spec weren't corrected. All have been fixed in the spec above, but read these to understand the reasoning:
+
+1. **Migration timestamp was `20260401000136`, but highest existing is `20260401000141`.** Fixed to `20260401000142`. Always run `glob database/migrations/*.sql` before creating a migration.
+
+2. **`seedDefaultTemplate()` originally required `requireChef()`, but Gmail sync runs with `admin: true` (no session).** Fixed: `ensureTemplateSeeded(chefId)` accepts `chefId` directly and uses admin client. Idempotent via `ON CONFLICT DO NOTHING`.
+
+3. **Detection originally only hooked after `createInquiry()` in Gmail sync.** But most emails are for EXISTING inquiries (logged as messages, not new inquiries). Fixed: detection now hooks at TWO points (new inquiry creation AND message logging for existing inquiries).
+
+4. **`auto_detect_rule` strings had no parser spec.** Fixed: format is `{type}:{key}`, split on first `:`. Four types defined: `field_present`, `inquiry_status`, `event_status`, `text_match`.
+
+5. **Template seed had no idempotency guard.** The `UNIQUE(chef_id, checkpoint_key)` constraint would crash on repeat calls. Fixed: seed uses `INSERT ... ON CONFLICT DO NOTHING`.
+
+6. **Lifecycle panel placement on inquiry detail page was unspecified.** The page is 941 lines with a specific visual hierarchy. Fixed: render BELOW existing `CriticalPathCard`, not replacing it.
+
+7. **Component 4 (Prediction Engine) was in scope but had no implementation spec.** Fixed: deferred to follow-up spec. Components 1-3 are the build target.
