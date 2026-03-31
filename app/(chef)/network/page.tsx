@@ -29,6 +29,10 @@ import {
   getCollabUnreadCount,
   getTrustedCircle,
 } from '@/lib/network/collab-actions'
+import {
+  getCollabSpaceSummaries,
+  getCollabSpacesUnreadCount,
+} from '@/lib/network/collab-space-actions'
 import { createServerClient } from '@/lib/db/server'
 import { SocialFeedClient } from '@/components/social/social-feed-client'
 import { SocialChannelGrid } from '@/components/social/social-channel-card'
@@ -90,11 +94,14 @@ export default async function NetworkPage({
   const myAvatar = (myChef as any)?.profile_image_url ?? null
 
   // Load tab-specific data
-  const [discoverable, pending, collabUnreadCount] = await Promise.all([
+  const [discoverable, pending, collabUnreadCount, spacesUnreadCount] = await Promise.all([
     getNetworkDiscoverable(),
     getPendingRequests(),
     getCollabUnreadCount(),
+    getCollabSpacesUnreadCount(),
   ])
+
+  const totalCollabBadge = collabUnreadCount + spacesUnreadCount
 
   return (
     <div className="space-y-6">
@@ -180,7 +187,7 @@ export default async function NetworkPage({
             { id: 'channels', label: 'Channels', icon: Hash, badge: 0 },
             { id: 'discover', label: 'Discover', icon: Compass, badge: 0 },
             { id: 'connections', label: 'Connections', icon: Users, badge: 0 },
-            { id: 'collab', label: 'Collab', icon: Handshake, badge: collabUnreadCount },
+            { id: 'collab', label: 'Collab', icon: Handshake, badge: totalCollabBadge },
           ].map(({ id, label, icon: Icon, badge }) => (
             <Link
               key={id}
@@ -427,12 +434,14 @@ async function ConnectionsTab({ chefId }: { chefId: string }) {
 
 // -- Collaboration Tab --------------------------------------------
 async function CollabTab({ focusHandoffId }: { focusHandoffId: string | null }) {
-  const [trustedCircle, collabInbox, availabilitySignals, collabMetrics] = await Promise.all([
-    getTrustedCircle(),
-    getCollabInbox(80),
-    getCollabAvailabilitySignals(),
-    getCollabMetrics(90),
-  ])
+  const [trustedCircle, collabInbox, availabilitySignals, collabMetrics, spaces] =
+    await Promise.all([
+      getTrustedCircle(),
+      getCollabInbox(80),
+      getCollabAvailabilitySignals(),
+      getCollabMetrics(90),
+      getCollabSpaceSummaries(5),
+    ])
 
   return (
     <div className="space-y-4">
@@ -447,6 +456,65 @@ async function CollabTab({ focusHandoffId }: { focusHandoffId: string | null }) 
         initialMetrics={collabMetrics}
         initialFocusHandoffId={focusHandoffId}
       />
+
+      {/* Private Spaces section */}
+      <div className="mt-6 pt-6 border-t border-stone-700">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="text-sm font-semibold text-stone-200">Private Spaces</h3>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Persistent chef-only spaces for ongoing collaboration. Not a Dinner Circle.
+            </p>
+          </div>
+          <Link
+            href="/network/collabs"
+            className="text-xs text-amber-500 hover:text-amber-400 font-medium"
+          >
+            New Space
+          </Link>
+        </div>
+        {spaces.length === 0 ? (
+          <div className="rounded-lg border border-stone-700 bg-stone-800/50 p-4 text-center">
+            <p className="text-xs text-stone-500">
+              No spaces yet.{' '}
+              <Link href="/network/collabs" className="text-amber-500 hover:underline">
+                Create one
+              </Link>{' '}
+              to start ongoing chef collaboration.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {spaces.map((space) => (
+              <Link
+                key={space.id}
+                href={`/network/collabs/${space.id}`}
+                className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-800/50 px-3 py-2 hover:border-amber-700/50 transition-colors"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="text-sm text-stone-200 truncate font-medium">
+                    {space.display_name}
+                  </span>
+                  {space.unread && (
+                    <span className="flex-shrink-0 h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  )}
+                </div>
+                <span className="text-xs text-stone-500 flex-shrink-0">
+                  {space.thread_count} threads
+                </span>
+              </Link>
+            ))}
+            {spaces.length >= 5 && (
+              <Link
+                href="/network/collabs"
+                className="block text-center text-xs text-amber-500 hover:text-amber-400 py-1"
+              >
+                View all spaces
+              </Link>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
