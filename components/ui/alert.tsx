@@ -27,7 +27,10 @@ export function Alert({ variant = 'info', title, children, className = '', ...pr
   }
 
   return (
-    <div className={`rounded-lg border p-4 ${variants[variant]} ${className}`} {...props}>
+    <div
+      className={`rounded-lg border p-4 animate-fade-slide-up ${variants[variant]} ${className}`}
+      {...props}
+    >
       <div className="flex">
         <div className="flex-shrink-0">
           {variant === 'error' && (

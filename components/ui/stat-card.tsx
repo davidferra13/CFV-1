@@ -2,6 +2,7 @@
 // Adapted from legacy ChefFlow ClientDetailModal pattern
 
 import { type LucideIcon } from '@/components/ui/icons'
+import { AnimatedCounter } from '@/components/ui/animated-counter'
 
 type StatCardProps = {
   label: string
@@ -13,6 +14,8 @@ type StatCardProps = {
   }
   subtitle?: string
   className?: string
+  /** Animate the value counting up on first render */
+  animate?: boolean
 }
 
 export function StatCard({
@@ -22,16 +25,23 @@ export function StatCard({
   trend,
   subtitle,
   className = '',
+  animate = true,
 }: StatCardProps) {
+  const displayValue = String(value)
+
   return (
-    <div className={`rounded-xl border border-stone-700 bg-stone-900 p-5 shadow-sm ${className}`}>
+    <div
+      className={`group rounded-xl border border-stone-700 bg-stone-900 p-5 shadow-sm transition-all duration-200 hover:border-stone-600 hover:shadow-[var(--shadow-card-hover)] hover:bg-stone-800/80 ${className}`}
+    >
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-stone-400">{label}</p>
-          <p className="text-2xl font-bold text-stone-100">{value}</p>
+          <p className="text-2xl font-bold text-stone-100 tabular-nums">
+            {animate ? <AnimatedCounter value={displayValue} /> : displayValue}
+          </p>
           {subtitle && <p className="text-xs text-stone-400">{subtitle}</p>}
         </div>
-        <div className="rounded-lg bg-brand-950 p-2.5">
+        <div className="rounded-lg bg-brand-950 p-2.5 transition-transform duration-200 group-hover:scale-110">
           <Icon className="h-5 w-5 text-brand-600" />
         </div>
       </div>

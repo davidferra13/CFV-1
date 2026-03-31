@@ -1533,3 +1533,105 @@ select:focus {
     transform: scale(1) translateY(0);
   }
 }
+
+/* ============================================
+   INTELLIGENT UX UTILITIES
+   Reusable micro-interaction patterns
+   ============================================ */
+
+/* Scale-in entrance for badges, chips, tags */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 200ms var(--ease-spring) both;
+}
+
+/* Slide-down entrance for dropdowns, menus, popovers */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 180ms var(--ease-spring) both;
+}
+
+/* ── Interactive Row (list items, table rows that respond to hover) ── */
+.interactive-row {
+  transition:
+    background-color var(--duration-fast),
+    transform var(--duration-fast);
+}
+.interactive-row:hover {
+  background-color: rgb(var(--stone-800) / 0.4);
+}
+.interactive-row:active {
+  transform: scale(0.995);
+}
+
+/* ── Smooth Number Transitions (for counters, metrics) ── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Focus-within group highlight (for form sections) ── */
+.focus-within-highlight {
+  transition: border-color var(--duration-normal);
+}
+.focus-within-highlight:focus-within {
+  border-color: rgb(var(--brand-500) / 0.3);
+}
+
+/* ── Hover-reveal child (show child element only on parent hover) ── */
+.hover-reveal-parent .hover-reveal-child {
+  opacity: 0;
+  transition: opacity var(--duration-fast);
+}
+.hover-reveal-parent:hover .hover-reveal-child,
+.hover-reveal-parent:focus-within .hover-reveal-child {
+  opacity: 1;
+}
+
+/* ── Subtle pulse for attention (new items, unread indicators) ── */
+@keyframes attention-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(var(--brand-500) / 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgb(var(--brand-500) / 0);
+  }
+}
+
+.attention-pulse {
+  animation: attention-pulse 2s ease-in-out 2;
+}
+
+/* ── Smooth collapse/expand ── */
+.collapsible {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--duration-slow) var(--ease-spring);
+}
+.collapsible[data-open='true'],
+.collapsible.open {
+  grid-template-rows: 1fr;
+}
+.collapsible > * {
+  overflow: hidden;
+}

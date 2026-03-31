@@ -172,7 +172,7 @@ export function ComboboxInput({
       {isOpen && filtered.length > 0 && (
         <ul
           ref={listRef}
-          className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-stone-600 bg-stone-900 shadow-lg"
+          className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-stone-600 bg-stone-900 shadow-[var(--shadow-overlay)] animate-slide-down"
           role="listbox"
         >
           {filtered.slice(0, 20).map((option, i) => (
@@ -201,7 +201,7 @@ export function ComboboxInput({
       )}
 
       {isOpen && filtered.length === 0 && value.trim() && (
-        <div className="absolute z-50 mt-1 w-full rounded-xl border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-500 shadow-lg">
+        <div className="absolute z-50 mt-1 w-full rounded-xl border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-500 shadow-[var(--shadow-overlay)] animate-slide-down">
           No matches found
         </div>
       )}

@@ -8,15 +8,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className }: SkeletonProps) {
-  return (
-    <div
-      className={cn(
-        'rounded-md bg-gradient-to-r from-stone-100 via-stone-50 to-stone-100 bg-[length:200%_100%] animate-shimmer',
-        className
-      )}
-      aria-hidden="true"
-    />
-  )
+  return <div className={cn('skeleton rounded-md', className)} aria-hidden="true" />
 }
 
 // Pre-built skeletons for common shapes
