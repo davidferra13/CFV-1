@@ -1004,6 +1004,12 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 | Experiential config    | `playwright.experiential.config.ts`                                                |
 | Experiential docs      | `docs/experiential-verification.md`                                                |
 | System behavior map    | `docs/system-behavior-map.md` (full runtime behavior audit, March 2026)            |
+| OpenClaw sync (all)    | `scripts/openclaw-pull/sync-all.mjs` (full pipeline: pull + normalize + prices)    |
+| OpenClaw pull          | `scripts/openclaw-pull/pull.mjs` (Pi SQLite -> openclaw.\* tables)                 |
+| OpenClaw normalize     | `scripts/openclaw-pull/sync-normalization.mjs` (norm map + ingredient aliases)     |
+| OpenClaw price sync    | `scripts/run-openclaw-sync.mjs` (Pi API -> ingredient_price_history)               |
+| Pipeline audit         | `scripts/pipeline-audit.mjs` (current state vs targets)                            |
+| Price resolution       | `lib/pricing/resolve-price.ts` (10-tier fallback chain)                            |
 
 ---
 
@@ -1032,7 +1038,7 @@ There are no beta/staging/prod directories. There is one copy of the app. The pr
 ## DATABASE
 
 - **Local PostgreSQL** via Docker container (`chefflow_postgres` on port 54322)
-- **Connection:** `postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres`
+- **Connection:** `postgresql://postgres:postgres@127.0.0.1:54322/postgres`
 - **Start:** `docker compose up -d`
 - **Init (first time):** `bash scripts/init-local-db.sh` (creates stubs, applies migrations, seeds demo accounts)
 - **Full docs:** `docs/local-database-setup.md`
