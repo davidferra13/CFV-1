@@ -71,6 +71,8 @@ import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
 import { getCriticalPath } from '@/lib/lifecycle/critical-path'
 import { CriticalPathCard } from '@/components/lifecycle/critical-path-card'
 import { getEmailSnapshot } from '@/lib/lifecycle/email-snapshot'
+import { getLifecycleProgress } from '@/lib/lifecycle/actions'
+import { LifecycleProgressPanel } from '@/components/lifecycle/lifecycle-progress-panel'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -174,6 +176,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     circleToken,
     criticalPath,
     snapshotData,
+    lifecycleProgress,
   ] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
@@ -189,6 +192,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     getInquiryCircleToken(params.id).catch(() => null),
     getCriticalPath({ inquiryId: params.id }).catch(() => null),
     getEmailSnapshot(params.id).catch(() => null),
+    getLifecycleProgress(params.id).catch(() => null),
   ])
 
   if (!inquiry) {
@@ -325,6 +329,17 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Critical Path - the go/no-go status for this dinner */}
       {criticalPath && <CriticalPathCard criticalPath={criticalPath} circleToken={circleToken} />}
+
+      {/* Service Lifecycle Progress - expanded checkpoint tracking */}
+      {lifecycleProgress && lifecycleProgress.stages.length > 0 && (
+        <LifecycleProgressPanel
+          inquiryId={params.id}
+          stages={lifecycleProgress.stages}
+          overallPercent={lifecycleProgress.overallPercent}
+          currentStage={lifecycleProgress.currentStage}
+          nextActions={lifecycleProgress.nextActions}
+        />
+      )}
 
       {/* Dinner Circle Link */}
       {circleToken && !criticalPath && (

@@ -23,6 +23,7 @@ import { WeeklyMealBoard } from '@/components/hub/weekly-meal-board'
 import { toggleMuteCircle, updateMemberNotificationPreferences } from '@/lib/hub/group-actions'
 import { NotificationPreferences } from '@/components/hub/notification-preferences'
 import { CircleClientStatus } from '@/components/hub/circle-client-status'
+import { LifecycleClientView } from '@/components/hub/lifecycle-client-view'
 import type { GuestCriticalPathResult } from '@/lib/lifecycle/critical-path'
 
 type Tab =
@@ -46,6 +47,11 @@ interface HubGroupViewProps {
   mealBoardEntries: MealBoardEntry[]
   profileToken?: string
   guestStatus?: GuestCriticalPathResult | null
+  lifecycleStages?: {
+    stageNumber: number
+    stageName: string
+    checkpoints: { label: string; status: string; value?: string }[]
+  }[]
 }
 
 export function HubGroupView({
@@ -58,6 +64,7 @@ export function HubGroupView({
   mealBoardEntries,
   profileToken: profileTokenProp,
   guestStatus,
+  lifecycleStages,
 }: HubGroupViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>(((group as any).default_tab as Tab) || 'chat')
   const [localGroup, setLocalGroup] = useState<HubGroup>(group)
@@ -291,6 +298,13 @@ export function HubGroupView({
       {guestStatus && (guestStatus.confirmed.length > 0 || guestStatus.missing.length > 0) && (
         <div className="mx-auto w-full max-w-2xl">
           <CircleClientStatus status={guestStatus} />
+        </div>
+      )}
+
+      {/* Lifecycle Progress (client-visible checkpoints) */}
+      {lifecycleStages && lifecycleStages.length > 0 && (
+        <div className="mx-auto w-full max-w-2xl px-4 mt-3">
+          <LifecycleClientView stages={lifecycleStages} />
         </div>
       )}
 

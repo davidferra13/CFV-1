@@ -618,6 +618,16 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[non-blocking] Webhook dispatch failed', err)
   }
 
+  // Lifecycle detection: seed + detect from initial fields (non-blocking)
+  try {
+    const { ensureTemplateSeeded } = await import('@/lib/lifecycle/seed')
+    const { runFieldDetectionAndUpdate } = await import('@/lib/lifecycle/actions')
+    await ensureTemplateSeeded(user.tenantId!)
+    await runFieldDetectionAndUpdate(user.tenantId!, inquiry.id, inquiry as any)
+  } catch (err) {
+    console.error('[createInquiry] Lifecycle detection failed (non-blocking):', err)
+  }
+
   return { success: true, inquiry }
 }
 
@@ -908,6 +918,14 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
     console.error('[non-blocking] Webhook dispatch failed', err)
   }
 
+  // Lifecycle detection: re-detect from updated fields (non-blocking)
+  try {
+    const { runFieldDetectionAndUpdate } = await import('@/lib/lifecycle/actions')
+    await runFieldDetectionAndUpdate(user.tenantId!, id, inquiry as any)
+  } catch (err) {
+    console.error('[updateInquiry] Lifecycle detection failed (non-blocking):', err)
+  }
+
   return result
 }
 
@@ -1085,6 +1103,14 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   // Client-side cache invalidation
   revalidatePath('/my-inquiries')
   revalidatePath(`/my-inquiries/${id}`)
+
+  // Lifecycle detection: auto-check status-mapped checkpoints (non-blocking)
+  try {
+    const { runFieldDetectionAndUpdate } = await import('@/lib/lifecycle/actions')
+    await runFieldDetectionAndUpdate(user.tenantId!, id, updated as any)
+  } catch (err) {
+    console.error('[transitionInquiry] Lifecycle detection failed (non-blocking):', err)
+  }
 
   return { success: true, inquiry: updated }
 }

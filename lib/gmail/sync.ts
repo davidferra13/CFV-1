@@ -719,6 +719,24 @@ async function handleInquiry(
       console.error('[handleInquiry] Chef email failed (non-fatal):', emailErr)
     }
 
+    // Lifecycle detection: seed template + run detection on new inquiry (non-blocking)
+    try {
+      const { ensureTemplateSeeded } = await import('@/lib/lifecycle/seed')
+      const { runDetectionAndUpdate } = await import('@/lib/lifecycle/actions')
+      await ensureTemplateSeeded(tenantId)
+      await runDetectionAndUpdate(
+        tenantId,
+        inquiry.id,
+        null,
+        'email',
+        email.messageId || null,
+        email.body,
+        inquiry as any
+      )
+    } catch (lifecycleErr) {
+      console.error('[handleInquiry] Lifecycle detection failed (non-blocking):', lifecycleErr)
+    }
+
     result.inquiriesCreated++
   } catch (err) {
     const error = err as Error
@@ -884,6 +902,35 @@ async function handleExistingThread(
           } catch (extractErr) {
             // Non-fatal - thread processing continues even if extraction fails
             console.error('[handleExistingThread] Field extraction failed (non-fatal):', extractErr)
+          }
+
+          // Lifecycle detection: run on existing inquiry's new message (non-blocking)
+          try {
+            const { runDetectionAndUpdate } = await import('@/lib/lifecycle/actions')
+            // Re-fetch inquiry with latest fields (may have been updated above)
+            const { data: freshInquiry } = await db
+              .from('inquiries')
+              .select('*')
+              .eq('id', linkedInquiryId)
+              .eq('tenant_id', tenantId)
+              .single()
+
+            if (freshInquiry) {
+              await runDetectionAndUpdate(
+                tenantId,
+                linkedInquiryId!,
+                null,
+                'email',
+                email.messageId || null,
+                email.body,
+                freshInquiry as any
+              )
+            }
+          } catch (lifecycleErr) {
+            console.error(
+              '[handleExistingThread] Lifecycle detection failed (non-blocking):',
+              lifecycleErr
+            )
           }
         }
 
