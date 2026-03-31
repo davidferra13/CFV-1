@@ -39,7 +39,7 @@ export default async function JoinGroupPage({ params }: Props) {
             </p>
           </div>
 
-          <JoinGroupForm groupToken={groupToken} />
+          <JoinGroupForm groupToken={groupToken} isBridge={group.group_type === 'bridge'} />
         </div>
 
         <p className="mt-4 text-center text-xs text-stone-600">

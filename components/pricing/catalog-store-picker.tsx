@@ -20,12 +20,17 @@ const STORE_BRANDING: Record<string, { color: string; initials: string }> = {
   'trader joe': { color: '#ba2225', initials: 'TJ' },
 }
 
+// Strip source jargon like "(via Flipp)", "(via Instacart)" from store names
+function cleanStoreName(name: string): string {
+  return name.replace(/\s*\(via\s+[^)]+\)/gi, '').trim()
+}
+
 function getStoreBrand(name: string) {
-  const lower = name.toLowerCase()
+  const lower = cleanStoreName(name).toLowerCase()
   for (const [key, val] of Object.entries(STORE_BRANDING)) {
     if (lower.includes(key)) return val
   }
-  return { color: '#6b7280', initials: name.charAt(0).toUpperCase() }
+  return { color: '#6b7280', initials: cleanStoreName(name).charAt(0).toUpperCase() }
 }
 
 function relativeTime(dateStr: string | null): string {
@@ -61,26 +66,46 @@ export function CatalogStorePicker({
     [preferredStoreNames]
   )
 
-  const activeStores = useMemo(() => stores.filter((s) => s.status === 'active'), [stores])
+  // Deduplicate stores by clean name (merge "ALDI (via Flipp)" + "Aldi (via Instacart)" into one card)
+  const activeStores = useMemo(() => {
+    const active = stores.filter((s) => s.status === 'active')
+    const seen = new Map<string, CatalogStore & { _sourceIds: string[] }>()
+    for (const s of active) {
+      const key = cleanStoreName(s.name).toLowerCase()
+      const existing = seen.get(key)
+      if (!existing) {
+        seen.set(key, { ...s, _sourceIds: [s.id] })
+      } else {
+        // Merge: keep whichever has more data (logo, city), collect all source IDs
+        existing._sourceIds.push(s.id)
+        if (!existing.logoUrl && s.logoUrl) existing.logoUrl = s.logoUrl
+        if (!existing.city && s.city) {
+          existing.city = s.city
+          existing.state = s.state
+        }
+      }
+    }
+    return Array.from(seen.values())
+  }, [stores])
 
   const filteredStores = useMemo(() => {
     if (!search) return activeStores
     const q = search.toLowerCase()
     return activeStores.filter(
       (s) =>
-        s.name.toLowerCase().includes(q) ||
+        cleanStoreName(s.name).toLowerCase().includes(q) ||
         (s.city && s.city.toLowerCase().includes(q)) ||
         (s.state && s.state.toLowerCase().includes(q))
     )
   }, [activeStores, search])
 
   const myStores = useMemo(
-    () => filteredStores.filter((s) => preferredSet.has(s.name.toLowerCase())),
+    () => filteredStores.filter((s) => preferredSet.has(cleanStoreName(s.name).toLowerCase())),
     [filteredStores, preferredSet]
   )
 
   const otherStores = useMemo(
-    () => filteredStores.filter((s) => !preferredSet.has(s.name.toLowerCase())),
+    () => filteredStores.filter((s) => !preferredSet.has(cleanStoreName(s.name).toLowerCase())),
     [filteredStores, preferredSet]
   )
 
@@ -133,8 +158,9 @@ export function CatalogStorePicker({
               <StoreCard
                 key={store.id}
                 store={store}
+                displayName={cleanStoreName(store.name)}
                 isPreferred
-                onClick={() => onSelectStore(store.id, store.name)}
+                onClick={() => onSelectStore(store.id, cleanStoreName(store.name))}
               />
             ))}
           </div>
@@ -154,7 +180,8 @@ export function CatalogStorePicker({
               <StoreCard
                 key={store.id}
                 store={store}
-                onClick={() => onSelectStore(store.id, store.name)}
+                displayName={cleanStoreName(store.name)}
+                onClick={() => onSelectStore(store.id, cleanStoreName(store.name))}
               />
             ))}
           </div>
@@ -172,14 +199,16 @@ export function CatalogStorePicker({
 
 function StoreCard({
   store,
+  displayName,
   isPreferred,
   onClick,
 }: {
   store: CatalogStore
+  displayName: string
   isPreferred?: boolean
   onClick: () => void
 }) {
-  const brand = getStoreBrand(store.name)
+  const brand = getStoreBrand(displayName)
 
   return (
     <button
@@ -194,7 +223,11 @@ function StoreCard({
       <div className="flex items-center gap-3 w-full">
         {store.logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={store.logoUrl} alt={store.name} className="w-10 h-10 rounded-lg object-cover" />
+          <img
+            src={store.logoUrl}
+            alt={displayName}
+            className="w-10 h-10 rounded-lg object-cover"
+          />
         ) : (
           <div
             className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0"
@@ -204,7 +237,7 @@ function StoreCard({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-stone-100 truncate">{store.name}</h4>
+          <h4 className="text-sm font-medium text-stone-100 truncate">{displayName}</h4>
           {store.city && (
             <span className="flex items-center gap-1 text-xs text-stone-500">
               <MapPin className="w-3 h-3" />

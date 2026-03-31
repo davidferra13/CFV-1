@@ -7,9 +7,10 @@ import { joinHubGroup } from '@/lib/hub/group-actions'
 
 interface JoinGroupFormProps {
   groupToken: string
+  isBridge?: boolean
 }
 
-export function JoinGroupForm({ groupToken }: JoinGroupFormProps) {
+export function JoinGroupForm({ groupToken, isBridge }: JoinGroupFormProps) {
   const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -72,7 +73,7 @@ export function JoinGroupForm({ groupToken }: JoinGroupFormProps) {
         disabled={!name.trim() || isPending}
         className="mt-4 w-full rounded-xl bg-[var(--hub-primary,#e88f47)] py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-30"
       >
-        {isPending ? 'Joining...' : 'Join the Group'}
+        {isPending ? 'Joining...' : isBridge ? 'Join Introduction' : 'Join the Group'}
       </button>
     </div>
   )

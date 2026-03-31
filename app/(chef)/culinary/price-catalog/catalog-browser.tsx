@@ -1198,7 +1198,9 @@ function ExpandedDetail({
                 const link = p.sourceUrl || p.storeWebsite || null
                 return (
                   <tr key={idx} className="border-b border-stone-800/30 hover:bg-stone-800/30">
-                    <td className="py-1.5 pr-3 text-stone-200">{p.store}</td>
+                    <td className="py-1.5 pr-3 text-stone-200">
+                      {p.store.replace(/\s*\(via\s+[^)]+\)/gi, '')}
+                    </td>
                     <td className="py-1.5 pr-3 text-stone-400 hidden sm:table-cell">
                       {[p.storeCity, p.storeState].filter(Boolean).join(', ') || '-'}
                     </td>

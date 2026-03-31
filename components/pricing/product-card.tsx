@@ -77,7 +77,9 @@ export function ProductCard({ item, onAddToCart, onExpand, isInCart }: ProductCa
 
         {/* Store */}
         {item.bestPriceStore && (
-          <span className="text-xs text-stone-500 truncate">{item.bestPriceStore}</span>
+          <span className="text-xs text-stone-500 truncate">
+            {item.bestPriceStore.replace(/\s*\(via\s+[^)]+\)/gi, '')}
+          </span>
         )}
 
         {/* Status row */}
