@@ -4,8 +4,44 @@
 > **Priority:** P0 (blocking) | P1 (next up) | P2 (queued) | P3 (backlog)
 > **Depends on:** [list spec filenames this depends on, or "none"]
 > **Estimated complexity:** small (1-2 files) | medium (3-8 files) | large (9+ files)
-> **Created:** YYYY-MM-DD
-> **Built by:** [agent session ID or "not started"]
+
+## Timeline
+
+_Every status change, every claim, every verification gets a row. This is the audit trail._
+
+| Event                 | Date             | Agent/Session     | Commit |
+| --------------------- | ---------------- | ----------------- | ------ |
+| Created               | YYYY-MM-DD HH:MM | [planner session] |        |
+| Status: ready         | YYYY-MM-DD HH:MM | [planner session] | [hash] |
+| Claimed (in-progress) |                  |                   |        |
+| Spike completed       |                  |                   |        |
+| Pre-flight passed     |                  |                   |        |
+| Build completed       |                  |                   |        |
+| Type check passed     |                  |                   |        |
+| Build check passed    |                  |                   |        |
+| Playwright verified   |                  |                   |        |
+| Status: verified      |                  |                   |        |
+
+---
+
+## Developer Notes
+
+_This section preserves the developer's original conversation and intent. It is MANDATORY. A spec without Developer Notes is incomplete. A builder reading a spec without this section is building blind._
+
+### Raw Signal
+
+_The developer's actual words, cleaned up for readability but faithful to what they said. Remove filler and repetition, keep the passion and reasoning. This is the "why behind the why." If the developer was on a voice-to-text rant, capture the gold._
+
+[Developer's words go here]
+
+### Developer Intent
+
+_Translate the raw signal into clear system-level requirements. What were they actually trying to achieve beneath what they said? Preserve reasoning, not just outcomes._
+
+- **Core goal:** [one sentence]
+- **Key constraints:** [what must not happen, what must be preserved]
+- **Motivation:** [why this matters to the developer right now]
+- **Success from the developer's perspective:** [what "done" looks like in their mind]
 
 ---
 
@@ -23,7 +59,7 @@ _One to two sentences. Why are we building this now? What problem does it solve?
 
 ## Files to Create
 
-_List every NEW file with its full path and a one-line description of what it does._
+_List every NEW file with its full path and a one-line description._
 
 | File                          | Purpose              |
 | ----------------------------- | -------------------- |
@@ -84,7 +120,7 @@ _List every server action with its signature, auth requirement, and behavior._
 
 ## UI / Component Spec
 
-_Describe what the user sees. Be specific: layout, components, states (loading, empty, error, populated)._
+_Describe what the user sees. Be specific: layout, components, states._
 
 ### Page Layout
 
@@ -117,7 +153,7 @@ _List anything that could go wrong and what the correct behavior is._
 
 ## Verification Steps
 
-_How does the builder agent confirm this works? Be specific so they can test it themselves._
+_How does the builder agent confirm this works? Be specific._
 
 1. Sign in with agent account
 2. Navigate to `/example`
@@ -130,7 +166,7 @@ _How does the builder agent confirm this works? Be specific so they can test it 
 
 ## Out of Scope
 
-_What does this spec explicitly NOT cover? Prevents scope creep by builder agents._
+_What does this spec explicitly NOT cover? Prevents scope creep._
 
 - Not building X (that's a separate spec)
 - Not changing Y (out of scope for this feature)

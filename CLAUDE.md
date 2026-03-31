@@ -407,26 +407,41 @@ If the audit doesn't cover it, then search the codebase. But the audit covers ~2
 
 ---
 
-## RESEARCH GATE (Research Agents - READ THIS)
+## SESSION AWARENESS (EVERY AGENT - MANDATORY)
 
-Research agents answer questions. They do not write specs. They do not write code. They investigate and produce a written report in `docs/research/`.
+**Every agent (planner, builder, research) must do these things at the start and end of every session. No exceptions.**
 
-**When to use a research agent instead of a planner:**
+This exists because agents operate blind. Without session awareness, an agent has no idea what the last agent did, whether the build is broken, or what files are hot. This causes regressions, wasted work, and collisions.
 
-- You need answers, not a buildable plan
-- The question is open-ended ("how does X work?", "where are all the Y?", "what's the state of Z?")
-- You want an audit, trace, or inventory of something in the codebase
-- You need external context (standards, docs, comparisons) synthesized with codebase knowledge
+### On Session Start (Before Doing Anything Else)
 
-**Rules:**
+1. **Read `docs/session-log.md`** - read the last 5 entries. Know what just happened.
+2. **Read `docs/build-state.md`** - know whether the app is green or broken right now.
+3. **If build state is broken:** STOP. Do not start new work on a broken foundation. Report what's broken and fix it first, or ask the developer for direction.
+4. **Log your arrival** - append an entry to `docs/session-log.md`:
+   ```
+   ## YYYY-MM-DD HH:MM EST
+   - Agent: [Planner | Builder | Research | General]
+   - Task: [what you're here to do]
+   - Status: started
+   - Build state on arrival: [green | broken] (commit [hash])
+   ```
 
-1. Every claim cites a file path and line number. No citation = not verified.
-2. Follow import chains at least 2 levels deep. Surface-level answers are worthless.
-3. No code changes. Flag issues in the report; a builder handles fixes.
-4. Reports go in `docs/research/[topic-name].md` with the format defined in the canonical prompt.
-5. Anti-Loop Rule applies. 3 failed search strategies on the same thing = document the gap and move on.
+### On Session End (Before Signing Off)
 
-**Canonical prompt lives in `docs/specs/README.md`** under "RESEARCH AGENT."
+1. **Log your departure** - append to `docs/session-log.md`:
+   ```
+   ## YYYY-MM-DD HH:MM EST
+   - Agent: [type]
+   - Task: [what you did]
+   - Status: completed | partial | blocked
+   - Files touched: [list every file you modified]
+   - Commits: [commit hashes]
+   - Build state on departure: [green | broken]
+   - Notes: [anything the next agent needs to know]
+   ```
+2. **Update `docs/build-state.md`** if you ran a build or type check.
+3. **Commit the session log update** with your other commits.
 
 ---
 
@@ -436,40 +451,68 @@ Research agents answer questions. They do not write specs. They do not write cod
 
 This gate exists because agents hallucinate specs. They skim 3 files, make assumptions about the rest, and write confident-sounding plans that break during implementation. This gate forces evidence-based planning.
 
-### Before Writing Anything
+**Canonical prompts live in `docs/specs/README.md`.**
 
-1. **Read `CLAUDE.md`** (this file) cover to cover
-2. **Read `docs/specs/_TEMPLATE.md`** for the required spec format
-3. **Scope the inspection** - read every file in the directories this feature touches. Follow import chains 2 levels deep from the entry point. Read the schema for every table this feature queries. Do NOT claim you "inspected the codebase" after reading 3 files.
-4. **Produce a current-state summary** - before writing the spec, output a plain-English summary of what exists today in the areas this feature touches. Include file paths, current behavior, and data flow. **This summary is for the developer to review.** If they spot errors, the spec hasn't been started yet, so nothing is wasted. This is the single highest-ROI human checkpoint.
+### Step 1: Load Context
 
-### Spec Validation (Evidence Required)
+1. **Read `CLAUDE.md`** (this file) cover to cover.
+2. **Read `docs/specs/_TEMPLATE.md`** for the required spec format.
+3. **Read `docs/session-log.md`** (last 5 entries) and `docs/build-state.md`.
+4. **Look up affected pages in `docs/app-complete-audit.md`** so you know what you're touching.
 
-Answer every item below. **Each answer must include the specific file paths and line numbers you read.** If you cannot cite a file, you did not verify it. Saying "I checked" without showing `Read` tool output is a lie.
+### Step 2: Deep Inspection
 
-1. **What exists today that this touches?** List files, routes, schemas, components, server actions. Cite line numbers.
+1. **Scope the inspection** - read every file in the directories this feature touches. Follow import chains 2 levels deep from the entry point. Read the schema for every table this feature queries. Do NOT claim you "inspected the codebase" after reading 3 files.
+2. **Produce a current-state summary** - before writing the spec, output a plain-English summary of what exists today in the areas this feature touches. Include file paths, current behavior, and data flow. **This summary is for the developer to review.** If they spot errors, the spec hasn't been started yet, so nothing is wasted. This is the single highest-ROI human checkpoint.
+
+### Step 3: Capture Developer Notes (CRITICAL)
+
+**The developer's conversation IS the spec's origin. Preserve it.**
+
+During the conversation with the developer, you MUST capture their words and intent into the spec's `## Developer Notes` section. This is not optional. The developer is often working in voice-to-text mode, pouring out high-signal context that will be lost forever if you don't capture it.
+
+Capture two things:
+
+1. **Raw Signal** - the developer's actual words, cleaned up for readability but faithful to what they said. Remove filler and repetition, keep the passion and reasoning. This is the "why behind the why."
+2. **Developer Intent** - translate their words into clear system-level requirements, constraints, and behaviors. What were they actually trying to achieve beneath what they said?
+
+A spec without Developer Notes is incomplete. A builder reading a spec without Developer Notes is building blind.
+
+### Step 4: Write the Spec
+
+Use `docs/specs/_TEMPLATE.md`. Fill in every section. The spec must include:
+
+- **Timeline table** with creation timestamp
+- **Developer Notes** section (from Step 3)
+- All technical sections per the template
+
+### Step 5: Spec Validation (Evidence Required)
+
+Answer every item below. **Each answer must cite specific file paths and line numbers you read.** If you cannot cite a file, you did not verify it.
+
+1. **What exists today that this touches?** Files, routes, schemas, components, server actions. Cite line numbers.
 2. **What exactly changes?** Add / modify / remove at the file + data level. Be surgical.
-3. **What assumptions are you making?** For each one: is it verified (you read the code) or unverified (you're guessing)? If unverified, go verify it now or flag it for the developer.
-4. **Where will this most likely break?** Top 2-3 failure points, with reasoning.
-5. **What is underspecified?** What could cause a builder agent to guess? Eliminate it or flag it.
+3. **What assumptions are you making?** For each: verified (you read the code) or unverified (you're guessing)? If unverified, verify it now or flag it.
+4. **Where will this most likely break?** Top 2-3 failure points with reasoning.
+5. **What is underspecified?** What could cause a builder to guess? Eliminate it or flag it.
 6. **What dependencies or prerequisites exist?** Migrations, other specs, config changes.
-7. **What existing logic could this conflict with?** Search for shared components, shared server actions, shared DB tables.
-8. **What is the end-to-end data flow?** Input (user action) -> processing (server action) -> storage (DB write) -> output (UI update). No gaps.
+7. **What existing logic could this conflict with?** Shared components, shared server actions, shared DB tables.
+8. **What is the end-to-end data flow?** User action -> server action -> DB write -> UI update. No gaps.
 9. **What is the correct implementation order?** Migration first? Schema first? Component first? Be explicit.
-10. **What are the exact success criteria?** What must be true when done? These become the builder's verification steps.
-11. **What are the non-negotiable constraints?** (Auth, tenant scoping, privacy boundary, financial rules)
+10. **What are the exact success criteria?** These become the builder's verification steps.
+11. **What are the non-negotiable constraints?** Auth, tenant scoping, privacy boundary, financial rules.
 12. **What should NOT be touched?** Explicitly fence off adjacent code.
-13. **Is this the simplest complete version?** If not, cut scope now. A spec longer than 10x the expected code change is bloated - trim it.
-14. **If implemented exactly as written, what would still be wrong?** Be honest. This question catches the gaps you're tempted to gloss over.
+13. **Is this the simplest complete version?** If not, cut scope now.
+14. **If implemented exactly as written, what would still be wrong?** Be honest.
 
 ### Final Check (Must Answer Explicitly)
 
 > Is this spec production-ready, or am I proceeding with uncertainty?
 > If uncertain: where specifically, and what would resolve it?
 
-If the answer is uncertain on anything that affects correctness, the spec is NOT ready. Resolve it or flag it for the developer. Do not mark "ready" with known gaps.
+If uncertain on anything that affects correctness, the spec is NOT ready. Resolve it or flag it for the developer.
 
-**Self-enforcement:** You must run the Spec Validation and Final Check above ON YOUR OWN before telling the developer the spec is ready. Do not wait for the developer to ask. If you say "ready" without having answered every question with cited evidence, you have failed the gate.
+**Self-enforcement:** You must run Spec Validation and Final Check ON YOUR OWN before telling the developer the spec is ready. If you say "ready" without cited evidence for every question, you have failed the gate.
 
 ---
 
@@ -479,49 +522,64 @@ If the answer is uncertain on anything that affects correctness, the spec is NOT
 
 This gate exists because agents say "done" when they mean "it compiled." Building code is not the same as shipping a working feature. This gate forces real testing, real evidence, and real accountability.
 
-**Canonical prompts for builder agents live in `docs/specs/README.md`.** That file has three prompts: BUILDER START (single spec, autonomous), BUILDER END (verification demand), and BUILDER CONTINUOUS (queue drain). Use those prompts to launch builder agents. The gate below is what those prompts enforce.
+**Canonical prompts live in `docs/specs/README.md`.**
 
 ### Queue Selection (How Builders Pick What to Build)
 
-Builder agents are queue-aware. They do not wait to be told what to build. The selection algorithm:
+Builder agents are queue-aware. They do not wait to be told what to build:
 
 1. **Scan** every file in `docs/specs/`. Collect all specs with status `ready`.
-2. **Filter** out any spec whose "Depends on" field references a spec that is NOT `verified` or `built`.
+2. **Filter** out any spec whose "Depends on" references a spec that is NOT `verified` or `built`.
 3. **Sort** by priority: P0 first, then P1, P2, P3.
 4. **Pick the first one.** That is the build target.
-5. **Claim it** immediately: change status to `in-progress`, set "Built by" to your session, commit the claim. This prevents another agent from double-picking.
+5. **Claim it** immediately: change status to `in-progress`, set "Built by" to your session, add a Timeline entry, commit the claim. This prevents double-picking.
 6. If no buildable specs remain, report "Queue empty" and stop.
 
-If the developer says "Build [specific spec or plain English]," skip the queue scan and build that specific thing. The rest of the gate still applies.
+If the developer says "Build [specific spec or plain English]," skip the queue and build that. The rest of the gate still applies.
 
-### Before Writing Code (Spike Required)
+### Pre-Flight Check (MANDATORY - Before Writing Any Code)
 
-1. **Read `CLAUDE.md`** (this file) cover to cover
-2. **Read the spec** in `docs/specs/` that you're implementing. Understand every section.
-3. **Look up affected pages in `docs/app-complete-audit.md`** so you know what you're touching.
-4. **Read every file the spec names.** Not skim. Read. If the spec says "modify `components/events/event-form.tsx`," open it and read the whole thing. Understand its conditional paths, validation, state management.
-5. **Spike report** - before writing any implementation code, report back:
+**You do not build on a broken foundation. Verify the app works BEFORE you touch anything.**
+
+1. **`git status`** - is the repo clean? If there are uncommitted changes from a prior agent, stop and report.
+2. **`npx tsc --noEmit --skipLibCheck`** - must exit 0. If it fails, the app is already broken. Do not proceed. Report what's broken.
+3. **`npx next build --no-lint`** - must exit 0. Skip ONLY if `.multi-agent-lock` exists. If it fails, stop and report.
+
+**If any pre-flight check fails:** you are NOT allowed to write code. Fix the existing break first, or report it to the developer. Never stack new code on top of broken code.
+
+### Spike (Before Writing Implementation Code)
+
+1. **Read `CLAUDE.md`** (this file) cover to cover.
+2. **Read the spec** you're implementing. Read the **Developer Notes** section carefully - understand the WHY, not just the WHAT.
+3. **Look up affected pages in `docs/app-complete-audit.md`**.
+4. **Read every file the spec names.** Not skim. Read. Understand conditional paths, validation, state management.
+5. **Spike report** - before writing implementation code, report:
    - "I read these files: [list with line counts]"
    - "The spec is accurate about: [what matches]"
    - "The spec is wrong or incomplete about: [what doesn't match reality]"
-   - If the spec is wrong: **STOP. Do not improvise.** Update the spec with corrections, note what was wrong, then continue. Never silently deviate from a spec.
+   - "Developer intent from the notes: [summary of what the developer actually wants]"
+   - If the spec is wrong: **STOP. Do not improvise.** Update the spec with corrections, then continue.
 
-### Build Phase
+### Build Phase (Continuous Verification)
 
 - Implement exactly what the spec defines. No unapproved additions.
-- No "while I'm here" refactors. No bonus features. No extra error handling for impossible scenarios.
+- No "while I'm here" refactors. No bonus features.
 - If you discover something the spec didn't anticipate: stop, update the spec, then continue.
 
-### Verification (Proof Required - Not Descriptions of Proof)
+**After every significant change (new file, major edit, or completing a logical unit):**
+
+Run `npx tsc --noEmit --skipLibCheck`. If it fails, fix it NOW before touching another file. Do not accumulate type errors. Catch regressions the moment they happen, not at the end.
+
+### Final Verification (Proof Required - Not Descriptions of Proof)
 
 **You are not allowed to mark this complete without executing these steps and showing the output.**
 
-1. **Type check:** Run `npx tsc --noEmit --skipLibCheck`. Paste the output. Must exit 0.
-2. **Build check:** Run `npx next build --no-lint`. Paste the output. Must exit 0. **Skip if `.multi-agent-lock` exists** (another agent is running; the developer will run a clean build after all agents finish).
-3. **Playwright verification:** Launch Playwright. Sign in with agent credentials (`.auth/agent.json`). Navigate to the feature. Execute the full user flow. Take screenshots. Paste the screenshots. If Playwright literally cannot test this (rare), explain exactly why and what alternative you used.
-4. **Edge cases tested:** List each edge case from the spec's "Edge Cases" section. For each one: what did you do, what happened? Not what "would" happen - what DID happen.
-5. **Regression check:** List every other page or component that imports or shares code with your changes. Verify at least one still works. If the feature touches auth/layout/navigation, run `npm run test:experiential`.
-6. **Before vs after:** Show what changed. UI screenshots, data output, or behavioral comparison.
+1. **Type check:** `npx tsc --noEmit --skipLibCheck`. Paste output. Must exit 0.
+2. **Build check:** `npx next build --no-lint`. Paste output. Must exit 0. Skip if `.multi-agent-lock` exists.
+3. **Playwright verification:** Sign in with agent credentials (`.auth/agent.json`). Navigate to the feature. Execute the full user flow. Take screenshots. Paste screenshots. If Playwright literally cannot test this (rare), explain exactly why.
+4. **Edge cases tested:** List each edge case from the spec. For each: what you did, what happened (not what "would" happen).
+5. **Regression check:** List every page/component that imports or shares code with your changes. Verify at least one still works. If the feature touches auth/layout/navigation, run `npm run test:experiential`.
+6. **Before vs after:** Show what changed. Screenshots, data output, or behavioral comparison.
 
 ### Final Check (Must Answer Explicitly)
 
@@ -532,15 +590,21 @@ If the answer is anything other than "nothing," fix it before marking complete.
 
 ### Completion Rules
 
-- If any verification step fails: fix it, re-verify, then proceed
-- If you discover a regression: fix it before finishing
-- If you've hit 3 failures on the same issue: stop and report (Anti-Loop Rule applies)
-- Update the spec status to "verified" only after all verification passes
-- Update `docs/app-complete-audit.md` if any UI changed
-- Write a short doc in `docs/` explaining what changed
-- Commit and push
+- If any verification step fails: fix it, re-verify, then proceed.
+- If you discover a regression: fix it before finishing.
+- If you've hit 3 failures on the same issue: stop and report (Anti-Loop Rule).
+- Update the spec's Timeline table with build + verification timestamps.
+- Update the spec status to `verified` only after all verification passes.
+- Update `docs/app-complete-audit.md` if any UI changed.
+- Update `docs/build-state.md` with the new green state and commit hash.
+- Commit with message format: `feat|fix(spec-name): description`.
+- Push.
 
-**Self-enforcement:** You must run every Verification step and the Final Check above ON YOUR OWN before telling the developer the build is complete. Do not wait to be asked. If you say "done" without having pasted typecheck output, build output, and Playwright screenshots, you have failed the gate.
+**Self-enforcement:** You must run every verification step and the Final Check ON YOUR OWN before telling the developer the build is complete. If you say "done" without pasted typecheck output, build output, and Playwright screenshots, you have failed the gate.
+
+### Continuous Mode
+
+In continuous mode, after completing one spec the agent loops back to Queue Selection and picks the next buildable spec. This continues until the queue is empty. If the Anti-Loop rule triggers on a spec, set its status back to `ready` with a note about what failed, then move to the next spec. One bad spec does not block the queue.
 
 ---
 
@@ -548,67 +612,70 @@ If the answer is anything other than "nothing," fix it before marking complete.
 
 **Research agents investigate questions and produce written reports. They do NOT write code. They do NOT write specs. They write findings.**
 
-This gate exists because agents mix research with implementation. They start investigating, find something, and immediately start fixing it or writing a spec. A research agent's only job is to understand and document. Someone else builds.
+This gate exists because agents mix research with implementation. A research agent's only job is to understand and document. Someone else builds.
 
-### Step 1: Load Rules
+### Step 1: Load Context
 
-Read `CLAUDE.md` (this file) cover to cover. You need the architecture, file locations, and patterns to know where to look.
+1. Read `CLAUDE.md` (this file) cover to cover.
+2. Read `docs/session-log.md` (last 5 entries) and `docs/build-state.md`.
 
 ### Step 2: Understand the Question
 
-Before investigating, restate what you're researching in one sentence. If the question is vague, make your interpretation explicit and confirm with the developer.
+Restate what you're investigating in one sentence. If vague, make your interpretation explicit and confirm with the developer.
 
-### Step 3: Investigate
+### Step 3: Capture Developer Notes
 
-Read the actual code. Follow import chains. Trace data flows. Check database schemas. Read existing docs in `docs/`. Search for patterns across the codebase.
+Same as Planner Gate Step 3. If the developer explained WHY they want this researched, capture their words and intent into the report's `## Origin Context` section. The developer's reasoning is part of the deliverable.
+
+### Step 4: Investigate
+
+Read actual code. Follow import chains. Trace data flows. Check database schemas. Read existing docs. Search for patterns.
 
 **Rules:**
 
-- Every claim in your report must cite a file path and line number. If you can't cite it, you didn't verify it.
-- Follow the trail at least 2 levels deep. If a function calls another function, read that one too.
-- If external context is needed (docs, APIs, standards), use web search.
-- **Do NOT make code changes, even "small fixes."** Flag issues in your report; a builder will handle them.
-- Anti-Loop Rule applies. If you can't find what you're looking for after 3 different search strategies, say what you tried and move on.
+- Every claim cites a file path and line number. No citation = not verified.
+- Follow the trail at least 2 levels deep.
+- If external context is needed, use web search.
+- **Do NOT make code changes, even "small fixes."** Flag issues in the report; a builder handles them.
+- Anti-Loop Rule applies. 3 failed search strategies = document the gap and move on.
 
-### Step 4: Write the Report
+### Step 5: Write the Report
 
-Create a file at `docs/research/[topic-name].md` with this structure:
+Create `docs/research/[topic-name].md`:
 
 ```markdown
 # Research: [Topic]
 
-> **Date:** [today's date]
-> **Question:** [the question you investigated]
+> **Date:** YYYY-MM-DD
+> **Question:** [the question investigated]
 > **Status:** complete | partial (explain what's missing)
+
+## Origin Context
+
+[Developer's words and intent that prompted this research. Why they asked. What they're trying to solve. Faithful to what they said.]
 
 ## Summary
 
-[2-3 sentence answer to the question. Lead with the conclusion.]
+[2-3 sentence answer. Lead with the conclusion.]
 
 ## Detailed Findings
 
-[Organized by sub-topic. Every finding cites file:line. Include code snippets where they clarify the point. Use tables for comparisons.]
+[Organized by sub-topic. Every finding cites file:line. Code snippets where they clarify. Tables for comparisons.]
 
 ## Gaps and Unknowns
 
-[What you couldn't determine. What would need runtime testing, database queries, or the developer's input to resolve.]
+[What you couldn't determine. What needs runtime testing, DB queries, or developer input.]
 
 ## Recommendations
 
-[If the findings suggest action items, list them. These are suggestions, not specs. Tag each as: "quick fix," "needs a spec," or "needs discussion."]
+[Action items tagged as: "quick fix," "needs a spec," or "needs discussion."]
 ```
 
-### Step 5: Report Back
+### Step 6: Report Back
 
-Tell the developer: what the report is called, the 2-3 sentence summary, and how many gaps remain. Link to the file.
+Tell the developer: report name, 2-3 sentence summary, how many gaps remain. Commit with `docs(research): [topic name]` and push.
 
-**Self-enforcement:** Do not tell the developer "research is done" without a written report in `docs/research/`. Verbal summaries are not deliverables. The report is the deliverable. Commit with message `docs(research): [topic name]` and push.
-
----
-
-### Continuous Mode
-
-In continuous mode (BUILDER CONTINUOUS prompt), after completing one spec the agent loops back to Queue Selection and picks the next buildable spec. This continues until the queue is empty. If the Anti-Loop rule triggers on a spec, set its status back to `ready` with a note about what failed, then move to the next spec. One bad spec does not block the queue.
+**Self-enforcement:** No "research is done" without a written report in `docs/research/`. The report is the deliverable.
 
 ---
 
@@ -622,6 +689,17 @@ In continuous mode (BUILDER CONTINUOUS prompt), after completing one spec the ag
 ### Documentation
 
 - **Always create a follow-up `.md` document for every code change.** Every implementation should have a reflecting document that explains what changed, why, and how it connects to the system. No code-only changes.
+
+### Commit Message Convention
+
+All commits tied to a spec must reference the spec name in the commit message:
+
+```
+feat(spec-name): description
+fix(spec-name): description
+```
+
+This creates traceability from git history back to the spec that drove the work. For non-spec work, use standard prefixes: `feat`, `fix`, `docs`, `chore`, `refactor`.
 
 ### Living App Audit - `docs/app-complete-audit.md` (MANDATORY)
 
@@ -997,6 +1075,10 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 | Remy reference         | `docs/remy-complete-reference.md` **(read this instead of re-scanning Remy)**      |
 | Research reports       | `docs/research/` (research agent output, not specs, not code)                      |
 | Agent prompts          | `docs/specs/README.md` (canonical prompts for planner, builder, research agents)   |
+| Session log            | `docs/session-log.md` (running log of what each agent did, read on startup)        |
+| Build state            | `docs/build-state.md` (last known green build, read before building)               |
+| Spec template          | `docs/specs/_TEMPLATE.md` (Timeline + Developer Notes + all sections)              |
+| Definition of done     | `docs/definition-of-done.md` (verified, honest, resilient against drift)           |
 | MC Manual panel        | `scripts/launcher/index.html` (panel-manual, live codebase scanner)                |
 | MC Codebase scanner    | `scripts/launcher/server.mjs` (`scanCodebase()`, `GET /api/manual/scan`)           |
 | MC File watcher        | `scripts/launcher/server.mjs` (`initFileWatcher()`, `GET /api/activity/summary`)   |
