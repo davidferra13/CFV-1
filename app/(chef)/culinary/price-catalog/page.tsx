@@ -15,7 +15,9 @@ export default async function PriceCatalogPage() {
     <div className="space-y-4">
       <div>
         <h1 className="text-xl font-bold text-stone-100">Food Catalog</h1>
-        <p className="text-sm text-stone-500">Browse 15,000+ ingredients across 39 local stores</p>
+        <p className="text-sm text-stone-500">
+          Browse 32,000+ ingredients across local and national stores
+        </p>
       </div>
       <CatalogBrowser />
     </div>

@@ -756,7 +756,7 @@ Quick-access pricing reference designed for mobile use mid-conversation. Reads a
 
 ### 6.3b Price Catalog (chef-facing)
 
-- **`/culinary/price-catalog`** — Full OpenClaw market catalog: 15K+ ingredients across 39 local stores. Search, category/store/tier/stock filters with infinite scroll. Each row shows: name, category badge (click-to-filter), best price + store, stock badge (green/amber/red), store count, freshness dot. Expanded detail: per-store price table with location, price, stock, confidence badge, freshness, link to store website, price history sparkline, "Add to My Pantry" button. Mobile responsive card layout. Nav link under Community sidebar.
+- **`/culinary/price-catalog`** — Full OpenClaw market catalog: 32K+ food ingredients across 27+ sources (11 Instacart chains, Kroger national via API across 14 states, direct API scrapers for Whole Foods/Target/Walmart/Stop & Shop, Flipp circular ads, BLS government baselines). 12 clean categories (Produce, Protein, Dairy, Pantry, Grains & Bakery, Beverages, Snacks, Frozen, Oils & Spices, Prepared & Deli, Baking, Other). Search, category/store/tier/stock filters with infinite scroll. Each row shows: name, category badge (click-to-filter), best price + store, stock badge (green/amber/red), store count, freshness dot. Expanded detail: per-store price table with location, price, stock, confidence badge, freshness, link to store website, price history sparkline, "Add to My Pantry" button. Mobile responsive card layout. Nav link under Community sidebar.
 
 ### 6.4 Components
 

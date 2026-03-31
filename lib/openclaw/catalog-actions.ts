@@ -1,8 +1,8 @@
 'use server'
 
 /**
- * OpenClaw Catalog Actions - Admin-only server actions for browsing
- * the full 9,000+ ingredient catalog on the Pi.
+ * OpenClaw Catalog Actions - Server actions for browsing
+ * the full 32,000+ ingredient catalog on the Pi.
  *
  * These call the Pi directly (not synced data) because most catalog
  * items are not synced to ChefFlow.

@@ -2,7 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateChefFullProfile, uploadChefLogo } from '@/lib/chef/profile-actions'
+import {
+  updateChefFullProfile,
+  uploadChefLogo,
+  type ChefSocialLinks,
+} from '@/lib/chef/profile-actions'
 import { uploadChefProfileImage } from '@/lib/network/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -25,6 +29,7 @@ type ChefProfile = {
   website_url: string | null
   show_website_on_public_profile: boolean
   preferred_inquiry_destination: 'website_only' | 'chefflow_only' | 'both'
+  social_links: ChefSocialLinks
 }
 
 export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; chefId: string }) {
@@ -47,6 +52,11 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
   const [preferredInquiryDestination, setPreferredInquiryDestination] = useState<
     'website_only' | 'chefflow_only' | 'both'
   >(profile.preferred_inquiry_destination || 'both')
+  const [socialInstagram, setSocialInstagram] = useState(profile.social_links?.instagram || '')
+  const [socialTiktok, setSocialTiktok] = useState(profile.social_links?.tiktok || '')
+  const [socialFacebook, setSocialFacebook] = useState(profile.social_links?.facebook || '')
+  const [socialYoutube, setSocialYoutube] = useState(profile.social_links?.youtube || '')
+  const [socialLinktree, setSocialLinktree] = useState(profile.social_links?.linktree || '')
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
   const [logoUrl, setLogoUrl] = useState(profile.logo_url || '')
@@ -64,6 +74,11 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
       websiteUrl: profile.website_url || '',
       showWebsiteOnPublicProfile: profile.show_website_on_public_profile ?? true,
       preferredInquiryDestination: (profile.preferred_inquiry_destination || 'both') as string,
+      socialInstagram: profile.social_links?.instagram || '',
+      socialTiktok: profile.social_links?.tiktok || '',
+      socialFacebook: profile.social_links?.facebook || '',
+      socialYoutube: profile.social_links?.youtube || '',
+      socialLinktree: profile.social_links?.linktree || '',
     }),
     [profile]
   )
@@ -79,6 +94,11 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
       websiteUrl,
       showWebsiteOnPublicProfile,
       preferredInquiryDestination: preferredInquiryDestination as string,
+      socialInstagram,
+      socialTiktok,
+      socialFacebook,
+      socialYoutube,
+      socialLinktree,
     }),
     [
       businessName,
@@ -90,6 +110,11 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
       websiteUrl,
       showWebsiteOnPublicProfile,
       preferredInquiryDestination,
+      socialInstagram,
+      socialTiktok,
+      socialFacebook,
+      socialYoutube,
+      socialLinktree,
     ]
   )
 
@@ -114,6 +139,11 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
     setPreferredInquiryDestination(
       d.preferredInquiryDestination as 'website_only' | 'chefflow_only' | 'both'
     )
+    setSocialInstagram(d.socialInstagram)
+    setSocialTiktok(d.socialTiktok)
+    setSocialFacebook(d.socialFacebook)
+    setSocialYoutube(d.socialYoutube)
+    setSocialLinktree(d.socialLinktree)
   }, [])
 
   useEffect(() => {
@@ -175,6 +205,13 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
           website_url: websiteUrl || null,
           show_website_on_public_profile: showWebsiteOnPublicProfile,
           preferred_inquiry_destination: preferredInquiryDestination,
+          social_links: {
+            instagram: socialInstagram || undefined,
+            tiktok: socialTiktok || undefined,
+            facebook: socialFacebook || undefined,
+            youtube: socialYoutube || undefined,
+            linktree: socialLinktree || undefined,
+          },
         })
         setSuccess(true)
         protection.markCommitted()
@@ -236,6 +273,52 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
               onChange={(e) => setBio(e.target.value)}
               rows={4}
               helperText={`${bio.length}/1200 characters`}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Social & External Links</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-stone-400">
+              Add your social profiles. These appear on your public chef page and directory listing.
+            </p>
+            <Input
+              label="Instagram"
+              type="url"
+              value={socialInstagram}
+              onChange={(e) => setSocialInstagram(e.target.value)}
+              placeholder="https://instagram.com/yourname"
+            />
+            <Input
+              label="TikTok"
+              type="url"
+              value={socialTiktok}
+              onChange={(e) => setSocialTiktok(e.target.value)}
+              placeholder="https://tiktok.com/@yourname"
+            />
+            <Input
+              label="Facebook"
+              type="url"
+              value={socialFacebook}
+              onChange={(e) => setSocialFacebook(e.target.value)}
+              placeholder="https://facebook.com/yourpage"
+            />
+            <Input
+              label="YouTube"
+              type="url"
+              value={socialYoutube}
+              onChange={(e) => setSocialYoutube(e.target.value)}
+              placeholder="https://youtube.com/@yourchannel"
+            />
+            <Input
+              label="Linktree / Link Hub"
+              type="url"
+              value={socialLinktree}
+              onChange={(e) => setSocialLinktree(e.target.value)}
+              placeholder="https://linktr.ee/yourname"
             />
           </CardContent>
         </Card>

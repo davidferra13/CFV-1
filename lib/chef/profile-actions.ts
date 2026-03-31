@@ -47,6 +47,24 @@ async function ensureChefLogosBucket(db: any) {
   throw new Error('Storage bucket setup failed. Please create bucket "chef-logos" (public).')
 }
 
+const SocialLinksSchema = z
+  .object({
+    instagram: z.string().url('Instagram URL must be valid').optional().or(z.literal('')),
+    tiktok: z.string().url('TikTok URL must be valid').optional().or(z.literal('')),
+    facebook: z.string().url('Facebook URL must be valid').optional().or(z.literal('')),
+    youtube: z.string().url('YouTube URL must be valid').optional().or(z.literal('')),
+    linktree: z.string().url('Linktree URL must be valid').optional().or(z.literal('')),
+  })
+  .optional()
+
+export type ChefSocialLinks = {
+  instagram?: string
+  tiktok?: string
+  facebook?: string
+  youtube?: string
+  linktree?: string
+}
+
 const UpdateChefFullProfileSchema = z.object({
   business_name: z.string().max(120).optional(),
   display_name: z.string().max(100).nullable().optional(),
@@ -59,6 +77,7 @@ const UpdateChefFullProfileSchema = z.object({
   website_url: z.string().url('Website URL must be valid').nullable().optional(),
   show_website_on_public_profile: z.boolean().optional(),
   preferred_inquiry_destination: z.enum(['website_only', 'chefflow_only', 'both']).optional(),
+  social_links: SocialLinksSchema,
 })
 
 export type UpdateChefFullProfileInput = z.infer<typeof UpdateChefFullProfileSchema>
@@ -75,6 +94,7 @@ export type ChefFullProfile = {
   website_url: string | null
   show_website_on_public_profile: boolean
   preferred_inquiry_destination: 'website_only' | 'chefflow_only' | 'both'
+  social_links: ChefSocialLinks
 }
 
 export async function getChefFullProfile(): Promise<ChefFullProfile> {
@@ -95,7 +115,8 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
       logo_url,
       website_url,
       show_website_on_public_profile,
-      preferred_inquiry_destination
+      preferred_inquiry_destination,
+      social_links
     `
     )
     .eq('id', user.entityId)
@@ -131,6 +152,7 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
     website_url: data.website_url ?? null,
     show_website_on_public_profile: data.show_website_on_public_profile ?? true,
     preferred_inquiry_destination: data.preferred_inquiry_destination ?? 'both',
+    social_links: (data.social_links as ChefSocialLinks) ?? {},
   }
 }
 
@@ -138,6 +160,17 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
   const user = await requireChef()
   const db: any = createServerClient()
   const validated = UpdateChefFullProfileSchema.parse(input)
+
+  // Normalize social_links: strip empty strings so the DB stores clean data
+  const normalizedSocialLinks: ChefSocialLinks = {}
+  if (validated.social_links) {
+    for (const [key, value] of Object.entries(validated.social_links)) {
+      const trimmed = value?.trim()
+      if (trimmed) {
+        normalizedSocialLinks[key as keyof ChefSocialLinks] = trimmed
+      }
+    }
+  }
 
   const payload: Record<string, unknown> = {
     display_name: validated.display_name?.trim() || null,
@@ -150,6 +183,7 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
     website_url: validated.website_url?.trim() || null,
     show_website_on_public_profile: validated.show_website_on_public_profile ?? true,
     preferred_inquiry_destination: validated.preferred_inquiry_destination ?? 'both',
+    social_links: normalizedSocialLinks,
   }
 
   // Only update business_name if a non-empty value was provided (preserves DB NOT NULL)

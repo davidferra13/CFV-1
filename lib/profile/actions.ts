@@ -123,6 +123,7 @@ export async function getPublicChefProfile(slug: string) {
       'portal_background_color',
       'portal_background_image_url',
       'show_availability_signals',
+      'social_links',
     ].join(', ')
   )
 
@@ -264,6 +265,7 @@ export async function getPublicChefProfile(slug: string) {
       portal_background_color: chef.portal_background_color,
       portal_background_image_url: chef.portal_background_image_url,
       show_availability_signals: chef.show_availability_signals ?? false,
+      social_links: chef.social_links ?? {},
       discovery,
     },
     partners: showcasePartners,

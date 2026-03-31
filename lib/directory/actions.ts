@@ -18,6 +18,7 @@ import {
 } from '@/lib/discovery/profile'
 import { isFounderEmail } from '@/lib/platform/owner-account'
 import { createServerClient } from '@/lib/db/server'
+import type { ChefSocialLinks } from '@/lib/chef/profile-actions'
 
 export type DirectoryPartnerLocation = {
   id: string
@@ -45,6 +46,8 @@ export type DirectoryChef = {
   tagline: string | null
   bio: string | null
   profile_image_url: string | null
+  website_url: string | null
+  social_links: ChefSocialLinks
   discovery: DiscoveryProfile & { completeness_score: number }
   /** True if this is the founder / platform owner */
   is_founder: boolean
@@ -90,6 +93,8 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
       tagline,
       bio,
       profile_image_url,
+      website_url,
+      social_links,
       email,
       directory_approved,
       chef_preferences!inner(network_discoverable)
@@ -244,6 +249,8 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
       tagline: chef.tagline ?? discovery.highlight_text ?? null,
       bio: chef.bio ?? null,
       profile_image_url: chef.profile_image_url ?? discovery.hero_image_url ?? null,
+      website_url: chef.website_url ?? null,
+      social_links: (chef.social_links as ChefSocialLinks) ?? {},
       discovery: {
         ...discovery,
         completeness_score: computeDiscoveryCompleteness(discovery),
