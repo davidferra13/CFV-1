@@ -29,6 +29,7 @@ import { getCategoryBaseline, getCategoryBaselinesBatch } from './category-basel
 export type PriceSource =
   | 'receipt'
   | 'api_quote'
+  | 'wholesale'
   | 'direct_scrape'
   | 'flyer'
   | 'instacart'
@@ -130,6 +131,8 @@ function sourceDisplayStore(source: PriceSource, storeName: string | null): stri
       return storeName || 'Your receipt'
     case 'api_quote':
       return storeName || 'API quote'
+    case 'wholesale':
+      return storeName || 'Wholesale distributor'
     case 'direct_scrape':
       return storeName || 'Store website'
     case 'flyer':
@@ -238,6 +241,35 @@ export async function resolvePrice(
         confidence: 0.75,
         freshness: computeFreshness(row.created_at),
         confirmedAt: row.created_at,
+        reason: null,
+      })
+    }
+  }
+
+  // Tier 2.5: WHOLESALE (openclaw_wholesale) within 30 days
+  const wholesale = (await db.execute(sql`
+    SELECT price_per_unit_cents, unit, store_name, purchase_date
+    FROM ingredient_price_history
+    WHERE ingredient_id = ${ingredientId}
+      AND tenant_id = ${tenantId}
+      AND source = 'openclaw_wholesale'
+      AND purchase_date > CURRENT_DATE - INTERVAL '30 days'
+    ORDER BY purchase_date DESC
+    LIMIT 1
+  `)) as unknown as PriceRow[]
+
+  if (wholesale.length > 0) {
+    const row = wholesale[0]
+    if (row.price_per_unit_cents !== null) {
+      return withDecay({
+        cents: row.price_per_unit_cents,
+        unit: row.unit || 'each',
+        source: 'wholesale',
+        sourceTier: 'openclaw_wholesale',
+        store: sourceDisplayStore('wholesale', row.store_name),
+        confidence: 0.8,
+        freshness: computeFreshness(row.purchase_date),
+        confirmedAt: row.purchase_date,
         reason: null,
       })
     }
@@ -510,7 +542,7 @@ export async function resolvePricesBatch(
     FROM ingredient_price_history
     WHERE ingredient_id = ANY(${ingredientIds})
       AND tenant_id = ${tenantId}
-      AND source IN ('openclaw_scrape', 'openclaw_flyer', 'openclaw_instacart', 'openclaw_government')
+      AND source IN ('openclaw_scrape', 'openclaw_flyer', 'openclaw_instacart', 'openclaw_government', 'openclaw_wholesale')
     ORDER BY ingredient_id, source, purchase_date DESC
   `)) as unknown as BatchRow[]
 
@@ -619,6 +651,26 @@ export async function resolvePricesBatch(
         if (storeMatch) return storeMatch
       }
       return eligible[0] // already ordered by purchase_date DESC
+    }
+
+    // Tier 2.5: Wholesale (within 30 days)
+    const wholesaleRow = findBestRow(openclaw, 'openclaw_wholesale', 30)
+    if (wholesaleRow && wholesaleRow.price_per_unit_cents !== null) {
+      result.set(
+        id,
+        withDecay({
+          cents: wholesaleRow.price_per_unit_cents,
+          unit: wholesaleRow.unit || 'each',
+          source: 'wholesale',
+          sourceTier: 'openclaw_wholesale',
+          store: sourceDisplayStore('wholesale', wholesaleRow.store_name),
+          confidence: 0.8,
+          freshness: computeFreshness(wholesaleRow.purchase_date),
+          confirmedAt: wholesaleRow.purchase_date,
+          reason: null,
+        })
+      )
+      continue
     }
 
     // Tier 3: Direct scrape (within 14 days)

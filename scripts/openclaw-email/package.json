@@ -1,0 +1,21 @@
+{
+  "name": "openclaw-email",
+  "version": "1.0.0",
+  "description": "OpenCLAW Email Agent - wholesale price harvesting via email",
+  "type": "module",
+  "main": "agent.mjs",
+  "scripts": {
+    "start": "node agent.mjs",
+    "send": "node agent.mjs --send",
+    "check": "node agent.mjs --check"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "csv-parse": "^5.5.0",
+    "imap": "^0.8.19",
+    "mailparser": "^3.7.0",
+    "nodemailer": "^6.9.0",
+    "pdf-parse": "^1.1.1",
+    "xlsx": "^0.18.5"
+  }
+}

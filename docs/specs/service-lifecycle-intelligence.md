@@ -1,12 +1,12 @@
 # Spec: Service Lifecycle Intelligence Layer
 
-> **Status:** ready
+> **Status:** in-progress
 > **Priority:** P0 (blocking)
 > **Depends on:** none (builds on existing inquiry pipeline, Gmail sync, Hub system)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-30
 > **Reviewed:** 2026-03-30 (Planner Gate passed, 7 builder traps identified and fixed)
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-30
 
 ---
 

@@ -1,11 +1,11 @@
 # Spec: OpenCLAW Reference Libraries
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** `openclaw-data-completeness-engine.md` Phase A (USDA import populates system_ingredients)
 > **Estimated complexity:** medium (3-8 files)
 > **Created:** 2026-03-30
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-30
 
 ---
 

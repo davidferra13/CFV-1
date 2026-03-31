@@ -1,0 +1,14 @@
+{
+  "name": "openclaw-dashboard",
+  "version": "1.0.0",
+  "description": "OpenCLAW Mission Control - real-time monitoring dashboard",
+  "type": "module",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "express": "^4.21.0"
+  }
+}

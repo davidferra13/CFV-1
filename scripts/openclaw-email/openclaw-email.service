@@ -1,0 +1,13 @@
+[Unit]
+Description=OpenCLAW Email Agent - Inbox Checker
+After=network.target
+
+[Service]
+Type=oneshot
+User=davidferra
+WorkingDirectory=/home/davidferra/openclaw-email
+ExecStart=/usr/bin/node agent.mjs --check
+EnvironmentFile=/home/davidferra/openclaw-email/.env
+
+[Install]
+WantedBy=multi-user.target

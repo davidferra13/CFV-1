@@ -1,0 +1,39 @@
+{
+  "region": {
+    "city": "Haverhill",
+    "state": "MA",
+    "label": "Northeast Massachusetts"
+  },
+  "contacts": [
+    {
+      "distributor_name": "Sysco Boston",
+      "contact_email": "boston.sales@sysco.com",
+      "category": "broadline",
+      "notes": "Largest broadline distributor. Request via website may be more reliable."
+    },
+    {
+      "distributor_name": "US Foods New England",
+      "contact_email": "newengland@usfoods.com",
+      "category": "broadline",
+      "notes": "Second largest broadline. Often has online portal for pricing."
+    },
+    {
+      "distributor_name": "Performance Foodservice",
+      "contact_email": "info@performancefoodservice.com",
+      "category": "broadline",
+      "notes": "Regional broadline, strong in New England."
+    },
+    {
+      "distributor_name": "Costa Fruit & Produce",
+      "contact_email": "sales@costafruit.com",
+      "category": "produce",
+      "notes": "Boston-based produce specialist. Weekly price sheets common."
+    },
+    {
+      "distributor_name": "Baldor Specialty Foods",
+      "contact_email": "info@baldorfood.com",
+      "category": "specialty",
+      "notes": "Specialty and gourmet items. Based in NYC, delivers to New England."
+    }
+  ]
+}

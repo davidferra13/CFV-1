@@ -1,0 +1,17 @@
+[Unit]
+Description=OpenCLAW Archive Digester API
+After=network.target
+
+[Service]
+Type=simple
+User=davidferra
+WorkingDirectory=/home/davidferra/openclaw-archive-digester
+ExecStart=/usr/bin/node services/sync-api.mjs
+Restart=on-failure
+RestartSec=10
+Environment=NODE_ENV=production
+Environment=OLLAMA_URL=http://localhost:11434
+Environment=ARCHIVE_PORT=8086
+
+[Install]
+WantedBy=multi-user.target

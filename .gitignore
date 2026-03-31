@@ -221,3 +221,12 @@ cfv1-e2e-cookies.txt
 
 # Personal files (photos, local data)
 davidfood/
+
+# Test result artifacts (screenshots, reports)
+/results/
+
+# USDA/reference data imports (large, downloaded on demand)
+scripts/data/node_modules/
+scripts/data/package-lock.json
+scripts/data/*.zip
+scripts/data/usda-sr-legacy/

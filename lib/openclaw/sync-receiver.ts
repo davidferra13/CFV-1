@@ -71,6 +71,32 @@ registerCartridge({
   },
 })
 
+// Wholesale Prices: email agent harvests wholesale distributor price lists
+registerCartridge({
+  codename: 'wholesale-prices',
+  name: 'Wholesale Prices',
+  port: 8081,
+  pullEndpoint: '/api/wholesale/unsynced',
+  targetType: 'database',
+  syncHandler: async (): Promise<CartridgeSyncResult> => {
+    const { handleWholesaleSync } = await import('./wholesale-handler')
+    return handleWholesaleSync(null)
+  },
+})
+
+// Archive Digester: processes 10 years of unorganized business artifacts
+registerCartridge({
+  codename: 'archive-digester',
+  name: 'Archive Digester',
+  port: 8086,
+  pullEndpoint: '/api/archive/unsynced',
+  targetType: 'database',
+  syncHandler: async (): Promise<CartridgeSyncResult> => {
+    const { handleArchiveDigesterSync } = await import('./archive-digester-handler')
+    return handleArchiveDigesterSync(null)
+  },
+})
+
 // Future cartridges register here as they are built:
 // registerCartridge({ codename: 'market-intel', ... })
 // registerCartridge({ codename: 'trend-watch', ... })

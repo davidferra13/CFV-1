@@ -1,0 +1,26 @@
+{
+  "name": "openclaw-archive-digester",
+  "version": "1.0.0",
+  "description": "OpenCLAW Archive Digester - 10-year business archive processor",
+  "type": "module",
+  "main": "services/sync-api.mjs",
+  "scripts": {
+    "start": "node services/sync-api.mjs",
+    "ingest": "node services/ingest.mjs",
+    "classify": "node services/classify.mjs",
+    "extract": "node services/extract.mjs",
+    "link": "node services/linker.mjs",
+    "timeline": "node services/timeline.mjs",
+    "gaps": "node services/gap-report.mjs",
+    "export": "node services/export.mjs",
+    "process": "node services/ingest.mjs && node services/classify.mjs && node services/extract.mjs && node services/linker.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "express": "^4.21.0",
+    "mailparser": "^3.7.0",
+    "mbox-reader": "^1.0.0",
+    "sharp": "^0.33.0",
+    "tesseract.js": "^5.0.0"
+  }
+}

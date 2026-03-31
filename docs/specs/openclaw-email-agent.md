@@ -1,11 +1,12 @@
 # Spec: OpenCLAW Email Agent (Wholesale Price Harvesting)
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** `openclaw-data-completeness-engine.md` Phase A (USDA import, need canonical ingredients to match against)
 > **Estimated complexity:** medium (3-8 files)
 > **Created:** 2026-03-30
-> **Built by:** not started
+> **Built by:** Claude Code session 2026-03-30
+> **Note:** Email credentials (IMAP/SMTP) need to be configured in ~/openclaw-email/.env before the agent can send/receive.
 
 ---
 
