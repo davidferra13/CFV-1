@@ -1,0 +1,25 @@
+# ChefFlow
+
+> ChefFlow is a food services operations platform that connects clients with private chefs, caterers, restaurants, food trucks, and bakeries. Chefs use ChefFlow to manage events, clients, menus, quotes, payments, and kitchen operations. Clients use it to discover, compare, and book food service providers.
+
+## Main Pages
+
+- [Chef Directory](https://cheflowhq.com/chefs): Browse all available chefs by location, cuisine, and service type
+- [Compare Services](https://cheflowhq.com/compare): Side-by-side comparisons of food service management options
+- [FAQ](https://cheflowhq.com/faq): Frequently asked questions about ChefFlow
+- [Trust & Safety](https://cheflowhq.com/trust): How ChefFlow protects clients and chefs
+- [For Operators](https://cheflowhq.com/for-operators): Information for chefs and food service operators
+- [Contact](https://cheflowhq.com/contact): Get in touch with ChefFlow
+- [Partner Signup](https://cheflowhq.com/partner-signup): Join ChefFlow as a chef or food service provider
+
+## For Chefs
+
+ChefFlow is the business operating system built by a chef, for chefs. Every feature is free, with zero commission. Manage your entire operation from one platform: events, clients, menus, recipes, food costing, invoices, payments (via Stripe), prep lists, shopping lists, calendar, documents, and staff.
+
+## For Clients
+
+Find and book private chefs, caterers, and food service providers. Browse profiles, explore cuisines, check availability, request quotes, and manage your events through a dedicated client portal. No middleman fees, no hidden costs.
+
+## Optional
+
+- [Full details](https://cheflowhq.com/llms-full.txt)

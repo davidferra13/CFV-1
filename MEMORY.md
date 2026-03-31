@@ -32,6 +32,15 @@ Tagline: **Ops for Artists.**
 
 ChefFlow includes a chef social platform where chefs can connect, share (what they choose to share), build reputation, and grow their network. This is part of the product vision.
 
+### Dinner Circle vs Chef Collab
+
+- **Dinner Circle** is the client/guest-facing shared space around a dinner, inquiry, event, household, or residency. It is persistent, link-based, and centered on coordinating the experience with the chef and invited non-chef participants.
+- A Dinner Circle can begin at the inquiry stage, continue through the booked event, and hold chat, meal planning, members, photos, notes, schedule, and event updates in one place.
+- **Chef-to-chef collaboration is separate from Dinner Circle.** In the product, that maps to Chef Community, Connections, Trusted Circle, Collab, and Handoffs.
+- **Trusted Circle** means trusted chef relationships and visibility scope. It is not the same thing as a Dinner Circle.
+- **Handoff** means a structured transfer or sharing of work between chefs: lead referral, backup coverage, or passing an active event/client situation to another chef.
+- If a request is about two chefs privately talking, routing work, covering dates, or passing off pricing/payment/client context, treat it as chef collaboration first, not as a Dinner Circle.
+
 ## About David (the developer/founder)
 
 - Private chef with 10+ years experience

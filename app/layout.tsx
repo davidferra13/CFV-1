@@ -98,7 +98,7 @@ export const metadata: Metadata = {
       'application/rss+xml': '/feed.xml',
     },
   },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://cheflowhq.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'),
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -53,18 +53,9 @@ The current catalog has 3 views (table, grid, store-aisle), price comparison, tr
 
 ## Database Changes
 
-### New Columns on Existing Tables
+### Existing Infrastructure (No Migration Needed)
 
-```sql
--- Chef's preferred stores (saved filter preferences)
-ALTER TABLE chefs ADD COLUMN preferred_stores JSONB DEFAULT '[]';
--- Example: ["market-basket-haverhill", "whole-foods-haverhill", "costco-methuen"]
-```
-
-### Migration Notes
-
-- Check `database/migrations/` for highest timestamp before creating migration file
-- Additive only (one new column)
+A dedicated `chef_preferred_stores` table already exists in the schema (`lib/db/schema/schema.ts:21110`). It stores per-chef store preferences with columns for `chef_id` and `store_name`, plus a unique constraint on the pair. **Do not add a JSONB column to the `chefs` table.** Use the existing table for all preferred-store reads and writes.
 
 ---
 

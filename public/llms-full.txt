@@ -1,0 +1,73 @@
+# ChefFlow - Full Reference
+
+> ChefFlow is a food services operations platform. Website: https://cheflowhq.com
+
+## What Is ChefFlow?
+
+ChefFlow is the business operating system built by a chef, for chefs. It is a web application that manages every aspect of a food service operation: client relationships, event lifecycle, menus, recipes, food costing, invoicing, payments, prep lists, shopping lists, calendar scheduling, document generation, staff management, and more.
+
+ChefFlow also serves as a public directory where clients can discover, compare, and book food service providers (private chefs, caterers, restaurants, food trucks, bakeries) in their area.
+
+## Pricing
+
+Every feature on ChefFlow is free. There are no paid tiers, no paywalls, and no locked features. ChefFlow takes zero commission on bookings or payments. Revenue comes from voluntary supporter contributions only.
+
+## Key Features for Chefs (Operators)
+
+- **Client Management**: Track dietary needs, allergies, preferences, communication history, and event history for every client.
+- **Event Lifecycle**: Full pipeline from inquiry to post-service, covering 8 states: draft, proposed, accepted, paid, confirmed, in progress, completed, and cancelled.
+- **Menus and Recipes**: Build menus, manage recipes, calculate food costs per dish and per event.
+- **Quoting and Invoicing**: Generate quotes, send proposals through a client portal, collect payments via Stripe.
+- **Financial Tracking**: Revenue, expenses, mileage, tax prep, ledger-based accounting with immutable entries.
+- **Prep Lists and Shopping Lists**: Auto-generated from event menus with ingredient consolidation.
+- **Calendar and Scheduling**: Unified calendar with availability signals for public profiles.
+- **Document Generation**: Contracts, proposals, invoices, and other documents auto-generated from event data.
+- **Staff Management**: Assign staff to events, manage roles and availability.
+- **Client Portal**: Clients get their own portal to view proposals, approve menus, make payments, and communicate.
+- **AI Assistant (Remy)**: On-device AI concierge (powered by Ollama, runs locally) that helps with operational tasks. All client data stays on the chef's machine and is never sent to external AI services.
+
+## Key Features for Clients
+
+- **Chef Directory**: Browse vetted chefs by location, cuisine type, service type, price range, and availability.
+- **Chef Profiles**: Each chef has a public profile with bio, photos, reviews, service areas, and booking links.
+- **Direct Inquiry**: Send inquiries directly to chefs with no middleman and no commission fees.
+- **Client Portal**: Manage your events, view proposals, approve menus, and make payments.
+- **Reviews**: Leave reviews after events that appear on the chef's public profile.
+- **Gift Cards**: Purchase gift cards for specific chefs.
+
+## Service Types Available
+
+- Private Dinners
+- Catering (events of any size)
+- Meal Prep (weekly meals)
+- Weddings
+- Corporate Dining
+- Cooking Classes
+
+## Technical Details
+
+- Built with Next.js (App Router), PostgreSQL, Auth.js v5, Stripe, and Tailwind CSS
+- Progressive Web App (PWA) support
+- Local-first AI: all private data processing uses Ollama (local LLM), never cloud AI services
+- Real-time updates via Server-Sent Events (SSE)
+- End-to-end encrypted transport (TLS)
+- Row-level tenant isolation for data security
+
+## Contact
+
+- Website: https://cheflowhq.com
+- Email: support@cheflowhq.com
+- Security: security@cheflowhq.com
+
+## Pages
+
+- Homepage: https://cheflowhq.com
+- Chef Directory: https://cheflowhq.com/chefs
+- For Operators: https://cheflowhq.com/for-operators
+- Compare: https://cheflowhq.com/compare
+- FAQ: https://cheflowhq.com/faq
+- Trust Center: https://cheflowhq.com/trust
+- Contact: https://cheflowhq.com/contact
+- Privacy Policy: https://cheflowhq.com/privacy
+- Terms of Service: https://cheflowhq.com/terms
+- Partner Signup: https://cheflowhq.com/partner-signup

@@ -1,7 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPublicChefProfile } from '@/lib/profile/actions'
 import { PublicPartnerSignupForm } from '@/components/partners/public-partner-signup-form'
 import { Button } from '@/components/ui/button'
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+
+export const metadata: Metadata = {
+  title: 'Partner Sign Up | ChefFlow',
+  description:
+    'Join ChefFlow as a venue partner. Connect with vetted private chefs and offer your space for private dining events.',
+  alternates: {
+    canonical: `${BASE_URL}/partner-signup`,
+  },
+}
 
 type Props = {
   searchParams?: {

@@ -6,6 +6,11 @@ import { getDiscoveryServiceTypeLabel } from '@/lib/discovery/constants'
 import { getDiscoveryAvailabilityLabel, getDiscoveryLocationLabel } from '@/lib/discovery/profile'
 import { getChefCoverage, sortDirectoryChefs } from '@/lib/directory/utils'
 import { getOptimizedImageUrl } from '@/lib/images/cloudinary'
+import {
+  OrganizationJsonLd,
+  SoftwareApplicationJsonLd,
+  WebSiteJsonLd,
+} from '@/components/seo/json-ld'
 import { HomepageSearch } from './_components/homepage-search'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -40,6 +45,9 @@ export const metadata: Metadata = {
     'find a caterer',
     'personal chef for hire',
   ],
+  alternates: {
+    canonical: BASE_URL,
+  },
 }
 
 const SERVICE_CATEGORIES = [
@@ -286,6 +294,9 @@ export default async function Home() {
 
   return (
     <main>
+      <OrganizationJsonLd />
+      <SoftwareApplicationJsonLd />
+      <WebSiteJsonLd />
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-600/8 via-transparent to-transparent" />

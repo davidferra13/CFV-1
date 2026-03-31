@@ -5,9 +5,14 @@ import { Suspense } from 'react'
 
 export const revalidate = 60
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+
 export const metadata: Metadata = {
   title: 'Terms of Service | ChefFlow',
   description: 'Read the terms and conditions governing your use of the ChefFlow platform.',
+  alternates: {
+    canonical: `${BASE_URL}/terms`,
+  },
 }
 
 const TermsExtendedSections = dynamic(() => import('./_components/terms-extended-sections'), {

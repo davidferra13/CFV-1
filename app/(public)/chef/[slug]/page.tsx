@@ -64,33 +64,75 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-function AggregateRatingJsonLd({
+function ChefProfileJsonLd({
   chefName,
+  description,
+  profileUrl,
+  imageUrl,
+  cuisines,
+  serviceArea,
+  priceRange,
   averageRating,
   totalReviews,
-  profileUrl,
 }: {
   chefName: string
+  description: string | null
+  profileUrl: string
+  imageUrl: string | null
+  cuisines: string[]
+  serviceArea: string | null
+  priceRange: string | null
   averageRating: number
   totalReviews: number
-  profileUrl: string
 }) {
-  if (totalReviews === 0 || averageRating === 0) return null
-
-  const jsonLd = {
+  const jsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
-    '@type': 'LocalBusiness',
+    '@type': 'FoodService',
     name: chefName,
     url: profileUrl,
-    aggregateRating: {
+    ...(description ? { description } : {}),
+    ...(imageUrl ? { image: imageUrl } : {}),
+    ...(cuisines.length > 0 ? { servesCuisine: cuisines } : {}),
+    ...(serviceArea
+      ? {
+          areaServed: {
+            '@type': 'Place',
+            name: serviceArea,
+          },
+        }
+      : {}),
+    ...(priceRange ? { priceRange } : {}),
+  }
+
+  if (totalReviews > 0 && averageRating > 0) {
+    jsonLd.aggregateRating = {
       '@type': 'AggregateRating',
       ratingValue: averageRating.toFixed(2),
       bestRating: '5',
       worstRating: '1',
       reviewCount: totalReviews,
-    },
+    }
   }
 
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  )
+}
+
+function ChefBreadcrumbJsonLd({ chefName, profileUrl }: { chefName: string; profileUrl: string }) {
+  const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: BASE },
+      { '@type': 'ListItem', position: 2, name: 'Chef Directory', item: `${BASE}/chefs` },
+      { '@type': 'ListItem', position: 3, name: chefName, item: profileUrl },
+    ],
+  }
   return (
     <script
       type="application/ld+json"
@@ -150,15 +192,22 @@ export default async function ChefProfilePage({ params }: Props) {
     : null
   const cuisineLabels = discovery.cuisine_types.slice(0, 6).map(getDiscoveryCuisineLabel)
   const serviceLabels = discovery.service_types.slice(0, 6).map(getDiscoveryServiceTypeLabel)
+  const profileUrl = `${BASE_URL}/chef/${publicSlug}`
 
   return (
     <div className="min-h-screen" style={pageBackgroundStyle}>
-      <AggregateRatingJsonLd
+      <ChefProfileJsonLd
         chefName={chef.display_name}
+        description={discovery.highlight_text || chef.tagline || chef.bio || null}
+        profileUrl={profileUrl}
+        imageUrl={discovery.hero_image_url || chef.profile_image_url || null}
+        cuisines={cuisineLabels}
+        serviceArea={locationLabel || null}
+        priceRange={priceRangeLabel}
         averageRating={reviewFeed.stats.averageRating}
         totalReviews={reviewFeed.stats.totalReviews}
-        profileUrl={`${BASE_URL}/chef/${publicSlug}`}
       />
+      <ChefBreadcrumbJsonLd chefName={chef.display_name} profileUrl={profileUrl} />
 
       <section className="py-16 md:py-24 bg-stone-900/70 backdrop-blur-[1px]">
         <div className="max-w-5xl mx-auto px-6 text-center">

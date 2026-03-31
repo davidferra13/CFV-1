@@ -20,6 +20,11 @@ export default function robots(): MetadataRoute.Robots {
           '/privacy',
           '/terms',
           '/partner-signup',
+          '/for-operators',
+          '/about',
+          '/discover',
+          '/discover/',
+          '/book',
         ],
         disallow: [
           '/api/',
