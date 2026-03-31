@@ -1,6 +1,6 @@
 # Spec: Ad-Hoc Schedule Changes
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P2 (queued)
 > **Depends on:** weekly-meal-board.md
 > **Estimated complexity:** small (2-3 files)

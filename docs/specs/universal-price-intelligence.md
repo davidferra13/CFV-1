@@ -1,6 +1,6 @@
 # Spec: Universal Price Intelligence (Cross-Store Averaging + Safety Net)
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** `auto-costing-engine.md` (verified)
 > **Estimated complexity:** large (9+ files)

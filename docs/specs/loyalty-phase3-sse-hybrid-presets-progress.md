@@ -1,6 +1,6 @@
 # Spec: Loyalty Phase 3 - SSE Broadcasts, Hybrid Earn Mode, Setup Presets, Reward Templates, Milestone Progress
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** loyalty-phase2-auto-referral-guest-milestones.md
 > **Estimated complexity:** medium (7 files)

@@ -1,6 +1,6 @@
 # Spec: OpenCLAW Reference Libraries
 
-> **Status:** built
+> **Status:** verified (seed data below targets: 73/400+ shelf life, 89/200+ waste factors; infrastructure complete)
 > **Priority:** P1 (next up)
 > **Depends on:** `openclaw-data-completeness-engine.md` Phase A (USDA import populates system_ingredients)
 > **Estimated complexity:** medium (3-8 files)

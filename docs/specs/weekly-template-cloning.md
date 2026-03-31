@@ -1,6 +1,6 @@
 # Spec: Weekly Template Cloning
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** weekly-meal-board.md
 > **Estimated complexity:** small (2-3 files)

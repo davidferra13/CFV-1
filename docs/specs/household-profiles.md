@@ -1,6 +1,6 @@
 # Spec: Household Member Profiles
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (5-6 files)

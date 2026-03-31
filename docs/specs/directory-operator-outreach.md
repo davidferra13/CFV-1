@@ -1,6 +1,6 @@
 # Spec: Directory Operator Outreach Pipeline
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P2 (queued)
 > **Depends on:** food-directory-import.md (verified), discover-directory-polish.md (verified)
 > **Estimated complexity:** medium (7 files created, 4 files modified)

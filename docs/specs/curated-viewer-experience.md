@@ -1,6 +1,6 @@
 # Spec: Curated Viewer Experience + Silent Mode
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P2 (queued)
 > **Depends on:** weekly-meal-board.md, meal-feedback.md
 > **Estimated complexity:** small (2-3 files)

@@ -96,21 +96,21 @@ export async function getLifecycleProgressForClient(
   // Look up the hub group by token to find inquiry
   const groupResult = await db
     .from('hub_groups')
-    .select('id, inquiry_id, chef_id')
-    .eq('slug', groupToken)
+    .select('id, inquiry_id, tenant_id')
+    .eq('group_token', groupToken)
     .single()
 
   if (groupResult.error || !groupResult.data) {
     return { stages: [] }
   }
 
-  const { inquiry_id, chef_id } = groupResult.data as any
+  const { inquiry_id, tenant_id } = groupResult.data as any
 
-  if (!inquiry_id || !chef_id) {
+  if (!inquiry_id || !tenant_id) {
     return { stages: [] }
   }
 
-  const full = await getLifecycleProgressInternal(chef_id, inquiry_id, null)
+  const full = await getLifecycleProgressInternal(tenant_id, inquiry_id, null)
 
   // Filter to client-visible checkpoints only
   const clientStages: ClientStageView[] = full.stages

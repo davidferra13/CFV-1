@@ -1,6 +1,6 @@
 # Spec: Loyalty Phase 1 - Visibility and Tier Perks
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (3-8 files)

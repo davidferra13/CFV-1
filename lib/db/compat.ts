@@ -99,6 +99,7 @@ type ParsedJoin = {
   columns: string[] // e.g. ['full_name']
   allColumns: boolean // true if columns is ['*']
   inner: boolean // true if !inner hint was used
+  explicitFk: string | null // e.g. 'author_profile_id' in 'table!author_profile_id(*)'
 }
 
 function parseSelectString(select: string): ParsedSelect {
@@ -128,18 +129,23 @@ function parseSelectString(select: string): ParsedSelect {
 
   for (const token of tokens) {
     // Check for nested select: table(col1, col2) or alias:table(col1, col2)
+    // Also supports PostgREST FK hints: table!fk_column(cols) or table!inner(cols)
     const nestedMatch = token.match(
-      /^(?:([a-zA-Z_][a-zA-Z0-9_]*):)?([a-zA-Z_][a-zA-Z0-9_]*)(?:!(inner|left))?\((.+)\)$/
+      /^(?:([a-zA-Z_][a-zA-Z0-9_]*):)?([a-zA-Z_][a-zA-Z0-9_]*)(?:!([a-zA-Z_][a-zA-Z0-9_]*))?\((.+)\)$/
     )
     if (nestedMatch) {
-      const [, alias, table, joinHint, innerCols] = nestedMatch
+      const [, alias, table, hint, innerCols] = nestedMatch
       const columns = innerCols.split(',').map((c) => c.trim())
+      const isInner = hint === 'inner'
+      // If hint is not 'inner' or 'left', treat it as an explicit FK column name
+      const explicitFk = hint && hint !== 'inner' && hint !== 'left' ? hint : null
       joins.push({
         alias: alias || null,
         table,
         columns,
         allColumns: columns.length === 1 && columns[0] === '*',
-        inner: joinHint === 'inner',
+        inner: isInner,
+        explicitFk,
       })
     } else {
       mainColumns.push(token.trim())
@@ -567,20 +573,27 @@ class QueryBuilder<T = any> {
     for (const join of parsed.joins) {
       const tbl = assertIdent(join.table)
       const joinType = join.inner ? 'INNER JOIN' : 'LEFT JOIN'
-      const fkCol = resolveFkColumn(this._table, tbl)
 
-      if (fkCol) {
-        // Forward FK: main table has a column referencing joined table's id
-        sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(fkCol)} = ${quoteIdent(tbl)}."id"`
+      if (join.explicitFk) {
+        // Explicit FK column specified via PostgREST !column_name syntax
+        // The FK column lives on the main table and points to the joined table's id
+        const fk = assertIdent(join.explicitFk)
+        sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(fk)} = ${quoteIdent(tbl)}."id"`
       } else {
-        // Try reverse FK: joined table has a column referencing main table's id
-        const reverseFkCol = resolveFkColumn(tbl, this._table)
-        if (reverseFkCol) {
-          sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(tbl)}.${quoteIdent(reverseFkCol)} = ${quoteIdent(this._table)}."id"`
+        const fkCol = resolveFkColumn(this._table, tbl)
+        if (fkCol) {
+          // Forward FK: main table has a column referencing joined table's id
+          sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(fkCol)} = ${quoteIdent(tbl)}."id"`
         } else {
-          // Fallback: try common convention (singular form + _id)
-          const singularGuess = tbl.replace(/s$/, '') + '_id'
-          sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(singularGuess)} = ${quoteIdent(tbl)}."id"`
+          // Try reverse FK: joined table has a column referencing main table's id
+          const reverseFkCol = resolveFkColumn(tbl, this._table)
+          if (reverseFkCol) {
+            sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(tbl)}.${quoteIdent(reverseFkCol)} = ${quoteIdent(this._table)}."id"`
+          } else {
+            // Fallback: try common convention (singular form + _id)
+            const singularGuess = tbl.replace(/s$/, '') + '_id'
+            sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(singularGuess)} = ${quoteIdent(tbl)}."id"`
+          }
         }
       }
     }

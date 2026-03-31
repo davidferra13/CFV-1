@@ -1,6 +1,6 @@
 # Spec: Meal-Specific Feedback
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** weekly-meal-board.md
 > **Estimated complexity:** medium (5-6 files)

@@ -1,6 +1,6 @@
 # Spec: Loyalty Phase 2 - Auto Referral Points and Guest Milestones
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P2 (queued)
 > **Depends on:** loyalty-phase1-visibility-and-perks.md
 > **Estimated complexity:** medium (3-8 files)

@@ -1,6 +1,6 @@
 # Spec: Visual Representation Strategy (Images Across ChefFlow)
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** showcase-image-upload.md (verified), portfolio-upload-fix.md (verified)
 > **Estimated complexity:** large (30+ files across 4 phases)

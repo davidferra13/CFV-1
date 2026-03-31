@@ -26,6 +26,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   reports: 'Reports',
 
   onboarding: 'Setup',
+  culinary: 'Culinary',
+  'price-catalog': 'Food Catalog',
 
   // Sub-paths
   new: 'New',
