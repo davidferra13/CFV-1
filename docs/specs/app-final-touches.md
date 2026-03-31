@@ -1,11 +1,11 @@
 # Spec: App Final Touches
 
-> **Status:** ready
+> **Status:** in-progress
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** small (5-8 files, 1 session)
 > **Created:** 2026-03-30
-> **Built by:** not started
+> **Built by:** Claude Code (2026-03-30)
 
 ---
 

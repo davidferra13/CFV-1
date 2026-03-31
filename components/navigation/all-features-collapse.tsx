@@ -42,12 +42,12 @@ export function AllFeaturesCollapse({
   const pathname = usePathname()
 
   const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return true
+    if (typeof window === 'undefined') return false
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
-      return stored === null ? true : stored === 'true'
+      return stored === null ? false : stored === 'true'
     } catch {
-      return true
+      return false
     }
   })
 
