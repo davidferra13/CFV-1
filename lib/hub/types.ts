@@ -58,7 +58,7 @@ export interface HubGroup {
   allow_member_invites: boolean
   allow_anonymous_posts: boolean
   visibility: HubGroupVisibility
-  group_type?: 'circle' | 'dinner_club' | 'planning'
+  group_type?: 'circle' | 'dinner_club' | 'planning' | 'bridge'
   created_by_profile_id: string
   last_message_at: string | null
   last_message_preview: string | null

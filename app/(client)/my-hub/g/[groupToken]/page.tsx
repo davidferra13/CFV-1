@@ -14,6 +14,7 @@ import { getGroupMedia } from '@/lib/hub/media-actions'
 import { getGroupAvailability } from '@/lib/hub/availability-actions'
 import { getMealBoard } from '@/lib/hub/meal-board-actions'
 import { HubGroupView } from '@/app/(public)/hub/g/[groupToken]/hub-group-view'
+import { HubBridgeView } from '@/components/hub/hub-bridge-view'
 
 interface Props {
   params: Promise<{ groupToken: string }>
@@ -22,7 +23,7 @@ interface Props {
 export async function generateMetadata({ params }: Props) {
   const { groupToken } = await params
   const group = await getGroupByToken(groupToken)
-  return { title: group ? `${group.name} - My Hub - ChefFlow` : 'Hub Group - ChefFlow' }
+  return { title: group ? `${group.name} - My Hub` : 'Hub Group' }
 }
 
 export default async function ClientHubGroupPage({ params }: Props) {
@@ -44,6 +45,27 @@ export default async function ClientHubGroupPage({ params }: Props) {
     getGroupEvents(group.id),
     getMealBoard({ groupId: group.id }),
   ])
+
+  // Bridge groups get the slim intro view
+  if (group.group_type === 'bridge') {
+    return (
+      <div className="mx-auto max-w-4xl p-4">
+        <HubBridgeView
+          group={group}
+          members={members}
+          profileToken={profile.profile_token}
+          currentProfileId={profile.id}
+          bridgeId={null}
+          introMode={null}
+          bridgeStatus={null}
+          isSourceChef={false}
+          isTargetChef={false}
+          targetCircleToken={null}
+          clientDisplayName={group.name?.replace('Introduction: ', '') ?? null}
+        />
+      </div>
+    )
+  }
 
   // Pass profileToken as a prop - the HubGroupView will set the cookie client-side
   return (

@@ -17,7 +17,7 @@ const CreateGroupSchema = z.object({
   event_stub_id: z.string().uuid().optional().nullable(),
   tenant_id: z.string().uuid().optional().nullable(),
   created_by_profile_id: z.string().uuid(),
-  group_type: z.enum(['circle', 'dinner_club', 'planning']).optional(),
+  group_type: z.enum(['circle', 'dinner_club', 'planning', 'bridge']).optional(),
 })
 
 /**

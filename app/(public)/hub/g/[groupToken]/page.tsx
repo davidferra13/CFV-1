@@ -9,6 +9,7 @@ import { getMealBoard } from '@/lib/hub/meal-board-actions'
 import { getCriticalPathForGuest } from '@/lib/lifecycle/critical-path'
 import { getLifecycleProgressForClient } from '@/lib/lifecycle/actions'
 import { HubGroupView } from './hub-group-view'
+import { HubBridgeView } from '@/components/hub/hub-bridge-view'
 
 interface Props {
   params: Promise<{ groupToken: string }>
@@ -54,6 +55,27 @@ export default async function HubGroupPage({ params }: Props) {
     getCriticalPathForGuest(groupToken).catch(() => null),
     getLifecycleProgressForClient(groupToken).catch(() => null),
   ])
+
+  // Branch: bridge groups get the slim intro view, not the full Dinner Circle
+  if (group.group_type === 'bridge') {
+    return (
+      <div className="min-h-screen bg-stone-950 p-4">
+        <HubBridgeView
+          group={group}
+          members={members}
+          profileToken={null}
+          currentProfileId={null}
+          bridgeId={null}
+          introMode={null}
+          bridgeStatus={null}
+          isSourceChef={false}
+          isTargetChef={false}
+          targetCircleToken={null}
+          clientDisplayName={group.name?.replace('Introduction: ', '') ?? null}
+        />
+      </div>
+    )
+  }
 
   return (
     <HubGroupView

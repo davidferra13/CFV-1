@@ -1,6 +1,6 @@
 # Spec: Chef Collab Spaces
 
-> **Status:** in-progress
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)

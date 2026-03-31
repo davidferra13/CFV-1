@@ -34,6 +34,7 @@ import {
   type HandoffRecipientStatus,
   type TrustedCircleMember,
 } from '@/lib/network/collab-actions'
+import { createIntroductionBridge, getBridgeForHandoff } from '@/lib/network/intro-bridge-actions'
 
 interface CollabInboxProps {
   trustedCircle: TrustedCircleMember[]
@@ -156,6 +157,18 @@ export function CollabInboxPanel({
   const [signalMaxGuests, setSignalMaxGuests] = useState('')
   const [signalTrustedOnly, setSignalTrustedOnly] = useState(true)
   const [signalNote, setSignalNote] = useState('')
+
+  // Introduction Bridge state
+  const [introModalOpen, setIntroModalOpen] = useState<{
+    handoffId: string
+    recipientChefId: string
+    recipientChefName: string
+  } | null>(null)
+  const [introClientName, setIntroClientName] = useState('')
+  const [introClientEmail, setIntroClientEmail] = useState('')
+  const [introMode, setIntroMode] = useState<'shared' | 'observer' | 'transfer'>('shared')
+  const [introMessage, setIntroMessage] = useState('')
+  const [introCopyGuests, setIntroCopyGuests] = useState(true)
 
   const [isPending, startTransition] = useTransition()
   const handoffRefs = useRef<Record<string, HTMLElement | null>>({})
@@ -430,6 +443,37 @@ export function CollabInboxPanel({
         await refreshSnapshot()
       } catch (err: any) {
         setError(err.message || 'Failed to cancel handoff.')
+      }
+    })
+  }
+
+  function handleStartIntro() {
+    if (!introModalOpen || !introClientName.trim()) return
+    startTransition(async () => {
+      try {
+        const result = await createIntroductionBridge({
+          handoffId: introModalOpen.handoffId,
+          recipientChefId: introModalOpen.recipientChefId,
+          clientName: introClientName.trim(),
+          clientEmail: introClientEmail.trim() || null,
+          introMode,
+          introMessage: introMessage.trim() || null,
+          copySourceGuests: introCopyGuests,
+        })
+        if (result.success && result.bridgeId) {
+          toast.success('Introduction bridge created.')
+          setIntroModalOpen(null)
+          setIntroClientName('')
+          setIntroClientEmail('')
+          setIntroMode('shared')
+          setIntroMessage('')
+          setIntroCopyGuests(true)
+          window.location.href = `/network/bridges/${result.bridgeId}`
+        } else {
+          toast.error(result.error || 'Failed to create bridge.')
+        }
+      } catch {
+        toast.error('Failed to create introduction bridge.')
       }
     })
   }
@@ -1174,13 +1218,33 @@ export function CollabInboxPanel({
                           <span className="text-sm text-stone-300 truncate">
                             {recipient.chef.display_name || recipient.chef.business_name}
                           </span>
-                          <span
-                            className={`text-xs border rounded-full px-2 py-0.5 ${statusBadgeClass(
-                              recipient.recipient_status
-                            )}`}
-                          >
-                            {renderRecipientStatus(recipient.recipient_status)}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {recipient.recipient_status === 'accepted' && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-amber-400 hover:text-amber-300"
+                                onClick={() =>
+                                  setIntroModalOpen({
+                                    handoffId: handoff.handoff_id,
+                                    recipientChefId: recipient.chef.chef_id,
+                                    recipientChefName:
+                                      recipient.chef.display_name || recipient.chef.business_name,
+                                  })
+                                }
+                                disabled={isPending}
+                              >
+                                Start Intro
+                              </Button>
+                            )}
+                            <span
+                              className={`text-xs border rounded-full px-2 py-0.5 ${statusBadgeClass(
+                                recipient.recipient_status
+                              )}`}
+                            >
+                              {renderRecipientStatus(recipient.recipient_status)}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1426,6 +1490,109 @@ export function CollabInboxPanel({
           setDeleteSignalConfirmId(null)
         }}
       />
+
+      {/* Introduction Bridge Modal */}
+      {introModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-full max-w-md rounded-xl border border-stone-700 bg-stone-900 p-5 shadow-xl">
+            <h3 className="text-base font-semibold text-stone-100 mb-1">Start Introduction</h3>
+            <p className="text-xs text-stone-400 mb-4">
+              Introduce {introModalOpen.recipientChefName} to your client in a temporary three-party
+              thread.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-stone-400 mb-1">
+                  Client Name *
+                </label>
+                <input
+                  type="text"
+                  value={introClientName}
+                  onChange={(e) => setIntroClientName(e.target.value)}
+                  placeholder="Client's name"
+                  maxLength={200}
+                  className="block w-full rounded-lg border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-stone-400 mb-1">
+                  Client Email (optional)
+                </label>
+                <input
+                  type="email"
+                  value={introClientEmail}
+                  onChange={(e) => setIntroClientEmail(e.target.value)}
+                  placeholder="client@example.com"
+                  className="block w-full rounded-lg border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-stone-400 mb-1">
+                  Introduction Mode
+                </label>
+                <select
+                  aria-label="Introduction Mode"
+                  value={introMode}
+                  onChange={(e) =>
+                    setIntroMode(e.target.value as 'shared' | 'observer' | 'transfer')
+                  }
+                  className="block w-full rounded-lg border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-100"
+                >
+                  <option value="shared">Shared (stay involved)</option>
+                  <option value="observer">Observer (watch from sidelines)</option>
+                  <option value="transfer">Transfer (hand off completely)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-stone-400 mb-1">
+                  Intro Message (optional)
+                </label>
+                <textarea
+                  value={introMessage}
+                  onChange={(e) => setIntroMessage(e.target.value)}
+                  rows={3}
+                  maxLength={2000}
+                  placeholder="Hey! I'd love to introduce you two..."
+                  className="block w-full rounded-lg border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500"
+                />
+              </div>
+
+              <label className="inline-flex items-center gap-2 text-sm text-stone-300">
+                <input
+                  type="checkbox"
+                  checked={introCopyGuests}
+                  onChange={(e) => setIntroCopyGuests(e.target.checked)}
+                />
+                Copy existing dinner circle guests to new circle
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-5">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIntroModalOpen(null)}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleStartIntro}
+                disabled={isPending || !introClientName.trim()}
+              >
+                {isPending ? 'Creating...' : 'Create Introduction'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

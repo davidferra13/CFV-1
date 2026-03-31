@@ -35,6 +35,7 @@ export default async function JoinGroupPage({ params }: Props) {
             )}
             <p className="mt-2 text-xs text-stone-500">
               {memberCount} member{memberCount !== 1 ? 's' : ''}
+              {group.group_type === 'bridge' && ' in this introduction thread'}
             </p>
           </div>
 
