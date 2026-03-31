@@ -18,11 +18,11 @@ export function BetaAccountReadyEmail({ name, signInUrl }: BetaAccountReadyEmail
       <Text style={heading}>Your account is live.</Text>
       <Text style={paragraph}>Hi {name},</Text>
       <Text style={paragraph}>
-        You are officially in. Your ChefFlow account has been created and is ready for onboarding.
+        You are officially in. Your ChefFlow account has been created and is ready for setup.
       </Text>
 
       <Button style={button} href={signInUrl}>
-        Sign in and start onboarding
+        Sign in and get started
       </Button>
 
       <Text style={paragraph}>

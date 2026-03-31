@@ -46,7 +46,7 @@ const HELP_CATEGORIES = [
     icon: BookOpen,
     label: 'Getting Started',
     slug: 'onboarding',
-    desc: 'First steps, onboarding guide',
+    desc: 'First steps, setup guide',
   },
 ]
 

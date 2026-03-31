@@ -1,6 +1,6 @@
 # Spec: App Final Touches
 
-> **Status:** in-progress
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** small (5-8 files, 1 session)
