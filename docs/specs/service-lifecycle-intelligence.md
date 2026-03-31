@@ -23,7 +23,7 @@ The developer has an 8-day-old unanswered email. That's a failure at checkpoint 
 
 ## Architecture Overview
 
-Three components, built in this order:
+Four components, built in this order:
 
 ### Component 1: Lifecycle Checkpoint Tracker (database + server actions)
 
@@ -36,6 +36,20 @@ Reads email threads, inquiry messages, and chat messages. Uses deterministic pat
 ### Component 3: Shared Status View (UI)
 
 The chef sees a full operational dashboard per inquiry/event. The client sees a simplified version in the Dinner Circle. Both see real-time progress.
+
+### Component 4: Prediction Engine (deterministic rules layer)
+
+Evaluates known facts at each stage and surfaces: (1) what the chef should prepare next, (2) what the client is likely to need, and (3) when to nudge vs. wait. Rules are deterministic (no AI), configurable per chef, and integrate with the Dinner Circle engagement model to suppress unnecessary emails when the client is active on the portal.
+
+**Full design:** `docs/research/predictive-lifecycle-engine.md` (50+ prediction rules across all 10 stages, Dinner Circle integration model, repeat-client acceleration, nudge timing logic).
+
+Key prediction categories:
+
+- **Fast-track detection:** client gave enough info to skip stages (e.g., date + count + dietary = skip deep discovery, go to quote)
+- **Risk detection:** silence > 48h, budget mismatch > 20%, deposit not paid after acceptance
+- **Preparation triggers:** date < 7 days = lock guest count, kitchen = limited = equipment list 3 days early
+- **Repeat-client acceleration:** 2nd booking = 60% pre-filled, 3rd+ = 80% pre-filled from previous engagement
+- **Circle-aware nudging:** if client is active on Dinner Circle, suppress email reminders; if not visited, re-attempt portal hook
 
 ---
 
