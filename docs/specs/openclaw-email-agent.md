@@ -1,6 +1,6 @@
 # Spec: OpenCLAW Email Agent (Wholesale Price Harvesting)
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** `openclaw-data-completeness-engine.md` Phase A (USDA import, need canonical ingredients to match against)
 > **Estimated complexity:** medium (3-8 files)
