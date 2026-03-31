@@ -2,7 +2,7 @@
 
 > **Date:** 2026-03-30
 > **Spec:** `docs/specs/loyalty-client-experience.md`
-> **Status:** built
+> **Status:** verified
 
 ## What Was Built
 
