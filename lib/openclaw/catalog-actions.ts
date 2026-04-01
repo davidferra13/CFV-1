@@ -134,7 +134,7 @@ export async function searchCatalog(params: {
 }
 
 export async function getCatalogStores(): Promise<CatalogStore[]> {
-  await requireAdmin()
+  await requireChef()
 
   try {
     const controller = new AbortController()
