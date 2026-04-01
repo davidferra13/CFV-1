@@ -182,3 +182,26 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/chef-prep-scheduling-practices.md (new), docs/session-log.md
 - Build state on departure: green (5511b1e9, research-only, no code changes)
 - Notes: 11 web searches across 5 categories. Key finding: no existing tool connects component-level recipe data to event-based reverse-calendar prep timelines. meez owns recipes, Puree owns catering dockets, but neither maps make-ahead windows to calendar dates. Grace's pain points validated as universal. Recommendations: add printable prep list view, group by station within day, surface storage notes prominently. Current spec is well-aligned with industry practices.
+
+## 2026-03-31 20:35 EST
+
+- Agent: Planner + Research
+- Task: Spec and research featured-chef public profile expansion for testimonials, reviews, direct links, and chef-customizable showcase upgrades
+- Status: started
+- Build state on arrival: green (commit 5511b1e9 noted in docs/build-state.md; HEAD 630a6474)
+
+## 2026-03-31 20:36 EST
+
+- Agent: Planner
+- Task: Intake for existing-feature improvement spec + developer-notes capture + research prep
+- Status: started
+- Build state on arrival: green (commit 5511b1e9)
+
+## 2026-03-31 20:52 EST
+
+- Agent: Planner + Research
+- Task: Featured-chef public proof, reviews, direct links, and booking-experience planning
+- Status: completed
+- Files touched: docs/specs/featured-chef-public-proof-and-booking.md (new), docs/research/featured-chef-public-proof-and-booking.md (new), docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; last green build 5511b1e9, starting HEAD 630a6474)
+- Notes: Spec is ready for a builder. Main finding: public proof already exists in the live review aggregator and public chef page, but the homepage card, inquiry route, and preview are not aligned. Biggest builder trap: do not implement this against the separate `testimonials` table or `/review/[token]` flow.
