@@ -1,9 +1,20 @@
 'use client'
 
 import { useState, useRef, useTransition } from 'react'
-import { ImagePlus, Globe, Users, Lock, ChevronDown, X, MapPin, Hash } from '@/components/ui/icons'
+import {
+  ImagePlus,
+  Globe,
+  Users,
+  Lock,
+  ChevronDown,
+  X,
+  MapPin,
+  Hash,
+  Sparkles,
+} from '@/components/ui/icons'
 import { createSocialPost, uploadPostMedia } from '@/lib/social/chef-social-actions'
 import type { PostVisibility, SocialChannel } from '@/lib/social/chef-social-actions'
+import { createOpportunityPost } from '@/lib/network/opportunity-actions'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
@@ -16,6 +27,20 @@ const VISIBILITY_OPTIONS: Array<{ value: Visibility; label: string; icon: React.
   { value: 'connections', label: 'Connections', icon: <Users className="h-3.5 w-3.5" /> },
   { value: 'private', label: 'Only Me', icon: <Lock className="h-3.5 w-3.5" /> },
 ]
+
+const DURATION_OPTIONS = [
+  { value: 'permanent', label: 'Permanent' },
+  { value: 'seasonal', label: 'Seasonal' },
+  { value: 'per_event', label: 'Per Event' },
+  { value: 'contract', label: 'Contract' },
+] as const
+
+const COMPENSATION_OPTIONS = [
+  { value: 'hourly', label: 'Hourly' },
+  { value: 'salary', label: 'Salary' },
+  { value: 'day_rate', label: 'Day Rate' },
+  { value: 'negotiable', label: 'Negotiable' },
+] as const
 
 export function SocialPostComposer({
   myName,
@@ -44,6 +69,20 @@ export function SocialPostComposer({
   const [error, setError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // Opportunity mode state
+  const [opportunityMode, setOpportunityMode] = useState(false)
+  const [roleTitle, setRoleTitle] = useState('')
+  const [oppCity, setOppCity] = useState('')
+  const [oppState, setOppState] = useState('')
+  const [compType, setCompType] = useState<'hourly' | 'salary' | 'day_rate' | 'negotiable'>(
+    'negotiable'
+  )
+  const [compLow, setCompLow] = useState('')
+  const [compHigh, setCompHigh] = useState('')
+  const [durationType, setDurationType] = useState<
+    'permanent' | 'seasonal' | 'per_event' | 'contract'
+  >('permanent')
+
   const selectedVis = VISIBILITY_OPTIONS.find((o) => o.value === visibility)!
 
   async function handleFiles(files: FileList) {
@@ -67,9 +106,65 @@ export function SocialPostComposer({
     setMediaItems((prev) => prev.filter((_, i) => i !== index))
   }
 
+  function resetForm() {
+    setContent('')
+    setMediaItems([])
+    setLocationTag('')
+    setShowLocation(false)
+    setOpportunityMode(false)
+    setRoleTitle('')
+    setOppCity('')
+    setOppState('')
+    setCompType('negotiable')
+    setCompLow('')
+    setCompHigh('')
+    setDurationType('permanent')
+  }
+
   function handleSubmit() {
     if (!content.trim()) return
+    if (opportunityMode && !roleTitle.trim()) {
+      setError('Role title is required for opportunity posts.')
+      return
+    }
     setError(null)
+
+    if (opportunityMode) {
+      startTransition(async () => {
+        try {
+          const lowCents = compLow ? Math.round(parseFloat(compLow) * 100) : null
+          const highCents = compHigh ? Math.round(parseFloat(compHigh) * 100) : null
+          if (lowCents != null && highCents != null && lowCents > highCents) {
+            setError('Minimum compensation cannot exceed maximum.')
+            return
+          }
+          const result = await createOpportunityPost({
+            content: content.trim(),
+            role_title: roleTitle.trim(),
+            location_city: oppCity.trim() || null,
+            location_state: oppState.trim().toUpperCase() || null,
+            compensation_type: compType,
+            compensation_low_cents: lowCents,
+            compensation_high_cents: highCents,
+            duration_type: durationType,
+            visibility,
+            channel_id: channelId ?? null,
+            media_urls: mediaItems.map((m) => m.url),
+            media_types: mediaItems.map((m) => m.type),
+          })
+          if (!result.success) {
+            setError(result.error ?? 'Failed to post opportunity')
+            return
+          }
+          resetForm()
+          onPosted?.()
+        } catch (e: any) {
+          setError(e.message ?? 'Failed to post opportunity')
+        }
+      })
+      return
+    }
+
     startTransition(async () => {
       try {
         const postType = mediaItems.some((m) => m.type === 'video')
@@ -108,6 +203,23 @@ export function SocialPostComposer({
 
   return (
     <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm p-4 space-y-3">
+      {/* Opportunity mode banner */}
+      {opportunityMode && (
+        <div className="flex items-center justify-between bg-amber-950/60 border border-amber-700/40 rounded-xl px-3 py-2">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-amber-500" />
+            <span className="text-sm font-medium text-amber-300">Posting a hiring opportunity</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpportunityMode(false)}
+            className="text-xs text-amber-500 hover:text-amber-300"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
       {/* Top row */}
       <div className="flex gap-3">
         <Avatar className="w-10 h-10 flex-shrink-0">
@@ -119,12 +231,123 @@ export function SocialPostComposer({
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="Share something with the chef community..."
+          placeholder={
+            opportunityMode
+              ? 'Describe the opportunity, your kitchen culture, what makes this gig great...'
+              : 'Share something with the chef community...'
+          }
           rows={3}
           maxLength={5000}
           className="flex-1 resize-none text-sm bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent placeholder:text-stone-400"
         />
       </div>
+
+      {/* Opportunity structured fields */}
+      {opportunityMode && (
+        <div className="space-y-3 ml-13 border border-amber-700/30 rounded-xl p-3 bg-amber-950/20">
+          {/* Role title */}
+          <div>
+            <label className="block text-xs font-medium text-stone-400 mb-1">
+              Role title <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={roleTitle}
+              onChange={(e) => setRoleTitle(e.target.value)}
+              placeholder="e.g. Sous Chef, Kitchen Manager"
+              maxLength={200}
+              className="w-full text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-stone-900 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+          </div>
+
+          {/* Location */}
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-stone-400 mb-1">City</label>
+              <input
+                type="text"
+                value={oppCity}
+                onChange={(e) => setOppCity(e.target.value)}
+                placeholder="e.g. Haverhill"
+                maxLength={100}
+                className="w-full text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-stone-900 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
+            </div>
+            <div className="w-24">
+              <label className="block text-xs font-medium text-stone-400 mb-1">State</label>
+              <input
+                type="text"
+                value={oppState}
+                onChange={(e) => setOppState(e.target.value.toUpperCase().slice(0, 2))}
+                placeholder="MA"
+                maxLength={2}
+                className="w-full text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-stone-900 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-400 uppercase"
+              />
+            </div>
+          </div>
+
+          {/* Compensation */}
+          <div>
+            <label className="block text-xs font-medium text-stone-400 mb-1">Compensation</label>
+            <div className="flex gap-2 flex-wrap">
+              <select
+                title="Compensation type"
+                value={compType}
+                onChange={(e) => setCompType(e.target.value as typeof compType)}
+                className="text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-stone-900 text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              >
+                {COMPENSATION_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              {compType !== 'negotiable' && (
+                <>
+                  <input
+                    type="number"
+                    value={compLow}
+                    onChange={(e) => setCompLow(e.target.value)}
+                    placeholder="Min"
+                    min={0}
+                    className="w-24 text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-stone-900 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  />
+                  <span className="self-center text-stone-500 text-sm">to</span>
+                  <input
+                    type="number"
+                    value={compHigh}
+                    onChange={(e) => setCompHigh(e.target.value)}
+                    placeholder="Max"
+                    min={0}
+                    className="w-24 text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-stone-900 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  />
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Duration */}
+          <div>
+            <label className="block text-xs font-medium text-stone-400 mb-1">Duration</label>
+            <div className="flex flex-wrap gap-2">
+              {DURATION_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setDurationType(opt.value)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                    durationType === opt.value
+                      ? 'bg-amber-700 border-amber-600 text-white'
+                      : 'border-stone-600 text-stone-400 hover:border-stone-500'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Media previews */}
       {mediaItems.length > 0 && (
@@ -138,6 +361,8 @@ export function SocialPostComposer({
                 <img src={item.preview} alt="" className="w-full h-full object-cover" />
               )}
               <button
+                type="button"
+                title="Remove"
                 onClick={() => removeMedia(i)}
                 className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-4 h-4 flex items-center justify-center"
               >
@@ -149,7 +374,7 @@ export function SocialPostComposer({
       )}
 
       {/* Location input */}
-      {showLocation && (
+      {showLocation && !opportunityMode && (
         <div className="flex items-center gap-2 ml-13">
           <MapPin className="h-4 w-4 text-stone-400 flex-shrink-0" />
           <LocationAutocomplete
@@ -167,6 +392,7 @@ export function SocialPostComposer({
         <div className="flex items-center gap-2 ml-13">
           <Hash className="h-4 w-4 text-stone-400 flex-shrink-0" />
           <select
+            title="Post to channel"
             value={channelId ?? ''}
             onChange={(e) => setChannelId(e.target.value || null)}
             className="text-sm border border-stone-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-stone-900"
@@ -188,6 +414,7 @@ export function SocialPostComposer({
         <div className="flex items-center gap-1">
           {/* Media upload */}
           <button
+            type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading || mediaItems.length >= 10}
             title="Add photo or video"
@@ -204,18 +431,32 @@ export function SocialPostComposer({
             onChange={(e) => e.target.files && handleFiles(e.target.files)}
           />
 
-          {/* Location toggle */}
+          {/* Location toggle (hidden in opportunity mode since location is in structured fields) */}
+          {!opportunityMode && (
+            <button
+              type="button"
+              onClick={() => setShowLocation((s) => !s)}
+              title="Add location"
+              className={`p-2 rounded-lg transition-colors ${showLocation ? 'text-amber-600 bg-amber-950' : 'text-stone-500 hover:bg-stone-700'}`}
+            >
+              <MapPin className="h-4 w-4" />
+            </button>
+          )}
+
+          {/* Opportunity toggle */}
           <button
-            onClick={() => setShowLocation((s) => !s)}
-            title="Add location"
-            className={`p-2 rounded-lg transition-colors ${showLocation ? 'text-amber-600 bg-amber-950' : 'text-stone-500 hover:bg-stone-700'}`}
+            type="button"
+            onClick={() => setOpportunityMode((s) => !s)}
+            title="Post a hiring opportunity"
+            className={`p-2 rounded-lg transition-colors ${opportunityMode ? 'text-amber-600 bg-amber-950' : 'text-stone-500 hover:bg-stone-700'}`}
           >
-            <MapPin className="h-4 w-4" />
+            <Sparkles className="h-4 w-4" />
           </button>
 
           {/* Visibility picker */}
           <div className="relative">
             <button
+              type="button"
               onClick={() => setShowVisMenu((s) => !s)}
               className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-stone-400 hover:bg-stone-700 transition-colors"
             >
@@ -227,6 +468,7 @@ export function SocialPostComposer({
               <div className="absolute left-0 bottom-full mb-1 bg-stone-900 border border-stone-700 rounded-xl shadow-lg z-20 min-w-[140px]">
                 {VISIBILITY_OPTIONS.map((opt) => (
                   <button
+                    type="button"
                     key={opt.value}
                     onClick={() => {
                       setVisibility(opt.value)
@@ -245,10 +487,18 @@ export function SocialPostComposer({
         <Button
           variant="primary"
           onClick={handleSubmit}
-          disabled={!content.trim() || pending || uploading}
+          disabled={
+            !content.trim() || pending || uploading || (opportunityMode && !roleTitle.trim())
+          }
           className="text-sm px-4 py-2 h-auto"
         >
-          {pending ? 'Posting...' : uploading ? 'Uploading...' : 'Post'}
+          {pending
+            ? 'Posting...'
+            : uploading
+              ? 'Uploading...'
+              : opportunityMode
+                ? 'Post Opportunity'
+                : 'Post'}
         </Button>
       </div>
     </div>

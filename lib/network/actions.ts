@@ -147,6 +147,8 @@ export type NetworkInsights = {
 
 const SearchChefsSchema = z.object({
   query: z.string().trim().max(100).default(''),
+  city: z.string().trim().max(100).optional(),
+  state: z.string().trim().max(2).optional(),
 })
 
 const SendRequestSchema = z.object({
@@ -402,11 +404,18 @@ export async function searchChefs(
     connectionMap.set(otherId, { status: conn.status, direction, id: conn.id })
   }
 
+  const cityFilter = validated.city?.trim().toLowerCase()
+  const stateFilter = validated.state?.trim().toUpperCase()
+
   const visibleChefs = (chefs as any[]).filter((chef) => {
     const prefs = Array.isArray(chef.chef_preferences)
       ? chef.chef_preferences[0]
       : chef.chef_preferences
-    return prefs?.network_discoverable !== false
+    if (prefs?.network_discoverable === false) return false
+    // Apply optional location filters (case-insensitive, partial match for city)
+    if (stateFilter && (prefs?.home_state?.toUpperCase() ?? '') !== stateFilter) return false
+    if (cityFilter && !(prefs?.home_city?.toLowerCase() ?? '').includes(cityFilter)) return false
+    return true
   })
 
   return visibleChefs.map((chef) => {

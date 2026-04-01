@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -15,6 +15,8 @@ import {
   ChevronDown,
   ChevronUp,
   Repeat2,
+  DollarSign,
+  Sparkles,
 } from '@/components/ui/icons'
 import type { SocialPost, ReactionType, SocialComment } from '@/lib/social/chef-social-actions'
 import {
@@ -25,6 +27,14 @@ import {
   createComment,
   getPostComments,
 } from '@/lib/social/chef-social-actions'
+import {
+  getOpportunityDetail,
+  expressInterest,
+  closeOpportunity,
+  getOpportunityInterests,
+  type OpportunityDetail,
+  type OpportunityInterest,
+} from '@/lib/network/opportunity-actions'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
@@ -409,6 +419,296 @@ function CommentsSection({ postId, commentsCount }: { postId: string; commentsCo
   )
 }
 
+// ── Opportunity banner ───────────────────────────────────────
+function formatCompensation(opp: OpportunityDetail): string {
+  if (opp.compensation_type === 'negotiable') return 'Negotiable'
+  const label =
+    opp.compensation_type === 'hourly'
+      ? '/hr'
+      : opp.compensation_type === 'day_rate'
+        ? '/day'
+        : '/yr'
+  if (opp.compensation_low_cents != null && opp.compensation_high_cents != null) {
+    const lo = (opp.compensation_low_cents / 100).toLocaleString('en-US', {
+      maximumFractionDigits: 0,
+    })
+    const hi = (opp.compensation_high_cents / 100).toLocaleString('en-US', {
+      maximumFractionDigits: 0,
+    })
+    return `$${lo}-$${hi}${label}`
+  }
+  if (opp.compensation_low_cents != null) {
+    const lo = (opp.compensation_low_cents / 100).toLocaleString('en-US', {
+      maximumFractionDigits: 0,
+    })
+    return `$${lo}+${label}`
+  }
+  return 'Negotiable'
+}
+
+function formatDuration(d: string): string {
+  if (d === 'per_event') return 'Per Event'
+  return d.charAt(0).toUpperCase() + d.slice(1)
+}
+
+function OpportunityBanner({
+  postId,
+  isOwner,
+  chefId,
+}: {
+  postId: string
+  isOwner: boolean
+  chefId: string
+}) {
+  const [opp, setOpp] = useState<OpportunityDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [interestedPending, startInterestTransition] = useTransition()
+  const [showInterests, setShowInterests] = useState(false)
+  const [interests, setInterests] = useState<OpportunityInterest[]>([])
+  const [loadingInterests, setLoadingInterests] = useState(false)
+  const [messageInput, setMessageInput] = useState('')
+  const [showMessageInput, setShowMessageInput] = useState(false)
+  const [closePending, startCloseTransition] = useTransition()
+
+  useEffect(() => {
+    getOpportunityDetail(postId, chefId)
+      .then((d) => setOpp(d))
+      .catch(() => setOpp(null))
+      .finally(() => setLoading(false))
+  }, [postId, chefId])
+
+  function handleExpressInterest() {
+    if (!opp) return
+    startInterestTransition(async () => {
+      try {
+        const result = await expressInterest({
+          opportunityId: opp.id,
+          message: messageInput.trim() || null,
+        })
+        if (!result.success) {
+          toast.error(result.error ?? 'Failed to express interest')
+          return
+        }
+        toast.success('Interest sent! The chef will see your message.')
+        setOpp((prev) =>
+          prev ? { ...prev, my_interest_id: 'sent', my_interest_status: 'expressed' } : prev
+        )
+        setShowMessageInput(false)
+        setMessageInput('')
+      } catch (err: any) {
+        toast.error(err.message ?? 'Failed to express interest')
+      }
+    })
+  }
+
+  function handleLoadInterests() {
+    if (!opp) return
+    setShowInterests((s) => !s)
+    if (!showInterests && interests.length === 0) {
+      setLoadingInterests(true)
+      getOpportunityInterests(opp.id)
+        .then((data) => setInterests(data))
+        .catch(() => toast.error('Could not load interests'))
+        .finally(() => setLoadingInterests(false))
+    }
+  }
+
+  function handleClose(status: 'filled' | 'closed') {
+    if (!opp) return
+    startCloseTransition(async () => {
+      try {
+        const result = await closeOpportunity({ opportunityId: opp.id, status })
+        if (!result.success) {
+          toast.error(result.error ?? 'Failed to update opportunity')
+          return
+        }
+        setOpp((prev) => (prev ? { ...prev, status } : prev))
+        toast.success(status === 'filled' ? 'Marked as filled' : 'Opportunity closed')
+      } catch (err: any) {
+        toast.error(err.message ?? 'Failed to update opportunity')
+      }
+    })
+  }
+
+  if (loading) return null
+  if (!opp) return null
+
+  const isFilled = opp.status === 'filled'
+  const isClosed = opp.status === 'closed'
+  const isInactive = isFilled || isClosed
+  const alreadyInterested = !!opp.my_interest_id
+
+  return (
+    <div
+      className={`mt-3 border rounded-xl p-3 space-y-2 ${isInactive ? 'border-stone-700 opacity-70' : 'border-amber-700/40 bg-amber-950/10'}`}
+    >
+      {/* Role + status badges */}
+      <div className="flex items-center flex-wrap gap-2">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-900/60 text-amber-300 text-xs font-semibold">
+          <Sparkles className="h-3 w-3" />
+          {opp.role_title}
+        </span>
+        <span className="inline-flex items-center px-2 py-0.5 rounded-full border border-stone-600 text-stone-400 text-xs">
+          {formatDuration(opp.duration_type)}
+        </span>
+        {isInactive && (
+          <span
+            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${isFilled ? 'bg-green-900/40 text-green-300 border border-green-700/50' : 'bg-stone-800 text-stone-400 border border-stone-600'}`}
+          >
+            {isFilled ? 'Filled' : 'Closed'}
+          </span>
+        )}
+      </div>
+
+      {/* Location + compensation */}
+      <div className="flex flex-wrap gap-3 text-xs text-stone-400">
+        {(opp.location_city || opp.location_state) && (
+          <span className="flex items-center gap-1">
+            <MapPin className="h-3 w-3 text-stone-500" />
+            {[opp.location_city, opp.location_state].filter(Boolean).join(', ')}
+          </span>
+        )}
+        <span className="flex items-center gap-1">
+          <DollarSign className="h-3 w-3 text-stone-500" />
+          {formatCompensation(opp)}
+        </span>
+      </div>
+
+      {/* Actions */}
+      {!isOwner && !isInactive && (
+        <div className="pt-1">
+          {alreadyInterested ? (
+            <span className="inline-flex items-center gap-1 text-xs text-amber-500 font-medium">
+              <Check className="h-3.5 w-3.5" />
+              Interest sent
+            </span>
+          ) : showMessageInput ? (
+            <div className="space-y-2">
+              <textarea
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                placeholder="Optional: introduce yourself..."
+                rows={2}
+                maxLength={1000}
+                className="w-full resize-none text-sm border border-stone-700 rounded-lg px-3 py-2 bg-stone-900 text-stone-100 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="primary"
+                  onClick={handleExpressInterest}
+                  disabled={interestedPending}
+                  className="text-xs px-3 py-1.5 h-auto"
+                >
+                  {interestedPending ? 'Sending...' : "I'm Interested"}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => setShowMessageInput(false)}
+                  className="text-xs text-stone-500 hover:text-stone-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="primary"
+              onClick={() => setShowMessageInput(true)}
+              disabled={interestedPending}
+              className="text-xs px-3 py-1.5 h-auto"
+            >
+              {"I'm Interested"}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Posting chef: interest count + manage */}
+      {isOwner && (
+        <div className="pt-1 space-y-2">
+          <button
+            type="button"
+            onClick={handleLoadInterests}
+            className="text-xs text-amber-500 hover:text-amber-300 font-medium"
+          >
+            {opp.interest_count === 0
+              ? 'No interest yet'
+              : `${opp.interest_count} chef${opp.interest_count !== 1 ? 's' : ''} interested`}
+            {opp.interest_count > 0 && (
+              <span className="ml-1">{showInterests ? '(hide)' : '(view)'}</span>
+            )}
+          </button>
+
+          {showInterests && (
+            <div className="space-y-2 border-t border-stone-700 pt-2">
+              {loadingInterests && <p className="text-xs text-stone-500">Loading...</p>}
+              {!loadingInterests && interests.length === 0 && (
+                <p className="text-xs text-stone-500">No interests yet.</p>
+              )}
+              {interests.map((interest) => (
+                <div key={interest.id} className="flex items-start gap-2 text-xs">
+                  <Link
+                    href={`/network/${interest.chef_id}`}
+                    className="font-medium text-stone-200 hover:underline flex-shrink-0"
+                  >
+                    {interest.chef_display_name ?? interest.chef_business_name}
+                  </Link>
+                  {(interest.chef_city || interest.chef_state) && (
+                    <span className="text-stone-500">
+                      {[interest.chef_city, interest.chef_state].filter(Boolean).join(', ')}
+                    </span>
+                  )}
+                  {interest.message && (
+                    <p className="text-stone-400 italic truncate">
+                      &ldquo;{interest.message}&rdquo;
+                    </p>
+                  )}
+                  <span
+                    className={`ml-auto flex-shrink-0 px-1.5 py-0.5 rounded-full text-xxs ${
+                      interest.status === 'connected'
+                        ? 'bg-green-900/40 text-green-300'
+                        : interest.status === 'declined'
+                          ? 'bg-stone-700 text-stone-400'
+                          : 'bg-amber-900/40 text-amber-300'
+                    }`}
+                  >
+                    {interest.status === 'expressed'
+                      ? 'New'
+                      : interest.status.charAt(0).toUpperCase() + interest.status.slice(1)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Close / fill controls */}
+          {opp.status === 'open' && (
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => handleClose('filled')}
+                disabled={closePending}
+                className="text-xs text-green-500 hover:text-green-300 font-medium disabled:opacity-50"
+              >
+                Mark as filled
+              </button>
+              <span className="text-stone-600">·</span>
+              <button
+                type="button"
+                onClick={() => handleClose('closed')}
+                disabled={closePending}
+                className="text-xs text-stone-500 hover:text-stone-300 disabled:opacity-50"
+              >
+                Close
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main post card ───────────────────────────────────────────
 export function SocialPostCard({
   post,
@@ -591,6 +891,11 @@ export function SocialPostCard({
           <div className="mt-3">
             <MediaGrid urls={post.media_urls} types={post.media_types} />
           </div>
+        )}
+
+        {/* Opportunity detail banner */}
+        {post.post_type === 'opportunity' && (
+          <OpportunityBanner postId={post.id} isOwner={post.is_mine} chefId={post.chef_id} />
         )}
 
         {/* Poll */}

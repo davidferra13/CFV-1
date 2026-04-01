@@ -29,7 +29,7 @@ const ALLOWED_MEDIA_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES]
 
 export type ReactionType = 'like' | 'fire' | 'clap' | 'wow' | 'hungry' | 'insightful'
 export type PostVisibility = 'public' | 'followers' | 'connections' | 'private'
-export type PostType = 'text' | 'photo' | 'video' | 'reel' | 'poll' | 'share'
+export type PostType = 'text' | 'photo' | 'video' | 'reel' | 'poll' | 'share' | 'opportunity'
 
 export type SocialPostAuthor = {
   id: string
@@ -283,12 +283,14 @@ export async function getSocialFeed(input: {
   mode?: 'for_you' | 'following' | 'global'
   limit?: number
   before?: string // cursor: created_at ISO string
+  post_type?: PostType // optional filter: only return posts of this type
 }): Promise<SocialPost[]> {
   const user = await requireChef()
   const db = createServerClient({ admin: true })
   const mode = input.mode ?? 'for_you'
   const limit = Math.min(input.limit ?? 30, 100)
   const before = input.before
+  const postTypeFilter = input.post_type
 
   // Global feed: public posts only, no relationship needed
   if (mode === 'global') {
@@ -299,6 +301,7 @@ export async function getSocialFeed(input: {
       .order('created_at', { ascending: false })
       .limit(limit)
     if (before) query = query.lt('created_at', before)
+    if (postTypeFilter) query = query.eq('post_type', postTypeFilter)
     const { data: posts } = await query
     return hydratePostList(db, posts ?? [], user.entityId)
   }
@@ -329,6 +332,7 @@ export async function getSocialFeed(input: {
       .order('created_at', { ascending: false })
       .limit(limit)
     if (before) query = query.lt('created_at', before)
+    if (postTypeFilter) query = query.eq('post_type', postTypeFilter)
     const { data: posts } = await query
     return hydratePostList(db, posts ?? [], user.entityId)
   }
@@ -408,12 +412,13 @@ export async function getSocialFeed(input: {
   const results = await Promise.all(queries)
   const allPosts = results.flatMap((r) => r.data ?? [])
 
-  // Deduplicate by id, then sort descending and take top `limit`
+  // Deduplicate by id, optionally filter by post_type, then sort descending and take top `limit`
   const seen = new Set<string>()
   const unique = allPosts
     .filter((p) => {
       if (seen.has(p.id)) return false
       seen.add(p.id)
+      if (postTypeFilter && p.post_type !== postTypeFilter) return false
       return true
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -679,7 +684,9 @@ const CreatePostSchema = z.object({
     .array(z.enum(['image', 'video']))
     .max(10)
     .default([]),
-  post_type: z.enum(['text', 'photo', 'video', 'reel', 'poll', 'share']).default('text'),
+  post_type: z
+    .enum(['text', 'photo', 'video', 'reel', 'poll', 'share', 'opportunity'])
+    .default('text'),
   visibility: z.enum(['public', 'followers', 'connections', 'private']).default('public'),
   channel_id: z.string().uuid().nullable().optional(),
   location_tag: z.string().max(100).nullable().optional(),

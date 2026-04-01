@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useTransition, useCallback } from 'react'
-import { RefreshCw } from '@/components/ui/icons'
+import { RefreshCw, Sparkles } from '@/components/ui/icons'
 import type {
   SocialPost,
   SocialChannel,
   StoryGroup,
   SocialPostAuthor,
+  PostType,
 } from '@/lib/social/chef-social-actions'
 import { getSocialFeed, getChannelFeed, getActiveStories } from '@/lib/social/chef-social-actions'
 import { SocialPostCard } from './social-post-card'
@@ -47,6 +48,7 @@ export function SocialFeedClient({
   const isChannelFeed = !!channelSlug
 
   const [mode, setMode] = useState<FeedMode>('for_you')
+  const [postTypeFilter, setPostTypeFilter] = useState<PostType | undefined>(undefined)
   const [posts, setPosts] = useState<SocialPost[]>(initialPosts)
   const [stories, setStories] = useState<StoryGroup[]>(storyGroups)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -54,12 +56,14 @@ export function SocialFeedClient({
   const [, startTransition] = useTransition()
 
   const reloadFeed = useCallback(
-    (newMode?: FeedMode) => {
+    (newMode?: FeedMode, newTypeFilter?: PostType | null) => {
       startTransition(async () => {
         try {
+          const resolvedFilter =
+            newTypeFilter !== undefined ? (newTypeFilter ?? undefined) : postTypeFilter
           const fresh = isChannelFeed
             ? await getChannelFeed({ channelSlug: channelSlug!, limit: 30 })
-            : await getSocialFeed({ mode: newMode ?? mode, limit: 30 })
+            : await getSocialFeed({ mode: newMode ?? mode, limit: 30, post_type: resolvedFilter })
           setPosts(fresh)
           setHasMore(fresh.length >= 30)
         } catch (err) {
@@ -67,7 +71,7 @@ export function SocialFeedClient({
         }
       })
     },
-    [isChannelFeed, channelSlug, mode]
+    [isChannelFeed, channelSlug, mode, postTypeFilter]
   )
 
   const reloadStories = useCallback(() => {
@@ -83,7 +87,13 @@ export function SocialFeedClient({
 
   function switchMode(m: FeedMode) {
     setMode(m)
-    reloadFeed(m)
+    reloadFeed(m, postTypeFilter ?? null)
+  }
+
+  function toggleOpportunityFilter() {
+    const next = postTypeFilter === 'opportunity' ? undefined : ('opportunity' as PostType)
+    setPostTypeFilter(next)
+    reloadFeed(mode, next ?? null)
   }
 
   async function loadMore() {
@@ -92,7 +102,7 @@ export function SocialFeedClient({
     const before = posts[posts.length - 1].created_at
     const more = isChannelFeed
       ? await getChannelFeed({ channelSlug: channelSlug!, limit: 30, before })
-      : await getSocialFeed({ mode, limit: 30, before })
+      : await getSocialFeed({ mode, limit: 30, before, post_type: postTypeFilter })
     setPosts((p) => [...p, ...more])
     setHasMore(more.length >= 30)
     setLoadingMore(false)
@@ -111,6 +121,8 @@ export function SocialFeedClient({
     { value: 'following', label: 'Following' },
     { value: 'global', label: 'All Chefs' },
   ]
+
+  const showingOpportunities = postTypeFilter === 'opportunity'
 
   return (
     <div className={showSidebar ? 'grid grid-cols-1 lg:grid-cols-3 gap-6' : 'space-y-4'}>
@@ -142,7 +154,7 @@ export function SocialFeedClient({
                   key={tab.value}
                   onClick={() => switchMode(tab.value)}
                   className={`flex-1 py-3 text-sm font-medium transition-colors ${
-                    mode === tab.value
+                    mode === tab.value && !showingOpportunities
                       ? 'text-amber-700 border-b-2 border-amber-500 bg-amber-950/50'
                       : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
                   }`}
@@ -151,7 +163,24 @@ export function SocialFeedClient({
                 </button>
               ))
             )}
+            {/* Opportunities filter pill */}
+            {!isChannelFeed && (
+              <button
+                type="button"
+                onClick={toggleOpportunityFilter}
+                title="Filter: Opportunities only"
+                className={`flex items-center gap-1 px-3 py-3 text-sm font-medium transition-colors border-l border-stone-800 ${
+                  showingOpportunities
+                    ? 'text-amber-500 border-b-2 border-amber-500 bg-amber-950/50'
+                    : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
+                }`}
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Hiring</span>
+              </button>
+            )}
             <button
+              type="button"
               onClick={() => reloadFeed()}
               className="px-4 py-3 text-stone-400 hover:text-stone-400 transition-colors"
               title="Refresh feed"
@@ -163,14 +192,25 @@ export function SocialFeedClient({
           {/* Posts */}
           <div className="divide-y divide-stone-800">
             {posts.length === 0 ? (
-              <div className="py-12 text-center">
+              <div className="py-12 text-center space-y-2">
                 <p className="text-stone-400 text-sm">
                   {isChannelFeed
                     ? 'No posts in this channel yet - be the first!'
-                    : mode === 'following'
-                      ? 'Follow some chefs to see their posts here'
-                      : 'No posts yet - be the first!'}
+                    : showingOpportunities
+                      ? 'No open opportunities right now. Check back soon, or post your own!'
+                      : mode === 'following'
+                        ? 'Follow some chefs to see their posts here'
+                        : 'No posts yet - be the first!'}
                 </p>
+                {showingOpportunities && (
+                  <button
+                    type="button"
+                    onClick={toggleOpportunityFilter}
+                    className="text-xs text-amber-500 hover:text-amber-300 font-medium"
+                  >
+                    Back to full feed
+                  </button>
+                )}
               </div>
             ) : (
               posts.map((post) => (
@@ -185,6 +225,7 @@ export function SocialFeedClient({
           {hasMore && (
             <div className="p-4 border-t border-stone-800">
               <button
+                type="button"
                 onClick={loadMore}
                 disabled={loadingMore}
                 className="w-full text-sm text-amber-700 font-medium hover:text-amber-800 py-2 rounded-xl hover:bg-amber-950 transition-colors"

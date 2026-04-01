@@ -1,24 +1,24 @@
 # Spec: Chef Opportunity Network
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (5-7 files)
 
 ## Timeline
 
-| Event                 | Date             | Agent/Session      | Commit |
-| --------------------- | ---------------- | ------------------ | ------ |
-| Created               | 2026-03-31 20:30 | Planner (Opus 4.6) |        |
-| Status: ready         | 2026-03-31 20:30 | Planner (Opus 4.6) |        |
-| Claimed (in-progress) |                  |                    |        |
-| Spike completed       |                  |                    |        |
-| Pre-flight passed     |                  |                    |        |
-| Build completed       |                  |                    |        |
-| Type check passed     |                  |                    |        |
-| Build check passed    |                  |                    |        |
-| Playwright verified   |                  |                    |        |
-| Status: verified      |                  |                    |        |
+| Event                 | Date             | Agent/Session        | Commit       |
+| --------------------- | ---------------- | -------------------- | ------------ |
+| Created               | 2026-03-31 20:30 | Planner (Opus 4.6)   |              |
+| Status: ready         | 2026-03-31 20:30 | Planner (Opus 4.6)   |              |
+| Claimed (in-progress) | 2026-04-01       | Builder (Sonnet 4.6) |              |
+| Spike completed       | 2026-04-01       | Builder (Sonnet 4.6) |              |
+| Pre-flight passed     | 2026-04-01       | Builder (Sonnet 4.6) |              |
+| Build completed       | 2026-04-01       | Builder (Sonnet 4.6) |              |
+| Type check passed     | 2026-04-01       | Builder (Sonnet 4.6) | TSC 0 errors |
+| Build check passed    |                  |                      |              |
+| Playwright verified   |                  |                      |              |
+| Status: verified      |                  |                      |              |
 
 ---
 
