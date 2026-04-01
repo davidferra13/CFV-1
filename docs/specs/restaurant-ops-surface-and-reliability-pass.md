@@ -9,11 +9,11 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event         | Date             | Agent/Session      | Commit  |
-| ------------- | ---------------- | ------------------ | ------- |
-| Created       | 2026-04-01 00:58 | Planner + Research |         |
-| Status: ready | 2026-04-01 00:58 | Planner + Research |         |
-| Status: built | 2026-04-01       | Builder            | pending |
+| Event         | Date             | Agent/Session      | Commit   |
+| ------------- | ---------------- | ------------------ | -------- |
+| Created       | 2026-04-01 00:58 | Planner + Research |          |
+| Status: ready | 2026-04-01 00:58 | Planner + Research |          |
+| Status: built | 2026-04-01       | Builder            | 59c4e54f |
 
 ---
 

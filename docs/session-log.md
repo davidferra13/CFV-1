@@ -81,6 +81,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: green (e740aa53, spec-only session, no code changes)
 - Notes: 5-phase spec: fix broken chains -> breadth-first Instacart expansion -> free APIs (Kroger/USDA) -> wholesale sources -> cross-reference gap-fill. Key shift: scan-and-move instead of re-scan. Wholesale/retail price type separation. $0 spend until Phase 1 proves 7 green days. Next: builder claims Phase 1, SSHs into Pi to fix 5 empty chains.
 
+## 2026-04-01 ~06:30 EST
+
+- Agent: Builder (Claude Sonnet 4.6)
+- Task: restaurant-ops-surface-and-reliability-pass spec
+- Status: completed
+- Files touched: lib/staff/staff-portal-actions.ts, app/(staff)/staff-station/page.tsx, components/staff/staff-shift-controls.tsx, app/(staff)/staff-recipes/page.tsx, lib/tasks/actions.ts, lib/tasks/dependency-actions.ts, components/tasks/dependency-picker.tsx, components/tasks/gantt-view.tsx, lib/staff/activity-board.ts, lib/inventory/auto-reorder-actions.ts, lib/inventory/vendor-invoice-actions.ts, components/stations/daily-ops-actions-bar.tsx, app/(chef)/stations/page.tsx, docs/specs/restaurant-ops-surface-and-reliability-pass.md
+- Commits: 59c4e54f
+- Build state on departure: green (tsc clean, no build run)
+- Notes: All 13 schema/UI drift issues fixed. Key repairs: station recipes now use real bridge (no all-recipes fallback), task_completion_log writes/reads staff_member_id, removeDependency uses task pair not record id, reorder_settings keyed by ingredient_name, vendor-invoice revalidates correct route, staff check-in/out loop complete with server-side shift state.
+
 ## 2026-03-31 ~17:36 EST
 
 - Agent: Planner
