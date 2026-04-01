@@ -627,3 +627,22 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 572185c4, 821035fc, 2154f9dd
 - Build state on departure: green (tsc clean 0 errors, 2154f9dd)
 - Notes: Key fix: terminal state guard in approveAndSendMessage prevents courtesy closeout from restoring follow-up debt on declined/expired inquiries. Playwright verification deferred - dev server not running. collab-spaces-qa.spec.ts + playwright.collab-qa.config.ts ready when needed.
+
+## 2026-04-01 13:04 EDT
+
+- Agent: Planner (Codex)
+- Task: Pricing readiness / use-now vs wait-for-OpenClaw planning pass, with current-state audit, developer-notes capture, and builder-ready spec validation
+- Status: started
+- Build state on arrival: mixed-docs / green-code (docs/build-state.md last green build 5511b1e9, last green tsc 2154f9dd; current repo typechecks and wrapper build succeeds, but docs/spec state is partially stale)
+- Files in focus: docs/app-complete-audit.md, docs/specs/\_TEMPLATE.md, docs/specs/openclaw-total-capture.md, docs/specs/openclaw-capture-countdown-and-pixel-schedule.md, docs/specs/openclaw-refresh-status-badge.md, docs/pricing-validation-report-2026-03-31.md, app/(chef)/prices, app/(chef)/culinary/price-catalog, app/(chef)/culinary/costing, app/(admin)/admin/price-catalog, lib/openclaw, lib/pricing, scripts/openclaw-pull, scripts/openclaw-health-check.mjs, openclaw schema/migrations
+- Notes: Goal is to answer the developer's real question with a spec that distinguishes practical chef-readiness from total-America completion, avoids fake certainty, and defines what must be true before the pricing system is honestly presented as ready for real use.
+
+## 2026-04-01 15:58 EDT
+
+- Agent: Planner (Codex)
+- Task: Pricing readiness / use-now vs wait-for-OpenClaw planning pass, with current-state audit, developer-notes capture, and builder-ready spec validation
+- Status: completed
+- Files touched: docs/specs/p0-chef-pricing-readiness-gate.md, docs/session-log.md
+- Commits: pending at log time
+- Build state on departure: unchanged (docs-only planning session; no product code or schema edited)
+- Notes: Added a build-ready spec that separates chef-specific pricing readiness from nationwide market completion, replaces the hardcoded New England ZIP assumption on `/prices`, and explicitly anchors green-day logic to `openclaw.sync_runs.errors` instead of the health-check script's nonexistent `status` column. Main residual risk is strategic, not structural: the readiness thresholds are now explicit product policy, but current live data still remains regional and the deploy-log source-mapping / capture-handoff defects are intentionally out of scope for this spec.
