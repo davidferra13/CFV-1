@@ -1,6 +1,6 @@
 # Spec: OpenClaw Canonical Scope and Sequence
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** small (1-2 files)

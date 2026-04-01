@@ -1,6 +1,6 @@
 # Spec: Remy Hybrid Cloud Routing
 
-> **Status:** ready
+> **Status:** superseded (by full-cloud-ai-runtime-and-disclosure.md)
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
