@@ -1,6 +1,6 @@
 # Spec: Chef Golden Path Reliability
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -8,11 +8,14 @@
 
 ## Timeline
 
-| Event                    | Date             | Agent/Session | Commit |
-| ------------------------ | ---------------- | ------------- | ------ |
-| Created                  | 2026-03-31 22:33 | Codex planner |        |
-| Tightened with citations | 2026-03-31 23:15 | Codex planner |        |
-| Status: ready            | 2026-03-31 22:33 | Codex planner |        |
+| Event                    | Date             | Agent/Session  | Commit |
+| ------------------------ | ---------------- | -------------- | ------ |
+| Created                  | 2026-03-31 22:33 | Codex planner  |        |
+| Tightened with citations | 2026-03-31 23:15 | Codex planner  |        |
+| Status: ready            | 2026-03-31 22:33 | Codex planner  |        |
+| Build started            | 2026-04-01       | Claude builder |        |
+| Type check passed        | 2026-04-01       | Claude builder |        |
+| Build completed          | 2026-04-01       | Claude builder |        |
 
 ---
 

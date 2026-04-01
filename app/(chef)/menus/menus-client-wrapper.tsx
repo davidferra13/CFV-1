@@ -349,7 +349,11 @@ export function MenusClientWrapper({
         setQuickViewError(false)
         setQuickViewLoading(true)
         try {
-          const data = await getMenuQuickViewData(menuId)
+          // Race the fetch against a 10s timeout so the spinner never hangs forever.
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Request timed out')), 10_000)
+          )
+          const data = await Promise.race([getMenuQuickViewData(menuId), timeoutPromise])
           setQuickViewData(data)
           setQuickViewCache((prev) => ({ ...prev, [menuId]: data }))
         } catch {

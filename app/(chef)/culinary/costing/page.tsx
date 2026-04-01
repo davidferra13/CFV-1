@@ -160,13 +160,8 @@ export default async function CostingPage() {
                           <span className="text-xs text-stone-500">No ingredients</span>
                         ) : (
                           <CostingConfidenceBadge
-                            coveragePct={
-                              recipe.has_all_prices
-                                ? 100
-                                : recipe.has_all_prices === false
-                                  ? 50
-                                  : null
-                            }
+                            coveragePct={recipe.has_all_prices ? 100 : null}
+                            isPartial={recipe.has_all_prices === false}
                           />
                         )}
                       </TableCell>
@@ -264,13 +259,8 @@ export default async function CostingPage() {
                         <span className="text-xs text-stone-500">No components</span>
                       ) : (
                         <CostingConfidenceBadge
-                          coveragePct={
-                            mc.has_all_recipe_costs
-                              ? 100
-                              : mc.has_all_recipe_costs === false
-                                ? 50
-                                : null
-                          }
+                          coveragePct={mc.has_all_recipe_costs ? 100 : null}
+                          isPartial={mc.has_all_recipe_costs === false}
                         />
                       )}
                     </TableCell>
