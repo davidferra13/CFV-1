@@ -48,6 +48,23 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Motivation:** The current pricing surfaces expose freshness fragments and raw counts, but they do not answer the developer's actual trust question.
 - **Success from the developer's perspective:** A chef can open the pricing surfaces and immediately understand "ready now," "usable with caveats," or "not ready yet" for their own current data, while also seeing that nationwide coverage is still in progress until strict thresholds are truly met.
 
+### Execution Translation
+
+_Convert the conversation into builder-usable requirements, constraints, and behaviors without losing the reasoning._
+
+- **Requirements:** The product must answer two separate questions everywhere this feature appears: `Can I use this for my own menu pricing today?` and `Is the national market foundation actually finished?`
+- **Requirements:** The finished-system promise is practical, not magical. Help a chef price almost any recipe or menu with the best available current data, while showing weaker-confidence situations honestly.
+- **Requirements:** The readiness surface must distinguish chef usefulness from broader OpenClaw expansion so the user is not forced to infer whether they are waiting on their own data quality, national scraping progress, or both.
+- **Constraints:** Do not imply that everything is already working perfectly.
+- **Constraints:** Do not convert roadmap projections into exact promises or launch dates.
+- **Constraints:** Do not define success as literal perfect coverage of every item in America forever. Define success as trustworthy, practical pricing with honest caveats.
+- **Constraints:** Do not frame the current unfinished state as proof that the architecture failed. The real problem is truthful readiness communication plus remaining market-data expansion.
+- **Behaviors:** If the chef can use pricing today with caveats, say that directly instead of hiding behind generic freshness counters.
+- **Behaviors:** If nationwide coverage is still regional, say that directly instead of implying total coverage from raw counts or optimistic copy.
+- **Behaviors:** If the system cannot verify readiness, say `unknown` or `unavailable`, not `done`, `healthy`, or `ready`.
+- **Gap fill:** The spec must make it impossible for a builder to ship a reassuring but false message like `just wait for scraping to finish` when chef-side coverage may also be incomplete.
+- **Gap fill:** The spec must make it impossible for a builder to ship the false opposite message that the final goal can never be met, when the real standard is practical accuracy rather than literal omniscience.
+
 ---
 
 ## What This Does (Plain English)

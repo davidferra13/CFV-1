@@ -684,3 +684,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending at log time
 - Build state on departure: unchanged (docs-only planning session; no product code, schema, or build-state files changed)
 - Notes: Added a builder-ready spec focused on shell curation rather than wholesale redesign. The plan narrows scope to dashboard, nav, settings, integrations, and focus-mode copy/fallback alignment; it explicitly fences AI runtime/privacy disclosure work to the existing `full-cloud-ai-runtime-and-disclosure` spec and warns against route removal, backend contract churn, or monetization-scope bleed while implementing the calmer shell.
+
+## 2026-04-01 14:01 EDT
+
+- Agent: Planner (Codex)
+- Task: Pricing readiness developer-notes capture follow-up
+- Status: completed
+- Files touched: docs/specs/p0-chef-pricing-readiness-gate.md, docs/session-log.md
+- Commits: pending at log time
+- Build state on departure: unchanged (docs-only follow-up under explicit no-code instruction)
+- Notes: Expanded the pricing-readiness spec's Developer Notes so the builder cannot miss the actual intent: separate `usable now` from `nationwide done`, forbid fake exact-date promises, define success as practical chef pricing accuracy rather than literal perfect omniscience, and keep readiness messaging honest when the current state is still regional or partially verified.
