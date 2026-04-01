@@ -173,3 +173,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/staff-ops-unified-workflow.md (new), docs/research/staff-ops-competitive-landscape.md (new), docs/session-log.md
 - Build state on departure: green (5511b1e9, spec-only session, no code changes)
 - Notes: P1 spec ready. 0 new tables, 0 migrations, 5 file modifications. Connects existing staff tasks to events (event context on task cards, inline task creation from event staff panel, notification direction fix). Deep UX inspection found 10 friction points; this spec addresses the top 3 highest-leverage ones. Full competitive landscape research confirms no competitor does event-based staff scheduling. Follow-up specs identified: recurring shifts, shift swaps, team announcements, unified staff command center, mobile layout polish.
+
+## 2026-04-01 ~06:00 EST
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Research how professional chefs handle prep scheduling, kitchen delegation, food costing, and operational management. Competitive landscape for prep scheduling tools.
+- Status: completed
+- Files touched: docs/research/chef-prep-scheduling-practices.md (new), docs/session-log.md
+- Build state on departure: green (5511b1e9, research-only, no code changes)
+- Notes: 11 web searches across 5 categories. Key finding: no existing tool connects component-level recipe data to event-based reverse-calendar prep timelines. meez owns recipes, Puree owns catering dockets, but neither maps make-ahead windows to calendar dates. Grace's pain points validated as universal. Recommendations: add printable prep list view, group by station within day, surface storage notes prominently. Current spec is well-aligned with industry practices.
