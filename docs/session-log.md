@@ -155,3 +155,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/how-chefs-solve-these-problems-today.md (new), docs/session-log.md
 - Build state on departure: green (5511b1e9, research-only, no code changes)
 - Notes: Key findings: 59% can't fill chef positions, word-of-mouth #1 but zero infrastructure (validates opportunity network spec). 67% prefer direct ordering, 20-30% commission on third-party apps (validates public ordering as P0). No competitor combines ops+community+hiring+ordering. ChefFlow uniquely positioned.
+
+## 2026-03-31 ~23:45 EST
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Staff operations & scheduling competitive landscape research (Toast, Sling, 7shifts, HotSchedules, Homebase, When I Work, private chef tools)
+- Status: completed
+- Files touched: docs/research/staff-ops-competitive-landscape.md (new), docs/session-log.md
+- Build state on departure: green (5511b1e9, research-only, no code changes)
+- Notes: 14 web searches across 6 categories. Key finding: restaurant scheduling market is mature and crowded but 100% location-centric. Private chef tools (Traqly, Private Chef Manager, APPCA PCO) handle clients/menus but ZERO staff scheduling. ChefFlow is uniquely positioned to be first with event-based staff ops. 76% of operators want tech advantage but only 13% satisfied with current stack. Fragmentation costs 3-5% of revenue.
+
+## 2026-04-01 ~00:00 EST
+
+- Agent: Planner (Claude Opus 4.6)
+- Task: Staff Operations Unified Workflow spec. Origin: Evan Mancini (restaurant owner) feedback revisit + competitive research + deep UX inspection.
+- Status: completed
+- Files touched: docs/specs/staff-ops-unified-workflow.md (new), docs/research/staff-ops-competitive-landscape.md (new), docs/session-log.md
+- Build state on departure: green (5511b1e9, spec-only session, no code changes)
+- Notes: P1 spec ready. 0 new tables, 0 migrations, 5 file modifications. Connects existing staff tasks to events (event context on task cards, inline task creation from event staff panel, notification direction fix). Deep UX inspection found 10 friction points; this spec addresses the top 3 highest-leverage ones. Full competitive landscape research confirms no competitor does event-based staff scheduling. Follow-up specs identified: recurring shifts, shift swaps, team announcements, unified staff command center, mobile layout polish.
