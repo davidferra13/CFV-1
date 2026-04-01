@@ -1,24 +1,24 @@
 # Spec: Component-Aware Prep Scheduling
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (3-8 files)
 
 ## Timeline
 
-| Event                 | Date             | Agent/Session      | Commit |
-| --------------------- | ---------------- | ------------------ | ------ |
-| Created               | 2026-03-31 22:00 | Planner (Opus 4.6) |        |
-| Status: ready         | 2026-03-31 22:00 | Planner (Opus 4.6) |        |
-| Claimed (in-progress) |                  |                    |        |
-| Spike completed       |                  |                    |        |
-| Pre-flight passed     |                  |                    |        |
-| Build completed       |                  |                    |        |
-| Type check passed     |                  |                    |        |
-| Build check passed    |                  |                    |        |
-| Playwright verified   |                  |                    |        |
-| Status: verified      |                  |                    |        |
+| Event                 | Date             | Agent/Session      | Commit   |
+| --------------------- | ---------------- | ------------------ | -------- |
+| Created               | 2026-03-31 22:00 | Planner (Opus 4.6) |          |
+| Status: ready         | 2026-03-31 22:00 | Planner (Opus 4.6) |          |
+| Claimed (in-progress) | 2026-03-31 22:30 | Builder (Opus 4.6) |          |
+| Spike completed       | 2026-03-31 22:30 | Builder (Opus 4.6) |          |
+| Pre-flight passed     | 2026-03-31 22:30 | Builder (Opus 4.6) |          |
+| Build completed       | 2026-03-31 23:00 | Builder (Opus 4.6) | 97ddb458 |
+| Type check passed     | 2026-03-31 23:00 | Builder (Opus 4.6) | 97ddb458 |
+| Build check passed    |                  |                    |          |
+| Playwright verified   |                  |                    |          |
+| Status: verified      |                  |                    |          |
 
 ---
 
@@ -57,9 +57,9 @@ Grace and every chef like her currently does this math in their head or on a spr
 
 ## Files to Create
 
-| File | Purpose                                                 |
-| ---- | ------------------------------------------------------- |
-| None | No new files needed. All changes fit in existing files. |
+| File                                    | Purpose                                                           |
+| --------------------------------------- | ----------------------------------------------------------------- |
+| `components/events/prep-plan-panel.tsx` | Self-contained client component showing day-by-day prep breakdown |
 
 ---
 
