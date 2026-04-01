@@ -160,8 +160,8 @@ Rules:
 
 - `pricedIngredients` = active chef ingredients where `cost_per_unit_cents` or `last_price_cents` is present.
 - `freshIngredients` = active chef ingredients with `last_price_date >= CURRENT_DATE - 7`.
-- `pricedRecipes` = rows in `recipe_cost_summary` for this chef where `total_ingredient_cost_cents` is not null and `ingredient_count > 0`.
-- `freshRecipes` = rows in `recipe_cost_summary` for this chef where `last_price_updated_at >= CURRENT_DATE - 7`.
+- `pricedRecipes` = rows in `recipe_cost_summary` for this chef where `ingredient_count > 0` and `has_all_prices = true`.
+- `freshRecipes` = rows in `recipe_cost_summary` for this chef where `ingredient_count > 0`, `has_all_prices = true`, and `last_price_updated_at >= CURRENT_DATE - 7`.
 - `ready` = ingredient coverage >= 90% and, when the chef has recipes, recipe coverage >= 90%.
 - `usable_with_caveats` = ingredient coverage >= 60% and, when the chef has recipes, recipe coverage >= 60%.
 - `not_ready` = anything below those thresholds, or no chef pricing records yet.

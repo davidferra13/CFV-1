@@ -646,3 +646,22 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending at log time
 - Build state on departure: unchanged (docs-only planning session; no product code or schema edited)
 - Notes: Added a build-ready spec that separates chef-specific pricing readiness from nationwide market completion, replaces the hardcoded New England ZIP assumption on `/prices`, and explicitly anchors green-day logic to `openclaw.sync_runs.errors` instead of the health-check script's nonexistent `status` column. Main residual risk is strategic, not structural: the readiness thresholds are now explicit product policy, but current live data still remains regional and the deploy-log source-mapping / capture-handoff defects are intentionally out of scope for this spec.
+
+## 2026-04-01 13:37 EDT
+
+- Agent: Planner (Codex)
+- Task: Pricing readiness spec follow-up validation and rule-alignment pass
+- Status: started
+- Build state on arrival: mixed-docs / green-code (docs/build-state.md still points to green build 5511b1e9 and green tsc 2154f9dd; follow-up is docs-only and must not disturb uncommitted implementation work)
+- Files in focus: docs/specs/p0-chef-pricing-readiness-gate.md, docs/session-log.md, app/(chef)/prices, app/(chef)/culinary/price-catalog, app/(chef)/culinary/costing, components/pricing, lib/openclaw, lib/pricing, scripts/openclaw-health-check.mjs, relevant pricing/openclaw migrations
+- Notes: Goal is to verify the existing readiness spec against the now-dirty pricing worktree, tighten any rule drift, and commit only planner-owned docs changes without bundling unrelated implementation edits.
+
+## 2026-04-01 13:38 EDT
+
+- Agent: Planner (Codex)
+- Task: Pricing readiness spec follow-up validation and rule-alignment pass
+- Status: completed
+- Files touched: docs/specs/p0-chef-pricing-readiness-gate.md, docs/session-log.md
+- Commits: pending at log time
+- Build state on departure: unchanged (docs-only follow-up; no product code, schema, or build-state files changed)
+- Notes: Confirmed the existing readiness spec matches the real code boundary between local mirror pricing and Pi-direct catalog/intelligence flows. Tightened the spec so recipe readiness uses `recipe_cost_summary.has_all_prices` plus `last_price_updated_at`, matching the actual view instead of a looser total-cost assumption. Intentionally left the in-progress implementation files uncommitted because they are separate builder work in a dirty tree.
