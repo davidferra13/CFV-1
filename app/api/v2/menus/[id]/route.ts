@@ -16,7 +16,10 @@ import {
 
 const UpdateMenuBody = z
   .object({
-    menu_name: z.string().min(1).optional(),
+    name: z.string().min(1).optional(),
+    season: z.enum(['spring', 'summer', 'fall', 'winter']).nullable().optional(),
+    client_id: z.string().uuid().nullable().optional(),
+    target_date: z.string().nullable().optional(),
     service_style: z
       .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])
       .optional(),

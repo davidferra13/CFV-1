@@ -16,7 +16,10 @@ import {
 
 const CreateMenuBody = z.object({
   event_id: z.string().uuid().optional(),
-  menu_name: z.string().min(1),
+  name: z.string().min(1),
+  season: z.enum(['spring', 'summer', 'fall', 'winter']).optional(),
+  client_id: z.string().uuid().optional(),
+  target_date: z.string().optional(),
   service_style: z
     .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])
     .optional(),
@@ -88,7 +91,10 @@ export const POST = withApiAuth(
       .insert({
         tenant_id: ctx.tenantId,
         event_id: input.event_id ?? null,
-        menu_name: input.menu_name,
+        name: input.name,
+        season: input.season ?? null,
+        client_id: input.client_id ?? null,
+        target_date: input.target_date ?? null,
         service_style: input.service_style,
         cuisine_type: input.cuisine_type,
         target_guest_count: input.target_guest_count,

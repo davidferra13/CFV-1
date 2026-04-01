@@ -1,6 +1,6 @@
 # Spec: Notes to Dishes to Menus Pipeline Hardening
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -13,9 +13,9 @@ _Every status change, every claim, every verification gets a row. This is the au
 | --------------------- | ---------------- | --------------- | ------ |
 | Created               | 2026-03-31 18:05 | planner session |        |
 | Status: ready         | 2026-03-31 18:05 | planner session |        |
-| Claimed (in-progress) |                  |                 |        |
-| Spike completed       |                  |                 |        |
-| Pre-flight passed     |                  |                 |        |
+| Claimed (in-progress) | 2026-04-01       | builder session |        |
+| Spike completed       | 2026-04-01       | builder session |        |
+| Pre-flight passed     | 2026-04-01       | builder session |        |
 | Build completed       |                  |                 |        |
 | Type check passed     |                  |                 |        |
 | Build check passed    |                  |                 |        |

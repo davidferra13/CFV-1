@@ -17,7 +17,9 @@ import {
   duplicateMenu,
   restoreMenu,
   transitionMenu,
+  unlockMenu,
 } from '@/lib/menus/actions'
+import { WorkflowNotesPanel } from '@/components/menus/workflow-notes-panel'
 import { toggleShowcase } from '@/lib/menus/showcase-actions'
 import {
   searchRecipes,
@@ -296,6 +298,19 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
       const nextStatus = menu.status === 'archived' ? 'draft' : 'archived'
       await transitionMenu(menu.id, nextStatus, 'Updated from back-of-house menu screen')
       trackAction(nextStatus === 'archived' ? 'Archived menu' : 'Unarchived menu', menu.name)
+      router.refresh()
+    } catch (err) {
+      setMutationError(err)
+      setLoading(false)
+    }
+  }
+
+  const handleUnlock = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      await unlockMenu(menu.id, 'Manually unlocked by chef from menu detail screen')
+      trackAction('Unlocked menu', menu.name)
       router.refresh()
     } catch (err) {
       setMutationError(err)
@@ -633,6 +648,17 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
                   >
                     Duplicate
                   </Button>
+                  {menu.status === 'locked' && (
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={handleUnlock}
+                      disabled={loading}
+                      title="Move this menu back to draft for editing"
+                    >
+                      Unlock
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="secondary"
@@ -953,6 +979,11 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
 
           {/* Prep Timeline */}
           {menu.id && <PrepTimelineView menuId={menu.id} />}
+
+          {/* Workflow Notes */}
+          <Card className="p-4">
+            <WorkflowNotesPanel mode="menu" menuId={menu.id} />
+          </Card>
 
           {/* Allergen Matrix (allergen-vs-dish grid) */}
           {menu.dishes.length > 0 && (

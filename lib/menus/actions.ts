@@ -205,6 +205,9 @@ export async function createMenu(input: CreateMenuInput) {
           notes: validated.notes,
           is_template: validated.is_template,
           event_id: validated.event_id,
+          season: validated.season ?? null,
+          client_id: validated.client_id ?? null,
+          target_date: validated.target_date ?? null,
           created_by: user.id,
           updated_by: user.id,
         })
@@ -897,6 +900,57 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
       console.error('[transitionMenu] Dish index bridge failed (non-blocking):', err)
     }
   }
+
+  return { success: true }
+}
+
+/**
+ * Explicitly unlock a locked menu back to draft.
+ * This is the ONLY supported path to reopen a finalized menu.
+ * Archive/restore must not be used as an implicit reopen path.
+ */
+export async function unlockMenu(menuId: string, reason: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: menu } = await db
+    .from('menus')
+    .select('id, status, name')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+    .single()
+
+  if (!menu) {
+    throw new UnknownAppError('Menu not found')
+  }
+
+  if (menu.status !== 'locked') {
+    throw new UnknownAppError('Only locked menus can be unlocked')
+  }
+
+  const { error } = await db
+    .from('menus')
+    .update({ status: 'draft', updated_at: new Date().toISOString(), updated_by: user.id })
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[unlockMenu] Error:', error)
+    throw new UnknownAppError('Failed to unlock menu')
+  }
+
+  await db.from('menu_state_transitions').insert({
+    tenant_id: user.tenantId!,
+    menu_id: menuId,
+    from_status: 'locked',
+    to_status: 'draft',
+    transitioned_by: user.id,
+    notes: reason || 'Manually unlocked by chef',
+  })
+
+  revalidatePath('/menus')
+  revalidatePath(`/menus/${menuId}`)
 
   return { success: true }
 }

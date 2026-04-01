@@ -26,6 +26,7 @@ import { Alert } from '@/components/ui/alert'
 import { formatCurrency } from '@/lib/utils/currency'
 import { duplicateMenu, transitionMenu, getMenuQuickViewData } from '@/lib/menus/actions'
 import type { MenuQuickViewData } from '@/lib/menus/actions'
+import { WorkflowNotesPanel } from '@/components/menus/workflow-notes-panel'
 
 type Menu = {
   id: string
@@ -431,6 +432,13 @@ export function MenusClientWrapper({
       </div>
 
       {error && <Alert variant="error">{error}</Alert>}
+
+      {/* ============================================ */}
+      {/* WORKFLOW NOTES PANEL                         */}
+      {/* ============================================ */}
+      <div className="bg-stone-900 border border-stone-700 rounded-lg p-4">
+        <WorkflowNotesPanel mode="landing" />
+      </div>
 
       {/* ============================================ */}
       {/* ACTIVE MENUS SECTION                         */}

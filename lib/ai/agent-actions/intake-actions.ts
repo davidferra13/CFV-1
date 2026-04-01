@@ -522,10 +522,30 @@ export const intakeAgentActions: AgentActionDefinition[] = [
         )
       }
 
-      // Notes are informational - they appear in the preview for the chef to act on
+      // Notes: commit into workflow_notes so they persist beyond chat preview
       const notes = (payload.notes ?? []) as Record<string, unknown>[]
       if (notes.length > 0) {
-        messages.push(`${notes.length} note${notes.length > 1 ? 's' : ''} captured in chat`)
+        let savedCount = 0
+        try {
+          const { createWorkflowNote } = await import('@/lib/notes/workflow-actions')
+          for (const note of notes) {
+            const body = String(note.content ?? note.text ?? note.body ?? '').trim()
+            if (!body) continue
+            const result = await createWorkflowNote({
+              title: note.type ? String(note.type) : undefined,
+              body,
+              ownership_scope: 'global',
+            })
+            if (result.success) savedCount++
+          }
+        } catch (err) {
+          console.error('[brain-dump commit] workflow_notes save failed (non-blocking):', err)
+        }
+        if (savedCount > 0) {
+          messages.push(`${savedCount} note${savedCount > 1 ? 's' : ''} saved to Workflow Notes`)
+        } else {
+          messages.push(`${notes.length} note${notes.length > 1 ? 's' : ''} captured in chat`)
+        }
       }
 
       return {
