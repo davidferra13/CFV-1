@@ -592,6 +592,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files in focus: docs/app-complete-audit.md, app/(chef)/settings/integrations, app/(chef)/settings/platform-connections, app/(chef)/settings/calendar-sync, app/(chef)/settings/yelp, components/settings, components/integrations, components/social, lib/google, lib/scheduling, lib/integrations, lib/reviews, relevant schema and env/docs surfaces
 - Notes: Developer wants free integrations only, prioritized by what ChefFlow actually needs first rather than a generic API wishlist. The deliverable must preserve the conversation's reasoning in permanent Developer Notes and separate verified current-state from assumptions.
 
+## 2026-04-01 03:57 EDT
+
+- Agent: Planner + Research (Codex)
+- Task: Free-first API integration priority audit, current-state research, developer-notes capture, and builder-ready spec/report for the integrations that are actually needed first
+- Status: completed
+- Files touched: docs/specs/p1-google-contacts-import-via-google-people-api.md, docs/research/free-first-api-integration-priorities-2026-04-01.md, docs/session-log.md
+- Commits: pending at log time
+- Build state on departure: unchanged (docs-only planning/research session; docs/build-state.md still points to green commit 5511b1e9)
+- Notes: Recommended first build is Google Contacts import through the existing `/import` flow, shared Google OAuth stack, and current client-import review/write path. The only explicit remaining uncertainty is whether the Google People API has a directly citable official "no additional cost" statement for the developer's strict free-only rule.
+
 ## 2026-04-01 EST
 
 - Agent: Builder
