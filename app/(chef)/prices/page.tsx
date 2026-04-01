@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getStoreCatalogStats, getChains } from '@/lib/openclaw/store-catalog-actions'
+import { getOpenClawRefreshStatus } from '@/lib/openclaw/refresh-status-actions'
+import { OpenClawRefreshStatus } from '@/components/pricing/openclaw-refresh-status'
 import { PricesCatalogClient } from './prices-client'
 
 export const metadata: Metadata = { title: 'Store Prices' }
@@ -46,7 +48,11 @@ function timeAgo(iso: string): string {
 export default async function PricesPage() {
   await requireChef()
 
-  const [stats, chains] = await Promise.all([getStoreCatalogStats(), getChains()])
+  const [stats, chains, refreshStatus] = await Promise.all([
+    getStoreCatalogStats(),
+    getChains(),
+    getOpenClawRefreshStatus(),
+  ])
 
   const freshPct = stats.prices > 0 ? Math.round((stats.freshPrices / stats.prices) * 100) : 0
 
@@ -89,15 +95,10 @@ export default async function PricesPage() {
           value={stats.usdaBaselines.toLocaleString()}
           sub={`${stats.categories} food categories`}
         />
-        {stats.lastSync && (
-          <StatCard
-            label="Last Sync"
-            value={timeAgo(stats.lastSync)}
-            sub={new Date(stats.lastSync).toLocaleString()}
-            pulse
-          />
-        )}
       </div>
+
+      {/* Refresh status surface - shows truthful last-known mirror timing */}
+      <OpenClawRefreshStatus status={refreshStatus} variant="local-mirror" />
 
       {/* Chain breakdown */}
       {stats.chainsWithData.length > 0 && (

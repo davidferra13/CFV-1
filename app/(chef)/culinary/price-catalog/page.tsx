@@ -1,19 +1,11 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
 import { getStoreCatalogStats } from '@/lib/openclaw/store-catalog-actions'
+import { getOpenClawRefreshStatus } from '@/lib/openclaw/refresh-status-actions'
+import { OpenClawRefreshStatus } from '@/components/pricing/openclaw-refresh-status'
 import { CatalogBrowser } from './catalog-browser'
 
 export const metadata = { title: 'Food Catalog' }
-
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
 
 export default async function PriceCatalogPage() {
   try {
@@ -22,7 +14,10 @@ export default async function PriceCatalogPage() {
     redirect('/sign-in')
   }
 
-  const stats = await getStoreCatalogStats()
+  const [stats, refreshStatus] = await Promise.all([
+    getStoreCatalogStats(),
+    getOpenClawRefreshStatus(),
+  ])
   const freshPct = stats.prices > 0 ? Math.round((stats.freshPrices / stats.prices) * 100) : 0
 
   return (
@@ -62,8 +57,10 @@ export default async function PriceCatalogPage() {
         <span className="text-stone-300 font-medium tabular-nums">
           {freshPct}%<span className="text-stone-500 font-normal"> fresh</span>
         </span>
-        {stats.lastSync && <span className="text-stone-500">synced {timeAgo(stats.lastSync)}</span>}
       </div>
+
+      {/* Refresh status surface - shows Pi scrape timing for live catalog */}
+      <OpenClawRefreshStatus status={refreshStatus} variant="live-catalog" />
 
       <CatalogBrowser />
     </div>
