@@ -6,6 +6,7 @@ import type { CSSProperties } from 'react'
 import Link from 'next/link'
 import { PartnerShowcase } from '@/components/public/partner-showcase'
 import { ReviewShowcase } from '@/components/public/review-showcase'
+import { ChefCredentialsPanel } from '@/components/public/chef-credentials-panel'
 import {
   getDiscoveryCuisineLabel,
   getDiscoveryPriceRangeLabel,
@@ -57,12 +58,28 @@ type ReviewFeed = {
   stats: PublicReviewStats
 } | null
 
+type CredentialsData = {
+  workHistory: any[]
+  achievements: any[]
+  portfolio: any[]
+  charityImpact: {
+    totalHours: number
+    totalEntries: number
+    uniqueOrgs: number
+    verified501cOrgs: number
+    publicCharityPercent: number | null
+    publicCharityNote: string | null
+  }
+  showResumeNote: boolean
+}
+
 type Props = {
   slug: string | null
   publicProfileData: PublicProfileData
   reviewFeed: ReviewFeed
   availabilitySignals: Array<{ id: string; start_date: string; public_note?: string | null }>
   deviceFrame: 'desktop' | 'mobile'
+  credentialsData?: CredentialsData
 }
 
 function DetailChip({ label }: { label: string }) {
@@ -79,6 +96,7 @@ export function PublicProfilePreview({
   reviewFeed,
   availabilitySignals,
   deviceFrame,
+  credentialsData,
 }: Props) {
   if (!slug) {
     return (
@@ -254,6 +272,17 @@ export function PublicProfilePreview({
                 )}
               </div>
             </section>
+          )}
+
+          {credentialsData && (
+            <ChefCredentialsPanel
+              workHistory={credentialsData.workHistory}
+              achievements={credentialsData.achievements}
+              portfolio={credentialsData.portfolio}
+              charityImpact={credentialsData.charityImpact}
+              showResumeNote={credentialsData.showResumeNote}
+              chefName={chef.display_name}
+            />
           )}
 
           {partners.length > 0 && (

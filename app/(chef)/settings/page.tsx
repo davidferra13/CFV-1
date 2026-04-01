@@ -715,6 +715,16 @@ export default async function SettingsPage() {
                 Curate the photos and descriptions that appear on your public profile.
               </p>
             </Link>
+            <Link
+              href="/settings/credentials"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Credentials</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Manage your career timeline, awards, charity impact, and private resume for your
+                public profile.
+              </p>
+            </Link>
           </div>
         </SettingsCategory>
 

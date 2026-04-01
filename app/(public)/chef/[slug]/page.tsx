@@ -24,6 +24,13 @@ import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
 import { getPublicChefProfile } from '@/lib/profile/actions'
 import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
 import { ChefProofSummary } from '@/components/public/chef-proof-summary'
+import { ChefCredentialsPanel } from '@/components/public/chef-credentials-panel'
+import {
+  getPublicWorkHistory,
+  getPublicAchievements,
+  getPublicCharityImpact,
+} from '@/lib/credentials/actions'
+import { getPublicPortfolio } from '@/lib/events/photo-actions'
 
 type Props = { params: { slug: string } }
 
@@ -158,9 +165,42 @@ export default async function ChefProfilePage({ params }: Props) {
   const publicSlug = chef.public_slug || params.slug
   const inquirySlug = chef.inquiry_slug || publicSlug
 
-  const [reviewFeed, availabilitySignals] = await Promise.all([
+  const [
+    reviewFeed,
+    availabilitySignals,
+    workHistory,
+    achievements,
+    charityImpact,
+    portfolio,
+    chefCredFields,
+  ] = await Promise.all([
     getPublicChefReviewFeed(chef.id),
     chef.show_availability_signals ? getPublicAvailabilitySignals(chef.id) : Promise.resolve([]),
+    getPublicWorkHistory(chef.id).catch(() => []),
+    getPublicAchievements(chef.id).catch(() => []),
+    getPublicCharityImpact(chef.id).catch(() => ({
+      totalHours: 0,
+      totalEntries: 0,
+      uniqueOrgs: 0,
+      verified501cOrgs: 0,
+      publicCharityPercent: null,
+      publicCharityNote: null,
+    })),
+    getPublicPortfolio(chef.id).catch(() => []),
+    (async () => {
+      try {
+        const { createServerClient } = await import('@/lib/db/server')
+        const db: any = createServerClient({ admin: true })
+        const { data } = await db
+          .from('chefs')
+          .select('show_resume_available_note')
+          .eq('id', chef.id)
+          .single()
+        return { showResumeAvailableNote: data?.show_resume_available_note ?? false }
+      } catch {
+        return { showResumeAvailableNote: false }
+      }
+    })(),
   ])
 
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -453,6 +493,15 @@ export default async function ChefProfilePage({ params }: Props) {
           </div>
         </section>
       )}
+
+      <ChefCredentialsPanel
+        workHistory={workHistory}
+        achievements={achievements as any}
+        portfolio={portfolio}
+        charityImpact={charityImpact}
+        showResumeNote={chefCredFields.showResumeAvailableNote}
+        chefName={chef.display_name}
+      />
 
       {partners.length > 0 && (
         <section className="py-16 px-6 bg-stone-900/70">

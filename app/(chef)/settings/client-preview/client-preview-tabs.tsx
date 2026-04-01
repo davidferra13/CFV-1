@@ -48,12 +48,28 @@ type ReviewFeed = {
   stats: import('@/lib/reviews/public-actions').PublicReviewStats
 } | null
 
+type CredentialsData = {
+  workHistory: any[]
+  achievements: any[]
+  portfolio: any[]
+  charityImpact: {
+    totalHours: number
+    totalEntries: number
+    uniqueOrgs: number
+    verified501cOrgs: number
+    publicCharityPercent: number | null
+    publicCharityNote: string | null
+  }
+  showResumeNote: boolean
+}
+
 type Props = {
   slug: string | null
   publicProfileData: PublicProfileData
   reviewFeed: ReviewFeed
   availabilitySignals: any[]
   clients: PreviewClient[]
+  credentialsData?: CredentialsData
 }
 
 export function ClientPreviewTabs({
@@ -62,6 +78,7 @@ export function ClientPreviewTabs({
   reviewFeed,
   availabilitySignals,
   clients,
+  credentialsData,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('public')
   const [deviceFrame, setDeviceFrame] = useState<DeviceFrame>('desktop')
@@ -226,6 +243,7 @@ export function ClientPreviewTabs({
           reviewFeed={reviewFeed}
           availabilitySignals={availabilitySignals}
           deviceFrame={deviceFrame}
+          credentialsData={credentialsData}
         />
       ) : (
         <ClientPortalPreview

@@ -8,6 +8,13 @@ import { getChefSlug, getPublicChefProfile } from '@/lib/profile/actions'
 import { getPreviewClients } from '@/lib/preview/client-portal-preview-actions'
 import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
+import {
+  getPublicWorkHistory,
+  getPublicAchievements,
+  getPublicCharityImpact,
+} from '@/lib/credentials/actions'
+import { getPublicPortfolio } from '@/lib/events/photo-actions'
+import { createServerClient } from '@/lib/db/server'
 import { ClientPreviewTabs } from './client-preview-tabs'
 
 export const metadata: Metadata = { title: 'Client Preview' }
@@ -19,15 +26,79 @@ export default async function ClientPreviewPage() {
   // Fetch the full public profile data (same as what /chef/[slug] renders)
   const publicProfileData = profile?.slug ? await getPublicChefProfile(profile.slug) : null
 
-  // Fetch review and availability data so the preview matches the live public page
-  const [reviewFeed, availabilitySignals] = publicProfileData?.chef.id
+  const chefId = publicProfileData?.chef.id ?? null
+
+  // Fetch review, availability, and credentials data so preview matches live public page
+  const [
+    reviewFeed,
+    availabilitySignals,
+    workHistory,
+    achievements,
+    charityImpact,
+    portfolio,
+    chefCredRow,
+  ] = chefId
     ? await Promise.all([
-        getPublicChefReviewFeed(publicProfileData.chef.id),
-        publicProfileData.chef.show_availability_signals
-          ? getPublicAvailabilitySignals(publicProfileData.chef.id)
+        getPublicChefReviewFeed(chefId),
+        publicProfileData!.chef.show_availability_signals
+          ? getPublicAvailabilitySignals(chefId)
           : Promise.resolve([]),
+        getPublicWorkHistory(chefId).catch(() => []),
+        getPublicAchievements(chefId).catch(() => []),
+        getPublicCharityImpact(chefId).catch(() => ({
+          totalHours: 0,
+          totalEntries: 0,
+          uniqueOrgs: 0,
+          verified501cOrgs: 0,
+          publicCharityPercent: null,
+          publicCharityNote: null,
+        })),
+        getPublicPortfolio(chefId).catch(() => []),
+        (async () => {
+          try {
+            const db: any = createServerClient({ admin: true })
+            const { data } = await db
+              .from('chefs')
+              .select('show_resume_available_note')
+              .eq('id', chefId)
+              .single()
+            return { showResumeAvailableNote: data?.show_resume_available_note ?? false }
+          } catch {
+            return { showResumeAvailableNote: false }
+          }
+        })(),
       ])
-    : [null, []]
+    : [
+        null,
+        [],
+        [],
+        [],
+        {
+          totalHours: 0,
+          totalEntries: 0,
+          uniqueOrgs: 0,
+          verified501cOrgs: 0,
+          publicCharityPercent: null,
+          publicCharityNote: null,
+        },
+        [],
+        { showResumeAvailableNote: false },
+      ]
+
+  const credentialsData = {
+    workHistory: workHistory ?? [],
+    achievements: achievements ?? [],
+    portfolio: portfolio ?? [],
+    charityImpact: charityImpact ?? {
+      totalHours: 0,
+      totalEntries: 0,
+      uniqueOrgs: 0,
+      verified501cOrgs: 0,
+      publicCharityPercent: null,
+      publicCharityNote: null,
+    },
+    showResumeNote: (chefCredRow as any)?.showResumeAvailableNote ?? false,
+  }
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -44,6 +115,7 @@ export default async function ClientPreviewPage() {
         reviewFeed={reviewFeed}
         availabilitySignals={availabilitySignals}
         clients={clients}
+        credentialsData={credentialsData}
       />
     </div>
   )
