@@ -79,6 +79,19 @@ export default async function StaffTasksPage() {
                             >
                               {task.title}
                             </div>
+                            {task.event_name && (
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-xs bg-brand-500/15 text-brand-400 border border-brand-500/25 rounded px-1.5 py-0.5">
+                                  {task.event_name}
+                                  {task.event_date
+                                    ? ` \u00b7 ${new Date(task.event_date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}`
+                                    : ''}
+                                  {task.event_guest_count
+                                    ? `, ${task.event_guest_count} guests`
+                                    : ''}
+                                </span>
+                              </div>
+                            )}
                             {task.description && (
                               <div className="text-xs text-stone-500 mt-0.5 line-clamp-2">
                                 {task.description}

@@ -6,6 +6,7 @@
 
 import { requireStaff } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { pgClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 
 // ============================================
@@ -19,6 +20,7 @@ export type StaffTask = {
   description: string | null
   assigned_to: string | null
   station_id: string | null
+  event_id: string | null
   due_date: string
   due_time: string | null
   priority: 'low' | 'medium' | 'high' | 'urgent'
@@ -27,6 +29,10 @@ export type StaffTask = {
   completed_at: string | null
   created_at: string
   station?: { id: string; name: string } | null
+  event_name?: string | null
+  event_date?: string | null
+  event_guest_count?: number | null
+  client_name?: string | null
 }
 
 export type StaffAssignment = {
@@ -109,31 +115,50 @@ export async function getMyProfile(): Promise<StaffProfile | null> {
 
 export async function getMyTasks(date?: string): Promise<StaffTask[]> {
   const user = await requireStaff()
-  const db: any = createServerClient({ admin: true })
 
-  let query = db
-    .from('tasks')
-    .select(
-      'id, chef_id, title, description, assigned_to, station_id, due_date, due_time, priority, status, notes, completed_at, created_at'
-    )
-    .eq('chef_id', user.tenantId)
-    .eq('assigned_to', user.staffMemberId)
-    .order('due_date', { ascending: true })
-    .order('due_time', { ascending: true, nullsFirst: false })
-    .order('priority', { ascending: false })
-
-  if (date) {
-    query = query.eq('due_date', date)
-  }
-
-  const { data, error } = await query
-
-  if (error) {
-    console.error('[getMyTasks] Error:', error)
+  try {
+    let rows: any[]
+    if (date) {
+      rows = await pgClient`
+        SELECT
+          t.id, t.chef_id, t.title, t.description, t.assigned_to,
+          t.station_id, t.event_id, t.due_date, t.due_time,
+          t.priority, t.status, t.notes, t.completed_at, t.created_at,
+          e.title AS event_name,
+          e.date  AS event_date,
+          e.guest_count AS event_guest_count,
+          c.name AS client_name
+        FROM tasks t
+        LEFT JOIN events e ON e.id = t.event_id
+        LEFT JOIN clients c ON c.id = e.client_id
+        WHERE t.chef_id = ${user.tenantId}
+          AND t.assigned_to = ${user.staffMemberId}
+          AND t.due_date = ${date}
+        ORDER BY t.due_date ASC, t.due_time ASC NULLS LAST, t.priority DESC
+      `
+    } else {
+      rows = await pgClient`
+        SELECT
+          t.id, t.chef_id, t.title, t.description, t.assigned_to,
+          t.station_id, t.event_id, t.due_date, t.due_time,
+          t.priority, t.status, t.notes, t.completed_at, t.created_at,
+          e.title AS event_name,
+          e.date  AS event_date,
+          e.guest_count AS event_guest_count,
+          c.name AS client_name
+        FROM tasks t
+        LEFT JOIN events e ON e.id = t.event_id
+        LEFT JOIN clients c ON c.id = e.client_id
+        WHERE t.chef_id = ${user.tenantId}
+          AND t.assigned_to = ${user.staffMemberId}
+        ORDER BY t.due_date ASC, t.due_time ASC NULLS LAST, t.priority DESC
+      `
+    }
+    return rows as unknown as StaffTask[]
+  } catch (err) {
+    console.error('[getMyTasks] Error:', err)
     return []
   }
-
-  return (data ?? []) as StaffTask[]
 }
 
 // ============================================
@@ -142,41 +167,45 @@ export async function getMyTasks(date?: string): Promise<StaffTask[]> {
 
 export async function getMyTasksGroupedByDate(): Promise<Record<string, StaffTask[]>> {
   const user = await requireStaff()
-  const db: any = createServerClient({ admin: true })
 
   // Get upcoming tasks (today and future, plus recently overdue)
-  const today = new Date().toISOString().split('T')[0]
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const { data, error } = await db
-    .from('tasks')
-    .select(
-      'id, chef_id, title, description, assigned_to, station_id, due_date, due_time, priority, status, notes, completed_at, created_at'
-    )
-    .eq('chef_id', user.tenantId)
-    .eq('assigned_to', user.staffMemberId)
-    .gte('due_date', weekAgo)
-    .order('due_date', { ascending: true })
-    .order('due_time', { ascending: true, nullsFirst: false })
-    .order('priority', { ascending: false })
+  try {
+    const rows = await pgClient`
+      SELECT
+        t.id, t.chef_id, t.title, t.description, t.assigned_to,
+        t.station_id, t.event_id, t.due_date, t.due_time,
+        t.priority, t.status, t.notes, t.completed_at, t.created_at,
+        e.title AS event_name,
+        e.date  AS event_date,
+        e.guest_count AS event_guest_count,
+        c.name AS client_name
+      FROM tasks t
+      LEFT JOIN events e ON e.id = t.event_id
+      LEFT JOIN clients c ON c.id = e.client_id
+      WHERE t.chef_id = ${user.tenantId}
+        AND t.assigned_to = ${user.staffMemberId}
+        AND t.due_date >= ${weekAgo}
+      ORDER BY t.due_date ASC, t.due_time ASC NULLS LAST, t.priority DESC
+    `
 
-  if (error) {
-    console.error('[getMyTasksGroupedByDate] Error:', error)
+    const tasks = rows as unknown as StaffTask[]
+    const grouped: Record<string, StaffTask[]> = {}
+
+    for (const task of tasks) {
+      const dateKey = task.due_date
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = []
+      }
+      grouped[dateKey].push(task)
+    }
+
+    return grouped
+  } catch (err) {
+    console.error('[getMyTasksGroupedByDate] Error:', err)
     return {}
   }
-
-  const tasks = (data ?? []) as StaffTask[]
-  const grouped: Record<string, StaffTask[]> = {}
-
-  for (const task of tasks) {
-    const dateKey = task.due_date
-    if (!grouped[dateKey]) {
-      grouped[dateKey] = []
-    }
-    grouped[dateKey].push(task)
-  }
-
-  return grouped
 }
 
 // ============================================

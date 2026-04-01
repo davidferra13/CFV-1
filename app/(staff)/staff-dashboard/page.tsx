@@ -131,9 +131,11 @@ export default async function StaffDashboardPage({
                 {todayTasks.map((task) => (
                   <div
                     key={task.id}
-                    className="flex items-center gap-3 py-2 border-b border-stone-800 last:border-0"
+                    className="flex items-start gap-3 py-2 border-b border-stone-800 last:border-0"
                   >
-                    <StaffTaskCheckbox taskId={task.id} isCompleted={task.status === 'done'} />
+                    <div className="pt-0.5">
+                      <StaffTaskCheckbox taskId={task.id} isCompleted={task.status === 'done'} />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div
                         className={`text-sm font-medium ${
@@ -142,6 +144,11 @@ export default async function StaffDashboardPage({
                       >
                         {task.title}
                       </div>
+                      {(task as any).event_name && (
+                        <div className="text-xs text-brand-400 mt-0.5">
+                          For: {(task as any).event_name}
+                        </div>
+                      )}
                       {task.due_time && (
                         <div className="text-xs text-stone-500">{task.due_time}</div>
                       )}

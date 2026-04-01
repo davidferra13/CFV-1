@@ -1,16 +1,18 @@
 # Spec: Staff Operations Unified Workflow
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (5-7 files)
 
 ## Timeline
 
-| Event         | Date             | Agent/Session      | Commit |
-| ------------- | ---------------- | ------------------ | ------ |
-| Created       | 2026-03-31 23:30 | Planner (Opus 4.6) |        |
-| Status: ready | 2026-03-31 23:30 | Planner (Opus 4.6) |        |
+| Event         | Date             | Agent/Session        | Commit |
+| ------------- | ---------------- | -------------------- | ------ |
+| Created       | 2026-03-31 23:30 | Planner (Opus 4.6)   |        |
+| Status: ready | 2026-03-31 23:30 | Planner (Opus 4.6)   |        |
+| Built         | 2026-04-01 00:00 | Builder (Sonnet 4.6) |        |
+| Status: built | 2026-04-01 00:00 | Builder (Sonnet 4.6) |        |
 
 ---
 

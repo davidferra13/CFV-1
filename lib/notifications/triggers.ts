@@ -3,9 +3,9 @@
 // All trigger functions are NON-BLOCKING - they use try/catch internally
 // and never throw. Safe to call as side effects after any operation.
 //
-// These notifications go to the chef (tenant owner) since staff members
-// do not have Auth.js accounts. The chef sees all operational
-// notifications in their bell panel and notifications page.
+// Notifications go to the chef (tenant owner) since staff members do not
+// have Auth.js accounts. The chef sees all operational notifications in
+// their bell panel and notifications page.
 
 'use server'
 
@@ -82,6 +82,45 @@ export async function notifyTaskAssigned(
     })
   } catch (err) {
     console.error('[notifyTaskAssigned] Failed (non-fatal):', err)
+  }
+}
+
+// ─── Staff Schedule Change ───────────────────────────────────────────────
+
+/**
+ * Called when a staff member is added to or removed from an event.
+ * Notifies the chef so they have a record of roster changes.
+ * changeType: 'added' | 'removed'
+ */
+export async function notifyStaffScheduleChange(
+  tenantId: string,
+  staffMemberName: string,
+  eventTitle: string,
+  eventId: string,
+  changeType: 'added' | 'removed'
+): Promise<void> {
+  try {
+    const recipientId = await getChefAuthUserId(tenantId)
+    if (!recipientId) return
+
+    const action = changeType === 'added' ? 'added to' : 'removed from'
+
+    await sendNotification({
+      tenantId,
+      recipientId,
+      type: 'staff_assignment',
+      title: `${staffMemberName} ${action} ${eventTitle}`,
+      message: `Staff roster updated for this event.`,
+      link: `/events/${eventId}`,
+      eventId,
+      metadata: {
+        staff_member_name: staffMemberName,
+        event_title: eventTitle,
+        change_type: changeType,
+      },
+    })
+  } catch (err) {
+    console.error('[notifyStaffScheduleChange] Failed (non-fatal):', err)
   }
 }
 

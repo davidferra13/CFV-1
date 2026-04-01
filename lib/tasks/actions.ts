@@ -184,6 +184,108 @@ export async function createTask(input: CreateTaskInput) {
 }
 
 // ============================================
+// CREATE TASK FROM EVENT (pre-populates event_id)
+// ============================================
+
+const CreateTaskFromEventSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
+  assigned_to: z.string().uuid(),
+  event_id: z.string().uuid(),
+  due_date: z.string().min(1, 'Due date is required'),
+  due_time: z.string().nullable().optional(),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
+  notes: z.string().optional(),
+})
+
+export type CreateTaskFromEventInput = z.infer<typeof CreateTaskFromEventSchema>
+
+export async function createTaskFromEvent(
+  input: CreateTaskFromEventInput
+): Promise<{ success: boolean; id?: string; error?: string }> {
+  const user = await requireChef()
+  let validated: CreateTaskFromEventInput
+  try {
+    validated = CreateTaskFromEventSchema.parse(input)
+  } catch (err: any) {
+    return { success: false, error: err?.message ?? 'Invalid input' }
+  }
+
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('tasks')
+    .insert({
+      chef_id: user.tenantId!,
+      title: validated.title,
+      description: validated.description ?? null,
+      assigned_to: validated.assigned_to,
+      event_id: validated.event_id,
+      station_id: null,
+      due_date: validated.due_date,
+      due_time: validated.due_time ?? null,
+      priority: validated.priority,
+      status: 'pending',
+      notes: validated.notes ?? null,
+      recurring_rule: null,
+    })
+    .select('id')
+    .single()
+
+  if (error) {
+    console.error('[createTaskFromEvent] Error:', error)
+    return { success: false, error: 'Failed to create task' }
+  }
+
+  // Non-blocking notification to chef about the task assignment
+  try {
+    const { data: staffRow } = await db
+      .from('staff_members')
+      .select('name')
+      .eq('id', validated.assigned_to)
+      .single()
+    const staffName = staffRow?.name ?? 'Unknown'
+    try {
+      await notifyTaskAssigned(user.tenantId!, staffName, validated.title, validated.due_date)
+    } catch {}
+  } catch (err) {
+    console.error('[createTaskFromEvent] Notification failed (non-fatal):', err)
+  }
+
+  revalidatePath('/tasks')
+  revalidatePath(`/events/${validated.event_id}`)
+  return { success: true, id: data.id }
+}
+
+// ============================================
+// GET TASKS FOR EVENT + STAFF MEMBER (for event staff panel)
+// ============================================
+
+export async function getTasksForEventAndStaff(
+  eventId: string,
+  staffMemberId: string
+): Promise<Task[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('tasks')
+    .select('*')
+    .eq('chef_id', user.tenantId!)
+    .eq('event_id', eventId)
+    .eq('assigned_to', staffMemberId)
+    .order('due_date', { ascending: true })
+    .order('due_time', { ascending: true, nullsFirst: false })
+
+  if (error) {
+    console.error('[getTasksForEventAndStaff] Error:', error)
+    return []
+  }
+
+  return (data ?? []) as Task[]
+}
+
+// ============================================
 // UPDATE TASK
 // ============================================
 
