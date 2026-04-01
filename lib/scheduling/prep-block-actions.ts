@@ -22,6 +22,7 @@ import type {
   CreatePrepBlockInput,
   UpdatePrepBlockInput,
   SchedulingEvent,
+  MenuComponent,
 } from './types'
 
 // ============================================
@@ -143,6 +144,46 @@ function getWeekStartForWeekNumber(year: number, weekNum: number): Date {
   const result = new Date(isoWeek1Monday)
   result.setUTCDate(isoWeek1Monday.getUTCDate() + (weekNum - 1) * 7)
   return result
+}
+
+/**
+ * Fetch make-ahead menu components for an event.
+ * Joins events → menus → dishes → components, with recipe prep time.
+ * Returns only is_make_ahead = true components.
+ */
+async function fetchMenuComponents(
+  db: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  eventId: string
+): Promise<MenuComponent[]> {
+  // Use raw SQL via compat shim for the multi-table join
+  const { data: components } = await (db as any)
+    .from('components')
+    .select(
+      `
+      id, name, prep_day_offset, make_ahead_window_hours,
+      prep_time_of_day, prep_station, storage_notes, recipe_id,
+      dish:dishes!inner(menu:menus!inner(event_id)),
+      recipe:recipes(prep_time_minutes)
+    `
+    )
+    .eq('tenant_id', tenantId)
+    .eq('is_make_ahead', true)
+    .eq('dish.menu.event_id', eventId)
+
+  if (!components || components.length === 0) return []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (components as any[]).map((c) => ({
+    id: c.id,
+    name: c.name,
+    prep_day_offset: c.prep_day_offset ?? null,
+    make_ahead_window_hours: c.make_ahead_window_hours ?? null,
+    prep_time_of_day: c.prep_time_of_day ?? null,
+    prep_station: c.prep_station ?? null,
+    storage_notes: c.storage_notes ?? null,
+    recipe_prep_time_minutes: c.recipe?.prep_time_minutes ?? null,
+  }))
 }
 
 // ============================================
@@ -553,18 +594,19 @@ export async function autoSuggestEventBlocks(eventId: string): Promise<{
 
     if (!event) return { suggestions: [], error: 'Event not found' }
 
-    // Fetch existing blocks for this event
-    const existingBlocks = await fetchPrepBlocks(db, tenantId, { eventId })
-
-    // Fetch chef preferences
-    const prefs = await getChefPreferences()
+    // Fetch existing blocks, chef preferences, and menu components in parallel
+    const [existingBlocks, prefs, menuComponents] = await Promise.all([
+      fetchPrepBlocks(db, tenantId, { eventId }),
+      getChefPreferences(),
+      fetchMenuComponents(db, tenantId, eventId),
+    ])
 
     // Map event to scheduling shape
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const schedulingEvent = mapEventToScheduling(event as Record<string, any>)
 
-    // Run engine - pure computation
-    const suggestions = suggestPrepBlocks(schedulingEvent, existingBlocks, prefs)
+    // Run engine - pure computation, now with component awareness
+    const suggestions = suggestPrepBlocks(schedulingEvent, existingBlocks, prefs, menuComponents)
 
     return { suggestions }
   } catch (err) {

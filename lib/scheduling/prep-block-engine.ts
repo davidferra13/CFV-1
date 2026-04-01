@@ -13,6 +13,7 @@ import type {
   PrepBlockSuggestion,
   PrepBlockType,
   SchedulingGap,
+  MenuComponent,
 } from './types'
 import { generateTimeline } from './timeline'
 import { DEFAULT_PREFERENCES } from './types'
@@ -33,6 +34,7 @@ const REQUIRED_BLOCK_TYPES: PrepBlockType[] = [
 const DEFAULT_EQUIPMENT_PREP_MINUTES = 30
 const DEFAULT_ADMIN_MINUTES = 45
 const DEFAULT_SPECIALTY_SOURCING_MINUTES = 45
+const DEFAULT_COMPONENT_PREP_MINUTES = 60 // fallback when recipe has no prep time
 
 // ============================================
 // HELPERS
@@ -111,6 +113,112 @@ export function getRequiredBlockTypes(_event: SchedulingEvent): PrepBlockType[] 
 }
 
 // ============================================
+// COMPONENT-AWARE SCHEDULING
+// ============================================
+
+/** Map prep_time_of_day enum values to suggested start times. */
+const PREP_TIME_OF_DAY_MAP: Record<string, string> = {
+  early_morning: '7:00 AM',
+  morning: '9:00 AM',
+  afternoon: '1:00 PM',
+  evening: '5:00 PM',
+}
+
+/**
+ * Generate component-specific prep block suggestions from menu components.
+ * Pure computation - no DB calls.
+ *
+ * For each make-ahead component:
+ *   - prep_day_offset takes priority over make_ahead_window_hours
+ *   - Components with prep_time_of_day = 'service' are day-of (skipped here)
+ *   - Components with no offset and no hours are day-of (skipped here)
+ *   - Past dates are clamped to today with a warning
+ */
+function suggestComponentBlocks(
+  eventDate: string,
+  components: MenuComponent[],
+  existingBlocks: PrepBlock[],
+  eventId: string
+): PrepBlockSuggestion[] {
+  const suggestions: PrepBlockSuggestion[] = []
+  const todayStr = new Date().toISOString().slice(0, 10)
+
+  // Build a set of component names already covered by existing blocks
+  const coveredTitles = new Set(
+    existingBlocks
+      .filter((b) => b.event_id === eventId && b.block_type === 'prep_session' && !b.is_completed)
+      .map((b) => b.title.toLowerCase())
+  )
+
+  for (const comp of components) {
+    // Skip service/day-of components (no separate block needed)
+    if (comp.prep_time_of_day === 'service') continue
+
+    // Determine block date from offset or hours
+    let blockDate: string | null = null
+    let reason = ''
+
+    if (comp.prep_day_offset != null && comp.prep_day_offset < 0) {
+      blockDate = addDays(eventDate, comp.prep_day_offset)
+      const daysBefore = Math.abs(comp.prep_day_offset)
+      reason = `${daysBefore} day${daysBefore > 1 ? 's' : ''} before event based on prep offset.`
+    } else if (comp.make_ahead_window_hours != null && comp.make_ahead_window_hours > 0) {
+      const daysBefore = Math.ceil(comp.make_ahead_window_hours / 24)
+      blockDate = addDays(eventDate, -daysBefore)
+      reason = `${comp.make_ahead_window_hours}h lead time (${daysBefore} day${daysBefore > 1 ? 's' : ''} before).`
+    }
+
+    // Skip components with no scheduling data (they're day-of, handled by Main Prep Session)
+    if (!blockDate) continue
+
+    // Skip if already covered by an existing block with the same title
+    if (coveredTitles.has(comp.name.toLowerCase())) continue
+
+    // Clamp past dates to today
+    let warning = ''
+    if (blockDate < todayStr) {
+      blockDate = todayStr
+      warning = ' (lead time already passed)'
+    }
+
+    // Determine start time from prep_time_of_day
+    const startTime = comp.prep_time_of_day
+      ? (PREP_TIME_OF_DAY_MAP[comp.prep_time_of_day] ?? null)
+      : null
+
+    // Determine duration from recipe or fallback
+    const durationMinutes = comp.recipe_prep_time_minutes ?? DEFAULT_COMPONENT_PREP_MINUTES
+
+    // Build notes
+    const noteParts: string[] = []
+    if (comp.prep_station) noteParts.push(`Station: ${comp.prep_station}`)
+    if (comp.storage_notes) noteParts.push(`Storage: ${comp.storage_notes}`)
+
+    suggestions.push({
+      block_type: 'prep_session',
+      title: comp.name,
+      suggested_date: blockDate,
+      suggested_start_time: startTime,
+      estimated_duration_minutes: durationMinutes,
+      notes: noteParts.join('. ') || `Prep for ${comp.name}.`,
+      store_name: null,
+      store_address: null,
+      reason: reason + warning,
+      component_id: comp.id,
+    })
+  }
+
+  // Sort by date (earliest first), then by start time
+  return suggestions.sort((a, b) => {
+    if (a.suggested_date !== b.suggested_date)
+      return a.suggested_date.localeCompare(b.suggested_date)
+    if (a.suggested_start_time && b.suggested_start_time)
+      return a.suggested_start_time.localeCompare(b.suggested_start_time)
+    return 0
+  })
+}
+
+// ============================================
 // PUBLIC: SUGGEST PREP BLOCKS
 // ============================================
 
@@ -120,20 +228,27 @@ export function getRequiredBlockTypes(_event: SchedulingEvent): PrepBlockType[] 
  * Returns suggestions only - caller must persist after chef confirms.
  * NEVER saves to DB.
  *
+ * When menu components are provided, generates component-specific prep blocks
+ * for make-ahead items (mapped to real calendar dates via prep_day_offset or
+ * make_ahead_window_hours). The generic "Main Prep Session" is kept for day-of
+ * prep but its duration is reduced by the total time of component blocks
+ * scheduled on event day.
+ *
  * Timing algorithm (all times derived from generateTimeline):
- *   - grocery_run: event_date−1 (if shop_day_before) or event_date, flexible time
+ *   - grocery_run: event_date-1 (if shop_day_before) or event_date, flexible time
  *   - specialty_sourcing: one per store in prefs.default_specialty_stores, same date as grocery_run
- *   - prep_session: event_date, start = departure − packing_min − prep_hours
+ *   - prep_session: event_date, start = departure - packing_min - prep_hours
  *     If menuComponentCount > 8: also suggest an early prep session on the day before
- *   - packing: event_date, start = departure − packing_min
- *   - equipment_prep: event_date−2, flexible time
+ *   - packing: event_date, start = departure - packing_min
+ *   - equipment_prep: event_date-2, flexible time
  *   - admin: event_date+1, flexible time (post-event admin)
- *   - mental_prep: event_date−1, evening (20:00), optional (not in required list)
+ *   - mental_prep: event_date-1, evening (20:00), optional (not in required list)
  */
 export function suggestPrepBlocks(
   event: SchedulingEvent,
   existingBlocks: PrepBlock[],
-  prefs: ChefPreferences | null
+  prefs: ChefPreferences | null,
+  components?: MenuComponent[]
 ): PrepBlockSuggestion[] {
   const p = prefs ?? { ...DEFAULT_PREFERENCES, id: '', chef_id: '' }
   const suggestions: PrepBlockSuggestion[] = []
@@ -273,6 +388,14 @@ export function suggestPrepBlocks(
       store_address: null,
       reason: 'Do this within 24 hours while the event is fresh.',
     })
+  }
+
+  // ── 7. COMPONENT-SPECIFIC BLOCKS ──────────────────────────────────────────
+  // Generate from menu components if provided.
+  // These are make-ahead items mapped to real calendar days.
+  if (components && components.length > 0) {
+    const componentBlocks = suggestComponentBlocks(eventDate, components, existingBlocks, event.id)
+    suggestions.push(...componentBlocks)
   }
 
   return suggestions

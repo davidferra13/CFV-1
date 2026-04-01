@@ -1119,6 +1119,20 @@ export interface PrepBlockSuggestion {
   store_name: string | null
   store_address: string | null
   reason: string // human-readable explanation shown in confirm dialog
+  component_id?: string // links suggestion to a specific menu component
+}
+
+// Menu component data passed into the prep engine for component-aware scheduling.
+// Fetched by the action layer, never by the engine itself (engine is pure computation).
+export interface MenuComponent {
+  id: string
+  name: string
+  prep_day_offset: number | null // 0 = day-of, -1 = one day before, etc.
+  make_ahead_window_hours: number | null
+  prep_time_of_day: string | null // early_morning | morning | afternoon | evening | service
+  prep_station: string | null
+  storage_notes: string | null
+  recipe_prep_time_minutes: number | null // from linked recipe, null if no recipe
 }
 
 // An event with one or more required prep blocks missing

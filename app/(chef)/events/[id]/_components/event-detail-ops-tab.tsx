@@ -22,6 +22,7 @@ import { ContingencyAIPanel } from '@/components/ai/contingency-ai-panel'
 import { DocumentSection } from '@/components/documents/document-section'
 import { AllergyCardButton } from '@/components/events/allergy-card-button'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
+import { PrepPlanPanel } from '@/components/events/prep-plan-panel'
 import { EventTransitions } from '@/components/events/event-transitions'
 import { EventClosureActions } from '@/components/events/event-closure-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
@@ -122,6 +123,16 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
           onSave={updateEventTimeAndCard}
           onStart={startEventActivity}
           onStop={stopEventActivity}
+        />
+      )}
+
+      {/* Prep Plan - component-aware day-by-day breakdown */}
+      {event.status !== 'cancelled' && (
+        <PrepPlanPanel
+          eventId={event.id}
+          eventDate={event.event_date}
+          eventStatus={event.status}
+          hasMenu={!!eventMenus}
         />
       )}
 
