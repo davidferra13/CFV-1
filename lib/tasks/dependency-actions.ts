@@ -22,10 +22,13 @@ export type TaskDependency = {
 
 export type TaskWithDeps = {
   id: string
-  text: string
+  // title is the current schema field name for the task label
+  title: string
   due_date: string | null
   due_time: string | null
+  // completed is derived from status === 'done' since there is no boolean 'completed' column
   completed: boolean
+  // estimated_minutes is not in the tasks schema; a heuristic default is applied at query time
   estimated_minutes: number | null
   dependencies: string[] // IDs of tasks this depends on
   dependents: string[] // IDs of tasks that depend on this
@@ -36,6 +39,8 @@ export type TaskWithDeps = {
 /**
  * Fetches all tasks for a chef with their dependency relationships.
  * Used to build the Gantt view.
+ * NOTE: estimated_minutes is not in the tasks schema. The field is null for all tasks;
+ * callers that need a duration heuristic should apply a default (e.g. 30 min) explicitly.
  */
 export async function getTasksWithDependencies(options?: {
   dateFilter?: string // ISO date to filter by due_date
@@ -43,11 +48,11 @@ export async function getTasksWithDependencies(options?: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Fetch tasks
+  // Select current schema fields: title and status (not the stale text/completed/estimated_minutes)
   let query = db
     .from('tasks')
-    .select('id, text, due_date, due_time, completed, estimated_minutes')
-    .eq('chef_id', user.entityId)
+    .select('id, title, due_date, due_time, status')
+    .eq('chef_id', user.tenantId!)
     .order('due_date', { ascending: true, nullsFirst: false })
     .order('due_time', { ascending: true, nullsFirst: false })
 
@@ -70,7 +75,7 @@ export async function getTasksWithDependencies(options?: {
   const { data: deps, error: depError } = await db
     .from('task_dependencies')
     .select('task_id, depends_on_task_id')
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', user.tenantId!)
     .or(`task_id.in.(${taskIds.join(',')}),depends_on_task_id.in.(${taskIds.join(',')})`)
 
   if (depError) {
@@ -91,11 +96,13 @@ export async function getTasksWithDependencies(options?: {
 
   return tasks.map((t: any) => ({
     id: t.id,
-    text: t.text,
+    title: t.title,
     due_date: t.due_date,
     due_time: t.due_time,
-    completed: t.completed,
-    estimated_minutes: t.estimated_minutes,
+    // Derive completed from status since there is no boolean 'completed' column in tasks
+    completed: t.status === 'done',
+    // No duration column in tasks schema; expose as null so callers apply their own heuristic
+    estimated_minutes: null,
     dependencies: dependsOn[t.id] ?? [],
     dependents: dependents[t.id] ?? [],
   }))
@@ -119,11 +126,11 @@ export async function addDependency(input: {
     return { success: false, error: 'A task cannot depend on itself' }
   }
 
-  // Verify both tasks belong to this chef
+  // Verify both tasks belong to this chef using current schema fields
   const { data: tasks } = await db
     .from('tasks')
-    .select('id, text, estimated_minutes')
-    .eq('chef_id', user.entityId)
+    .select('id, title')
+    .eq('chef_id', user.tenantId!)
     .in('id', [input.taskId, input.dependsOnTaskId])
 
   if (!tasks || tasks.length !== 2) {
@@ -134,19 +141,20 @@ export async function addDependency(input: {
   const { data: allDeps } = await db
     .from('task_dependencies')
     .select('task_id, depends_on_task_id')
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', user.tenantId!)
 
   // Fetch all tasks for cycle detection
   const { data: allTasks } = await db
     .from('tasks')
-    .select('id, text, estimated_minutes')
-    .eq('chef_id', user.entityId)
+    .select('id, title')
+    .eq('chef_id', user.tenantId!)
 
   // Build TaskNode array for cycle detection
+  // Use 30-minute heuristic duration since tasks schema has no estimated_minutes column
   const taskNodes: TaskNode[] = (allTasks ?? []).map((t: any) => ({
     id: t.id,
-    name: t.text,
-    durationMinutes: t.estimated_minutes ?? 30,
+    name: t.title,
+    durationMinutes: 30, // heuristic: no duration column in current schema
     dependsOn: (allDeps ?? [])
       .filter((d: any) => d.task_id === t.id)
       .map((d: any) => d.depends_on_task_id),
@@ -162,7 +170,7 @@ export async function addDependency(input: {
 
   // Insert the dependency
   const { error } = await db.from('task_dependencies').insert({
-    chef_id: user.entityId,
+    chef_id: user.tenantId!,
     task_id: input.taskId,
     depends_on_task_id: input.dependsOnTaskId,
     dependency_type: input.dependencyType ?? 'finish_to_start',
@@ -184,19 +192,22 @@ export async function addDependency(input: {
 // ── removeDependency ───────────────────────────────────────────────────────
 
 /**
- * Removes a dependency between two tasks.
+ * Removes a dependency between two tasks by stable task pair.
+ * The UI passes the two task ids directly (not a dependency record id).
  */
-export async function removeDependency(
-  dependencyId: string
-): Promise<{ success: boolean; error?: string }> {
+export async function removeDependency(input: {
+  taskId: string
+  dependsOnTaskId: string
+}): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const db: any = createServerClient()
 
   const { error } = await db
     .from('task_dependencies')
     .delete()
-    .eq('id', dependencyId)
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', user.tenantId!)
+    .eq('task_id', input.taskId)
+    .eq('depends_on_task_id', input.dependsOnTaskId)
 
   if (error) {
     console.error('[removeDependency] Error:', error)
@@ -213,6 +224,9 @@ export async function removeDependency(
 /**
  * Computes the critical path for tasks on a given date (or all tasks).
  * Returns scheduling information for Gantt chart rendering.
+ * NOTE: task duration uses a 30-minute heuristic because the tasks schema
+ * does not carry an estimated_minutes column. Gantt bar widths are proportional
+ * but not authoritative time estimates.
  */
 export async function getCriticalPath(options?: {
   dateFilter?: string
@@ -220,12 +234,12 @@ export async function getCriticalPath(options?: {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Fetch tasks
+  // Fetch tasks using current schema fields
   let query = db
     .from('tasks')
-    .select('id, text, estimated_minutes')
-    .eq('chef_id', user.entityId)
-    .eq('completed', false)
+    .select('id, title, status')
+    .eq('chef_id', user.tenantId!)
+    .neq('status', 'done')
 
   if (options?.dateFilter) {
     query = query.eq('due_date', options.dateFilter)
@@ -248,7 +262,7 @@ export async function getCriticalPath(options?: {
   const { data: deps } = await db
     .from('task_dependencies')
     .select('task_id, depends_on_task_id')
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', user.tenantId!)
     .in('task_id', taskIds)
 
   // Build dependency map
@@ -258,11 +272,11 @@ export async function getCriticalPath(options?: {
     depMap[dep.task_id].push(dep.depends_on_task_id)
   }
 
-  // Build task nodes
+  // Build task nodes with explicit 30-min heuristic duration
   const taskNodes: TaskNode[] = tasks.map((t: any) => ({
     id: t.id,
-    name: t.text,
-    durationMinutes: t.estimated_minutes ?? 30, // default 30 min if no estimate
+    name: t.title,
+    durationMinutes: 30, // heuristic: 30 min default since tasks schema has no duration column
     dependsOn: (depMap[t.id] ?? []).filter((d) => taskIds.includes(d)),
   }))
 

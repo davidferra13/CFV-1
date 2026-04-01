@@ -61,9 +61,8 @@ export function DependencyPicker({
     setError(null)
     startTransition(async () => {
       try {
-        // We need the dependency record ID, but we only have task IDs
-        // For now, use a workaround: the server can find and delete by task pair
-        const result = await removeDependency(depTaskId)
+        // Remove by stable task pair (taskId depends on depTaskId)
+        const result = await removeDependency({ taskId, dependsOnTaskId: depTaskId })
         if (!result.success) {
           setError(result.error ?? 'Failed to remove dependency')
           return
@@ -87,7 +86,7 @@ export function DependencyPicker({
               key={dep.id}
               className="flex items-center justify-between gap-2 px-2 py-1 rounded bg-stone-900/50"
             >
-              <span className="text-xs text-stone-300 truncate">{dep.text}</span>
+              <span className="text-xs text-stone-300 truncate">{dep.title}</span>
               <button
                 onClick={() => handleRemove(dep.id)}
                 disabled={isPending}
@@ -127,7 +126,7 @@ export function DependencyPicker({
                   disabled={isPending}
                   className="w-full text-left px-2 py-1.5 rounded text-xs text-stone-300 hover:bg-stone-800 transition-colors flex items-center justify-between"
                 >
-                  <span className="truncate">{t.text}</span>
+                  <span className="truncate">{t.title}</span>
                   {t.completed && <Badge variant="success">Done</Badge>}
                 </button>
               ))}

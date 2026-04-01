@@ -4,7 +4,11 @@
 
 import type { Metadata } from 'next'
 import { requireStaff } from '@/lib/auth/get-user'
-import { getMyStations, getStationClipboard } from '@/lib/staff/staff-portal-actions'
+import {
+  getMyStations,
+  getStationClipboard,
+  getMyStationData,
+} from '@/lib/staff/staff-portal-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -41,12 +45,18 @@ export default async function StaffStationPage({ searchParams }: Props) {
     )
   }
 
-  // Load clipboard data for the selected station
+  // Load clipboard data and active shift state for the selected station
   let clipboardData: Awaited<ReturnType<typeof getStationClipboard>> | null = null
+  let activeShift = null
   try {
-    clipboardData = await getStationClipboard(selectedStationId, selectedDate)
+    const [clipboard, stationData] = await Promise.all([
+      getStationClipboard(selectedStationId, selectedDate),
+      getMyStationData(selectedStationId),
+    ])
+    clipboardData = clipboard
+    activeShift = stationData.activeShift
   } catch (err) {
-    console.error('[StaffStationPage] Error loading clipboard:', err)
+    console.error('[StaffStationPage] Error loading station data:', err)
   }
 
   return (
@@ -74,8 +84,8 @@ export default async function StaffStationPage({ searchParams }: Props) {
         )}
       </div>
 
-      {/* Shift check-in/out controls */}
-      <StaffShiftControls stationId={selectedStationId} />
+      {/* Shift check-in/out controls - server-loaded shift state so refresh preserves active shift */}
+      <StaffShiftControls stationId={selectedStationId} initialActiveShift={activeShift} />
 
       {/* Clipboard grid */}
       {clipboardData ? (

@@ -57,12 +57,19 @@ export type StaffStation = {
 
 export type StaffRecipe = {
   id: string
-  title: string
+  name: string
   description: string | null
   servings: number | null
   prep_time_minutes: number | null
   cook_time_minutes: number | null
-  instructions: string | null
+  method: string | null
+}
+
+export type ActiveShift = {
+  id: string
+  station_id: string
+  shift: string
+  check_in_at: string
 }
 
 export type StaffProfile = {
@@ -215,7 +222,7 @@ export async function completeMyTask(taskId: string): Promise<{ success: boolean
     await db.from('task_completion_log').insert({
       chef_id: user.tenantId,
       task_id: taskId,
-      completed_by: user.staffMemberId,
+      staff_member_id: user.staffMemberId,
       completed_at: now,
     })
   } catch (err) {
@@ -534,48 +541,59 @@ export async function getStationRecipes(stationId: string): Promise<StaffRecipe[
     throw new Error('Station not found')
   }
 
-  // Get menu items for this station that have a menu_item_id (linked to menu_items table)
+  // Step 1: find station_menu_items that have a real menu_item_id
   const { data: stationMenuItems, error: smiError } = await db
     .from('station_menu_items')
-    .select('menu_item_id, name')
+    .select('menu_item_id')
     .eq('station_id', stationId)
     .eq('chef_id', user.tenantId)
     .not('menu_item_id', 'is', null)
 
-  if (smiError || !stationMenuItems?.length) {
-    // No linked menu items - try to get all recipes for the tenant instead
-    const { data: allRecipes, error: recipesError } = await db
-      .from('recipes')
-      .select(
-        'id, title, description, servings, prep_time_minutes, cook_time_minutes, instructions'
-      )
-      .eq('chef_id', user.tenantId)
-      .order('title')
-      .limit(50)
-
-    if (recipesError) {
-      console.error('[getStationRecipes] Error loading recipes:', recipesError)
-      return []
-    }
-    return (allRecipes ?? []) as StaffRecipe[]
+  if (smiError) {
+    console.error('[getStationRecipes] station_menu_items query error:', smiError)
+    return []
   }
 
-  // Get recipes linked to these menu items (via menu_item_id)
-  const menuItemIds = stationMenuItems
-    .map((smi: any) => smi.menu_item_id)
-    .filter(Boolean) as string[]
+  if (!stationMenuItems?.length) {
+    // Station has no linked menu items - return honest empty result, no fallback
+    return []
+  }
 
-  // Recipes are linked to menu items through menu_items.recipe_id or similar.
-  // Fallback: return all recipes for the tenant, filtered to limit
+  const menuItemIds = (stationMenuItems as any[]).map((smi) => smi.menu_item_id).filter(Boolean)
+
+  if (menuItemIds.length === 0) return []
+
+  // Step 2: fetch recipe_id from menu_items
+  const { data: menuItemRows, error: miError } = await db
+    .from('menu_items')
+    .select('recipe_id')
+    .in('id', menuItemIds)
+    .not('recipe_id', 'is', null)
+
+  if (miError) {
+    console.error('[getStationRecipes] menu_items query error:', miError)
+    return []
+  }
+
+  if (!menuItemRows?.length) {
+    // Menu items exist but none have recipe_id set - honest empty result
+    return []
+  }
+
+  const recipeIds = (menuItemRows as any[]).map((mi) => mi.recipe_id).filter(Boolean)
+
+  if (recipeIds.length === 0) return []
+
+  // Step 3: fetch the actual recipes using their real schema fields
   const { data: recipes, error: recipesError } = await db
     .from('recipes')
-    .select('id, title, description, servings, prep_time_minutes, cook_time_minutes, instructions')
-    .eq('chef_id', user.tenantId)
-    .order('title')
-    .limit(50)
+    .select('id, name, description, servings, prep_time_minutes, cook_time_minutes, method')
+    .in('id', recipeIds)
+    .eq('archived', false)
+    .order('name')
 
   if (recipesError) {
-    console.error('[getStationRecipes] Error loading recipes:', recipesError)
+    console.error('[getStationRecipes] recipes query error:', recipesError)
     return []
   }
 
@@ -592,9 +610,10 @@ export async function getMyRecipes(): Promise<StaffRecipe[]> {
 
   const { data, error } = await db
     .from('recipes')
-    .select('id, title, description, servings, prep_time_minutes, cook_time_minutes, instructions')
-    .eq('chef_id', user.tenantId)
-    .order('title')
+    .select('id, name, description, servings, prep_time_minutes, cook_time_minutes, method')
+    .eq('tenant_id', user.tenantId)
+    .eq('archived', false)
+    .order('name')
 
   if (error) {
     console.error('[getMyRecipes] Error:', error)
@@ -602,6 +621,46 @@ export async function getMyRecipes(): Promise<StaffRecipe[]> {
   }
 
   return (data ?? []) as StaffRecipe[]
+}
+
+// ============================================
+// GET MY STATION DATA (station + active shift state)
+// ============================================
+
+export async function getMyStationData(stationId: string): Promise<{
+  station: StaffStation | null
+  activeShift: ActiveShift | null
+}> {
+  const user = await requireStaff()
+  const db: any = createServerClient({ admin: true })
+
+  const { data: station, error: stationError } = await db
+    .from('stations')
+    .select('id, name, description, status')
+    .eq('id', stationId)
+    .eq('chef_id', user.tenantId)
+    .single()
+
+  if (stationError || !station) {
+    return { station: null, activeShift: null }
+  }
+
+  // Find an open shift for this staff member at this station (check_out_at is null)
+  const { data: shift } = await db
+    .from('shift_logs')
+    .select('id, station_id, shift, check_in_at')
+    .eq('chef_id', user.tenantId)
+    .eq('staff_member_id', user.staffMemberId)
+    .eq('station_id', stationId)
+    .is('check_out_at', null)
+    .order('check_in_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return {
+    station: station as StaffStation,
+    activeShift: shift ? (shift as ActiveShift) : null,
+  }
 }
 
 // ============================================
@@ -624,12 +683,16 @@ export async function staffShiftCheckIn(stationId: string, shiftType: 'open' | '
     throw new Error('Station not found')
   }
 
-  const { error: insertError } = await db.from('shift_logs').insert({
-    station_id: stationId,
-    chef_id: user.tenantId,
-    staff_member_id: user.staffMemberId,
-    shift: shiftType,
-  })
+  const { data: newShift, error: insertError } = await db
+    .from('shift_logs')
+    .insert({
+      station_id: stationId,
+      chef_id: user.tenantId,
+      staff_member_id: user.staffMemberId,
+      shift: shiftType,
+    })
+    .select('id, station_id, shift, check_in_at')
+    .single()
 
   if (insertError) {
     console.error('[staffShiftCheckIn] Error:', insertError)
@@ -637,7 +700,7 @@ export async function staffShiftCheckIn(stationId: string, shiftType: 'open' | '
   }
 
   revalidatePath('/staff-station')
-  return { success: true }
+  return { success: true, activeShift: newShift as ActiveShift }
 }
 
 // ============================================

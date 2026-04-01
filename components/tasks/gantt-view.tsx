@@ -122,6 +122,7 @@ export function GanttView({ dateFilter, className = '' }: GanttViewProps) {
           {tasks.map((task) => {
             const sched = schedule[task.id]
             const isCritical = criticalIds.has(task.id)
+            // estimated_minutes is not in the tasks schema; 30 min is the heuristic default
             const duration = task.estimated_minutes ?? 30
             const barWidth = totalMinutes > 0 ? Math.max((duration / totalMinutes) * 100, 5) : 100
             const barOffset =
@@ -140,7 +141,7 @@ export function GanttView({ dateFilter, className = '' }: GanttViewProps) {
                           : 'text-stone-300'
                     }`}
                   >
-                    {task.text}
+                    {task.title}
                   </span>
                 </div>
 
@@ -160,7 +161,7 @@ export function GanttView({ dateFilter, className = '' }: GanttViewProps) {
                     }}
                   >
                     <span className="text-xxs text-stone-200 px-1 leading-5 truncate block">
-                      {formatDuration(duration)}
+                      {formatDuration(duration)} (est.)
                     </span>
                   </div>
                 </div>

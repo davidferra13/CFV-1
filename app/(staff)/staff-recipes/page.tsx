@@ -63,7 +63,16 @@ export default async function StaffRecipesPage({ searchParams }: Props) {
       {recipes.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-stone-400">No recipes available yet.</p>
+            {searchParams.station ? (
+              <>
+                <p className="text-stone-400">No recipes linked to this station yet.</p>
+                <p className="text-xs text-stone-500 mt-2">
+                  A chef can link menu items to this station to make recipes appear here.
+                </p>
+              </>
+            ) : (
+              <p className="text-stone-400">No recipes available yet.</p>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -71,7 +80,7 @@ export default async function StaffRecipesPage({ searchParams }: Props) {
           {recipes.map((recipe) => (
             <Card key={recipe.id} className="hover:ring-1 hover:ring-stone-600 transition-all">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base text-stone-100">{recipe.title}</CardTitle>
+                <CardTitle className="text-base text-stone-100">{recipe.name}</CardTitle>
               </CardHeader>
               <CardContent>
                 {recipe.description && (
@@ -86,9 +95,9 @@ export default async function StaffRecipesPage({ searchParams }: Props) {
                     <Badge variant="info">{recipe.cook_time_minutes}m cook</Badge>
                   )}
                 </div>
-                {recipe.instructions && (
+                {recipe.method && (
                   <div className="text-sm text-stone-300 whitespace-pre-wrap line-clamp-6">
-                    {recipe.instructions}
+                    {recipe.method}
                   </div>
                 )}
               </CardContent>

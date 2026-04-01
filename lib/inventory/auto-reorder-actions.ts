@@ -45,16 +45,16 @@ export async function previewAutoReorder(): Promise<AutoReorderPreview[]> {
   const suggestions = await getReorderSuggestions()
   if (suggestions.length === 0) return []
 
-  // Look up reorder settings for custom reorder quantities
-  const ingredientIds = suggestions.flatMap((g) => g.items.map((i) => i.ingredientId))
-  const reorderQtyMap = await getReorderQuantities(db, user.tenantId!, ingredientIds)
+  // Look up reorder settings by ingredient_name (the schema key - there is no ingredient_id column)
+  const ingredientNames = suggestions.flatMap((g) => g.items.map((i) => i.ingredientName))
+  const reorderQtyMap = await getReorderQuantities(db, user.tenantId!, ingredientNames)
 
   return suggestions.map((group) => ({
     vendorName: group.vendorName,
     vendorId: group.vendorId,
     items: group.items.map((item) => {
-      // Use reorder_qty from settings if set, otherwise use calculated deficit
-      const customQty = reorderQtyMap.get(item.ingredientId)
+      // Match by ingredient name (reorder_settings keyed by ingredient_name, not ingredient_id)
+      const customQty = reorderQtyMap.get(item.ingredientName)
       const reorderQty = customQty != null && customQty > 0 ? customQty : item.deficit
 
       return {
@@ -136,25 +136,28 @@ export async function generateAutoReorderPOs(): Promise<AutoReorderResult> {
 
 /**
  * Look up custom reorder quantities from reorder_settings.
+ * reorder_settings is keyed by ingredient_name (there is no ingredient_id column).
+ * Returns a map of ingredient_name -> reorder_qty.
  */
 async function getReorderQuantities(
   db: any,
   chefId: string,
-  ingredientIds: string[]
+  ingredientNames: string[]
 ): Promise<Map<string, number>> {
   const map = new Map<string, number>()
-  if (ingredientIds.length === 0) return map
+  if (ingredientNames.length === 0) return map
 
   const { data } = await db
     .from('reorder_settings')
-    .select('ingredient_id, reorder_qty')
+    .select('ingredient_name, reorder_qty')
     .eq('chef_id', chefId)
-    .in('ingredient_id', ingredientIds)
+    .in('ingredient_name', ingredientNames)
+    .eq('is_active', true)
     .not('reorder_qty', 'is', null)
 
   for (const row of (data as any[]) || []) {
-    if (row.ingredient_id && row.reorder_qty > 0) {
-      map.set(row.ingredient_id, Number(row.reorder_qty))
+    if (row.ingredient_name && Number(row.reorder_qty) > 0) {
+      map.set(row.ingredient_name, Number(row.reorder_qty))
     }
   }
 

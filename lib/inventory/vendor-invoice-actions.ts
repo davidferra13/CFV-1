@@ -123,7 +123,7 @@ export async function uploadVendorInvoice(input: UploadVendorInvoiceInput): Prom
 
   if (itemsError) throw new Error(`Failed to create invoice items: ${(itemsError as any).message}`)
 
-  revalidatePath('/inventory/invoices')
+  revalidatePath('/inventory/vendor-invoices')
 
   return {
     id: (invoice as any).id,
@@ -197,7 +197,7 @@ export async function matchInvoiceItems(
       .eq('chef_id', user.tenantId!)
   }
 
-  revalidatePath('/inventory/invoices')
+  revalidatePath('/inventory/vendor-invoices')
 }
 
 /**
@@ -295,5 +295,5 @@ export async function flagPriceChange(invoiceItemId: string): Promise<void> {
 
   if (error) throw new Error(`Failed to flag price change: ${(error as any).message}`)
 
-  revalidatePath('/inventory/invoices')
+  revalidatePath('/inventory/vendor-invoices')
 }

@@ -29,9 +29,31 @@ export default async function StationsPage() {
             Kitchen stations, daily prep clipboards, and shift handoffs. Manage your line.
           </p>
         </div>
+      </div>
+
+      {/* Operational surfaces - quick links to the full ops stack */}
+      <div className="flex flex-wrap gap-2">
+        <Link
+          href="/stations/daily-ops"
+          className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-700 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700 hover:text-stone-100 transition-colors"
+        >
+          Daily Ops
+        </Link>
+        <Link
+          href="/stations/ops-log"
+          className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-700 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700 hover:text-stone-100 transition-colors"
+        >
+          Ops Log
+        </Link>
+        <Link
+          href="/stations/waste"
+          className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-700 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700 hover:text-stone-100 transition-colors"
+        >
+          Waste Log
+        </Link>
         <Link
           href="/stations/orders"
-          className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-600 px-4 py-2 text-sm text-stone-200 hover:bg-stone-700 transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg bg-stone-800 border border-stone-700 px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-700 hover:text-stone-100 transition-colors"
         >
           Order Sheet
         </Link>

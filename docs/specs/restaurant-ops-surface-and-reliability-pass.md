@@ -9,10 +9,11 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event         | Date             | Agent/Session      | Commit |
-| ------------- | ---------------- | ------------------ | ------ |
-| Created       | 2026-04-01 00:58 | Planner + Research |        |
-| Status: ready | 2026-04-01 00:58 | Planner + Research |        |
+| Event         | Date             | Agent/Session      | Commit  |
+| ------------- | ---------------- | ------------------ | ------- |
+| Created       | 2026-04-01 00:58 | Planner + Research |         |
+| Status: ready | 2026-04-01 00:58 | Planner + Research |         |
+| Status: built | 2026-04-01       | Builder            | pending |
 
 ---
 
@@ -73,29 +74,29 @@ ChefFlow already contains a large amount of restaurant-operations infrastructure
 
 ## Files to Create
 
-| File | Purpose |
-| ---- | ------- |
+| File | Purpose                                                            |
+| ---- | ------------------------------------------------------------------ |
 | None | This pass is a reliability/polish pass over existing product code. |
 
 ---
 
 ## Files to Modify
 
-| File | What to Change |
-| ---- | -------------- |
-| `app/(chef)/stations/page.tsx` | Surface the existing station-adjacent operational links more clearly from the chef station hub. |
-| `components/stations/daily-ops-actions-bar.tsx` | Remove or correct the misleading `Print Clipboards` link. |
-| `lib/staff/staff-portal-actions.ts` | Fix station recipe loading; return active-shift state cleanly; support safe check-out flow. |
-| `app/(staff)/staff-station/page.tsx` | Render active-shift state so check-in/check-out are both available in the staff workflow. |
-| `components/staff/staff-shift-controls.tsx` | Add check-out state and actions using server-returned shift state instead of hidden ids. |
-| `app/(staff)/staff-recipes/page.tsx` | Show honest station-scoped recipe results and empty states. |
-| `lib/tasks/actions.ts` | Write task completion log entries using the actual schema field names. |
-| `lib/tasks/dependency-actions.ts` | Replace stale task-field usage and pair-id mismatch with current-schema dependency behavior. |
-| `components/tasks/dependency-picker.tsx` | Remove dependencies by stable task pair and display current task fields. |
-| `components/tasks/gantt-view.tsx` | Consume the corrected dependency/task model and expose any duration heuristic explicitly. |
-| `lib/staff/activity-board.ts` | Read task completion log entries using the actual schema fields. |
-| `lib/inventory/auto-reorder-actions.ts` | Align reorder-setting lookups with the actual schema keying. |
-| `lib/inventory/vendor-invoice-actions.ts` | Revalidate the correct route after vendor-invoice mutations. |
+| File                                            | What to Change                                                                                  |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `app/(chef)/stations/page.tsx`                  | Surface the existing station-adjacent operational links more clearly from the chef station hub. |
+| `components/stations/daily-ops-actions-bar.tsx` | Remove or correct the misleading `Print Clipboards` link.                                       |
+| `lib/staff/staff-portal-actions.ts`             | Fix station recipe loading; return active-shift state cleanly; support safe check-out flow.     |
+| `app/(staff)/staff-station/page.tsx`            | Render active-shift state so check-in/check-out are both available in the staff workflow.       |
+| `components/staff/staff-shift-controls.tsx`     | Add check-out state and actions using server-returned shift state instead of hidden ids.        |
+| `app/(staff)/staff-recipes/page.tsx`            | Show honest station-scoped recipe results and empty states.                                     |
+| `lib/tasks/actions.ts`                          | Write task completion log entries using the actual schema field names.                          |
+| `lib/tasks/dependency-actions.ts`               | Replace stale task-field usage and pair-id mismatch with current-schema dependency behavior.    |
+| `components/tasks/dependency-picker.tsx`        | Remove dependencies by stable task pair and display current task fields.                        |
+| `components/tasks/gantt-view.tsx`               | Consume the corrected dependency/task model and expose any duration heuristic explicitly.       |
+| `lib/staff/activity-board.ts`                   | Read task completion log entries using the actual schema fields.                                |
+| `lib/inventory/auto-reorder-actions.ts`         | Align reorder-setting lookups with the actual schema keying.                                    |
+| `lib/inventory/vendor-invoice-actions.ts`       | Revalidate the correct route after vendor-invoice mutations.                                    |
 
 ---
 
@@ -119,20 +120,20 @@ None.
 
 ## Server Actions
 
-| Action | Auth | Input | Output | Side Effects |
-| ---- | ---- | ---- | ---- | ---- |
-| `getStationRecipes(stationId)` | `requireStaff()` | `stationId: string` | Station-linked recipes or an honest empty result | Reads `station_menu_items`, `menu_items`, and `recipes`; no fallback to all recipes |
-| `getMyStationData(stationId)` | `requireStaff()` | `stationId: string` | Station metadata plus active-shift state | Reads station and active shift together for the staff station page |
-| `staffShiftCheckIn(stationId, shiftType)` | `requireStaff()` | `stationId: string`, `shiftType: string` | Success plus active shift metadata | Creates/updates `shift_logs`, revalidates staff station view |
-| `staffShiftCheckOut(shiftLogId, notes?)` | `requireStaff()` | `shiftLogId: string`, optional notes | Success plus closed shift metadata | Updates `shift_logs`, revalidates staff station view |
-| `completeTask(...)` | `requireChef()` | Existing task-complete inputs | Existing success/error shape | Writes `task_completion_log.staff_member_id` instead of the stale field name |
-| `completeMyTask(taskId)` | `requireStaff()` | `taskId: string` | Existing success/error shape | Writes `task_completion_log.staff_member_id` for staff completions |
-| `getTasksWithDependencies(options?)` | `requireChef()` | Existing filters | Tasks plus dependency metadata | Uses current `tasks` fields (`title`, `status`) and explicit duration heuristic |
-| `addDependency(input)` | `requireChef()` | Task id pair | Existing success/error shape | Creates `task_dependencies` row |
-| `removeDependency({ taskId, dependsOnTaskId })` | `requireChef()` | Two task ids | Existing success/error shape | Deletes dependency by stable pair instead of a mismatched dependency-record id from the UI |
-| `previewAutoReorder()` | `requireChef()` | Existing preview inputs | Existing preview payload | Matches reorder settings by schema-correct key |
-| `generateAutoReorderPOs()` | `requireChef()` | Existing generation inputs | Existing success/error shape | Same schema alignment as preview |
-| `createVendorInvoice / updateVendorInvoice / deleteVendorInvoice` | `requireChef()` | Existing inputs | Existing success/error shape | Revalidates the real vendor-invoice route |
+| Action                                                            | Auth             | Input                                    | Output                                           | Side Effects                                                                               |
+| ----------------------------------------------------------------- | ---------------- | ---------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `getStationRecipes(stationId)`                                    | `requireStaff()` | `stationId: string`                      | Station-linked recipes or an honest empty result | Reads `station_menu_items`, `menu_items`, and `recipes`; no fallback to all recipes        |
+| `getMyStationData(stationId)`                                     | `requireStaff()` | `stationId: string`                      | Station metadata plus active-shift state         | Reads station and active shift together for the staff station page                         |
+| `staffShiftCheckIn(stationId, shiftType)`                         | `requireStaff()` | `stationId: string`, `shiftType: string` | Success plus active shift metadata               | Creates/updates `shift_logs`, revalidates staff station view                               |
+| `staffShiftCheckOut(shiftLogId, notes?)`                          | `requireStaff()` | `shiftLogId: string`, optional notes     | Success plus closed shift metadata               | Updates `shift_logs`, revalidates staff station view                                       |
+| `completeTask(...)`                                               | `requireChef()`  | Existing task-complete inputs            | Existing success/error shape                     | Writes `task_completion_log.staff_member_id` instead of the stale field name               |
+| `completeMyTask(taskId)`                                          | `requireStaff()` | `taskId: string`                         | Existing success/error shape                     | Writes `task_completion_log.staff_member_id` for staff completions                         |
+| `getTasksWithDependencies(options?)`                              | `requireChef()`  | Existing filters                         | Tasks plus dependency metadata                   | Uses current `tasks` fields (`title`, `status`) and explicit duration heuristic            |
+| `addDependency(input)`                                            | `requireChef()`  | Task id pair                             | Existing success/error shape                     | Creates `task_dependencies` row                                                            |
+| `removeDependency({ taskId, dependsOnTaskId })`                   | `requireChef()`  | Two task ids                             | Existing success/error shape                     | Deletes dependency by stable pair instead of a mismatched dependency-record id from the UI |
+| `previewAutoReorder()`                                            | `requireChef()`  | Existing preview inputs                  | Existing preview payload                         | Matches reorder settings by schema-correct key                                             |
+| `generateAutoReorderPOs()`                                        | `requireChef()`  | Existing generation inputs               | Existing success/error shape                     | Same schema alignment as preview                                                           |
+| `createVendorInvoice / updateVendorInvoice / deleteVendorInvoice` | `requireChef()`  | Existing inputs                          | Existing success/error shape                     | Revalidates the real vendor-invoice route                                                  |
 
 ---
 
@@ -162,15 +163,15 @@ None.
 
 ## Edge Cases and Error Handling
 
-| Scenario | Correct Behavior |
-| ---- | ---- |
-| Station has no linked `station_menu_items` | Return no recipes and show an honest empty state; do not fall back to all recipes. |
-| `menu_items` are linked but `recipe_id` is null | Treat as no station recipes and surface the gap honestly. |
-| Staff user refreshes after check-in | Active shift remains visible from `shift_logs` and the UI presents check-out. |
-| Staff user attempts to check out another user's shift | Reject with auth/ownership error. |
-| UI tries to remove a dependency pair that no longer exists | Return a safe no-op success or friendly error; do not break the page. |
-| Ingredient naming does not match a reorder setting | Treat the ingredient as unmatched and document the data-quality gap instead of inventing ids. |
-| Vendor invoice mutation succeeds | Revalidate the vendor-invoice page route, not a stale inventory route. |
+| Scenario                                                   | Correct Behavior                                                                              |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Station has no linked `station_menu_items`                 | Return no recipes and show an honest empty state; do not fall back to all recipes.            |
+| `menu_items` are linked but `recipe_id` is null            | Treat as no station recipes and surface the gap honestly.                                     |
+| Staff user refreshes after check-in                        | Active shift remains visible from `shift_logs` and the UI presents check-out.                 |
+| Staff user attempts to check out another user's shift      | Reject with auth/ownership error.                                                             |
+| UI tries to remove a dependency pair that no longer exists | Return a safe no-op success or friendly error; do not break the page.                         |
+| Ingredient naming does not match a reorder setting         | Treat the ingredient as unmatched and document the data-quality gap instead of inventing ids. |
+| Vendor invoice mutation succeeds                           | Revalidate the vendor-invoice page route, not a stale inventory route.                        |
 
 ---
 

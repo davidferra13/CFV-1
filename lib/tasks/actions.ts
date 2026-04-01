@@ -366,7 +366,7 @@ export async function completeTask(
     await db.from('task_completion_log').insert({
       chef_id: user.tenantId!,
       task_id: id,
-      completed_by: staffMemberId ?? user.entityId,
+      staff_member_id: staffMemberId ?? null,
       completed_at: now,
       duration_minutes: durationMinutes ?? null,
       notes: notes ?? null,

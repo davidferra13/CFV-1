@@ -58,7 +58,7 @@ export async function getStaffActivityBoard(): Promise<StaffActivity[]> {
     // Recent task completion log (today)
     db
       .from('task_completion_log')
-      .select('completed_by, completed_at')
+      .select('staff_member_id, completed_at')
       .eq('chef_id', tenantId)
       .gte('completed_at', today + 'T00:00:00')
       .order('completed_at', { ascending: false }),
@@ -98,7 +98,7 @@ export async function getStaffActivityBoard(): Promise<StaffActivity[]> {
     let lastActivityType: string | null = null
 
     // Check completion log
-    const lastCompletion = completionLogs.find((l: any) => l.completed_by === staff.id)
+    const lastCompletion = completionLogs.find((l: any) => l.staff_member_id === staff.id)
     if (lastCompletion) {
       lastActivity = lastCompletion.completed_at
       lastActivityType = 'task_complete'
