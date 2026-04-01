@@ -4,9 +4,10 @@
  * OpenClaw Pull Service
  *
  * Downloads the full SQLite database from the Pi, then upserts:
- *   catalog_stores   -> openclaw.stores
- *   catalog_products  -> openclaw.products
+ *   catalog_stores         -> openclaw.stores
+ *   catalog_products       -> openclaw.products
  *   catalog_store_products -> openclaw.store_products
+ *   current_prices         -> openclaw.products + store_products (bridged)
  *
  * Run manually: node scripts/openclaw-pull/pull.mjs
  * Or via Windows Scheduled Task (hourly).
@@ -30,6 +31,50 @@ import postgres from 'postgres'
 const BATCH_SIZE = 500
 
 const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`)
+
+// Maps current_prices.source_id prefixes/patterns to chain slugs.
+// Order matters: first match wins.
+const SOURCE_TO_CHAIN = [
+  [/^ic-hannaford$/,              'hannaford'],
+  [/^hannaford-instacart$/,       'hannaford'],
+  [/^ic-market-basket$/,          'market_basket'],
+  [/^market-basket-instacart$/,   'market_basket'],
+  [/^ic-star-market$/,            'star_market'],
+  [/^ic-price-chopper$/,          'price_chopper'],
+  [/^ic-roche-bros$/,             'roche_bros'],
+  [/^wegmans-instacart$/,         'wegmans'],
+  [/^ic-aldi$/,                   'aldi'],
+  [/^aldi-instacart$/,            'aldi'],
+  [/^ic-restaurant-depot$/,       'restaurant_depot'],
+  [/^ic-stop-and-shop$/,          'stop_and_shop'],
+  [/^ic-bjs$/,                    'bjs'],
+  [/^shaws-flipp$/,               'shaws'],
+  [/^bigy-flipp$/,                'bigy'],
+  [/^stop-shop-flipp$/,           'stop_and_shop'],
+  [/^target-flipp$/,              'target'],
+  [/^target-/,                    'target'],
+  [/^dollar-general-flipp$/,      'dollar_general'],
+  [/^whole-foods-/,               'whole_foods'],
+  [/^kroger-/,                    'kroger'],
+  [/^restaurant-depot-flipp$/,    'restaurant_depot'],
+  [/^costco-flipp$/,              'costco'],
+  [/^ocean-state-flipp$/,         'ocean_state'],
+  [/^wegmans-flipp$/,             'wegmans'],
+  [/^aldi-flipp$/,                'aldi'],
+  [/^cvs-flipp$/,                 'cvs'],
+  [/^family-dollar-flipp$/,       'family_dollar'],
+  [/^sams-club-flipp$/,           'sams_club'],
+  [/^walmart-flipp$/,             'walmart'],
+  [/^walmart-/,                   'walmart'],
+  [/^walgreens-flipp$/,           'walgreens'],
+]
+
+function sourceIdToChainSlug(sourceId) {
+  for (const [pattern, slug] of SOURCE_TO_CHAIN) {
+    if (pattern.test(sourceId)) return slug
+  }
+  return null
+}
 
 // Categories that are definitively non-food. Used to override the Pi's
 // unreliable is_food flag during ingest.
@@ -321,9 +366,16 @@ async function main() {
     let offset = 0
 
     while (offset < total) {
-      const rows = sqlite
-        .prepare(`SELECT * FROM catalog_store_products LIMIT ${BATCH_SIZE} OFFSET ${offset}`)
-        .all()
+      let rows
+      try {
+        rows = sqlite
+          .prepare(`SELECT * FROM catalog_store_products LIMIT ${BATCH_SIZE} OFFSET ${offset}`)
+          .all()
+      } catch (sqliteErr) {
+        log(`  WARN: SQLite read error at offset ${offset}: ${sqliteErr.message}. Skipping batch.`)
+        offset += BATCH_SIZE
+        continue
+      }
 
       for (const sp of rows) {
         if (!sp.price_cents || sp.price_cents <= 0) {
@@ -376,6 +428,205 @@ async function main() {
     log('WARN: No catalog_store_products table in SQLite')
   }
 
+  // ── Step 7b: Sync current_prices (the other data path) ─────────────────
+  // current_prices is populated by ALL scrapers (Walmart API, Target API,
+  // Whole Foods, Flipp, government, etc). The catalog_* tables above only
+  // cover Instacart catalog walkers. This step bridges the gap.
+  let currentPricesSynced = 0
+  if (tables.includes('current_prices')) {
+    const total = sqlite.prepare('SELECT COUNT(*) as cnt FROM current_prices').get().cnt
+    log(`Found ${total} current_prices rows in SQLite, syncing...`)
+
+    // Build a source_id -> virtual store mapping
+    // Each unique source_id gets one virtual store in openclaw.stores
+    const sourceStoreMap = new Map() // source_id -> pg store uuid
+
+    const distinctSources = sqlite
+      .prepare('SELECT DISTINCT source_id FROM current_prices ORDER BY source_id')
+      .all()
+
+    for (const { source_id } of distinctSources) {
+      const chainSlug = sourceIdToChainSlug(source_id)
+      if (!chainSlug) {
+        log(`  WARN: No chain mapping for source_id "${source_id}", skipping`)
+        continue
+      }
+      const chainId = chainSlugToUuid.get(chainSlug)
+      if (!chainId) {
+        log(`  WARN: Chain slug "${chainSlug}" not in PG chains, skipping source "${source_id}"`)
+        continue
+      }
+
+      try {
+        // Upsert a virtual store for this source_id
+        const rows = await sql`
+          INSERT INTO openclaw.stores (
+            chain_id, external_store_id, name, city, state, zip
+          ) VALUES (
+            ${chainId}, ${source_id},
+            ${source_id}, 'Regional', 'MA', '00000'
+          )
+          ON CONFLICT (chain_id, external_store_id) DO UPDATE SET
+            updated_at = now()
+          RETURNING id
+        `
+        sourceStoreMap.set(source_id, rows[0].id)
+      } catch (err) {
+        errors++
+        if (errorDetails.length < 20) errorDetails.push(`Virtual store "${source_id}": ${err.message}`)
+      }
+    }
+    log(`  Mapped ${sourceStoreMap.size}/${distinctSources.length} source_ids to stores`)
+
+    // Now sync each current_price row as a product + store_product
+    let offset = 0
+    let skippedNoStore = 0
+    let skippedNonFood = 0
+
+    while (offset < total) {
+      const rows = sqlite
+        .prepare(`SELECT * FROM current_prices LIMIT ${BATCH_SIZE} OFFSET ${offset}`)
+        .all()
+
+      for (const cp of rows) {
+        if (!cp.price_cents || cp.price_cents <= 0) continue
+
+        const pgStoreId = sourceStoreMap.get(cp.source_id)
+        if (!pgStoreId) {
+          skippedNoStore++
+          continue
+        }
+
+        // Skip obvious non-food items
+        if (cp.raw_product_name && isNonFoodProduct(cp.raw_product_name)) {
+          skippedNonFood++
+          continue
+        }
+
+        try {
+          // Upsert product by name (current_prices rarely has UPC)
+          const productRows = await sql`
+            INSERT INTO openclaw.products (
+              name, size, is_food
+            ) VALUES (
+              ${cp.raw_product_name || 'Unknown'},
+              ${cp.package_size || null},
+              true
+            )
+            ON CONFLICT DO NOTHING
+            RETURNING id
+          `
+          let pgProductId = productRows[0]?.id
+
+          // If DO NOTHING fired, look up by exact name
+          if (!pgProductId) {
+            const existing = await sql`
+              SELECT id FROM openclaw.products
+              WHERE name = ${cp.raw_product_name || 'Unknown'}
+              LIMIT 1
+            `
+            pgProductId = existing[0]?.id
+          }
+
+          if (!pgProductId) continue
+
+          // Determine if this is a sale price
+          const isSale = cp.price_type === 'sale'
+          const priceCents = cp.price_cents
+          const salePriceCents = isSale ? cp.price_cents : null
+          const regularPrice = isSale ? null : cp.price_cents
+
+          // Determine source label
+          let source = 'current_prices'
+          if (cp.pricing_tier) source = cp.pricing_tier
+          if (cp.source_id?.includes('flipp')) source = 'flipp'
+
+          await sql`
+            INSERT INTO openclaw.store_products (
+              store_id, product_id, price_cents, sale_price_cents,
+              sale_ends_at, in_stock, source, last_seen_at
+            ) VALUES (
+              ${pgStoreId}, ${pgProductId},
+              ${regularPrice || priceCents},
+              ${salePriceCents},
+              ${cp.sale_end_date ? new Date(cp.sale_end_date) : null},
+              ${cp.in_stock !== 0},
+              ${source},
+              ${cp.last_confirmed_at ? new Date(cp.last_confirmed_at) : new Date()}
+            )
+            ON CONFLICT (store_id, product_id) DO UPDATE SET
+              price_cents = EXCLUDED.price_cents,
+              sale_price_cents = EXCLUDED.sale_price_cents,
+              sale_ends_at = EXCLUDED.sale_ends_at,
+              in_stock = EXCLUDED.in_stock,
+              source = EXCLUDED.source,
+              last_seen_at = EXCLUDED.last_seen_at
+          `
+          currentPricesSynced++
+        } catch (err) {
+          errors++
+          if (errorDetails.length < 20) errorDetails.push(`current_price "${cp.raw_product_name}": ${err.message}`)
+        }
+      }
+
+      offset += BATCH_SIZE
+      if (offset % 10000 === 0) log(`  current_prices: ${offset}/${total}...`)
+    }
+
+    log(`Synced ${currentPricesSynced} current_prices (skipped: ${skippedNoStore} no store, ${skippedNonFood} non-food)`)
+  }
+
+  // ── Step 7c: Sync canonical_ingredients ────────────────────────────────
+  // The Pi maintains a master ingredient dictionary (48K+ entries from
+  // OpenFoodFacts, USDA, and curated sources). Sync them so ChefFlow can
+  // display the full ingredient count and enable future search/matching.
+  let ingredientsSynced = 0
+  if (tables.includes('canonical_ingredients')) {
+    const total = sqlite.prepare('SELECT COUNT(*) as cnt FROM canonical_ingredients').get().cnt
+    log(`Found ${total} canonical ingredients in SQLite, syncing...`)
+
+    let offset = 0
+    while (offset < total) {
+      const rows = sqlite
+        .prepare(`SELECT * FROM canonical_ingredients LIMIT ${BATCH_SIZE} OFFSET ${offset}`)
+        .all()
+
+      for (const ing of rows) {
+        try {
+          await sql`
+            INSERT INTO openclaw.canonical_ingredients (
+              ingredient_id, name, category, standard_unit,
+              off_image_url, off_barcode, off_nutrition_json
+            ) VALUES (
+              ${ing.ingredient_id}, ${ing.name}, ${ing.category || null},
+              ${ing.standard_unit || null}, ${ing.off_image_url || null},
+              ${ing.off_barcode || null},
+              ${ing.off_nutrition_json ? JSON.parse(ing.off_nutrition_json) : null}
+            )
+            ON CONFLICT (ingredient_id) DO UPDATE SET
+              name = EXCLUDED.name,
+              category = EXCLUDED.category,
+              standard_unit = EXCLUDED.standard_unit,
+              off_image_url = EXCLUDED.off_image_url,
+              off_barcode = EXCLUDED.off_barcode,
+              off_nutrition_json = EXCLUDED.off_nutrition_json,
+              updated_at = now()
+          `
+          ingredientsSynced++
+        } catch (err) {
+          errors++
+          if (errorDetails.length < 20) errorDetails.push(`Ingredient "${ing.name}": ${err.message}`)
+        }
+      }
+
+      offset += BATCH_SIZE
+      if (offset % 5000 === 0) log(`  Ingredients: ${offset}/${total}...`)
+    }
+    log(`Synced ${ingredientsSynced} canonical ingredients`)
+  } else {
+    log('WARN: No canonical_ingredients table in SQLite')
+  }
+
   // ── Step 8: Log sync run ───────────────────────────────────────────────
   const finishedAt = new Date()
   const durationSeconds = Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)
@@ -387,7 +638,7 @@ async function main() {
       errors, error_details, duration_seconds
     ) VALUES (
       ${startedAt}, ${finishedAt}, ${fileSize},
-      ${storesSynced}, ${productsSynced}, ${pricesSynced},
+      ${storesSynced}, ${productsSynced}, ${pricesSynced + currentPricesSynced},
       ${errors}, ${errorDetails.length > 0 ? errorDetails.join('\n') : null},
       ${durationSeconds}
     )
@@ -396,7 +647,9 @@ async function main() {
   log(`\nDone in ${durationSeconds}s`)
   log(`  Stores:   ${storesSynced}`)
   log(`  Products: ${productsSynced}`)
-  log(`  Prices:   ${pricesSynced}`)
+  log(`  Prices (catalog):  ${pricesSynced}`)
+  log(`  Prices (current):  ${currentPricesSynced}`)
+  log(`  Prices (total):    ${pricesSynced + currentPricesSynced}`)
   log(`  Errors:   ${errors}`)
   if (errorDetails.length > 0) {
     log(`  First errors:`)

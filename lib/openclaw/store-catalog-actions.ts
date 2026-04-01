@@ -63,8 +63,15 @@ export type StoreCatalogStats = {
   chains: number
   stores: number
   products: number
+  foodProducts: number
   prices: number
+  ingredients: number
+  normMappings: number
+  usdaBaselines: number
+  freshPrices: number
+  categories: number
   lastSync: string | null
+  chainsWithData: { name: string; prices: number }[]
 }
 
 // ── Server Actions ─────────────────────────────────────────────────────────
@@ -72,20 +79,61 @@ export type StoreCatalogStats = {
 export async function getStoreCatalogStats(): Promise<StoreCatalogStats> {
   await requireChef()
 
-  const [chainsResult, storesResult, productsResult, pricesResult, syncResult] = await Promise.all([
+  const [
+    chainsResult,
+    storesResult,
+    productsResult,
+    foodResult,
+    pricesResult,
+    syncResult,
+    ingredientsResult,
+    normResult,
+    usdaResult,
+    freshResult,
+    catsResult,
+    chainDataResult,
+  ] = await Promise.all([
     pgClient`SELECT count(*)::int AS cnt FROM openclaw.chains WHERE is_active = true`,
     pgClient`SELECT count(*)::int AS cnt FROM openclaw.stores WHERE is_active = true`,
     pgClient`SELECT count(*)::int AS cnt FROM openclaw.products`,
+    pgClient`SELECT count(*)::int AS cnt FROM openclaw.products WHERE is_food = true`,
     pgClient`SELECT count(*)::int AS cnt FROM openclaw.store_products`,
     pgClient`SELECT started_at FROM openclaw.sync_runs ORDER BY started_at DESC LIMIT 1`,
+    pgClient`SELECT count(*)::int AS cnt FROM openclaw.canonical_ingredients`,
+    pgClient`SELECT count(*)::int AS cnt FROM openclaw.normalization_map`,
+    pgClient`SELECT count(*)::int AS cnt FROM openclaw.usda_price_baselines`,
+    pgClient`SELECT count(*)::int AS cnt FROM openclaw.store_products WHERE last_seen_at > now() - interval '7 days'`,
+    pgClient`SELECT count(*)::int AS cnt FROM openclaw.product_categories WHERE is_food = true`,
+    pgClient`
+      SELECT c.name, count(sp.id)::int AS prices
+      FROM openclaw.chains c
+      JOIN openclaw.stores s ON s.chain_id = c.id
+      JOIN openclaw.store_products sp ON sp.store_id = s.id
+      GROUP BY c.name
+      ORDER BY prices DESC
+    `,
   ])
 
   return {
     chains: chainsResult[0]?.cnt ?? 0,
     stores: storesResult[0]?.cnt ?? 0,
     products: productsResult[0]?.cnt ?? 0,
+    foodProducts: foodResult[0]?.cnt ?? 0,
     prices: pricesResult[0]?.cnt ?? 0,
-    lastSync: syncResult[0]?.started_at?.toISOString() ?? null,
+    ingredients: ingredientsResult[0]?.cnt ?? 0,
+    normMappings: normResult[0]?.cnt ?? 0,
+    usdaBaselines: usdaResult[0]?.cnt ?? 0,
+    freshPrices: freshResult[0]?.cnt ?? 0,
+    categories: catsResult[0]?.cnt ?? 0,
+    lastSync: syncResult[0]?.started_at
+      ? syncResult[0].started_at instanceof Date
+        ? syncResult[0].started_at.toISOString()
+        : String(syncResult[0].started_at)
+      : null,
+    chainsWithData: (chainDataResult as any[]).map((r: any) => ({
+      name: r.name,
+      prices: r.prices,
+    })),
   }
 }
 
