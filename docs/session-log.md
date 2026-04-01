@@ -221,3 +221,28 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/featured-chef-public-proof-and-booking.md, docs/session-log.md
 - Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
 - Notes: Expanded Developer Notes to preserve transcript/process intent and gap-closure reasoning. No product-scope change to the spec. Remaining assumption is still only production fill rate for `google_review_url`, which has a safe null-path fallback.
+
+## 2026-03-31 21:15 EST
+
+- Agent: Planner + Research
+- Task: Remy public-cloud/private-local routing spec + provider research + developer-notes capture
+- Status: completed
+- Files touched: docs/specs/remy-hybrid-cloud-routing.md (new), docs/research/remy-cloud-routing-options.md (new), docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; last green build 5511b1e9, current HEAD 543bab98)
+- Notes: Recommended route-level hybrid routing only: public Remy to an Ollama-compatible cloud endpoint, client/chef Remy stay local-only. Biggest builder traps: do not globally repoint `OLLAMA_BASE_URL`, do not use `routeForRemy()` for public traffic, and do not assume Remy is browser-only/no-server-storage because artifacts and memories already persist server-side.
+
+## 2026-03-31 21:13 EST
+
+- Agent: Planner
+- Task: Developer-notes capture, gap check, and validation pass for `docs/specs/openclaw-total-capture.md`
+- Status: started
+- Build state on arrival: green (commit 5511b1e9 per docs/build-state.md; HEAD a3a0181f)
+
+## 2026-03-31 21:12 EST
+
+- Agent: Planner + Research
+- Task: Public chef credentials / culinary CV feature research + spec, with developer transcript capture and planner-gate validation
+- Status: started
+- Build state on arrival: green (docs/build-state.md shows last green build 5511b1e9; docs-only planning session)
+- Files in focus: public chef profile, featured chef homepage card, chef settings/profile/highlights, professional achievements, charity hours, related specs/docs
+- Notes: Origin signal is a developer request for a public-facing credentials showcase beyond a normal resume: work history, notable clients/collaborations, awards/accomplishments, charity visibility, and optional private resume handling for high-end profile clients.
