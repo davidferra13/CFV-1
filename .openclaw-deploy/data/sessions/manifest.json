@@ -1,0 +1,38 @@
+{
+  "captured": "2026-03-31T14:13:18.192Z",
+  "results": [
+    {
+      "zip": "10001",
+      "metro": "NYC",
+      "state": "NY",
+      "hasSessionId": true,
+      "cookieCount": 29,
+      "resolvedPostalCode": null,
+      "priceCount": 55
+    },
+    {
+      "zip": "60606",
+      "metro": "Chicago",
+      "state": "IL",
+      "hasSessionId": true,
+      "cookieCount": 29,
+      "resolvedPostalCode": null,
+      "priceCount": 42
+    },
+    {
+      "zip": "90012",
+      "metro": "Los Angeles",
+      "state": "CA",
+      "hasSessionId": true,
+      "cookieCount": 29,
+      "resolvedPostalCode": null,
+      "priceCount": 55
+    }
+  ],
+  "summary": {
+    "total": 3,
+    "geoLocked": 0,
+    "geoipFallback": 3,
+    "failed": 0
+  }
+}

@@ -8,6 +8,7 @@
 > **Built by:** Claude Code (2026-03-29)
 > **Spec error found:** Spec claimed `prospects.source` has no CHECK constraint. It does: `CHECK (source IN ('ai_scrub', 'web_enriched', 'manual'))`. Migration `20260401000118` adds `openclaw_import` and `csv_import`.
 > **Note:** Workstream A (Pi scrapers) not built; requires physical Pi deployment. Workstream B (ChefFlow connector) complete.
+> **Policy override (2026-04-01):** Chef-facing raw-source lead browsing from this spec is superseded by `openclaw-canonical-scope-and-sequence.md` and `openclaw-internal-only-boundary-and-debranding.md`. Do not use this spec as authority for an `app/(chef)/prospecting/openclaw/page.tsx` route, an "OpenClaw Leads" chef-facing button, or any chef-facing raw-source review UI. If raw OpenClaw lead review survives later, it belongs in a separate founder/admin-only workflow.
 
 ---
 
@@ -54,6 +55,8 @@ The Pi script is a **trigger**, not a data push. ChefFlow does the pulling.
 Build the lead-engine cartridge from the `_template/` scaffold. Initial scrapers target catering **businesses** in the developer's region.
 
 ### Workstream B: ChefFlow-Side (OpenClaw-to-Prospecting Connector)
+
+> **Historical UI note (2026-04-01):** The ChefFlow-side sync/import plumbing can remain a useful reference, but any chef-facing UI guidance below that exposes raw OpenClaw leads is historical only. Current policy does not approve a chef-facing `OpenClaw Leads` page, button, route, title, subtitle, empty state, or raw-source browser. Keep those sections as implementation history only, not as current build instructions.
 
 Connect `openclaw_leads` table to the existing prospecting module. Let the admin browse OpenClaw leads and import selected ones into their `prospects` pipeline.
 
@@ -219,19 +222,19 @@ Built using shared `createSyncServer()` from `_shared/lib/sync-api-base.mjs`, pl
 
 ### Files to Create
 
-| File                                                | Purpose                                                                    |
-| --------------------------------------------------- | -------------------------------------------------------------------------- |
-| `lib/openclaw/lead-engine-handler.ts`               | Sync handler: pulls from Pi API, upserts to openclaw_leads                 |
-| `lib/prospecting/openclaw-import.ts`                | Server actions: browse openclaw_leads, import selected into prospects      |
-| `components/prospecting/openclaw-leads-browser.tsx` | Client component: filterable table of openclaw_leads with "Import" buttons |
-| `app/(chef)/prospecting/openclaw/page.tsx`          | New page: Browse and import OpenClaw leads (dedicated route, not tab)      |
+| File                                                | Purpose                                                                                            |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `lib/openclaw/lead-engine-handler.ts`               | Sync handler: pulls from Pi API, upserts to openclaw_leads                                         |
+| `lib/prospecting/openclaw-import.ts`                | Server actions: browse openclaw_leads, import selected into prospects                              |
+| `components/prospecting/openclaw-leads-browser.tsx` | Client component: filterable table of openclaw_leads with "Import" buttons                         |
+| `app/(chef)/prospecting/openclaw/page.tsx`          | Superseded for chef-facing use. Do not build or retain as a chef-facing route under current policy |
 
 ### Files to Modify
 
-| File                              | What to Change                                                                                 |
-| --------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `lib/openclaw/sync-receiver.ts`   | Register lead-engine cartridge with its sync handler (lines 43-46, where future cartridges go) |
-| `app/(chef)/prospecting/page.tsx` | Add "OpenClaw Leads" button in the action bar (line 63-95, alongside existing buttons)         |
+| File                              | What to Change                                                                                       |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `lib/openclaw/sync-receiver.ts`   | Register lead-engine cartridge with its sync handler (lines 43-46, where future cartridges go)       |
+| `app/(chef)/prospecting/page.tsx` | Superseded for chef-facing use. Do not add or retain an "OpenClaw Leads" button under current policy |
 
 ### No Database Changes
 
@@ -447,13 +450,11 @@ Key implementation notes:
 
 ## UI / Component Spec
 
-### New Page: `/prospecting/openclaw` (`app/(chef)/prospecting/openclaw/page.tsx`)
+### Superseded Chef-Facing Page: `/prospecting/openclaw` (`app/(chef)/prospecting/openclaw/page.tsx`)
 
-A dedicated page (not a tab on the import page). Follows the existing page pattern:
+This chef-facing route guidance is superseded by current policy and should not be used for future implementation work.
 
-- `requireAdmin()` + `requireChef()` at top
-- Server component that fetches initial data
-- Renders the client browser component
+If raw-source lead review remains useful later, move it to a founder/admin-only surface under a separate spec rather than exposing it inside chef-facing prospecting.
 
 **Why a dedicated route instead of a tab on `/prospecting/import`:**
 
@@ -461,6 +462,8 @@ A dedicated page (not a tab on the import page). Follows the existing page patte
 - A separate route is cleaner and consistent with how other prospecting sub-features work (scrub, pipeline, queue, clusters each have their own route).
 
 ### OpenClaw Leads Browser (`components/prospecting/openclaw-leads-browser.tsx`)
+
+If this component is retained at all, it should only be reused in an internal admin/founder workflow. It is no longer approved as chef-facing product UI.
 
 A filterable, paginated table of leads from `openclaw_leads`.
 

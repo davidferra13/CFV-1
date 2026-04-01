@@ -13,6 +13,7 @@
 - `openclaw-mission-control.md` - Real-time Pi dashboard
 - `openclaw-email-agent.md` - Wholesale price list harvesting via email
 - `openclaw-reference-libraries.md` - Shelf life, seasonal availability, waste factors, store accuracy
+  > **Boundary note (2026-04-01):** Any chef-facing or public-facing copy examples in this spec are subject to `openclaw-canonical-scope-and-sequence.md` and `openclaw-internal-only-boundary-and-debranding.md`. OpenClaw must not be named in user-facing product copy.
 
 ---
 
@@ -777,7 +778,7 @@ ingredients.preferred_region  -->  region-config.ts REGIONS[]
 **States:**
 
 - **Loading:** Skeleton card with pulsing stat boxes
-- **Empty:** "No ingredient data yet. Run OpenCLAW sync first."
+- **Empty:** "No ingredient data yet. Run a data sync first."
 - **Error:** "Could not load coverage data" (never show fake zeros)
 - **Populated:** Real stats with color-coded coverage percentages (green >80%, yellow 50-80%, red <50%)
 

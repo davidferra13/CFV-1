@@ -2,11 +2,12 @@
 
 > **Status:** verified
 > **Priority:** P1 (next up)
-> **Depends on:** none (all prerequisites are included as Phase 0)
+> **Depends on:** `openclaw-canonical-scope-and-sequence.md`, `openclaw-internal-only-boundary-and-debranding.md`
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-28
 > **Built by:** Claude Code (2026-03-28)
 > **SPEC IS BUILT**
+> **Boundary note (2026-04-01):** This spec may continue to surface price-data outcomes to chefs, but any chef-facing or public-facing visible copy must stay neutral and must not name OpenClaw. Internal/admin language may still use OpenClaw where operationally necessary.
 
 ---
 
@@ -106,9 +107,9 @@ The V2 sync (already built in `lib/openclaw/sync.ts`) writes enriched data to `i
 
 For the grocery quote rewrite, OpenClaw data (from `ingredient_price_history` where `source LIKE 'openclaw_%'`) is checked first. External APIs (Spoonacular, Kroger, MealMe) are only called for ingredients with zero OpenClaw coverage. USDA baseline stays as the floor (it's free and always available).
 
-### Decision 3: Catalog is admin-only
+### Decision 3: Catalog scope in this spec
 
-The ingredient catalog browser is exclusively an admin feature. No chef-facing catalog page, no catalog links in chef navigation. Admin uses it for coverage monitoring, catalog growth tracking, and manual price verification.
+The ingredient catalog browser in this spec is admin-focused. However, this decision is superseded where `catalog-chef-upgrade.md` explicitly approves a ChefFlow-branded chef-facing market catalog. Under current canonical policy, chef-facing catalog outcomes are allowed if they remain neutral in language and do not expose OpenClaw as a user-facing tool.
 
 ### Decision 4: Read enrichment columns with fallback
 
@@ -120,13 +121,13 @@ The 5 new columns on `ingredients` (last_price_source, last_price_store, last_pr
 
 ### Files to Modify
 
-| File                                                    | What to Change                                                                                                                                                                                                                                                                                                                                                                                 |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lib/db/schema/schema.ts`                               | Regenerate with `npx drizzle-kit introspect` to pick up the 5 new columns from migration 20260401000109                                                                                                                                                                                                                                                                                        |
-| `app/(chef)/culinary/costing/page.tsx`                  | This is a **pure Server Component** (no client component exists). It reads from `recipe_cost_summary` view (recipe-level totals, not individual ingredients). Add per-recipe enrichment summary: freshness badge ("prices updated 2d ago"), coverage indicator ("12/15 ingredients have OpenClaw prices"). Does NOT show per-ingredient attribution here (that's the recipe detail view's job) |
-| `app/(chef)/recipes/ingredients/ingredients-client.tsx` | Replace bare "Avg. Price" column (currently reads `average_price_cents`) with: price + store + trend arrow + confidence dot using `PriceAttribution` component                                                                                                                                                                                                                                 |
-| `app/(chef)/recipes/[id]/recipe-detail-client.tsx`      | Enhance existing ingredient cost display (lines 354-419). Currently shows cost status dots (accurate/estimated/stale/no_price) and `computedCostCents`. Add store attribution text next to each ingredient's cost. Data comes from `getRecipeById()` which already joins the `ingredients` table                                                                                               |
-| `lib/recipes/actions.ts`                                | Two changes: (1) `getRecipeById()` (line 392) already joins `ingredients`; add the 5 enrichment columns to that join SELECT. (2) For the ingredient list query, add same 5 columns. Note: `getRecipes()` (line 289) does NOT join ingredients; it reads from `recipe_cost_summary` view, so enrichment there is recipe-level only                                                              |
+| File                                                    | What to Change                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib/db/schema/schema.ts`                               | Regenerate with `npx drizzle-kit introspect` to pick up the 5 new columns from migration 20260401000109                                                                                                                                                                                                                                                                                              |
+| `app/(chef)/culinary/costing/page.tsx`                  | This is a **pure Server Component** (no client component exists). It reads from `recipe_cost_summary` view (recipe-level totals, not individual ingredients). Add per-recipe enrichment summary: freshness badge ("prices updated 2d ago"), coverage indicator ("12/15 ingredients have current market prices"). Does NOT show per-ingredient attribution here (that's the recipe detail view's job) |
+| `app/(chef)/recipes/ingredients/ingredients-client.tsx` | Replace bare "Avg. Price" column (currently reads `average_price_cents`) with: price + store + trend arrow + confidence dot using `PriceAttribution` component                                                                                                                                                                                                                                       |
+| `app/(chef)/recipes/[id]/recipe-detail-client.tsx`      | Enhance existing ingredient cost display (lines 354-419). Currently shows cost status dots (accurate/estimated/stale/no_price) and `computedCostCents`. Add store attribution text next to each ingredient's cost. Data comes from `getRecipeById()` which already joins the `ingredients` table                                                                                                     |
+| `lib/recipes/actions.ts`                                | Two changes: (1) `getRecipeById()` (line 392) already joins `ingredients`; add the 5 enrichment columns to that join SELECT. (2) For the ingredient list query, add same 5 columns. Note: `getRecipes()` (line 289) does NOT join ingredients; it reads from `recipe_cost_summary` view, so enrichment there is recipe-level only                                                                    |
 
 ### Database Changes
 
@@ -228,15 +229,15 @@ interface PriceAttributionProps {
 - Primary display: "Best Price" column (cheapest across all stores)
 - Expandable row: all store prices for that ingredient
 - New dropdown: "Cost this menu at [store]" - recalculates total using only one store's prices
-- Coverage indicator: "X of Y ingredients have OpenClaw prices" with progress bar
-- Items falling back to external APIs get a subtle "API estimate" badge (vs OpenClaw's "Local price" badge)
+- Coverage indicator: "X of Y ingredients have current market prices" with progress bar
+- Items falling back to external APIs get a subtle "API estimate" badge (vs neutral local-price wording)
 
 ### Edge Cases
 
 | Scenario                                                             | Behavior                                                               |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Ingredient has no OpenClaw data and no API data                      | Show "No price data" (never zero)                                      |
-| Ingredient has OpenClaw data older than 30 days                      | Still show it but with "stale" amber indicator                         |
+| Ingredient has no local market data and no API data                  | Show "No price data" (never zero)                                      |
+| Ingredient has local market data older than 30 days                  | Still show it but with "stale" amber indicator                         |
 | Pi is down (no sync happened recently)                               | Use whatever data is in `ingredient_price_history` (it's local)        |
 | Store-specific costing has gaps (Store X doesn't carry ingredient Y) | Fill gaps from best available store, show which items were substituted |
 | External API fails                                                   | Log warning, show "N/A" for that source column (never block the quote) |
@@ -299,7 +300,7 @@ interface PriceAttributionProps {
 
 - **Loading:** Skeleton rows (no spinner)
 - **Empty search:** "No ingredients match your search"
-- **Error (Pi offline):** "Cannot reach OpenClaw Pi. Check that the Pi is online and sync-api is running." with retry button
+- **Error (data source offline):** "Price data is temporarily unavailable. Check that the data source is online and try again." with retry button
 - **Populated:** Table with data
 
 ### Nav Config Addition
@@ -332,7 +333,7 @@ interface PriceAttributionProps {
 
 1. Sign in with agent account
 2. Navigate to `/culinary/costing`
-3. Verify: recipe rows show enrichment summary (freshness badge like "prices updated 2d ago", coverage indicator like "12/15 OpenClaw prices"). This is recipe-level only, not per-ingredient attribution
+3. Verify: recipe rows show enrichment summary (freshness badge like "prices updated 2d ago", coverage indicator like "12/15 current market prices"). This is recipe-level only, not per-ingredient attribution
 4. Navigate to a recipe detail page (click any recipe)
 5. Verify: each ingredient line shows store attribution text next to its cost (e.g., "$4.29 at Stop & Shop") and the existing cost status dots still work
 6. Navigate to `/recipes/ingredients`
@@ -390,7 +391,7 @@ interface PriceAttributionProps {
 - **`getRecipes()` does NOT join ingredients.** It fetches recipe metadata + cost summaries from the `recipe_cost_summary` view. `getRecipeById()` is the function that joins the `ingredients` table (and is the one needing enrichment column additions).
 - **Pi calls in catalog tab only.** Phase 1 and Phase 2 read from PostgreSQL. Phase 3 (catalog tab) is the only part that calls the Pi directly, because the full 9,000+ catalog isn't synced to ChefFlow.
 - **No em dashes.** Project rule. Use commas, semicolons, parentheses, or separate sentences.
-- **Catalog is admin-only.** `requireAdmin()` on every server action. No chef nav entries. No public routes.
+- **Admin catalog remains admin-only in this spec.** If a chef-facing catalog is built, follow `catalog-chef-upgrade.md` and keep the experience ChefFlow-branded and neutral in language.
 - **Formula > AI.** All pricing is deterministic. No LLM involvement anywhere in this spec.
 - **`ingredient_price_history` already has RLS.** Don't add new RLS policies. The existing ones scope by tenant_id.
 - **External API cost savings.** After Phase 2, external API calls should drop significantly. Track this: log when an external API is called vs when OpenClaw data was sufficient. This helps the developer monitor cost reduction.

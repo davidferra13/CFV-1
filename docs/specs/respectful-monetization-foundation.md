@@ -150,6 +150,8 @@ This direction best matches the current product copy, the developer's constraint
 
 This spec is **not approved for build**. It captures the current recommendation and the decision space, but pricing and support structure are still open.
 
+The later beta-first rollout reasoning and OpenClaw clarification are preserved separately in `docs/specs/beta-first-monetization-decision-archive.md`. Read both documents together before any monetization decision is promoted beyond strategy.
+
 At the moment, the recommendation is:
 
 1. Keep core access universal.

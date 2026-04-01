@@ -14,6 +14,7 @@ _Every status change, every claim, every verification gets a row. This is the au
 | Created                                        | 2026-04-01 01:20 EDT | Codex research session     |        |
 | Current-state audit completed                  | 2026-04-01 01:59 EDT | Planner + Research (Codex) |        |
 | Developer-notes expansion and build-order pass | 2026-04-01 01:59 EDT | Planner + Research (Codex) |        |
+| Chef and restaurant workflow research added    | 2026-04-01 03:05 EDT | Codex research session     |        |
 | Status: ready                                  | 2026-04-01 01:59 EDT | Planner + Research (Codex) |        |
 
 ---
@@ -61,6 +62,29 @@ This turns ChefFlow's existing `/social` system into the durable control tower f
 ## Why It Matters
 
 The repo already has real social scheduling and publishing infrastructure, but it still behaves like a partial internal tool in some places and over-promises full automation in others. This spec closes that gap by making the system truthful, safe, and delegable.
+
+---
+
+## Industry Research (April 1, 2026)
+
+This spec is not just based on the repo. It is also grounded in how restaurant and chef operators are handling social media right now:
+
+- **Discovery is real business infrastructure, not vanity work.** SevenRooms reports that 94% of diners use online resources such as Google, social media, and media sites to discover restaurants, and that 69% of Gen Z rely on social media for discovery. Source: [SevenRooms 2025 U.S. Restaurant Trends](https://sevenrooms.com/press/2025-US-data-report/).
+- **Instagram and TikTok remain the core social pair for restaurants.** Restaurant Playbook frames TikTok as the top food-discovery engine and Instagram as the digital storefront, with Facebook still relevant for events and older audiences. Source: [Restaurant Playbook, 2025](https://restaurant-playbook.com/growth/social-media-strategies-for-restaurants/).
+- **Authentic short-form video beats polished creative for restaurant marketing.** OpenTable recommends short video, behind-the-scenes kitchen content, low-polish authenticity, captions for sound-off viewing, and clear booking CTAs. Dash Social's 2025 Food & Beverage benchmark shows TikTok leading Instagram and YouTube in engagement, with brands prioritizing short-form video and posting frequently. Sources: [OpenTable guide](https://www.opentable.com/restaurant-solutions/resources/complete-guide-restaurant-marketing/), [Dash Social 2025 Food & Beverage Benchmark PDF](https://pages.dashsocial.com/hubfs/social-media-benchmark/2025/1H/food-beverage-industry.pdf).
+- **Operators do batch planning, but not pure autopilot.** Unilever's chef social toolkit recommends building a social calendar in advance around public holidays, food moments, and quieter periods, and scheduling posts ahead of time. Restaurant Playbook recommends scheduling core posts 3-5 times per week, then supplementing with real-time stories, sold-out items, birthdays, and other manual moments. Sources: [Unilever Food Solutions chef toolkit PDF](https://www.unileverfoodsolutions.us/dam/global-ufs/mcos/nam/ufs-website/chef-inspiration/training/Toolkit%20Social%20Media_ENNAM%20%281%29.pdf), [Restaurant Playbook, 2025](https://restaurant-playbook.com/growth/social-media-strategies-for-restaurants/).
+- **Content pillars are standardized enough to productize.** Restaurant Playbook's recommended rotation is menu highlights, behind-the-scenes content, guest reactions, and promos/events. Unilever adds recipes, seasonal produce, live cooking, throwbacks, and food-calendar moments. Sources: [Restaurant Playbook, 2025](https://restaurant-playbook.com/growth/social-media-strategies-for-restaurants/), [Unilever Food Solutions chef toolkit PDF](https://www.unileverfoodsolutions.us/dam/global-ufs/mcos/nam/ufs-website/chef-inspiration/training/Toolkit%20Social%20Media_ENNAM%20%281%29.pdf).
+- **User-generated and advocate content is rising, while classic influencer dependence is softening.** SevenRooms reports only one in 10 consumers use influencers for restaurant recommendations, and separately reports 39% of bookings from organic social media versus 27% from influencer content. That pushes the product toward guest content, advocate content, and provenance-aware reposting rather than generic influencer workflows. Sources: [SevenRooms 2025 U.S. Restaurant Trends](https://sevenrooms.com/press/2025-US-data-report/), [SevenRooms brand advocate article](https://sevenrooms.com/blog/restaurant-brand-advocate/).
+- **AI-assisted restaurant social tools already exist, but they all follow the same basic pattern.** Tools aimed at restaurants are already selling "upload dish photo -> generate caption/hashtags -> schedule posts -> keep a content library." That validates the OpenClaw direction, but it also means the differentiator is safe orchestration and restaurant-specific workflow, not generic caption generation alone. Sources: [ChefMedia](https://www.chefmedia.ai/), [Plann for restaurants](https://www.plannthat.com/restaurant-cafe-social-media-marketing/), [PostEverywhere for restaurants](https://posteverywhere.ai/for/restaurants).
+- **AI is being adopted as labor relief, not as a replacement for hospitality judgment.** OpenTable explicitly positions AI as support for content drafting and repetitive work, while SevenRooms reports operators using AI to save time and improve efficiency. That aligns with the product boundary in this spec: OpenClaw drafts and packages, ChefFlow stores and governs, and the owner keeps approval authority. Sources: [OpenTable guide](https://www.opentable.com/restaurant-solutions/resources/complete-guide-restaurant-marketing/), [SevenRooms 2025 U.S. Restaurant Trends](https://sevenrooms.com/press/2025-US-data-report/).
+
+### Product Implications From Research
+
+- **The system should support annual planning without pretending the year is creatively "finished."** The right model is a long-horizon calendar with locked evergreen/seasonal posts plus preserved reactive slots for timely kitchen moments, trends, and community content.
+- **The default content model should expose pillars, not just empty slots.** At minimum: `menu_highlight`, `behind_the_scenes`, `guest_reaction`, `promo_event`, and `seasonal_story`.
+- **The first-class creative source should be real chef-owned media.** Authentic kitchen footage and real food photos are the norm. Stock support imagery is secondary and should stay explicit, limited, and non-food unless the owner deliberately overrides policy.
+- **UGC and advocate content need provenance and permission handling.** Even in phase 1, the package boundary should preserve who created an asset, whether it is guest-generated, and any credit or permission notes required before queueing.
+- **OpenClaw should optimize for fast packaging, repurposing, and review loops, not for a giant in-app editing suite.** The market already has many scheduler-plus-caption tools. The opportunity here is trustworthy workflow, not bloated creative surface area.
 
 ---
 
@@ -169,16 +193,19 @@ Phase 1 adds two important application-level concepts without a required schema 
 2. **`OpenClawSocialPackage`**  
    Normalized handoff object from OpenClaw into ChefFlow. Fields should include:
    - target post or slot identifier
+   - `contentPillar` such as `menu_highlight | behind_the_scenes | guest_reaction | promo_event | seasonal_story`
    - asset references or upload payloads
    - title
    - master caption and per-platform caption overrides
    - hashtags
    - CTA
+   - CTA target such as `reservation | order | menu | event | awareness`
    - mentions
    - location
    - notes
    - intended platforms
-   - provenance metadata such as `source = tenant_media | approved_support_stock`
+   - provenance metadata such as `source = tenant_media | approved_support_stock | guest_ugc | employee_ugc`
+   - rights or credit notes for guest and advocate content
 
 Important phase-1 policy decision:
 
@@ -223,9 +250,11 @@ Keep the existing `/social` layout and do not build a separate scheduler product
 Add a single shared readiness panel pattern so every post shows:
 
 - target platforms
+- content pillar
 - current delivery mode per platform
 - blockers
 - warnings
+- provenance or credit notes when the source is not tenant-owned media
 - whether the post can truly move from `approved` to `queued`
 
 ### States
@@ -238,7 +267,7 @@ Add a single shared readiness panel pattern so every post shows:
 ### Interactions
 
 - Uploading assets stays in the vault and remains simple. No new in-app media editor in phase 1.
-- Editing a post updates captions, tags, location, alt text, platforms, and notes as today, but now also shows delivery mode per platform.
+- Editing a post updates captions, tags, location, alt text, platforms, pillar, and notes as today, but now also shows delivery mode per platform.
 - Moving a post to `approved` is the owner's "yes, this package is ready" checkpoint.
 - Moving a post to `queued` runs policy-aware preflight:
   - generic completeness
@@ -246,6 +275,7 @@ Add a single shared readiness panel pattern so every post shows:
   - supported media type
   - privacy/disclosure warnings
   - platform-specific delivery mode
+- The planner should preserve reactive or holdout slots as an intentional workflow, not as unexplained empty space, so operators can batch the year without losing flexibility for trends, sold-out dishes, or live moments.
 - If one platform is blocked but others are safe, the UI must say exactly which platform is blocked and why. Do not silently pretend the entire post is queueable everywhere.
 - OpenClaw-ingested packages should land as editable ChefFlow posts, not hidden system records. The owner must always be able to review and adjust them.
 
@@ -263,6 +293,7 @@ Add a single shared readiness panel pattern so every post shows:
 | Event-compose flow depends on fields not proven by current schema      | Fence it as unverified or repair it before builders rely on it.                                                       |
 | OpenClaw proposes stock food photography                               | Reject by default; allow only tenant-owned food media unless the developer later defines an explicit override policy. |
 | OpenClaw proposes support imagery such as leaves, decor, or atmosphere | Allow if provenance is explicit and it is clearly not representing the chef's food output.                            |
+| Guest or advocate content is attached without permission or credit     | Keep it out of `queued` until provenance and credit notes are present.                                                |
 
 ---
 
@@ -279,6 +310,7 @@ Add a single shared readiness panel pattern so every post shows:
    - Add central platform capability and delivery-mode logic.
    - Wire policy-aware preflight into queueing.
    - Make the editor and connections UI display that truth.
+   - Keep reactive-slot and manual-moment behavior explicit so the system supports real restaurant workflows instead of pretending everything should be pre-locked.
 
 3. **System boundary**
    - Define the OpenClaw-to-ChefFlow package boundary.
@@ -339,6 +371,7 @@ Add a single shared readiness panel pattern so every post shows:
 - Keep the first pass additive and conservative. Repair truthfulness and policy before adding more feature surface.
 - Verify deployment env before touching OAuth flows. `SOCIAL_TOKEN_ENCRYPTION_KEY` is a hard dependency.
 - Prefer real chef-owned food media. Support imagery is acceptable only for non-food atmosphere or seasonal context and should remain explicit.
+- Optimize for authentic, lightly produced restaurant content and fast review loops. Do not over-design for polished ad production in phase 1.
 
 ---
 

@@ -1,0 +1,86 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+OPENCLAW_DIR=/home/davidferra/openclaw-prices
+
+# === Government & Wholesale Data ===
+0 2 * * 1 cd $OPENCLAW_DIR && node services/scraper-government.mjs >> logs/scraper-government.log 2>&1
+
+# === Flipp Circular Ads (all stores) ===
+0 3 * * * cd $OPENCLAW_DIR && node services/scraper-flipp.mjs >> logs/scraper-flipp.log 2>&1
+
+# === Cross-match Round 1 ===
+0 4 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+
+# === Direct API Scrapers ===
+0 5 * * * cd $OPENCLAW_DIR && node services/scraper-wholefoodsapfresh.mjs >> logs/scraper-wholefoods.log 2>&1
+0 6 * * * cd $OPENCLAW_DIR && node services/scraper-target.mjs >> logs/scraper-target.log 2>&1
+30 6 * * * cd $OPENCLAW_DIR && node services/scraper-walmart.mjs >> logs/scraper-walmart.log 2>&1
+0 7 * * 2,4,6 cd $OPENCLAW_DIR && node services/scraper-stopsandshop.mjs >> logs/scraper-stopsandshop.log 2>&1
+
+# === Instacart Full Catalog - AM Slot (7:30, core chains daily) ===
+30 7 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh market-basket >> logs/instacart-walker.log 2>&1
+30 7 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh hannaford >> logs/instacart-walker.log 2>&1
+30 7 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh aldi >> logs/instacart-walker.log 2>&1
+30 7 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh stop-and-shop >> logs/instacart-walker.log 2>&1
+30 7 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh costco >> logs/instacart-walker.log 2>&1
+30 7 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh bjs-wholesale-club >> logs/instacart-walker.log 2>&1
+30 7 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh wegmans >> logs/instacart-walker.log 2>&1
+
+# === Cross-match Round 2 ===
+0 11 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+
+# === Instacart Full Catalog - Noon Slot (12:00, rotation set B) ===
+0 12 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh target >> logs/instacart-walker.log 2>&1
+0 12 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh price-chopper >> logs/instacart-walker.log 2>&1
+0 12 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh big-y >> logs/instacart-walker.log 2>&1
+0 12 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh walmart >> logs/instacart-walker.log 2>&1
+0 12 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh market-basket >> logs/instacart-walker.log 2>&1
+0 12 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh hannaford >> logs/instacart-walker.log 2>&1
+0 12 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh stop-and-shop >> logs/instacart-walker.log 2>&1
+
+# === Wholesale Catalog (Wednesday) ===
+0 15 * * 3 cd $OPENCLAW_DIR && node services/scraper-wholesale.mjs >> logs/scraper-wholesale.log 2>&1
+
+# === Instacart Full Catalog - PM Slot (17:00, specialty + smaller chains) ===
+0 17 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh shaws >> logs/instacart-walker.log 2>&1
+0 17 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh brothers-marketplace >> logs/instacart-walker.log 2>&1
+0 17 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh roche-bros >> logs/instacart-walker.log 2>&1
+0 17 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh the-fresh-market >> logs/instacart-walker.log 2>&1
+0 17 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh shaws >> logs/instacart-walker.log 2>&1
+0 17 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh brothers-marketplace >> logs/instacart-walker.log 2>&1
+0 17 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh roche-bros >> logs/instacart-walker.log 2>&1
+
+# === Cross-match Round 3 (after PM slot) ===
+0 20 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+
+# === Aggregator (trends, aging, anomaly detection) ===
+0 21 * * * cd $OPENCLAW_DIR && node services/aggregator.mjs >> logs/aggregator.log 2>&1
+
+# === Instacart Full Catalog - Late Slot (22:00, NEW chains) ===
+# star-markets, pricerite, eataly, jetro-restaurant-depot, cvs, 711
+0 22 * * 1 cd $OPENCLAW_DIR && bash run-full-catalog.sh star-markets >> logs/instacart-walker.log 2>&1
+0 22 * * 2 cd $OPENCLAW_DIR && bash run-full-catalog.sh pricerite >> logs/instacart-walker.log 2>&1
+0 22 * * 3 cd $OPENCLAW_DIR && bash run-full-catalog.sh eataly >> logs/instacart-walker.log 2>&1
+0 22 * * 4 cd $OPENCLAW_DIR && bash run-full-catalog.sh jetro-restaurant-depot >> logs/instacart-walker.log 2>&1
+0 22 * * 5 cd $OPENCLAW_DIR && bash run-full-catalog.sh cvs >> logs/instacart-walker.log 2>&1
+0 22 * * 6 cd $OPENCLAW_DIR && bash run-full-catalog.sh 711 >> logs/instacart-walker.log 2>&1
+0 22 * * 0 cd $OPENCLAW_DIR && bash run-full-catalog.sh star-markets >> logs/instacart-walker.log 2>&1
+
+# === Kroger API (DISABLED - cert endpoint returning 500s, needs prod access) ===
+# 0 8 * * * cd $OPENCLAW_DIR && node services/scraper-kroger.mjs >> logs/scraper-kroger.log 2>&1
+
+# === Open Food Facts Enrichment (Sunday) ===
+0 14 * * 0 cd $OPENCLAW_DIR && node services/enricher-openfoodfacts.mjs >> logs/enricher-off.log 2>&1
+
+# === Monitoring ===
+*/15 * * * * cd $OPENCLAW_DIR && node services/watchdog.mjs >> logs/watchdog.log 2>&1
+*/30 * * * * cd $OPENCLAW_DIR && node services/receipt-processor.mjs batch >> logs/receipt-batch.log 2>&1
+
+# === ChefFlow Sync ===
+0 23 * * * cd $OPENCLAW_DIR && node services/sync-to-chefflow.mjs >> logs/sync-chefflow.log 2>&1
+
+# === Cross-match Round 4 (after late slot, before sync) ===
+30 22 * * * cd $OPENCLAW_DIR && node services/cross-match.mjs >> logs/cross-match.log 2>&1
+
+# === Log Rotation (Sunday midnight) ===
+0 0 * * 0 find $OPENCLAW_DIR/logs -name '*.log' -size +10M -exec truncate -s 0 {} \;

@@ -2,16 +2,18 @@
 
 > **Status:** verified
 > **Priority:** P1 (next up)
-> **Depends on:** openclaw-v2-intelligence.md (built), catalog-power-tools.md (built)
+> **Depends on:** `openclaw-canonical-scope-and-sequence.md`, `openclaw-internal-only-boundary-and-debranding.md`, openclaw-v2-intelligence.md (built), catalog-power-tools.md (built)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-28
 > **Built by:** Claude Code (2026-03-28). SPEC IS BUILT.
+> **Boundary note (2026-04-01):** This chef-facing catalog can still exist as a product outcome, but visible chef-facing copy must describe it as ChefFlow's market or price catalog, not as OpenClaw. OpenClaw naming belongs only in internal docs/admin surfaces.
+> **Scope note (2026-04-01):** This spec is the approved authority for a chef-facing ChefFlow market catalog. It supersedes the earlier admin-only catalog assumption inside `openclaw-price-surfacing.md`.
 
 ---
 
 ## What This Does (Plain English)
 
-Moves the OpenClaw price catalog from an admin-only hidden page to a chef-facing tool under Culinary. The catalog becomes a real grocery intelligence hub: 15K+ ingredients from 39 local Haverhill-area stores, with stock status, freshness indicators, direct links to store websites (and product pages where available), infinite scroll instead of 50-item pages, and rich filtering (category, store, price range, stock status, tier). When you expand an ingredient, you see every store's price, whether it's in stock, when it was last confirmed, a link to view it on the store's site, a price history sparkline, and a one-click "Add to my pantry" button. Phase 2 (separate spec) adds product images, nutrition facts, Instacart deep links, and FDA recall tracking via scraper enhancements.
+Moves the internal price catalog from an admin-only hidden page to a chef-facing tool under Culinary. The catalog becomes a real grocery intelligence hub: 15K+ ingredients from 39 local Haverhill-area stores, with stock status, freshness indicators, direct links to store websites (and product pages where available), infinite scroll instead of 50-item pages, and rich filtering (category, store, price range, stock status, tier). When you expand an ingredient, you see every store's price, whether it's in stock, when it was last confirmed, a link to view it on the store's site, a price history sparkline, and a one-click "Add to my pantry" button. Phase 2 (separate spec) adds product images, nutrition facts, Instacart deep links, and FDA recall tracking via scraper enhancements.
 
 ---
 
@@ -462,7 +464,7 @@ Use `IntersectionObserver` on a sentinel div at the bottom of the results list.
 - FDA recall tracking (requires new Pi service, separate Phase 2 spec)
 - Instacart deep links to product pages (requires scraper to capture URLs, Phase 2)
 - The admin catalog page stays as-is (`catalog-power-tools.md` covers its upgrades separately)
-- Modifying the existing chef ingredients page (`/culinary/ingredients`). That page shows the chef's own ingredient library. This page shows the full OpenClaw market catalog. Different views, different data sources.
+- Modifying the existing chef ingredients page (`/culinary/ingredients`). That page shows the chef's own ingredient library. This page shows the full market catalog. Different views, different data sources.
 - Shopping optimizer integration (already on costing page)
 - CSV export from chef catalog (admin catalog gets this via `catalog-power-tools.md`)
 
@@ -488,7 +490,7 @@ Both specs modify `.openclaw-build/services/sync-api.mjs`:
 **Key distinction: Chef's Ingredients vs Market Catalog**
 
 - `/culinary/ingredients` = the chef's personal ingredient library (from their recipes). Uses ChefFlow PostgreSQL.
-- `/culinary/price-catalog` = the full OpenClaw market catalog (15K+ items from 39 stores). Uses Pi SQLite via API.
+- `/culinary/price-catalog` = the full market catalog (15K+ items from 39 stores). Uses Pi SQLite via API.
 - These are separate pages with separate data sources. Don't mix them.
 - The "Add to My Pantry" action bridges them: it reads from Pi (catalog) and writes to PostgreSQL (chef's library).
 

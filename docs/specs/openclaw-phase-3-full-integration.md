@@ -2,10 +2,11 @@
 
 > **Status:** verified (ChefFlow side complete; Pi endpoints for Workstreams E+H pending)
 > **Priority:** P1 (next up)
-> **Depends on:** openclaw-v2-unified-pricing.md (built), openclaw-price-surfacing.md (built)
+> **Depends on:** `openclaw-canonical-scope-and-sequence.md`, `openclaw-internal-only-boundary-and-debranding.md`, openclaw-v2-unified-pricing.md (built), openclaw-price-surfacing.md (built)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-28
 > **Built by:** Claude Code (2026-03-28)
+> **Boundary note (2026-04-01):** Chef-facing product outcomes in this spec are still allowed, but any visible chef-facing or public-facing copy must stay neutral and must not name OpenClaw. Raw-source review interfaces remain off the chef-facing surface unless a later founder/admin-only spec explicitly approves them.
 
 ---
 
@@ -27,7 +28,7 @@ OpenClaw has 9,270 cataloged ingredients, 18 tracked stores, a nightly sync pipe
 
 1. [Workstream A: Pi Hardening](#workstream-a-pi-hardening)
 2. [Workstream B: Coverage Expansion](#workstream-b-coverage-expansion)
-3. [Workstream C: Chef Store Preferences (OpenClaw Integration)](#workstream-c-chef-store-preferences-openclaw-integration)
+3. [Workstream C: Chef Store Preferences (Internal Price-Coverage Integration)](#workstream-c-chef-store-preferences-internal-price-coverage-integration)
 4. [Workstream D: Proactive Price Intelligence](#workstream-d-proactive-price-intelligence)
 5. [Workstream E: Sale Calendar](#workstream-e-sale-calendar)
 6. [Workstream F: Weekly Price Briefing](#workstream-f-weekly-price-briefing)
@@ -244,9 +245,9 @@ ChefFlow can display this on the admin catalog and dashboard.
 
 ---
 
-## Workstream C: Chef Store Preferences (OpenClaw Integration)
+## Workstream C: Chef Store Preferences (Internal Price-Coverage Integration)
 
-**Goal:** Connect the EXISTING store preferences system to OpenClaw's price resolution so chefs see personalized prices throughout the app.
+**Goal:** Connect the EXISTING store preferences system to the internal price-resolution pipeline so chefs see personalized prices throughout the app.
 
 ### What Already Exists (DO NOT RECREATE)
 
@@ -259,7 +260,7 @@ The store preferences infrastructure is already fully built:
 
 ### What's Missing (BUILD THIS)
 
-The existing store preferences are used for grocery list splitting but NOT connected to OpenClaw's price resolution or price display. This workstream connects them.
+The existing store preferences are used for grocery list splitting but NOT connected to the internal price-resolution or price-display pipeline. This workstream connects them.
 
 ### Database Change
 
@@ -289,7 +290,7 @@ The existing store preferences are used for grocery list splitting but NOT conne
 
 `components/grocery/store-manager.tsx` is a complete store preferences component (393 lines, full CRUD for preferred stores) but is **not mounted on any page yet**. No existing app page imports it.
 
-**Build:** Create `app/(chef)/settings/store-preferences/page.tsx` that renders `StoreManager` from `components/grocery/store-manager.tsx`. Enhance it with OpenClaw store suggestions: call `getAvailableOpenClawStores()` to show Pi's tracked stores that aren't in the chef's list yet as quick-add chips.
+**Build:** Create `app/(chef)/settings/store-preferences/page.tsx` that renders `StoreManager` from `components/grocery/store-manager.tsx`. Enhance it with neutral tracked-store suggestions from current price coverage: call `getAvailableOpenClawStores()` to show available store names that are not yet in the chef's list as quick-add chips. Visible copy must stay neutral.
 
 ### Integration Points
 
@@ -778,7 +779,7 @@ Add a 7th tab to the admin price catalog: "Vendor Import". The admin catalog cur
 - **Idle:** Upload form with instructions
 - **Parsing:** Progress spinner, "Processing PDF..."
 - **Results:** Table with parsed items, match status, edit capability
-- **Error (Pi offline):** "Cannot reach OpenClaw Pi. Ensure Pi is online."
+- **Error (data source offline):** "Price data is temporarily unavailable. Ensure the data source is online."
 - **Error (bad PDF):** "Could not extract text from this PDF. Try a clearer scan."
 
 ---
@@ -791,17 +792,17 @@ Add a 7th tab to the admin price catalog: "Vendor Import". The admin catalog cur
 
 ## Files to Create
 
-| File                                                    | Purpose                                                                    | WS  |
-| ------------------------------------------------------- | -------------------------------------------------------------------------- | --- |
-| `lib/openclaw/store-preference-actions.ts`              | Thin wrappers: `getAvailableOpenClawStores()`, `getMyPrimaryStoreName()`   | C   |
-| `app/(chef)/settings/store-preferences/page.tsx`        | Store selection UI: renders existing `StoreManager` + OpenClaw suggestions | C   |
-| `lib/openclaw/sale-calendar-actions.ts`                 | Current sales data from Pi                                                 | E   |
-| `app/(chef)/culinary/costing/sales/page.tsx`            | "On Sale This Week" page                                                   | E   |
-| `lib/openclaw/weekly-briefing-actions.ts`               | Weekly price briefing computation                                          | F   |
-| `components/pricing/weekly-briefing-card.tsx`           | Dashboard briefing card                                                    | F   |
-| `lib/openclaw/cost-forecast-actions.ts`                 | Menu cost forecasting                                                      | G   |
-| `app/(admin)/admin/price-catalog/vendor-import-tab.tsx` | Vendor PDF import UI                                                       | H   |
-| `lib/openclaw/vendor-import-actions.ts`                 | `parseVendorPriceList()` + `confirmVendorImport()` server actions          | H   |
+| File                                                    | Purpose                                                                                 | WS  |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------- | --- |
+| `lib/openclaw/store-preference-actions.ts`              | Thin wrappers: `getAvailableOpenClawStores()`, `getMyPrimaryStoreName()`                | C   |
+| `app/(chef)/settings/store-preferences/page.tsx`        | Store selection UI: renders existing `StoreManager` + neutral tracked-store suggestions | C   |
+| `lib/openclaw/sale-calendar-actions.ts`                 | Current sales data from Pi                                                              | E   |
+| `app/(chef)/culinary/costing/sales/page.tsx`            | "On Sale This Week" page                                                                | E   |
+| `lib/openclaw/weekly-briefing-actions.ts`               | Weekly price briefing computation                                                       | F   |
+| `components/pricing/weekly-briefing-card.tsx`           | Dashboard briefing card                                                                 | F   |
+| `lib/openclaw/cost-forecast-actions.ts`                 | Menu cost forecasting                                                                   | G   |
+| `app/(admin)/admin/price-catalog/vendor-import-tab.tsx` | Vendor PDF import UI                                                                    | H   |
+| `lib/openclaw/vendor-import-actions.ts`                 | `parseVendorPriceList()` + `confirmVendorImport()` server actions                       | H   |
 
 ---
 
