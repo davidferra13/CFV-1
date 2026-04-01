@@ -23,6 +23,7 @@ import { getOptimizedAvatar, getOptimizedImageUrl } from '@/lib/images/cloudinar
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
 import { getPublicChefProfile } from '@/lib/profile/actions'
 import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
+import { ChefProofSummary } from '@/components/public/chef-proof-summary'
 
 type Props = { params: { slug: string } }
 
@@ -374,6 +375,25 @@ export default async function ChefProfilePage({ params }: Props) {
         </div>
       </section>
 
+      {(reviewFeed.stats.totalReviews > 0 ||
+        chef.google_review_url ||
+        (chef.website_url && chef.show_website_on_public_profile)) && (
+        <section className="px-6 pt-8">
+          <div className="max-w-5xl mx-auto">
+            <ChefProofSummary
+              slug={publicSlug}
+              stats={reviewFeed.stats}
+              googleReviewUrl={chef.google_review_url}
+              websiteUrl={chef.website_url ?? null}
+              showWebsite={chef.show_website_on_public_profile}
+              acceptingInquiries={discovery.accepting_inquiries}
+              preferWebsite={preferWebsite}
+              preferChefFlow={preferChefFlow}
+            />
+          </div>
+        </section>
+      )}
+
       {!discovery.accepting_inquiries && (
         <section className="px-6 pt-8">
           <div className="mx-auto max-w-4xl rounded-2xl border border-amber-800 bg-amber-950/70 p-5 text-amber-200">
@@ -450,7 +470,7 @@ export default async function ChefProfilePage({ params }: Props) {
       )}
 
       {reviewFeed.reviews.length > 0 && (
-        <section className="py-16 px-6 bg-stone-900/70">
+        <section id="reviews" className="py-16 px-6 bg-stone-900/70">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-stone-100">Client Reviews</h2>

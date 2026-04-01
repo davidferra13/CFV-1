@@ -5,6 +5,7 @@
 import type { CSSProperties } from 'react'
 import Link from 'next/link'
 import { PartnerShowcase } from '@/components/public/partner-showcase'
+import { ReviewShowcase } from '@/components/public/review-showcase'
 import {
   getDiscoveryCuisineLabel,
   getDiscoveryPriceRangeLabel,
@@ -16,6 +17,7 @@ import {
   getDiscoveryLeadTimeLabel,
   getDiscoveryLocationLabel,
 } from '@/lib/discovery/profile'
+import type { PublicReviewItem, PublicReviewStats } from '@/lib/reviews/public-actions'
 
 type PublicProfileData = {
   chef: {
@@ -50,9 +52,16 @@ type PublicProfileData = {
   partners: any[]
 } | null
 
+type ReviewFeed = {
+  reviews: PublicReviewItem[]
+  stats: PublicReviewStats
+} | null
+
 type Props = {
   slug: string | null
   publicProfileData: PublicProfileData
+  reviewFeed: ReviewFeed
+  availabilitySignals: Array<{ id: string; start_date: string; public_note?: string | null }>
   deviceFrame: 'desktop' | 'mobile'
 }
 
@@ -64,7 +73,13 @@ function DetailChip({ label }: { label: string }) {
   )
 }
 
-export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: Props) {
+export function PublicProfilePreview({
+  slug,
+  publicProfileData,
+  reviewFeed,
+  availabilitySignals,
+  deviceFrame,
+}: Props) {
   if (!slug) {
     return (
       <div className="rounded-xl border border-stone-700 bg-stone-900 p-16 text-center">
@@ -251,6 +266,59 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
                   </p>
                 </div>
                 <PartnerShowcase partners={partners as any} chefName={chef.display_name} />
+              </div>
+            </section>
+          )}
+
+          {reviewFeed && reviewFeed.reviews.length > 0 && (
+            <section id="reviews" className="py-16 px-6 bg-stone-900/70">
+              <div className="max-w-5xl mx-auto">
+                <div className="text-center mb-10">
+                  <h2 className="text-3xl font-bold text-stone-100">Client Reviews</h2>
+                  <p className="text-stone-300 mt-3 max-w-xl mx-auto">
+                    Feedback from recent clients and guests.
+                  </p>
+                </div>
+                <ReviewShowcase reviews={reviewFeed.reviews} stats={reviewFeed.stats} />
+              </div>
+            </section>
+          )}
+
+          {availabilitySignals.length > 0 && (
+            <section className="py-12 px-6 bg-stone-900/70">
+              <div className="max-w-2xl mx-auto">
+                <div className="text-center mb-8">
+                  <h2 className="text-2xl font-bold text-stone-100">Available Dates</h2>
+                  <p className="text-stone-300 mt-2 text-sm">
+                    Open dates currently available for booking.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  {availabilitySignals.map((signal) => {
+                    const dateLabel = new Date(`${signal.start_date}T00:00:00`).toLocaleDateString(
+                      'en-US',
+                      {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      }
+                    )
+                    return (
+                      <div
+                        key={signal.id}
+                        className="flex items-center justify-between bg-green-950 border border-green-200 rounded-xl px-5 py-4"
+                      >
+                        <div>
+                          <p className="font-semibold text-stone-100">{dateLabel}</p>
+                          {signal.public_note && (
+                            <p className="text-sm text-stone-300 mt-0.5">{signal.public_note}</p>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
             </section>
           )}

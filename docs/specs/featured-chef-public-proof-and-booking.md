@@ -1,6 +1,6 @@
 # Spec: Featured Chef Public Proof and Booking Upgrade
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** `featured-chef-links-and-conversion.md`
 > **Estimated complexity:** medium (3-8 files)

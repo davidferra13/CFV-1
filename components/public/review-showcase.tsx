@@ -173,13 +173,30 @@ const INITIAL_SHOW_COUNT = 6
 export function ReviewShowcase({
   reviews,
   stats,
+  compact = false,
+  maxCompact = 2,
 }: {
   reviews: PublicReviewItem[]
   stats: PublicReviewStats
+  /** When true, shows a reduced card count with no stats header - for sidebar/inquiry contexts. */
+  compact?: boolean
+  /** How many cards to show in compact mode. Defaults to 2. */
+  maxCompact?: number
 }) {
   const [showAll, setShowAll] = useState(false)
 
   if (reviews.length === 0) return null
+
+  if (compact) {
+    const compactReviews = reviews.slice(0, maxCompact)
+    return (
+      <div className="space-y-3">
+        {compactReviews.map((review) => (
+          <ReviewCard key={review.id} review={review} />
+        ))}
+      </div>
+    )
+  }
 
   const visibleReviews = showAll ? reviews : reviews.slice(0, INITIAL_SHOW_COUNT)
   const hasMore = reviews.length > INITIAL_SHOW_COUNT

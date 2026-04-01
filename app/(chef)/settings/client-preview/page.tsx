@@ -6,6 +6,8 @@
 import type { Metadata } from 'next'
 import { getChefSlug, getPublicChefProfile } from '@/lib/profile/actions'
 import { getPreviewClients } from '@/lib/preview/client-portal-preview-actions'
+import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
+import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
 import { ClientPreviewTabs } from './client-preview-tabs'
 
 export const metadata: Metadata = { title: 'Client Preview' }
@@ -16,6 +18,16 @@ export default async function ClientPreviewPage() {
 
   // Fetch the full public profile data (same as what /chef/[slug] renders)
   const publicProfileData = profile?.slug ? await getPublicChefProfile(profile.slug) : null
+
+  // Fetch review and availability data so the preview matches the live public page
+  const [reviewFeed, availabilitySignals] = publicProfileData?.chef.id
+    ? await Promise.all([
+        getPublicChefReviewFeed(publicProfileData.chef.id),
+        publicProfileData.chef.show_availability_signals
+          ? getPublicAvailabilitySignals(publicProfileData.chef.id)
+          : Promise.resolve([]),
+      ])
+    : [null, []]
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -29,6 +41,8 @@ export default async function ClientPreviewPage() {
       <ClientPreviewTabs
         slug={profile?.slug ?? null}
         publicProfileData={publicProfileData}
+        reviewFeed={reviewFeed}
+        availabilitySignals={availabilitySignals}
         clients={clients}
       />
     </div>

@@ -124,6 +124,7 @@ export async function getPublicChefProfile(slug: string) {
       'portal_background_image_url',
       'show_availability_signals',
       'social_links',
+      'google_review_url',
     ].join(', ')
   )
 
@@ -266,6 +267,7 @@ export async function getPublicChefProfile(slug: string) {
       portal_background_image_url: chef.portal_background_image_url,
       show_availability_signals: chef.show_availability_signals ?? false,
       social_links: chef.social_links ?? {},
+      google_review_url: chef.google_review_url ?? null,
       discovery,
     },
     partners: showcasePartners,

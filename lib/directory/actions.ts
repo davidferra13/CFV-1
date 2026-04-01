@@ -47,6 +47,9 @@ export type DirectoryChef = {
   bio: string | null
   profile_image_url: string | null
   website_url: string | null
+  google_review_url: string | null
+  show_website_on_public_profile: boolean
+  preferred_inquiry_destination: string | null
   social_links: ChefSocialLinks
   discovery: DiscoveryProfile & { completeness_score: number }
   /** True if this is the founder / platform owner */
@@ -94,6 +97,9 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
       bio,
       profile_image_url,
       website_url,
+      google_review_url,
+      show_website_on_public_profile,
+      preferred_inquiry_destination,
       social_links,
       email,
       directory_approved,
@@ -250,6 +256,9 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
       bio: chef.bio ?? null,
       profile_image_url: chef.profile_image_url ?? discovery.hero_image_url ?? null,
       website_url: chef.website_url ?? null,
+      google_review_url: chef.google_review_url ?? null,
+      show_website_on_public_profile: chef.show_website_on_public_profile ?? true,
+      preferred_inquiry_destination: chef.preferred_inquiry_destination ?? 'both',
       social_links: (chef.social_links as ChefSocialLinks) ?? {},
       discovery: {
         ...discovery,

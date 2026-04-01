@@ -43,13 +43,26 @@ type PublicProfileData = {
   partners: any[]
 } | null
 
+type ReviewFeed = {
+  reviews: import('@/lib/reviews/public-actions').PublicReviewItem[]
+  stats: import('@/lib/reviews/public-actions').PublicReviewStats
+} | null
+
 type Props = {
   slug: string | null
   publicProfileData: PublicProfileData
+  reviewFeed: ReviewFeed
+  availabilitySignals: any[]
   clients: PreviewClient[]
 }
 
-export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
+export function ClientPreviewTabs({
+  slug,
+  publicProfileData,
+  reviewFeed,
+  availabilitySignals,
+  clients,
+}: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('public')
   const [deviceFrame, setDeviceFrame] = useState<DeviceFrame>('desktop')
   const [selectedClientId, setSelectedClientId] = useState<string>(clients[0]?.id ?? '')
@@ -210,6 +223,8 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
         <PublicProfilePreview
           slug={slug}
           publicProfileData={publicProfileData as any}
+          reviewFeed={reviewFeed}
+          availabilitySignals={availabilitySignals}
           deviceFrame={deviceFrame}
         />
       ) : (
