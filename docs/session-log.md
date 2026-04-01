@@ -232,6 +232,15 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: green (docs-only session, no code changes; last green build 5511b1e9, starting HEAD 630a6474)
 - Notes: Spec is ready for a builder. Main finding: public proof already exists in the live review aggregator and public chef page, but the homepage card, inquiry route, and preview are not aligned. Biggest builder trap: do not implement this against the separate `testimonials` table or `/review/[token]` flow.
 
+## 2026-04-01 00:44 EST
+
+- Agent: Planner
+- Task: Tax-readiness audit operationalization spec for CPA-ready year-end export, reconciliation, and finance controls
+- Status: started
+- Build state on arrival: green (docs/build-state.md shows last green build 5511b1e9; current HEAD 6017b0b0)
+- Files in focus: docs/specs/\_TEMPLATE.md, docs/app-complete-audit.md, finance/export/tax paths, ledger/expense schemas, reporting surfaces, and integration tables tied to tax readiness
+- Notes: Must preserve developer voice, summarize current state before spec finalization, answer every Planner Gate validation question with file and line citations, and avoid assuming missing or working behavior without code or seeded-data proof.
+
 ## 2026-03-31 21:04 EST
 
 - Agent: Planner + Research
@@ -487,8 +496,17 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Task: Restaurant operations system investigation and spec/report for stations, tasks, staff execution, recipe books, prep, inventory, and daily ops
 - Status: started
 - Build state on arrival: green (build-state last green 5511b1e9; current HEAD 6017b0b0)
-- Files in focus: docs/specs/_TEMPLATE.md, docs/app-complete-audit.md, app/(chef)/tasks, app/(chef)/stations, app/(chef)/staff-*, app/(chef)/recipes, app/(chef)/culinary/prep, app/(chef)/inventory, lib/stations, lib/tasks, database schema/docs
+- Files in focus: docs/specs/\_TEMPLATE.md, docs/app-complete-audit.md, app/(chef)/tasks, app/(chef)/stations, app/(chef)/staff-\*, app/(chef)/recipes, app/(chef)/culinary/prep, app/(chef)/inventory, lib/stations, lib/tasks, database schema/docs
 - Notes: Developer wants the existing restaurant-running system fully surfaced, captured in permanent Developer Notes, summarized in plain English before spec finalization, and translated into build-ready requirements with explicit gap checks and validation citations.
+
+## 2026-04-01 00:41 EST
+
+- Agent: Codex
+- Task: Save revisit note for the OpenCLAW VR / MR command-center idea based on the live Pi-hosted `/game` surface
+- Status: completed
+- Files touched: memory/project_openclaw_vr_spatial_dashboard.md, docs/session-log.md
+- Build state on departure: unchanged (docs-only)
+- Notes: Captured feasibility tiers (flat VR screen, full 3D command room, MR office overlay), the warning that the live Pi `/game` page diverges from repo dashboard code, and the recommended approach of building from `/api/status` data instead of trying to convert the existing webpage into 3D.
 
 ## 2026-04-01 01:02 EST
 
@@ -499,3 +517,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending at log time (created immediately after this entry)
 - Build state on departure: green (docs-only follow-up, no product-code changes)
 - Notes: Verified that ChefFlow already has a broad restaurant-operations foundation; the scoped pass is to surface and repair drift, not invent new systems. Primary unresolved uncertainties are live tenant coverage for station-to-recipe links and ingredient-name hygiene for reorder settings.
+
+## 2026-04-01 01:34 EST
+
+- Agent: Planner
+- Task: Tax-readiness audit operationalization spec for CPA-ready year-end export, reconciliation, and finance controls
+- Status: completed
+- Files touched: docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md, docs/session-log.md
+- Commits: pending at log time (created immediately after this entry)
+- Build state on departure: green (docs-only planning session, no product-code changes)
+- Notes: Verified the existing finance/tax/export surfaces against schema and seeded finance behavior, captured the developer's audit-first voice in Developer Notes, produced a minimal CPA-export spec, and answered every Planner Gate validation question with cited file anchors. The only explicit uncertainty left is operational data completeness in real tenants, which the spec handles by blocking export rather than guessing.
