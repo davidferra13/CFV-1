@@ -205,3 +205,19 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/featured-chef-public-proof-and-booking.md (new), docs/research/featured-chef-public-proof-and-booking.md (new), docs/session-log.md
 - Build state on departure: green (docs-only session, no code changes; last green build 5511b1e9, starting HEAD 630a6474)
 - Notes: Spec is ready for a builder. Main finding: public proof already exists in the live review aggregator and public chef page, but the homepage card, inquiry route, and preview are not aligned. Biggest builder trap: do not implement this against the separate `testimonials` table or `/review/[token]` flow.
+
+## 2026-03-31 21:04 EST
+
+- Agent: Planner + Research
+- Task: Follow-up validation pass, developer-notes expansion, and explicit Planner Gate answer set for featured-chef public proof spec
+- Status: started
+- Build state on arrival: green (last green build 5511b1e9; current HEAD 543bab98)
+
+## 2026-03-31 21:04 EST
+
+- Agent: Planner + Research
+- Task: Follow-up validation pass, developer-notes expansion, and explicit Planner Gate answer set for featured-chef public proof spec
+- Status: completed
+- Files touched: docs/specs/featured-chef-public-proof-and-booking.md, docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
+- Notes: Expanded Developer Notes to preserve transcript/process intent and gap-closure reasoning. No product-scope change to the spec. Remaining assumption is still only production fill rate for `google_review_url`, which has a safe null-path fallback.

@@ -43,6 +43,54 @@ The developer also wants all of the chef's direct links surfaced properly. They 
 - **Motivation:** The proof already exists in the product, but it is fragmented. The homepage card is too shallow, the inquiry page is too thin, and the chef preview/customization path is not aligned with the public experience.
 - **Success from the developer's perspective:** A visitor can move from a featured chef card to a high-confidence public profile and then to an inquiry flow without losing trust context. Chefs can influence that experience through existing profile/branding/content fields, but every chef still gets the same strong default structure.
 
+### Transcript Capture
+
+- The developer wants a brand new feature around the Featured Chefs tab on the public landing pages.
+- The visitor should be able to see all testimonials and reviews more easily, not just fragments.
+- Google reviews must be part of that proof story.
+- The developer pointed to the Take a Chef chef page and the "what it looks like when you hire a chef" experience as the standard for a page that makes a chef feel instantly hireable.
+- Direct links need to be surfaced more clearly.
+- The current featured-chef experience is already working, but it is underbuilt relative to the proof and conversion potential already in the product.
+- The experience must be customizable from the chef side to a degree, but it must still default every featured chef into a strong standardized layout.
+- The developer explicitly asked for spec-only work here, not implementation.
+- The developer explicitly asked that the raw conversation and reasoning be preserved in the spec so the builder understands why the feature exists, not just what to build.
+- The developer explicitly asked that any missing intent, underdeveloped area, or builder-guessing gap be filled in the spec instead of left ambiguous.
+
+### Execution Translation
+
+#### Requirements
+
+- Homepage featured-chef cards must expose clearer public proof entry points.
+- The public chef page must remain the canonical full-proof surface.
+- The inquiry page must preserve chef credibility/context instead of detaching the form from the proof story.
+- Google review links, public website links, and social links must be surfaced only when allowed by existing public-profile controls.
+- Client preview must stay aligned with the live public profile so chefs can preview what they are editing.
+
+#### Constraints
+
+- No new testimonial source of truth for this feature.
+- No freeform layout builder.
+- No fake or placeholder review stats.
+- No schema expansion unless the code proves it is necessary.
+- No loss of the developer's reasoning in the permanent spec artifact.
+
+#### Behaviors
+
+- Use the live public review aggregator for all public proof surfaces.
+- Deep-link homepage proof actions to the canonical public review section rather than cloning a second full review experience onto the homepage.
+- Keep ChefFlow/website routing consistent across homepage card, public chef page, and inquiry page.
+- Reuse existing chef-controlled settings as the customization layer.
+
+### Gap Check
+
+The original ask had several intentionally rough edges, and this spec closes them rather than leaving them for a builder to guess:
+
+- "See all testimonials and reviews" is translated into a canonical proof strategy: homepage deep-links plus a strengthened public chef page, not a second disconnected review system.
+- "Google reviews" is translated into explicit CTA behavior tied to the existing `google_review_url` field.
+- "What it looks like when you hire a chef" is translated into an inquiry-page upgrade that keeps proof/context next to the form.
+- "Customizable to a degree" is translated into fixed-layout, data-driven customization using existing settings instead of a new layout-builder feature.
+- "Anything else I might be missing" is filled in with preview parity, CTA-rule consistency, and a warning against the wrong testimonial system.
+
 ---
 
 ## What This Does (Plain English)
