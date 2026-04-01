@@ -146,6 +146,7 @@
     "audit:notifications:strict": "node --import tsx scripts/audit-notifications.mjs --strict --require client_signup,quote_expiring,event_reminder_7d,event_reminder_2d,event_reminder_1d,insurance_expiring_30d,insurance_expiring_7d,cert_expiring_90d,cert_expiring_30d,cert_expiring_7d,burnout_risk_high,capacity_limit_approaching,goal_milestone,goal_weekly_digest,new_negative_mention,no_education_logged_90d,quarterly_checkin_due,relationship_cooling --out reports/notification-audit.json",
     "smoke:notifications": "node scripts/smoke-notification-crons.mjs",
     "audit:db": "node scripts/db-integrity-audit.mjs",
+    "audit:reachability": "node scripts/audit-reachability.mjs",
     "audit:goldmine": "node --import tsx scripts/goldmine-audit.mjs",
     "gold:watch": "powershell -ExecutionPolicy Bypass -File scripts/start-gold-watch.ps1 -Hours 12 -Headed 1",
     "gold:watch:10h": "powershell -ExecutionPolicy Bypass -File scripts/start-gold-watch.ps1 -Hours 10 -Headed 1",
