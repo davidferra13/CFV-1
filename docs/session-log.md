@@ -137,3 +137,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/component-aware-prep-scheduling.md (new), docs/session-log.md
 - Build state on departure: green (5511b1e9, spec-only session, no code changes)
 - Notes: P1 spec ready. 0 new tables, 0 migrations, 4 file modifications. Wires existing component prep data (prep_day_offset, make_ahead_window_hours) through existing prep-block-engine to generate component-specific blocks. Adds Prep Plan section to event detail ops tab. Builder pitfalls documented: engine purity, isCovered dedup by block_type, generic/component overlap. Prerequisite for sous chef delegation spec (future).
+
+## 2026-03-31 ~23:00 EST
+
+- Agent: Planner (Claude Opus 4.6)
+- Task: Revisit Evan Mancini (restaurant owner) feedback for leverage analysis. Staff ops polish + restaurant readiness spec.
+- Status: started
+- Build state on arrival: green (5511b1e9)
+- Files in focus: All staff/task/scheduling features, staff portal, Toast/Sling competitive analysis
+- Notes: Developer revisiting old beta tester feedback with fresh eyes. Looking for unrealized leverage in existing infrastructure. Research + spec session.
+
+## 2026-03-31 ~23:30 EST
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Competitive landscape research - how chefs currently solve hiring, ordering, sourcing, networking problems
+- Status: completed
+- Files touched: docs/research/how-chefs-solve-these-problems-today.md (new), docs/session-log.md
+- Build state on departure: green (5511b1e9, research-only, no code changes)
+- Notes: Key findings: 59% can't fill chef positions, word-of-mouth #1 but zero infrastructure (validates opportunity network spec). 67% prefer direct ordering, 20-30% commission on third-party apps (validates public ordering as P0). No competitor combines ops+community+hiring+ordering. ChefFlow uniquely positioned.
