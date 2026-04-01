@@ -602,6 +602,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: unchanged (docs-only planning/research session; docs/build-state.md still points to green commit 5511b1e9)
 - Notes: Recommended first build is Google Contacts import through the existing `/import` flow, shared Google OAuth stack, and current client-import review/write path. The only explicit remaining uncertainty is whether the Google People API has a directly citable official "no additional cost" statement for the developer's strict free-only rule.
 
+## 2026-04-01 EST (Wave A-C Builder)
+
+- Agent: Builder (Claude Sonnet 4.6)
+- Task: Wave A: verify 3 already-built specs via Playwright. Wave B: build full-cloud-ai-runtime + CPA tax export. Wave C: 5 P1 specs.
+- Status: started
+- Build state on arrival: green (5511b1e9 per build-state.md; tsc clean, no lock file)
+
 ## 2026-04-01 EST
 
 - Agent: Builder
@@ -610,3 +617,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: lib/quotes/actions.ts, lib/guests/count-changes.ts, lib/events/invoice-actions.ts, lib/booking/instant-book-actions.ts, lib/booking/series-materialization.ts, components/quotes/quote-transitions.tsx, app/(chef)/quotes/page.tsx, app/(chef)/quotes/[id]/page.tsx, app/(chef)/events/[id]/\_components/event-detail-money-tab.tsx, app/(client)/my-events/[id]/proposal/page.tsx, app/(client)/my-events/[id]/pay/page.tsx, app/(client)/my-events/[id]/page.tsx, app/api/v2/settings/pricing/route.ts, database/migrations/20260401000153_quote_acceptance_copy_pricing_metadata.sql, docs/specs/chef-pricing-override-infrastructure.md
 - Build state on departure: green (TSC clean, 0 errors)
 - Notes: All pricing override infrastructure complete. Key changes: (1) createQuote/updateQuote persist 6 new pricing-decision fields; (2) guest-count changes respect custom_total overrides instead of silently repricing; (3) invoice-actions uses explicit price_per_person_cents instead of deriving from total/count for overridden events; (4) quote-transitions removes stale Mark Accepted/Rejected buttons that always threw; (5) all 6 pricing surfaces (chef quote list, chef quote detail, chef event money tab, client proposal, client payment, client event detail) now show PriceComparisonSummary; (6) instant-book and series-materialization seed pricing_source_kind/baseline/override metadata; (7) Migration 153 extends respond_to_quote_atomic to copy all pricing metadata to the linked event on acceptance; (8) API v2 pricing route no longer returns stale hardcoded defaults.
+
+## 2026-04-01 EST (System Audit + Execution)
+
+- Agent: Builder (Claude Sonnet 4.6)
+- Task: 23-section system audit + alignment framework execution: machine safety, hygiene, risk audit, soft-close spec build, event-progression cron.
+- Status: completed
+- Files touched: lib/inquiries/soft-close-leverage-actions.ts (new), lib/inquiries/soft-close-message-presets.ts (new), components/inquiries/soft-close-leverage-card.tsx (new), app/(chef)/inquiries/[id]/page.tsx, components/inquiries/inquiry-response-composer.tsx, lib/gmail/actions.ts, lib/lifecycle/next-action.ts, docs/specs/soft-close-leverage-and-reactivation.md, app/api/cron/event-progression/route.ts (new)
+- Commits: 572185c4, 821035fc, 2154f9dd
+- Build state on departure: green (tsc clean 0 errors, 2154f9dd)
+- Notes: Key fix: terminal state guard in approveAndSendMessage prevents courtesy closeout from restoring follow-up debt on declined/expired inquiries. Playwright verification deferred - dev server not running. collab-spaces-qa.spec.ts + playwright.collab-qa.config.ts ready when needed.
