@@ -1,16 +1,18 @@
 # Spec: Production Code Reachability and Safe Prune Audit
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
 
 ## Timeline
 
-| Event         | Date             | Agent/Session | Commit |
-| ------------- | ---------------- | ------------- | ------ |
-| Created       | 2026-03-31 23:55 | Codex planner |        |
-| Status: ready | 2026-03-31 23:55 | Codex planner |        |
+| Event            | Date             | Agent/Session  | Commit |
+| ---------------- | ---------------- | -------------- | ------ |
+| Created          | 2026-03-31 23:55 | Codex planner  |        |
+| Status: ready    | 2026-03-31 23:55 | Codex planner  |        |
+| Reports produced | 2026-04-01       | Claude builder |        |
+| Status: verified | 2026-04-01       | Claude builder |        |
 
 ---
 
