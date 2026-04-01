@@ -132,5 +132,8 @@ Every agent appends an entry when they start and when they finish. The next agen
 
 - Agent: Planner (Claude Opus 4.6)
 - Task: Spec for component-aware prep auto-scheduling. Origin: Grace (grazebyelena) beta tester conversation. Closes prep 8/10 → 10/10 gap.
-- Status: started
+- Status: completed
 - Build state on arrival: green (5511b1e9)
+- Files touched: docs/specs/component-aware-prep-scheduling.md (new), docs/session-log.md
+- Build state on departure: green (5511b1e9, spec-only session, no code changes)
+- Notes: P1 spec ready. 0 new tables, 0 migrations, 4 file modifications. Wires existing component prep data (prep_day_offset, make_ahead_window_hours) through existing prep-block-engine to generate component-specific blocks. Adds Prep Plan section to event detail ops tab. Builder pitfalls documented: engine purity, isCovered dedup by block_type, generic/component overlap. Prerequisite for sous chef delegation spec (future).
