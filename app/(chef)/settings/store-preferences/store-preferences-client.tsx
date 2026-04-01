@@ -35,9 +35,7 @@ export function StorePreferencesClient({
     <div className="space-y-6">
       {visibleSuggestions.length > 0 && (
         <div className="rounded-lg border border-stone-700 bg-stone-800/50 p-4">
-          <h3 className="text-sm font-medium text-stone-300 mb-3">
-            Tracked by OpenClaw (quick add)
-          </h3>
+          <h3 className="text-sm font-medium text-stone-300 mb-3">Tracked stores (quick add)</h3>
           <div className="flex flex-wrap gap-2">
             {visibleSuggestions.map((name) => (
               <button
@@ -51,8 +49,7 @@ export function StorePreferencesClient({
             ))}
           </div>
           <p className="text-xs text-stone-500 mt-2">
-            These stores have price data from OpenClaw. Adding them personalizes your price
-            displays.
+            These stores already have price coverage. Adding them personalizes your price displays.
           </p>
         </div>
       )}

@@ -257,7 +257,6 @@ export async function importOpenClawLead(openclawLeadId: number): Promise<{
   }
 
   revalidatePath('/prospecting')
-  revalidatePath('/prospecting/openclaw')
 
   return { success: true, prospectId: inserted?.id }
 }
@@ -289,7 +288,6 @@ export async function bulkImportOpenClawLeads(ids: number[]): Promise<{
   }
 
   revalidatePath('/prospecting')
-  revalidatePath('/prospecting/openclaw')
   revalidateTag('openclaw-lead-count')
 
   return { imported, skipped, duplicates, errors }

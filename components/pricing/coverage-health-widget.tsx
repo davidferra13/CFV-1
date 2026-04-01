@@ -80,7 +80,7 @@ export function CoverageHealthWidget() {
       <Card>
         <CardContent className="py-6">
           <h3 className="mb-2 text-sm font-medium text-stone-300">Price Coverage</h3>
-          <p className="text-sm text-stone-500">No ingredient data yet. Run OpenCLAW sync first.</p>
+          <p className="text-sm text-stone-500">No ingredient data yet. Run a data sync first.</p>
         </CardContent>
       </Card>
     )

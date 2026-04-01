@@ -160,7 +160,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               )}
               {!hasQuote && (
                 <p className="text-sm text-stone-500 mt-1">
-                  Uses local OpenClaw store prices first (free, instant), then USDA Northeast
+                  Uses current local store price data first (free, instant), then USDA Northeast
                   averages. External APIs (Spoonacular, Kroger
                   {mealMeConfigured ? ', MealMe' : ''}) only called for uncovered ingredients.
                 </p>
@@ -192,7 +192,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               <div className="h-4 loading-bone loading-bone-muted w-4/5" />
               <div className="h-4 loading-bone loading-bone-muted w-3/5" />
               <p className="text-xs text-stone-300 mt-3">
-                Checking local OpenClaw prices first, then USDA NE data. External APIs only for
+                Checking local store price coverage first, then USDA NE data. External APIs only for
                 uncovered items...
               </p>
             </div>
@@ -337,8 +337,8 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               {/* Source legend */}
               <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-300 border-t border-stone-800 pt-4">
                 <span>
-                  <span className="font-medium text-emerald-400">OpenClaw</span> - Local store
-                  prices from 18+ NE stores (synced nightly, free). Checked first for every
+                  <span className="font-medium text-emerald-400">Local store coverage</span> - Live
+                  prices from 18+ NE stores (updated regularly, free). Checked first for every
                   ingredient.
                 </span>
                 <span>
@@ -347,7 +347,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                 </span>
                 <span>
                   <span className="font-medium text-stone-300">Spoonacular / Kroger / MealMe</span>{' '}
-                  - External APIs. Only called for ingredients without OpenClaw coverage.
+                  - External APIs. Only called for ingredients without local store coverage.
                 </span>
                 <span>
                   <span className="font-medium text-stone-300">Avg Estimate</span> - Average of all

@@ -55,8 +55,8 @@ export default async function PricesPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Ingredient Price Engine</h1>
         <p className="text-stone-400 mt-1">
-          Live grocery price database. Every product, every store, every price - updated daily by
-          OpenClaw.
+          Live grocery price database. Every product, every store, every price - updated regularly
+          from local store data.
         </p>
       </div>
 

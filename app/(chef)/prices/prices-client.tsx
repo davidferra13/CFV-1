@@ -94,9 +94,8 @@ export function PricesCatalogClient({ chains, hasData }: Props) {
           <Store className="h-12 w-12 text-stone-600 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-stone-300">Store catalog is being built</h3>
           <p className="text-stone-500 mt-2 max-w-md mx-auto">
-            The OpenClaw inventory system is collecting store data. Once the Pi scrapers run and the
-            pull service syncs data to PostgreSQL, nearby stores and their inventories will appear
-            here.
+            The store data pipeline is still building coverage. Once the first sync completes,
+            nearby stores and their inventories will appear here.
           </p>
           {chains.length > 0 && (
             <div className="mt-4">
