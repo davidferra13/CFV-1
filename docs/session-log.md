@@ -315,3 +315,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on arrival: green (build-state still 5511b1e9; current HEAD de48928f)
 - Files in focus: billing/support surfaces, tier/gating remnants, public product definition, external competitor pricing and fee models
 - Notes: Developer wants a direct recommendation, not just options. Research must preserve both repo reality and live market comps, then recommend the best path forward.
+
+## 2026-03-31 22:14 EST
+
+- Agent: Research
+- Task: Live monetization strategy research for respectful pricing, positioning, and recommendation
+- Status: completed
+- Files touched: docs/research/respectful-monetization-direction.md (new), docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
+- Notes: Direct recommendation is universal core access plus a respectful supporter model, not a mandatory $25/month gate and not a permanent $1 unlock. Market check found adjacent tools commonly charge $19-$55/month, so $25 is not a crazy number in abstract, but ChefFlow's current public promise and product identity point toward support-first monetization. Recommended launch ask: $12/month or $120/year, with an optional limited founding-supporter offer at $99-$149 if an upfront cash path is needed.
