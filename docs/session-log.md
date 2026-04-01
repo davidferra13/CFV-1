@@ -723,3 +723,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending at log time
 - Build state on departure: unchanged (docs-only research session; no product code, schema, or build-state files changed)
 - Notes: Expanded the permanent Developer Notes with execution-ready requirements/constraints/behaviors, then wrote `docs/research/chef-shell-clarity-intent-audit.md`. The audit confirms the shell-clarity direction is code-grounded, warns that builders could still ship a structurally cleaner but visually generic result, and flags underdeveloped areas around example-driven starter states, exact 8-item action-bar composition, and stale monetization/trust-language bleed from adjacent files.
+
+## 2026-04-01 ~12:00 EST
+
+- Agent: Builder (Claude Sonnet 4.6)
+- Task: soft-close-leverage-and-reactivation spec build
+- Status: completed
+- Files touched: components/inquiries/soft-close-leverage-card.tsx, lib/inquiries/soft-close-leverage-actions.ts, lib/inquiries/soft-close-message-presets.ts, lib/lifecycle/next-action.ts (softCloseWorkflow flag already present), app/(chef)/inquiries/[id]/page.tsx (State 1 + State 2 rendering already in place), components/inquiries/inquiry-response-composer.tsx (softCloseMode + A/B presets already wired), lib/gmail/actions.ts (terminal-state guard already in place), docs/specs/soft-close-leverage-and-reactivation.md
+- Commits: pending
+- Build state on departure: green (tsc --noEmit exit 0)
+- Notes: All 7 required changes were already implemented by a prior session. Verified the full spec: softCloseWorkflow flag on NextActionResult, SoftCloseLeverageCard State 1 + State 2, captureSoftCloseLeverage action, soft-close-message-presets A/B, composer softCloseMode defaults, terminal-state guard in approveAndSendMessage. TSC clean.

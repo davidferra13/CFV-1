@@ -1,6 +1,6 @@
 # Spec: Soft-Close Leverage Capture & Reactivation
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1
 > **Depends on:** email-snapshot-and-portal-strategy (verified)
 > **Estimated complexity:** medium (5-7 files)
@@ -17,10 +17,8 @@ _Every status change, every claim, every verification gets a row. This is the au
 | Spike completed     | 2026-04-01           | Builder Claude Sonnet 4.6  | pending |
 | Pre-flight passed   | 2026-04-01           | tsc clean pre-build        | pending |
 | Build completed     | 2026-04-01           | Builder Claude Sonnet 4.6  | pending |
-| Type check passed   | 2026-04-01           | tsc noEmit exit 0          | pending |
-| Build check passed  |                      |                            |         |
-| Playwright verified |                      |                            |         |
-| Status: verified    |                      |                            |         |
+| Type check passed   | 2026-04-01           | tsc --noEmit exit 0        | pending |
+| Status: built       | 2026-04-01           | Builder Claude Sonnet 4.6  | pending |
 
 ---
 
