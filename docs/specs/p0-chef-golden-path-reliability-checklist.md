@@ -1,6 +1,6 @@
 # Checklist: Chef Golden Path Reliability
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** `docs/specs/p0-chef-golden-path-reliability.md`
 > **Scope rule:** do not expand beyond the existing chef workflow

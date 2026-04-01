@@ -32,6 +32,7 @@ import { WeeklyBriefingCard } from '@/components/pricing/weekly-briefing-card'
 import { isAdmin } from '@/lib/auth/admin'
 import { CoverageHealthWidget } from '@/components/pricing/coverage-health-widget'
 import { DinnerCirclesSection } from './_sections/dinner-circles-cards'
+import { DashboardSecondaryInsights } from '@/components/dashboard/dashboard-secondary-insights'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -119,16 +120,15 @@ function IntelligenceCardsSkeleton() {
 function CommandCenterSkeleton() {
   return (
     <section>
-      <div className="section-label mb-4">Command Center</div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {Array.from({ length: 24 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-stone-800 bg-stone-900/50 p-3.5">
-            <div className="flex items-start justify-between mb-2">
+      <div className="section-label mb-4">Core Areas</div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="rounded-xl border border-stone-800 bg-stone-900/50 p-4">
+            <div className="flex items-start justify-between mb-2.5">
               <div className="w-8 h-8 rounded-lg loading-bone loading-bone-muted" />
-              <div className="h-6 w-8 loading-bone loading-bone-muted rounded" />
             </div>
             <div className="h-4 w-20 loading-bone loading-bone-muted rounded mt-1" />
-            <div className="h-3 w-32 loading-bone loading-bone-muted rounded mt-1.5" />
+            <div className="h-3 w-28 loading-bone loading-bone-muted rounded mt-1.5" />
           </div>
         ))}
       </div>
@@ -417,56 +417,55 @@ export default async function ChefDashboard() {
       </section>
 
       {/* ============================================ */}
-      {/* WEEKLY PRICE BRIEFING                        */}
+      {/* SECONDARY INSIGHTS (collapsed by default)   */}
       {/* ============================================ */}
-      <section>
-        <WidgetErrorBoundary name="WeeklyBriefing" compact>
+      <DashboardSecondaryInsights>
+        {/* WEEKLY PRICE BRIEFING */}
+        <section className="px-4 pt-4">
+          <WidgetErrorBoundary name="WeeklyBriefing" compact>
+            <Suspense fallback={null}>
+              <WeeklyBriefingSection />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </section>
+
+        {/* PRICE COVERAGE HEALTH (admin only) */}
+        <section className="px-4">
           <Suspense fallback={null}>
-            <WeeklyBriefingSection />
+            <CoverageHealthSection />
           </Suspense>
-        </WidgetErrorBoundary>
-      </section>
+        </section>
 
-      {/* ============================================ */}
-      {/* PRICE COVERAGE HEALTH (admin only)           */}
-      {/* ============================================ */}
-      <Suspense fallback={null}>
-        <CoverageHealthSection />
-      </Suspense>
+        {/* ALERTS + INTELLIGENCE */}
+        <section className="px-4">
+          <div className="section-label mb-4">Alerts &amp; Health</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <WidgetErrorBoundary name="Alerts" compact>
+              <Suspense fallback={<AlertCardsSkeleton />}>
+                <AlertCards />
+              </Suspense>
+            </WidgetErrorBoundary>
 
-      {/* ============================================ */}
-      {/* ALERTS + INTELLIGENCE                        */}
-      {/* ============================================ */}
-      <section>
-        <div className="section-label mb-4">Alerts &amp; Health</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <WidgetErrorBoundary name="Alerts" compact>
-            <Suspense fallback={<AlertCardsSkeleton />}>
-              <AlertCards />
-            </Suspense>
-          </WidgetErrorBoundary>
+            <WidgetErrorBoundary name="Intelligence" compact>
+              <Suspense fallback={<IntelligenceCardsSkeleton />}>
+                <IntelligenceCards />
+              </Suspense>
+            </WidgetErrorBoundary>
+          </div>
+        </section>
 
-          <WidgetErrorBoundary name="Intelligence" compact>
-            <Suspense fallback={<IntelligenceCardsSkeleton />}>
-              <IntelligenceCards />
-            </Suspense>
-          </WidgetErrorBoundary>
-        </div>
-      </section>
-
-      {/* ============================================ */}
-      {/* BUSINESS METRICS                             */}
-      {/* ============================================ */}
-      <section>
-        <div className="section-label mb-4">Business</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <WidgetErrorBoundary name="Business" compact>
-            <Suspense fallback={<BusinessCardsSkeleton />}>
-              <BusinessCards />
-            </Suspense>
-          </WidgetErrorBoundary>
-        </div>
-      </section>
+        {/* BUSINESS METRICS */}
+        <section className="px-4">
+          <div className="section-label mb-4">Business</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <WidgetErrorBoundary name="Business" compact>
+              <Suspense fallback={<BusinessCardsSkeleton />}>
+                <BusinessCards />
+              </Suspense>
+            </WidgetErrorBoundary>
+          </div>
+        </section>
+      </DashboardSecondaryInsights>
     </div>
   )
 }

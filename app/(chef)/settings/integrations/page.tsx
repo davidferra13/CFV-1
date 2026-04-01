@@ -19,6 +19,8 @@ import { listConnectedAccounts } from '@/lib/integrations/integration-hub'
 import { ConnectedAccounts } from '@/components/integrations/connected-accounts'
 import { getTakeAChefIntegrationSettings } from '@/lib/integrations/take-a-chef-settings'
 import { getChefPlatformSettings } from '@/lib/integrations/platform-settings'
+import { BusinessToolStrip } from '@/components/integrations/business-tool-strip'
+import { IntegrationsAdvancedSection } from '@/components/integrations/integrations-advanced-section'
 
 export const metadata: Metadata = { title: 'Integrations' }
 
@@ -56,6 +58,28 @@ export default async function IntegrationsSettingsPage() {
     getChefPlatformSettings().catch(() => ({ platforms: {} })),
   ])
 
+  // Business tool strip: show connection state from oauthStatuses
+  const businessTools = [
+    {
+      name: 'QuickBooks',
+      description: 'Connect for accounting sync',
+      href: '/settings/integrations',
+      connected: oauthStatuses?.quickbooks?.connected === true,
+    },
+    {
+      name: 'DocuSign',
+      description: 'Connect for contract sending',
+      href: '/settings/integrations',
+      connected: oauthStatuses?.docusign?.connected === true,
+    },
+    {
+      name: 'Square',
+      description: 'Connect for payment processing',
+      href: '/settings/integrations',
+      connected: oauthStatuses?.square?.connected === true,
+    },
+  ]
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <WidgetErrorBoundary name="Integration Callback">
@@ -73,12 +97,11 @@ export default async function IntegrationsSettingsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100">Integrations</h1>
         <p className="text-stone-400 mt-1">
-          Connect ChefFlow to your accounting, payments, contracts, scheduling, and automation
-          tools.
+          Connect ChefFlow to your email capture, booking platforms, and business tools.
         </p>
       </div>
 
-      {/* Email lead capture - parses booking platform notification emails via Gmail sync */}
+      {/* Email lead capture - guided setup for booking platform notifications via Gmail */}
       <TakeAChefSetup
         gmailConnected={gmailConn?.gmail_connected ?? false}
         lastSyncAt={gmailConn?.gmail_last_sync_at ?? null}
@@ -89,13 +112,18 @@ export default async function IntegrationsSettingsPage() {
       {/* Multi-platform configuration */}
       <PlatformSetup settings={platformSettings.platforms} />
 
-      <IntegrationCenter
-        overview={overview}
-        recentEvents={recentEvents}
-        oauthStatuses={oauthStatuses}
-      />
+      {/* Business tool connection status strip */}
+      <BusinessToolStrip tools={businessTools} />
 
-      <ConnectedAccounts initialAccounts={connectedAccounts} />
+      {/* Advanced: provider inventory + manual connector (collapsed by default) */}
+      <IntegrationsAdvancedSection>
+        <IntegrationCenter
+          overview={overview}
+          recentEvents={recentEvents}
+          oauthStatuses={oauthStatuses}
+        />
+        <ConnectedAccounts initialAccounts={connectedAccounts} />
+      </IntegrationsAdvancedSection>
     </div>
   )
 }

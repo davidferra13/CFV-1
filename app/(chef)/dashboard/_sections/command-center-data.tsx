@@ -24,77 +24,18 @@ export async function CommandCenterSection() {
   const db: any = createServerClient()
   const tid = user.tenantId!
 
-  const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-    .toISOString()
-    .split('T')[0]
-
-  const today = new Date().toISOString().split('T')[0]
-
-  // Fetch all counts in parallel for speed
-  const [
-    events,
-    inquiries,
-    clients,
-    recipes,
-    menus,
-    quotes,
-    expenses,
-    invoices,
-    staff,
-    tasks,
-    vendors,
-    contracts,
-    leads,
-    goals,
-    campaigns,
-    unreadMessages,
-    calls,
-    circles,
-  ] = await Promise.all([
-    // Events: active (not completed, not cancelled)
+  // Fetch only the 6 core counts needed by the condensed Core Areas panel
+  const [events, inquiries, clients, menus, quotes, unreadMessages] = await Promise.all([
     safeCount(db, 'events', 'tenant_id', tid, (q: any) =>
       q.not('status', 'in', '(completed,cancelled)')
     ),
-    // Inquiries: open (not converted, not rejected, not archived)
     safeCount(db, 'inquiries', 'tenant_id', tid, (q: any) =>
       q.not('status', 'in', '(converted,rejected,archived)')
     ),
-    // Clients: total
     safeCount(db, 'clients', 'tenant_id', tid),
-    // Recipes: total
-    safeCount(db, 'recipes', 'tenant_id', tid),
-    // Menus: total
     safeCount(db, 'menus', 'tenant_id', tid),
-    // Quotes: pending (draft or sent)
     safeCount(db, 'quotes', 'tenant_id', tid, (q: any) => q.in('status', ['draft', 'sent'])),
-    // Expenses: this month
-    safeCount(db, 'expenses', 'tenant_id', tid, (q: any) => q.gte('expense_date', monthStart)),
-    // Invoices: billable events
-    safeCount(db, 'events', 'tenant_id', tid, (q: any) =>
-      q.in('status', ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'])
-    ),
-    // Staff: active
-    safeCount(db, 'staff_members', 'chef_id', tid, (q: any) => q.eq('status', 'active')),
-    // Tasks: open (not completed)
-    safeCount(db, 'chef_todos', 'chef_id', tid, (q: any) => q.eq('completed', false)),
-    // Vendors: total (chef_id scoped)
-    safeCount(db, 'vendors', 'chef_id', tid),
-    // Contracts: signed (event_contracts table, chef_id scoped)
-    safeCount(db, 'event_contracts', 'chef_id', tid, (q: any) => q.eq('status', 'signed')),
-    // Leads: new inquiries
-    safeCount(db, 'inquiries', 'tenant_id', tid, (q: any) => q.eq('status', 'new')),
-    // Goals: active (tenant_id scoped)
-    safeCount(db, 'chef_goals', 'tenant_id', tid, (q: any) => q.eq('status', 'active')),
-    // Campaigns: marketing_campaigns, chef_id scoped
-    safeCount(db, 'marketing_campaigns', 'chef_id', tid),
-    // Unread conversations
     safeCount(db, 'conversations', 'tenant_id', tid, (q: any) => q.gt('unread_count', 0)),
-    // Upcoming calls (scheduled, not completed)
-    safeCount(db, 'scheduled_calls', 'tenant_id', tid, (q: any) =>
-      q.eq('status', 'scheduled').gte('scheduled_at', today)
-    ),
-    // Dinner Circles: active groups
-    safeCount(db, 'hub_groups', 'tenant_id', tid, (q: any) => q.eq('is_active', true)),
   ])
 
   return (
@@ -103,22 +44,23 @@ export async function CommandCenterSection() {
         events,
         inquiries,
         clients,
-        recipes,
         menus,
         quotes,
-        expenses,
-        invoices,
-        staff,
-        tasks,
-        vendors,
-        contracts,
-        leads,
-        inventoryAlerts: 0,
-        goals,
-        campaigns,
         unreadMessages,
-        calls,
-        circles,
+        // Unused by the condensed panel but kept for interface compatibility
+        recipes: 0,
+        expenses: 0,
+        invoices: 0,
+        staff: 0,
+        tasks: 0,
+        vendors: 0,
+        contracts: 0,
+        leads: 0,
+        inventoryAlerts: 0,
+        goals: 0,
+        campaigns: 0,
+        calls: 0,
+        circles: 0,
       }}
     />
   )

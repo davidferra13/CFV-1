@@ -1,6 +1,6 @@
 # Spec: Restaurant Ops Surface and Reliability Pass
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)

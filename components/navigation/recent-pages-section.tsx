@@ -44,11 +44,12 @@ export function RecentPagesSection() {
   const [collapsed, setCollapsed] = useState(false)
   const [mounted, setMounted] = useState(false)
 
-  // Load collapsed state from localStorage on mount
+  // Load collapsed state from localStorage on mount; default to collapsed
   useEffect(() => {
     try {
       const stored = localStorage.getItem(COLLAPSED_KEY)
-      if (stored === 'true') setCollapsed(true)
+      // Default to collapsed unless user explicitly expanded
+      setCollapsed(stored === null ? true : stored === 'true')
     } catch {
       // ignore
     }
@@ -109,7 +110,7 @@ export function RecentPagesSection() {
         }`}
       >
         <div className="space-y-0.5">
-          {recentPages.map((page: RecentPage) => (
+          {recentPages.slice(0, 5).map((page: RecentPage) => (
             <button
               key={page.path}
               type="button"

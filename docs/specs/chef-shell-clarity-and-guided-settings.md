@@ -1,6 +1,6 @@
 # Spec: Chef Shell Clarity and Guided Settings
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)

@@ -42,12 +42,13 @@ export function AllFeaturesCollapse({
   const pathname = usePathname()
 
   const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return false
+    if (typeof window === 'undefined') return true
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
-      return stored === null ? false : stored === 'true'
+      // Default to collapsed on first load; auto-expand overrides this when active route is inside
+      return stored === null ? true : stored === 'true'
     } catch {
-      return false
+      return true
     }
   })
 
@@ -82,7 +83,7 @@ export function AllFeaturesCollapse({
         onClick={toggle}
         className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-stone-500 hover:text-stone-400 transition-colors"
       >
-        <span>All Features</span>
+        <span>Browse Everything</span>
         <ChevronDown
           className={`h-3.5 w-3.5 transition-transform duration-200 ${collapsed ? '-rotate-90' : 'rotate-0'}`}
         />

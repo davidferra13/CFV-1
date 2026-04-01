@@ -12,7 +12,7 @@ import { CORE_MODULES } from '@/lib/billing/focus-mode'
 
 /**
  * Check if Focus Mode is enabled for the current chef.
- * Defaults to true (ON) for new users - clean sidebar out of the box.
+ * Defaults to false (OFF) - focus mode is optional simplification, not the default state.
  */
 export async function isFocusModeEnabled(): Promise<boolean> {
   const user = await requireChef()
@@ -24,8 +24,7 @@ export async function isFocusModeEnabled(): Promise<boolean> {
     .eq('chef_id', user.entityId)
     .single()
 
-  // Default to ON for new users (guided experience)
-  return (data as any)?.focus_mode ?? true
+  return (data as any)?.focus_mode ?? false
 }
 
 /**

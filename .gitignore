@@ -230,3 +230,6 @@ scripts/data/node_modules/
 scripts/data/package-lock.json
 scripts/data/*.zip
 scripts/data/usda-sr-legacy/
+
+# OpenClaw temp files
+.openclaw-temp/
