@@ -91,7 +91,7 @@ export async function getEmailSnapshot(inquiryId: string): Promise<EmailSnapshot
   }
 
   // Fetch event if converted
-  const eventId = (inquiry as any).converted_to_event_id || null
+  const eventId = inquiry.converted_to_event_id || null
   let event: Record<string, any> | null = null
   if (eventId) {
     const { data } = await db
@@ -124,7 +124,7 @@ export async function getEmailSnapshot(inquiryId: string): Promise<EmailSnapshot
   }
 
   const contactName = inquiry.contact_name || null
-  const occasion = (inquiry as any).confirmed_occasion || null
+  const occasion = inquiry.confirmed_occasion || null
   const title = computeTitle(contactName, occasion)
 
   const lines: SnapshotLine[] = []
@@ -180,7 +180,7 @@ export async function getEmailSnapshot(inquiryId: string): Promise<EmailSnapshot
   })
 
   // Dishes discussed (only if present)
-  const dishes = (inquiry as any).discussed_dishes as string[] | null
+  const dishes = inquiry.discussed_dishes as string[] | null
   if (Array.isArray(dishes) && dishes.length > 0) {
     lines.push({
       label: 'Dishes discussed',
@@ -190,7 +190,7 @@ export async function getEmailSnapshot(inquiryId: string): Promise<EmailSnapshot
   }
 
   // Course selection (only if present)
-  const tier = (inquiry as any).selected_tier as string | null
+  const tier = inquiry.selected_tier as string | null
   if (tier) {
     lines.push({
       label: 'Course selection',

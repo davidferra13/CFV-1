@@ -1919,6 +1919,9 @@ export async function declineInquiry(id: string, reason?: string) {
     .update({
       status: 'declined',
       decline_reason: reason ?? null,
+      next_action_required: null,
+      next_action_by: null,
+      follow_up_due_at: null,
     })
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)

@@ -504,6 +504,7 @@ async function handleInquiry(
     let ollamaPhone: string | null = null
     let ollamaNotes: string | null = null
     let ollamaReferralSource: string | null = null
+    let ollamaDiscussedDishes: string[] = []
 
     try {
       const parseResult = await parseInquiryFromText(email.body)
@@ -513,6 +514,7 @@ async function handleInquiry(
       ollamaPhone = parseResult.parsed.client_phone || null
       ollamaNotes = parseResult.parsed.notes || null
       ollamaReferralSource = parseResult.parsed.referral_source || null
+      ollamaDiscussedDishes = parseResult.parsed.discussed_dishes || []
     } catch (ollamaErr) {
       // Ollama offline - deterministic extraction still provides all structured fields
       console.warn(
@@ -589,6 +591,9 @@ async function handleInquiry(
         confirmed_service_expectations: ollamaServiceExpectations || null,
         // Referral source from either layer
         referral_source: detFields.referral_source || ollamaReferralSource || null,
+        // Dish names extracted from email (Ollama freeform extraction)
+        discussed_dishes:
+          ollamaDiscussedDishes.length > 0 ? (ollamaDiscussedDishes as unknown as Json) : null,
         source_message: email.body,
         unknown_fields:
           Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
@@ -866,6 +871,35 @@ async function handleExistingThread(
               updates.confirmed_dietary_restrictions = newFields.confirmed_dietary_restrictions
             if (!inquiry.confirmed_cannabis_preference && newFields.confirmed_cannabis_preference)
               updates.confirmed_cannabis_preference = newFields.confirmed_cannabis_preference
+
+            // Extract discussed dishes from follow-up emails via Ollama (non-blocking)
+            try {
+              const ollamaResult = await parseInquiryFromText(email.body)
+              const newDishes = ollamaResult.parsed.discussed_dishes || []
+              if (newDishes.length > 0) {
+                const existingDishes = Array.isArray((inquiry as any).discussed_dishes)
+                  ? ((inquiry as any).discussed_dishes as string[])
+                  : []
+                // Merge: add new dishes not already in the list (case-insensitive)
+                const existingLower = new Set(existingDishes.map((d: string) => d.toLowerCase()))
+                const merged = [...existingDishes]
+                for (const dish of newDishes) {
+                  if (!existingLower.has(dish.toLowerCase())) {
+                    merged.push(dish)
+                    existingLower.add(dish.toLowerCase())
+                  }
+                }
+                if (merged.length > existingDishes.length) {
+                  updates.discussed_dishes = merged as unknown as Json
+                }
+              }
+            } catch (dishErr) {
+              // Non-fatal: Ollama may be offline
+              console.warn(
+                '[handleExistingThread] Dish extraction failed (non-fatal):',
+                (dishErr as Error).message
+              )
+            }
 
             // Re-score if we found new fields
             if (Object.keys(updates).length > 0) {

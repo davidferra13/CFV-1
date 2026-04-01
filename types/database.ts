@@ -28436,6 +28436,7 @@ export type Database = {
           decline_reason: string | null
           deleted_at: string | null
           deleted_by: string | null
+          discussed_dishes: Json | null
           external_inquiry_id: string | null
           external_link: string | null
           external_platform: string | null
@@ -28453,6 +28454,7 @@ export type Database = {
           referral_source: string | null
           schedule_request_jsonb: Json | null
           selected_menu_id: string | null
+          selected_tier: string | null
           service_mode:
             | Database["public"]["Enums"]["booking_service_mode"]
             | null
@@ -28489,6 +28491,7 @@ export type Database = {
           decline_reason?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
+          discussed_dishes?: Json | null
           external_inquiry_id?: string | null
           external_link?: string | null
           external_platform?: string | null
@@ -28506,6 +28509,7 @@ export type Database = {
           referral_source?: string | null
           schedule_request_jsonb?: Json | null
           selected_menu_id?: string | null
+          selected_tier?: string | null
           service_mode?:
             | Database["public"]["Enums"]["booking_service_mode"]
             | null
@@ -28542,6 +28546,7 @@ export type Database = {
           decline_reason?: string | null
           deleted_at?: string | null
           deleted_by?: string | null
+          discussed_dishes?: Json | null
           external_inquiry_id?: string | null
           external_link?: string | null
           external_platform?: string | null
@@ -28559,6 +28564,7 @@ export type Database = {
           referral_source?: string | null
           schedule_request_jsonb?: Json | null
           selected_menu_id?: string | null
+          selected_tier?: string | null
           service_mode?:
             | Database["public"]["Enums"]["booking_service_mode"]
             | null

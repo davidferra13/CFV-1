@@ -1,11 +1,18 @@
 import { getResponseQueue } from '@/lib/inquiries/actions'
+import { getOverdueInquiries } from '@/lib/lifecycle/next-action'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 
 export async function RespondNextCard() {
   let queue: Awaited<ReturnType<typeof getResponseQueue>>
+  let overdueCount = 0
   try {
-    queue = await getResponseQueue(1)
+    const [q, overdue] = await Promise.all([
+      getResponseQueue(1),
+      getOverdueInquiries().catch(() => []),
+    ])
+    queue = q
+    overdueCount = overdue.length
   } catch {
     return null
   }
@@ -53,12 +60,22 @@ export async function RespondNextCard() {
         </div>
       </div>
 
-      <Link
-        href={`/inquiries/${item.id}`}
-        className="mt-3 inline-block rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-orange-500"
-      >
-        View Inquiry
-      </Link>
+      <div className="mt-3 flex items-center gap-3">
+        <Link
+          href={`/inquiries/${item.id}`}
+          className="inline-block rounded-md bg-orange-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-orange-500"
+        >
+          View Inquiry
+        </Link>
+        {overdueCount > 0 && (
+          <Link
+            href="/inquiries?filter=respond_next"
+            className="text-xs text-red-400 hover:text-red-300"
+          >
+            {overdueCount} overdue
+          </Link>
+        )}
+      </div>
     </div>
   )
 }

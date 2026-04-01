@@ -12,5 +12,6 @@ export const COMMON_DECLINE_REASONS = [
   "Cuisine / event type I don't serve",
   'Not a good fit for my style',
   'Client unresponsive',
+  'Plans changed / maybe future',
   'Other',
 ] as const

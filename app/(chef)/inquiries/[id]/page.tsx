@@ -73,6 +73,8 @@ import { CriticalPathCard } from '@/components/lifecycle/critical-path-card'
 import { getEmailSnapshot } from '@/lib/lifecycle/email-snapshot'
 import { getLifecycleProgress } from '@/lib/lifecycle/actions'
 import { LifecycleProgressPanel } from '@/components/lifecycle/lifecycle-progress-panel'
+import { getNextActions } from '@/lib/lifecycle/next-action'
+import { NextActionBanner } from '@/components/lifecycle/next-action-banner'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -177,6 +179,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     criticalPath,
     snapshotData,
     lifecycleProgress,
+    nextActions,
   ] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
@@ -193,6 +196,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     getCriticalPath({ inquiryId: params.id }).catch(() => null),
     getEmailSnapshot(params.id).catch(() => null),
     getLifecycleProgress(params.id).catch(() => null),
+    getNextActions(params.id).catch(() => null),
   ])
 
   if (!inquiry) {
@@ -326,6 +330,9 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           <Button variant="ghost">Back to Pipeline</Button>
         </Link>
       </div>
+
+      {/* Next Action - what to do right now */}
+      {nextActions && <NextActionBanner data={nextActions} />}
 
       {/* Critical Path - the go/no-go status for this dinner */}
       {criticalPath && <CriticalPathCard criticalPath={criticalPath} circleToken={circleToken} />}
