@@ -1,6 +1,6 @@
 # Spec: OpenClaw Developer Usage Page
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** `openclaw-canonical-scope-and-sequence.md`, `openclaw-internal-only-boundary-and-debranding.md`
 > **Estimated complexity:** medium (3-8 files)

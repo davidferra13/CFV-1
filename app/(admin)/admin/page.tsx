@@ -4,6 +4,7 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformOverviewStats } from '@/lib/admin/platform-stats'
 import { getAdminDebugState } from '@/lib/admin/debug-state'
+import { isFounderEmail } from '@/lib/platform/owner-account'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -19,6 +20,7 @@ import {
   TrendingDown,
   Globe,
   Inbox,
+  Cpu,
 } from '@/components/ui/icons'
 
 function StatCard({
@@ -257,6 +259,23 @@ export default async function AdminOverviewPage() {
           />
         </div>
       </div>
+
+      {/* Founder-only section */}
+      {isFounderEmail(admin.email) && (
+        <div>
+          <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-3">
+            Founder Only
+          </h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <QuickTile
+              href="/admin/openclaw"
+              icon={Cpu}
+              label="OpenClaw"
+              description="Internal map of OpenClaw usage across the website lifecycle"
+            />
+          </div>
+        </div>
+      )}
 
       <div>
         <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-3">
