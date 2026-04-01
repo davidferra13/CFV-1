@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, formatDistanceToNow } from 'date-fns'
+import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
+import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
@@ -99,26 +101,29 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
           {/* Pricing */}
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Pricing</h2>
+            <div className="mb-4">
+              <PriceComparisonSummary
+                showPerPerson
+                data={rowToPriceComparison({
+                  total_quoted_cents: quote.total_quoted_cents,
+                  price_per_person_cents: (quote as any).price_per_person_cents ?? null,
+                  baseline_total_cents: (quote as any).baseline_total_cents ?? null,
+                  baseline_price_per_person_cents:
+                    (quote as any).baseline_price_per_person_cents ?? null,
+                  pricing_source_kind: (quote as any).pricing_source_kind ?? null,
+                  override_kind: (quote as any).override_kind ?? null,
+                  override_reason: (quote as any).override_reason ?? null,
+                  pricing_context: (quote as any).pricing_context ?? null,
+                  guest_count_estimated: quote.guest_count_estimated ?? null,
+                })}
+              />
+            </div>
             <dl className="space-y-3">
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Total Quoted</dt>
-                <dd className="text-2xl font-bold text-stone-100 mt-1">
-                  {formatCurrency(quote.total_quoted_cents)}
-                </dd>
-              </div>
               {quote.pricing_model && (
                 <div>
                   <dt className="text-sm font-medium text-stone-500">Pricing Model</dt>
                   <dd className="mt-1">
                     <PricingModelBadge model={quote.pricing_model as any} />
-                  </dd>
-                </div>
-              )}
-              {quote.price_per_person_cents && (
-                <div>
-                  <dt className="text-sm font-medium text-stone-500">Per Person</dt>
-                  <dd className="text-sm text-stone-100 mt-1">
-                    {formatCurrency(quote.price_per_person_cents)}
                   </dd>
                 </div>
               )}

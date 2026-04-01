@@ -17,6 +17,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import type { CostForecast } from '@/lib/openclaw/cost-forecast-actions'
+import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
+import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
 
 type EventDetailMoneyTabProps = {
   activeTab: EventDetailTab
@@ -141,6 +143,26 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
             <EventExportButton eventId={event.id} />
           </div>
         </div>
+        {/* Baseline vs final comparison when override metadata exists */}
+        {(event as any).override_kind && (event as any).override_kind !== 'none' && (
+          <div className="mb-4 pb-4 border-b border-stone-700">
+            <PriceComparisonSummary
+              showPerPerson
+              data={rowToPriceComparison({
+                quoted_price_cents: event.quoted_price_cents,
+                price_per_person_cents: (event as any).price_per_person_cents ?? null,
+                baseline_total_cents: (event as any).baseline_total_cents ?? null,
+                baseline_price_per_person_cents:
+                  (event as any).baseline_price_per_person_cents ?? null,
+                pricing_source_kind: (event as any).pricing_source_kind ?? null,
+                override_kind: (event as any).override_kind ?? null,
+                override_reason: (event as any).override_reason ?? null,
+                pricing_context: (event as any).pricing_context ?? null,
+                guest_count_actual: event.guest_count ?? null,
+              })}
+            />
+          </div>
+        )}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <dt className="text-sm font-medium text-stone-500">Quoted Price</dt>

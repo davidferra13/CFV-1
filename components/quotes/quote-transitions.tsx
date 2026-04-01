@@ -182,42 +182,9 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
 
           {quote.status === 'sent' && (
             <>
-              <Button
-                onClick={() =>
-                  requestPolicyConfirmation(
-                    {
-                      risk: 'medium',
-                      reversible: false,
-                      entityName: quote.id,
-                      impactPreview: 'This quote will move to accepted.',
-                      actionLabel: 'Mark Accepted',
-                    },
-                    () => handleTransition('accepted')
-                  )
-                }
-                loading={loading}
-                disabled={loading}
-              >
-                Mark Accepted
-              </Button>
-              <Button
-                variant="danger"
-                onClick={() =>
-                  requestPolicyConfirmation(
-                    {
-                      risk: 'high',
-                      reversible: false,
-                      entityName: quote.id,
-                      impactPreview: 'This quote will be marked rejected.',
-                      actionLabel: 'Mark Rejected',
-                    },
-                    () => handleTransition('rejected')
-                  )
-                }
-                disabled={loading}
-              >
-                Mark Rejected
-              </Button>
+              {/* Accepted/rejected transitions are client-only via the client portal.
+                  The server action blocks chef-initiated accept/reject by design.
+                  Chefs may only expire a sent quote from this surface. */}
               <Button
                 variant="secondary"
                 onClick={() =>
@@ -253,8 +220,8 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
           )}
           {quote.status === 'sent' && (
             <p>
-              Quote sent to client. Waiting for their response. You can also mark it manually if
-              they respond outside the portal.
+              Quote sent to client. Waiting for their response via the client portal. Expire it here
+              if it is no longer relevant.
             </p>
           )}
           {quote.status === 'expired' && (

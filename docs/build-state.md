@@ -14,10 +14,10 @@ Last known state of the app. Updated after every successful type check and build
 
 | Check                         | Status | Last Verified    | Commit   | Agent   |
 | ----------------------------- | ------ | ---------------- | -------- | ------- |
-| `tsc --noEmit --skipLibCheck` | green  | 2026-04-01 02:00 | 5511b1e9 | Builder |
+| `tsc --noEmit --skipLibCheck` | green  | 2026-04-01       | pending  | Builder |
 | `next build --no-lint`        | green  | 2026-04-01 02:00 | 5511b1e9 | Builder |
 
-**Last green build:** 5511b1e9 (2026-04-01 02:00 EST)
+**Last green build:** 5511b1e9 (2026-04-01 02:00 EST) - tsc verified clean post spec-6 changes
 **Last commit on main:** 5511b1e9 - feat(catalog-ux-overhaul): store-first shopping experience
 
 ## History

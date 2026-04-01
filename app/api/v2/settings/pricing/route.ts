@@ -58,35 +58,10 @@ export const GET = withApiAuth(
       .single()
 
     if (error || !data) {
-      // Return defaults if no config exists
-      return apiSuccess({
-        chef_id: ctx.tenantId,
-        couples_rate_3_course: 20000,
-        couples_rate_4_course: 25000,
-        couples_rate_5_course: 30000,
-        group_rate_3_course: 15500,
-        group_rate_4_course: 18500,
-        group_rate_5_course: 21500,
-        weekly_standard_min: 40000,
-        weekly_standard_max: 50000,
-        weekly_commit_min: 30000,
-        weekly_commit_max: 35000,
-        cook_and_leave_rate: 15000,
-        pizza_rate: 15000,
-        deposit_percentage: 50,
-        minimum_booking_cents: 30000,
-        balance_due_hours: 24,
-        mileage_rate_cents: 70,
-        weekend_premium_pct: 10,
-        weekend_premium_on: false,
-        holiday_tier1_pct: 45,
-        holiday_tier2_pct: 30,
-        holiday_tier3_pct: 20,
-        holiday_proximity_days: 2,
-        large_group_min: 8,
-        large_group_max: 14,
-        _defaults: true,
-      })
+      // No pricing config has been saved yet. Return a clean empty-state object
+      // rather than stale hardcoded defaults that conflict with the zero-default
+      // migration at database/migrations/20260401000102_pricing_config_zero_defaults.sql.
+      return apiSuccess({ chef_id: ctx.tenantId, _unconfigured: true })
     }
 
     return apiSuccess(data)

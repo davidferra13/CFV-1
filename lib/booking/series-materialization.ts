@@ -223,6 +223,11 @@ export async function materializeSeriesEvents(params: {
         quoted_price_cents: sessionIndex === 0 ? quotedPriceCents : null,
         deposit_amount_cents: sessionIndex === 0 ? depositAmountCents : null,
         pricing_model: pricingModel,
+        // Seed pricing metadata so downstream overrides and comparisons work correctly.
+        // Baseline equals the series-derived total with no override applied.
+        pricing_source_kind: 'series_session',
+        baseline_total_cents: sessionIndex === 0 ? quotedPriceCents : null,
+        override_kind: 'none',
         dietary_restrictions: inquiry.confirmed_dietary_restrictions || [],
         special_requests: mergeSpecialRequestNotes(
           inquiry.confirmed_service_expectations,

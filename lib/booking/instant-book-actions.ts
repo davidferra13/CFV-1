@@ -318,6 +318,8 @@ export async function createInstantBookingCheckout(
       return Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0)
     })
 
+    const perPersonCentsForSeries = pricingModel === 'per_person' ? basePriceCents : null
+
     const eventPayload = sortedSessions.map((session: any, index: number) => ({
       tenant_id: tenantId,
       client_id: client.id,
@@ -338,6 +340,11 @@ export async function createInstantBookingCheckout(
       quoted_price_cents: index === 0 ? totalCents : null,
       deposit_amount_cents: index === 0 ? depositCents : null,
       pricing_model: pricingModel,
+      price_per_person_cents: perPersonCentsForSeries,
+      pricing_source_kind: 'booking_page',
+      baseline_total_cents: index === 0 ? totalCents : null,
+      baseline_price_per_person_cents: perPersonCentsForSeries,
+      override_kind: 'none',
       service_mode: serviceMode,
       special_requests: [
         validated.additional_notes?.trim() || null,
@@ -384,6 +391,9 @@ export async function createInstantBookingCheckout(
         .eq('id', event.source_session_id)
     }
   } else {
+    const singleEventPerPersonCents =
+      chef.booking_pricing_type === 'per_person' ? basePriceCents : null
+
     const { data: event, error: eventError } = await db
       .from('events')
       .insert({
@@ -401,6 +411,11 @@ export async function createInstantBookingCheckout(
         quoted_price_cents: totalCents,
         deposit_amount_cents: depositCents,
         service_mode: serviceMode,
+        price_per_person_cents: singleEventPerPersonCents,
+        pricing_source_kind: 'booking_page',
+        baseline_total_cents: totalCents,
+        baseline_price_per_person_cents: singleEventPerPersonCents,
+        override_kind: 'none',
         special_requests: [
           validated.additional_notes?.trim() || null,
           recurringSummary,

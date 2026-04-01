@@ -20,6 +20,8 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { formatDistanceToNow, format } from 'date-fns'
 import { NoQuotesIllustration } from '@/components/ui/branded-illustrations'
 import { QuotesFilterTabs } from '@/components/quotes/quotes-filter-tabs'
+import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
+import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
 
 type QuoteFilter = 'all' | 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
 
@@ -83,15 +85,21 @@ async function QuoteList({ filter }: { filter: QuoteFilter }) {
                 )}
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-lg font-semibold text-stone-100">
-                  {formatCurrency(quote.total_quoted_cents)}
-                </p>
-                {quote.price_per_person_cents && quote.guest_count_estimated && (
-                  <p className="text-xs text-stone-500">
-                    {formatCurrency(quote.price_per_person_cents)}/person x{' '}
-                    {quote.guest_count_estimated}
-                  </p>
-                )}
+                <PriceComparisonSummary
+                  compact
+                  data={rowToPriceComparison({
+                    total_quoted_cents: quote.total_quoted_cents,
+                    price_per_person_cents: (quote as any).price_per_person_cents ?? null,
+                    baseline_total_cents: (quote as any).baseline_total_cents ?? null,
+                    baseline_price_per_person_cents:
+                      (quote as any).baseline_price_per_person_cents ?? null,
+                    pricing_source_kind: (quote as any).pricing_source_kind ?? null,
+                    override_kind: (quote as any).override_kind ?? null,
+                    override_reason: (quote as any).override_reason ?? null,
+                    pricing_context: (quote as any).pricing_context ?? null,
+                    guest_count_estimated: quote.guest_count_estimated ?? null,
+                  })}
+                />
                 <p className="text-xs text-stone-400 mt-1">
                   {formatDistanceToNow(new Date(quote.updated_at), { addSuffix: true })}
                 </p>

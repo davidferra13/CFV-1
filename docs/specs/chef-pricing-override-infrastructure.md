@@ -1,6 +1,6 @@
 # Spec: Chef Pricing Override Infrastructure
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -14,6 +14,7 @@ _Every status change, every claim, every verification gets a row. This is the au
 | Created                                 | 2026-03-31 23:59 | planner + research agent |        |
 | Status: ready                           | 2026-03-31 23:59 | planner + research agent |        |
 | Refined with external operator research | 2026-04-01 00:34 | planner + research agent |        |
+| Status: built (TSC clean)               | 2026-04-01       | builder agent            |        |
 
 ---
 

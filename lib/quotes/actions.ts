@@ -10,6 +10,8 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
 import type { PricingInput } from '@/lib/pricing/compute'
+import type { PricingDecision } from '@/lib/pricing/pricing-decision'
+import { validatePricingDecision } from '@/lib/pricing/pricing-decision'
 import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { AuthError, UnknownAppError, ValidationError } from '@/lib/errors/app-error'
@@ -31,6 +33,27 @@ const VALID_TRANSITIONS: Record<QuoteStatus, QuoteStatus[]> = {
 // VALIDATION SCHEMAS
 // ============================================
 
+const PricingDecisionSchema = z
+  .object({
+    pricingSourceKind: z
+      .enum([
+        'chef_config_calculated',
+        'recurring_default',
+        'booking_page',
+        'recurring_service',
+        'series_session',
+        'manual_only',
+        'legacy',
+      ])
+      .optional(),
+    baselineTotalCents: z.number().int().nonnegative().nullable().optional(),
+    baselinePricePerPersonCents: z.number().int().positive().nullable().optional(),
+    overrideKind: z.enum(['none', 'per_person', 'custom_total']).optional(),
+    overrideReason: z.string().nullable().optional(),
+    pricingContext: z.record(z.string(), z.unknown()).nullable().optional(),
+  })
+  .optional()
+
 const CreateQuoteSchema = z.object({
   client_id: z.string().uuid(),
   inquiry_id: z.string().uuid().nullable().optional(),
@@ -47,6 +70,7 @@ const CreateQuoteSchema = z.object({
   pricing_notes: z.string().optional().or(z.literal('')),
   internal_notes: z.string().optional().or(z.literal('')),
   idempotency_key: z.string().optional(),
+  pricingDecision: PricingDecisionSchema,
 })
 
 const UpdateQuoteSchema = z.object({
@@ -63,6 +87,7 @@ const UpdateQuoteSchema = z.object({
   internal_notes: z.string().nullable().optional(),
   expected_updated_at: z.string().optional(),
   idempotency_key: z.string().optional(),
+  pricingDecision: PricingDecisionSchema,
 })
 
 export type CreateQuoteInput = z.infer<typeof CreateQuoteSchema>
@@ -128,6 +153,13 @@ export async function createQuote(input: CreateQuoteInput) {
           internal_notes: validated.internal_notes || null,
           created_by: user.id,
           updated_by: user.id,
+          pricing_source_kind: validated.pricingDecision?.pricingSourceKind ?? 'manual_only',
+          baseline_total_cents: validated.pricingDecision?.baselineTotalCents ?? null,
+          baseline_price_per_person_cents:
+            validated.pricingDecision?.baselinePricePerPersonCents ?? null,
+          override_kind: validated.pricingDecision?.overrideKind ?? 'none',
+          override_reason: validated.pricingDecision?.overrideReason ?? null,
+          pricing_context: validated.pricingDecision?.pricingContext ?? null,
         })
         .select()
         .single()
@@ -309,7 +341,7 @@ export async function getQuoteById(id: string) {
 export async function updateQuote(id: string, input: UpdateQuoteInput) {
   const user = await requireChef()
   const validated = UpdateQuoteSchema.parse(input)
-  const { expected_updated_at, idempotency_key, ...updateFields } = validated
+  const { expected_updated_at, idempotency_key, pricingDecision, ...updateFields } = validated
   const db: any = createServerClient()
 
   // Verify quote exists and is in draft
@@ -346,6 +378,17 @@ export async function updateQuote(id: string, input: UpdateQuoteInput) {
             ...updateFields,
             updated_by: user.id,
             updated_at: new Date().toISOString(),
+            ...(pricingDecision !== undefined
+              ? {
+                  pricing_source_kind: pricingDecision?.pricingSourceKind ?? 'manual_only',
+                  baseline_total_cents: pricingDecision?.baselineTotalCents ?? null,
+                  baseline_price_per_person_cents:
+                    pricingDecision?.baselinePricePerPersonCents ?? null,
+                  override_kind: pricingDecision?.overrideKind ?? 'none',
+                  override_reason: pricingDecision?.overrideReason ?? null,
+                  pricing_context: pricingDecision?.pricingContext ?? null,
+                }
+              : {}),
           })
           .eq('id', id)
           .eq('tenant_id', user.tenantId!)

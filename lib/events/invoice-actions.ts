@@ -168,7 +168,7 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
       `
       id, occasion, event_date, guest_count, status, tenant_id,
       quoted_price_cents, deposit_amount_cents, payment_status,
-      tip_amount_cents, pricing_model,
+      tip_amount_cents, pricing_model, override_kind, price_per_person_cents,
       invoice_number, invoice_issued_at,
       location_city, location_state, location_zip,
       client:clients(id, full_name, email)
@@ -652,8 +652,13 @@ function buildInvoiceData(
     loyaltyDiscountCents,
     loyaltyAdjustments: loyaltyAdjustmentSummary,
     pricePerPersonCents:
-      event.pricing_model === 'per_person' && event.quoted_price_cents && event.guest_count
-        ? Math.round(event.quoted_price_cents / event.guest_count)
+      event.pricing_model === 'per_person'
+        ? ((event as any).price_per_person_cents ??
+          (event.quoted_price_cents &&
+          event.guest_count &&
+          (event as any).override_kind !== 'custom_total'
+            ? Math.round(event.quoted_price_cents / event.guest_count)
+            : null))
         : null,
     depositAmountCents: event.deposit_amount_cents,
     paymentStatus: event.payment_status,

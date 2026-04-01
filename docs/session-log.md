@@ -582,3 +582,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending at log time (created immediately after this entry)
 - Build state on departure: unchanged (docs-only planning/research pass)
 - Notes: Rewrote the social spec into the full planner format, locked the system boundary that ChefFlow is the source of truth and publisher while OpenClaw is the content operator, added a verified build-order hierarchy, and captured the main drift risks: over-promised UI copy, platform-policy gaps, route/table drift, and event-social schema uncertainty.
+
+## 2026-04-01 03:20 EDT
+
+- Agent: Planner + Research (Codex)
+- Task: Free-first API integration priority audit, current-state research, developer-notes capture, and builder-ready spec/report for the integrations that are actually needed first
+- Status: started
+- Build state on arrival: green (docs/build-state.md last green 5511b1e9; docs-focused planning/research session)
+- Files in focus: docs/app-complete-audit.md, app/(chef)/settings/integrations, app/(chef)/settings/platform-connections, app/(chef)/settings/calendar-sync, app/(chef)/settings/yelp, components/settings, components/integrations, components/social, lib/google, lib/scheduling, lib/integrations, lib/reviews, relevant schema and env/docs surfaces
+- Notes: Developer wants free integrations only, prioritized by what ChefFlow actually needs first rather than a generic API wishlist. The deliverable must preserve the conversation's reasoning in permanent Developer Notes and separate verified current-state from assumptions.
+
+## 2026-04-01 EST
+
+- Agent: Builder
+- Task: Spec 6 - chef-pricing-override-infrastructure (continuation from prior context-exhausted session)
+- Status: completed
+- Files touched: lib/quotes/actions.ts, lib/guests/count-changes.ts, lib/events/invoice-actions.ts, lib/booking/instant-book-actions.ts, lib/booking/series-materialization.ts, components/quotes/quote-transitions.tsx, app/(chef)/quotes/page.tsx, app/(chef)/quotes/[id]/page.tsx, app/(chef)/events/[id]/\_components/event-detail-money-tab.tsx, app/(client)/my-events/[id]/proposal/page.tsx, app/(client)/my-events/[id]/pay/page.tsx, app/(client)/my-events/[id]/page.tsx, app/api/v2/settings/pricing/route.ts, database/migrations/20260401000153_quote_acceptance_copy_pricing_metadata.sql, docs/specs/chef-pricing-override-infrastructure.md
+- Build state on departure: green (TSC clean, 0 errors)
+- Notes: All pricing override infrastructure complete. Key changes: (1) createQuote/updateQuote persist 6 new pricing-decision fields; (2) guest-count changes respect custom_total overrides instead of silently repricing; (3) invoice-actions uses explicit price_per_person_cents instead of deriving from total/count for overridden events; (4) quote-transitions removes stale Mark Accepted/Rejected buttons that always threw; (5) all 6 pricing surfaces (chef quote list, chef quote detail, chef event money tab, client proposal, client payment, client event detail) now show PriceComparisonSummary; (6) instant-book and series-materialization seed pricing_source_kind/baseline/override metadata; (7) Migration 153 extends respond_to_quote_atomic to copy all pricing metadata to the linked event on acceptance; (8) API v2 pricing route no longer returns stale hardcoded defaults.

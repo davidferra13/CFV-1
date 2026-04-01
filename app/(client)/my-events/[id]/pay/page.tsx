@@ -12,6 +12,8 @@ import { PaymentPageClient } from './payment-page-client'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
 import { CancellationPolicyDisplay } from '@/components/events/cancellation-policy-display'
+import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
+import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
 
 export default async function PaymentPage({ params }: { params: { id: string } }) {
   await requireClient()
@@ -117,10 +119,20 @@ export default async function PaymentPage({ params }: { params: { id: string } }
 
             {/* Financial Breakdown */}
             <div className="space-y-3">
-              <div className="flex justify-between text-stone-400">
-                <span>Total Event Cost</span>
-                <span className="font-medium">{formatCurrency(quotedPriceCents)}</span>
-              </div>
+              <PriceComparisonSummary
+                data={rowToPriceComparison({
+                  quoted_price_cents: quotedPriceCents,
+                  price_per_person_cents: (event as any).price_per_person_cents ?? null,
+                  baseline_total_cents: (event as any).baseline_total_cents ?? null,
+                  baseline_price_per_person_cents:
+                    (event as any).baseline_price_per_person_cents ?? null,
+                  pricing_source_kind: (event as any).pricing_source_kind ?? null,
+                  override_kind: (event as any).override_kind ?? null,
+                  override_reason: (event as any).override_reason ?? null,
+                  pricing_context: (event as any).pricing_context ?? null,
+                  guest_count_actual: event.guest_count ?? null,
+                })}
+              />
 
               {totalPaidCents > 0 && (
                 <div className="flex justify-between text-stone-400">

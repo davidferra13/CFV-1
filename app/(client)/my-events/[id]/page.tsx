@@ -37,6 +37,8 @@ import { TrackedDownloadLink } from '@/components/activity/tracked-download-link
 import { CancellationPolicyDisplay } from '@/components/events/cancellation-policy-display'
 import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
 import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
+import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
+import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
 import { buildJourneySteps } from '@/lib/events/journey-steps'
 import { getCircleTokenForEvent } from '@/lib/hub/client-hub-actions'
 import type { Database } from '@/types/database'
@@ -298,12 +300,20 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-stone-400">Total Price</span>
-              <span className="font-semibold text-stone-100">
-                {formatCurrency(quotedPriceCents)}
-              </span>
-            </div>
+            <PriceComparisonSummary
+              data={rowToPriceComparison({
+                quoted_price_cents: quotedPriceCents,
+                price_per_person_cents: (event as any).price_per_person_cents ?? null,
+                baseline_total_cents: (event as any).baseline_total_cents ?? null,
+                baseline_price_per_person_cents:
+                  (event as any).baseline_price_per_person_cents ?? null,
+                pricing_source_kind: (event as any).pricing_source_kind ?? null,
+                override_kind: (event as any).override_kind ?? null,
+                override_reason: (event as any).override_reason ?? null,
+                pricing_context: (event as any).pricing_context ?? null,
+                guest_count_actual: event.guest_count ?? null,
+              })}
+            />
 
             <div className="flex justify-between items-center">
               <span className="text-stone-400">Amount Paid</span>

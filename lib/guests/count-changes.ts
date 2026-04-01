@@ -47,7 +47,9 @@ export async function requestGuestCountChange(
   // Load event
   const { data: event } = await db
     .from('events')
-    .select('id, guest_count, quoted_price_cents, pricing_model, tenant_id, client_id, event_date')
+    .select(
+      'id, guest_count, quoted_price_cents, pricing_model, override_kind, price_per_person_cents, tenant_id, client_id, event_date'
+    )
     .eq('id', parsed.data.eventId)
     .eq('tenant_id', user.entityId)
     .single()
@@ -61,10 +63,17 @@ export async function requestGuestCountChange(
     return { success: false, error: 'Guest count is already set to this number.' }
   }
 
-  // Calculate price impact for per-person pricing
+  // Calculate price impact for per-person pricing.
+  // Skip if override_kind is 'custom_total' - chef set a fixed price that should not change with guest count.
   let priceImpactCents = 0
-  if (event.pricing_model === 'per_person' && event.quoted_price_cents && previousCount > 0) {
-    const pricePerPerson = Math.round(event.quoted_price_cents / previousCount)
+  const isCustomTotal = event.override_kind === 'custom_total'
+  if (!isCustomTotal && event.pricing_model === 'per_person' && previousCount > 0) {
+    // Prefer the explicit per-person rate if available; fall back to dividing total.
+    const pricePerPerson = event.price_per_person_cents
+      ? event.price_per_person_cents
+      : event.quoted_price_cents
+        ? Math.round(event.quoted_price_cents / previousCount)
+        : 0
     priceImpactCents = pricePerPerson * (newCount - previousCount)
   }
 
@@ -114,8 +123,8 @@ export async function requestGuestCountChange(
     })
     .eq('id', parsed.data.eventId)
 
-  // Update quoted price if per-person
-  if (event.pricing_model === 'per_person' && priceImpactCents !== 0) {
+  // Update quoted price if per-person and no custom_total override protecting the amount.
+  if (!isCustomTotal && event.pricing_model === 'per_person' && priceImpactCents !== 0) {
     const newQuotedPrice = (event.quoted_price_cents ?? 0) + priceImpactCents + surchargeCents
     await db
       .from('events')
