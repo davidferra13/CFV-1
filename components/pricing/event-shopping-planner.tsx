@@ -43,7 +43,9 @@ export function EventShoppingPlanner() {
         const data = await getUpcomingEventShoppingPlan(daysAhead)
         setPlan(data)
       } catch {
-        setError('Could not generate shopping plan. Is the Pi online?')
+        setError(
+          'Could not generate shopping plan right now. Live price optimization is unavailable.'
+        )
       }
     })
   }
@@ -247,7 +249,7 @@ export function EventShoppingPlanner() {
 
               {!plan.optimization && plan.ingredients.length > 0 && (
                 <p className="text-sm text-stone-500 text-center py-2">
-                  Price data unavailable (Pi offline)
+                  Price data unavailable right now
                 </p>
               )}
             </>

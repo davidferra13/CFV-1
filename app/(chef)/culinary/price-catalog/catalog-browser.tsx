@@ -213,9 +213,7 @@ export function CatalogBrowser() {
           setError(null)
         } catch (err) {
           if (controller.signal.aborted) return
-          setError(
-            'Ingredient catalog is temporarily unavailable. Our pricing service is being updated.'
-          )
+          setError('Live catalog search is unavailable right now. Try again shortly.')
         }
       }
 
@@ -751,7 +749,7 @@ export function CatalogBrowser() {
               <p className="text-sm text-stone-400">No ingredients found</p>
               <p className="text-xs text-stone-500 mt-1">
                 {activeStoreName
-                  ? `No catalog data for ${activeStoreName} yet. Data is collected daily.`
+                  ? `No catalog data for ${activeStoreName} yet. Coverage for this store is still in progress.`
                   : 'Try adjusting your filters or search term'}
               </p>
               {hasActiveFilters && (

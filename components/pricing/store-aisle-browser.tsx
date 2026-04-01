@@ -266,7 +266,7 @@ export function StoreAisleBrowser({
           {search
             ? `No items found for "${search}"${selectedStore ? ` at ${selectedStore}` : ''}. Try a different search or store.`
             : selectedStore
-              ? `No catalog data for this store yet. Data is collected daily.`
+              ? 'No catalog data for this store yet. Coverage for this store is still in progress.'
               : 'Select a store or search to browse the catalog.'}
         </div>
       ) : (

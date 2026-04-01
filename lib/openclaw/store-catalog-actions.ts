@@ -40,6 +40,12 @@ export type StoreWithDistance = {
   productCount: number
 }
 
+export type StoreLookupResult = {
+  zip: string
+  resolvedFrom: 'store_zip' | 'zip_centroid'
+  stores: StoreWithDistance[]
+}
+
 export type StoreProduct = {
   id: string
   productId: string
@@ -157,13 +163,11 @@ export async function getChains(): Promise<ChainInfo[]> {
   }))
 }
 
-export async function getNearbyStores(
+async function queryNearbyStores(
   lat: number,
   lng: number,
   radiusMiles: number = 25
 ): Promise<StoreWithDistance[]> {
-  await requireChef()
-
   const rows = await pgClient`
     SELECT s.id, s.chain_id, c.name AS chain_name, c.slug AS chain_slug,
       s.name, s.address, s.city, s.state, s.zip, s.lat, s.lng,
@@ -205,6 +209,63 @@ export async function getNearbyStores(
     distanceMiles: r.distance_miles != null ? Math.round(Number(r.distance_miles) * 10) / 10 : null,
     productCount: r.product_count ?? 0,
   }))
+}
+
+export async function getNearbyStores(
+  lat: number,
+  lng: number,
+  radiusMiles: number = 25
+): Promise<StoreWithDistance[]> {
+  await requireChef()
+  return queryNearbyStores(lat, lng, radiusMiles)
+}
+
+export async function getNearbyStoresByZip(
+  zip: string,
+  radiusMiles: number = 25
+): Promise<StoreLookupResult> {
+  await requireChef()
+
+  const normalizedZip = zip.trim()
+  if (!/^\d{5}$/.test(normalizedZip)) {
+    throw new Error('Enter a valid 5-digit ZIP code.')
+  }
+
+  const exactRows = await pgClient`
+    SELECT AVG(lat)::float8 AS lat, AVG(lng)::float8 AS lng, COUNT(*)::int AS cnt
+    FROM openclaw.stores
+    WHERE zip = ${normalizedZip}
+      AND is_active = true
+      AND lat IS NOT NULL
+      AND lng IS NOT NULL
+  `
+
+  const exact = exactRows[0]
+  if (exact && Number(exact.cnt) > 0 && exact.lat != null && exact.lng != null) {
+    return {
+      zip: normalizedZip,
+      resolvedFrom: 'store_zip',
+      stores: await queryNearbyStores(Number(exact.lat), Number(exact.lng), radiusMiles),
+    }
+  }
+
+  const centroidRows = await pgClient`
+    SELECT lat, lng
+    FROM openclaw.zip_centroids
+    WHERE zip = ${normalizedZip}
+    LIMIT 1
+  `
+
+  const centroid = centroidRows[0]
+  if (!centroid || centroid.lat == null || centroid.lng == null) {
+    throw new Error(`Could not determine location for ZIP code ${normalizedZip}. Try another ZIP.`)
+  }
+
+  return {
+    zip: normalizedZip,
+    resolvedFrom: 'zip_centroid',
+    stores: await queryNearbyStores(Number(centroid.lat), Number(centroid.lng), radiusMiles),
+  }
 }
 
 export async function getStoreInventory(input: {

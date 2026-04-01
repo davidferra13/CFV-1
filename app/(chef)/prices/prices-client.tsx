@@ -7,31 +7,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Store } from '@/components/ui/icons'
 import {
-  getNearbyStores,
+  getNearbyStoresByZip,
   type ChainInfo,
   type StoreWithDistance,
 } from '@/lib/openclaw/store-catalog-actions'
-
-// Common NE zip-to-lat/lng lookup (approximate centers)
-const ZIP_COORDS: Record<string, [number, number]> = {
-  '01835': [42.776, -71.077], // Haverhill
-  '01915': [42.558, -70.88], // Beverly
-  '01950': [42.812, -70.877], // Newburyport
-  '01960': [42.525, -70.895], // Peabody
-  '02101': [42.361, -71.057], // Boston
-  '02138': [42.38, -71.129], // Cambridge
-  '03801': [43.071, -70.762], // Portsmouth NH
-  '04101': [43.661, -70.255], // Portland ME
-}
-
-function estimateCoords(zip: string): [number, number] | null {
-  if (ZIP_COORDS[zip]) return ZIP_COORDS[zip]
-  // Fallback: try 3-digit prefix match for rough area
-  const prefix = zip.substring(0, 3)
-  const match = Object.entries(ZIP_COORDS).find(([z]) => z.startsWith(prefix))
-  if (match) return match[1]
-  return null
-}
 
 function freshnessIndicator(lastSeen: string | null) {
   if (!lastSeen) return <span className="inline-block h-2 w-2 rounded-full bg-stone-600" />
@@ -62,26 +41,24 @@ export function PricesCatalogClient({ chains, hasData }: Props) {
   const [stores, setStores] = useState<StoreWithDistance[]>([])
   const [searched, setSearched] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [resolvedFrom, setResolvedFrom] = useState<'store_zip' | 'zip_centroid' | null>(null)
   const [pending, startTransition] = useTransition()
 
   const handleSearch = () => {
     if (!zip || zip.length < 5) return
     setError(null)
     setSearched(true)
-
-    const coords = estimateCoords(zip)
-    if (!coords) {
-      setError(`Could not determine location for zip code ${zip}. Try a New England zip code.`)
-      setStores([])
-      return
-    }
+    setResolvedFrom(null)
 
     startTransition(async () => {
       try {
-        const result = await getNearbyStores(coords[0], coords[1], 25)
-        setStores(result)
-      } catch {
-        setError('Could not load nearby stores. Try again later.')
+        const result = await getNearbyStoresByZip(zip, 25)
+        setResolvedFrom(result.resolvedFrom)
+        setStores(result.stores)
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Could not load nearby stores. Try again later.'
+        )
         setStores([])
       }
     })
@@ -92,10 +69,12 @@ export function PricesCatalogClient({ chains, hasData }: Props) {
       <Card>
         <CardContent className="py-12 text-center">
           <Store className="h-12 w-12 text-stone-600 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-stone-300">Store catalog is being built</h3>
+          <h3 className="text-lg font-semibold text-stone-300">
+            Store coverage is still in progress
+          </h3>
           <p className="text-stone-500 mt-2 max-w-md mx-auto">
-            The store data pipeline is still building coverage. Once the first sync completes,
-            nearby stores and their inventories will appear here.
+            Nearby store search will appear here as local coverage lands in the synced market
+            mirror.
           </p>
           {chains.length > 0 && (
             <div className="mt-4">
@@ -122,7 +101,7 @@ export function PricesCatalogClient({ chains, hasData }: Props) {
           <div className="flex gap-3 items-center">
             <input
               type="text"
-              placeholder="Enter zip code (e.g., 01835)"
+              placeholder="Enter ZIP code (e.g., 10001)"
               value={zip}
               onChange={(e) => setZip(e.target.value.replace(/\D/g, '').slice(0, 5))}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -132,9 +111,14 @@ export function PricesCatalogClient({ chains, hasData }: Props) {
               {pending ? 'Searching...' : 'Find Stores'}
             </Button>
             {searched && stores.length > 0 && (
-              <span className="text-xs text-stone-500">
-                {stores.length} store{stores.length !== 1 ? 's' : ''} within 25 miles
-              </span>
+              <div className="text-xs text-stone-500">
+                <span>
+                  {stores.length} store{stores.length !== 1 ? 's' : ''} within 25 miles
+                </span>
+                {resolvedFrom === 'zip_centroid' && (
+                  <span className="ml-2">resolved from ZIP centroid</span>
+                )}
+              </div>
             )}
           </div>
         </CardContent>
@@ -166,7 +150,7 @@ export function PricesCatalogClient({ chains, hasData }: Props) {
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-stone-400">
-              No stores found within 25 miles of {zip}. Try a different zip code.
+              No stores found within 25 miles of {zip}. Coverage may not be nearby yet.
             </p>
           </CardContent>
         </Card>

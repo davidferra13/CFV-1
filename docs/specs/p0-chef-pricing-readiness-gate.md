@@ -1,6 +1,6 @@
 # Spec: Chef Pricing Readiness Gate
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** `openclaw-refresh-status-badge.md`, `openclaw-price-surfacing.md`
 > **Estimated complexity:** large (9+ files)
@@ -9,18 +9,17 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event                 | Date                | Agent/Session   | Commit |
-| --------------------- | ------------------- | --------------- | ------ |
-| Created               | 2026-04-01 15:42 ET | Planner (Codex) |        |
-| Status: ready         | 2026-04-01 15:42 ET | Planner (Codex) |        |
-| Claimed (in-progress) |                     |                 |        |
-| Spike completed       |                     |                 |        |
-| Pre-flight passed     |                     |                 |        |
-| Build completed       |                     |                 |        |
-| Type check passed     |                     |                 |        |
-| Build check passed    |                     |                 |        |
-| Playwright verified   |                     |                 |        |
-| Status: verified      |                     |                 |        |
+| Event                 | Date                | Agent/Session           | Commit |
+| --------------------- | ------------------- | ----------------------- | ------ |
+| Created               | 2026-04-01 15:42 ET | Planner (Codex)         |        |
+| Status: ready         | 2026-04-01 15:42 ET | Planner (Codex)         |        |
+| Claimed (in-progress) | 2026-04-01          | Builder (prior session) |        |
+| Build completed       | 2026-04-01          | Builder (prior session) |        |
+| Type check passed     | 2026-04-01          | Claude Sonnet 4.6       |        |
+| Status: built         | 2026-04-01          | Claude Sonnet 4.6       |        |
+| Build check passed    |                     |                         |        |
+| Playwright verified   |                     |                         |        |
+| Status: verified      |                     |                         |        |
 
 ---
 

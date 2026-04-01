@@ -3,6 +3,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getStoreCatalogStats, getChains } from '@/lib/openclaw/store-catalog-actions'
 import { getOpenClawRefreshStatus } from '@/lib/openclaw/refresh-status-actions'
 import { OpenClawRefreshStatus } from '@/components/pricing/openclaw-refresh-status'
+import { PricingReadinessCard } from '@/components/pricing/pricing-readiness-card'
+import { getPricingReadinessSummary } from '@/lib/pricing/pricing-readiness-actions'
 import { PricesCatalogClient } from './prices-client'
 
 export const metadata: Metadata = { title: 'Store Prices' }
@@ -35,23 +37,14 @@ function StatCard({
   )
 }
 
-function timeAgo(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime()
-  const mins = Math.floor(diff / 60000)
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  return `${days}d ago`
-}
-
 export default async function PricesPage() {
   await requireChef()
 
-  const [stats, chains, refreshStatus] = await Promise.all([
+  const [stats, chains, refreshStatus, readinessSummary] = await Promise.all([
     getStoreCatalogStats(),
     getChains(),
     getOpenClawRefreshStatus(),
+    getPricingReadinessSummary(),
   ])
 
   const freshPct = stats.prices > 0 ? Math.round((stats.freshPrices / stats.prices) * 100) : 0
@@ -61,10 +54,12 @@ export default async function PricesPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Ingredient Price Engine</h1>
         <p className="text-stone-400 mt-1">
-          Live grocery price database. Every product, every store, every price - updated regularly
-          from local store data.
+          Best available current store-price coverage from synced local market data. Nationwide
+          coverage is still in progress.
         </p>
       </div>
+
+      <PricingReadinessCard summary={readinessSummary} variant="market" />
 
       {/* Engine stats dashboard */}
       <div className="flex flex-wrap gap-3">

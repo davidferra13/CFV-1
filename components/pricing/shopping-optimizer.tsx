@@ -35,7 +35,7 @@ export function ShoppingOptimizer({ ingredientNames }: Props) {
         setResult(data)
         setExpanded(true)
       } catch {
-        setError('Could not reach price database. Is the Pi online?')
+        setError('Could not reach live price optimization right now.')
       }
     })
   }

@@ -12,6 +12,8 @@ import { CostingConfidenceBadge } from '@/components/pricing/costing-confidence-
 import { IngredientMatchReview } from '@/components/pricing/ingredient-match-review'
 import { getUnmatchedIngredientsAction } from '@/lib/pricing/ingredient-matching-actions'
 import { Card } from '@/components/ui/card'
+import { PricingReadinessCard } from '@/components/pricing/pricing-readiness-card'
+import { getPricingReadinessSummary } from '@/lib/pricing/pricing-readiness-actions'
 import {
   Table,
   TableHeader,
@@ -37,12 +39,14 @@ function priceFreshness(dateStr: string | null): { text: string; color: string }
 
 export default async function CostingPage() {
   await requireChef()
-  const [recipes, menuCosts, allIngredients, unmatchedIngredients] = await Promise.all([
-    getRecipes(),
-    getMenuCostSummaries(),
-    getIngredients().catch(() => []),
-    getUnmatchedIngredientsAction().catch(() => []),
-  ])
+  const [recipes, menuCosts, allIngredients, unmatchedIngredients, readinessSummary] =
+    await Promise.all([
+      getRecipes(),
+      getMenuCostSummaries(),
+      getIngredients().catch(() => []),
+      getUnmatchedIngredientsAction().catch(() => []),
+      getPricingReadinessSummary(),
+    ])
 
   const costedRecipes = recipes.filter((r) => r.total_cost_cents !== null)
   const uncostedRecipes = recipes.length - costedRecipes.length
@@ -62,11 +66,15 @@ export default async function CostingPage() {
         <div className="flex items-center justify-between mt-1">
           <div>
             <h1 className="text-3xl font-bold text-stone-100">Food Costing</h1>
-            <p className="text-stone-500 mt-1">Recipe and menu cost breakdowns</p>
+            <p className="text-stone-500 mt-1">
+              Recipe and menu cost breakdowns with current pricing coverage
+            </p>
           </div>
           <CostRefreshButton />
         </div>
       </div>
+
+      <PricingReadinessCard summary={readinessSummary} variant="full" />
 
       {/* Summary stats */}
       <div className="grid grid-cols-4 gap-4">
@@ -76,7 +84,7 @@ export default async function CostingPage() {
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-green-700">{costingCoverage}%</p>
-          <p className="text-sm text-stone-500 mt-1">Costing coverage</p>
+          <p className="text-sm text-stone-500 mt-1">Recipe cost coverage</p>
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">{formatCurrency(avgRecipeCostCents)}</p>
