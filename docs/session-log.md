@@ -518,6 +518,23 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: green (docs-only follow-up, no product-code changes)
 - Notes: Verified that ChefFlow already has a broad restaurant-operations foundation; the scoped pass is to surface and repair drift, not invent new systems. Primary unresolved uncertainties are live tenant coverage for station-to-recipe links and ingredient-name hygiene for reorder settings.
 
+## 2026-04-01 01:20 EDT
+
+- Agent: Codex
+- Task: Research current social media scheduling and safe autopublishing paths for OpenClaw across Instagram, Facebook, and TikTok
+- Status: started
+- Build state on arrival: unchanged (docs/research pass)
+
+## 2026-04-01 01:20 EDT
+
+- Agent: Codex
+- Task: Research current social media scheduling and safe autopublishing paths for OpenClaw across Instagram, Facebook, and TikTok
+- Status: completed
+- Files touched: docs/research/openclaw-social-media-scheduling-landscape-2026-04-01.md, docs/specs/openclaw-social-media-orchestration.md, memory/project_openclaw_social_media_orchestration.md, docs/session-log.md
+- Commits: pending at log time
+- Build state on departure: unchanged (docs-only)
+- Notes: Verified from current official sources that Meta direct publishing is viable, TikTok is viable but stricter, and the repo already contains a substantial `/social` planner and publishing engine. The next likely job is compliance hardening and connector finishing, not greenfield scheduler invention.
+
 ## 2026-04-01 01:34 EST
 
 - Agent: Planner
@@ -527,3 +544,22 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending at log time (created immediately after this entry)
 - Build state on departure: green (docs-only planning session, no product-code changes)
 - Notes: Verified the existing finance/tax/export surfaces against schema and seeded finance behavior, captured the developer's audit-first voice in Developer Notes, produced a minimal CPA-export spec, and answered every Planner Gate validation question with cited file anchors. The only explicit uncertainty left is operational data completeness in real tenants, which the spec handles by blocking export rather than guessing.
+
+## 2026-04-01 01:47 EST
+
+- Agent: Research
+- Task: Developer-notes capture and gap-check pass for the CPA-ready tax export spec and supporting research report
+- Status: started
+- Build state on arrival: green (docs/build-state.md last green 5511b1e9; docs-only research session)
+- Files in focus: docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md, docs/session-log.md, docs/build-state.md, CLAUDE.md, finance/export/tax code and schema already scoped by the planning pass
+- Notes: Goal is to permanently capture the developer's full audit-first reasoning, translate it into builder-usable requirements and constraints, and check whether any intended nuance is still missing or underdeveloped in the spec.
+
+## 2026-04-01 02:05 EST
+
+- Agent: Research
+- Task: Developer-notes capture and gap-check pass for the CPA-ready tax export spec and supporting research report
+- Status: completed
+- Files touched: docs/specs/p0-chef-cpa-ready-tax-export-and-reconciliation.md, docs/research/chef-tax-export-intent-and-gap-check-2026-04-01.md, docs/session-log.md
+- Commits: pending at log time (created immediately after this entry)
+- Build state on departure: green (docs-only research session, no product-code changes)
+- Notes: Expanded the spec's Developer Notes into transcript outline, developer intent, and execution translation; added an explicit builder fence against greenfield redesign; and wrote a cited research report confirming that the remaining unknowns are operational, not hidden scope gaps.

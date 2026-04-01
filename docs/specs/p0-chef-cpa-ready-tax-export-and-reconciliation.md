@@ -24,36 +24,48 @@
 
 ## Developer Notes
 
-### Raw Signal
+### Transcript Outline / Raw Signal
 
-Audit ChefFlow's real tax readiness using evidence, then immediately convert that audit into a precise minimal build plan.
+The developer's instruction was not "design a tax product." It was "audit the real system, prove what exists, prove what is broken, and then close only the verified gaps."
 
-Do not brainstorm. Do not design new features for their own sake. Identify reality and close the gaps.
+This is explicitly not a brainstorming exercise. The developer rejected speculative feature design and wanted reality-check work: identify what ChefFlow already does correctly, keep that, and repair only the seams that stop a CPA from filing directly from one export.
 
-Only evaluate what is real and verifiable. If a feature cannot be verified, treat it as missing.
+The proof standard is intentionally harsh. If a capability cannot be verified in code, schema, or seeded data, it does not count. If real or seeded data cannot be accessed, the answer is NO. If anything requires spreadsheet cleanup, off-system reconstruction, reclassification, multi-page navigation, or accountant guesswork, the system fails the standard.
 
-If real or seeded data cannot be accessed, the answer is NO.
+The developer framed the audit around one concrete question: if a chef used ChefFlow for a full year, could a CPA take a single export and file taxes immediately with little to no clarification or reconstruction?
 
-Validate the full chain: inquiry -> event -> menu -> recipes -> costing -> invoice -> payment -> reporting -> export.
+The work had to validate the full operational chain, not just isolated screens: inquiry -> event -> menu -> recipes -> costing -> invoice -> payment -> reporting -> export.
 
-Use real or seeded data for at least 3 events or the equivalent. Generate revenue, COGS, categorized expenses, and net profit. Produce an actual export. Verify totals reconcile and there are no missing or duplicate rows.
+The developer also forced a broad accounting-reality pass. Revenue integrity, expense integrity, COGS separation, profit math, ledger completeness, tax classification, reporting/export structure, multi-source normalization, continuous operations support, payroll and POS ingestion, refunds and cancellations, explainability, sales-tax separation, owner-draw separation, immutable auditability, and control surfaces all had to be judged against real evidence.
 
-The standard is strict: could a CPA take one export and file taxes immediately with little to no reclassification, clarification, or reconstruction?
+The audit had to use real or seeded data for at least three events or an equivalent dataset, generate actual revenue, COGS, categorized expenses, and net profit numbers, produce a real export, and verify that totals reconcile exactly with no missing or duplicate rows.
 
-If anything requires spreadsheet fixing, reclassification, multi-page navigation, or leaving the system, that is a failure.
+After the audit, the developer wanted an immediate conversion into a minimal build spec. No feature expansion, no "future nice-to-haves," no replacement system unless the existing system truly lacks a required control. The path had to be direct: confirm what works, isolate what fails, define the smallest production-ready repair set.
 
-After the audit, convert only verified failures into the smallest complete build spec needed for a CPA-ready, zero-friction tax export.
-
-Preserve the developer's words in Developer Notes. The voice notes and rants are the origin of the work and cannot be lost.
-
-Show a plain-English current-state summary before spec writing so the developer can checkpoint the facts before builder work starts.
+The developer then added a second demand: preserve the reasoning itself. The builder must understand why each rule exists, not just what file to change. The conversation, especially the audit-first framing and zero-friction standard, had to be attached permanently to the spec in a way that survives handoff.
 
 ### Developer Intent
 
-- **Core goal:** make ChefFlow produce one reconciled, CPA-ready year-end export that can be trusted without spreadsheet reconstruction.
-- **Key constraints:** use only verified failures; do not replace working product areas with a parallel accounting system; do not hide broken finance paths behind fake zeros, disclaimers, or optimistic CSV labels.
-- **Motivation:** the product already has real finance, tax, event, menu, and commerce primitives, but the current export and reporting layer is not reliable enough to file from directly.
-- **Success from the developer's perspective:** a builder can follow this spec, repair the broken accounting seams, and produce one export action that exactly reconciles to raw source rows for a full tax year.
+- **Audit first, build second:** the developer wanted evidence before design. Builder scope must come from verified failures, not from intuition or generic accounting-product ideas.
+- **Preserve working reality:** ChefFlow already has real finance, tax, event, menu, and commerce primitives. The goal is not to replace them with a new accounting subsystem. The goal is to make the existing truth reliable and exportable.
+- **One export, one truth source:** the system must converge on one authoritative CPA-facing dataset and one year-end export path. Multiple accountant outputs, mixed revenue definitions, or parallel total calculators violate the intent even if each path looks plausible in isolation.
+- **Explainability is part of correctness:** every number must be traceable back to raw rows, source tables, and normalization logic. A mathematically correct number with no explanation path still fails the developer's standard.
+- **Visible failure is better than fake completeness:** missing mappings, unresolved categories, missing receipts, missing source rows, or incomplete historical data should block or warn explicitly. They must never be hidden behind zero values, vague labels, or optimistic exports.
+- **The spec must carry the why:** the builder needs the reasoning behind the rules because most of the risk in this area comes from seemingly reasonable shortcuts, such as using quoted price as revenue, keeping duplicate export paths alive, or letting unresolved tax categories slide through to CSV.
+- **Success means no reconstruction:** from the developer's perspective, a builder succeeds only when a full-year ChefFlow export can be handed to a CPA without reclassification, spreadsheet fixing, or off-platform reconciliation for the covered accounting model.
+
+### Execution Translation
+
+- **Requirements:** the build must produce one full-year, CPA-facing export package backed by one canonical dataset; that dataset must reconcile revenue, tips, refunds, COGS, categorized expenses, net profit, source/channel metadata, and audit detail directly to source tables.
+- **Requirements:** the build must preserve end-to-end traceability from inquiry-linked event work through payment, reporting, and export, with exact reconciliation on the seeded audit baseline before UI claims of readiness are allowed.
+- **Requirements:** the build must translate current finance data into builder-usable rules, including how to treat sales tax, fees, discretionary tips, service revenue, owner draws, payroll, contractor payments, mileage, and ambiguous expense categories.
+- **Constraints:** no speculative feature expansion; no parallel accounting system; no claimed capability without verified code or data support; no fallback zeros or reference-only numbers presented as accounting truth.
+- **Constraints:** scope stays surgical. Add new tables or controls only where the current repo truly lacks required accounting infrastructure, such as period locks, export snapshots, and owner-draw separation.
+- **Constraints:** existing operational exports may survive only if they are clearly not CPA-facing and do not rely on broken finance logic that would misstate numbers elsewhere.
+- **Behaviors:** `/finance/year-end`, `/finance/tax`, and `/finance/export` must converge on the same canonical export builder and readiness logic.
+- **Behaviors:** expense writes must maintain authoritative tax classification state, unresolved mappings must block export, and accountant-facing pages must surface blockers honestly.
+- **Behaviors:** revenue must come from realized cash and normalized settlement/refund data, not from quoted prices, event status, or completed-event counts.
+- **Behaviors:** the builder must treat the spec as an audit repair plan, not as permission to invent adjacent accounting workflows that were not proven necessary here.
 
 ---
 
@@ -554,6 +566,7 @@ Do not keep the current model where `expense_tax_categories` and raw expense row
 
 ## Notes for Builder Agent
 
+- Treat this as an audit repair pass, not a greenfield finance redesign. Reuse current tables and flows unless the spec names a control or data structure the repo truly does not have.
 - The biggest regression risk is `event_financial_summary`. Keep the output column names stable and smoke-test every current consumer that reads it. Current anchors: `lib/client-portal/actions.ts:251-269`, `lib/dashboard/actions.ts:17-57`, `lib/finance/invoice-payment-link-actions.ts:47-82`.
 - Do not use `quoted_price_cents`, event status, or completed-event counts as the source of revenue truth in any CPA-facing surface. Current anti-pattern anchors: `app/(chef)/finance/reporting/profit-by-event/page.tsx:36-48`, `app/(chef)/finance/payouts/reconciliation/page.tsx:53-63`, `lib/finance/tax-package.ts:63-97`.
 - Do not keep multiple accountant export paths. After this work, `/finance/year-end`, `/finance/tax`, and `/finance/export` must all hit the same canonical export builder.
