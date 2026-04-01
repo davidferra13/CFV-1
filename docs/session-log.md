@@ -665,3 +665,22 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending at log time
 - Build state on departure: unchanged (docs-only follow-up; no product code, schema, or build-state files changed)
 - Notes: Confirmed the existing readiness spec matches the real code boundary between local mirror pricing and Pi-direct catalog/intelligence flows. Tightened the spec so recipe readiness uses `recipe_cost_summary.has_all_prices` plus `last_price_updated_at`, matching the actual view instead of a looser total-cost assumption. Intentionally left the in-progress implementation files uncommitted because they are separate builder work in a dirty tree.
+
+## 2026-04-01 13:42 EDT
+
+- Agent: Planner (Codex)
+- Task: Product clarity / anti-AI-slop planning pass: current-state audit, developer-notes capture, and builder-ready spec for reducing clutter, improving guided UX, and preserving truthful system boundaries
+- Status: started
+- Build state on arrival: mixed-docs / green-code (docs/build-state.md still points to green build 5511b1e9 and green tsc 2154f9dd; repo currently has unrelated in-progress implementation changes in pricing/OpenClaw surfaces)
+- Files in focus: docs/app-complete-audit.md, docs/specs/\_TEMPLATE.md, docs/session-log.md, docs/build-state.md, app/(chef)/layout.tsx, components/navigation, dashboard and pricing surfaces, relevant schema and integration boundary files
+- Notes: Goal is to translate the developer's critique of uncanny, cluttered, low-personality AI software into a repo-grounded spec that favors guided workflows, honest states, existing system reuse, local control over critical data, and no fake “everything is ready” framing.
+
+## 2026-04-01 14:00 EDT
+
+- Agent: Planner (Codex)
+- Task: Product clarity / anti-AI-slop planning pass: current-state audit, developer-notes capture, and builder-ready shell-clarity spec
+- Status: completed
+- Files touched: docs/specs/chef-shell-clarity-and-guided-settings.md, docs/session-log.md
+- Commits: pending at log time
+- Build state on departure: unchanged (docs-only planning session; no product code, schema, or build-state files changed)
+- Notes: Added a builder-ready spec focused on shell curation rather than wholesale redesign. The plan narrows scope to dashboard, nav, settings, integrations, and focus-mode copy/fallback alignment; it explicitly fences AI runtime/privacy disclosure work to the existing `full-cloud-ai-runtime-and-disclosure` spec and warns against route removal, backend contract churn, or monetization-scope bleed while implementing the calmer shell.
