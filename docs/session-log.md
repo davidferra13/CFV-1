@@ -480,3 +480,22 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/openclaw-completion-countdown-and-pixel-schedule.md, docs/specs/openclaw-capture-countdown-and-pixel-schedule.md, docs/session-log.md
 - Build state on departure: green (docs-only follow-up, no product-code changes)
 - Notes: Captured the developer's countdown and schedule intent in permanent docs, specified a shared projected mission-countdown card for the three requested pages, and fenced the live pixel-art implementation to scripts/openclaw-dashboard with one row per active cron line.
+
+## 2026-04-01 00:29 EST
+
+- Agent: Planner + Research
+- Task: Restaurant operations system investigation and spec/report for stations, tasks, staff execution, recipe books, prep, inventory, and daily ops
+- Status: started
+- Build state on arrival: green (build-state last green 5511b1e9; current HEAD 6017b0b0)
+- Files in focus: docs/specs/_TEMPLATE.md, docs/app-complete-audit.md, app/(chef)/tasks, app/(chef)/stations, app/(chef)/staff-*, app/(chef)/recipes, app/(chef)/culinary/prep, app/(chef)/inventory, lib/stations, lib/tasks, database schema/docs
+- Notes: Developer wants the existing restaurant-running system fully surfaced, captured in permanent Developer Notes, summarized in plain English before spec finalization, and translated into build-ready requirements with explicit gap checks and validation citations.
+
+## 2026-04-01 01:02 EST
+
+- Agent: Planner + Research
+- Task: Restaurant operations current-state research plus a surface/reliability spec for stations, tasks, staff execution, recipes, prep visibility, and inventory support
+- Status: completed
+- Files touched: docs/specs/restaurant-ops-surface-and-reliability-pass.md, docs/research/restaurant-ops-current-state-2026-04-01.md, docs/session-log.md
+- Commits: pending at log time (created immediately after this entry)
+- Build state on departure: green (docs-only follow-up, no product-code changes)
+- Notes: Verified that ChefFlow already has a broad restaurant-operations foundation; the scoped pass is to surface and repair drift, not invent new systems. Primary unresolved uncertainties are live tenant coverage for station-to-recipe links and ingredient-name hygiene for reorder settings.
