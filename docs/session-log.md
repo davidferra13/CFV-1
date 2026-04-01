@@ -281,3 +281,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/public-chef-credentials-showcase.md (new), docs/specs/public-chef-credentials-showcase.md (new), docs/session-log.md
 - Build state on departure: green (docs-only session, no code changes; last green build 5511b1e9, current HEAD 5497e807)
 - Notes: Spec is ready for the defined v1 scope. Reuse existing achievements, review, portfolio, charity, and document systems; add one new structured work-history model; keep the formal resume private; do not overload profile highlights.
+
+## 2026-03-31 21:37 EST
+
+- Agent: Planner
+- Task: New spec intake for respectful monetization model and non-obnoxious upgrade/support UX
+- Status: completed
+- Files touched: docs/specs/respectful-monetization-foundation.md (new), docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
+- Notes: Draft spec created with Developer Notes capture, monetization option analysis, recommended hybrid direction, and full Planner Gate validation. Biggest open decisions: exact price, whether founding pass ships, and whether complimentary support grants need their own follow-up spec.
