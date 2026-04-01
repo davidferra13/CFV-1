@@ -38,6 +38,8 @@ The developer asked for simple API integrations that add real quality of life, n
 
 They then required that this conversation be preserved permanently inside the spec and report. The transcript, the reasoning underneath it, the execution translation, and any missing nuance all had to survive the handoff. Their standard was "no loss": do not compress away the why, do not leave gaps a builder has to guess through, and do not let the original intent evaporate during planning.
 
+In the follow-up pass, the developer added a stricter planning guardrail: pause before acting, expose assumptions, separate verified facts from unverified claims, and improve the spec with external research on how chefs actually handle the workflow this feature is meant to solve. They also narrowed the execution boundary again: spec work only, no product-code changes.
+
 ### Developer Intent
 
 - **Core goal:** Identify the first API integration that materially reduces current product friction, fits the existing architecture, and respects a strict free-first constraint.
@@ -52,14 +54,18 @@ They then required that this conversation be preserved permanently inside the sp
   - Reuse the existing Google OAuth entry + callback stack and the existing `google_connections` token/scopes row. Do not create a second Google token store. `app/api/auth/google/connect/route.ts:14-73` `app/api/auth/google/connect/callback/route.ts:188-225` `database/migrations/20260218000001_gmail_agent.sql:9-34`
   - Keep the existing review-first import pattern. Google contacts must preview as candidate clients first, then import only after explicit confirmation. `components/import/csv-import.tsx:61-121` `components/import/csv-import.tsx:197-387`
   - Write imported records through the existing client import actions so tenant scoping, placeholder-email behavior, and `/clients` revalidation stay consistent. `lib/ai/import-actions.ts:72-175`
+  - Preserve the contact-level fields chefs actually use at the contact stage: name, email, phone, primary address, and freeform notes. Do not turn this into full inquiry parsing or event creation in v1. `lib/ai/parse-client.ts:32-57` `database/migrations/20260215000001_layer_1_foundation.sql:75-113`
 - **Constraints:**
   - No new database table or contact mirror in v1. Imported contacts write directly to `clients`; Google remains the remote source of truth. `database/migrations/20260215000001_layer_1_foundation.sql:75-154`
   - No background sync, no push-back to Google Contacts, and no change to `google_mailboxes`. `database/migrations/20260331000045_google_mailboxes.sql:1-4`
   - No social, Yelp, Google Places, or marketplace API work in this spec. Those are separate surfaces with different constraints. `app/(chef)/social/connections/page.tsx:9-35` `components/settings/yelp-settings.tsx:121-242` `lib/integrations/platform-connections-constants.ts:5-16`
+  - No automatic lead, project, quote, or event creation from imported contacts. This pass only seeds client records. Industry workflow research supports keeping contact import separate from downstream pipeline creation.
+  - No Google "Other Contacts" or inbox-derived contact mining in v1. This feature is for importing known Google Contacts, not for turning Gmail heuristics into CRM records. Official scope/data distinction: https://developers.google.com/people/contacts-api-migration
 - **Behaviors:**
   - If Google is disconnected or the People scope is missing, the import button should send the chef through the shared Google connect flow and return them back to `/import?mode=csv&source=google-contacts`. `app/api/auth/google/connect/route.ts:35-73` `lib/google/connect-entry.ts:3-20`
   - If People scope is present, fetch contacts server-side, normalize them into the existing import preview shape, run duplicate detection, let the chef skip rows, and import only the confirmed selection. `lib/ai/parse-csv-clients.ts:257-357` `components/import/csv-import.tsx:68-121`
   - Duplicate detection must catch phone-only contacts too, not just email/name, because Google contacts often have phone numbers without email. Current duplicate detection only covers email and full-name matches, so this spec explicitly widens it. `lib/ai/import-actions.ts:26-66`
+  - When Google contact notes are available, preserve them as freeform relationship context in `vibe_notes`; do not attempt structured allergy or dietary extraction from those notes in this pass.
 
 ---
 
@@ -72,6 +78,28 @@ Inside the existing CSV import screen, the chef gets a second path: instead of e
 ## Why It Matters
 
 The repo already advertises CSV import for Google Contacts, which means contacts import is a real current need, but the product still makes the chef leave Google, export a file, and come back manually. At the same time, the existing Google OAuth stack already supports arbitrary scopes and merged scope storage, so this is a high-leverage gap to close before broader social or marketplace APIs. `components/import/csv-import.tsx:152-158` `lib/ai/parse-csv-clients.ts:98-113` `app/api/auth/google/connect/route.ts:35-63` `app/api/auth/google/connect/callback/route.ts:188-225`
+
+---
+
+## External Workflow Research
+
+Current external workflow research supports this spec shape rather than a broader integration build:
+
+- Chef-specific admin tools position the real pain as juggling enquiries, quotes, client communication, dietary needs, and payments across fragmented tools. That matches ChefFlow's current contact-import gap more closely than a first-pass social API build.
+  - PrivateChefSoftware says private chefs lose hours every week managing enquiries, quotes, updating clients, tracking dietary needs, and chasing payments, and that many rely on WhatsApp, email, and spreadsheets. Source: https://www.privatechefsoftware.com/
+- Marketplace chef-booking flows start with contact identity plus event-specific preferences, intolerances, and direct chef-client messaging. That means Google Contacts import should be positioned as identity bootstrap for known people, not as a replacement for inquiry intake or event briefing.
+  - Take a Chef's booking flow asks for cuisine, preferences, intolerances, and then encourages messaging with chefs to refine the job. Source: https://www.takeachef.com/en-us/private-chef/near-you
+- Service-business CRMs treat contact import as a distinct action from project or lead creation.
+  - HoneyBook explicitly supports importing Google contacts directly into the contacts list without creating projects. Source: https://help.honeybook.com/en/articles/9242203-add-your-contacts-leads-and-existing-clients-to-honeybook
+  - Dubsado warns that CSV import creates new client entries, can duplicate existing clients, and does not support merging duplicates. Source: https://help.dubsado.com/en/articles/1458403-bulk-import-a-client-list
+
+Research-driven implications for this spec:
+
+- Keep this as a one-time, review-first contact import.
+- Preserve phone, address, and note fields when available because those matter in real chef follow-up workflows.
+- Do not auto-create leads, projects, quotes, or events from imported contacts.
+- Keep duplicate handling warning-first rather than inventing auto-merge logic.
+- Keep dietary/allergy/event-intake collection outside this flow unless a later spec intentionally expands the system boundary.
 
 ---
 
@@ -127,6 +155,7 @@ None.
 - **Imported target records:** `clients` already stores the identity, phone, preferences, site notes, relationship notes, and status that the import flow writes. The table requires `tenant_id`, `full_name`, and a non-null `email`, with uniqueness enforced per `(tenant_id, email)`. `database/migrations/20260215000001_layer_1_foundation.sql:75-154`
 - **Write-path behavior:** `importClient()` already handles contacts with no email by generating a `@placeholder.import` address so the `clients.email` constraint is still satisfied. That behavior must remain the canonical fallback for Google contacts without email addresses. `lib/ai/import-actions.ts:83-145`
 - **Duplicate detection shape:** `checkClientDuplicates()` currently returns only `byEmail` and `byName`; this spec broadens that preview-only metadata to include phone matches so the UI can warn on phone-only contacts too. `lib/ai/import-actions.ts:21-66`
+- **Research-informed boundary:** `clients` can store rich preference and relationship data, but external workflow research says contact import should stay distinct from inquiry intake and downstream booking/project creation. This spec therefore seeds the client record only; it does not attempt to create business objects from the imported contact.
 
 ---
 
@@ -145,8 +174,8 @@ Implementation requirements for `fetchGoogleContactsImportPreview`:
 - Load the chef's `google_connections` row and inspect `refresh_token` plus `scopes`. If no row or no refresh token exists, return `needs_connect`; if the row exists but `https://www.googleapis.com/auth/contacts.readonly` is absent from `scopes`, return `needs_scope`. `database/migrations/20260218000001_gmail_agent.sql:14-33` `app/api/auth/google/connect/callback/route.ts:188-225`
 - Build the reconnect URL with the shared entry helper and a `returnTo` of `/import?mode=csv&source=google-contacts`. `lib/google/connect-entry.ts:3-20`
 - Reuse `getGoogleAccessToken(chefId)` for token refresh instead of implementing a second Google refresh path. `lib/google/auth.ts:93-157`
-- Call Google People API `people.connections.list` server-side with explicit `personFields`, paging through `nextPageToken` until exhaustion or the hard cap. Official method reference: https://developers.google.com/people/api/rest/v1/people.connections/list
-- Normalize Google people into the existing `ParsedClient`-compatible shape used by `CsvImport`, with at minimum: `full_name`, `email`, `phone`, `address`, `vibe_notes`, `preferred_contact_method`, default `status='active'`, and empty arrays/nulls for unsupported fields. `lib/ai/parse-client.ts:16-70` `database/migrations/20260215000001_layer_1_foundation.sql:75-154`
+- Call Google People API `people.connections.list` server-side for My Contacts only, with explicit `personFields` that at minimum cover `names`, `emailAddresses`, `phoneNumbers`, `addresses`, and `biographies`, paging through `nextPageToken` until exhaustion or the hard cap. Do not expand to `otherContacts.list` in this pass because the scope and returned data shape are different. Official references: https://developers.google.com/people/api/rest/v1/people.connections/list and https://developers.google.com/people/contacts-api-migration
+- Normalize Google people into the existing `ParsedClient`-compatible shape used by `CsvImport`, with at minimum: `full_name`, `email`, `phone`, primary `address`, `vibe_notes` from biographies/notes when present, `preferred_contact_method`, default `status='active'`, and empty arrays/nulls for unsupported fields. `lib/ai/parse-client.ts:16-70` `database/migrations/20260215000001_layer_1_foundation.sql:75-154`
 
 Implementation requirements for `checkClientDuplicates()`:
 
@@ -242,6 +271,9 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 - No ongoing background sync between Google Contacts and ChefFlow.
 - No write-back or edit sync from ChefFlow to Google Contacts.
 - No new Google-specific settings page, contacts dashboard, or local contacts mirror table.
+- No automatic lead, project, quote, event, or workflow creation from imported contacts.
+- No Google "Other Contacts" import, inbox scraping, or Gmail-derived lead mining in v1.
+- No structured extraction of allergies, dietary restrictions, or event requirements from Google contact notes in this pass. Preserve notes as notes only.
 - No Google Drive, Docs, Calendar, Gmail, Meta, TikTok, YouTube, Yelp, Google Places, or marketplace-API implementation work.
 - No changes to `google_mailboxes`, Gmail historical scan, or the broader social publishing engine.
 - No automatic duplicate merge logic. This pass adds warnings, not merge automation.
@@ -381,6 +413,9 @@ Yes. It reuses the existing `/import` page, the existing shared Google OAuth sta
 - Writing directly to `clients` without reusing `importClient()`, which would break placeholder-email behavior and `/clients` revalidation.
 - Trying to model Google contacts as a synced local mirror table in v1.
 - Wiring the feature to `google_mailboxes` because it looks newer, even though the connect flow still uses `google_connections`.
+- Auto-creating leads, quotes, projects, or events during import because external CRMs sometimes let imports feed pipeline objects. This spec does not.
+- Pulling Google "Other Contacts" into the first pass and accidentally turning a simple contact import into inbox-lead ingestion.
+- Treating freeform Google contact notes as fully structured dietary or allergy data instead of preserving them as notes for later human review.
 
 ### Is anything assumed but not verified?
 
