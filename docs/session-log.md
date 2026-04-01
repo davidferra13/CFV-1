@@ -409,6 +409,15 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files in focus: app/(chef)/prices, app/(chef)/culinary/price-catalog, lib/openclaw/store-catalog-actions.ts, lib/openclaw/catalog-actions.ts, cron/sync routes, openclaw inventory schema
 - Notes: Developer wants a simple, trustworthy answer for when price data should change, plus a permanent spec that preserves their reasoning and defines a visible status badge so they can anticipate replenishment instead of refreshing blindly.
 
+## 2026-03-31 23:39 EST
+
+- Agent: Planner + Research
+- Task: Pricing override infrastructure investigation for chef-controlled dinner pricing, visual strike-through comparisons, implementation spec, and research report
+- Status: started
+- Build state on arrival: green (docs/build-state.md last green 5511b1e9; current HEAD 19b04d11)
+- Files in focus: quotes, pricing utilities, menu costing, event pricing surfaces, chef settings/pricing configuration, related pricing schemas/docs
+- Notes: Developer wants the existing pricing infrastructure verified and tightened so chefs can set base pricing, override any dinner at will, and expose the override in the UI with crossed-out normal pricing so custom charges are obvious and attractive.
+
 ## 2026-03-31 23:58 EST
 
 - Agent: Planner + Research
@@ -417,3 +426,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/openclaw-refresh-cadence-and-status-surface.md, docs/specs/openclaw-refresh-status-badge.md, docs/session-log.md
 - Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
 - Notes: Confirmed the chef pages do not auto-refresh, documented the local-mirror vs Pi-direct pipeline split, and wrote a build-ready spec for a truthful refresh-status surface that avoids fake countdown promises.
+
+## 2026-04-01 00:20 EST
+
+- Agent: Research + Planner
+- Task: External operator-pattern research to improve the OpenClaw refresh-status spec without building code
+- Status: started
+- Build state on arrival: green (last verified build 5511b1e9; no product-code changes planned)
+- Files in focus: docs/specs/openclaw-refresh-status-badge.md, docs/research/openclaw-refresh-cadence-and-status-surface.md, external restaurant procurement and costing sources
+- Notes: Goal is to tighten the spec around how chefs and restaurant purchasing tools actually communicate pricing freshness, vendor availability, and confidence so the badge follows real operator patterns instead of invented UX.
+
+## 2026-04-01 00:24 EST
+
+- Agent: Planner + Research
+- Task: Pricing override infrastructure investigation for chef-controlled dinner pricing, visual strike-through comparisons, implementation spec, and research report
+- Status: completed
+- Files touched: docs/specs/chef-pricing-override-infrastructure.md, docs/research/chef-pricing-override-current-state.md, docs/session-log.md
+- Build state on departure: green (docs-only session, no product-code changes)
+- Notes: Confirmed the current system stores chef overrides mostly as final numbers without durable baseline context, documented the active overwrite paths and parallel pricing sources, and wrote a build-ready spec that preserves developer intent and defines explicit baseline-vs-final pricing infrastructure.
