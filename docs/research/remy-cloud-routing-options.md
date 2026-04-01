@@ -3,6 +3,9 @@
 > **Date:** 2026-03-31
 > **Question:** How should Remy stop depending on the developer's local machine for non-private traffic without breaking the local-only privacy boundary for private client and chef conversations?
 > **Status:** complete
+> **Superseded by:** `docs/research/full-cloud-ai-runtime-and-disclosure.md`
+
+_Historical note: this report reflects the earlier hybrid public-cloud/private-local direction. It is preserved for history, but it is no longer the canonical runtime recommendation._
 
 ## Origin Context
 

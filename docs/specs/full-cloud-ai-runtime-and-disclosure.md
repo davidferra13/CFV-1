@@ -5,6 +5,7 @@
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
 > **Supersedes:** `docs/specs/remy-hybrid-cloud-routing.md`
+> **Research:** `docs/research/full-cloud-ai-runtime-and-disclosure.md`
 
 ## Timeline
 

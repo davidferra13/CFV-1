@@ -257,6 +257,22 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
 - Notes: Full-cloud spec replaces the earlier hybrid Remy-only plan. Architecture decision: remote Ollama-compatible host becomes the primary runtime for former-Ollama features, existing Gemini cloud features stay cloud, and all local/private/browser-only trust copy must be replaced with accurate cloud-processing language rather than removed deceptively.
 
+## 2026-03-31 21:58 EST
+
+- Agent: Planner + Research
+- Task: Canonical alignment pass for full-cloud AI runtime planning package
+- Status: started
+- Build state on arrival: green (last green build 5511b1e9; current HEAD de48928f)
+
+## 2026-03-31 21:58 EST
+
+- Agent: Planner + Research
+- Task: Canonical alignment pass for full-cloud AI runtime planning package
+- Status: completed
+- Files touched: docs/research/full-cloud-ai-runtime-and-disclosure.md (new), docs/research/remy-cloud-routing-options.md, docs/specs/full-cloud-ai-runtime-and-disclosure.md, docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
+- Notes: Resolved the remaining planning mismatch by adding a canonical full-cloud research report, marking the older hybrid research as superseded, and linking the full-cloud spec to its matching research. Builder-facing planning docs now point to one architecture instead of competing hybrid and full-cloud recommendations.
+
 ## 2026-03-31 21:13 EST
 
 - Agent: Planner
@@ -290,3 +306,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/respectful-monetization-foundation.md (new), docs/session-log.md
 - Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
 - Notes: Draft spec created with Developer Notes capture, monetization option analysis, recommended hybrid direction, and full Planner Gate validation. Biggest open decisions: exact price, whether founding pass ships, and whether complimentary support grants need their own follow-up spec.
+
+## 2026-03-31 21:38 EST
+
+- Agent: Research
+- Task: Live monetization strategy research for respectful pricing, positioning, and recommendation
+- Status: started
+- Build state on arrival: green (build-state still 5511b1e9; current HEAD de48928f)
+- Files in focus: billing/support surfaces, tier/gating remnants, public product definition, external competitor pricing and fee models
+- Notes: Developer wants a direct recommendation, not just options. Research must preserve both repo reality and live market comps, then recommend the best path forward.
