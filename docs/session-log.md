@@ -38,6 +38,22 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: green (09b2cc4b)
 - Notes: All pushed to main. p1-introduction-bridge status=built (needs Playwright verification). catalog-ux-overhaul is next ready spec.
 
+## 2026-03-31 22:23 EST
+
+- Agent: Planner + Research
+- Task: Soft-close leverage planning and research: inquiry closeout, warm-future-lead handling, and A/B messaging with Dinner Circle vs inline summary
+- Status: started
+- Build state on arrival: green (commit 575ba251; docs/build-state.md last green 5511b1e9)
+
+## 2026-03-31 22:49 EST
+
+- Agent: Planner + Research
+- Task: Soft-close leverage planning and research: inquiry closeout, warm-future-lead handling, and A/B messaging with Dinner Circle vs inline summary
+- Status: completed
+- Files touched: docs/specs/soft-close-leverage-and-reactivation.md, docs/research/soft-close-leverage-and-reactivation.md, docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
+- Notes: Added a research report and build-ready spec for turning future-interest soft closes into a decline-first, warm-lead capture workflow using existing inquiry, client, Dinner Circle, and email infrastructure. Explicitly fenced off the touchpoint-rule subsystem and required Gmail send-path protection for post-decline courtesy closeouts.
+
 ## 2026-04-01 ~01:00 EST
 
 - Agent: Builder (Claude Opus 4.6)
