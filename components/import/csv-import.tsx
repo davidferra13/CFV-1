@@ -1,10 +1,12 @@
 // CSV Client Import Component
 // Handles the full CSV import flow: upload/paste → column preview → review → save
+// Also supports direct Google Contacts import via the People API.
 // Uses deterministic parsing - no AI required.
 
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
@@ -17,9 +19,16 @@ import {
   checkClientDuplicates,
   type DuplicateCheckResult,
 } from '@/lib/ai/import-actions'
+import { fetchGoogleContactsImportPreview } from '@/lib/google/contacts-actions'
 import type { ParsedClient } from '@/lib/ai/parse-client'
 
 type Phase = 'input' | 'preview' | 'saving' | 'done'
+
+type GoogleMeta = {
+  totalFetched: number
+  truncated: boolean
+  warnings: string[]
+}
 
 const COL_COLORS: Record<string, string> = {
   full_name: 'bg-brand-900 text-brand-800',
@@ -36,6 +45,7 @@ const COL_COLORS: Record<string, string> = {
 }
 
 export function CsvImport() {
+  const searchParams = useSearchParams()
   const [phase, setPhase] = useState<Phase>('input')
   const [rawText, setRawText] = useState('')
   const [parseResult, setParseResult] = useState<CsvParseResult | null>(null)
@@ -45,8 +55,27 @@ export function CsvImport() {
   const [importedCount, setImportedCount] = useState(0)
   const [failedCount, setFailedCount] = useState(0)
   const [skippedClients, setSkippedClients] = useState<Set<number>>(new Set())
+  const [googleSource, setGoogleSource] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const [googleMeta, setGoogleMeta] = useState<GoogleMeta | null>(null)
+  const autoFetchedRef = useRef(false)
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Auto-fetch Google contacts when returning from OAuth with source=google-contacts
+  useEffect(() => {
+    const source = searchParams.get('source')
+    const oauthError = searchParams.get('error')
+    if (source !== 'google-contacts') return
+    if (oauthError) {
+      setError(`Google sign-in failed: ${oauthError}`)
+      return
+    }
+    if (autoFetchedRef.current || parseResult) return
+    autoFetchedRef.current = true
+    handleGoogleFetch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -56,6 +85,59 @@ export function CsvImport() {
       setRawText((ev.target?.result as string) || '')
     }
     reader.readAsText(file)
+  }
+
+  const handleGoogleFetch = async () => {
+    setGoogleLoading(true)
+    setError(null)
+    try {
+      const result = await fetchGoogleContactsImportPreview()
+      if (result.status === 'needs_connect' || result.status === 'needs_scope') {
+        window.location.href = result.connectUrl
+        return
+      }
+      if (result.status === 'error') {
+        setError(result.message)
+        setGoogleLoading(false)
+        return
+      }
+      if (result.status !== 'ok') return
+      // Build a minimal CsvParseResult so the existing preview/save path works unchanged
+      const synthetic: CsvParseResult = {
+        clients: result.clients,
+        columnMappings: [],
+        headers: [],
+        previewRows: [],
+        totalRows: result.totalFetched,
+        skippedRows: result.warnings.length,
+        warnings: result.warnings,
+        format: 'google_contacts',
+        confidence: 'high',
+      }
+      setParseResult(synthetic)
+      setGoogleSource(true)
+      setGoogleMeta({
+        totalFetched: result.totalFetched,
+        truncated: result.truncated,
+        warnings: result.warnings,
+      })
+
+      if (result.clients.length > 0) {
+        try {
+          const dupes = await checkClientDuplicates(
+            result.clients.map((c) => ({ full_name: c.full_name, email: c.email, phone: c.phone }))
+          )
+          setDuplicates(dupes)
+        } catch {
+          // Non-fatal
+        }
+      }
+      setPhase('preview')
+    } catch {
+      setError('Could not load Google Contacts. Please try again.')
+    } finally {
+      setGoogleLoading(false)
+    }
   }
 
   const handleParse = async () => {
@@ -85,6 +167,10 @@ export function CsvImport() {
     const emailKey = client.email?.toLowerCase()
     if (emailKey && duplicates.byEmail[emailKey]) return true
     if (duplicates.byName[client.full_name.trim().toLowerCase()]) return true
+    if (client.phone) {
+      const digits = client.phone.replace(/\D/g, '')
+      if (digits.length >= 7 && duplicates.byPhone[digits]) return true
+    }
     return false
   }
 
@@ -130,6 +216,8 @@ export function CsvImport() {
     setImportedCount(0)
     setFailedCount(0)
     setSkippedClients(new Set())
+    setGoogleSource(false)
+    setGoogleMeta(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -149,7 +237,31 @@ export function CsvImport() {
       {/* ---- INPUT PHASE ---- */}
       {phase === 'input' && (
         <div className="space-y-4">
-          <Alert variant="info" title="Supported formats">
+          {/* Google Contacts direct import */}
+          <div className="flex items-center gap-4 p-4 rounded-lg border border-stone-700 bg-stone-900">
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-stone-100">Import from Google Contacts</p>
+              <p className="text-xs text-stone-500 mt-0.5">
+                One-time snapshot. Review before saving.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleGoogleFetch}
+              disabled={googleLoading}
+            >
+              {googleLoading ? 'Loading...' : 'Connect Google'}
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex-1 border-t border-stone-700" />
+            <span className="text-xs text-stone-600 shrink-0">or upload / paste a CSV</span>
+            <div className="flex-1 border-t border-stone-700" />
+          </div>
+
+          <Alert variant="info" title="Supported CSV formats">
             <ul className="list-disc list-inside space-y-0.5 text-sm">
               <li>Google Contacts CSV (exported from contacts.google.com)</li>
               <li>iPhone / Android contacts export</li>
@@ -159,7 +271,7 @@ export function CsvImport() {
 
           {/* File upload */}
           <div className="flex items-center gap-4">
-            <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
+            <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()}>
               Upload CSV File
             </Button>
             <span className="text-sm text-stone-500">or paste CSV text below</span>
@@ -182,11 +294,11 @@ export function CsvImport() {
           />
 
           <div className="flex gap-3">
-            <Button onClick={handleParse} disabled={!rawText.trim()}>
+            <Button type="button" onClick={handleParse} disabled={!rawText.trim()}>
               Detect Columns
             </Button>
             {rawText && (
-              <Button variant="secondary" onClick={reset}>
+              <Button type="button" variant="secondary" onClick={reset}>
                 Clear
               </Button>
             )}
@@ -197,90 +309,107 @@ export function CsvImport() {
       {/* ---- PREVIEW PHASE ---- */}
       {phase === 'preview' && parseResult && (
         <div className="space-y-6">
-          {/* Column mapping */}
-          <Card className="p-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <h3 className="text-sm font-semibold text-stone-100">Column Detection</h3>
-              <Badge
-                variant={
-                  parseResult.confidence === 'high'
-                    ? 'success'
-                    : parseResult.confidence === 'medium'
-                      ? 'warning'
-                      : 'error'
-                }
-              >
-                {parseResult.confidence} confidence
-              </Badge>
-              {parseResult.format !== 'unknown' && (
-                <Badge variant="info">
-                  {parseResult.format === 'google_contacts' ? 'Google Contacts' : 'Generic CSV'}
-                </Badge>
-              )}
-            </div>
-
-            {/* Column chips */}
-            <div className="flex flex-wrap gap-2">
-              {parseResult.columnMappings.map((col, i) => (
-                <span
-                  key={i}
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${COL_COLORS[col.detected] || COL_COLORS.skip}`}
+          {googleSource && googleMeta ? (
+            /* Google Contacts source summary */
+            <Card className="p-4 space-y-2">
+              <div className="flex items-center gap-3">
+                <h3 className="text-sm font-semibold text-stone-100">Google Contacts import</h3>
+                <Badge variant="info">Google Contacts</Badge>
+                {googleMeta.truncated && <Badge variant="warning">Partial</Badge>}
+              </div>
+              <p className="text-xs text-stone-400">
+                {googleMeta.totalFetched} contact{googleMeta.totalFetched !== 1 ? 's' : ''} fetched.
+                {googleMeta.truncated &&
+                  ' Showing the first 1,000 - export a CSV for the full list.'}{' '}
+                This is a one-time snapshot. No ongoing sync.
+              </p>
+            </Card>
+          ) : (
+            /* CSV column mapping */
+            <Card className="p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <h3 className="text-sm font-semibold text-stone-100">Column Detection</h3>
+                <Badge
+                  variant={
+                    parseResult.confidence === 'high'
+                      ? 'success'
+                      : parseResult.confidence === 'medium'
+                        ? 'warning'
+                        : 'error'
+                  }
                 >
-                  <span className="opacity-60">{col.header}</span>
-                  {col.detected !== 'skip' && (
-                    <>
-                      <span className="opacity-40">→</span>
-                      <span>{col.detected.replace(/_/g, ' ')}</span>
-                    </>
-                  )}
-                  {col.detected === 'skip' && <span className="opacity-50">ignored</span>}
-                </span>
-              ))}
-            </div>
-
-            {/* Preview rows */}
-            {parseResult.previewRows.length > 0 && (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-stone-700">
-                      {parseResult.columnMappings
-                        .filter((m) => m.detected !== 'skip')
-                        .map((m, i) => (
-                          <th
-                            key={i}
-                            className="text-left py-1.5 pr-4 font-medium text-stone-500 whitespace-nowrap"
-                          >
-                            {m.header}
-                          </th>
-                        ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {parseResult.previewRows.map((row, ri) => (
-                      <tr key={ri} className="border-b border-stone-800">
-                        {parseResult.columnMappings
-                          .filter((m) => m.detected !== 'skip')
-                          .map((m, ci) => (
-                            <td
-                              key={ci}
-                              className="py-1.5 pr-4 text-stone-300 max-w-[200px] truncate"
-                            >
-                              {row[m.index] || '-'}
-                            </td>
-                          ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {parseResult.totalRows > 5 && (
-                  <p className="text-xs text-stone-400 mt-1">
-                    Showing 5 of {parseResult.totalRows} rows
-                  </p>
+                  {parseResult.confidence} confidence
+                </Badge>
+                {parseResult.format !== 'unknown' && (
+                  <Badge variant="info">
+                    {parseResult.format === 'google_contacts' ? 'Google Contacts' : 'Generic CSV'}
+                  </Badge>
                 )}
               </div>
-            )}
-          </Card>
+
+              {/* Column chips */}
+              <div className="flex flex-wrap gap-2">
+                {parseResult.columnMappings.map((col, i) => (
+                  <span
+                    key={i}
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${COL_COLORS[col.detected] || COL_COLORS.skip}`}
+                  >
+                    <span className="opacity-60">{col.header}</span>
+                    {col.detected !== 'skip' && (
+                      <>
+                        <span className="opacity-40">→</span>
+                        <span>{col.detected.replace(/_/g, ' ')}</span>
+                      </>
+                    )}
+                    {col.detected === 'skip' && <span className="opacity-50">ignored</span>}
+                  </span>
+                ))}
+              </div>
+
+              {/* Preview rows */}
+              {parseResult.previewRows.length > 0 && (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-stone-700">
+                        {parseResult.columnMappings
+                          .filter((m) => m.detected !== 'skip')
+                          .map((m, i) => (
+                            <th
+                              key={i}
+                              className="text-left py-1.5 pr-4 font-medium text-stone-500 whitespace-nowrap"
+                            >
+                              {m.header}
+                            </th>
+                          ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {parseResult.previewRows.map((row, ri) => (
+                        <tr key={ri} className="border-b border-stone-800">
+                          {parseResult.columnMappings
+                            .filter((m) => m.detected !== 'skip')
+                            .map((m, ci) => (
+                              <td
+                                key={ci}
+                                className="py-1.5 pr-4 text-stone-300 max-w-[200px] truncate"
+                              >
+                                {row[m.index] || '-'}
+                              </td>
+                            ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {parseResult.totalRows > 5 && (
+                    <p className="text-xs text-stone-400 mt-1">
+                      Showing 5 of {parseResult.totalRows} rows
+                    </p>
+                  )}
+                </div>
+              )}
+            </Card>
+          )}
 
           {/* Warnings */}
           {parseResult.warnings.length > 0 && (
@@ -304,60 +433,72 @@ export function CsvImport() {
             </Alert>
           )}
 
-          {/* Summary + client list */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <h3 className="text-sm font-semibold text-stone-100">
-                {parseResult.clients.length} client{parseResult.clients.length !== 1 ? 's' : ''} to
-                import
-              </h3>
-              {parseResult.skippedRows > 0 && (
-                <span className="text-xs text-stone-500">
-                  ({parseResult.skippedRows} rows skipped - no name found)
-                </span>
-              )}
-            </div>
+          {/* Empty state for Google source */}
+          {googleSource && parseResult.clients.length === 0 && (
+            <Alert variant="info" title="No importable contacts found">
+              Your Google Contacts did not include any contacts with a usable name. You can still
+              upload a CSV below.
+            </Alert>
+          )}
 
-            <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-              {parseResult.clients.map((client, i) => {
-                const dupe = isDuplicate(client)
-                const skipped = skippedClients.has(i)
-                return (
-                  <div
-                    key={i}
-                    className={`flex items-center gap-3 p-3 rounded-lg border text-sm transition-opacity ${
-                      skipped
-                        ? 'border-stone-700 bg-stone-800 opacity-40'
-                        : dupe
-                          ? 'border-yellow-200 bg-yellow-950'
-                          : 'border-stone-700 bg-stone-900'
-                    }`}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <span className="font-medium text-stone-100">{client.full_name}</span>
-                      {client.email && (
-                        <span className="ml-2 text-stone-500 text-xs">{client.email}</span>
-                      )}
-                      {client.phone && (
-                        <span className="ml-2 text-stone-500 text-xs">{client.phone}</span>
-                      )}
-                      {dupe && (
-                        <Badge variant="warning" className="ml-2 text-xs">
-                          possible duplicate
-                        </Badge>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => toggleSkip(i)}
-                      className="text-xs text-stone-500 hover:text-stone-300 shrink-0"
+          {/* Summary + client list */}
+          {parseResult.clients.length > 0 && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <h3 className="text-sm font-semibold text-stone-100">
+                  {parseResult.clients.length} client{parseResult.clients.length !== 1 ? 's' : ''}{' '}
+                  to import
+                </h3>
+                {parseResult.skippedRows > 0 && (
+                  <span className="text-xs text-stone-500">
+                    ({parseResult.skippedRows} {googleSource ? 'contacts' : 'rows'} skipped - no
+                    name found)
+                  </span>
+                )}
+              </div>
+
+              <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                {parseResult.clients.map((client, i) => {
+                  const dupe = isDuplicate(client)
+                  const skipped = skippedClients.has(i)
+                  return (
+                    <div
+                      key={i}
+                      className={`flex items-center gap-3 p-3 rounded-lg border text-sm transition-opacity ${
+                        skipped
+                          ? 'border-stone-700 bg-stone-800 opacity-40'
+                          : dupe
+                            ? 'border-yellow-200 bg-yellow-950'
+                            : 'border-stone-700 bg-stone-900'
+                      }`}
                     >
-                      {skipped ? 'Restore' : 'Skip'}
-                    </button>
-                  </div>
-                )
-              })}
+                      <div className="flex-1 min-w-0">
+                        <span className="font-medium text-stone-100">{client.full_name}</span>
+                        {client.email && (
+                          <span className="ml-2 text-stone-500 text-xs">{client.email}</span>
+                        )}
+                        {client.phone && (
+                          <span className="ml-2 text-stone-500 text-xs">{client.phone}</span>
+                        )}
+                        {dupe && (
+                          <Badge variant="warning" className="ml-2 text-xs">
+                            possible duplicate
+                          </Badge>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => toggleSkip(i)}
+                        className="text-xs text-stone-500 hover:text-stone-300 shrink-0"
+                      >
+                        {skipped ? 'Restore' : 'Skip'}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Confirmation checkbox */}
           {activeClients.length > 0 && (
@@ -369,18 +510,20 @@ export function CsvImport() {
                 className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
               />
               <span className="text-sm text-stone-300">
-                The column mapping looks right - import these clients
+                {googleSource
+                  ? 'These contacts look right - import them to my client list'
+                  : 'The column mapping looks right - import these clients'}
               </span>
             </label>
           )}
 
           <div className="flex gap-3 pt-2">
             {activeClients.length > 0 && (
-              <Button onClick={handleSave} disabled={!confirmed}>
+              <Button type="button" onClick={handleSave} disabled={!confirmed}>
                 Import {activeClients.length} Client{activeClients.length !== 1 ? 's' : ''}
               </Button>
             )}
-            <Button variant="secondary" onClick={reset}>
+            <Button type="button" variant="secondary" onClick={reset}>
               Start Over
             </Button>
           </div>

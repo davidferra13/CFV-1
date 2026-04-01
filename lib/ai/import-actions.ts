@@ -21,10 +21,17 @@ import type { Json } from '@/types/database'
 export type DuplicateCheckResult = {
   byEmail: Record<string, { id: string; full_name: string; email: string }>
   byName: Record<string, { id: string; full_name: string; email: string | null }>
+  byPhone: Record<string, { id: string; full_name: string; email: string | null }>
+}
+
+function normalizePhoneDigits(phone: string | null | undefined): string | null {
+  if (!phone) return null
+  const digits = phone.replace(/\D/g, '')
+  return digits.length >= 7 ? digits : null
 }
 
 export async function checkClientDuplicates(
-  candidates: { full_name: string; email?: string | null }[]
+  candidates: { full_name: string; email?: string | null; phone?: string | null }[]
 ): Promise<DuplicateCheckResult> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -33,9 +40,12 @@ export async function checkClientDuplicates(
     .map((c) => c.email)
     .filter((e): e is string => !!e && !e.includes('@placeholder.import'))
   const names = candidates.map((c) => c.full_name.trim().toLowerCase())
+  const candidatePhones = new Set(
+    candidates.map((c) => normalizePhoneDigits(c.phone)).filter((p): p is string => p !== null)
+  )
 
-  // Run email match and full client name fetch in parallel.
-  // Name matching is done in JS rather than via PostgREST .or() because
+  // Run email match and full client name/phone fetch in parallel.
+  // Name and phone matching is done in JS rather than via PostgREST .or() because
   // PostgREST's ilike filter misparses values that contain spaces.
   const [emailResult, allClientsResult] = await Promise.all([
     emails.length > 0
@@ -45,7 +55,11 @@ export async function checkClientDuplicates(
           .eq('tenant_id', user.tenantId!)
           .in('email', emails)
       : Promise.resolve({ data: [] }),
-    db.from('clients').select('id, full_name, email').eq('tenant_id', user.tenantId!).limit(500),
+    db
+      .from('clients')
+      .select('id, full_name, email, phone')
+      .eq('tenant_id', user.tenantId!)
+      .limit(500),
   ])
 
   const byEmail: DuplicateCheckResult['byEmail'] = {}
@@ -55,14 +69,21 @@ export async function checkClientDuplicates(
   }
 
   const byName: DuplicateCheckResult['byName'] = {}
+  const byPhone: DuplicateCheckResult['byPhone'] = {}
   for (const row of allClientsResult.data || []) {
-    const key = row.full_name.trim().toLowerCase()
-    if (names.includes(key)) {
-      byName[key] = row
+    const nameKey = row.full_name.trim().toLowerCase()
+    if (names.includes(nameKey)) {
+      byName[nameKey] = row
+    }
+    if (candidatePhones.size > 0) {
+      const existingPhoneKey = normalizePhoneDigits(row.phone)
+      if (existingPhoneKey && candidatePhones.has(existingPhoneKey)) {
+        byPhone[existingPhoneKey] = row
+      }
     }
   }
 
-  return { byEmail, byName }
+  return { byEmail, byName, byPhone }
 }
 
 // ============================================

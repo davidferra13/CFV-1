@@ -1,6 +1,6 @@
 # Spec: Google Contacts Import via Google People API
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1
 > **Depends on:** none
 > **Estimated complexity:** medium (3-8 files)
