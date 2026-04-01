@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { computeProfitAndLoss } from '@/lib/ledger/compute'
+import { getCpaExportReadiness } from '@/lib/finance/cpa-export-actions'
 import { createServerClient } from '@/lib/db/server'
 import { Card } from '@/components/ui/card'
 import {
@@ -41,12 +42,12 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
 
   const yearOptions = [currentYear, currentYear - 1, currentYear - 2]
 
-  // Run P&L compute and events query in parallel
+  // Run P&L compute, events query, and CPA readiness in parallel
   const db: any = createServerClient()
   const startDate = `${validYear}-01-01`
   const endDate = `${validYear}-12-31`
 
-  const [pl, eventsResult] = await Promise.all([
+  const [pl, eventsResult, cpaReadiness] = await Promise.all([
     computeProfitAndLoss(validYear),
     db
       .from('events')
@@ -55,6 +56,7 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
       .gte('event_date', startDate)
       .lte('event_date', endDate)
       .order('event_date', { ascending: true }),
+    getCpaExportReadiness(validYear).catch(() => null),
   ])
 
   const events = eventsResult.data || []
@@ -90,14 +92,12 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
       {/* Header */}
       <div>
         <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
-          ← Finance
+          Back to Finance
         </Link>
         <div className="flex items-center justify-between mt-1">
           <div>
             <h1 className="text-3xl font-bold text-stone-100">Year-End Summary</h1>
-            <p className="text-stone-500 mt-1">
-              Complete annual financial summary for {validYear} - ready for your accountant
-            </p>
+            <p className="text-stone-500 mt-1">Annual financial summary for {validYear}</p>
           </div>
           <YearEndClientControls
             yearOptions={yearOptions}
@@ -105,9 +105,91 @@ export default async function YearEndPage({ searchParams }: { searchParams: { ye
             pl={pl}
             completedEventsCount={completedEvents.length}
             totalEventsCount={totalEvents}
+            exportYear={validYear}
           />
         </div>
       </div>
+
+      {/* CPA Export Readiness Card */}
+      {cpaReadiness && (
+        <Card
+          className={`p-5 border-l-4 ${cpaReadiness.isReady ? 'border-l-green-500' : 'border-l-amber-400'}`}
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-1">
+                CPA Export Readiness
+              </h2>
+              {cpaReadiness.isReady ? (
+                <p className="text-sm text-green-400">
+                  No blocking issues. Your {validYear} export is ready to download.
+                </p>
+              ) : (
+                <p className="text-sm text-amber-400">
+                  {cpaReadiness.blockers.length} issue
+                  {cpaReadiness.blockers.length !== 1 ? 's' : ''} must be resolved before the export
+                  can be generated.
+                </p>
+              )}
+            </div>
+            {cpaReadiness.isReady && (
+              <a
+                href={`/finance/year-end/export?year=${validYear}`}
+                className="ml-4 shrink-0 text-sm px-4 py-2 rounded-md bg-green-800 text-green-100 hover:bg-green-700 transition-colors font-medium"
+              >
+                Download CPA Export
+              </a>
+            )}
+          </div>
+
+          {cpaReadiness.blockers.length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {cpaReadiness.blockers.map((b) => (
+                <li key={b.code} className="text-sm text-stone-300 flex items-start gap-2">
+                  <span className="text-red-400 shrink-0 mt-0.5">!</span>
+                  <span>
+                    {b.message}
+                    {b.repairPath && (
+                      <Link
+                        href={b.repairPath}
+                        className="ml-2 text-brand-400 hover:underline text-xs"
+                      >
+                        Fix now
+                      </Link>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {cpaReadiness.lastExportRun && (
+            <p className="mt-3 text-xs text-stone-500">
+              Last export: {cpaReadiness.lastExportRun.filename} (
+              {new Date(cpaReadiness.lastExportRun.generatedAt).toLocaleDateString('en-US')},{' '}
+              {cpaReadiness.lastExportRun.detailRowCount} rows)
+            </p>
+          )}
+
+          {cpaReadiness.warnings.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {cpaReadiness.warnings.map((w) => (
+                <li key={w.code} className="text-xs text-stone-400">
+                  Note: {w.message}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+      )}
+
+      {!cpaReadiness && (
+        <Card className="p-5 border-l-4 border-l-red-600">
+          <p className="text-sm text-red-400">
+            Could not load CPA export readiness data. Finance data may be temporarily unavailable.
+          </p>
+        </Card>
+      )}
 
       {/* Business Summary */}
       <Card className="p-5">

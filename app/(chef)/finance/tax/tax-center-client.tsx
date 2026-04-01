@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { logMileage, generateAccountantExport, type MileageInput } from '@/lib/tax/actions'
+import { logMileage, type MileageInput } from '@/lib/tax/actions'
 import { format } from 'date-fns'
 
 type MileageData = {
@@ -63,7 +63,6 @@ export function TaxCenterClient({ year, mileage, quarterlyEstimates }: Props) {
     purpose: 'event',
   })
   const [loading, setLoading] = useState(false)
-  const [exporting, setExporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   async function handleLogMileage(e: React.FormEvent) {
@@ -91,24 +90,6 @@ export function TaxCenterClient({ year, mileage, quarterlyEstimates }: Props) {
       setError(err instanceof Error ? err.message : 'Failed')
     } finally {
       setLoading(false)
-    }
-  }
-
-  async function handleExport() {
-    setExporting(true)
-    try {
-      const data = await generateAccountantExport(year)
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `chefflow-tax-${year}.json`
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Export failed')
-    } finally {
-      setExporting(false)
     }
   }
 
@@ -269,11 +250,14 @@ export function TaxCenterClient({ year, mileage, quarterlyEstimates }: Props) {
         </CardContent>
       </Card>
 
-      {/* Export */}
+      {/* CPA Export - routes to the canonical year-end export package */}
       <div className="flex justify-end">
-        <Button variant="secondary" onClick={handleExport} disabled={exporting}>
-          {exporting ? 'Exporting…' : 'Export for Accountant (JSON)'}
-        </Button>
+        <a
+          href={`/finance/year-end/export?year=${year}`}
+          className="inline-flex items-center justify-center rounded-md border border-stone-600 bg-stone-900 px-4 py-2 text-sm text-stone-300 hover:bg-stone-800 transition-colors"
+        >
+          Download CPA Export
+        </a>
       </div>
     </div>
   )

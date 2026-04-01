@@ -1,6 +1,6 @@
 # Spec: CPA-Ready Tax Export and Reconciliation
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -8,10 +8,13 @@
 
 ## Timeline
 
-| Event         | Date                 | Agent/Session | Commit                   |
-| ------------- | -------------------- | ------------- | ------------------------ |
-| Created       | 2026-04-01 01:18 EST | Codex planner | pending at planning time |
-| Status: ready | 2026-04-01 01:18 EST | Codex planner | pending at planning time |
+| Event          | Date                 | Agent/Session | Commit                                    |
+| -------------- | -------------------- | ------------- | ----------------------------------------- |
+| Created        | 2026-04-01 01:18 EST | Codex planner | pending at planning time                  |
+| Status: ready  | 2026-04-01 01:18 EST | Codex planner | pending at planning time                  |
+| Build started  | 2026-04-01           | Builder agent | -                                         |
+| Build complete | 2026-04-01           | Builder agent | -                                         |
+| TSC: clean     | 2026-04-01           | Builder agent | npx tsc --noEmit --skipLibCheck: 0 errors |
 
 ---
 

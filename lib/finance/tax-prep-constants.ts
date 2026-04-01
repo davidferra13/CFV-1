@@ -16,6 +16,11 @@ export const SCHEDULE_C_LINES: Record<
     description: 'Mileage deduction (standard rate) or actual vehicle costs',
     deductiblePct: 100,
   },
+  line_11: {
+    label: 'Line 11: Contract Labor',
+    description: 'Payments to contractors, freelancers, and 1099 workers',
+    deductiblePct: 100,
+  },
   line_13: {
     label: 'Line 13: Depreciation',
     description: 'Equipment depreciation (ovens, mixers, tools)',
@@ -36,6 +41,11 @@ export const SCHEDULE_C_LINES: Record<
     description: 'Office supplies, printer ink, postage',
     deductiblePct: 100,
   },
+  line_20b: {
+    label: 'Line 20b: Rent - Equipment',
+    description: 'Rental of business equipment or machinery',
+    deductiblePct: 100,
+  },
   line_22: {
     label: 'Line 22: Supplies',
     description: 'Food, ingredients, kitchen supplies, disposables',
@@ -54,6 +64,11 @@ export const SCHEDULE_C_LINES: Record<
   line_25: {
     label: 'Line 25: Utilities',
     description: 'Home office utilities (proportional)',
+    deductiblePct: 100,
+  },
+  line_26: {
+    label: 'Line 26: Wages',
+    description: 'Gross wages paid to W-2 employees',
     deductiblePct: 100,
   },
   line_27a: {

@@ -19,7 +19,13 @@ const VIEWS = [
     href: '/finance/ledger/adjustments',
     label: 'Adjustments',
     icon: '🔧',
-    description: 'Credits, add-ons, and manual adjustments',
+    description: 'Credits, add-ons, and manual adjustments (not owner draws)',
+  },
+  {
+    href: '/finance/ledger/owner-draws',
+    label: 'Owner Draws',
+    icon: '💼',
+    description: 'Equity draws from the business, excluded from profit and loss',
   },
 ]
 

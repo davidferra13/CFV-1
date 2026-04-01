@@ -241,6 +241,7 @@
     "date-fns": "^4.1.0",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.1",
+    "fflate": "^0.8.2",
     "inngest": "^3.52.4",
     "jspdf": "^4.1.0",
     "lucide-react": "^0.564.0",

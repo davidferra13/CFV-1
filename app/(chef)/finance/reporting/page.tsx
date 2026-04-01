@@ -94,10 +94,10 @@ export default async function ReportingPage() {
           </p>
         </div>
         <a
-          href={`/finance/export?year=${new Date().getFullYear()}`}
+          href={`/finance/year-end/export?year=${new Date().getFullYear()}`}
           className="inline-flex items-center justify-center px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm shrink-0"
         >
-          Export Financials CSV
+          Download CPA Export
         </a>
       </div>
 

@@ -67,6 +67,84 @@ export type ExpenseFilters = {
   end_date?: string
 }
 
+// --- Tax mapping helpers ---
+
+// Categories that map deterministically to one Schedule C line.
+// These get an auto-upserted expense_tax_categories row on write.
+const DETERMINISTIC_TAX_MAP: Record<string, string> = {
+  groceries: 'cogs',
+  alcohol: 'cogs',
+  specialty_items: 'cogs',
+  gas_mileage: 'line_9',
+  vehicle: 'line_9',
+  supplies: 'line_22',
+  venue_rental: 'line_27a',
+  labor: 'line_26',
+  uniforms: 'line_27a',
+  subscriptions: 'line_27a',
+  marketing: 'line_8',
+  insurance_licenses: 'line_15',
+  professional_services: 'line_17',
+  education: 'line_27a',
+  utilities: 'line_25',
+}
+
+// Ambiguous categories: remove any stale auto-map, require explicit mapping.
+const AMBIGUOUS_CATEGORIES = new Set(['equipment', 'other'])
+
+/**
+ * Upsert the authoritative expense_tax_categories row for a deterministic category.
+ * For ambiguous categories, delete any stale auto-upserted row.
+ * This ensures export_tax_categories never double-counts a raw expense row.
+ */
+async function syncExpenseTaxMapping(
+  db: any,
+  tenantId: string,
+  expenseId: string,
+  category: string,
+  amountCents: number,
+  expenseDate: string,
+  createdBy: string
+): Promise<void> {
+  const taxYear = parseInt(expenseDate.slice(0, 4), 10)
+  if (isNaN(taxYear)) return
+
+  if (AMBIGUOUS_CATEGORIES.has(category)) {
+    // Remove any stale auto-generated mapping so export blocks correctly.
+    try {
+      await db
+        .from('expense_tax_categories')
+        .delete()
+        .eq('tenant_id', tenantId)
+        .eq('source', 'expense')
+        .eq('source_id', expenseId)
+        .eq('tax_year', taxYear)
+    } catch {}
+    return
+  }
+
+  const line = DETERMINISTIC_TAX_MAP[category]
+  if (!line) return
+
+  try {
+    await db.from('expense_tax_categories').upsert(
+      {
+        tenant_id: tenantId,
+        expense_description: category,
+        schedule_c_line: line,
+        amount_cents: amountCents,
+        tax_year: taxYear,
+        source: 'expense',
+        source_id: expenseId,
+      },
+      { onConflict: 'tenant_id,source,source_id,tax_year' }
+    )
+  } catch (err) {
+    // Non-blocking: log but do not fail the expense write
+    console.error('[syncExpenseTaxMapping] Failed to upsert tax mapping (non-blocking):', err)
+  }
+}
+
 // --- Actions ---
 
 /**
@@ -90,6 +168,21 @@ export async function createExpense(input: CreateExpenseInput) {
   if (error) {
     console.error('[createExpense] Error:', error)
     throw new Error('Failed to create expense')
+  }
+
+  // Sync authoritative tax mapping (non-blocking)
+  try {
+    await syncExpenseTaxMapping(
+      db,
+      user.tenantId!,
+      data.id,
+      validated.category,
+      validated.amount_cents,
+      validated.expense_date,
+      user.id
+    )
+  } catch (err) {
+    console.error('[createExpense] Tax mapping sync failed (non-blocking):', err)
   }
 
   revalidatePath('/expenses')
@@ -228,6 +321,28 @@ export async function updateExpense(id: string, input: UpdateExpenseInput) {
     throw new Error('Failed to update expense')
   }
 
+  // Sync authoritative tax mapping when category or amount changed (non-blocking)
+  if (validated.category || validated.amount_cents || validated.expense_date) {
+    try {
+      const category = data.category
+      const amountCents = data.amount_cents
+      const expenseDate = data.expense_date
+      if (category && amountCents && expenseDate) {
+        await syncExpenseTaxMapping(
+          db,
+          user.tenantId!,
+          id,
+          category,
+          amountCents,
+          expenseDate,
+          user.id
+        )
+      }
+    } catch (err) {
+      console.error('[updateExpense] Tax mapping sync failed (non-blocking):', err)
+    }
+  }
+
   revalidatePath('/expenses')
   revalidatePath(`/expenses/${id}`)
   if (data.event_id) {
@@ -258,6 +373,18 @@ export async function deleteExpense(id: string) {
   if (error) {
     console.error('[deleteExpense] Error:', error)
     throw new Error('Failed to delete expense')
+  }
+
+  // Remove linked authoritative tax mapping rows (non-blocking)
+  try {
+    await db
+      .from('expense_tax_categories')
+      .delete()
+      .eq('tenant_id', user.tenantId!)
+      .eq('source', 'expense')
+      .eq('source_id', id)
+  } catch (err) {
+    console.error('[deleteExpense] Tax mapping cleanup failed (non-blocking):', err)
   }
 
   revalidatePath('/expenses')

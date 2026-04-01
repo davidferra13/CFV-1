@@ -122,10 +122,17 @@ function computeEstimateStatus(
 // ── Actions ──────────────────────────────────────────────────────
 
 /**
- * Get Schedule C breakdown by aggregating:
- * 1. Manual categorizations from expense_tax_categories
- * 2. Expenses from the expenses table (auto-mapped by category)
- * 3. Mileage deductions from mileage_logs
+ * Get Schedule C breakdown.
+ *
+ * Uses expense_tax_categories as the authoritative source for expense rows
+ * that have been explicitly mapped. For expenses without an authoritative
+ * mapping, falls back to the deterministic category map. This prevents
+ * the double-counting that occurred when both tables were summed independently.
+ *
+ * Ambiguous categories (equipment, other) without an explicit mapping are
+ * counted here but flagged as unresolved in the CPA export readiness check.
+ *
+ * Mileage deductions are sourced from mileage_logs (not expense_tax_categories).
  */
 export async function getScheduleCBreakdown(year: number): Promise<ScheduleCBreakdown> {
   const user = await requireChef()
@@ -135,17 +142,18 @@ export async function getScheduleCBreakdown(year: number): Promise<ScheduleCBrea
   const yearStart = `${year}-01-01`
   const yearEnd = `${year}-12-31`
 
-  // 1. Manual tax categorizations
-  const { data: manualCats } = await db
+  // 1. Authoritative tax mappings for expenses (source = 'expense')
+  const { data: authMappings } = await db
     .from('expense_tax_categories')
-    .select('schedule_c_line, amount_cents')
+    .select('source_id, schedule_c_line, amount_cents')
     .eq('tenant_id', tenantId)
     .eq('tax_year', year)
+    .eq('source', 'expense')
 
-  // 2. Expenses table (auto-map by category)
+  // 2. All business expenses for the year
   const { data: expenses } = await db
     .from('expenses')
-    .select('category, amount_cents')
+    .select('id, category, amount_cents')
     .eq('tenant_id', tenantId)
     .eq('is_business', true)
     .gte('expense_date', yearStart)
@@ -159,23 +167,37 @@ export async function getScheduleCBreakdown(year: number): Promise<ScheduleCBrea
     .gte('log_date', yearStart)
     .lte('log_date', yearEnd)
 
-  // Aggregate by Schedule C line
-  const lineMap = new Map<string, { totalCents: number; count: number }>()
-
-  // Manual categorizations
-  for (const cat of manualCats || []) {
-    const line = cat.schedule_c_line as string
-    const existing = lineMap.get(line) || { totalCents: 0, count: 0 }
-    existing.totalCents += cat.amount_cents || 0
-    existing.count++
-    lineMap.set(line, existing)
+  // Build authoritative mapping index: expense_id -> { line, amount }
+  const authMap = new Map<string, { line: string; amountCents: number }>()
+  for (const mapping of authMappings || []) {
+    if (mapping.source_id) {
+      authMap.set(mapping.source_id, {
+        line: mapping.schedule_c_line as string,
+        amountCents: mapping.amount_cents || 0,
+      })
+    }
   }
 
-  // Auto-mapped expenses
+  // Aggregate by Schedule C line using authoritative mapping when available,
+  // otherwise using the deterministic category fallback.
+  const lineMap = new Map<string, { totalCents: number; count: number }>()
+
   for (const exp of expenses || []) {
-    const line = EXPENSE_CATEGORY_TO_LINE[exp.category as string] || 'line_27a'
+    let line: string
+    let amountCents: number
+
+    if (authMap.has(exp.id)) {
+      const auth = authMap.get(exp.id)!
+      line = auth.line
+      // Use the actual expense amount (not what was stored in the mapping)
+      amountCents = exp.amount_cents || 0
+    } else {
+      line = EXPENSE_CATEGORY_TO_LINE[exp.category as string] || 'line_27a'
+      amountCents = exp.amount_cents || 0
+    }
+
     const existing = lineMap.get(line) || { totalCents: 0, count: 0 }
-    existing.totalCents += exp.amount_cents || 0
+    existing.totalCents += amountCents
     existing.count++
     lineMap.set(line, existing)
   }
