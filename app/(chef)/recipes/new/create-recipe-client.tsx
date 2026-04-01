@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
-import { createRecipe, addIngredientToRecipe, linkRecipeToComponent } from '@/lib/recipes/actions'
+import { createRecipeWithIngredients, linkRecipeToComponent } from '@/lib/recipes/actions'
 import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { parseRecipeFromText } from '@/lib/ai/parse-recipe'
 import type { ParsedRecipe, ParsedIngredient } from '@/lib/ai/parse-recipe'
@@ -290,48 +290,44 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
     setError('')
 
     try {
-      // Create the recipe
-      const result = await createRecipe({
-        name: name.trim(),
-        category,
-        method: method.trim(),
-        method_detailed: methodDetailed.trim() || undefined,
-        description: description.trim() || undefined,
-        notes: notes.trim() || undefined,
-        prep_time_minutes: prepTime ? parseInt(prepTime) : undefined,
-        cook_time_minutes: cookTime ? parseInt(cookTime) : undefined,
-        total_time_minutes:
-          prepTime && cookTime ? parseInt(prepTime) + parseInt(cookTime) : undefined,
-        yield_quantity: yieldQty ? parseFloat(yieldQty) : undefined,
-        yield_unit: yieldUnit.trim() || undefined,
-        dietary_tags: dietaryTags
-          ? dietaryTags
-              .split(',')
-              .map((t) => t.trim())
-              .filter(Boolean)
-          : undefined,
-        servings: servings ? parseInt(servings) : undefined,
-        calories_per_serving: caloriesPerServing ? parseInt(caloriesPerServing) : undefined,
-        difficulty: difficulty >= 1 ? difficulty : undefined,
-        equipment: equipment
-          ? equipment
-              .split(',')
-              .map((e) => e.trim())
-              .filter(Boolean)
-          : undefined,
-        cuisine: cuisine || undefined,
-        meal_type: mealType || undefined,
-        season: season.length > 0 ? season : undefined,
-        occasion_tags: occasionTags.length > 0 ? occasionTags : undefined,
-      })
-
-      const recipeId = result.recipe.id
-
-      // Add ingredients
       const validIngredients = ingredients.filter((ing) => ing.name.trim())
-      for (let i = 0; i < validIngredients.length; i++) {
-        const ing = validIngredients[i]
-        await addIngredientToRecipe(recipeId, {
+
+      // Atomic create: recipe + all ingredients in one call with rollback on failure
+      const result = await createRecipeWithIngredients(
+        {
+          name: name.trim(),
+          category,
+          method: method.trim(),
+          method_detailed: methodDetailed.trim() || undefined,
+          description: description.trim() || undefined,
+          notes: notes.trim() || undefined,
+          prep_time_minutes: prepTime ? parseInt(prepTime) : undefined,
+          cook_time_minutes: cookTime ? parseInt(cookTime) : undefined,
+          total_time_minutes:
+            prepTime && cookTime ? parseInt(prepTime) + parseInt(cookTime) : undefined,
+          yield_quantity: yieldQty ? parseFloat(yieldQty) : undefined,
+          yield_unit: yieldUnit.trim() || undefined,
+          dietary_tags: dietaryTags
+            ? dietaryTags
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean)
+            : undefined,
+          servings: servings ? parseInt(servings) : undefined,
+          calories_per_serving: caloriesPerServing ? parseInt(caloriesPerServing) : undefined,
+          difficulty: difficulty >= 1 ? difficulty : undefined,
+          equipment: equipment
+            ? equipment
+                .split(',')
+                .map((e) => e.trim())
+                .filter(Boolean)
+            : undefined,
+          cuisine: cuisine || undefined,
+          meal_type: mealType || undefined,
+          season: season.length > 0 ? season : undefined,
+          occasion_tags: occasionTags.length > 0 ? occasionTags : undefined,
+        },
+        validIngredients.map((ing, i) => ({
           ingredient_name: ing.name.trim(),
           ingredient_category: ing.category as any,
           ingredient_default_unit: ing.unit || 'unit',
@@ -340,12 +336,20 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
           preparation_notes: ing.preparation_notes || undefined,
           is_optional: ing.is_optional,
           sort_order: i,
-        })
+        }))
+      )
+
+      if (!result.success) {
+        setError(result.message)
+        setLoading(false)
+        return
       }
 
-      // If created from a component prompt, link it
+      const recipeId = result.recipeId
+
+      // If created from a component prompt, link it (non-blocking)
       if (prefillComponent?.componentId) {
-        await linkRecipeToComponent(recipeId, prefillComponent.componentId)
+        await linkRecipeToComponent(recipeId, prefillComponent.componentId).catch(() => null)
       }
 
       // Nutrition enrichment is non-blocking for the primary save path.

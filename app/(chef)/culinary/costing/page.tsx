@@ -148,15 +148,19 @@ export default async function CostingPage() {
                         })()}
                       </TableCell>
                       <TableCell>
-                        <CostingConfidenceBadge
-                          coveragePct={
-                            recipe.has_all_prices
-                              ? 100
-                              : recipe.has_all_prices === false
-                                ? 50
-                                : null
-                          }
-                        />
+                        {(recipe.ingredient_count ?? 0) === 0 ? (
+                          <span className="text-xs text-stone-500">No ingredients</span>
+                        ) : (
+                          <CostingConfidenceBadge
+                            coveragePct={
+                              recipe.has_all_prices
+                                ? 100
+                                : recipe.has_all_prices === false
+                                  ? 50
+                                  : null
+                            }
+                          />
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -248,15 +252,19 @@ export default async function CostingPage() {
                         : '-'}
                     </TableCell>
                     <TableCell>
-                      <CostingConfidenceBadge
-                        coveragePct={
-                          mc.has_all_recipe_costs
-                            ? 100
-                            : mc.has_all_recipe_costs === false
-                              ? 50
-                              : null
-                        }
-                      />
+                      {(mc.total_component_count ?? 0) === 0 ? (
+                        <span className="text-xs text-stone-500">No components</span>
+                      ) : (
+                        <CostingConfidenceBadge
+                          coveragePct={
+                            mc.has_all_recipe_costs
+                              ? 100
+                              : mc.has_all_recipe_costs === false
+                                ? 50
+                                : null
+                          }
+                        />
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

@@ -430,6 +430,18 @@ export async function addEditorCourse(
   const user = await requireChef()
   const db: any = createServerClient()
 
+  // Verify menu belongs to tenant before inserting a dish
+  const { data: menu, error: menuErr } = await db
+    .from('menus')
+    .select('id')
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+  if (menuErr || !menu) {
+    console.error('[addEditorCourse] Menu not found or unauthorized:', menuErr)
+    throw new Error('Menu not found or you do not have permission to edit it')
+  }
+
   const { data: dish, error } = (await db
     .from('dishes')
     .insert({

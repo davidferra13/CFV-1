@@ -189,7 +189,31 @@ export async function getDishIndex(filters?: {
     query = query.range(from, from + filters.limit - 1)
   }
 
-  const { data, error, count } = await query
+  let { data, error, count } = await query
+
+  // If linked-recipe join causes the query to fail, retry without the join so
+  // the page degrades gracefully instead of crashing the whole dish index.
+  if (
+    error &&
+    (error.message?.includes('linked_recipe_id') || error.message?.includes('recipes'))
+  ) {
+    console.warn(
+      '[getDishIndex] Recipe join failed, retrying without recipe enrichment:',
+      error.message
+    )
+    const fallbackQuery = db
+      .from('dish_index')
+      .select('*', { count: 'exact' })
+      .eq('tenant_id', user.tenantId!)
+      .eq('archived', false)
+    const fallback = await fallbackQuery.range(0, (filters?.limit ?? 50) - 1)
+    if (!fallback.error) {
+      data = fallback.data
+      count = fallback.count
+      error = null
+    }
+  }
+
   if (error) throw new Error(`Failed to fetch dish index: ${error.message}`)
   return { dishes: data ?? [], total: count ?? 0 }
 }

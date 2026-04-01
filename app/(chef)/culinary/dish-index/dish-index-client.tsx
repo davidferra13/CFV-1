@@ -32,9 +32,15 @@ interface DishIndexClientProps {
   initialDishes: Array<Record<string, unknown>>
   totalCount: number
   stats: DishIndexStats
+  loadError?: string | null
 }
 
-export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexClientProps) {
+export function DishIndexClient({
+  initialDishes,
+  totalCount,
+  stats,
+  loadError,
+}: DishIndexClientProps) {
   const [dishes, setDishes] = useState(initialDishes)
   const [total, setTotal] = useState(totalCount)
   const [search, setSearch] = useState('')
@@ -255,6 +261,15 @@ export function DishIndexClient({ initialDishes, totalCount, stats }: DishIndexC
           </select>
         </div>
       </Card>
+
+      {/* Load error banner */}
+      {loadError && (
+        <Card className="p-4 border-red-800/40 bg-red-900/10">
+          <p className="text-sm text-red-400">
+            Could not load dish index: {loadError}. Showing partial or empty results.
+          </p>
+        </Card>
+      )}
 
       {/* Dish grid */}
       <div className={`space-y-2 ${isPending ? 'opacity-50' : ''}`}>

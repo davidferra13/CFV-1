@@ -234,6 +234,7 @@ export function MenusClientWrapper({
   // Quick view data (lazy-loaded per menu)
   const [quickViewData, setQuickViewData] = useState<MenuQuickViewData | null>(null)
   const [quickViewLoading, setQuickViewLoading] = useState(false)
+  const [quickViewError, setQuickViewError] = useState(false)
   const [quickViewCache, setQuickViewCache] = useState<Record<string, MenuQuickViewData>>({})
 
   const selectedMenu = selectedMenuId
@@ -342,16 +343,18 @@ export function MenusClientWrapper({
       if (quickViewCache[menuId]) {
         setQuickViewData(quickViewCache[menuId])
         setQuickViewLoading(false)
+        setQuickViewError(false)
       } else {
         setQuickViewData(null)
+        setQuickViewError(false)
         setQuickViewLoading(true)
         try {
           const data = await getMenuQuickViewData(menuId)
           setQuickViewData(data)
           setQuickViewCache((prev) => ({ ...prev, [menuId]: data }))
         } catch {
-          // Non-blocking: modal still shows basic info
           setQuickViewData(null)
+          setQuickViewError(true)
         } finally {
           setQuickViewLoading(false)
         }
@@ -626,6 +629,24 @@ export function MenusClientWrapper({
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-6 w-6 animate-spin text-brand-500" />
                 <span className="ml-2 text-sm text-stone-400">Loading menu details...</span>
+              </div>
+            ) : quickViewError ? (
+              <div className="rounded-lg border border-red-800/40 bg-red-900/20 p-4 text-center">
+                <p className="text-sm text-red-400">
+                  Could not load menu details. Please try again.
+                </p>
+                <button
+                  type="button"
+                  className="mt-2 text-xs text-stone-400 underline hover:text-stone-200"
+                  onClick={() => {
+                    if (selectedMenuId) {
+                      setQuickViewError(false)
+                      openMenuModal(selectedMenuId)
+                    }
+                  }}
+                >
+                  Retry
+                </button>
               </div>
             ) : quickViewData ? (
               <div className="space-y-5">

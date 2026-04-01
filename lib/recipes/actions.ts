@@ -2115,3 +2115,113 @@ export async function applyDietaryTags(
     return { success: false, error: 'Failed to apply tags' }
   }
 }
+
+// ============================================
+// COMPOSITE: createRecipeWithIngredients
+// Atomic recipe + ingredient creation with rollback.
+// If any ingredient fails, the recipe row is deleted (compensating rollback).
+// This replaces the two-step create-then-loop pattern in the client.
+// ============================================
+
+export type RecipeCreateResult =
+  | {
+      success: true
+      recipeId: string
+      createdIngredientCount: number
+      missingPriceIngredientIds: string[]
+    }
+  | {
+      success: false
+      code: 'duplicate_recipe' | 'ingredient_validation' | 'tenant_context_missing' | 'write_failed'
+      message: string
+      fieldErrors?: Record<string, string>
+    }
+
+export async function createRecipeWithIngredients(
+  recipeInput: CreateRecipeInput,
+  ingredientInputs: AddIngredientInput[]
+): Promise<RecipeCreateResult> {
+  const user = await requireChef()
+  if (!user.tenantId) {
+    return {
+      success: false,
+      code: 'tenant_context_missing',
+      message: 'Session is missing tenant context. Please sign out and sign in again.',
+    }
+  }
+
+  const db: any = createServerClient()
+
+  // Check for duplicate recipe name before creating
+  const { data: existing } = await db
+    .from('recipes')
+    .select('id')
+    .eq('tenant_id', user.tenantId)
+    .ilike('name', recipeInput.name.trim())
+    .limit(1)
+  if (existing && existing.length > 0) {
+    return {
+      success: false,
+      code: 'duplicate_recipe',
+      message: `A recipe named "${recipeInput.name.trim()}" already exists.`,
+    }
+  }
+
+  // Create the recipe row
+  let recipeId: string
+  try {
+    const result = await createRecipe(recipeInput)
+    recipeId = (result as any).recipe?.id
+    if (!recipeId) throw new Error('Recipe row was not returned')
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Recipe creation failed'
+    return { success: false, code: 'write_failed', message: msg }
+  }
+
+  // Add ingredients one by one. On first failure, compensate by deleting the recipe.
+  const missingPriceIds: string[] = []
+  let createdCount = 0
+  for (let i = 0; i < ingredientInputs.length; i++) {
+    const ing = ingredientInputs[i]
+    if (!ing.ingredient_name?.trim()) continue
+    try {
+      const ingResult = await addIngredientToRecipe(recipeId, ing)
+      createdCount++
+      if ((ingResult as any).costWarning) {
+        // costWarning = no price data available; track for caller
+        missingPriceIds.push(ing.ingredient_name)
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : `Ingredient "${ing.ingredient_name}" failed`
+      console.error(
+        `[createRecipeWithIngredients] ingredient ${i} failed, rolling back recipe ${recipeId}:`,
+        err
+      )
+      // Compensating rollback
+      await db
+        .from('recipes')
+        .delete()
+        .eq('id', recipeId)
+        .eq('tenant_id', user.tenantId)
+        .catch((e: unknown) => {
+          console.error('[createRecipeWithIngredients] rollback failed:', e)
+        })
+      return {
+        success: false,
+        code: 'ingredient_validation',
+        message: `Failed to save ingredient "${ing.ingredient_name}": ${msg}`,
+      }
+    }
+  }
+
+  revalidatePath('/recipes')
+  revalidatePath('/recipes/ingredients')
+  revalidatePath('/culinary/costing')
+
+  return {
+    success: true,
+    recipeId,
+    createdIngredientCount: createdCount,
+    missingPriceIngredientIds: missingPriceIds,
+  }
+}

@@ -296,6 +296,18 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
         const result = mutationResult.result as any
 
         if (result?.menu?.id) {
+          // If any course failed to persist, block advancement and surface the failures.
+          // Showing "Menu Created" with 0 persisted dishes is a spec violation.
+          const courseErrors: string[] = result.courseErrors ?? []
+          const expectedCourses = courses.filter((c) => c.label?.trim()).length
+          const persistedCount = (result.dishes ?? []).length
+          if (courseErrors.length > 0 || (expectedCourses > 0 && persistedCount === 0)) {
+            const summary =
+              courseErrors.length > 0
+                ? `Some courses failed to save: ${courseErrors.join('; ')}`
+                : 'Courses were not saved. Please try again.'
+            throw new Error(summary)
+          }
           setCreatedMenuId(result.menu.id)
           setCreatedDishes(result.dishes ?? [])
           setCommittedFormData(currentFormData)
