@@ -324,3 +324,28 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/respectful-monetization-direction.md (new), docs/session-log.md
 - Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
 - Notes: Direct recommendation is universal core access plus a respectful supporter model, not a mandatory $25/month gate and not a permanent $1 unlock. Market check found adjacent tools commonly charge $19-$55/month, so $25 is not a crazy number in abstract, but ChefFlow's current public promise and product identity point toward support-first monetization. Recommended launch ask: $12/month or $120/year, with an optional limited founding-supporter offer at $99-$149 if an upfront cash path is needed.
+
+## 2026-03-31 22:28 EST
+
+- Agent: Planner
+- Task: Lock monetization decisions and convert the respectful monetization spec from draft to build-ready direction
+- Status: started
+- Build state on arrival: green (build-state still 5511b1e9; current HEAD 5677c711)
+- Files in focus: docs/specs/respectful-monetization-foundation.md, docs/research/respectful-monetization-direction.md, docs/session-log.md
+- Notes: Resolving open branches from the original draft. Decision target is support-first launch pricing, no v1 founding pass, and no v1 grants system.
+
+## 2026-03-31 22:23 EST
+
+- Agent: Planner + Research
+- Task: Soft-close leverage planning and research: inquiry closeout, warm-future-lead handling, and A/B messaging with Dinner Circle vs inline summary
+- Status: started
+- Build state on arrival: green (commit 5511b1e9; current HEAD 9e8e6e9f)
+
+## 2026-03-31 22:41 EST
+
+- Agent: Planner
+- Task: Lock monetization decisions and convert the respectful monetization spec from draft to build-ready direction
+- Status: completed
+- Files touched: docs/specs/respectful-monetization-foundation.md, docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
+- Notes: Resolved the open pricing/model branches. The spec is now build-ready with universal core access, annual support at $120/year, monthly support at $12/month, no v1 founding pass, and no v1 grants system.
