@@ -1,6 +1,6 @@
 # Spec: Chef Pricing Readiness Gate
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P0 (blocking)
 > **Depends on:** `openclaw-refresh-status-badge.md`, `openclaw-price-surfacing.md`
 > **Estimated complexity:** large (9+ files)
@@ -18,6 +18,8 @@ _Every status change, every claim, every verification gets a row. This is the au
 | Type check passed     | 2026-04-01          | Claude Sonnet 4.6       |        |
 | Status: built         | 2026-04-01          | Claude Sonnet 4.6       |        |
 | Build check passed    |                     |                         |        |
+| Playwright verified   | 2026-04-01          | QA Agent (Sonnet 4.6)   |        |
+| Status: verified      | 2026-04-01          | QA Agent (Sonnet 4.6)   |        |
 | Playwright verified   |                     |                         |        |
 | Status: verified      |                     |                         |        |
 

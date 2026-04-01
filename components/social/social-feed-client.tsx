@@ -176,7 +176,7 @@ export function SocialFeedClient({
                 }`}
               >
                 <Sparkles className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Hiring</span>
+                <span className="hidden sm:inline">Opportunities</span>
               </button>
             )}
             <button
