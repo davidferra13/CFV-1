@@ -1,6 +1,6 @@
 # Spec: Introduction Bridge
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)

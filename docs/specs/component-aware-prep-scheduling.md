@@ -1,24 +1,24 @@
 # Spec: Component-Aware Prep Scheduling
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** medium (3-8 files)
 
 ## Timeline
 
-| Event                 | Date             | Agent/Session      | Commit   |
-| --------------------- | ---------------- | ------------------ | -------- |
-| Created               | 2026-03-31 22:00 | Planner (Opus 4.6) |          |
-| Status: ready         | 2026-03-31 22:00 | Planner (Opus 4.6) |          |
-| Claimed (in-progress) | 2026-03-31 22:30 | Builder (Opus 4.6) |          |
-| Spike completed       | 2026-03-31 22:30 | Builder (Opus 4.6) |          |
-| Pre-flight passed     | 2026-03-31 22:30 | Builder (Opus 4.6) |          |
-| Build completed       | 2026-03-31 23:00 | Builder (Opus 4.6) | 97ddb458 |
-| Type check passed     | 2026-03-31 23:00 | Builder (Opus 4.6) | 97ddb458 |
-| Build check passed    |                  |                    |          |
-| Playwright verified   |                  |                    |          |
-| Status: verified      |                  |                    |          |
+| Event                 | Date             | Agent/Session         | Commit   |
+| --------------------- | ---------------- | --------------------- | -------- |
+| Created               | 2026-03-31 22:00 | Planner (Opus 4.6)    |          |
+| Status: ready         | 2026-03-31 22:00 | Planner (Opus 4.6)    |          |
+| Claimed (in-progress) | 2026-03-31 22:30 | Builder (Opus 4.6)    |          |
+| Spike completed       | 2026-03-31 22:30 | Builder (Opus 4.6)    |          |
+| Pre-flight passed     | 2026-03-31 22:30 | Builder (Opus 4.6)    |          |
+| Build completed       | 2026-03-31 23:00 | Builder (Opus 4.6)    | 97ddb458 |
+| Type check passed     | 2026-03-31 23:00 | Builder (Opus 4.6)    | 97ddb458 |
+| Build check passed    |                  |                       |          |
+| Playwright verified   | 2026-04-01       | QA Agent (Sonnet 4.6) |          |
+| Status: verified      | 2026-04-01       | QA Agent (Sonnet 4.6) |          |
 
 ---
 

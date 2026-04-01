@@ -1,11 +1,13 @@
 # Spec: Chef Catalog UX Overhaul (Store-First Shopping Experience)
 
-> **Status:** built
+> **Status:** verified
 > **Priority:** P1 (next up)
 > **Depends on:** openclaw-scraper-enrichment.md (for images, stock status, locations)
 > **Estimated complexity:** large (9+ files)
 > **Created:** 2026-03-29
 > **Built by:** Claude Opus 4.6 session 2026-04-01
+> **Verified by:** Claude Sonnet 4.6 session 2026-04-01
+> **Note:** catalog-event-linker.tsx (cart-to-event linking) not built; all other spec items verified. Fix: getCatalogStores() now uses requireChef() (was requireAdmin(), caused infinite loading for chefs).
 
 ---
 
