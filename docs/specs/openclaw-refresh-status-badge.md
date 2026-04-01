@@ -9,18 +9,19 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event                 | Date                | Agent/Session      | Commit |
-| --------------------- | ------------------- | ------------------ | ------ |
-| Created               | 2026-03-31 23:55 ET | Planner + Research |        |
-| Status: ready         | 2026-03-31 23:55 ET | Planner + Research |        |
-| Claimed (in-progress) |                     |                    |        |
-| Spike completed       |                     |                    |        |
-| Pre-flight passed     |                     |                    |        |
-| Build completed       |                     |                    |        |
-| Type check passed     |                     |                    |        |
-| Build check passed    |                     |                    |        |
-| Playwright verified   |                     |                    |        |
-| Status: verified      |                     |                    |        |
+| Event                  | Date                | Agent/Session      | Commit |
+| ---------------------- | ------------------- | ------------------ | ------ |
+| Created                | 2026-03-31 23:55 ET | Planner + Research |        |
+| Status: ready          | 2026-03-31 23:55 ET | Planner + Research |        |
+| Research-informed edit | 2026-04-01 00:20 ET | Planner + Research |        |
+| Claimed (in-progress)  |                     |                    |        |
+| Spike completed        |                     |                    |        |
+| Pre-flight passed      |                     |                    |        |
+| Build completed        |                     |                    |        |
+| Type check passed      |                     |                    |        |
+| Build check passed     |                     |                    |        |
+| Playwright verified    |                     |                    |        |
+| Status: verified       |                     |                    |        |
 
 ---
 
@@ -34,12 +35,15 @@ _The developer's actual words, cleaned up for readability but faithful to what t
 
 The developer needs a simple answer to a practical problem: when they open the pricing page, when should they expect it to refresh? They keep going back to the store prices page and the food catalog page, and the numbers are not changing in front of them even though OpenClaw is still replenishing data in the background. The database is slowly growing, but there is no badge or status symbol telling them when the next meaningful change is likely or whether they are just looking too early. Right now they remember that it seems to replenish every couple of hours, but the product does not confirm that. They want the interface to stop making them guess.
 
+Follow-up direction from the developer: research how chefs and restaurant purchasing tools already communicate this kind of pricing freshness and use that to tighten the spec. This phase stays docs-only. Do not build product code yet.
+
 ### Developer Intent
 
 _Translate the raw signal into clear system-level requirements. What were they actually trying to achieve beneath what they said? Preserve reasoning, not just outcomes._
 
 - **Core goal:** Add a truthful refresh-status surface to the chef-facing OpenClaw pages so the developer can immediately see whether data should have changed yet.
 - **Key constraints:** Do not fake an exact countdown the codebase cannot verify. Do not collapse Store Prices and Food Catalog into one pipeline when they are fed differently today.
+- **Research constraint:** Follow real operator patterns where possible. Favor last verified truth, source clarity, and degraded-state honesty over invented "refresh ETA" language.
 - **Motivation:** The current pages make unchanged numbers ambiguous. The developer needs operational trust, not more raw data.
 - **Success from the developer's perspective:** When they land on Store Prices or Food Catalog, they can tell what pipeline that page is using, when it last refreshed, and whether reloading now is likely to help.
 
@@ -54,6 +58,21 @@ This adds a compact, shared refresh-status surface to the chef-facing OpenClaw p
 ## Why It Matters
 
 Right now the pages expose freshness fragments but not the page-level truth. The result is unnecessary rechecking, misleading copy, and no reliable mental model for when OpenClaw data is actually supposed to move.
+
+External operator research points in the same direction. Restaurant tools like MarginEdge, Restaurant365, ChefMod, and meez emphasize last verified price, price history, variance alerts, availability status, and source context rather than a promised countdown to the next data update. Under cost volatility, chefs make rapid decisions about substitutions, vendor choices, and menu costing, which means the UI should optimize for trust and clarity, not false precision. See `docs/research/openclaw-refresh-status-operator-patterns.md`.
+
+---
+
+## Research-Informed Product Principles
+
+These rules are non-optional for this spec and are based on external operator-pattern research documented in `docs/research/openclaw-refresh-status-operator-patterns.md`.
+
+- Show the last verified update, not a guessed next refresh time.
+- Always label the source or pipeline for the timestamp being shown.
+- Separate page refresh status from item availability, substitutions, and row-level freshness.
+- Use degraded or unknown states explicitly when truth is missing.
+- Prefer operational wording like `last scrape`, `last local mirror update`, and `loads on search or reload`.
+- Do not color-code age as healthy or unhealthy without a verified cadence contract.
 
 ---
 
@@ -156,10 +175,25 @@ Add a compact, bordered status card directly under the page intro on both chef-f
 
 The component should feel like operational status, not marketing.
 
+Global presentation requirements:
+
+- Show one explicit status badge with one of these labels only:
+  - `Verified`
+  - `Degraded`
+  - `Unknown`
+- Badge color semantics are availability-of-truth semantics only:
+  - neutral or informational when timestamps are available
+  - warning when one required source is unavailable
+  - muted when no trustworthy timestamp exists
+- Do not use badge color to imply `fresh`, `stale`, or `late` based on elapsed time alone.
+- Show timestamps in exact local time with timezone plus a relative helper. Relative time alone is not sufficient.
+- Show a `Source:` line or equivalent labeled text so the chef can tell which pipeline the timestamp belongs to.
+
 Required content on `/prices`:
 
 - Primary label: `Local mirror status`
 - Primary timestamp: last local pull using `localSyncFinishedAt` when present, otherwise `localSyncStartedAt`
+- Source label: `Source: local OpenClaw mirror`
 - Secondary facts:
   - `Latest store catalog seen ...`
   - `Latest store price seen ...`
@@ -169,6 +203,7 @@ Required content on `/culinary/price-catalog`:
 
 - Primary label: `Live catalog status`
 - Primary timestamp: Pi `lastScrapeAt`
+- Source label: `Source: OpenClaw live catalog scrape`
 - Secondary facts:
   - `Catalog results load from OpenClaw on search and reload`
   - optional secondary local mirror timestamp for cross-reference, but clearly labeled as local mirror, not live catalog
@@ -184,6 +219,7 @@ Replace misleading existing copy:
 - **Empty:** Show `No refresh data yet` and keep the explanatory copy about how the page updates. Never show fake zero dates.
 - **Error:** If the Pi stats call fails, show `Pi status unavailable` on Food Catalog and continue rendering any verified local timestamps. Do not collapse the whole page.
 - **Populated:** Show the relevant last-known timestamps plus explicit refresh mechanics text. No countdown.
+- **Mixed:** If both local and Pi timestamps are shown on one page, label them separately and never merge them into a single `last updated` claim.
 
 ### Interactions
 
@@ -203,6 +239,8 @@ _List anything that could go wrong and what the correct behavior is._
 | No local sync rows yet                            | Show unknown local mirror state, keep explanatory copy                                       |
 | Store catalog has timestamps but sync run is null | Show the freshest verified store/store-product timestamps and keep local pull unknown        |
 | Page data is old but unchanged                    | Show the old timestamp truthfully, not fake "fresh" marketing language                       |
+| Local and Pi timestamps disagree                  | Show both with clear labels, do not collapse them into one blended refresh claim             |
+| Timestamp exists but cadence is unclear           | Show the timestamp only. Do not infer healthy/unhealthy age from elapsed hours               |
 
 ---
 
@@ -214,12 +252,13 @@ _How does the builder agent confirm this works? Be specific._
 2. Open `/prices`.
 3. Verify the page shows a refresh-status surface under the header.
 4. Verify the old "updated daily by OpenClaw" copy is gone.
-5. Verify the status text references local mirror timing and explicitly says the page does not auto-refresh.
+5. Verify the status text references local mirror timing, shows an exact local timestamp plus relative helper, and explicitly says the page does not auto-refresh.
 6. Open `/culinary/price-catalog`.
 7. Verify the page shows a refresh-status surface under the header.
 8. Verify the old `synced ...` crumb based on `stats.lastSync` is gone.
-9. Verify the Food Catalog status references Pi scrape timing, not the local mirror only.
-10. Temporarily simulate Pi unreachability during local testing and verify the page still renders with a degraded status state instead of throwing.
+9. Verify the Food Catalog status references Pi scrape timing, not the local mirror only, and shows the correct source label.
+10. Verify badge styling changes only for truth availability (`Verified`, `Degraded`, `Unknown`), not for arbitrary age buckets.
+11. Temporarily simulate Pi unreachability during local testing and verify the page still renders with a degraded status state instead of throwing.
 
 ---
 
@@ -233,6 +272,8 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 - Not creating a guaranteed `next refresh at` countdown
 - Not touching `/app/(admin)/admin/price-catalog/`
 - Not changing row-level freshness dots on store cards or catalog rows
+- Not adding item availability, substitution guidance, or supplier-order workflow UI
+- Not adding threshold-based price alerts in v1
 
 ---
 
@@ -245,6 +286,9 @@ _Anything else the builder needs to know: gotchas, patterns to follow, files to 
 - Prefer `finished_at` over `started_at` when presenting the last local pull to the chef
 - Keep the status component read-only and server-rendered
 - Do not reuse `FreshnessDot` as the entire solution. That component is record-age language, not page-refresh language. `components/pricing/freshness-dot.tsx:8-27`
+- Prefer exact local timestamps with timezone plus a relative helper, not relative-only text
+- Badge colors must represent truth availability, not guessed freshness health
+- If you include both local and Pi timestamps anywhere, label them explicitly as separate pipelines
 
 ---
 
@@ -394,6 +438,7 @@ The product would still not know an exact future refresh time, only the last kno
 2. Treating Store Prices and Food Catalog as one pipeline. They are not. Store Prices is local PostgreSQL mirror data, while Food Catalog browsing calls Pi APIs directly. `lib/openclaw/store-catalog-actions.ts:79-138`, `lib/openclaw/catalog-actions.ts:309-445`
 3. Building a countdown or "refreshes every 2 hours" promise from comments alone. The repo contradicts itself on cadence. `scripts/openclaw-pull/pull.mjs:12-13`, `docs/openclaw-price-intelligence.md:50-67,73`, `docs/food-catalog-pipeline-update.md:12,24-31`
 4. Reaching for the admin page or cron-auth sentinel route instead of building a chef-safe read-only action. `app/(admin)/admin/price-catalog/page.tsx:8-10`, `app/api/sentinel/sync-status/route.ts:6-42`
+5. Using red/yellow/green age buckets or a countdown to imply an SLA that the repo does not verify. `scripts/openclaw-pull/pull.mjs:12-13`, `docs/openclaw-data-pipeline.md:294-305`, `docs/research/openclaw-refresh-status-operator-patterns.md`
 
 ### Is anything assumed but not verified?
 
@@ -402,6 +447,7 @@ Yes.
 - An exact future refresh schedule for chef-facing UI is not verified and is contradicted by repo sources. `app/(chef)/prices/page.tsx:57-60`, `scripts/openclaw-pull/pull.mjs:12-13`, `docs/openclaw-data-pipeline.md:294-305`, `docs/food-catalog-pipeline-update.md:12,24-31`
 - The Pi does not expose scrape history in this repo beyond current `lastScrapeAt`, so the spec cannot truthfully compute a future countdown from code alone. `lib/openclaw/sync.ts:43-50,94-104`
 - The current local `openclaw.sync_runs` table shape supports "last pull" truth, not "next pull" truth. `database/migrations/20260401000119_openclaw_inventory_schema.sql:127-141`
+- External product research supports last-verified and alert patterns, but it does not itself prove that OpenClaw should infer age-based health states. That remains intentionally out of scope for v1. `docs/research/openclaw-refresh-status-operator-patterns.md`
 
 ---
 

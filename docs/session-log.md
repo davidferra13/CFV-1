@@ -444,3 +444,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/chef-pricing-override-infrastructure.md, docs/research/chef-pricing-override-current-state.md, docs/session-log.md
 - Build state on departure: green (docs-only session, no product-code changes)
 - Notes: Confirmed the current system stores chef overrides mostly as final numbers without durable baseline context, documented the active overwrite paths and parallel pricing sources, and wrote a build-ready spec that preserves developer intent and defines explicit baseline-vs-final pricing infrastructure.
+
+## 2026-04-01 00:46 EST
+
+- Agent: Research + Planner
+- Task: External operator-pattern research to improve the OpenClaw refresh-status spec without building code
+- Status: completed
+- Files touched: docs/research/openclaw-refresh-status-operator-patterns.md, docs/specs/openclaw-refresh-status-badge.md, docs/session-log.md
+- Build state on departure: green (docs-only session, no product-code changes)
+- Notes: Surveyed chef and operator tooling patterns across MarginEdge, Restaurant365, ChefMod, meez, and National Restaurant Association material, then tightened the spec so the badge favors last-verified truth, source labels, and degraded-state honesty instead of fake ETA or age-health claims.
