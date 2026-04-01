@@ -1,0 +1,120 @@
+{
+  "_comment": "OpenClaw scan-and-move manifest. Updated after each chain is scanned.",
+  "_version": "1.0",
+  "_last_updated": "2026-04-01",
+  "completed": [
+    {
+      "chain": "market-basket",
+      "source": "instacart",
+      "price_type": "retail",
+      "products": 38954,
+      "scanned": "2026-03-29",
+      "notes": "Instacart bulk. Max=2000. Do not re-scan until all queue is complete."
+    },
+    {
+      "chain": "hannaford",
+      "source": "instacart",
+      "price_type": "retail",
+      "products": 26235,
+      "scanned": "2026-03-29",
+      "notes": "Instacart bulk. Odd-day rotation."
+    },
+    {
+      "chain": "aldi",
+      "source": "instacart",
+      "price_type": "retail",
+      "products": 2612,
+      "scanned": "2026-03-29",
+      "notes": "Instacart bulk. Small catalog."
+    },
+    {
+      "chain": "stop-and-shop",
+      "source": "instacart-and-direct",
+      "price_type": "retail",
+      "products": null,
+      "scanned": "2026-03-29",
+      "notes": "Both Instacart and direct scraper active."
+    },
+    {
+      "chain": "whole-foods",
+      "source": "instacart",
+      "price_type": "retail",
+      "products": null,
+      "scanned": "2026-03-29",
+      "notes": "Even-day Instacart rotation."
+    }
+  ],
+  "broken": [
+    {
+      "chain": "walmart",
+      "source": "direct",
+      "price_type": "retail",
+      "issue": "Scheduled but may have issues. Check logs/scraper-walmart.log on Pi.",
+      "priority": "high"
+    },
+    {
+      "chain": "target",
+      "source": "redsky-api",
+      "price_type": "retail",
+      "issue": "Redsky API may have changed. Check logs/scraper-target.log on Pi.",
+      "priority": "high"
+    },
+    {
+      "chain": "shaws",
+      "source": "instacart",
+      "price_type": "retail",
+      "issue": "In even-day rotation. Check product count to verify.",
+      "priority": "medium"
+    }
+  ],
+  "queue": [
+    {
+      "chain": "costco",
+      "source": "instacart",
+      "price_type": "retail",
+      "priority": "high",
+      "region": "northeast",
+      "notes": "In even-day rotation. High value - bulk pricing."
+    },
+    {
+      "chain": "bjs-wholesale-club",
+      "source": "instacart",
+      "price_type": "wholesale",
+      "priority": "high",
+      "region": "northeast",
+      "notes": "Club store. price_type=wholesale."
+    },
+    {
+      "chain": "restaurant-depot",
+      "source": "instacart-or-direct",
+      "price_type": "wholesale",
+      "priority": "critical",
+      "region": "northeast",
+      "notes": "Developer has account. Wholesale prices critical for chef costing."
+    },
+    {
+      "chain": "wegmans",
+      "source": "instacart",
+      "price_type": "retail",
+      "priority": "medium",
+      "region": "northeast",
+      "notes": "In Instacart store list. Regional premium grocer."
+    },
+    {
+      "chain": "shoprite",
+      "source": "instacart",
+      "price_type": "retail",
+      "priority": "medium",
+      "region": "northeast",
+      "notes": "Add to Instacart rotation when current chains are stable."
+    }
+  ],
+  "failed": [],
+  "protocol": {
+    "scan": "Capture full catalog/price list (every page, every product)",
+    "save": "Store with source, timestamp, location, wholesale/retail flag",
+    "verify": "Count products captured vs expected. Log coverage %.",
+    "mark_complete": "Move from queue to completed with actual_products count",
+    "move_on": "Next source. Do NOT re-scan until ALL queue items are captured."
+  }
+}

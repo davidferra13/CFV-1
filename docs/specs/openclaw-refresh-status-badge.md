@@ -1,8 +1,8 @@
 # Spec: OpenClaw Refresh Status Badge
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1 (next up)
-> **Depends on:** none
+> **Depends on:** `openclaw-canonical-scope-and-sequence.md`, `openclaw-internal-only-boundary-and-debranding.md`
 > **Estimated complexity:** medium (3-8 files)
 
 ## Timeline
@@ -41,7 +41,7 @@ Follow-up direction from the developer: research how chefs and restaurant purcha
 
 _Translate the raw signal into clear system-level requirements. What were they actually trying to achieve beneath what they said? Preserve reasoning, not just outcomes._
 
-- **Core goal:** Add a truthful refresh-status surface to the chef-facing OpenClaw pages so the developer can immediately see whether data should have changed yet.
+- **Core goal:** Add a truthful refresh-status surface to the chef-facing pricing pages so the developer can immediately see whether data should have changed yet.
 - **Key constraints:** Do not fake an exact countdown the codebase cannot verify. Do not collapse Store Prices and Food Catalog into one pipeline when they are fed differently today.
 - **Research constraint:** Follow real operator patterns where possible. Favor last verified truth, source clarity, and degraded-state honesty over invented "refresh ETA" language.
 - **Motivation:** The current pages make unchanged numbers ambiguous. The developer needs operational trust, not more raw data.
@@ -51,7 +51,7 @@ _Translate the raw signal into clear system-level requirements. What were they a
 
 ## What This Does (Plain English)
 
-This adds a compact, shared refresh-status surface to the chef-facing OpenClaw pages. `/prices` will show the timing of the local PostgreSQL mirror pull and store-catalog freshness. `/culinary/price-catalog` will show the timing of the live Pi catalog scrape. Both pages will explicitly state that they do not live-auto-refresh in the browser, so the chef can tell whether they should wait, reload, or stop expecting immediate movement.
+This adds a compact, shared refresh-status surface to the chef-facing pricing pages. `/prices` will show the timing of the local PostgreSQL mirror pull and store-catalog freshness. `/culinary/price-catalog` will show the timing of the live catalog scrape. Both pages will explicitly state that they do not live-auto-refresh in the browser, so the chef can tell whether they should wait, reload, or stop expecting immediate movement.
 
 ---
 
@@ -193,20 +193,22 @@ Required content on `/prices`:
 
 - Primary label: `Local mirror status`
 - Primary timestamp: last local pull using `localSyncFinishedAt` when present, otherwise `localSyncStartedAt`
-- Source label: `Source: local OpenClaw mirror`
+- Source label: `Source: local price mirror`
 - Secondary facts:
   - `Latest store catalog seen ...`
   - `Latest store price seen ...`
   - `Updates on page load or when you run a new search`
+  - all visible copy must stay neutral and must not name OpenClaw
 
 Required content on `/culinary/price-catalog`:
 
 - Primary label: `Live catalog status`
 - Primary timestamp: Pi `lastScrapeAt`
-- Source label: `Source: OpenClaw live catalog scrape`
+- Source label: `Source: live catalog scrape`
 - Secondary facts:
-  - `Catalog results load from OpenClaw on search and reload`
+  - `Catalog results load on search and reload`
   - optional secondary local mirror timestamp for cross-reference, but clearly labeled as local mirror, not live catalog
+  - all visible copy must stay neutral and must not name OpenClaw
 
 Replace misleading existing copy:
 

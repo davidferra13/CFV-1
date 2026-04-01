@@ -72,6 +72,10 @@ export interface PriceLookupResult {
 
   /** Sources that contributed to this price */
   sources: string[]
+
+  /** Whether this is a retail, wholesale, commodity, or farm-direct price.
+   * 'mixed' if the result aggregates both retail and wholesale sources. */
+  price_type: 'retail' | 'wholesale' | 'commodity' | 'farm_direct' | 'mixed'
 }
 
 // ---------------------------------------------------------------------------
@@ -311,6 +315,7 @@ interface ProductPriceRow {
   size_unit: string | null
   last_seen_at: string
   distance_miles: number | null
+  price_type: 'retail' | 'wholesale' | 'commodity' | 'farm_direct' | null
 }
 
 // Non-food keyword patterns for products that slip through category filters
@@ -369,7 +374,8 @@ async function searchProductPrices(
         sp.sale_price_cents,
         p.size, p.size_value, p.size_unit,
         sp.last_seen_at,
-        NULL::float as distance_miles
+        NULL::float as distance_miles,
+        sp.price_type
       FROM openclaw.products p
       JOIN openclaw.store_products sp ON sp.product_id = p.id
       JOIN openclaw.stores s ON s.id = sp.store_id
@@ -400,7 +406,8 @@ async function searchProductPrices(
       sp.sale_price_cents,
       p.size, p.size_value, p.size_unit,
       sp.last_seen_at,
-      NULL::float as distance_miles
+      NULL::float as distance_miles,
+      sp.price_type
     FROM openclaw.products p
     JOIN openclaw.store_products sp ON sp.product_id = p.id
     JOIN openclaw.stores s ON s.id = sp.store_id
@@ -419,6 +426,20 @@ async function searchProductPrices(
     LIMIT ${limit}
   `)) as unknown as ProductPriceRow[]
   return filterFoodProducts(rows)
+}
+
+/** Derive a single price_type label from a set of ProductPriceRow results.
+ *  All retail → 'retail'. All wholesale → 'wholesale'. Any mix → 'mixed'.
+ */
+function derivePriceType(
+  rows: ProductPriceRow[]
+): 'retail' | 'wholesale' | 'commodity' | 'farm_direct' | 'mixed' {
+  const types = new Set(rows.map((r) => r.price_type ?? 'retail'))
+  if (types.size === 1) {
+    const only = [...types][0]
+    return only as 'retail' | 'wholesale' | 'commodity' | 'farm_direct'
+  }
+  return 'mixed'
 }
 
 // ---------------------------------------------------------------------------
@@ -814,6 +835,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       coverage_note: buildCoverageNote('national', 0, null, zipCode || null),
     },
     sources: [],
+    price_type: 'retail',
   }
 
   // --- Resolve location ---
@@ -884,6 +906,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
             ),
           },
           sources: agg.sources,
+          price_type: 'retail',
         }
       }
     }
@@ -944,6 +967,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           ),
         },
         sources: agg.sources,
+        price_type: derivePriceType(productPrices),
       }
     }
   }
@@ -1000,6 +1024,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
             coverage_note: buildCoverageNote('national', 0, null, zipCode || null),
           },
           sources: agg.sources,
+          price_type: derivePriceType(nationalPrices),
         }
       }
     }
@@ -1038,6 +1063,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
         coverage_note: `USDA ${regionLabel} baseline (BLS avg). No live store prices available near ${zipCode || 'unknown location'}.`,
       },
       sources: [`USDA BLS (${regionLabel})`],
+      price_type: 'commodity',
     }
   }
 

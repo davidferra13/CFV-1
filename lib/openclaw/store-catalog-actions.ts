@@ -57,6 +57,7 @@ export type StoreProduct = {
   isStoreBrand: boolean
   categoryName: string | null
   department: string | null
+  imageUrl: string | null
 }
 
 export type StoreCatalogStats = {
@@ -240,7 +241,7 @@ export async function getStoreInventory(input: {
     SELECT sp.id, sp.product_id, p.name AS product_name, p.brand, p.size,
       sp.price_cents, sp.sale_price_cents, sp.sale_ends_at,
       sp.in_stock, sp.aisle, sp.source, sp.last_seen_at,
-      p.is_organic, p.is_store_brand,
+      p.is_organic, p.is_store_brand, p.image_url,
       pc.name AS category_name, pc.department
     FROM openclaw.store_products sp
     JOIN openclaw.products p ON p.id = sp.product_id
@@ -249,7 +250,9 @@ export async function getStoreInventory(input: {
       ${input.department ? pgClient`AND pc.department = ${input.department}` : pgClient``}
       ${searchPattern ? pgClient`AND p.name ILIKE ${searchPattern}` : pgClient``}
       ${foodOnly ? pgClient`AND (pc.is_food IS NULL OR pc.is_food = true)` : pgClient``}
-    ORDER BY p.name
+    ORDER BY
+      sp.in_stock DESC,
+      p.name
     LIMIT ${limit} OFFSET ${offset}
   `
 
@@ -283,6 +286,7 @@ export async function getStoreInventory(input: {
       isStoreBrand: r.is_store_brand ?? false,
       categoryName: r.category_name,
       department: r.department,
+      imageUrl: r.image_url ?? null,
     })),
     total: countRows[0]?.cnt ?? 0,
     departments,
@@ -301,13 +305,13 @@ export async function searchStoreProducts(
     SELECT sp.id, sp.product_id, p.name AS product_name, p.brand, p.size,
       sp.price_cents, sp.sale_price_cents, sp.sale_ends_at,
       sp.in_stock, sp.aisle, sp.source, sp.last_seen_at,
-      p.is_organic, p.is_store_brand,
+      p.is_organic, p.is_store_brand, p.image_url,
       pc.name AS category_name, pc.department
     FROM openclaw.products p
     JOIN openclaw.store_products sp ON sp.product_id = p.id
     LEFT JOIN openclaw.product_categories pc ON pc.id = p.category_id
     WHERE to_tsvector('english', p.name) @@ plainto_tsquery('english', ${query})
-    ORDER BY sp.price_cents ASC
+    ORDER BY sp.in_stock DESC, sp.price_cents ASC
     LIMIT ${limit}
   `
 
@@ -328,5 +332,6 @@ export async function searchStoreProducts(
     isStoreBrand: r.is_store_brand ?? false,
     categoryName: r.category_name,
     department: r.department,
+    imageUrl: r.image_url ?? null,
   }))
 }

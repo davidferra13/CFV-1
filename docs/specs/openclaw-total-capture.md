@@ -622,6 +622,8 @@ CREATE INDEX IF NOT EXISTS idx_usda_fdc_fts ON openclaw.usda_fdc_products USING 
 
 ## Notes for Builder Agent
 
+**CRITICAL: Only claim Phase 1 initially.** Phases 2-5 are a roadmap, not a single build ticket. Each phase has its own success criteria and must be verified before the next phase begins. Do NOT start Phase 2 until Phase 1 shows 7 consecutive green days.
+
 1. **Phase 1 is SSH work on the Pi.** The builder needs Pi access (10.0.0.177, see memory/reference_raspberry_pi.md). Check `logs/scraper-walmart.log`, `logs/scraper-target.log`, `logs/instacart-walker.log` for error details.
 
 2. **The scan-and-move architecture is a crontab change, not a code change.** Don't over-engineer this. A JSON manifest file + manual crontab updates per phase is fine. No need for a queue management system.

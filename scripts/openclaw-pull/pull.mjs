@@ -109,6 +109,53 @@ function isNonFoodProduct(productName) {
   return NON_FOOD_KEYWORDS.some(pattern => pattern.test(productName))
 }
 
+// Wholesale chains - price_type = 'wholesale' for products from these chains.
+// Club stores (Costco, BJ's, Sam's) use 'retail' price_type (consumer-facing).
+const WHOLESALE_CHAIN_SLUGS = new Set([
+  'restaurant_depot',
+  'restaurant-depot',
+  'jetro',
+  'sysco',
+  'us_foods',
+  'us-foods',
+  'gfs',
+  'webstaurantstore',
+  'food-service-direct',
+  'foodservicedirect',
+])
+
+// Club stores - separate store_type but consumer-retail pricing
+const CLUB_STORE_SLUGS = new Set([
+  'costco',
+  'bjs',
+  'bjs_wholesale_club',
+  'bjs-wholesale-club',
+  'sams_club',
+  'sams-club',
+])
+
+/**
+ * Determine price_type for a given chain slug.
+ * Default: 'retail'. Wholesale distributors get 'wholesale'.
+ */
+function getPriceType(chainSlug) {
+  if (!chainSlug) return 'retail'
+  const slug = chainSlug.toLowerCase()
+  return WHOLESALE_CHAIN_SLUGS.has(slug) ? 'wholesale' : 'retail'
+}
+
+/**
+ * Determine store_type for a given chain slug.
+ * Default: 'retail'. Club stores and wholesale distributors differ.
+ */
+function getStoreType(chainSlug) {
+  if (!chainSlug) return 'retail'
+  const slug = chainSlug.toLowerCase()
+  if (WHOLESALE_CHAIN_SLUGS.has(slug)) return 'wholesale'
+  if (CLUB_STORE_SLUGS.has(slug)) return 'club'
+  return 'retail'
+}
+
 async function main() {
   const startedAt = new Date()
   log('Starting OpenClaw pull...')
@@ -392,16 +439,21 @@ async function main() {
         }
 
         try {
+          // Determine price_type from chain slug (resolved earlier in storeIdMap step)
+          const chainSlug = sp.chain_slug || null
+          const priceTypeVal = getPriceType(chainSlug)
+
           await sql`
             INSERT INTO openclaw.store_products (
               store_id, product_id, price_cents, sale_price_cents, sale_ends_at,
-              in_stock, aisle, source, last_seen_at
+              in_stock, aisle, source, last_seen_at, price_type
             ) VALUES (
               ${pgStoreId}, ${pgProductId}, ${sp.price_cents},
               ${sp.sale_price_cents || null},
               ${sp.sale_ends_at ? new Date(sp.sale_ends_at) : null},
               ${sp.in_stock === 1}, ${sp.aisle}, ${sp.source || 'pull'},
-              ${sp.last_seen_at ? new Date(sp.last_seen_at) : new Date()}
+              ${sp.last_seen_at ? new Date(sp.last_seen_at) : new Date()},
+              ${priceTypeVal}
             )
             ON CONFLICT (store_id, product_id) DO UPDATE SET
               price_cents = EXCLUDED.price_cents,
@@ -410,7 +462,8 @@ async function main() {
               in_stock = EXCLUDED.in_stock,
               aisle = EXCLUDED.aisle,
               source = EXCLUDED.source,
-              last_seen_at = EXCLUDED.last_seen_at
+              last_seen_at = EXCLUDED.last_seen_at,
+              price_type = EXCLUDED.price_type
           `
           pricesSynced++
         } catch (err) {
@@ -541,10 +594,14 @@ async function main() {
           if (cp.pricing_tier) source = cp.pricing_tier
           if (cp.source_id?.includes('flipp')) source = 'flipp'
 
+          // Derive price_type from source_id (maps to chain slug)
+          const cpChainSlug = sourceIdToChainSlug(cp.source_id || '') || null
+          const cpPriceType = getPriceType(cpChainSlug)
+
           await sql`
             INSERT INTO openclaw.store_products (
               store_id, product_id, price_cents, sale_price_cents,
-              sale_ends_at, in_stock, source, last_seen_at
+              sale_ends_at, in_stock, source, last_seen_at, price_type
             ) VALUES (
               ${pgStoreId}, ${pgProductId},
               ${regularPrice || priceCents},
@@ -552,7 +609,8 @@ async function main() {
               ${cp.sale_end_date ? new Date(cp.sale_end_date) : null},
               ${cp.in_stock !== 0},
               ${source},
-              ${cp.last_confirmed_at ? new Date(cp.last_confirmed_at) : new Date()}
+              ${cp.last_confirmed_at ? new Date(cp.last_confirmed_at) : new Date()},
+              ${cpPriceType}
             )
             ON CONFLICT (store_id, product_id) DO UPDATE SET
               price_cents = EXCLUDED.price_cents,
@@ -560,7 +618,8 @@ async function main() {
               sale_ends_at = EXCLUDED.sale_ends_at,
               in_stock = EXCLUDED.in_stock,
               source = EXCLUDED.source,
-              last_seen_at = EXCLUDED.last_seen_at
+              last_seen_at = EXCLUDED.last_seen_at,
+              price_type = EXCLUDED.price_type
           `
           currentPricesSynced++
         } catch (err) {

@@ -163,15 +163,33 @@ export function StoreInventoryBrowser({
                 </thead>
                 <tbody>
                   {products.map((p) => (
-                    <tr key={p.id} className="border-b border-stone-800 hover:bg-stone-900/50">
+                    <tr
+                      key={p.id}
+                      className={`border-b border-stone-800 hover:bg-stone-900/50 ${!p.inStock ? 'opacity-50' : ''}`}
+                    >
                       <td className="py-2 pr-3">
-                        <div>
-                          <span className="font-medium text-stone-200">{p.productName}</span>
-                          {p.brand && (
-                            <span className="text-xs text-stone-500 ml-1.5">{p.brand}</span>
+                        <div className="flex items-center gap-2">
+                          {p.imageUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={p.imageUrl}
+                              alt=""
+                              className="h-8 w-8 rounded object-cover flex-shrink-0 bg-stone-800"
+                              onError={(e) => {
+                                ;(e.currentTarget as HTMLImageElement).style.display = 'none'
+                              }}
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded bg-stone-800 flex-shrink-0" />
                           )}
+                          <div>
+                            <span className="font-medium text-stone-200">{p.productName}</span>
+                            {p.brand && (
+                              <span className="text-xs text-stone-500 ml-1.5">{p.brand}</span>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex gap-1 mt-0.5">
+                        <div className="flex gap-1 mt-0.5 ml-10">
                           {p.isOrganic && <Badge variant="success">Organic</Badge>}
                           {p.isStoreBrand && <Badge variant="default">Store Brand</Badge>}
                         </div>
