@@ -105,5 +105,8 @@ That was a reasonable answer to the earlier question, but it is not aligned with
 
 - **Needs a spec:** Use `docs/specs/full-cloud-ai-runtime-and-disclosure.md` as the canonical implementation plan.
 - **Quick fix:** Mark the older hybrid research as superseded so builders do not follow the wrong architecture.
-- **Needs discussion:** Choose the actual remote Ollama-compatible provider/account and define production SLAs, spend limits, and health-monitoring thresholds.
-- **Needs discussion:** Decide the exact wording style for cloud-processing disclosure so it is truthful without being verbose or alarming.
+- **Locked architecture decision:** Use one remote Ollama-compatible cloud runtime as the production primary for all current former-Ollama user-facing AI traffic. Existing Gemini-native features stay on Gemini.
+- **Locked fallback decision:** Do not allow silent or automatic production fallback to local hardware. Keep any local Ollama path behind an explicit non-production debug override only.
+- **Locked disclosure decision:** Every user-facing trust surface should communicate the equivalent of: "ChefFlow uses cloud AI processing for AI features. Inputs and outputs may be processed by secure third-party AI infrastructure." Individual surfaces can shorten it, but they cannot claim local-only, browser-only, or no-third-party-AI handling unless literally true.
+- **Locked rollout gate:** Do not call the rollout complete until former-Ollama features pass verification with local Ollama fully stopped and the disclosure sweep is finished.
+- **Operational follow-up, not architecture debate:** The exact provider account, spend caps, alert thresholds, and redundancy posture still need to be chosen during implementation rollout, but they should not reopen the full-cloud direction.

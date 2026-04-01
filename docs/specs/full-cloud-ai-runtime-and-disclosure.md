@@ -49,6 +49,17 @@ The current runtime is split between existing cloud Gemini features and a large 
 
 ---
 
+## Locked Decisions
+
+- Production uses one remote Ollama-compatible cloud runtime as the primary endpoint for all current former-Ollama user-facing AI traffic. Do not keep a hybrid production split where some former-Ollama lanes still depend on local hardware.
+- Existing Gemini-native features stay on Gemini. Do not force them through the remote Ollama-compatible runtime just for naming consistency.
+- Production has no silent or automatic local fallback. If the cloud runtime is down or misconfigured, the product must fail clearly with provider-agnostic AI-unavailable messaging and operator alerts.
+- Local Ollama remains allowed only as an explicit non-production debug override through runtime policy. It is not a supported production dependency and must never activate by accident in production.
+- The baseline disclosure meaning is locked. Every user-facing trust surface must communicate the equivalent of: "ChefFlow uses cloud AI processing for AI features. Inputs and outputs may be processed by secure third-party AI infrastructure. Product surfaces must not promise local-only, browser-only, or no-third-party-AI handling unless that is still literally true."
+- Rollout is not complete until local Ollama can be fully stopped and the verification sweep still passes across former-Ollama features and disclosure surfaces.
+
+---
+
 ## Files to Create
 
 | File                                             | Purpose                                                                                                                    |
@@ -137,8 +148,10 @@ No persistence model changes are required. The key change is the runtime-provide
 ### Constraints
 
 - Production runtime defaults to cloud for all former Ollama-backed features.
+- Production former-Ollama traffic uses one cloud primary instead of a route-by-route local/cloud split.
 - Existing Gemini features stay cloud and are not migrated just for naming consistency.
 - Any local Ollama usage that remains must be explicitly fenced to development/debug mode, not normal user traffic.
+- There is no production local fallback. If cloud runtime is unavailable, the system fails clearly and alerts instead of silently using someone's machine.
 - User-facing disclosure text must match actual runtime behavior. No "local-only," "private infrastructure only," "browser-only," or "data never leaves your machine" claim may remain unless it is still literally true in that surface.
 
 ---
@@ -159,6 +172,7 @@ No persistence model changes are required. The key change is the runtime-provide
 Implementation rule:
 
 - Preserve the existing API contracts and call signatures where possible. The fastest safe implementation is to change runtime resolution centrally rather than rewrite every feature API.
+- Do not add a new production "smart fallback" that silently switches back to local hardware. That would recreate the current failure mode in a less visible form.
 
 ---
 
@@ -184,6 +198,7 @@ The pages and components do not need structural redesign. What changes is the tr
 - Remy UI contracts stay the same: widgets still stream, drawers still open, buttons still trigger the same routes.
 - The trust/disclosure surfaces should all reuse the new shared disclosure component or shared disclosure copy source instead of duplicating strings.
 - Settings/onboarding screens must explain real behavior, not reassure through false locality claims.
+- The canonical baseline disclosure meaning is: cloud AI processing is used for AI features, secure third-party AI infrastructure may process inputs/outputs, and local-only/browser-only/no-third-party-AI promises are not allowed unless still literally true.
 
 ---
 
@@ -194,6 +209,7 @@ The pages and components do not need structural redesign. What changes is the tr
 | Cloud Ollama-compatible host is down                      | User sees AI-unavailable messaging; no "start Ollama" instruction in production paths.                 |
 | `OLLAMA_BASE_URL` still points to localhost in production | Hard fail startup/health checks or report misconfiguration loudly; do not silently ship local runtime. |
 | Dev wants local testing                                   | Allowed only behind explicit dev-only override; never the default production path.                     |
+| Builder tries to add production local fallback            | Reject that design. Production fallback to a local machine is explicitly out of spec.                  |
 | Existing Gemini feature is already cloud                  | Leave it cloud; do not force it through remote Ollama just for uniformity.                             |
 | User-facing copy still says local-only after rollout      | Treat as a bug. This spec requires a disclosure sweep, not just a runtime change.                      |
 | Monitoring/alerts still ping localhost                    | Treat as incomplete implementation. Production monitoring must watch the cloud runtime.                |
@@ -222,6 +238,8 @@ The pages and components do not need structural redesign. What changes is the tr
    - no third-party AI
 7. Verify `GET /api/ollama-status` reports remote-provider health, not local daemon presence.
 8. Verify cloud runtime latency is materially lower than the prior local flow for the same Remy paths.
+9. Verify local Ollama can remain fully off during the whole production-style verification sweep.
+10. Verify production config cannot silently fall back to local runtime when the remote provider is unhealthy or missing.
 
 ---
 
@@ -241,9 +259,12 @@ The pages and components do not need structural redesign. What changes is the tr
   2. remove hardcoded localhost assumptions,
   3. leave existing Gemini cloud features alone,
   4. rewrite the trust/disclosure copy truthfully.
+- Keep the production former-Ollama runtime single-homed to one remote Ollama-compatible provider. Do not build route-level hybrid production routing back into the system.
+- Do not add local production fallback. Local is for explicit non-production debugging only.
 - Do not build this as "delete the privacy text." Build it as "replace false local-only claims with accurate cloud-processing claims."
 - Do not leave production paths that tell users to start a local daemon.
 - Centralize disclosure copy so the site does not drift again.
+- The baseline disclosure copy meaning is locked in this spec; individual surfaces can shorten it, but they cannot contradict it.
 - The earlier hybrid Remy-only spec is superseded by this full-cloud spec.
 
 ---
@@ -278,6 +299,7 @@ The pages and components do not need structural redesign. What changes is the tr
 - **Verified:** Some production paths still hardcode localhost and must be explicitly cleaned up (`app/api/remy/client/route.ts:146-160`, `app/api/remy/stream/route.ts:165-176`, `lib/ai/receipt-ocr.ts:17`, `lib/ai/remy-vision-actions.ts:12-15`, `lib/email/developer-alerts.ts:184-185`).
 - **Verified:** The website currently makes many claims that would become false under a full-cloud rollout (`app/(chef)/settings/ai-privacy/page.tsx:145-171`, `components/ai-privacy/remy-onboarding-wizard.tsx:155-163`, `app/(public)/for-operators/page.tsx:45-47`, `docs/remy-complete-reference.md:10`).
 - **Unverified:** Exact cloud provider choice, throughput, and cost envelope for the new primary Ollama-compatible host. The codebase does not encode that deployment decision today.
+- **Decision now locked despite vendor uncertainty:** the production architecture is one remote Ollama-compatible primary with no production local fallback. Vendor/account selection is operational, not a reason to reopen the architecture.
 
 ### 4. Where will this most likely break?
 
@@ -294,6 +316,7 @@ The pages and components do not need structural redesign. What changes is the tr
 ### 6. What dependencies or prerequisites exist?
 
 - A production-ready remote Ollama-compatible host and credentials are required for former-Ollama features.
+- Production credentials/config must support a single remote primary for former-Ollama traffic and must not enable automatic local fallback.
 - Existing Gemini cloud features remain in place and are not prerequisites beyond current config.
 - No database migration is needed.
 - A copy review is required across product trust surfaces before rollout because current claims would be false after the runtime change (`app/(chef)/settings/ai-privacy/page.tsx:145-171`, `components/ai-privacy/remy-onboarding-wizard.tsx:155-163`, `app/(public)/for-operators/page.tsx:45-47`).
@@ -323,6 +346,7 @@ The pages and components do not need structural redesign. What changes is the tr
 ### 10. What are the exact success criteria?
 
 - No normal user-facing AI feature requires local Ollama to be running.
+- Former-Ollama production traffic has one remote primary and no production local fallback path.
 - No production-facing error tells the user to start Ollama.
 - No user-facing trust surface still claims local-only/private-infrastructure/browser-only behavior if it is no longer true.
 - `parseWithOllama()` consumers still work through the new remote runtime without mass call-site rewrites.
@@ -331,6 +355,8 @@ The pages and components do not need structural redesign. What changes is the tr
 ### 11. What are the non-negotiable constraints?
 
 - Cloud-first runtime in production.
+- One remote Ollama-compatible primary for former-Ollama production traffic.
+- No production local fallback.
 - Truthful disclosure. Do not hide cloud processing by deleting warnings or keeping false local-only copy.
 - Existing Gemini cloud features stay cloud; do not regress them.
 - No local-daemon dependency in standard user traffic.
@@ -349,7 +375,7 @@ Yes. The simplest complete version is not "invent a whole new routing platform."
 
 - There would still be a follow-up cleanup opportunity to rename internal "Ollama/local" terminology that remains only for backward-compatible API naming.
 - Broader legal/privacy-policy review could still be needed if there are non-product documents outside this spec's enumerated surfaces that describe local-only AI behavior.
-- Cost control, rate limiting, and provider redundancy would still need operational follow-up once the new cloud runtime is live.
+- Cost control, rate limiting, and provider redundancy would still need operational follow-up once the new cloud runtime is live, but they are not reasons to retain local production fallback.
 
 ### Final Check
 

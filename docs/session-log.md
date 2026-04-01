@@ -341,6 +341,24 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Status: started
 - Build state on arrival: green (commit 5511b1e9; current HEAD 9e8e6e9f)
 
+## 2026-03-31 22:25 EST
+
+- Agent: Planner + Research
+- Task: Lock remaining canonical decisions for the full-cloud AI runtime planning package
+- Status: started
+- Build state on arrival: green (build-state still 5511b1e9; current HEAD 11e79250)
+- Files in focus: docs/specs/full-cloud-ai-runtime-and-disclosure.md, docs/research/full-cloud-ai-runtime-and-disclosure.md, docs/session-log.md
+- Notes: Docs-only decision lock. Goal is to remove remaining builder ambiguity around production provider shape, local fallback policy, disclosure baseline, and rollout gate without changing code.
+
+## 2026-03-31 22:26 EST
+
+- Agent: Planner + Research
+- Task: Lock remaining canonical decisions for the full-cloud AI runtime planning package
+- Status: completed
+- Files touched: docs/specs/full-cloud-ai-runtime-and-disclosure.md, docs/research/full-cloud-ai-runtime-and-disclosure.md, docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
+- Notes: Canonical full-cloud docs now lock one remote Ollama-compatible production primary for former-Ollama traffic, no production local fallback, explicit dev-only local override, baseline cloud-processing disclosure meaning, and a rollout gate that requires local Ollama to stay off during verification.
+
 ## 2026-03-31 22:41 EST
 
 - Agent: Planner
