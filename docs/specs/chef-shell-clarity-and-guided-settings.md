@@ -30,18 +30,44 @@ _This section preserves the developer's original conversation and intent. It is 
 
 ### Raw Signal
 
-The developer said AI-built products often look bad in a very specific way: not broken, but uncanny. Zero personality. Nothing feels easy or ready to use. Everything gets presented like a dataset, a control panel, or an overstuffed admin surface with too much clutter and noise. The result screams "AI-made" in the worst way.
+The developer described a specific AI-product failure mode: the product is not broken, but it feels uncanny. It has zero personality, nothing feels easy or ready to use, and the whole experience reads like a dataset, control panel, or overstuffed admin surface. Too much appears at once, the hierarchy is weak, and the result loudly signals "AI-made" in the worst possible way.
 
-They also called out a second failure mode: builders often ignore leverage that already exists. They skip modern interaction behavior, simple UI polish, and obvious backend and frontend integrations. They miss easy practical wins like using another company's free cloud when that is the right tradeoff for a chatbot, or setting up the stack so important data stays under product control and can be stored locally when needed.
+They also called out a second failure mode: builders ignore leverage that already exists. Instead of using modern interaction behavior, simple UI polish, examples, and real backend/frontend integrations, they create more parallel surfaces or expose raw internals. They explicitly pointed to practical tradeoffs: using another company's free cloud for a chatbot can be the right move, while critical product data and storage boundaries should still remain under product control when needed.
 
-They did not want blind execution. Before proceeding they explicitly required full context awareness, goal definition, validation of prior work, assumption exposure, proof, a clear plan before execution, scope control, regression checks, and uncertainty checks. The subtext was clear: do not improvise a shiny redesign. Prove what exists, then make the highest-leverage decisions in the correct order.
+They did not want blind execution. Before proceeding they explicitly required full context awareness, goal definition, validation of prior work, assumption exposure, proof, a plan before execution, scope control, regression checks, and uncertainty checks. The operative message was: do not improvise a shiny redesign, do not make claims without evidence, and do not confuse feature completeness with product coherence.
 
 ### Developer Intent
 
-- **Core goal:** Make the chef-facing shell feel curated, calm, useful, and trustworthy instead of encyclopedic, overly configurable, or machine-generated.
-- **Key constraints:** Do not redesign the whole app. Do not delete deep capabilities. Reuse existing mechanisms like the Action Bar, command palette, modules/focus mode, and current integration flows instead of inventing parallel systems. Do not overlap AI runtime and disclosure work that already has its own spec.
-- **Motivation:** The product already has real substance. The current problem is the first impression and the curation layer, which make that substance feel noisier and less human than it should.
+- **Core goal:** Make the chef-facing shell feel human, curated, calm, useful, and ready to use. The first experience should answer what matters now, what to do next, and where advanced/admin controls live.
+- **Product philosophy:** Favor guided workflows over encyclopedic directories. Daily-driver actions, occasional setup, and low-frequency admin surfaces must be visibly different instead of flattened into one control plane.
+- **Leverage principle:** Reuse and tighten existing mechanisms like the Action Bar, command palette, quick-create flows, modules/focus mode, and live integration setup paths before inventing new systems.
+- **Trust principle:** Product quality is not only visual. Builders must avoid misleading system-language, respect storage and control boundaries, and keep convenience-vs-control tradeoffs honest.
+- **Scope boundary:** Do not redesign the whole app. Do not delete deep capabilities. Do not create schema churn or backend-contract churn. Do not overlap AI runtime and disclosure work that already has its own spec.
+- **Motivation:** The product already has real substance. The current problem is the curation layer and first impression, which make that substance feel noisier, colder, and more machine-generated than it actually is.
 - **Success from the developer's perspective:** A chef opens ChefFlow and immediately understands what matters now, where to go next, and what is advanced or secondary. The app feels guided and intentional, not like a pile of features.
+
+### Execution Translation
+
+#### Requirements
+
+- The shell must surface primary action, immediate workload, and next steps before secondary analytics, directories, or low-frequency controls.
+- Settings and integrations must begin with task-oriented guidance, then reveal the lower-frequency directory or manual/admin surfaces behind a deliberate secondary layer.
+- Existing global entry points (`Create`, command palette, primary shortcuts, modules/focus mode, current integration setup flows) must be the main simplification levers.
+- Copy and hierarchy must explain why a section matters, not merely list categories or capabilities.
+
+#### Constraints
+
+- Do not remove routes or deep capabilities; demote them through progressive disclosure instead of deleting discoverability.
+- Do not add parallel shortcut systems, duplicate dashboards, or new admin surfaces when existing action surfaces already cover the need.
+- Do not introduce new misleading claims about privacy, local-only processing, or storage boundaries while polishing adjacent UI.
+- Do not let stale monetization or tier semantics distort this shell-clarity pass.
+
+#### Builder Behaviors
+
+- When choosing between showing more and guiding more, choose guidance.
+- When an existing surface can carry the job with better defaults, refine it instead of creating new UI.
+- When a control is useful only occasionally, keep it reachable but visually secondary.
+- When copy sounds generic, administrative, or machine-written, rewrite it into concrete chef-facing task language.
 
 ---
 

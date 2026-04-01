@@ -694,3 +694,22 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending at log time
 - Build state on departure: unchanged (docs-only follow-up under explicit no-code instruction)
 - Notes: Expanded the pricing-readiness spec's Developer Notes so the builder cannot miss the actual intent: separate `usable now` from `nationwide done`, forbid fake exact-date promises, define success as practical chef pricing accuracy rather than literal perfect omniscience, and keep readiness messaging honest when the current state is still regional or partially verified.
+
+## 2026-04-01 14:06 EDT
+
+- Agent: Research (Codex)
+- Task: Research whether the chef shell-clarity spec fully captures the developer's anti-AI-slop intent, update permanent Developer Notes, and document remaining code-grounded gaps
+- Status: started
+- Build state on arrival: unchanged (docs/build-state.md still shows green tsc at 2154f9dd and last green build at 5511b1e9; repo has unrelated dirty implementation work that must not be touched)
+- Files in focus: CLAUDE.md, docs/session-log.md, docs/build-state.md, docs/specs/chef-shell-clarity-and-guided-settings.md, chef shell/navigation/dashboard/settings/integrations code, and adjacent command-palette/recent-history helpers
+- Notes: Research question is whether the permanent spec fully preserves the developer's stated reasoning about uncanny AI product design, guided workflows, leverage of existing systems, trust, and local-control boundaries, plus what a builder would still miss without a deeper intent capture.
+
+## 2026-04-01 14:10 EDT
+
+- Agent: Research (Codex)
+- Task: Chef shell clarity intent audit and Developer Notes capture
+- Status: completed
+- Files touched: docs/specs/chef-shell-clarity-and-guided-settings.md, docs/research/chef-shell-clarity-intent-audit.md, docs/session-log.md
+- Commits: pending at log time
+- Build state on departure: unchanged (docs-only research session; no product code, schema, or build-state files changed)
+- Notes: Expanded the permanent Developer Notes with execution-ready requirements/constraints/behaviors, then wrote `docs/research/chef-shell-clarity-intent-audit.md`. The audit confirms the shell-clarity direction is code-grounded, warns that builders could still ship a structurally cleaner but visually generic result, and flags underdeveloped areas around example-driven starter states, exact 8-item action-bar composition, and stale monetization/trust-language bleed from adjacent files.
