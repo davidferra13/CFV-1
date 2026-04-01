@@ -367,3 +367,19 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/respectful-monetization-foundation.md, docs/session-log.md
 - Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
 - Notes: Resolved the open pricing/model branches. The spec is now build-ready with universal core access, annual support at $120/year, monthly support at $12/month, no v1 founding pass, and no v1 grants system.
+
+## 2026-03-31 23:01 EST
+
+- Agent: Planner
+- Task: Clarify monetization spec posture so builders understand pricing/model are still unresolved
+- Status: completed
+- Files touched: docs/specs/respectful-monetization-foundation.md, docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
+- Notes: Reframed the monetization spec from build-ready back to decision-pending. The document now preserves the current recommendation without pretending pricing is finalized, adds Patreon/pay-what-you-want as explicit open options, and includes a builder-stop gate so implementation does not begin before the commercial decision is actually made.
+
+## 2026-03-31 22:29 EST
+
+- Agent: Planner + Research
+- Task: OpenCLAW surveillance dashboard gap analysis, research report, and implementation spec with developer-notes capture
+- Status: started
+- Build state on arrival: green (commit 575ba251; docs/build-state.md last green 5511b1e9)

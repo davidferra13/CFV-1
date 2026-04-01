@@ -1,6 +1,6 @@
 # Spec: Respectful Monetization Foundation
 
-> **Status:** ready
+> **Status:** draft
 > **Priority:** P1
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -9,10 +9,11 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event   | Date             | Agent/Session | Commit   |
-| ------- | ---------------- | ------------- | -------- |
-| Created | 2026-03-31 21:21 | Planner       | 0feb1100 |
-| Locked  | 2026-03-31 22:28 | Planner       | 5677c711 |
+| Event    | Date             | Agent/Session | Commit   |
+| -------- | ---------------- | ------------- | -------- |
+| Created  | 2026-03-31 21:21 | Planner       | 0feb1100 |
+| Locked   | 2026-03-31 22:28 | Planner       | 5677c711 |
+| Reopened | 2026-03-31 23:01 | Planner       | 11e79250 |
 
 ---
 
@@ -35,6 +36,8 @@ They are actively torn between multiple models:
 
 They also care about dignity and social reality. They want the ability to let close friends use everything without awkwardness, but they do not know whether that is wrong, unacceptable, or messy from a product perspective. They want a path that is respectable, makes money, and still feels aligned with the product's identity.
 
+The developer is still uneasy about finalizing price before the product is fully proven. They do not want the spec to overstate certainty. They want room to consult other people, validate that the product works, and decide whether the final ask should be a fixed supporter price, a donation-style ask, or a Patreon-like patronage structure with optional incentives. The builder must be able to read this spec and understand that monetization implementation is not approved yet.
+
 ### Developer Intent
 
 - **Core goal:** Define a monetization system that earns real revenue without making ChefFlow feel manipulative, gated, or inferior in its free experience.
@@ -53,6 +56,8 @@ This spec defines ChefFlow's monetization foundation: the language rules, produc
 ## Why It Matters
 
 ChefFlow already claims that every feature is free and that support is voluntary, but the codebase still contains subscription, trial, Pro, and upgrade-era concepts. If monetization evolves without a clear foundation, the product will drift into a confused state where the brand says one thing and the system behaves like another.
+
+This spec also matters because it needs to protect against premature implementation. The developer wants strategic clarity recorded now, but does not want a builder to treat pricing as finalized before product readiness and outside consultation happen.
 
 ---
 
@@ -118,35 +123,66 @@ ChefFlow keeps universal product access, uses recurring supporter membership as 
 - **Risks:** Requires tighter copy rules and a cleaner shared monetization state model than the repo has today.
 - **Implementation fit:** Best strategic fit for the developer's actual tension. This is the recommended direction for planning.
 
+### Option E: Patronage / Pay-What-You-Want Support
+
+ChefFlow stays fully accessible and asks users to support it with a donation-style contribution or a Patreon-like patron model. The product may suggest levels, but the primary emotional framing is support rather than purchase.
+
+- **Pros:** Feels philosophically aligned with generosity and community support. Avoids the weirdness of calling something a donation while also pretending there is only one acceptable amount.
+- **Risks:** Revenue predictability is lower. If optional incentive tiers are added, those incentives must stay non-hostile and non-core or the system drifts back into soft gating.
+- **Implementation fit:** Product-copy fit is plausible, but the repo does not currently have a pay-what-you-want or patron-tier model. This would require a different billing and messaging design from the current recurring support flow.
+
 ---
 
 ## Recommended Direction
 
-This spec recommends **Option D: universal access plus respectful support offers**.
+This spec currently leans toward **Option D: universal access plus respectful support offers**, but this is a recommendation, not an approved launch decision.
 
 That means:
 
 - ChefFlow's core product remains fully usable for everyone.
 - The primary money ask is framed as support for ChefFlow, not access to withheld functionality.
-- A one-time founding pass is deferred out of v1, not used as part of the initial rollout.
+- A one-time founding pass remains optional and unresolved.
 - If future paid offerings are ever added beyond support, they must be additive, explicit, and cost-justified. Examples: concierge onboarding, premium SMS bundles, or genuinely expensive third-party integrations. Core daily workflow cannot become a hostage.
 
-This direction best matches the current product copy, the developer's constraints, and the existing codebase's ability to support recurring Stripe support flows without reintroducing a hostile upsell layer.
+This direction best matches the current product copy, the developer's constraints, and the existing codebase's ability to support recurring Stripe support flows without reintroducing a hostile upsell layer. But it is still a directional recommendation, not a finalized commercial decision.
 
-## Launch Decisions
+## Decision Status
 
-These decisions are now locked for v1 implementation.
+This spec is **not approved for build**. It captures the current recommendation and the decision space, but pricing and support structure are still open.
 
-1. ChefFlow core access stays universal. No core workflow paywall ships in this phase.
-2. The live support offers are:
-   - `Annual Supporter` at `$120/year`
-   - `Monthly Supporter` at `$12/month`
-3. The annual offer is the visually preferred offer on `/settings/billing`.
-4. A one-time founding pass does **not** ship in v1.
-5. Complimentary access for friends, testers, or collaborators does **not** get a formal product system in v1. If needed before a later spec, it is handled manually, not as a new UX or schema path.
-6. Future paid monetization beyond support must be additive and cost-justified. It must not convert core workflows into hostage features later.
+At the moment, the recommendation is:
 
-This is the most intelligent first implementation because it preserves the current product promise, gives ChefFlow real recurring revenue asks immediately, and avoids introducing extra states or one-time entitlement logic before the support model itself is clean.
+1. Keep core access universal.
+2. Use support-style monetization rather than feature-withholding language.
+3. Keep additive paid services as the future expansion path if needed.
+
+But these points are still unresolved:
+
+1. Whether the support ask should be fixed-price, pay-what-you-want, or Patreon-style patronage.
+2. Whether the pricing page should show one clear suggested amount or multiple contribution levels.
+3. Whether any non-core supporter incentives should exist at all.
+4. Whether a one-time founding pass belongs in the first monetization release.
+5. How much consultation with other operators should happen before pricing is locked.
+6. Whether the product is ready enough to justify any monetization ask yet.
+
+## Builder Stop
+
+Builder agents must **not** implement monetization from this spec yet.
+
+They may use this document to understand:
+
+- the constraints,
+- the language rules,
+- the cleanup surfaces,
+- and the leading recommendation.
+
+They must stop and ask for a follow-up decision spec before building if any of the following are still unresolved:
+
+- final pricing model,
+- final public pricing copy,
+- whether support is fixed-price or pay-what-you-want,
+- whether supporter incentives exist,
+- whether monetization should ship before product-readiness validation.
 
 ---
 
@@ -196,7 +232,7 @@ This is the most intelligent first implementation because it preserves the curre
 
 None for the simplest complete version of this foundation spec.
 
-ChefFlow's existing billing columns are sufficient for the recurring supporter flow, as shown in `database/migrations/20260321000006_saas_billing.sql:7-32`. This spec intentionally avoids new schema work because the chosen v1 model is recurring support only, with no founding-pass entitlement layer and no grants system in this phase.
+ChefFlow's existing billing columns are sufficient for a recurring supporter flow, as shown in `database/migrations/20260321000006_saas_billing.sql:7-32`. This spec intentionally avoids new schema work because the monetization structure is not final yet.
 
 ### New Tables
 
@@ -213,27 +249,27 @@ ChefFlow's existing billing columns are sufficient for the recurring supporter f
 ### Migration Notes
 
 - No migration is part of the simplest complete version of this spec.
-- Support pricing expands through Stripe price configuration and code-level offer definitions, not new database state.
+- If the final decision stays on recurring support, pricing can expand through Stripe price configuration and code-level offer definitions, not new database state.
 - If the developer later chooses complimentary support grants or one-time permanent supporter states, write a separate additive schema spec instead of overloading `subscription_status`.
 
 ---
 
 ## Data Model
 
-This spec introduces a code-level, model-neutral monetization vocabulary. It deliberately separates product access from support status.
+This section describes the leading technical shape if the recommendation is approved. It is a planning model, not a finalized implementation contract.
 
 ### `MonetizationStatus`
 
 - `accessModel: 'universal'`
-- `supportState: 'none' | 'monthly_supporter' | 'annual_supporter' | 'grandfathered'`
+- `supportState: 'none' | 'monthly_supporter' | 'annual_supporter' | 'grandfathered' | 'patron_supporter'`
 - `canManageRecurringSupport: boolean`
 - `nextContributionDate: string | null`
 - `badgeLabel: string | null`
 
 ### `SupportOffer`
 
-- `id: 'annual_support' | 'monthly_support'`
-- `checkoutMode: 'subscription'`
+- `id: 'annual_support' | 'monthly_support' | 'patron_support' | 'pay_what_you_want_support'`
+- `checkoutMode: 'subscription' | 'payment' | 'variable_payment'`
 - `title: string`
 - `story: string`
 - `ctaLabel: string`
@@ -252,7 +288,7 @@ This spec introduces a code-level, model-neutral monetization vocabulary. It del
 
 ---
 
-## Server Actions
+## Provisional Server Actions
 
 | Action                             | Auth                                    | Input                 | Output                                     | Side Effects                                         |
 | ---------------------------------- | --------------------------------------- | --------------------- | ------------------------------------------ | ---------------------------------------------------- |
@@ -263,7 +299,7 @@ This spec introduces a code-level, model-neutral monetization vocabulary. It del
 
 Notes:
 
-- `redirectToSupportCheckout()` should preserve the current recurring support flow, implemented today by `app/(chef)/settings/billing/actions.ts:12-16` and `lib/stripe/subscription.ts:221-245`, while expanding it to support `annual_support` and `monthly_support` Stripe price IDs.
+- If the final decision stays on recurring support, `redirectToSupportCheckout()` should preserve the current recurring support flow, implemented today by `app/(chef)/settings/billing/actions.ts:12-16` and `lib/stripe/subscription.ts:221-245`, while expanding it to support the approved support offers.
 - `dismissSupportNudge(context)` may be local-only for the simplest version. Do not add schema just to remember nudge dismissal.
 
 ---
@@ -276,13 +312,14 @@ _Describe what the user sees. Be specific: layout, components, states._
 
 `/settings/billing` remains the primary monetization surface.
 
-It should show:
+If the recommendation is approved, the billing page should show:
 
 - A headline that frames ChefFlow as fully usable today.
 - A short mission statement explaining why support matters.
 - Current supporter status if applicable.
-- Exactly two respectful recurring support offers, driven by `SupportOffer` config.
-- The annual offer first, visually preferred, with explicit savings framing relative to monthly.
+- A respectful support ask, driven by the final approved support model.
+- If fixed recurring prices are chosen, one or more recurring support offers with clear language.
+- If a donation-style model is chosen, a suggested amount or pay-what-you-want structure without coercive framing.
 - A plain-language explanation that support does not affect access to core product functionality.
 - A link to manage recurring support only if the user has an active recurring support subscription.
 
@@ -297,13 +334,13 @@ It should not show:
 
 - **Loading:** Billing page waits for server data. Do not show fake supporter state.
 - **Empty:** Non-supporter sees the support story and offer cards.
-- **Preferred offer presentation:** Annual support is visually emphasized. Monthly support remains plainly available and never hidden behind an extra click.
+- **Preferred offer presentation:** Final hierarchy depends on the pricing decision. If multiple fixed offers exist, the preferred option may be emphasized, but the spec does not yet lock which one.
 - **Error:** If billing lookup fails, render the support story with a neutral fallback and no fabricated account status. Follow the current non-blocking billing-failure posture in `components/billing/trial-banner.tsx:12-16`.
 - **Populated:** Supporter sees gratitude, current recurring date if applicable, and manage link if recurring support exists.
 
 ### Interactions
 
-- Clicking either support CTA submits a server action that redirects to Stripe Checkout with the selected recurring offer.
+- Clicking a support CTA should submit a server action appropriate to the approved model.
 - Clicking the manage CTA submits a server action that redirects to Stripe Billing Portal.
 - Contextual support nudges may appear after value moments such as completing setup, closing an event, or successfully using a high-value workflow, but never while the user is blocked or trying to recover from failure.
 - Nudge dismissal must suppress repeat prompts for a cooldown period.
@@ -315,7 +352,7 @@ It should not show:
 | Scenario                                         | Correct Behavior                                                                  |
 | ------------------------------------------------ | --------------------------------------------------------------------------------- |
 | Billing lookup fails                             | Page still renders without breaking; do not invent supporter state                |
-| Monthly or annual Stripe price ID missing        | Missing offer is hidden or disabled honestly; never submit a broken checkout form |
+| Final support offer config missing               | Missing offer is hidden or disabled honestly; never submit a broken checkout form |
 | User is already a recurring supporter            | Show gratitude + manage link, not another contribution CTA                        |
 | Legacy route still imports `UpgradePrompt`       | Render neutral support messaging or migrate the call site; never revive Pro copy  |
 | Module settings still receive `tier` props       | Treat monetization data as deprecated; do not reintroduce locked-module UI        |
@@ -332,14 +369,13 @@ _How does the builder agent confirm this works? Be specific._
 2. Navigate to `/settings/billing`.
 3. Verify the page contains no user-facing use of `Pro`, `unlock`, `locked features`, or a free-versus-paid comparison.
 4. Verify the page explicitly states that all core features remain available.
-5. Verify the annual offer is the visually preferred card and the monthly offer is still immediately available.
-6. Trigger the annual support CTA and verify it redirects to Stripe Checkout successfully.
-7. Trigger the monthly support CTA and verify it redirects to Stripe Checkout successfully.
-8. If already in a recurring support state, verify the manage CTA redirects to Stripe Billing Portal successfully.
-9. Navigate to `/settings`, `/settings/modules`, and one or two former Pro-era routes and verify no hostile monetization language appears.
-10. Check `/privacy` and `/terms` for aligned public wording.
-11. Search the repo for user-facing `Upgrade to unlock`, `Pro`, and `locked feature` language after implementation and verify only acceptable internal/deprecated references remain.
-12. Screenshot the final billing page and any contextual support nudge that remains in scope.
+5. Verify the approved support structure is represented accurately on the page.
+6. Trigger the approved support CTA path and verify it redirects to the correct billing flow successfully.
+7. If recurring support exists, verify the manage CTA redirects to Stripe Billing Portal successfully.
+8. Navigate to `/settings`, `/settings/modules`, and one or two former Pro-era routes and verify no hostile monetization language appears.
+9. Check `/privacy` and `/terms` for aligned public wording.
+10. Search the repo for user-facing `Upgrade to unlock`, `Pro`, and `locked feature` language after implementation and verify only acceptable internal/deprecated references remain.
+11. Screenshot the final billing page and any contextual support nudge that remains in scope.
 
 ---
 
@@ -347,6 +383,7 @@ _How does the builder agent confirm this works? Be specific._
 
 - Introducing new feature locks.
 - Turning free users into a degraded tier.
+- Final pricing choice itself.
 - Shipping a one-time founding pass in this phase.
 - Designing a full complimentary-access grants system. If the developer wants friend/beta/grace access states, write a separate additive schema spec.
 - Adding premium external-cost add-ons such as SMS bundles or concierge services. Those are future monetization specs if needed.
@@ -357,8 +394,8 @@ _How does the builder agent confirm this works? Be specific._
 
 - Do not confuse Stripe Connect payouts with ChefFlow support billing. The settings hub explicitly separates them in `app/(chef)/settings/page.tsx:371-399`.
 - The current recurring support flow already exists. Reuse it where possible rather than rebuilding Stripe billing from scratch in `app/(chef)/settings/billing/actions.ts:12-21` and `lib/stripe/subscription.ts:221-273`.
-- Expand recurring support configuration to two Stripe price IDs: one annual and one monthly. Do not keep a single hard-coded recurring offer.
-- The annual offer is preferred in UI hierarchy, not exclusive in availability.
+- Do not assume recurring annual-plus-monthly pricing is approved just because it is the current recommendation.
+- If the pricing model changes to donation-style or patronage-style, update this spec first instead of quietly improvising implementation details.
 - Do not reintroduce user-facing `Pro` or `unlock` language anywhere.
 - Do not overload `subscription_status` to represent every future monetization state. If permanent or complimentary support states become real, spec the schema explicitly first.
 
@@ -372,16 +409,17 @@ Today this touches the dedicated support page in `app/(chef)/settings/billing/pa
 
 ### 2. What exactly changes?
 
-This spec changes language, shared status modeling, support pricing configuration, and the dedicated support UX. It does not add feature locks and does not require schema work for the simplest version. Specifically: centralize support offers and allowed copy in new monetization helpers; refactor `app/(chef)/settings/billing/*` and `lib/stripe/subscription.ts` around support-state instead of upgrade-state; expand recurring checkout from one hard-coded price to annual-plus-monthly offer selection; remove stale tier/lock/trial assumptions from billing components, module settings, and layout; align deletion/help/legal/docs with the actual product story; and leave Stripe Connect client-payment flows untouched. The current code locations are cited above, especially `app/(chef)/settings/billing/billing-client.tsx:113-155`, `lib/billing/tier.ts:20-67`, and `lib/compliance/pre-deletion-checks.ts:76-88`.
+This spec changes language, decision framing, and the eventual support UX direction. It does not yet authorize implementation. Specifically: centralize the constraints and option set; preserve the leading recommendation; identify the cleanup surfaces builders will eventually need to touch; and keep Stripe Connect client-payment flows untouched. The current code locations are cited above, especially `app/(chef)/settings/billing/billing-client.tsx:113-155`, `lib/billing/tier.ts:20-67`, and `lib/compliance/pre-deletion-checks.ts:76-88`.
 
 ### 3. What assumptions are you making?
 
 - **Verified:** ChefFlow already supports a recurring monthly support checkout via Stripe subscription in `lib/stripe/subscription.ts:221-245`.
 - **Verified:** ChefFlow already has a reusable one-time Stripe Checkout payment pattern in `lib/stripe/checkout.ts:129-160`.
 - **Verified:** User-facing product and docs already assert that all features are free in `app/(chef)/settings/billing/page.tsx:24-28`, `app/(chef)/settings/billing/billing-client.tsx:117-153`, and `docs/chefflow-product-definition.md:44-45`.
-- **Decision made:** Recurring support launches with annual `$120/year` and monthly `$12/month`.
-- **Decision made:** One-time founding pass does not launch in v1.
-- **Decision made:** Friend/beta complimentary support does not get a formal system in this phase.
+- **Recommendation only:** A recurring support ask around annual-plus-monthly pricing is currently the leading direction.
+- **Open:** Whether pricing should be fixed, pay-what-you-want, or patron-style.
+- **Open:** Whether a one-time founding pass should exist.
+- **Open:** Whether friend/beta complimentary support needs a formal system.
 - **Unverified:** Final public legal/accounting wording may still benefit from external review before launch.
 
 ### 4. Where will this most likely break?
@@ -392,11 +430,11 @@ This spec changes language, shared status modeling, support pricing configuratio
 
 ### 5. What is underspecified?
 
-Only two areas remain intentionally light: exact nudge placement rules and whether legal/accounting wants wording changes on public copy before launch. Neither blocks implementation of the support model itself. The core monetization decisions are now made and builders should not reopen them casually.
+The core strategic decision is still open. The biggest unresolved area is not micro-copy, it is the monetization structure itself. That means builders should not proceed yet.
 
 ### 6. What dependencies or prerequisites exist?
 
-- Existing Stripe recurring support configuration via `STRIPE_SUBSCRIPTION_PRICE_ID` in `lib/stripe/subscription.ts:222-223`, which should be split into annual and monthly price configuration during implementation.
+- Existing Stripe recurring support configuration via `STRIPE_SUBSCRIPTION_PRICE_ID` in `lib/stripe/subscription.ts:222-223`, which is relevant if recurring support remains the chosen model.
 - Existing billing migration and columns in `database/migrations/20260321000006_saas_billing.sql:7-32`.
 - Documentation alignment work in `docs/app-complete-audit.md:1261-1262`, `docs/app-complete-audit.md:1601-1604`, and `docs/chefflow-product-definition.md:44-45`.
 
@@ -416,23 +454,22 @@ Current recurring support flow:
 6. Stripe hosts the checkout.
 7. On success, Stripe returns the user to `/settings/billing?upgraded=1`, which `app/(chef)/settings/billing/page.tsx:19-31` converts into a thank-you state.
 
-The proposed flow is the same shape, but uses model-neutral support status and offer definitions instead of tier/upgrade language, with the billing page selecting either annual or monthly recurring support before redirect.
+The proposed flow will depend on the final monetization decision. If recurring support is approved, it can keep the same shape with model-neutral support status and offer definitions instead of tier/upgrade language.
 
 ### 9. What is the correct implementation order?
 
-1. Create the shared monetization offer/status helpers with annual and monthly recurring offers locked in.
-2. Refactor the billing page and its actions around those helpers while preserving current recurring support functionality.
-3. Expand Stripe recurring configuration from one offer to annual plus monthly.
-4. Remove or deprecate stale trial/upgrade/tier user-facing components and comments.
-5. Clean up module settings, settings hub copy, and layout remnants.
-6. Align deletion, help, privacy, terms, and audit docs.
+1. Finalize the monetization model.
+2. Finalize the public pricing story and whether the ask is fixed-price, pay-what-you-want, or patron-style.
+3. Only then, write a build spec or promote this spec to ready.
+4. After approval, refactor the billing page and stale monetization helpers.
+5. Then align deletion, help, privacy, terms, and audit docs.
 
 ### 10. What are the exact success criteria?
 
 - `/settings/billing` contains no user-facing `Pro`, `unlock`, or locked-feature shame copy.
 - The page clearly states that all core features remain available.
-- Annual and monthly recurring support checkout both work.
-- The annual offer is visually preferred and the monthly offer remains immediately visible.
+- The final approved support model is represented honestly.
+- No builder has to guess what the business model is.
 - Supporters can still manage recurring billing.
 - Former monetization helper components no longer imply feature withholding.
 - Module/settings surfaces no longer imply locked modules.
@@ -455,11 +492,11 @@ The proposed flow is the same shape, but uses model-neutral support status and o
 
 ### 13. Is this the simplest complete version?
 
-Yes. It keeps the existing recurring support flow, avoids schema churn, and focuses on clarifying the monetization model in copy, status helpers, shared UI, and dual recurring pricing. It intentionally does not build a full complimentary-grants system or permanent one-time entitlement model in this phase.
+No. This is intentionally incomplete as an implementation spec because the commercial decision is not final yet. It is complete as a strategy-capture and builder-stop document.
 
 ### 14. If implemented exactly as written, what would still be wrong?
 
-Legal/accounting review of the final public billing language is not verified here. Support-nudge placement still needs good product judgment during implementation. Complimentary support for friends or testers is still a manual policy gap, but intentionally not a blocker for this phase. Those are manageable edges, not missing core decisions.
+The final model would still be wrong if a builder treated the current recommendation as approved pricing. The spec is preserving strategic thinking, not authorizing monetization implementation yet.
 
 ---
 
@@ -467,6 +504,6 @@ Legal/accounting review of the final public billing language is not verified her
 
 > Is this spec production-ready, or am I proceeding with uncertainty?
 
-Production-ready.
+Proceeding with uncertainty.
 
-This is now a build-ready monetization direction spec. The main remaining caution is external wording review for public-facing legal/billing copy, not product-strategy uncertainty.
+This is not a build-ready monetization implementation spec yet. It is a strategy-and-constraints spec. The main unresolved area is the business decision itself: fixed support pricing vs donation-style support vs patron-style support, plus whether monetization should wait until product readiness is stronger.
