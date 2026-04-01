@@ -126,6 +126,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Status: completed
 - Files touched: docs/specs/chef-opportunity-network.md (new), docs/session-log.md
 - Build state on departure: green (5511b1e9, spec-only session, no code changes)
+
+## 2026-03-31 21:21 EST
+
+- Agent: Planner
+- Task: New spec intake for respectful monetization model and non-obnoxious upgrade/support UX
+- Status: started
+- Build state on arrival: green (last green build 5511b1e9; current HEAD 0feb1100)
+- Files in focus: billing settings, supporter/donation UX, Stripe subscription plumbing, module/tier references, monetization docs/specs
+- Notes: Developer wants a brand new monetization spec that preserves dignity: no "Pro" in users' faces, no mocking lockouts, no pay-to-win feel, and no "free bad version" vibe. Need option analysis, execution-ready requirements, and permanent Developer Notes capture.
+
 - Notes: P1 spec ready. 2 new tables (chef_opportunity_posts, chef_opportunity_interests), 1 enum value (kitchen_manager), location filtering on searchChefs(), opportunity post type in social feed. No dependencies. Developer has additional messages from same beta tester for follow-up specs.
 
 ## 2026-03-31 ~22:00 EST
@@ -231,6 +241,22 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: green (docs-only session, no code changes; last green build 5511b1e9, current HEAD 543bab98)
 - Notes: Recommended route-level hybrid routing only: public Remy to an Ollama-compatible cloud endpoint, client/chef Remy stay local-only. Biggest builder traps: do not globally repoint `OLLAMA_BASE_URL`, do not use `routeForRemy()` for public traffic, and do not assume Remy is browser-only/no-server-storage because artifacts and memories already persist server-side.
 
+## 2026-03-31 21:16 EST
+
+- Agent: Planner
+- Task: Replacement spec for full-cloud AI runtime plus truthful website AI/privacy disclosure updates
+- Status: started
+- Build state on arrival: green (last green build 5511b1e9; current HEAD 5497e807)
+
+## 2026-03-31 21:31 EST
+
+- Agent: Planner
+- Task: Replacement spec for full-cloud AI runtime plus truthful website AI/privacy disclosure updates
+- Status: completed
+- Files touched: docs/specs/full-cloud-ai-runtime-and-disclosure.md (new), docs/specs/remy-hybrid-cloud-routing.md, docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
+- Notes: Full-cloud spec replaces the earlier hybrid Remy-only plan. Architecture decision: remote Ollama-compatible host becomes the primary runtime for former-Ollama features, existing Gemini cloud features stay cloud, and all local/private/browser-only trust copy must be replaced with accurate cloud-processing language rather than removed deceptively.
+
 ## 2026-03-31 21:13 EST
 
 - Agent: Planner
@@ -246,3 +272,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on arrival: green (docs/build-state.md shows last green build 5511b1e9; docs-only planning session)
 - Files in focus: public chef profile, featured chef homepage card, chef settings/profile/highlights, professional achievements, charity hours, related specs/docs
 - Notes: Origin signal is a developer request for a public-facing credentials showcase beyond a normal resume: work history, notable clients/collaborations, awards/accomplishments, charity visibility, and optional private resume handling for high-end profile clients.
+
+## 2026-03-31 21:12 EST
+
+- Agent: Planner + Research
+- Task: Public chef credentials / culinary CV feature research + spec, with developer transcript capture and planner-gate validation
+- Status: completed
+- Files touched: docs/research/public-chef-credentials-showcase.md (new), docs/specs/public-chef-credentials-showcase.md (new), docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; last green build 5511b1e9, current HEAD 5497e807)
+- Notes: Spec is ready for the defined v1 scope. Reuse existing achievements, review, portfolio, charity, and document systems; add one new structured work-history model; keep the formal resume private; do not overload profile highlights.

@@ -4,6 +4,7 @@
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
+> **Superseded by:** `docs/specs/full-cloud-ai-runtime-and-disclosure.md`
 
 ## Timeline
 
