@@ -9,10 +9,11 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event         | Date             | Agent/Session            | Commit |
-| ------------- | ---------------- | ------------------------ | ------ |
-| Created       | 2026-03-31 23:59 | planner + research agent |        |
-| Status: ready | 2026-03-31 23:59 | planner + research agent |        |
+| Event                                   | Date             | Agent/Session            | Commit |
+| --------------------------------------- | ---------------- | ------------------------ | ------ |
+| Created                                 | 2026-03-31 23:59 | planner + research agent |        |
+| Status: ready                           | 2026-03-31 23:59 | planner + research agent |        |
+| Refined with external operator research | 2026-04-01 00:34 | planner + research agent |        |
 
 ---
 
@@ -52,6 +53,25 @@ This adds one shared pricing-decision model across quotes and quote-derived even
 ## Why It Matters
 
 Today the chef can often type a different total, but the system usually stores only the final number. That means override intent is easy to lose, downstream math can overwrite it, and the UI cannot honestly show "normal price vs chef price" because the baseline is not modeled as durable data. See `components/quotes/quote-form.tsx:486-567,1146-1210`, `lib/quotes/actions.ts:75-141,309-402`, and `lib/guests/count-changes.ts:64-124`.
+
+---
+
+## External Operator Patterns
+
+Research basis for this section: `docs/research/chef-pricing-operator-patterns-2026-04-01.md`
+
+External chef and catering research tightened this spec in four useful ways:
+
+- Real operators commonly publish a starting estimate, tier, or instant quote, then escalate larger or more custom events into a tailored proposal. Examples: [Honest to Goodness](https://honesttogoodness.com/instant-quote) uses an instant quote as a starting point and routes events above 20 guests into a customized quote, while [Chef Ana](https://personalchefana.com/faq/private-chef-cost-guide/) uses flat-rate tiers plus a custom-quote path.
+- Operators usually separate the base chef/service fee from variable extras such as groceries, staffing, rentals, travel, admin fees, taxes, or gratuity. Examples: [Honest to Goodness](https://honesttogoodness.com/instant-quote), [Florabelle](https://www.florabellefood.com/pricing), [Pascaline Fine Catering](https://pascalinefinecatering.com/wp-content/uploads/2025/05/Pascaline_Fine_Catering_-_Weddings_Brochure_25-26.pdf), and [Chef's Choice Catering](https://chefschoicecatering.com/wp-content/uploads/2025/12/2026-01-Policies.pdf).
+- Minimum spends, minimum guest counts, and clear pricing model boundaries are normal margin-protection tools, not edge cases. Examples: [Florabelle](https://www.florabellefood.com/pricing) uses minimum spends and hourly staffing, while [KitchenCost's 2026 private chef pricing guide](https://kitchencost.app/en/blog/us-private-chef-pricing-guide/) recommends minimum spends and says chefs should pick one pricing model clearly.
+- Operators increasingly explain price changes and cost drivers instead of treating price as static. [KitchenCost's guide](https://kitchencost.app/en/blog/us-private-chef-pricing-guide/) explicitly says private-chef pricing must move with costs, and [Toast's menu costing resource](https://pos.toasttab.com/resources/menu-costing-infographic) frames transparent cost explanation as a customer-communication requirement.
+
+What this changes in this spec:
+
+- A crossed-out baseline is only valid when the baseline and final price describe the same scope of work.
+- Source snapshots must preserve minimums, service style, menu shape, and included-vs-extra assumptions.
+- When the baseline is a starting estimate instead of a guaranteed all-in number, UI copy must say that plainly.
 
 ---
 
@@ -236,6 +256,16 @@ There are now two pricing layers on every quote-like record:
    - `override_reason`: optional chef-entered explanation.
    - `pricing_context`: optional JSON with source-specific inputs, calculator metadata, or recurring/booking snapshots.
 
+Minimum `pricing_context` expectations when a trusted baseline exists:
+
+- `source_generated_at`: when the baseline was produced or copied.
+- `pricing_basis`: `full_quote`, `service_fee_only`, or other truthful scope label used by the source flow.
+- `guest_count_basis` and any `minimum_applied_cents` or `minimum_applied_label`.
+- `service_style` and menu-shape inputs that materially affect price, such as `course_count`, `menu_complexity`, or `family_style` vs `plated`.
+- Known inclusions or exclusions that affect whether the baseline and final price are comparable, such as groceries, staffing, rentals, travel, taxes, or gratuity.
+
+This does not create a new accounting model. It preserves the context operators actually use when they turn a standard rate or quick estimate into a custom proposal.
+
 Override semantics:
 
 - **`override_kind = 'none'`**
@@ -304,7 +334,7 @@ Visual direction:
 - Baseline amount: smaller, muted, struck through.
 - Final amount: larger, bolder, brand-colored or success-colored emphasis.
 - Delta badge: short chip like `Chef override`, `$300 below baseline`, or `$150 above baseline`.
-- Supporting copy: one short line such as `Normal price` / `Chef price`.
+- Supporting copy: one short line such as `Starting quote` / `Chef price`, `Standard rate` / `Revised quote`, or `Service fee estimate` / `Final chef price`, depending on source scope.
 - The layout should feel more like a receipt or revised quote than a warning banner.
 
 ### States
@@ -313,6 +343,7 @@ Visual direction:
 - **Empty:** If baseline is null, render the final price only. Never invent a crossed-out number.
 - **Error:** If save/update fails, keep the current rollback behavior and show existing error UI. Do not optimistically show an override that the server rejected.
 - **Populated:** Show baseline vs final when override metadata exists and baseline differs from final.
+- **Scope mismatch:** If `pricing_context` says the baseline and final price do not cover the same scope, render this as a revised quote with supporting scope notes, not as a fake discount.
 
 ### Interactions
 
@@ -338,6 +369,11 @@ Quote form behavior:
 5. **Accepted quote propagation**
    - When a quote is accepted, the event record receives final price, final per-person price, baseline values, source kind, override kind, override reason, and pricing context.
    - Frozen snapshots on quote and event must include the same metadata.
+
+6. **Scope-aware comparison rules**
+   - If the baseline came from a source that behaves like a starting estimate, tier, or service-fee-only quote, preserve that label in `pricing_context` and render it honestly.
+   - If the chef changes the scope itself, for example adds staffing assumptions that were not in the baseline, keep the baseline for context but suppress any misleading "discount" framing.
+   - Optional note rows may call out source assumptions such as `Groceries billed separately`, `Staffing extra`, `Travel not included`, or `Minimum applied`.
 
 Surfaces that must render comparison UI when metadata exists:
 
@@ -369,6 +405,7 @@ Surfaces that must stay final-only in this spec:
 | Builder only updates UI and not DB copy/lock functions           | Reject this implementation. Quote acceptance would drop the override context or let event data drift from the accepted quote. |
 | Public booking creates a direct event                            | Seed baseline/final fields from booking config with `override_kind = 'none'`.                                                 |
 | Historical rows are backfilled with current totals as baseline   | Reject this. That would create fake crossed-out prices with no verified source.                                               |
+| Baseline and final price do not cover the same scope             | Show a revised-quote layout with scope notes. Do not present it as a simple discount or markup against the same package.      |
 
 ---
 
@@ -385,6 +422,7 @@ Surfaces that must stay final-only in this spec:
    - `custom_total` override should preserve final total and return a warning instead of silently changing it.
 8. Create an instant-book event from booking-page pricing and verify it persists baseline and final pricing metadata with no override applied.
 9. Open a legacy quote or event created before the migration and verify it still renders cleanly with final-only pricing and no invented crossed-out amount.
+10. Verify a source-driven quote with contextual exclusions or minimums carries those notes through `pricing_context` and displays a truthful source label such as `Starting quote` or `Service fee estimate` instead of implying an all-in baseline.
 
 ---
 
@@ -395,6 +433,7 @@ Surfaces that must stay final-only in this spec:
 - Fixing the separate rate-card holiday-range issue in `components/pricing/rate-card-view.tsx:107-110`.
 - Backfilling historical records with synthetic baseline numbers.
 - Redesigning the public instant-book checkout experience beyond seeding the new metadata fields correctly.
+- Turning this feature into a full line-item grocery, staffing, rental, tax, or gratuity quoting engine. External research shows those concepts matter, but this spec only requires honest metadata and scope labels, not a whole new financial subsystem.
 
 ---
 
@@ -405,6 +444,7 @@ Surfaces that must stay final-only in this spec:
 - Do not infer per-person price from `quoted_price_cents / guest_count` when `override_kind = 'custom_total'`. Current invoice logic does that at `lib/events/invoice-actions.ts:654-657`, and it is exactly the kind of hidden re-derivation that this spec is meant to stop.
 - Do not show crossed-out prices on legacy rows unless the new baseline fields are actually populated.
 - Do not touch old migration files. Replace DB functions inside the new migration only.
+- External operator research supports richer source context, not a wider billing model. Keep extras and minimums in `pricing_context` unless the existing app already models them as first-class amounts.
 
 ## Spec Validation (Planner Gate Evidence)
 
@@ -468,6 +508,7 @@ Surfaces that must stay final-only in this spec:
 - Legacy-row behavior is now explicit: if baseline is missing, show final-only pricing. Current schemas do not carry a trustworthy baseline at `database/migrations/20260215000003_layer_3_events_quotes_financials.sql:144-149,266-289`.
 - Public booking is now explicit in scope: its config becomes a baseline source, but this spec does not redesign the checkout UI beyond seeding correct metadata from `app/book/[chefSlug]/page.tsx:56-63` and `components/booking/booking-form.tsx:106-125,741-762`.
 - The stale API default mismatch is explicitly part of this spec so builders do not seed fake baselines from the old hardcoded values in `app/api/v2/settings/pricing/route.ts:60-89`.
+- Source-scope labeling is now explicit: a baseline can be shown as `Starting quote`, `Standard rate`, or `Service fee estimate` instead of always pretending it is a universal all-in normal price.
 
 ### 6. What dependencies or prerequisites exist?
 
@@ -532,10 +573,12 @@ Surfaces that must stay final-only in this spec:
 
 - Chef-config pricing and API v2 pricing agree on default behavior for unconfigured chefs.
 - New quotes can persist source kind, baseline total, baseline per-person, override kind, override reason, and context JSON.
+- New source-driven quotes preserve enough context to explain their scope honestly, including minimums and any included-vs-extra assumptions when known.
 - Per-person overrides stay per-person and recompute correctly.
 - Arbitrary total overrides become final custom totals and are not later re-derived from guest count.
 - Accepted quotes copy the new metadata into events and frozen snapshots.
 - Chef quote list/detail, chef event money tab, client proposal, client payment, and client event summary all show a truthful crossed-out baseline when metadata exists.
+- Those comparison surfaces use scope-aware labels and suppress misleading strike-through math when baseline and final scope do not match.
 - Guest-count changes preserve a `custom_total` override instead of overwriting it.
 - Instant-book and series-seeded events populate the new pricing metadata with `override_kind = 'none'`.
 - Legacy rows remain stable and show final-only pricing without invented comparisons.

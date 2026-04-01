@@ -453,3 +453,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/openclaw-refresh-status-operator-patterns.md, docs/specs/openclaw-refresh-status-badge.md, docs/session-log.md
 - Build state on departure: green (docs-only session, no product-code changes)
 - Notes: Surveyed chef and operator tooling patterns across MarginEdge, Restaurant365, ChefMod, meez, and National Restaurant Association material, then tightened the spec so the badge favors last-verified truth, source labels, and degraded-state honesty instead of fake ETA or age-health claims.
+
+## 2026-04-01 00:34 EST
+
+- Agent: Planner + Research
+- Task: External operator-pattern research to strengthen the chef pricing override spec without writing product code
+- Status: started
+- Build state on arrival: green (docs-only follow-up; current HEAD 94fcad8d)
+- Files in focus: docs/specs/chef-pricing-override-infrastructure.md, docs/research/chef-pricing-override-current-state.md, external chef and catering pricing sources
+- Notes: Goal is to validate how real chefs and catering operators handle standard pricing, custom quotes, minimums, transparency, and price changes so only verified operator patterns are added to the spec.
+
+## 2026-04-01 00:44 EST
+
+- Agent: Planner + Research
+- Task: External operator-pattern research to strengthen the chef pricing override spec without writing product code
+- Status: completed
+- Files touched: docs/specs/chef-pricing-override-infrastructure.md, docs/research/chef-pricing-operator-patterns-2026-04-01.md, docs/session-log.md
+- Build state on departure: green (docs-only follow-up, no product-code changes)
+- Notes: Added external chef and catering operator evidence to the pricing-override spec, clarified when a crossed-out baseline is honest versus misleading, and required source-scope metadata for minimums, exclusions, and starting-quote labels.
