@@ -118,3 +118,19 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/notes-dishes-menus-client-event-pipeline.md, docs/session-log.md
 - Build state on departure: unchanged (planner-only docs, no build run)
 - Notes: Existing spec tightened in place for builder clarity. Added quick-start order, rollout/backout guidance, and explicit stop signs without expanding scope or changing product code.
+
+## 2026-03-31 ~20:00 EST
+
+- Agent: Planner (Claude Opus 4.6)
+- Task: Spec for Chef Opportunity Network - staff hiring posts, regional chef discovery, interest tracking. Origin: real beta tester voice transcript.
+- Status: completed
+- Files touched: docs/specs/chef-opportunity-network.md (new), docs/session-log.md
+- Build state on departure: green (5511b1e9, spec-only session, no code changes)
+- Notes: P1 spec ready. 2 new tables (chef_opportunity_posts, chef_opportunity_interests), 1 enum value (kitchen_manager), location filtering on searchChefs(), opportunity post type in social feed. No dependencies. Developer has additional messages from same beta tester for follow-up specs.
+
+## 2026-03-31 ~22:00 EST
+
+- Agent: Planner (Claude Opus 4.6)
+- Task: Spec for component-aware prep auto-scheduling. Origin: Grace (grazebyelena) beta tester conversation. Closes prep 8/10 → 10/10 gap.
+- Status: started
+- Build state on arrival: green (5511b1e9)
