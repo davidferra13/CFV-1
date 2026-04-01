@@ -399,3 +399,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Task: OpenCLAW surveillance dashboard gap analysis, research report, and implementation spec with developer-notes capture
 - Status: started
 - Build state on arrival: green (commit 575ba251; docs/build-state.md last green 5511b1e9)
+
+## 2026-03-31 23:28 EST
+
+- Agent: Planner + Research
+- Task: OpenClaw price/catalog refresh cadence investigation and spec for visible refresh status badges
+- Status: started
+- Build state on arrival: green (build-state still 5511b1e9; current HEAD 19b04d11)
+- Files in focus: app/(chef)/prices, app/(chef)/culinary/price-catalog, lib/openclaw/store-catalog-actions.ts, lib/openclaw/catalog-actions.ts, cron/sync routes, openclaw inventory schema
+- Notes: Developer wants a simple, trustworthy answer for when price data should change, plus a permanent spec that preserves their reasoning and defines a visible status badge so they can anticipate replenishment instead of refreshing blindly.
+
+## 2026-03-31 23:58 EST
+
+- Agent: Planner + Research
+- Task: OpenClaw price/catalog refresh cadence investigation and spec for visible refresh status badges
+- Status: completed
+- Files touched: docs/research/openclaw-refresh-cadence-and-status-surface.md, docs/specs/openclaw-refresh-status-badge.md, docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still 5511b1e9)
+- Notes: Confirmed the chef pages do not auto-refresh, documented the local-mirror vs Pi-direct pipeline split, and wrote a build-ready spec for a truthful refresh-status surface that avoids fake countdown promises.
