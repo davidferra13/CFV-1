@@ -733,3 +733,34 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending
 - Build state on departure: green (tsc --noEmit exit 0)
 - Notes: All 7 required changes were already implemented by a prior session. Verified the full spec: softCloseWorkflow flag on NextActionResult, SoftCloseLeverageCard State 1 + State 2, captureSoftCloseLeverage action, soft-close-message-presets A/B, composer softCloseMode defaults, terminal-state guard in approveAndSendMessage. TSC clean.
+
+## 2026-04-01 (continued session)
+
+- Agent: Builder (Claude Sonnet 4.6)
+- Task: Exhaust buildable ready spec queue
+- Status: completed
+- Files touched:
+  - components/import/csv-import.tsx (Google Contacts import path, synthetic CsvParseResult, phone dedup, useEffect auto-trigger)
+  - lib/google/contacts-actions.ts (fetchGoogleContactsImportPreview server action, People API, discriminated union return)
+  - lib/ai/import-actions.ts (DuplicateCheckResult byPhone field, normalizePhoneDigits, phone candidate check)
+  - lib/openclaw/developer-usage-map.ts (NEW: 13-stage lifecycle config, POTENTIAL_FUTURE_USES, CATEGORY_DISTINCTIONS)
+  - components/admin/openclaw-usage-page.tsx (NEW: full founder-only internal map page)
+  - app/(admin)/admin/openclaw/page.tsx (NEW: founder-only route with requireAdmin + isFounderEmail gate)
+  - app/(admin)/admin/page.tsx (founder-only QuickTile for /admin/openclaw)
+  - lib/help/page-info-sections/23-admin-portal.ts (/admin/openclaw page-info entry)
+  - lib/social/types.ts (SocialDeliveryMode, PlatformDeliveryAssessment, OpenClawSocialPackage types)
+  - lib/social/platform-policy.ts (NEW: PlatformCapability, PLATFORM_CAPABILITIES, resolveDeliveryMode)
+  - lib/social/publishability.ts (NEW: assessPublishability, assessPlatform, isQueueable, getEngineTargets)
+  - lib/social/openclaw-ingest.ts (NEW: ingestOpenClawPackage server action)
+  - components/social/social-delivery-mode-panel.tsx (NEW: SocialDeliveryModePanel component)
+  - lib/social/publishing/engine.ts (manual_handoff skip + unsupported media type skip)
+  - app/(chef)/social/layout.tsx (truthfulness fix: no false universal autopublishing claim)
+  - app/(chef)/social/connections/page.tsx (truthfulness fix)
+  - app/(chef)/social/templates/page.tsx (table name fix: social_post_templates -> social_templates, field name fixes)
+  - docs/specs/p1-google-contacts-import-via-google-people-api.md (status: verified)
+  - docs/specs/openclaw-developer-usage-page.md (status: verified)
+  - docs/specs/openclaw-social-media-orchestration.md (status: verified)
+  - docs/specs/p1-code-reachability-and-safe-prune-audit.md (status: verified)
+- Commits: 96dd7c81 (Google contacts), 55578c97 (openclaw usage page), 63d7fd28 (social orchestration)
+- Build state on departure: green (tsc --noEmit exit 0 at 63d7fd28)
+- Notes: 4 specs built and verified. 3 remaining ready specs (openclaw-total-capture, openclaw-archive-digester, openclaw-capture-countdown-and-pixel-schedule) all require Raspberry Pi SSH access and cannot be built from ChefFlow machine. Queue is empty for PC-side work. Key fixes: social templates page was querying wrong table name (social_post_templates vs social_templates), two social layout pages overstated universal autopublishing (hallucination fix applied).
