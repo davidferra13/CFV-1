@@ -9,18 +9,18 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event                 | Date                 | Agent/Session              | Commit  |
-| --------------------- | -------------------- | -------------------------- | ------- |
-| Created               | 2026-03-31 22:34 EST | Planner + Research session | pending |
-| Status: ready         | 2026-03-31 22:34 EST | Planner + Research session | pending |
-| Claimed (in-progress) |                      |                            |         |
-| Spike completed       |                      |                            |         |
-| Pre-flight passed     |                      |                            |         |
-| Build completed       |                      |                            |         |
-| Type check passed     |                      |                            |         |
-| Build check passed    |                      |                            |         |
-| Playwright verified   |                      |                            |         |
-| Status: verified      |                      |                            |         |
+| Event               | Date                 | Agent/Session              | Commit  |
+| ------------------- | -------------------- | -------------------------- | ------- |
+| Created             | 2026-03-31 22:34 EST | Planner + Research session | pending |
+| Status: ready       | 2026-03-31 22:34 EST | Planner + Research session | pending |
+| Claimed in-progress | 2026-04-01           | Builder Claude Sonnet 4.6  | pending |
+| Spike completed     | 2026-04-01           | Builder Claude Sonnet 4.6  | pending |
+| Pre-flight passed   | 2026-04-01           | tsc clean pre-build        | pending |
+| Build completed     | 2026-04-01           | Builder Claude Sonnet 4.6  | pending |
+| Type check passed   | 2026-04-01           | tsc noEmit exit 0          | pending |
+| Build check passed  |                      |                            |         |
+| Playwright verified |                      |                            |         |
+| Status: verified    |                      |                            |         |
 
 ---
 

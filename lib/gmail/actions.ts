@@ -287,23 +287,30 @@ export async function approveAndSendMessage(messageId: string): Promise<SendMess
       .eq('tenant_id', user.tenantId!)
       .single()
 
-    const updatePayload: Record<string, unknown> = {
-      next_action_required: 'Awaiting client reply',
-      next_action_by: 'client',
-      follow_up_due_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-    }
+    const isTerminal = currentInquiry?.status === 'declined' || currentInquiry?.status === 'expired'
 
-    // Auto-advance: new → awaiting_client, awaiting_chef → awaiting_client
-    // DB trigger auto-logs to inquiry_state_transitions
-    if (currentInquiry?.status === 'new' || currentInquiry?.status === 'awaiting_chef') {
-      updatePayload.status = 'awaiting_client'
-    }
+    if (!isTerminal) {
+      // Non-terminal: update action tracking and auto-advance status normally
+      const updatePayload: Record<string, unknown> = {
+        next_action_required: 'Awaiting client reply',
+        next_action_by: 'client',
+        follow_up_due_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
+      }
 
-    await db
-      .from('inquiries')
-      .update(updatePayload)
-      .eq('id', message.inquiry_id)
-      .eq('tenant_id', user.tenantId!)
+      // Auto-advance: new → awaiting_client, awaiting_chef → awaiting_client
+      // DB trigger auto-logs to inquiry_state_transitions
+      if (currentInquiry?.status === 'new' || currentInquiry?.status === 'awaiting_chef') {
+        updatePayload.status = 'awaiting_client'
+      }
+
+      await db
+        .from('inquiries')
+        .update(updatePayload)
+        .eq('id', message.inquiry_id)
+        .eq('tenant_id', user.tenantId!)
+    }
+    // Terminal inquiries (declined, expired): do not restore follow-up debt or advance status.
+    // A courtesy closeout sent after a soft close must not reopen the inquiry cycle.
   }
 
   revalidatePath('/inquiries')

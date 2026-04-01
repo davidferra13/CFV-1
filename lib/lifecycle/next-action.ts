@@ -33,6 +33,11 @@ export interface NextActionResult {
   slaStatus: 'overdue' | 'due_soon' | 'on_track' | 'no_sla'
   /** Minutes until SLA deadline (negative = overdue) */
   slaMinutesRemaining: number | null
+  /**
+   * When non-null, this inquiry is in a soft-close workflow.
+   * Consumers must check this flag instead of matching action label strings.
+   */
+  softCloseWorkflow?: { futureInterest: boolean }
 }
 
 export async function getNextActions(inquiryId: string): Promise<NextActionResult> {
@@ -139,6 +144,7 @@ export async function getNextActions(inquiryId: string): Promise<NextActionResul
         : `${readySummary}. Client is not moving forward right now.`,
       slaStatus: 'no_sla',
       slaMinutesRemaining: null,
+      softCloseWorkflow: { futureInterest: softCloseIntent.futureInterest },
     }
   }
 

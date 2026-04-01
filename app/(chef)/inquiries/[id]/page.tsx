@@ -68,6 +68,7 @@ import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/s
 import { Suspense } from 'react'
 import { InquiryIntelligencePanel } from '@/components/intelligence/inquiry-intelligence-panel'
 import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
+import { SoftCloseLeverageCard } from '@/components/inquiries/soft-close-leverage-card'
 import { getCriticalPath } from '@/lib/lifecycle/critical-path'
 import { CriticalPathCard } from '@/components/lifecycle/critical-path-card'
 import { getEmailSnapshot } from '@/lib/lifecycle/email-snapshot'
@@ -333,6 +334,30 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Next Action - what to do right now */}
       {nextActions && <NextActionBanner data={nextActions} />}
+
+      {/* Soft-Close Leverage Card - State 1: detected soft close, inquiry still open */}
+      {nextActions?.softCloseWorkflow?.futureInterest && inquiry.status === 'awaiting_chef' && (
+        <SoftCloseLeverageCard
+          inquiryId={inquiry.id}
+          inquiryStatus={inquiry.status}
+          declineReason={(inquiry as any).decline_reason ?? null}
+          futureInterest={nextActions.softCloseWorkflow.futureInterest}
+          inquiryDietary={
+            Array.isArray((inquiry as any).confirmed_dietary_restrictions)
+              ? ((inquiry as any).confirmed_dietary_restrictions as string[])
+              : []
+          }
+          inquiryDishes={
+            Array.isArray((inquiry as any).discussed_dishes)
+              ? ((inquiry as any).discussed_dishes as string[])
+              : []
+          }
+          contactName={(inquiry as any).contact_name ?? inquiry.client?.full_name ?? null}
+          closedAt={inquiry.updated_at ?? null}
+          clientId={inquiry.client_id ?? null}
+          contactEmail={(inquiry as any).contact_email ?? inquiry.client?.email ?? null}
+        />
+      )}
 
       {/* Critical Path - the go/no-go status for this dinner */}
       {criticalPath && <CriticalPathCard criticalPath={criticalPath} circleToken={circleToken} />}
@@ -826,8 +851,36 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           />
         )}
 
+      {/* Soft-Close Leverage Card - State 2: already declined for future reasons */}
+      {inquiry.status === 'declined' &&
+        (inquiry as any).decline_reason === 'Plans changed / maybe future' && (
+          <SoftCloseLeverageCard
+            inquiryId={inquiry.id}
+            inquiryStatus={inquiry.status}
+            declineReason={(inquiry as any).decline_reason ?? null}
+            futureInterest={true}
+            inquiryDietary={
+              Array.isArray((inquiry as any).confirmed_dietary_restrictions)
+                ? ((inquiry as any).confirmed_dietary_restrictions as string[])
+                : []
+            }
+            inquiryDishes={
+              Array.isArray((inquiry as any).discussed_dishes)
+                ? ((inquiry as any).discussed_dishes as string[])
+                : []
+            }
+            contactName={(inquiry as any).contact_name ?? inquiry.client?.full_name ?? null}
+            closedAt={inquiry.updated_at ?? null}
+            clientId={inquiry.client_id ?? null}
+            contactEmail={(inquiry as any).contact_email ?? inquiry.client?.email ?? null}
+          />
+        )}
+
       {/* AI Response Composer (Gmail send - for direct/email inquiries) */}
-      {inquiry.status !== 'declined' && inquiry.status !== 'expired' && (
+      {/* Also shown for soft-close declined inquiries to allow optional courtesy closeout */}
+      {(inquiry.status !== 'declined' && inquiry.status !== 'expired') ||
+      (inquiry.status === 'declined' &&
+        (inquiry as any).decline_reason === 'Plans changed / maybe future') ? (
         <InquiryResponseComposer
           inquiryId={inquiry.id}
           clientId={inquiry.client_id}
@@ -835,10 +888,15 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           gmailConnected={gmailStatus.gmail.connected}
           circleToken={circleToken}
           chefName={null}
+          contactName={name}
           isFirstResponse={!(inquiry as any).first_response_at}
           snapshotData={snapshotData}
+          softCloseMode={
+            inquiry.status === 'declined' &&
+            (inquiry as any).decline_reason === 'Plans changed / maybe future'
+          }
         />
-      )}
+      ) : null}
 
       {/* TakeAChef transcript prompt - encourage pasting the TAC conversation */}
       {inquiry.channel === 'take_a_chef' &&

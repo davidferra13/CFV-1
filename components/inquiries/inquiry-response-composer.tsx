@@ -14,6 +14,7 @@ import { draftResponseForInquiry } from '@/lib/ai/correspondence'
 import { createDraftMessage, approveAndSendMessage, updateDraftMessage } from '@/lib/gmail/actions'
 import { getDinnerCircleInvitation } from '@/lib/lifecycle/dinner-circle-templates'
 import type { EmailSnapshotResult } from '@/lib/lifecycle/email-snapshot'
+import { buildPresetA, buildPresetB } from '@/lib/inquiries/soft-close-message-presets'
 
 interface InquiryResponseComposerProps {
   inquiryId: string
@@ -22,8 +23,12 @@ interface InquiryResponseComposerProps {
   gmailConnected: boolean
   circleToken?: string | null
   chefName?: string | null
+  /** Contact name used for soft-close preset subject/greeting */
+  contactName?: string | null
   isFirstResponse?: boolean
   snapshotData?: EmailSnapshotResult | null
+  /** When true: defaults to A mode (no circle link, no snapshot), shows A/B preset loaders */
+  softCloseMode?: boolean
 }
 
 interface DraftState {
@@ -45,8 +50,10 @@ export function InquiryResponseComposer({
   gmailConnected,
   circleToken,
   chefName,
+  contactName,
   isFirstResponse,
   snapshotData,
+  softCloseMode = false,
 }: InquiryResponseComposerProps) {
   const router = useRouter()
   const [generating, setGenerating] = useState(false)
@@ -58,9 +65,9 @@ export function InquiryResponseComposer({
   const [editedSubject, setEditedSubject] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [savedMessageId, setSavedMessageId] = useState<string | null>(null)
-  // Version B is the default when we have a circle token (90% adoption vs 33%)
-  const [includeCircleLink, setIncludeCircleLink] = useState(!!circleToken)
-  const [includeSnapshot, setIncludeSnapshot] = useState(!!snapshotData)
+  // Soft-close mode: default A (no circle, no snapshot). Normal mode: default B when token exists.
+  const [includeCircleLink, setIncludeCircleLink] = useState(softCloseMode ? false : !!circleToken)
+  const [includeSnapshot, setIncludeSnapshot] = useState(softCloseMode ? false : !!snapshotData)
 
   // ── Generate AI Draft ──────────────────────────────────────────────────────
 
@@ -230,14 +237,83 @@ export function InquiryResponseComposer({
     )
   }
 
+  const circleUrl = circleToken ? `https://app.cheflowhq.com/hub/g/${circleToken}` : null
+
+  const handleLoadPresetA = () => {
+    const name = contactName ?? ''
+    const chef = chefName ?? 'Your chef'
+    const preset = buildPresetA(name, chef)
+    setDraftState({
+      draft: preset.body,
+      subject: preset.subject,
+      flags: [],
+      lifecycleState: 'soft_close',
+      emailStage: 'courtesy_closeout',
+      missingBlocking: [],
+      pricingAllowed: false,
+      confidence: 'high',
+      conversationDepth: 0,
+    })
+    setEditedBody(preset.body)
+    setEditedSubject(preset.subject)
+    setIncludeCircleLink(false)
+    setIncludeSnapshot(false)
+    setSavedMessageId(null)
+    setError(null)
+  }
+
+  const handleLoadPresetB = () => {
+    if (!circleUrl) return
+    const name = contactName ?? ''
+    const chef = chefName ?? 'Your chef'
+    const preset = buildPresetB(name, chef, circleUrl)
+    setDraftState({
+      draft: preset.body,
+      subject: preset.subject,
+      flags: [],
+      lifecycleState: 'soft_close',
+      emailStage: 'courtesy_closeout',
+      missingBlocking: [],
+      pricingAllowed: false,
+      confidence: 'high',
+      conversationDepth: 0,
+    })
+    setEditedBody(preset.body)
+    setEditedSubject(preset.subject)
+    setIncludeCircleLink(true)
+    setIncludeSnapshot(false)
+    setSavedMessageId(null)
+    setError(null)
+  }
+
   return (
     <Card className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Response Draft</h2>
+        <h2 className="text-xl font-semibold">
+          {softCloseMode ? 'Courtesy Closeout (optional)' : 'Response Draft'}
+        </h2>
         {!draftState && (
-          <Button variant="primary" size="sm" onClick={handleGenerateDraft} loading={generating}>
-            {generating ? 'Generating...' : 'Generate Draft'}
-          </Button>
+          <div className="flex items-center gap-2">
+            {softCloseMode && (
+              <>
+                <Button variant="ghost" size="sm" onClick={handleLoadPresetA}>
+                  Load A closeout
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLoadPresetB}
+                  disabled={!circleUrl}
+                  title={!circleUrl ? 'No Dinner Circle token for this inquiry' : undefined}
+                >
+                  Load B closeout
+                </Button>
+              </>
+            )}
+            <Button variant="primary" size="sm" onClick={handleGenerateDraft} loading={generating}>
+              {generating ? 'Generating...' : 'Generate Draft'}
+            </Button>
+          </div>
         )}
       </div>
 
