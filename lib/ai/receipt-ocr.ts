@@ -1,20 +1,21 @@
 /**
- * Receipt OCR - Extract grocery prices from receipt photos using Ollama.
+ * Receipt OCR - Extract grocery prices from receipt photos using Ollama-compatible runtime.
  *
- * Privacy: Uses local Ollama only. Receipt images never leave the machine.
+ * Routes through the configured Ollama-compatible endpoint (cloud in production).
  * The chef's purchase prices are the highest-confidence data source (tier 1).
  *
  * Flow:
  *   1. Chef uploads receipt photo
- *   2. Ollama vision model extracts line items
+ *   2. AI vision model extracts line items
  *   3. Each item is fuzzy-matched to canonical ingredients
  *   4. Chef confirms/edits matches
  *   5. Prices logged to ingredient_price_history as source='receipt'
  */
 
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import { getOllamaConfig } from '@/lib/ai/providers'
 
-const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
+const OLLAMA_URL = process.env.OLLAMA_URL || getOllamaConfig().baseUrl
 
 export interface ReceiptLineItem {
   rawText: string

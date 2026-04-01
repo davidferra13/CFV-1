@@ -142,14 +142,15 @@ export default function AiPrivacyPage() {
         </div>
         <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
-            Remy runs on ChefFlow&apos;s private AI infrastructure - not OpenAI, not Google, not any
-            third-party cloud AI service. When you talk to Remy, your conversation is processed on
-            our private servers and the response is sent back to you.
+            Remy uses secure cloud AI infrastructure to process your requests and generate
+            responses. When you talk to Remy, your message is sent to the AI runtime, processed, and
+            the response is returned to you.
           </p>
           <p>
-            We don&apos;t store what you say or what Remy says. Your conversation history lives in
-            your browser, on your device. If you switch browsers or clear your browser data, your
-            conversation history goes with it - because it was never on our servers to begin with.
+            We do not store conversation content on our servers. Your conversation history lives in
+            your browser. If you switch browsers or clear your browser data, your local history goes
+            with it. We collect only usage counts (feature used, error counts) for reliability
+            monitoring.
           </p>
         </div>
       </div>
@@ -163,12 +164,11 @@ export default function AiPrivacyPage() {
         <div className="text-sm text-stone-300 space-y-3 leading-relaxed">
           <p>
             We can see that you used Remy - how often, which features, whether errors occurred. We
-            cannot see what you talked about.
+            do not store conversation content and cannot see what you talked about.
           </p>
           <p>
-            This isn&apos;t a policy choice - it&apos;s how the system is built. There is no
-            database table for your conversations. There is no log file. The data doesn&apos;t exist
-            on our servers.
+            There is no database table for your conversation content. Usage counts exist for
+            reliability monitoring. Content does not.
           </p>
         </div>
 
@@ -243,9 +243,9 @@ export default function AiPrivacyPage() {
             clients&apos; names, or any personal information.
           </p>
           <p>
-            This is separate from Remy. Remy&apos;s conversations are processed entirely on
-            ChefFlow&apos;s private infrastructure. These external lookups are comparable to
-            searching for a product on a grocery store&apos;s website.
+            This is separate from Remy. These external lookups receive only item-level data (for
+            example, a product name) and are comparable to searching for a product on a grocery
+            store website.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">

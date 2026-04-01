@@ -231,7 +231,6 @@ export function ReceiptScanClient() {
           <CardContent className="space-y-4">
             <p className="text-sm text-stone-400">
               Take a photo of your grocery receipt. The AI will extract line items and prices.
-              Everything stays local (processed by Ollama on your machine).
             </p>
 
             <div className="flex flex-col items-center gap-4">

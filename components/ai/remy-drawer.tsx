@@ -1030,7 +1030,7 @@ export function RemyDrawer() {
                       </p>
                       <p className="text-xs text-stone-300 mt-2 flex items-center gap-1">
                         <Globe className="h-3 w-3" />
-                        Web search enabled. Conversations stay in your browser. Press{' '}
+                        Web search enabled. Press{' '}
                         <kbd className="bg-stone-700 dark:bg-stone-700 rounded px-1 py-0.5 text-xxs font-mono">
                           Ctrl+J
                         </kbd>{' '}
@@ -1405,7 +1405,7 @@ export function RemyDrawer() {
                       Remy can make mistakes. Please double-check important info.
                     </p>
                     <p className="text-xxs text-stone-500 italic">
-                      Responses may take a moment - Remy runs on a private, local AI.
+                      AI features use secure cloud processing.
                     </p>
                   </div>
                   <span

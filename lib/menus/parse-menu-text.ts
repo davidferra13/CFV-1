@@ -1,6 +1,6 @@
-// Ollama-powered menu text parser
+// AI-powered menu text parser
 // Takes raw extracted text from a menu document and identifies dishes.
-// Uses LOCAL Ollama only - data never leaves the machine.
+// Routes through configured cloud AI runtime.
 // This is text comprehension (reading what the chef wrote), NOT recipe generation.
 
 'use server'

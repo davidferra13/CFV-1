@@ -1,30 +1,25 @@
 'use server'
 
 // Remy - Vision Actions (Phase 4A & 4B)
-// Receipt scanning and dish photo documentation via Ollama vision models.
-// PRIVACY: All images processed locally via Ollama (LLaVA) - never sent to cloud.
+// Receipt scanning and dish photo documentation via Ollama-compatible vision models.
+// Routes through the configured cloud AI runtime endpoint.
 // This handles private data: store names, prices, dish photos for the chef's portfolio.
 
 import { Ollama } from 'ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import { getOllamaConfig } from '@/lib/ai/providers'
 
 const VISION_MODEL = 'llava:7b' // or bakllava, minicpm-v
-const OLLAMA_ENDPOINTS = [
-  process.env.OLLAMA_HOST || 'http://localhost:11434',
-  'http://127.0.0.1:11434',
-]
 
 async function getOllamaClient(): Promise<Ollama> {
-  for (const host of OLLAMA_ENDPOINTS) {
-    try {
-      const client = new Ollama({ host })
-      await client.list() // Quick connectivity check
-      return client
-    } catch {
-      continue
-    }
+  const { baseUrl } = getOllamaConfig()
+  try {
+    const client = new Ollama({ host: baseUrl })
+    await client.list() // Quick connectivity check
+    return client
+  } catch {
+    throw new OllamaOfflineError()
   }
-  throw new OllamaOfflineError()
 }
 
 // ─── Receipt Scanning (4A) ──────────────────────────────────────────────────

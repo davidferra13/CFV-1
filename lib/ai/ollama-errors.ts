@@ -1,4 +1,4 @@
-// OllamaOfflineError - shared error type for privacy-sensitive AI operations
+// AiRuntimeError (OllamaOfflineError) - shared error type for AI runtime operations
 // No 'use server' - safe to import from any context (server actions, API routes, tests)
 // This lives in its own file because 'use server' modules can only export async functions.
 
@@ -12,12 +12,13 @@ export type OllamaErrorCode =
   | 'validation_failed' // Zod validation failed after repair attempt
   | 'unknown' // Catch-all
 
-const OLLAMA_OFFLINE_MESSAGE = 'Local AI is offline. Start Ollama to use this feature.'
+const OLLAMA_OFFLINE_MESSAGE =
+  'AI processing is temporarily unavailable. Please try again in a few moments.'
 
 /**
- * Thrown when a privacy-sensitive operation cannot be completed because
- * Ollama is not configured or not reachable. Never caught silently - always
- * surfaced to the UI so the user knows data was not sent externally.
+ * Thrown when an AI operation cannot be completed because the runtime
+ * endpoint is not configured or not reachable.
+ * Never caught silently - always surfaced to the UI.
  */
 export class OllamaOfflineError extends Error {
   readonly code: OllamaErrorCode
@@ -52,20 +53,20 @@ function inferErrorCode(reason?: string): OllamaErrorCode {
 export function getOllamaErrorHelp(code: OllamaErrorCode): string {
   switch (code) {
     case 'not_configured':
-      return 'Set OLLAMA_BASE_URL in your environment to enable local AI.'
+      return 'AI runtime is not configured. Set OLLAMA_BASE_URL to enable AI features.'
     case 'unreachable':
-      return 'Ollama is not running. Start it with "ollama serve" or check the Windows service.'
+      return 'AI runtime is not responding. Please try again in a moment.'
     case 'timeout':
-      return 'Ollama is taking too long. The model may be loading - try again in 30 seconds.'
+      return 'AI request timed out. Please try again.'
     case 'model_missing':
-      return 'The configured model is not installed. Run "ollama pull <model>" to download it.'
+      return 'The configured AI model is not available on the runtime endpoint.'
     case 'empty_response':
-      return 'Ollama returned an empty response. The model may have run out of context.'
+      return 'AI returned an empty response. Please try again.'
     case 'invalid_json':
-      return 'Ollama returned non-JSON. This may be a prompt issue.'
+      return 'AI returned an unexpected format. This may be a transient issue.'
     case 'validation_failed':
       return 'AI output did not match the expected format after a repair attempt.'
     case 'unknown':
-      return 'An unexpected error occurred with local AI processing.'
+      return 'An unexpected error occurred with AI processing.'
   }
 }

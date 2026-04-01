@@ -2,11 +2,8 @@
 
 /**
  * DataFlowSchematic - pure React/SVG inline diagram.
- * Shows the private loop: Chef → ChefFlow Private AI → Chef.
- * Clear "X" over any path to external servers or third parties.
- *
- * Simplified from the original two-column comparison to focus on
- * what actually happens - a closed loop within ChefFlow.
+ * Shows the cloud AI processing flow: Chef → ChefFlow Cloud AI → Chef.
+ * Conversation content is not stored server-side.
  */
 
 import { Check, X, Shield, Server } from '@/components/ui/icons'
@@ -16,9 +13,9 @@ export function DataFlowSchematic() {
     <div className="space-y-8">
       {/* Title */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-stone-100">Where Does Your Data Go?</h2>
+        <h2 className="text-xl font-bold text-stone-100">How Remy Processes Your Data</h2>
         <p className="text-sm text-stone-500 mt-1">
-          Your conversations with Remy stay within ChefFlow. Here&apos;s exactly how.
+          Remy uses secure cloud AI. Here is how your data flows.
         </p>
       </div>
 
@@ -30,7 +27,9 @@ export function DataFlowSchematic() {
           </div>
           <div>
             <h3 className="font-semibold text-emerald-900">Remy Conversations</h3>
-            <p className="text-xs text-emerald-600">Private loop - nothing leaves ChefFlow</p>
+            <p className="text-xs text-emerald-600">
+              Cloud AI processing. Conversation content not stored.
+            </p>
           </div>
         </div>
 
@@ -38,7 +37,7 @@ export function DataFlowSchematic() {
           <svg
             viewBox="0 0 400 200"
             className="w-full"
-            aria-label="Diagram showing Remy conversations stay within ChefFlow's private infrastructure"
+            aria-label="Diagram showing Remy conversations processed by ChefFlow cloud AI"
           >
             {/* ChefFlow boundary */}
             <rect
@@ -58,7 +57,7 @@ export function DataFlowSchematic() {
               textAnchor="middle"
               className="fill-emerald-800 text-xs-tight font-semibold"
             >
-              ChefFlow (everything stays here)
+              ChefFlow + Secure Cloud AI
             </text>
 
             {/* You → box */}
@@ -139,10 +138,10 @@ export function DataFlowSchematic() {
               textAnchor="middle"
               className="fill-emerald-800 text-xs-tight font-semibold"
             >
-              Remy (Ollama)
+              Remy (Cloud AI)
             </text>
             <text x="235" y="81" textAnchor="middle" className="fill-emerald-600 text-3xs">
-              ChefFlow&apos;s private servers
+              Secure cloud runtime
             </text>
 
             {/* Conversation storage label */}
@@ -165,7 +164,7 @@ export function DataFlowSchematic() {
               History stays in browser
             </text>
 
-            {/* No storage label */}
+            {/* No content storage label */}
             <rect
               x="175"
               y="100"
@@ -182,7 +181,7 @@ export function DataFlowSchematic() {
               textAnchor="middle"
               className="fill-emerald-800 text-3xs font-bold"
             >
-              No server-side storage
+              Content not stored server-side
             </text>
 
             {/* Blocked paths */}
@@ -256,7 +255,7 @@ export function DataFlowSchematic() {
                 &#x2713;
               </text>
               <text x="22" y="12" className="fill-emerald-800 text-2xs">
-                AI runs on ChefFlow&apos;s own servers
+                AI uses secure cloud processing
               </text>
             </g>
             <g transform="translate(15, 165)">
@@ -270,7 +269,7 @@ export function DataFlowSchematic() {
                 &#x2713;
               </text>
               <text x="22" y="12" className="fill-emerald-800 text-2xs">
-                Conversations stored in your browser only
+                Conversation history in your browser
               </text>
             </g>
             <g transform="translate(200, 145)">
@@ -284,7 +283,7 @@ export function DataFlowSchematic() {
                 &#x2713;
               </text>
               <text x="22" y="12" className="fill-emerald-800 text-2xs">
-                Zero data sent to any third-party AI
+                Content not stored on our servers
               </text>
             </g>
             <g transform="translate(200, 165)">

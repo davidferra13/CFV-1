@@ -104,9 +104,11 @@ export function ErrorState({
         </button>
       )}
 
-      {/* Ollama hint for AI errors */}
+      {/* AI unavailable hint */}
       {isAiError && (
-        <p className="text-xs text-stone-500 mt-1">Make sure Ollama is running on your machine.</p>
+        <p className="text-xs text-stone-500 mt-1">
+          AI features are temporarily unavailable. Please try again in a moment.
+        </p>
       )}
     </div>
   )

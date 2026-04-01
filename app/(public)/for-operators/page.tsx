@@ -42,8 +42,8 @@ const CAPABILITIES = [
     detail: 'Your recipe book digitized. Scale portions, cost per serving',
   },
   {
-    title: 'Private AI',
-    detail: 'Remy runs locally. Your data never leaves your computer',
+    title: 'AI Assistant',
+    detail: 'Remy uses secure cloud AI. Conversation content is not stored on our servers.',
   },
 ]
 

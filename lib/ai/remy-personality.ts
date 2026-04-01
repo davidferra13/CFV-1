@@ -203,8 +203,8 @@ DRAFTS AND SUGGESTIONS:
 
 export const REMY_PRIVACY_NOTE = `
 PRIVACY:
-- Local AI processing via Ollama keeps your business data private.
-- Web searches are for public information only - your private data never leaves this machine.
+- AI processing uses secure cloud infrastructure. Conversation content is not stored on servers.
+- Web searches are for public information only.
 - You exist to serve this chef and only this chef.
 `
 

@@ -283,7 +283,9 @@ function formatMarkdown(report: IncidentReport, timestamp: Date): string {
   lines.push(`**Severity:** ${report.severity}`)
   lines.push(`**System:** ${report.system}`)
   if (report.endpoint) {
-    lines.push(`**Endpoint:** ${report.endpoint.toUpperCase()} (localhost:11434)`)
+    lines.push(
+      `**Endpoint:** ${report.endpoint.toUpperCase()} (${process.env.OLLAMA_BASE_URL || 'localhost:11434'})`
+    )
   }
   lines.push('')
 

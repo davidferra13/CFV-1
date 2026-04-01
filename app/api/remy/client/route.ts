@@ -1,7 +1,6 @@
 // Remy - Client Layer Streaming API
 // AUTHENTICATED - for clients in the client portal.
-// PRIVACY: Client data = PII → must use Ollama. No cloud models. EVER.
-// Scoped to the authenticated client's own data only.
+// Routes through configured cloud AI runtime. Scoped to the authenticated client's own data only.
 
 import { NextRequest } from 'next/server'
 import { Ollama } from 'ollama'
@@ -141,29 +140,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Pre-flight Ollama health check - verify the service is actually responding
-    try {
-      const health = await fetch('http://localhost:11434/api/tags', {
-        signal: AbortSignal.timeout(3000),
-      })
-      if (!health.ok) {
-        return new Response(
-          JSON.stringify({
-            error: 'Ollama is not available. Please start Ollama to use this feature.',
-          }),
-          { status: 503, headers: { 'Content-Type': 'application/json' } }
-        )
-      }
-    } catch {
-      return new Response(
-        JSON.stringify({
-          error: 'Ollama is not available. Please start Ollama to use this feature.',
-        }),
-        { status: 503, headers: { 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Check Ollama availability - client data = PII, must use Ollama
+    // Check AI runtime availability via configured endpoint (cloud in production)
     if (!isOllamaEnabled()) {
       return new Response(
         encodeSSE({

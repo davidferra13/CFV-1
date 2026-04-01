@@ -1,8 +1,8 @@
-// LLM Router - Single-Endpoint Routing for Ollama
+// LLM Router - Single-Endpoint Routing for Ollama-compatible runtime
 // No 'use server' - pure utility, importable anywhere server-side.
 //
-// Routes all AI tasks to the PC Ollama at localhost:11434.
-// Pi is permanently retired. No dual-endpoint routing.
+// Routes all AI tasks to the configured Ollama-compatible endpoint.
+// Cloud endpoint in production (OLLAMA_BASE_URL env var). Local dev falls back to localhost.
 
 import { getOllamaConfig, getModelForEndpoint } from './providers'
 import type { LlmEndpoint } from './queue/types'
@@ -45,7 +45,7 @@ const state: RouterState = {
 // ============================================
 
 /**
- * Returns the PC Ollama endpoint with current health status.
+ * Returns the configured Ollama-compatible endpoint with current health status.
  * Runs health check if stale (>60s since last check).
  */
 export async function getEndpoints(): Promise<OllamaEndpoint[]> {
@@ -54,7 +54,7 @@ export async function getEndpoints(): Promise<OllamaEndpoint[]> {
 }
 
 /**
- * Picks the PC endpoint for a task. Always returns PC.
+ * Picks the primary endpoint for a task.
  * Kept for API compatibility with callers that use routing logic.
  */
 export async function routeTask(
@@ -74,7 +74,7 @@ export async function routeTask(
 }
 
 /**
- * Route a Remy chat request. Returns full endpoint config or null if offline.
+ * Route a Remy chat request. Returns full endpoint config or null if unavailable.
  * Convenience wrapper around routeTask() for the Remy streaming route.
  */
 export async function routeForRemy(_opts?: { preferEndpoint?: LlmEndpoint }): Promise<{
@@ -89,15 +89,14 @@ export async function routeForRemy(_opts?: { preferEndpoint?: LlmEndpoint }): Pr
 
   return {
     host: url,
-    // Use fast tier - the 30B models are 77% CPU-offloaded on 6GB VRAM GPUs,
-    // causing 90-120s responses. The 4B model responds in 5-10s with good quality.
+    // Use fast tier for Remy streaming responses - lower latency for interactive use.
     model: getModelForEndpoint('pc', 'fast'),
     endpointName: 'pc',
   }
 }
 
 /**
- * Force a fresh health check on the PC endpoint. Call this after
+ * Force a fresh health check on the primary endpoint. Call this after
  * configuration changes or when you suspect it recovered.
  */
 export async function forceHealthCheck(): Promise<OllamaEndpoint[]> {
@@ -106,7 +105,7 @@ export async function forceHealthCheck(): Promise<OllamaEndpoint[]> {
 }
 
 /**
- * Returns true if the PC Ollama endpoint is healthy.
+ * Returns true if the configured Ollama-compatible endpoint is healthy.
  */
 export async function isAnyEndpointHealthy(): Promise<boolean> {
   await refreshIfStale()
@@ -148,7 +147,7 @@ async function checkAllEndpoints(): Promise<void> {
   state.endpoints = endpoints
   state.lastHealthCheck = new Date()
 
-  // Report if PC is down
+  // Report if primary endpoint is down
   const pcEp = endpoints.find((e) => e.name === 'pc')
   if (pcEp && !pcEp.healthy && shouldReportHealth()) {
     reportHealthDegraded({

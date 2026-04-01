@@ -155,14 +155,14 @@ export function DeveloperDigestEmail({
       )}
 
       {/* Ollama Status */}
-      <Heading style={h2}>Ollama</Heading>
+      <Heading style={h2}>AI Runtime</Heading>
       <Text style={listItem}>
         <span style={{ color: ollamaStatus.online ? '#16a34a' : '#ef4444', fontWeight: '600' }}>
           [{ollamaStatus.online ? 'ONLINE' : 'OFFLINE'}]
         </span>{' '}
         {ollamaStatus.online
           ? `Responding (${ollamaStatus.latencyMs ?? '?'}ms latency)`
-          : 'Not responding on localhost:11434'}
+          : 'Not responding on configured endpoint'}
       </Text>
 
       {/* All-healthy cron summary (collapsed) */}

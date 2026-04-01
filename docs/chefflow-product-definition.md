@@ -30,7 +30,7 @@ A chef running their business today uses 8-12 disconnected tools. ChefFlow colla
 Most independent chefs have no clear picture of their true profitability. ChefFlow's ledger-first financial model tracks every dollar across every event, computes real margins, and gives chefs the data they need to price their work correctly.
 
 **Goal 3: Protect the chef-client relationship.**
-Client relationships are the core asset of any private chef business. ChefFlow treats client data, preferences, allergies, histories, and communications as sacred. All sensitive data stays on the chef's own infrastructure via local AI (Ollama). Nothing is shared with third-party cloud services.
+Client relationships are the core asset of any private chef business. ChefFlow treats client data, preferences, allergies, histories, and communications as sacred. AI features use secure cloud infrastructure. Conversation content is not stored on our servers. Only usage counts are collected for reliability monitoring.
 
 **Goal 4: Surface the right action at the right time.**
 A chef running a business while also cooking has no time to hunt for what needs their attention. ChefFlow's priority queue, daily ops system, and morning briefing surface the most important next action automatically.
@@ -689,7 +689,7 @@ Every function available in the ChefFlow platform, organized by section.
 | Drag-to-resize           | Resize the Remy window by dragging any edge or corner                        |
 | Daily plan generation    | Remy generates the daily ops swim-lane plan                                  |
 
-All Remy interactions use Ollama (local AI only). No conversation content, client data, or business data is sent to external AI services.
+All Remy interactions route through the configured cloud Ollama-compatible runtime. Conversation content is not stored on our servers.
 
 ---
 
@@ -2591,12 +2591,12 @@ Toast behavior: Each notification type has a `toastByDefault` flag. Time-sensiti
 
 Two backends with a hard privacy boundary. Crossing it is a bug.
 
-| Backend | Where it Runs          | Privacy                                | Use Cases                                                                                                                         |
-| ------- | ---------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Ollama  | Local LLM on chef's PC | Private: data never leaves the machine | Client PII, financials, allergies, event details, recipes, personalized campaigns, contracts, AAR generation, chef bio, Remy chat |
-| Gemini  | Google cloud API       | Non-private only (no PII allowed)      | Generic marketing copy, technique lists, kitchen specs, public-facing content, review request drafts                              |
+| Backend                   | Where it Runs                   | Privacy                                       | Use Cases                                                                                                                         |
+| ------------------------- | ------------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Ollama-compatible (cloud) | Cloud runtime (OLLAMA_BASE_URL) | Secure cloud; conversation content not stored | Client PII, financials, allergies, event details, recipes, personalized campaigns, contracts, AAR generation, chef bio, Remy chat |
+| Gemini                    | Google cloud API                | Non-private only (no PII allowed)             | Generic marketing copy, technique lists, kitchen specs, public-facing content, review request drafts                              |
 
-Ollama failure behavior: Throws `OllamaOfflineError`. Never falls back to Gemini. Chef sees "Start Ollama to use this feature." Private data does not go anywhere.
+AI runtime failure behavior: Throws `OllamaOfflineError`. Never falls back to Gemini. User sees provider-agnostic "AI unavailable" message.
 
 AI dispatch layer (`lib/ai/dispatch/`): classifier, privacy gate, routing table, router, cost tracker. Routes each request based on data classification before the LLM call is made.
 
@@ -3401,7 +3401,7 @@ ChefFlow runs across three environments, all hosted on the developer's local PC:
 **Beta directory:** `C:\Users\david\Documents\CFv1-beta\`
 **Production directory:** `C:\Users\david\Documents\CFv1-prod\`
 
-All three environments share the same PostgreSQL database and Ollama instance (`localhost:11434`).
+All three environments share the same PostgreSQL database and AI runtime (configured via `OLLAMA_BASE_URL`).
 
 **Deployment:**
 

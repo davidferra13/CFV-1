@@ -29,7 +29,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 - **Stack:** Next.js · PostgreSQL (Drizzle ORM via postgres.js) · Auth.js v5 · Stripe · Local FS storage · SSE realtime
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
 - **End every session:** commit everything → push the feature branch → update this file if new rules were found
-- **Private AI:** client data stays local via Ollama only - never Gemini, never cloud LLMs
+- **Cloud AI:** production AI routes through a cloud Ollama-compatible endpoint (OLLAMA_BASE_URL). Gemini is used only for non-PII tasks. Conversation content is never stored server-side.
 - **Never:** run `drizzle-kit push` without explicit user approval
 
 ---
@@ -962,17 +962,19 @@ Revenue comes from **voluntary supporter contributions** (Stripe checkout, cance
 
 These are the established patterns. Follow them - don't reinvent.
 
-### Private AI - Local Only (NO Exceptions)
+### Cloud AI Runtime (Production)
 
-**Private data must never leave the local machine.** Any function that handles client PII, financials, allergies, messages, or internal business data uses `parseWithOllama` - not `parseWithAI`.
+**Production AI uses a cloud Ollama-compatible endpoint.** Any function that handles client PII, financials, allergies, messages, or internal business data uses `parseWithOllama` - not `parseWithAI` (Gemini).
 
-- `parseWithOllama` now throws `OllamaOfflineError` if Ollama is not running. It **never** falls back to Gemini.
+- `parseWithOllama` routes through `OLLAMA_BASE_URL` (cloud endpoint in production, localhost fallback in dev).
+- `parseWithOllama` throws `OllamaOfflineError` if the runtime is unreachable. It **never** falls back to Gemini.
 - **Never** add `parseWithAI` as a fallback in any file that calls `parseWithOllama`.
-- If Ollama is offline, the feature hard-fails with a clear error. The user sees "Start Ollama to use this feature." Data is not leaked.
+- If the AI runtime is unavailable, the feature hard-fails with a provider-agnostic error message. Data is not leaked.
 - The `OllamaOfflineError` class lives in `lib/ai/ollama-errors.ts` (no `'use server'` - class exports are not allowed in server action files). Import it from there: `import { OllamaOfflineError } from '@/lib/ai/ollama-errors'`. Callers that catch errors **must** re-throw it: `if (err instanceof OllamaOfflineError) throw err`.
-- Heuristic/regex fallbacks (no LLM call) are acceptable - they don't send data externally.
+- Heuristic/regex fallbacks (no LLM call) are acceptable.
+- Production has NO silent fallback to a local machine. If the cloud runtime is down, the product fails clearly.
 
-Private data categories that must stay local:
+Private data categories that route through the Ollama-compatible runtime (never Gemini):
 
 - Client names, contact info, dietary restrictions, allergies, messages
 - Budget amounts, quotes, payment history, revenue, expenses
@@ -981,12 +983,12 @@ Private data categories that must stay local:
 
 ### Gemini/Ollama Boundary
 
-Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
+Two AI backends, each with a clear purpose. Do not cross the boundary.
 
-| Backend    | Purpose                                              | Cost             | Privacy          |
-| ---------- | ---------------------------------------------------- | ---------------- | ---------------- |
-| **Ollama** | Private data (client PII, financials, allergies)     | Free (local GPU) | Data stays on PC |
-| **Gemini** | Generic cloud tasks (technique lists, kitchen specs) | Paid (Google)    | No PII allowed   |
+| Backend                       | Purpose                                              | Privacy                         |
+| ----------------------------- | ---------------------------------------------------- | ------------------------------- |
+| **Ollama-compat (cloud/dev)** | Private data (client PII, financials, allergies)     | Conversation content not stored |
+| **Gemini**                    | Generic cloud tasks (technique lists, kitchen specs) | No PII allowed                  |
 
 | File                                                        | AI Backend | Why                                                    |
 | ----------------------------------------------------------- | ---------- | ------------------------------------------------------ |
@@ -1003,7 +1005,7 @@ Two AI backends, each with a clear purpose. Do not cross the privacy boundary.
 | `lib/ai/contract-generator.ts`                              | **Ollama** | Client PII, event details, pricing                     |
 | `lib/ai/remy-actions.ts`                                    | **Ollama** | All client/chef conversational data                    |
 
-**Rule:** If a new AI file handles ANY private data category listed above, it MUST use `parseWithOllama`. No exceptions. Gemini is a cloud service; private data never touches it.
+**Rule:** If a new AI file handles ANY private data category listed above, it MUST use `parseWithOllama`. No exceptions. Gemini is a separate cloud service; private data must not route through it.
 
 ---
 

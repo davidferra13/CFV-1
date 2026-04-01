@@ -3,7 +3,7 @@
 // AAR (After-Action Report) Generator
 // AI drafts the full AAR narrative from event data.
 // Extends lib/events/debrief-actions.ts which has only partial AI.
-// Routed to LOCAL Ollama (complex tier) - private data never leaves the machine.
+// Routed through cloud AI runtime (complex tier).
 // Output is DRAFT ONLY - chef edits and confirms before the AAR is finalized.
 
 import { requireChef } from '@/lib/auth/get-user'

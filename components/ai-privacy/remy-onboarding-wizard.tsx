@@ -153,13 +153,13 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 {[
                   {
                     icon: <HardDrive className="h-5 w-5 text-brand-500" />,
-                    title: 'Private AI',
-                    desc: 'Remy runs on ChefFlow\u2019s private servers. Your conversations are processed locally and never stored on our servers.',
+                    title: 'Cloud AI',
+                    desc: 'Remy uses secure cloud AI infrastructure. Your inputs are processed to generate responses and are not stored on our servers.',
                   },
                   {
                     icon: <Lock className="h-5 w-5 text-brand-500" />,
                     title: 'Your Data',
-                    desc: 'Client names, budgets, recipes - everything stays within ChefFlow. Conversation history lives in your browser.',
+                    desc: 'Conversation history stays in your browser. We collect only usage counts (not content) for reliability monitoring.',
                   },
                   {
                     icon: <Eye className="h-5 w-5 text-brand-500" />,
@@ -192,8 +192,9 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 </div>
                 <h2 className="text-2xl font-bold text-stone-100">You&apos;re in Control</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">
-                  Your conversation history lives in your browser. You can clear it at any time -
-                  and when you do, it&apos;s gone. Not archived, not hidden. Gone.
+                  Your conversation history lives in your browser. You can clear it at any time.
+                  When you do, the local history is gone. Conversation content is not stored on our
+                  servers.
                 </p>
               </div>
 

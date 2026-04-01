@@ -24,7 +24,7 @@ export function AiSourceBadge({ source }: { source?: 'formula' | 'ai' }) {
   return (
     <span
       className="inline-flex items-center gap-1 text-xxs text-violet-400"
-      title="Result enhanced by local AI (Ollama)"
+      title="Result enhanced by AI"
     >
       <FlaskConical className="w-3 h-3" />
       AI

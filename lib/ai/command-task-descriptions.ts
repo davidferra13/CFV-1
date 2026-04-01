@@ -194,7 +194,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 2,
     name: 'Prep Timeline',
     description:
-      'Generate a detailed prep timeline for an event - includes shopping, prep, cooking, plating, and service times. Requires Ollama.',
+      'Generate a detailed prep timeline for an event - includes shopping, prep, cooking, plating, and service times.',
     inputSchema: '{ "eventName": "string - event name or occasion to generate a timeline for" }',
     tierNote: 'ALWAYS tier 2 - chef should review the timeline before committing to it.',
   },
@@ -319,7 +319,7 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tier: 1,
     name: 'Recipe Cost Optimization',
     description:
-      "Analyze a recipe's ingredient costs and suggest substitutions to reduce costs without sacrificing quality. Requires Ollama.",
+      "Analyze a recipe's ingredient costs and suggest substitutions to reduce costs without sacrificing quality.",
     inputSchema: '{ "recipeName": "string - recipe name to optimize" }',
   },
 

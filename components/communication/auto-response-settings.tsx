@@ -100,7 +100,7 @@ export function AutoResponseSettings({ config }: Props) {
             className="rounded bg-stone-800 border-stone-700 text-amber-600"
           />
           <span className="text-sm text-stone-300">
-            Let Remy personalize auto-responses (uses local AI, data stays on your machine)
+            Let Remy personalize auto-responses (uses cloud AI)
           </span>
         </label>
       </div>

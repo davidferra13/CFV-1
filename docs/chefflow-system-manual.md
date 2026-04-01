@@ -1182,23 +1182,23 @@ Production:   Self-hosted     (app.cheflowhq.com, Cloudflare Tunnel)
 
 ### Environment Variables (Key Categories)
 
-| Category       | Variables                                                                                |
-| -------------- | ---------------------------------------------------------------------------------------- |
-| **PostgreSQL** | `NEXT_PUBLIC_DATABASE_URL`, `NEXT_PUBLIC_DATABASE_ANON_KEY`, `DATABASE_SERVICE_ROLE_KEY` |
-| **Stripe**     | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`       |
-| **Resend**     | `RESEND_API_KEY`                                                                         |
-| **Google**     | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_MAPS_API_KEY`                        |
-| **Ollama**     | Runs on localhost:11434, no env vars needed                                              |
-| **Gemini**     | `GOOGLE_GENERATIVE_AI_API_KEY`                                                           |
-| **Groq**       | `GROQ_API_KEY`                                                                           |
-| **Sentry**     | `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`                                                        |
-| **PostHog**    | `NEXT_PUBLIC_POSTHOG_KEY`                                                                |
-| **Upstash**    | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`                                     |
-| **Push**       | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`                                                  |
-| **Twilio**     | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`                                                |
-| **Inngest**    | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`                                               |
-| **App**        | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL`                                            |
-| **PWA**        | `ENABLE_PWA_BUILD` (only when =1)                                                        |
+| Category       | Variables                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------- |
+| **PostgreSQL** | `NEXT_PUBLIC_DATABASE_URL`, `NEXT_PUBLIC_DATABASE_ANON_KEY`, `DATABASE_SERVICE_ROLE_KEY`       |
+| **Stripe**     | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`             |
+| **Resend**     | `RESEND_API_KEY`                                                                               |
+| **Google**     | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_MAPS_API_KEY`                              |
+| **Ollama**     | `OLLAMA_BASE_URL` (cloud endpoint in prod; defaults to localhost:11434 in dev), `OLLAMA_MODEL` |
+| **Gemini**     | `GOOGLE_GENERATIVE_AI_API_KEY`                                                                 |
+| **Groq**       | `GROQ_API_KEY`                                                                                 |
+| **Sentry**     | `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`                                                              |
+| **PostHog**    | `NEXT_PUBLIC_POSTHOG_KEY`                                                                      |
+| **Upstash**    | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`                                           |
+| **Push**       | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`                                                        |
+| **Twilio**     | `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`                                                      |
+| **Inngest**    | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`                                                     |
+| **App**        | `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL`                                                  |
+| **PWA**        | `ENABLE_PWA_BUILD` (only when =1)                                                              |
 
 Full reference: `docs/environment-variables.md`
 

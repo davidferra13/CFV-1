@@ -7,9 +7,7 @@
 
 ## What Is Remy?
 
-Remy is ChefFlow's private AI concierge — a domain-specific assistant that helps private chefs manage their business. It runs on **local Ollama only** (never cloud LLMs for private data), stores conversations in **browser IndexedDB only** (never on servers), and operates under strict rules that protect chef IP and financial accuracy.
-
-Remy is a **Pro feature** (`requirePro('remy')`). Free-tier chefs don't get Remy.
+Remy is ChefFlow's AI concierge — a domain-specific assistant that helps private chefs manage their business. It uses a **cloud Ollama-compatible runtime** (configured via `OLLAMA_BASE_URL`), stores conversation history in **browser IndexedDB only** (not on servers), and operates under strict rules that protect chef IP and financial accuracy.
 
 ---
 
@@ -584,9 +582,9 @@ Admins (`ADMIN_EMAILS` env var) skip ALL guardrails — never rate-limited, neve
 
 ---
 
-## Privacy Architecture (Level 3 — By Design)
+## Privacy Architecture
 
-**Core principle:** "We don't have your data" > "We have your data but we promise not to look."
+**Core principle:** Conversation content is not stored on our servers. Usage counts (not content) are collected for reliability monitoring.
 
 | Data                                                 | Stored?                | Where                  | Who Sees It               |
 | ---------------------------------------------------- | ---------------------- | ---------------------- | ------------------------- |
@@ -596,7 +594,7 @@ Admins (`ADMIN_EMAILS` env var) skip ALL guardrails — never rate-limited, neve
 | Error logs (stack traces)                            | Yes                    | Server logs            | Engineering               |
 | Conversations shared via "Send to Support"           | Only if chef initiates | PostgreSQL             | Support team              |
 
-**Data flow:** Chef types → Browser sends to API → API routes to local Ollama → Response streams back → Stored in IndexedDB → Nothing on servers.
+**Data flow:** Chef types → Browser sends to API → API routes to cloud Ollama-compatible runtime → Response streams back → Stored in IndexedDB → Conversation content not on servers.
 
 **External APIs** (Spoonacular, Kroger, Instacart, MealMe) receive item-level data only (e.g., "broccoli price"), never PII or conversations.
 

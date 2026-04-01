@@ -170,8 +170,8 @@ export const CHEFFLOW_FEATURE_MAP: FeatureMapEntry[] = [
       'client data',
     ],
     solution:
-      "ChefFlow's AI assistant (Remy) runs on your own hardware via Ollama. Your client data, financials, and conversations never leave your machine. It's private by architecture, not by policy.",
-    featureName: 'Private AI',
+      "ChefFlow's AI assistant (Remy) uses secure cloud AI. Conversation content is not stored on our servers. Only usage counts are tracked for reliability.",
+    featureName: 'AI Assistant',
     tier: 'free',
   },
   {

@@ -1,6 +1,6 @@
 # Spec: Full Cloud AI Runtime and Truthful Disclosure
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -11,10 +11,13 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event         | Date             | Agent/Session | Commit |
-| ------------- | ---------------- | ------------- | ------ |
-| Created       | 2026-03-31 21:15 | Planner       |        |
-| Status: ready | 2026-03-31 21:15 | Planner       |        |
+| Event          | Date             | Agent/Session | Commit                        |
+| -------------- | ---------------- | ------------- | ----------------------------- |
+| Created        | 2026-03-31 21:15 | Planner       |                               |
+| Status: ready  | 2026-03-31 21:15 | Planner       |                               |
+| Build started  | 2026-04-01       | Builder       |                               |
+| Build complete | 2026-04-01       | Builder       |                               |
+| TSC: passed    | 2026-04-01       | Builder       | (zero errors, --skipLibCheck) |
 
 ---
 

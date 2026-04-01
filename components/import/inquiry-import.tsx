@@ -1,6 +1,6 @@
 // Inquiry Import Component
 // Full import flow for historical inquiries: CSV or freeform text → preview → save.
-// CSV uses deterministic parsing, freeform uses Ollama (local AI only).
+// CSV uses deterministic parsing, freeform uses the configured AI runtime.
 // Follows the PastEventsImport pattern with an internal CSV/Freeform toggle.
 
 'use client'

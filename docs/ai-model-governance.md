@@ -12,7 +12,7 @@
 │                                                   │
 │  Input -> Privacy Gate -> Classifier -> Router    │
 │                                                   │
-│  Private data detected:  FORCE local-only path    │
+│  Private data detected:  FORCE Ollama-compat path  │
 │  Deterministic possible: FORCE no-LLM path        │
 │  Otherwise:              Route per table           │
 └──────────┬────────────────────────────────────────┘
@@ -26,41 +26,37 @@
 
 ## Two Domains (Hard Boundary)
 
-|         | Developer-Agent                  | Application Runtime            |
-| ------- | -------------------------------- | ------------------------------ |
-| Purpose | Helps build software             | Runs inside ChefFlow for users |
-| Trust   | High (sees codebase)             | Mixed (handles PII)            |
-| Latency | Moderate (seconds OK)            | Low (real-time UI)             |
-| Privacy | Source code acceptable for cloud | Client data MUST stay local    |
-| Failure | Blocked developer                | Broken product                 |
-
-These domains share infrastructure (same Ollama) but have different routing policies.
+|         | Developer-Agent                  | Application Runtime              |
+| ------- | -------------------------------- | -------------------------------- |
+| Purpose | Helps build software             | Runs inside ChefFlow for users   |
+| Trust   | High (sees codebase)             | Mixed (handles PII)              |
+| Latency | Moderate (seconds OK)            | Low (real-time UI)               |
+| Privacy | Source code acceptable for cloud | Uses cloud Ollama-compat runtime |
+| Failure | Blocked developer                | Broken product                   |
 
 ## Provider Roles
 
-| Provider       | Domain               | Role                                   | Privacy    |
-| -------------- | -------------------- | -------------------------------------- | ---------- |
-| Ollama (local) | Runtime (primary)    | All private data processing            | LOCAL ONLY |
-| Groq           | Both (cloud-safe)    | Fast cheap worker for structured tasks | No PII     |
-| Gemini         | Runtime (cloud-safe) | Domain content generation (culinary)   | No PII     |
-| GitHub Models  | Dev-Agent            | Code-focused utilities, docs           | No PII     |
-| Workers AI     | Both (cloud-safe)    | Edge inference, fallback               | No PII     |
+| Provider                   | Domain               | Role                                 | Privacy       |
+| -------------------------- | -------------------- | ------------------------------------ | ------------- |
+| Ollama-compat cloud (prod) | Runtime (primary)    | All Ollama-backed feature processing | Secure cloud  |
+| Ollama local (dev only)    | Runtime (dev)        | Local dev/debug override             | Local machine |
+| Gemini                     | Runtime (cloud-safe) | Domain content generation (culinary) | No PII        |
 
 ## Task Classes
 
-| Class                | LLM?      | Privacy     | Description                             |
-| -------------------- | --------- | ----------- | --------------------------------------- |
-| DETERMINISTIC        | No        | N/A         | Math, regex, SQL, conditionals          |
-| MECHANICAL_SAFE      | Cheap     | Cloud-safe  | Structured extraction, classification   |
-| MECHANICAL_PRIVATE   | Local     | LOCAL_ONLY  | Structured extraction of private data   |
-| IMPLEMENTATION       | Mid+      | Source code | Writing/modifying code                  |
-| REVIEW               | High      | Source code | Code quality, security, architecture    |
-| RESEARCH             | Mid       | Source code | Exploration, documentation lookup       |
-| PRIVATE_PARSE        | Local     | LOCAL_ONLY  | PII, financials, allergies, client data |
-| PUBLIC_GENERATE_FOOD | Any cloud | Cloud-safe  | Culinary content (no PII)               |
-| PUBLIC_GENERATE_CODE | Any cloud | Cloud-safe  | Code/docs (no PII)                      |
-| ESCALATION           | Top       | Depends     | Ambiguous tasks                         |
-| ORCHESTRATION        | Top       | Metadata    | Routing, coordination                   |
+| Class                | LLM?                | Privacy       | Description                             |
+| -------------------- | ------------------- | ------------- | --------------------------------------- |
+| DETERMINISTIC        | No                  | N/A           | Math, regex, SQL, conditionals          |
+| MECHANICAL_SAFE      | Cheap               | Cloud-safe    | Structured extraction, classification   |
+| MECHANICAL_PRIVATE   | Cloud/Ollama-compat | Ollama-compat | Structured extraction of private data   |
+| IMPLEMENTATION       | Mid+                | Source code   | Writing/modifying code                  |
+| REVIEW               | High                | Source code   | Code quality, security, architecture    |
+| RESEARCH             | Mid                 | Source code   | Exploration, documentation lookup       |
+| PRIVATE_PARSE        | Cloud/Ollama-compat | Ollama-compat | PII, financials, allergies, client data |
+| PUBLIC_GENERATE_FOOD | Any cloud           | Cloud-safe    | Culinary content (no PII)               |
+| PUBLIC_GENERATE_CODE | Any cloud           | Cloud-safe    | Code/docs (no PII)                      |
+| ESCALATION           | Top                 | Depends       | Ambiguous tasks                         |
+| ORCHESTRATION        | Top                 | Metadata      | Routing, coordination                   |
 
 ## Routing Table
 
@@ -82,7 +78,7 @@ These domains share infrastructure (same Ollama) but have different routing poli
 
 ## Privacy Policy
 
-### Must Stay Local (Ollama only)
+### Routed Through Ollama-Compatible Cloud Runtime
 
 - Client PII (names, emails, phones, addresses)
 - Dietary/allergy data (safety-critical)
@@ -92,7 +88,7 @@ These domains share infrastructure (same Ollama) but have different routing poli
 - Contracts/legal documents
 - Staff data (names, schedules, pay rates)
 
-### Cloud-Safe
+### Gemini Cloud (No PII)
 
 - Generic culinary content (techniques, specs, templates)
 - Public code (open-source patterns, generic implementations)
@@ -101,23 +97,21 @@ These domains share infrastructure (same Ollama) but have different routing poli
 
 ### The Test
 
-Before routing to cloud: "If this payload appeared in the provider's training data, would it harm any client, chef, or the business?" If yes, local only.
+Before routing to Gemini: "If this payload appeared in the provider's training data, would it harm any client, chef, or the business?" If yes, route through Ollama-compatible runtime instead.
 
 ## Permission Boundaries
 
-| Model         | CAN                                                             | CANNOT                                                 |
-| ------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
-| Groq          | Parse structured data, classify, draft, boilerplate             | Access private data, make judgment calls, self-certify |
-| Ollama        | Process all private data, runtime AI with PII, offline fallback | Send data externally (architecturally impossible)      |
-| Gemini        | Generate culinary content, domain templates                     | Access private data, replace Ollama for PII tasks      |
-| GitHub Models | Code utilities, docs, code review                               | Access private data, complex multi-file implementation |
-| Workers AI    | Edge classification, embeddings, content moderation             | Access private data, complex reasoning                 |
+| Model                   | CAN                                           | CANNOT                                                |
+| ----------------------- | --------------------------------------------- | ----------------------------------------------------- |
+| Ollama-compat cloud     | Process all private data, runtime AI with PII | Be used for generic/public tasks (use Gemini instead) |
+| Ollama local (dev only) | Local dev/debug of the same features          | Be the production runtime                             |
+| Gemini                  | Generate culinary content, domain templates   | Access private data, replace Ollama-compat for PII    |
 
 ## Failure Policy
 
-1. **Cheap model fails**: Retry once (transient only), then secondary, then fallback. Max 3 attempts total.
-2. **Ollama offline (private task)**: Hard fail. User sees "Start Ollama to use this feature." NEVER cloud.
-3. **Ollama offline (non-private task)**: Route to cloud alternative per table.
+1. **Cloud AI runtime fails**: Retry once (transient only), then hard fail with provider-agnostic message.
+2. **AI runtime unavailable**: Hard fail. User sees provider-agnostic "AI unavailable" message. NEVER silent fallback.
+3. **Gemini fails**: Retry once, then fallback per routing table.
 4. **All providers fail**: Escalate to developer with structured error report.
 5. **Ambiguous task**: Route to ESCALATION class. Fast model attempts classification. If it fails, developer decides.
 

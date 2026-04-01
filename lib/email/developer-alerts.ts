@@ -177,18 +177,20 @@ export async function sendDeveloperDigest(): Promise<{
       failures: info.failures,
     }))
 
-    // ── Ollama health ───────────────────────────────────────────────────
+    // ── AI runtime health ────────────────────────────────────────────────
+    const { getOllamaConfig } = await import('@/lib/ai/providers')
+    const aiConfig = getOllamaConfig()
     let ollamaStatus = { online: false, latencyMs: undefined as number | undefined }
     try {
       const start = Date.now()
-      const res = await fetch('http://localhost:11434/api/tags', {
+      const res = await fetch(`${aiConfig.baseUrl}/api/tags`, {
         signal: AbortSignal.timeout(5000),
       })
       if (res.ok) {
         ollamaStatus = { online: true, latencyMs: Date.now() - start }
       }
     } catch {
-      // Ollama not responding
+      // AI runtime not responding
     }
 
     // ── Build summary ───────────────────────────────────────────────────

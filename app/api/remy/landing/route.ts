@@ -1,7 +1,7 @@
 // Remy - Landing Page Concierge Streaming API
 // UNAUTHENTICATED - for visitors on the public landing page and marketing pages.
 // No tenantId required - uses platform-level feature knowledge instead.
-// Rate-limited per IP. Uses Ollama for consistency with the rest of the system.
+// Rate-limited per IP. Routes through configured cloud AI runtime.
 
 import { NextRequest } from 'next/server'
 import { Ollama } from 'ollama'

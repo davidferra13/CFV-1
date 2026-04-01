@@ -274,10 +274,10 @@ export default async function ProspectingPage({
             </div>
 
             <div className="rounded-lg bg-brand-950 border border-brand-200 p-4">
-              <h4 className="font-medium text-brand-900 text-sm mb-2">Requires Ollama</h4>
+              <h4 className="font-medium text-brand-900 text-sm mb-2">AI Scrub</h4>
               <p className="text-xs text-brand-700">
-                AI Scrub uses your local Ollama installation to research prospects. Make sure Ollama
-                is running before starting a scrub. Your data never leaves your machine.
+                AI Scrub uses cloud AI to research prospects. AI features require the AI runtime to
+                be configured and available.
               </p>
             </div>
           </CardContent>

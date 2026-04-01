@@ -1,7 +1,8 @@
 // Ollama Wake Utilities
-// Functions to wake, ping, and manage the PC Ollama endpoint.
+// Functions to ping and manage a local Ollama endpoint.
 // No 'use server' - pure utility module for server-side use.
-// Pi is permanently retired. Ollama runs ONLY on localhost:11434 (PC).
+// DEV-ONLY: These utilities assume a locally reachable Ollama process.
+// Production uses a remote Ollama-compatible cloud endpoint and does not need wake/restart logic.
 
 import { getOllamaConfig, getModelForEndpoint } from './providers'
 import { exec } from 'child_process'

@@ -66,7 +66,7 @@ export function RecipeImportHubClient({ aiConfigured, visionConfigured }: Props)
         'Paste or type a recipe. AI parses it into structured data with ingredients, method, times, dietary tags. Edit before saving.',
       icon: '\uD83E\uDDE0',
       available: aiConfigured,
-      unavailableReason: 'Requires Ollama or Gemini for text parsing',
+      unavailableReason: 'Requires AI to be configured for text parsing',
     },
     {
       id: 'brain-dump',
@@ -75,7 +75,7 @@ export function RecipeImportHubClient({ aiConfigured, visionConfigured }: Props)
         'Type everything you know about a recipe in your own words. "It is a diane sauce, you sear the steak, deglaze with cognac..." AI turns it into a structured recipe.',
       icon: '\uD83D\uDCA1',
       available: aiConfigured,
-      unavailableReason: 'Requires Ollama for text parsing',
+      unavailableReason: 'Requires AI to be configured for text parsing',
     },
     {
       id: 'sprint',

@@ -1,6 +1,7 @@
 // AI Provider Configuration
 // No 'use server' - safe to import from any context (client, server, edge)
-// Routing decisions and config for the privacy-first hybrid LLM system
+// Cloud-first runtime. OLLAMA_BASE_URL must point to a remote cloud endpoint in production.
+// Local Ollama is only used when OLLAMA_BASE_URL is unset or explicitly localhost (dev/debug only).
 
 export type AIProvider = 'gemini' | 'ollama'
 
@@ -8,16 +9,18 @@ export type AIProvider = 'gemini' | 'ollama'
 export type ModelTier = 'fast' | 'standard' | 'complex'
 
 /**
- * Returns true if a local Ollama endpoint is configured.
- * Set OLLAMA_BASE_URL in .env.local to enable (e.g. http://localhost:11434).
+ * Returns true if an Ollama-compatible endpoint is configured.
+ * In production this will be a remote cloud URL set via OLLAMA_BASE_URL.
+ * In local dev it defaults to localhost:11434 when OLLAMA_BASE_URL is not set.
  */
 export function isOllamaEnabled(): boolean {
   return !!process.env.OLLAMA_BASE_URL
 }
 
 /**
- * Returns the primary Ollama connection config (PC).
- * Defaults to localhost:11434 / qwen3-coder:30b if env vars not set.
+ * Returns the primary Ollama-compatible connection config.
+ * Production: OLLAMA_BASE_URL must point to the cloud runtime endpoint.
+ * Dev: falls back to localhost:11434 only when OLLAMA_BASE_URL is unset.
  */
 export function getOllamaConfig(): { baseUrl: string; model: string } {
   return {
@@ -30,14 +33,14 @@ export function getOllamaConfig(): { baseUrl: string; model: string } {
  * Returns the Ollama model for a given task-complexity tier.
  *
  * Env vars:
- *   OLLAMA_MODEL_FAST    - small, fast model for classification tasks (~4B, fits in 6GB VRAM)
- *   OLLAMA_MODEL         - default model for structured extraction (~30B MoE)
- *   OLLAMA_MODEL_COMPLEX - large model for conversational/creative tasks (defaults to qwen3:30b)
+ *   OLLAMA_MODEL_FAST    - small, fast model for classification tasks
+ *   OLLAMA_MODEL         - default model for structured extraction
+ *   OLLAMA_MODEL_COMPLEX - large model for conversational/creative tasks
  *
- * Architecture rationale (RTX 3050, 6GB VRAM, 128GB RAM):
- *   fast    → qwen3:4b     - fits entirely in VRAM, 40-60 tok/s, for classification/intent parsing
- *   standard → qwen3-coder:30b - MoE (3.3B active), GPU+RAM split, 12-15 tok/s, structured JSON
- *   complex → qwen3:30b    - MoE (3.3B active), same speed, trained for prose/conversation
+ * Default models (can be overridden via env vars for the cloud runtime):
+ *   fast    → qwen3:4b
+ *   standard → qwen3-coder:30b
+ *   complex → qwen3:30b
  */
 export function getOllamaModel(tier: ModelTier = 'standard'): string {
   const defaultModel = process.env.OLLAMA_MODEL || 'qwen3-coder:30b'
@@ -53,7 +56,6 @@ export function getOllamaModel(tier: ModelTier = 'standard'): string {
 
 /**
  * Returns the right model for a given tier.
- * Only PC exists now (Pi is permanently retired).
  * Kept for API compatibility with callers that pass endpoint name.
  */
 export function getModelForEndpoint(_endpoint: 'pc', tier: ModelTier = 'standard'): string {

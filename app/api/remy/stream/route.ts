@@ -1,5 +1,5 @@
 ﻿// Remy - Streaming Chat API Route
-// PRIVACY: Processes chef messages with full business context - must stay local via Ollama.
+// Processes chef messages with full business context via cloud AI runtime.
 // Uses Server-Sent Events (SSE) to stream token-by-token responses.
 
 import { NextRequest } from 'next/server'
@@ -160,20 +160,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Pre-flight Ollama health check - verify the service is actually responding
+    // Check AI runtime availability via configured endpoint (cloud in production)
+    const { getOllamaConfig } = await import('@/lib/ai/providers')
     try {
-      const health = await fetch('http://localhost:11434/api/tags', {
-        signal: AbortSignal.timeout(3000),
+      const runtimeConfig = getOllamaConfig()
+      const health = await fetch(`${runtimeConfig.baseUrl}/api/tags`, {
+        signal: AbortSignal.timeout(5000),
       })
       if (!health.ok) {
         return sseErrorResponse(
-          'Ollama is not available. Please start Ollama to use this feature.',
+          'AI features are temporarily unavailable. Please try again in a few moments.',
           503
         )
       }
     } catch {
       return sseErrorResponse(
-        'Ollama is not available. Please start Ollama to use this feature.',
+        'AI features are temporarily unavailable. Please try again in a few moments.',
         503
       )
     }

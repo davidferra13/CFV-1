@@ -1,7 +1,7 @@
-// Ollama-backed AI Parser - PRIVATE DATA ONLY
-// Hard rule: private data (client PII, financials, allergies, messages) stays local.
-// No Gemini fallback. If Ollama is offline, OllamaOfflineError is thrown.
-// The UI layer catches OllamaOfflineError and shows a clear "start Ollama" message.
+// Ollama-compatible AI Parser - for structured data extraction.
+// Routes through the configured Ollama-compatible endpoint (cloud in production, local in dev).
+// No Gemini fallback. If the runtime is unavailable, OllamaOfflineError is thrown.
+// The UI layer catches OllamaOfflineError and shows a provider-agnostic unavailability message.
 
 'use server'
 
@@ -79,14 +79,14 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): 
 }
 
 /**
- * Privacy-first parsing using local Ollama model.
- * Mirrors parseWithAI signature - drop-in for sensitive operations.
+ * Structured parsing using an Ollama-compatible runtime endpoint.
+ * Mirrors parseWithAI signature - drop-in for structured extraction.
  *
  * Routing:
- *   OLLAMA_BASE_URL set + reachable → Ollama (data stays local)
+ *   OLLAMA_BASE_URL set + reachable → cloud or local endpoint depending on config
  *   OLLAMA_BASE_URL not set         → OllamaOfflineError (never Gemini)
- *   Ollama unreachable at runtime   → OllamaOfflineError (never Gemini)
- *   Ollama returns invalid output   → OllamaOfflineError (never Gemini)
+ *   Runtime unreachable             → OllamaOfflineError (never Gemini)
+ *   Runtime returns invalid output  → OllamaOfflineError (never Gemini)
  */
 export async function parseWithOllama<T>(
   systemPrompt: string,
@@ -233,7 +233,7 @@ export async function parseWithOllama<T>(
     })
     incrementAiMetric('ai.call.repair_attempted')
 
-    // Single repair pass via Ollama (still local - no privacy risk)
+    // Single repair pass via the same runtime endpoint
     try {
       const repairResponse = await withTimeout(
         ollama.chat({
