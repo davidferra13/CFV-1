@@ -14,7 +14,8 @@ export default function SocialLayout({ children }: { children: React.ReactNode }
             <div className="flex-1 pb-3">
               <h1 className="text-2xl font-bold text-stone-100">Content Planner</h1>
               <p className="text-sm text-stone-500 mt-0.5">
-                Build your year of content once | ChefFlow posts it automatically on every platform.
+                Build your content calendar. ChefFlow publishes to connected platforms based on what
+                each one supports.
               </p>
             </div>
           </div>

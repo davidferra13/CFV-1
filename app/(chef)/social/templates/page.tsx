@@ -15,8 +15,8 @@ export default async function SocialTemplatesPage() {
   const db: any = createServerClient()
 
   const { data: templates } = await db
-    .from('social_post_templates')
-    .select('id, name, caption_template, platform, category, created_at')
+    .from('social_templates')
+    .select('id, title, content, platform, template_type, created_at')
     .eq('chef_id', chef.entityId)
     .order('created_at', { ascending: false })
 
@@ -55,7 +55,7 @@ export default async function SocialTemplatesPage() {
             <Card key={template.id} className="p-4">
               <CardHeader className="p-0 mb-2">
                 <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-base">{template.name ?? 'Untitled'}</CardTitle>
+                  <CardTitle className="text-base">{template.title ?? 'Untitled'}</CardTitle>
                   {template.platform && (
                     <span className="text-xs text-stone-400 bg-stone-700 px-2 py-0.5 rounded-full capitalize">
                       {template.platform}
@@ -64,13 +64,15 @@ export default async function SocialTemplatesPage() {
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                {template.caption_template && (
+                {template.content && (
                   <p className="text-sm text-stone-400 line-clamp-3 whitespace-pre-line">
-                    {template.caption_template}
+                    {template.content}
                   </p>
                 )}
-                {template.category && (
-                  <p className="text-xs text-stone-500 mt-2 capitalize">{template.category}</p>
+                {template.template_type && (
+                  <p className="text-xs text-stone-500 mt-2 capitalize">
+                    {template.template_type.replace(/_/g, ' ')}
+                  </p>
                 )}
               </CardContent>
             </Card>

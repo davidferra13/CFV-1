@@ -16,7 +16,8 @@ export default async function SocialConnectionsPage({ searchParams }: Props) {
       <div>
         <h2 className="text-lg font-semibold text-stone-100">Platform Connections</h2>
         <p className="text-sm text-stone-500 mt-0.5">
-          Connect your social accounts once | ChefFlow handles all the posting automatically.
+          Connect your accounts. Each platform has different publishing capabilities - ChefFlow
+          shows you exactly what it can do for each one.
         </p>
       </div>
 

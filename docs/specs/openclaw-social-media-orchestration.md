@@ -1,6 +1,6 @@
 # Spec: OpenClaw-Assisted Social Orchestration
 
-> **Status:** ready
+> **Status:** verified
 > **Priority:** P1
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)

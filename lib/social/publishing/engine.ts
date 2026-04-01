@@ -12,6 +12,7 @@ import {
   recordPublishSuccess,
 } from '@/lib/social/oauth/token-store'
 import type { SocialPost, SocialPlatform } from '@/lib/social/types'
+import { PLATFORM_CAPABILITIES } from '@/lib/social/platform-policy'
 
 // ── Public result types used by adapters ─────────────────────────────────────
 
@@ -258,6 +259,19 @@ export async function runPublishingEngine(): Promise<EngineRun> {
     run.processed++
 
     for (const platform of pending) {
+      // Skip platforms that require manual posting - these are never attempted by the engine.
+      const policy = PLATFORM_CAPABILITIES[platform]
+      if (policy?.defaultMode === 'manual_handoff') {
+        run.skipped++
+        continue
+      }
+
+      // Skip platforms where media type is unsupported - these are policy violations, not failures.
+      if (policy && policy.unsupportedMediaTypes.includes(post.media_type)) {
+        run.skipped++
+        continue
+      }
+
       try {
         const result = await publishToPlatform(post, platform, tenantId)
 

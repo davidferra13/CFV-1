@@ -1,5 +1,41 @@
 export type SocialPostStatus = 'idea' | 'draft' | 'approved' | 'queued' | 'published' | 'archived'
 
+/**
+ * How ChefFlow will deliver a post to a given platform.
+ * - direct_publish: API posts directly to the live feed.
+ * - upload_as_draft: API uploads as a draft for manual review before publication.
+ * - manual_handoff: No safe API path; content is prepared for manual posting.
+ * - blocked: Platform connection missing, content type unsupported, or policy violation.
+ */
+export type SocialDeliveryMode = 'direct_publish' | 'upload_as_draft' | 'manual_handoff' | 'blocked'
+
+export type PlatformDeliveryAssessment = {
+  platform: SocialPlatform
+  mode: SocialDeliveryMode
+  /** Human-readable reason, shown in UI for manual_handoff or blocked. */
+  reason?: string
+  /** Specific things the user can fix to unlock a better delivery mode. */
+  blockers: string[]
+  /** Non-blocking notes (e.g. caption will be truncated). */
+  warnings: string[]
+}
+
+export type OpenClawSocialPackage = {
+  /** Unique ID from OpenClaw for traceability. */
+  provenance_id: string
+  platform_targets: SocialPlatform[]
+  media_type: SocialMediaType
+  caption_master: string
+  caption_overrides?: Partial<Record<SocialPlatform, string>>
+  hashtags?: string[]
+  cta?: string
+  pillar?: SocialPillar
+  campaign?: string
+  notes?: string
+  /** Publicly accessible URLs for media assets OpenClaw has already hosted. */
+  asset_urls?: string[]
+}
+
 export type SocialPillar =
   | 'recipe'
   | 'behind_scenes'
