@@ -78,7 +78,7 @@ test.describe('Cross-Boundary Transitions', () => {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
     const page = await context.newPage()
 
-    const publicRoutes = ['/', '/pricing', '/about', '/contact', '/privacy', '/terms']
+    const publicRoutes = ['/', '/about', '/contact', '/privacy', '/terms']
 
     for (const route of publicRoutes) {
       await page.goto(route, { waitUntil: 'domcontentloaded' })

@@ -184,6 +184,7 @@ export const standaloneTop: NavItem[] = [
     subMenu: [
       { href: '/culinary/recipes', label: 'Recipes' },
       { href: '/menus', label: 'Menus' },
+      { href: '/culinary/price-catalog', label: 'Food Catalog' },
       { href: '/culinary/costing', label: 'Costing' },
       { href: '/culinary/prep', label: 'Prep' },
     ],
@@ -875,7 +876,7 @@ export const navGroups: NavGroup[] = [
         label: 'Financial Hub',
         icon: DollarSign,
         children: [
-          { href: '/finance/overview/cash-flow', label: 'Cash Flow' },
+          { href: '/finance/overview/cash-flow', label: 'Cash Flow', hidden: true },
           { href: '/finance', label: 'Finance Home' },
           { href: '/finance/overview/outstanding-payments', label: 'Outstanding Payments' },
           { href: '/finance/overview', label: 'Overview' },
@@ -886,7 +887,7 @@ export const navGroups: NavGroup[] = [
         href: '/finance/forecast',
         label: 'Forecasting',
         icon: TrendingUp,
-        children: [{ href: '/finance/cash-flow', label: 'Cash Flow Forecast' }],
+        children: [{ href: '/finance/cash-flow', label: 'Cash Flow Forecast', hidden: true }],
       },
       {
         href: '/finance/invoices',
@@ -935,7 +936,7 @@ export const navGroups: NavGroup[] = [
         label: 'Payouts',
         icon: Landmark,
         children: [
-          { href: '/finance/bank-feed', label: 'Bank Feed' },
+          { href: '/finance/bank-feed', label: 'Bank Feed', hidden: true },
           { href: '/finance/payouts/manual-payments', label: 'Manual Payments' },
           { href: '/finance/payouts/reconciliation', label: 'Reconciliation' },
           { href: '/finance/payouts/stripe-payouts', label: 'Stripe Payouts' },

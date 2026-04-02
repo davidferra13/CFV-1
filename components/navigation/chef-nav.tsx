@@ -24,6 +24,7 @@ import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
 import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
 import { ActivityDot } from '@/components/activity/activity-dot'
+import { SystemHeartbeat } from '@/components/navigation/system-heartbeat'
 import { useNavigationPending } from '@/components/navigation/navigation-pending-provider'
 import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
@@ -859,6 +860,7 @@ export function ChefSidebar({
         {!collapsed ? (
           <div className="flex items-center flex-shrink-0">
             {isAdmin && <OllamaStatusBadge />}
+            <SystemHeartbeat />
             <OfflineNavIndicator />
             <ActivityDot />
             <GlobalSearch userId={userId} tenantId={tenantId} />
@@ -919,6 +921,7 @@ export function ChefSidebar({
                 <Bot className="w-[18px] h-[18px]" />
               </button>
             )}
+            <SystemHeartbeat collapsed />
             <OfflineNavIndicator />
             <ActivityDot collapsed />
 

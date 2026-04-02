@@ -33,6 +33,8 @@ import { isAdmin } from '@/lib/auth/admin'
 import { CoverageHealthWidget } from '@/components/pricing/coverage-health-widget'
 import { DinnerCirclesSection } from './_sections/dinner-circles-cards'
 import { DashboardSecondaryInsights } from '@/components/dashboard/dashboard-secondary-insights'
+import { SmartSuggestions, SmartSuggestionsSkeleton } from './_sections/smart-suggestions'
+import { MetricsStrip } from './_sections/metrics-strip'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -401,6 +403,25 @@ export default async function ChefDashboard() {
           </Suspense>
         </WidgetErrorBoundary>
       </div>
+
+      {/* ============================================ */}
+      {/* SMART SUGGESTIONS - actionable data gaps     */}
+      {/* ============================================ */}
+      <section>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+          <div className="section-label">Suggestions</div>
+          <Suspense fallback={null}>
+            <MetricsStrip />
+          </Suspense>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <WidgetErrorBoundary name="Smart Suggestions" compact>
+            <Suspense fallback={<SmartSuggestionsSkeleton />}>
+              <SmartSuggestions />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </div>
+      </section>
 
       {/* ============================================ */}
       {/* SCHEDULE + OPERATIONS                        */}
