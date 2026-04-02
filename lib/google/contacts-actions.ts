@@ -34,7 +34,7 @@ export type ContactsImportPreviewResult =
   | ContactsImportPreviewError
 
 /** Normalize a phone number to digits-only for dedup comparison. */
-export function normalizePhone(phone: string | null | undefined): string | null {
+function normalizePhone(phone: string | null | undefined): string | null {
   if (!phone) return null
   const digits = phone.replace(/\D/g, '')
   return digits.length >= 7 ? digits : null
