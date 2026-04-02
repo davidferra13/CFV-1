@@ -7,11 +7,11 @@
 
 ## Timeline
 
-| Event         | Date                 | Agent/Session   | Commit |
-| ------------- | -------------------- | --------------- | ------ |
-| Created       | 2026-04-02 13:45 EDT | Codex (planner) |        |
-| Status: ready | 2026-04-02 13:45 EDT | Codex (planner) |        |
-| Refined       | 2026-04-02 14:01 EDT | Codex (planner) |        |
+| Event         | Date                 | Agent/Session   | Commit     |
+| ------------- | -------------------- | --------------- | ---------- |
+| Created       | 2026-04-02 13:45 EDT | Codex (planner) | `0faaab45` |
+| Status: ready | 2026-04-02 13:45 EDT | Codex (planner) | `0faaab45` |
+| Refined       | 2026-04-02 14:01 EDT | Codex (planner) | `7ce07bd0` |
 
 ---
 
@@ -284,6 +284,8 @@ The only interactions in scope are builder interactions with repo files:
 
 ## Notes for Builder Agent
 
+- Queue placement: this spec is `ready`, `P0`, and `Depends on: none`, so it is eligible for immediate builder claim once a builder is operating inside a clean, buildable execution context.
+- Builder scope is narrow: align only `docs/system-architecture.md`, `docs/feature-classification-rules.md`, and `types/system.ts` to this spec's canonical contract. Do not expand into runtime enforcement, route moves, or auth refactors in the same pass.
 - Do not classify by route alone. Public token delivery and chef preview pages prove that route family is only one signal.
 - Do not treat current leakage as architecture. The point is to name the correct owner even when the current shell is wrong.
 - Do not invent a sixth canonical surface for staff. Staff is a restricted role inside chef operations.

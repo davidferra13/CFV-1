@@ -864,3 +864,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending
 - Build state on departure: green (unchanged from `docs/build-state.md`; spec-only refinement, no build actions)
 - Notes: Verified the existing draft outputs against the ready planner spec. `docs/system-architecture.md` and `docs/feature-classification-rules.md` are materially aligned. The remaining spec-level risk was that the draft `types/system.ts` shape does not exactly match the canonical contract because it exports `FeatureExposure` instead of `Exposure` and adds extra helpers. Tightened the spec to make that correction mandatory for the next builder.
+
+## 2026-04-02 14:14 EDT
+
+- Agent: Planner (Codex)
+- Task: Final archive-readiness pass for the system surface / role classification foundation spec
+- Status: completed
+- Files touched: docs/specs/system-surface-role-classification-foundation.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: green (unchanged from `docs/build-state.md`; spec-only polish, no build actions)
+- Notes: Added missing commit hashes to the spec timeline and made builder queue eligibility/scope explicit in the handoff notes. This pass did not change runtime requirements or broaden scope. It only tightened documentation completeness so the thread can be archived cleanly.
