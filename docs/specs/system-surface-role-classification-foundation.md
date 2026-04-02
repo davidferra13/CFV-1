@@ -11,6 +11,7 @@
 | ------------- | -------------------- | --------------- | ------ |
 | Created       | 2026-04-02 13:45 EDT | Codex (planner) |        |
 | Status: ready | 2026-04-02 13:45 EDT | Codex (planner) |        |
+| Refined       | 2026-04-02 14:01 EDT | Codex (planner) |        |
 
 ---
 
@@ -198,6 +199,10 @@ It must include:
 
 It must export the unions and interface exactly as above, with `Exposure` separated out as its own type.
 
+Current-repo gap to correct:
+
+- The existing draft file at `types/system.ts` is close, but not fully aligned. It currently exports `FeatureExposure` instead of `Exposure` and includes extra classifier helper types/constants. The builder must normalize the file to the canonical contract required by this spec instead of treating the current draft shape as authoritative.
+
 ---
 
 ## Server Actions
@@ -328,6 +333,7 @@ The only interactions in scope are builder interactions with repo files:
 - Without this spec, `currentSurface` versus `correctSurface` is underspecified. This spec resolves that explicitly by making `currentSurface` about present delivery and `correctSurface` about architectural owner.
 - Without this spec, staff could be modeled either as a separate surface or as a chef sub-role. This spec resolves it: staff is a role only, not a canonical surface.
 - Without this spec, builders could treat "partner features" as one blob. This spec requires separating chef-side partner management from partner self-service.
+- Without this spec, a builder could preserve the existing draft `types/system.ts` shape even though it does not exactly match the required export contract. This spec resolves that by making the canonical type names and interface explicit.
 - The only intentionally flexible area is the exact prose style of the two documents. The structure, required sections, and examples are not flexible.
 
 ### 6. What dependencies or prerequisites exist?
@@ -376,6 +382,7 @@ The evidence inputs for that flow are verified in the files above, especially `m
 - `docs/feature-classification-rules.md` includes deterministic rules for surface, roles, and exposure plus misplacement, duplication, and split detection.
 - The classification-rules doc includes worked examples for token-based client, staff, and partner flows plus chef preview and admin leakage.
 - `types/system.ts` exports `Surface`, `Role`, `Exposure`, and `FeaturePlacement` with the required unions and interface shape.
+- `types/system.ts` does not leave the older `FeatureExposure` name as the canonical exposure type.
 - `npx tsc --noEmit --skipLibCheck` passes after adding the type file.
 
 ### 11. What are the non-negotiable constraints?
@@ -411,6 +418,7 @@ The requested outputs are two docs and one shared type file. Adding runtime enfo
 - The runtime product would still have the same leakage it has today. Admin would still render through chef shell, middleware would still not explicitly gate admin route paths, and request auth context would still only carry chef/client roles: `app/(admin)/layout.tsx:1-47`; `middleware.ts:131-140`; `lib/auth/request-auth-context.ts:21-27,71-90`.
 - Terminology drift in the live UI would still exist because this spec only documents it; it does not rename runtime copy: `components/navigation/nav-config.tsx:193-202,290,1593-1634,1932`.
 - The inventory would still need to do the actual feature-by-feature placement work. This spec gives it the classifier, not the completed inventory: `docs/specs/comprehensive-domain-inventory-phase-1.md:21-28,76-81`.
+- If a builder only glanced at the current draft artifacts instead of reading this spec carefully, they could wrongly conclude that the extra helper exports in `types/system.ts` are part of the required canonical contract. This spec allows those helpers only if the canonical exports still match exactly.
 
 ## Final Check
 

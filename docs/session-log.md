@@ -854,3 +854,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending
 - Build state on departure: green (unchanged from `docs/build-state.md`; spec-only session, no build actions)
 - Notes: Wrote a ready spec that permanently captures developer signal and translates it into architecture outputs for `docs/system-architecture.md`, `docs/feature-classification-rules.md`, and `types/system.ts`. Planner validation cites auth, layout, navigation, token-route, and schema evidence. Key builder warnings locked into the spec: do not classify by route alone, do not invent a staff surface, do not treat admin-in-chef-shell leakage as correct architecture, and keep this work separate from the ongoing inventory.
+
+## 2026-04-02 14:01 EDT
+
+- Agent: Planner (Codex)
+- Task: Spec refinement pass to eliminate remaining ambiguity in the system surface / role classification foundation
+- Status: completed
+- Files touched: docs/specs/system-surface-role-classification-foundation.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: green (unchanged from `docs/build-state.md`; spec-only refinement, no build actions)
+- Notes: Verified the existing draft outputs against the ready planner spec. `docs/system-architecture.md` and `docs/feature-classification-rules.md` are materially aligned. The remaining spec-level risk was that the draft `types/system.ts` shape does not exactly match the canonical contract because it exports `FeatureExposure` instead of `Exposure` and adds extra helpers. Tightened the spec to make that correction mandatory for the next builder.
