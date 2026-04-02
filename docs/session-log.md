@@ -826,3 +826,31 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: app/globals.css (stagger-grid utility), app/(chef)/dashboard/page.tsx, app/(chef)/recipes/recipes-client.tsx, app/(chef)/menus/menus-client-wrapper.tsx, app/(chef)/events/page.tsx, app/(chef)/inquiries/page.tsx, app/(chef)/staff/page.tsx, app/(chef)/clients/page.tsx, app/(chef)/culinary/page.tsx, app/(chef)/finance/page.tsx, components/dashboard/command-center.tsx
 - Build state on departure: green (tsc clean, next build clean)
 - Notes: Added .stagger-grid CSS utility (auto nth-child delays up to 12 items). Applied to 13 grid containers across dashboard, recipes, menus, events, clients, culinary, finance, command center. Upgraded 5 plain-text empty states to use branded EmptyState component with Remy mascot (recipes, menus, events, inquiries, staff). Global page transitions already existed via ChefMainContent animate-fade-slide-up.
+
+## 2026-04-02 13:36 EDT
+
+- Agent: Planner (Codex)
+- Task: System surface / role classification planning pass for ChefFlow OS, intended to complement the separate domain inventory work with enforceable architecture, placement rules, and builder validation
+- Status: started
+- Build state on arrival: green (`docs/build-state.md` last green build 4743f418; docs-focused planning session)
+- Files in focus: docs/app-complete-audit.md, docs/specs/\_TEMPLATE.md, docs/specs/comprehensive-domain-inventory-phase-1.md, middleware.ts, lib/auth/\*, app route-group layouts and token/public entry routes, navigation config, relevant schema/migration files for role storage
+- Notes: Goal is to define the correct system surfaces, role boundaries, feature-placement rules, and current misalignment risks without redoing the inventory agent's domain listing work.
+
+## 2026-04-02 13:40 EST
+
+- Agent: Planner (Codex)
+- Task: Spec-only pass for chef catalog store-selection truthfulness and image-delivery contract
+- Status: completed
+- Files touched: docs/specs/catalog-store-selection-and-image-delivery-contract.md (new), docs/session-log.md
+- Build state on departure: green (unchanged from `docs/build-state.md`; no code changes, no build actions)
+- Notes: Wrote a narrow ready spec for `/culinary/price-catalog`. Verified from code that `image_url` already maps into `CatalogItemV2.imageUrl`, `ImageWithFallback` already proxies remote images, and the remaining correctness bug is the store picker sending unstable raw source IDs for visually merged store cards. Direct Pi API checks showed `market-basket-flipp` and `stop-and-shop-new-england` return zero items while `Market Basket` and `Stop & Shop` name filters return populated results. Scope explicitly excludes pipeline rewrites and broader catalog redesign.
+
+## 2026-04-02 13:49 EDT
+
+- Agent: Planner (Codex)
+- Task: System surface / role classification foundation spec, intended to define canonical surfaces, roles, placement rules, and builder validation without redoing the separate inventory pass
+- Status: completed
+- Files touched: docs/specs/system-surface-role-classification-foundation.md (new), docs/session-log.md
+- Commits: pending
+- Build state on departure: green (unchanged from `docs/build-state.md`; spec-only session, no build actions)
+- Notes: Wrote a ready spec that permanently captures developer signal and translates it into architecture outputs for `docs/system-architecture.md`, `docs/feature-classification-rules.md`, and `types/system.ts`. Planner validation cites auth, layout, navigation, token-route, and schema evidence. Key builder warnings locked into the spec: do not classify by route alone, do not invent a staff surface, do not treat admin-in-chef-shell leakage as correct architecture, and keep this work separate from the ongoing inventory.
