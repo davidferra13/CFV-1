@@ -270,8 +270,8 @@ export default async function AdminOverviewPage() {
             <QuickTile
               href="/admin/openclaw"
               icon={Cpu}
-              label="OpenClaw"
-              description="Internal map of OpenClaw usage across the website lifecycle"
+              label="Data Engine"
+              description="Internal map of data engine usage across the website lifecycle"
             />
           </div>
         </div>

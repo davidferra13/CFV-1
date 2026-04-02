@@ -71,10 +71,10 @@ export function OpenClawUsagePage() {
     <div className="space-y-10 max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-stone-100">OpenClaw</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Data Engine</h1>
         <p className="text-sm text-stone-400 mt-1">
-          Internal map of what OpenClaw does for this website, what it will do next, and what it
-          could do later.
+          Internal map of what the data engine does for this website, what it will do next, and what
+          it could do later.
         </p>
       </div>
 
@@ -191,7 +191,7 @@ export function OpenClawUsagePage() {
         <div className="rounded-xl border border-stone-700 bg-stone-950 p-5 space-y-2">
           <ul className="space-y-1.5">
             {[
-              'This page does not run OpenClaw or trigger any Raspberry Pi operations.',
+              'This page does not run the data engine or trigger any Raspberry Pi operations.',
               'This page does not edit Pi configuration, cron jobs, or sync settings.',
               'This page does not replace technical documentation or spec files.',
               'This page does not expose private internals publicly.',

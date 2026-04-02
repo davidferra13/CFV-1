@@ -55,7 +55,7 @@ export function StoreAisleBrowser({
   const [sort, setSort] = useState<string>('name')
   const [region, setRegion] = useState(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('openclaw-region') || 'haverhill-ma'
+      return localStorage.getItem('cf-region') || 'haverhill-ma'
     }
     return 'haverhill-ma'
   })
@@ -156,7 +156,7 @@ export function StoreAisleBrowser({
   const handleRegionChange = (newRegion: string) => {
     setRegion(newRegion)
     if (typeof window !== 'undefined') {
-      localStorage.setItem('openclaw-region', newRegion)
+      localStorage.setItem('cf-region', newRegion)
     }
     setSelectedStore('')
   }

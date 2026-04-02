@@ -174,8 +174,7 @@ export function OpenClawLeadsBrowser({ initialLeads, initialTotal }: Props) {
       <Card>
         <CardContent className="py-12 text-center">
           <p className="text-stone-400">
-            No OpenClaw leads found. Leads appear after the lead-engine cartridge runs its first
-            scrape on the Pi.
+            No leads found. Leads appear after the lead engine runs its first scan.
           </p>
         </CardContent>
       </Card>

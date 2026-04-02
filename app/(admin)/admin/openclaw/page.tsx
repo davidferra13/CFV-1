@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { OpenClawUsagePage } from '@/components/admin/openclaw-usage-page'
 
 export const metadata = {
-  title: 'OpenClaw | Admin',
+  title: 'Data Engine | Admin',
 }
 
 export default async function OpenClawPage() {

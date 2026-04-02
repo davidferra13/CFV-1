@@ -40,7 +40,7 @@ export function PriceCatalogClient() {
       if (tab === 'overview' || tab === 'sync') {
         const s = await getOpenClawStats()
         setStats(s)
-        if (!s) setError('Could not reach OpenClaw Pi. Is it online?')
+        if (!s) setError('Could not reach the price engine. Is it online?')
       }
       if (tab === 'prices') {
         const p = await getOpenClawPrices({
@@ -98,8 +98,8 @@ export function PriceCatalogClient() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-2">Price Catalog</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        OpenClaw Price Intelligence from the Raspberry Pi. View scraped prices, manage sources, and
-        sync to ChefFlow.
+        Price intelligence from the data engine. View scraped prices, manage sources, and sync to
+        ChefFlow.
       </p>
 
       {/* Tabs */}
@@ -149,8 +149,8 @@ export function PriceCatalogClient() {
             </div>
           ) : (
             <div className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-600 rounded-lg p-4">
-              Cannot reach OpenClaw Pi at {process.env.OPENCLAW_API_URL || '10.0.0.177:8081'}. Check
-              that the Pi is on and sync-api is running.
+              Cannot reach the price engine at {process.env.OPENCLAW_API_URL || '10.0.0.177:8081'}.
+              Check that the Pi is on and sync-api is running.
             </div>
           )}
         </div>
@@ -367,7 +367,7 @@ export function PriceCatalogClient() {
           <div className="border rounded-lg p-6 mb-4">
             <h2 className="text-lg font-semibold mb-2">Sync Prices to ChefFlow</h2>
             <p className="text-sm text-muted-foreground mb-4">
-              Match OpenClaw ingredient prices to your ChefFlow ingredients and update{' '}
+              Match engine ingredient prices to your ChefFlow ingredients and update{' '}
               <code>last_price_cents</code>. This triggers automatic recipe and menu cost
               recalculation.
             </p>

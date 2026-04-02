@@ -187,7 +187,9 @@ export function CatalogTab() {
           setItems(result.items)
           setTotal(result.total)
         } catch {
-          setError('Cannot reach OpenClaw Pi. Check that the Pi is online and sync-api is running.')
+          setError(
+            'Cannot reach the price engine. Check that the Pi is online and sync-api is running.'
+          )
         }
       })
     },

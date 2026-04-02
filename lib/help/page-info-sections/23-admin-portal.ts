@@ -11,16 +11,16 @@ export const ADMIN_PORTAL_PAGE_INFO: Record<string, PageInfoEntry> = {
   },
 
   '/admin/openclaw': {
-    title: 'OpenClaw',
+    title: 'Data Engine',
     description:
-      'Founder-only internal map of OpenClaw usage across the website lifecycle. Documents current uses, planned next stages, and potential future capabilities.',
+      'Founder-only internal map of data engine usage across the website lifecycle. Documents current uses, planned next stages, and potential future capabilities.',
     features: [
       '13-stage ordered lifecycle (research through documentation)',
       'Status badges: Used, Active, Planned, Potential',
       'Category distinction callout (prospecting vs testing vs outreach)',
       'Status summary grid: Already Used / Active+Planned / Potential',
       'Potential future uses section',
-      'Boundaries: this page does not run OpenClaw or modify Pi config',
+      'Boundaries: this page does not run the engine or modify Pi config',
     ],
   },
 

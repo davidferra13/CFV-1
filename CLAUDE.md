@@ -60,6 +60,42 @@ Em dashes are the #1 tell that text was written by AI. Using them destroys credi
 
 **This is not a style preference. This is a hard rule. Em dashes = instant credibility loss.**
 
+### NO "OpenClaw" IN PUBLIC SURFACES (ABSOLUTE RULE - ZERO TOLERANCE)
+
+**"OpenClaw" is forbidden from all user-facing surfaces.** No user (chef, client, or visitor) should ever see or infer this term. Internal tools stay internal.
+
+**Banned surfaces:**
+
+- UI text, labels, headings, descriptions, tooltips
+- Error messages, toast notifications, empty states
+- Page titles and metadata
+- API responses surfaced to frontend
+- localStorage keys (use `cf-` prefix instead)
+- Embedded content, emails, Remy responses
+
+**What to use instead:**
+
+- Nothing (preferred; just remove the reference)
+- "system", "engine", "platform", "price engine", "data engine" (when a noun is needed)
+
+**What is allowed:**
+
+- Internal variable names, type names, function names, import paths (code-only, never rendered)
+- Comments and docstrings (developer-only)
+- File names in `lib/openclaw/`, `scripts/openclaw-*`, `.openclaw-deploy/`, `.openclaw-build/`
+- Internal docs (`docs/specs/`, `docs/research/`)
+- Database schema names (`openclaw.*` tables)
+- CLAUDE.md itself
+
+**Enforcement:**
+
+- When writing new UI text, error messages, or user-visible strings: never include "OpenClaw"
+- When editing existing files: replace any user-visible "OpenClaw" you encounter
+- When adding new features that use data from the engine: present outcomes, not tooling
+- This applies to admin pages too (browser tab titles, headings, descriptions)
+
+**This is a product boundary, not a cosmetic change.**
+
 ### Brand Names - What Things Are Currently Called
 
 Different names are used in different places. This is intentional - don't "fix" one to match another.
