@@ -134,6 +134,14 @@ export async function POST(request: NextRequest) {
     const tenantId = chef.id as string
     const chefName = (chef.business_name as string | null) || 'Your Chef'
 
+    // Parse dietary restrictions early (needed for client + event + inquiry)
+    const allergiesList = data.allergies_food_restrictions
+      ? data.allergies_food_restrictions
+          .split(/[\n,]/)
+          .map((item: string) => item.trim())
+          .filter(Boolean)
+      : null
+
     // 2. Create or find existing client (idempotent by email)
     const clientEmail = data.email.toLowerCase().trim()
     const clientName = data.full_name.trim()
@@ -160,6 +168,8 @@ export async function POST(request: NextRequest) {
           phone: data.phone?.trim() || null,
           referral_source: 'website',
           address: data.address?.trim() || null,
+          dietary_restrictions: allergiesList ?? [],
+          allergies: allergiesList ?? [],
         })
         .select('id')
         .single()
@@ -207,13 +217,7 @@ export async function POST(request: NextRequest) {
     const budgetRange = data.budget_range ?? null
     const budgetKnown = budgetMode === 'exact' || budgetMode === 'range'
 
-    // Parse dietary restrictions
-    const allergiesList = data.allergies_food_restrictions
-      ? data.allergies_food_restrictions
-          .split(/[\n,]/)
-          .map((item) => item.trim())
-          .filter(Boolean)
-      : null
+    // allergiesList already parsed above (before client creation)
 
     // 4. Create inquiry
     const { data: inquiry, error: inquiryError } = await db
@@ -277,6 +281,8 @@ export async function POST(request: NextRequest) {
           occasion: data.occasion.trim(),
           quoted_price_cents: budgetCents,
           special_requests: sourceMessage || null,
+          dietary_restrictions: allergiesList ?? [],
+          allergies: allergiesList ?? [],
         })
         .select('id')
         .single()

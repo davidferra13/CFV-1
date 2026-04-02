@@ -772,3 +772,48 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Status: started
 - Build state on arrival: green (efeecd67)
 - Notes: Builder agent may still be active on another session. Creating QA spec and test infrastructure while waiting for that agent to complete. Developer explicitly said: no external testers, Claude is the QA team, Pi available for OpenClaw tasks. Goal: test every input/output on Chef portal, then Client and Public perspectives.
+
+## 2026-04-02 ~00:00 EST
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Phase shift audit. Full system comprehension audit, dead zone detection, redundancy flags, gap-based survey generation, market research on how chefs solve problems today.
+- Status: completed
+- Files touched: docs/research/phase-shift-system-audit-and-validation.md (new), docs/research/survey-food-operator.md (new), docs/research/survey-client.md (new)
+- Build state on departure: green (efeecd67, research-only session, no code changes)
+- Notes: System has 490+ pages (not ~300), 301 API routes (not ~1,000). Found 4 dead zones, 6+ redundancy areas, 14 built-but-unverified specs. Anti-clutter rule established: no new features without validated gaps. Two surveys ready for distribution: 28-question operator survey, 22-question client survey. Each question maps to a specific assumption ChefFlow makes. Next step: distribute surveys, batch-verify 14 built specs, consolidate redundant pages.
+
+## 2026-04-02 ~01:30 EST
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Chef OS Sanity Check (31-question pass/fail validation) + deep research on how food operators deal with what ChefFlow solves
+- Status: completed
+- Files touched: docs/research/chef-os-sanity-check.md (new), docs/research/how-food-operators-deal-with-what-we-solve.md (new)
+- Build state on departure: green (efeecd67, research-only session, no code changes)
+- Notes: Sanity check results: 28/31 pass, 1 fail (ingredient pricing coverage), 2 partial (team coordination, background operation visibility). Single biggest risk: incomplete ingredient pricing leads to inaccurate food cost calculations. Operator research mapped real 7-stage workflow against ChefFlow features. Key findings: 15-field inquiry form may be too long (operators collect 6-8 on first contact), Stripe-only payment adds friction (operators use Venmo/Zelle/cash), quote-to-event should auto-create, receipt quick-capture is a real unmet need.
+
+## 2026-04-02 ~02:30 EST
+
+- Agent: Planner (Claude Opus 4.6)
+- Task: Vendor Personalization Layer spec - unified vendor/store filtering for catalog
+- Status: completed
+- Files touched: docs/specs/vendor-personalization-layer.md (new), docs/session-log.md
+- Build state on departure: green (efeecd67, spec-only session, no code changes)
+- Notes: Deep inspection revealed 90% of the DB infrastructure already exists (vendors, vendor_preferred_ingredients, chef_preferred_stores, store_item_assignments, vendor_price_entries, ingredient_best_vendor_price view). Zero new migrations needed. Spec is a UI/integration layer: merge vendors+stores into unified source picker, auto-filter catalog on load, show per-vendor pricing, add quick-assign. Catalog browser is 56KB - builder must read it thoroughly. Ready for builder queue.
+
+## 2026-04-02 ~03:30 EST
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Cross-system continuity audit - traced 5 integration chains through actual code
+- Status: completed
+- Files touched: docs/research/cross-system-continuity-audit.md (new), docs/specs/vendor-personalization-layer.md (created earlier), docs/session-log.md
+- Build state on departure: green (efeecd67, research-only session, no code changes)
+- Notes: 5 chains traced: (1) Pricing<->Menu<->Client - recipe costing ignores 10-tier resolver, uses stale column; menu edits don't flag events. (2) Vendor<->Catalog - vendor prices are reference-only, never feed cost chain; store preference is shopping org not catalog filtering. (3) Inquiry->Event->Execution - 64% field propagation; CRITICAL: dietary restrictions not copied to event (safety hole). (4) Feedback loop - only receipts->pricing connected; AAR data, profitability, recipe feedback all dead-end. (5) System awareness - strong priority queue, but no escalation, no progress aggregation, limited stale detection. 16 break points documented. Vendor personalization spec needs revision to include cost propagation. C1 (allergen safety) should be fixed immediately.
+
+## 2026-04-02 ~04:00 EST
+
+- Agent: Planner + Builder (Claude Opus 4.6)
+- Task: C1 safety fix + vendor spec revision + cost propagation wiring spec
+- Status: completed
+- Files touched: app/api/embed/inquiry/route.ts (C1 fix), docs/specs/vendor-personalization-layer.md (revised), docs/specs/cost-propagation-wiring.md (new), docs/session-log.md
+- Build state on departure: green (tsc clean after C1 fix)
+- Notes: C1 fixed: inquiry dietary restrictions now copied to both event AND new client records. allergiesList parsing moved before client creation. Vendor spec revised to include cost propagation (vendor prices as Tier 1.5 in resolvePrice, propagatePriceChange after vendor assignment). New P0 wiring spec covers C2 (resolvePrice in recipe costing), C3 (event flagging on menu edits), M1 (cache invalidation), H1 (profitability-aware quotes). Builder queue: cost-propagation-wiring (P0) then vendor-personalization-layer (P1).
