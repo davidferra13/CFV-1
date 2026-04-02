@@ -12,6 +12,7 @@
 | Created       | 2026-04-02 13:45 EDT | Codex (planner) | `0faaab45` |
 | Status: ready | 2026-04-02 13:45 EDT | Codex (planner) | `0faaab45` |
 | Refined       | 2026-04-02 14:01 EDT | Codex (planner) | `7ce07bd0` |
+| Research pass | 2026-04-02 14:27 EDT | Codex (planner) | pending    |
 
 ---
 
@@ -33,6 +34,8 @@ The target shape is ChefFlow OS with Public Surface, Chef Portal, Client Portal,
 
 Beyond the initial structural ask, there is a broader concern that the product has grown beyond its default setup and may now be inconsistent or structurally dishonest. The architecture needs to leave room for checking whether terminology is coherent, whether relationships and dependencies are clearly established, whether hidden or silent failures exist, whether the current organization is still correct for the system's scale, and whether the most valuable next step is polish, debugging, consolidation, or expansion.
 
+The structure work must also be grounded in reality, not just source code. Do thorough, accurate research using multiple methods and sources on how developers currently handle this class of system and how chefs currently handle the operating workflow ChefFlow is trying to unify. Cross-check the findings, identify real workflows, where they break, and what is missing, then use those insights to improve the planning work directly.
+
 The planning process itself matters. Read the code thoroughly, not just a few files. Log the session. Produce a plain-English current-state checkpoint before the spec. Capture the developer's words permanently in the spec. Answer every planner-gate validation question with file paths and line numbers. Tell the next builder what they would get wrong if they guessed. Do not anchor this work around excluded hosting-vendor assumptions that are not part of the product direction.
 
 ### Developer Intent
@@ -40,6 +43,7 @@ The planning process itself matters. Read the code thoroughly, not just a few fi
 - **Core goal:** create the canonical architecture and classification foundation that the separate inventory effort will plug into, so ChefFlow can be understood and governed as one coherent operating system.
 - **Key constraints:** do not redo inventory work; do not split ChefFlow into fake separate apps; do not collapse staff into chef or partner into chef; do not let route folders alone decide ownership; preserve developer reasoning permanently inside the spec.
 - **Motivation:** the product has grown into multiple overlapping shells, token flows, roles, and naming systems. Without a hard structural model, builders will keep classifying by convenience, folder name, or existing leakage instead of by correct ownership and trust boundary.
+- **Research requirement:** validate the architecture against real current developer and chef workflows, not just internal assumptions. The model should reflect how multi-surface systems are actually separated and how chefs actually move work from intake through execution and close-out.
 - **Success from the developer's perspective:** every incoming feature can be mapped to `currentSurface`, `correctSurface`, `roles`, and `exposure`; misplacements become obvious; the inventory agent has a stable classifier; and the builder has enough reasoning to implement the docs and shared types without inventing policy.
 
 ---
@@ -52,7 +56,7 @@ This spec creates ChefFlow's canonical surface and role model. It tells the next
 
 ## Why It Matters
 
-ChefFlow already has multiple route groups, shells, token-based entry points, and role-specific behaviors, but the governing model is implicit and inconsistent. Without a canonical classifier, the inventory will become a list instead of a system, and future builders will keep reinforcing the current leakage instead of correcting it.
+ChefFlow already has multiple route groups, shells, token-based entry points, and role-specific behaviors, but the governing model is implicit and inconsistent. Without a canonical classifier, the inventory will become a list instead of a system, and future builders will keep reinforcing the current leakage instead of correcting it. The risk gets worse if the classifier is derived only from code shape. Real developer and chef workflows show that delivery paths, actor ownership, and trust boundaries routinely diverge.
 
 ---
 
@@ -126,6 +130,9 @@ The builder must ground the docs in these verified source files:
 
 - `docs/app-complete-audit.md:63-69,532-564,567-610` for existing staff, client, and pipeline surface breadth.
 - `docs/specs/comprehensive-domain-inventory-phase-1.md:21-28,78-80,106-116` for the companion inventory scope and the explicit "list first, classify later" boundary.
+- `docs/research/how-food-operators-deal-with-what-we-solve.md:9-18,22-29,44-95,97-167,169-225` for the seven-stage operator lifecycle, progressive intake reality, and where operator workflows break today.
+- `docs/research/directory-operator-and-developer-workflows-2026-04-02.md:9-18,72-129,131-172` for cross-checked developer/operator patterns around central source of truth, delegated management, and outward delivery.
+- `docs/research/developer-and-chef-workflow-research-for-surface-classification-2026-04-02.md:7-29,33-77,79-137,139-186,188-221` for the cross-checked research synthesis that ties current code structure to current developer and chef workflow reality.
 - `middleware.ts:20-27,63-140` for current redirect and surface-gating behavior.
 - `lib/auth/route-policy.ts:98-107,131-141,162-229` for protected and public route families including admin, partner-report, and staff portal paths.
 - `lib/auth/get-user.ts:15-33,78-113,173-258,267-272` for role resolution and the difference between chef/client and partner/staff handling.
@@ -136,6 +143,23 @@ The builder must ground the docs in these verified source files:
 - `app/client/[token]/page.tsx:1-31`, `app/(public)/partner-report/[token]/page.tsx:1-45`, `app/(public)/staff-portal/[id]/page.tsx:15-75`, `app/(public)/proposal/[token]/page.tsx:37-58`, `app/intake/[token]/page.tsx:1-68`, `app/(chef)/settings/client-preview/page.tsx:1-27,103-120`, and `app/(partner)/partner/dashboard/page.tsx:1-5,49-80` for public-delivered but non-public-owned experiences.
 - `lib/client-portal/actions.ts:3-16,88-121,146-220`, `lib/staff/staff-event-portal-actions.ts:1-4,75-158,246-257`, and `lib/partners/portal-actions.ts:3-7,79-118,118-176,207-220` for role behavior and data exposure constraints.
 - `database/migrations/20260215000001_layer_1_foundation.sql:157-172` plus `lib/db/schema/schema.ts:469-485,2033-2060,17430-17495,22300-22318,22482-22625` for role and entity storage.
+
+---
+
+## Research-Backed Workflow Constraints
+
+The builder must preserve these workflow realities in the output documents:
+
+- One named business workflow can span multiple surfaces. Discovery, drafting, approval, execution, and reporting are often owned by different actors.
+- Public should generally own discovery and minimal first-contact intake, not the full long-lived client or partner relationship.
+- Chef should own drafting, planning, costing, execution, and internal management, even when previews or temporary links exist elsewhere.
+- Client should own review, approval, payment, and ongoing customer visibility, even when access starts through email or token links.
+- Staff should remain a constrained role inside chef operations. Separate staff routes and briefings are delivery lanes, not proof of a sixth canonical surface.
+- Partner should remain a scoped external-collaboration surface and must not inherit chef CRM, staff operations, or internal mission-control powers.
+- Admin should be treated as a true internal control plane. Current admin-in-chef-shell leakage is an implementation smell, not a classification rule.
+- Invite or token delivery changes exposure and sometimes `currentSurface`. It does not automatically change `correctSurface`.
+
+These constraints are supported by both current repo evidence and the research synthesis in `docs/research/developer-and-chef-workflow-research-for-surface-classification-2026-04-02.md`.
 
 ---
 
@@ -169,6 +193,7 @@ It must include:
    - auth-context mismatch where middleware context only carries chef/client
    - terminology drift such as Finance vs Money vs Financials and My Profile vs Network Profile
 6. A "boundary rules" section explaining that route structure is evidence, not truth.
+7. A "lifecycle ownership" section that maps discovery, intake, proposal, booking, planning, execution, and close-out across the correct surfaces and explains that one business workflow can span multiple surfaces.
 
 ### `docs/feature-classification-rules.md`
 
@@ -194,6 +219,7 @@ It must include:
    - chef-side client preview page
    - admin tool currently rendered through chef shell
 8. A companion-workflow section explaining how the inventory agent should apply the classifier when features arrive.
+9. A lifecycle-splitting section explaining how one named workflow such as inquiry -> quote -> booking may require multiple `FeaturePlacement` records across public, chef, client, partner, or admin.
 
 ### `types/system.ts`
 
@@ -287,6 +313,9 @@ The only interactions in scope are builder interactions with repo files:
 - Queue placement: this spec is `ready`, `P0`, and `Depends on: none`, so it is eligible for immediate builder claim once a builder is operating inside a clean, buildable execution context.
 - Builder scope is narrow: align only `docs/system-architecture.md`, `docs/feature-classification-rules.md`, and `types/system.ts` to this spec's canonical contract. Do not expand into runtime enforcement, route moves, or auth refactors in the same pass.
 - Do not classify by route alone. Public token delivery and chef preview pages prove that route family is only one signal.
+- Use the workflow research, not just the route tree. Real comparable systems separate internal control planes, tenant workspaces, and constrained external portals even when invites, tokens, or alternate login paths are involved.
+- Reflect progressive intake. Public discovery and first-contact inquiry are not the same thing as the long-lived client relationship or client workspace.
+- Split lifecycle features by actor boundary when necessary. Quote drafting, client approval, staff execution, and partner reporting are related, but they are not one placement.
 - Do not treat current leakage as architecture. The point is to name the correct owner even when the current shell is wrong.
 - Do not invent a sixth canonical surface for staff. Staff is a restricted role inside chef operations.
 - Do not collapse chef-side partner management and partner self-service into one placement. They are related, but not the same feature owner.
@@ -322,6 +351,8 @@ The only interactions in scope are builder interactions with repo files:
 - **Verified:** Staff and partner are distinct roles with distinct auth paths today and must not be collapsed into chef. Evidence: `lib/auth/get-user.ts:173-258`; `lib/db/schema/schema.ts:2033-2060,17430-17495`.
 - **Verified:** Admin is a separate persisted access system and not just another chef permission bit. Evidence: `lib/auth/admin.ts:1-18,39-57`; `lib/db/schema/schema.ts:22300-22318`.
 - **Verified:** Public token routes can represent client, partner, or chef-owned staff experiences, so route family is not sufficient to determine ownership. Evidence: `app/client/[token]/page.tsx:1-31`; `app/(public)/staff-portal/[id]/page.tsx:15-75`; `app/(public)/partner-report/[token]/page.tsx:1-45`; `lib/client-portal/actions.ts:146-220`; `lib/staff/staff-event-portal-actions.ts:1-4,246-257`; `lib/partners/portal-actions.ts:79-118`.
+- **Verified:** Real operator workflow is progressive and actor-shifting, which means discovery/intake, internal planning, client approval/payment, and staff execution should not be collapsed into one surface just because they belong to one business lifecycle. Evidence: `docs/research/how-food-operators-deal-with-what-we-solve.md:22-29,44-95,97-167,169-225`; `docs/research/developer-and-chef-workflow-research-for-surface-classification-2026-04-02.md:79-186`.
+- **Verified:** Current comparable developer systems separate portal-only external access, employee/internal access, and internal control authority. That supports the spec's admin/client/partner separation and the rule that delivery path does not equal ownership. Evidence: `docs/research/developer-and-chef-workflow-research-for-surface-classification-2026-04-02.md:33-77,188-221`.
 - **Unverified but non-blocking:** The exact long-term enforcement mechanism for making runtime code obey this classifier is not part of the current request. This spec intentionally stops at docs and types. That is supported by the requested output files and by the companion inventory spec being classification-adjacent rather than build execution: `docs/specs/comprehensive-domain-inventory-phase-1.md:44-60`.
 
 ### 4. Where will this most likely break?
