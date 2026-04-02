@@ -881,6 +881,6 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Task: Cross-check current developer and chef workflows to refine the system surface / role classification foundation with real workflow evidence
 - Status: completed
 - Files touched: docs/research/developer-and-chef-workflow-research-for-surface-classification-2026-04-02.md (new), docs/specs/system-surface-role-classification-foundation.md, docs/session-log.md
-- Commits: pending
+- Commits: `3ebd8d57`
 - Build state on departure: green (unchanged from `docs/build-state.md`; spec-only research pass, no build actions)
 - Notes: Cross-checked local repo evidence, prior ChefFlow research, official product docs, and community workflow signals. The findings reinforce the existing model but tighten it in three important ways: (1) treat invite and token delivery as transport, not ownership; (2) split lifecycle features by actor boundary because discovery, drafting, approval, execution, and reporting are often different placements; (3) keep admin as a true internal control plane and staff as a constrained role lane inside chef operations. Added a permanent research artifact and updated the planner spec to require lifecycle ownership and lifecycle-splitting guidance.

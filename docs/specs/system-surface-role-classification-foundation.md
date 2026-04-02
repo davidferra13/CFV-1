@@ -12,7 +12,7 @@
 | Created       | 2026-04-02 13:45 EDT | Codex (planner) | `0faaab45` |
 | Status: ready | 2026-04-02 13:45 EDT | Codex (planner) | `0faaab45` |
 | Refined       | 2026-04-02 14:01 EDT | Codex (planner) | `7ce07bd0` |
-| Research pass | 2026-04-02 14:27 EDT | Codex (planner) | pending    |
+| Research pass | 2026-04-02 14:27 EDT | Codex (planner) | `3ebd8d57` |
 
 ---
 
