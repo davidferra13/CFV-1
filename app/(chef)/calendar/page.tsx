@@ -34,7 +34,7 @@ export default async function CalendarPage({
 
   const [unifiedItems, waitlistEntries] = await Promise.all([
     getUnifiedCalendar(startDate, endDate),
-    getWaitlistEntries('waiting'),
+    getWaitlistEntries('waiting').catch(() => []),
   ])
 
   return (

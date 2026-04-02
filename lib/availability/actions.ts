@@ -519,12 +519,7 @@ export async function getWaitlistEntries(status?: string) {
 
   let query = db
     .from('waitlist_entries')
-    .select(
-      `
-      *,
-      clients (id, full_name, email, phone)
-    `
-    )
+    .select('*')
     .eq('chef_id', user.tenantId!)
     .order('requested_date', { ascending: true })
 
