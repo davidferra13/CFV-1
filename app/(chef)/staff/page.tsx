@@ -12,6 +12,7 @@ import { StaffSearchFilter } from '@/components/staff/staff-search-filter'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export const metadata: Metadata = { title: 'Staff Roster' }
 
@@ -63,11 +64,19 @@ export default async function StaffRosterPage({
       {/* Staff List */}
       <div className="space-y-3">
         {staff.length === 0 ? (
-          <p className="text-sm text-stone-500">
-            {search || role !== 'all'
-              ? 'No staff members match your search.'
-              : 'No active staff yet. Add your first team member below.'}
-          </p>
+          <EmptyState
+            remy={search || role !== 'all' ? 'straight-face' : 'idle'}
+            title={
+              search || role !== 'all'
+                ? 'No staff members match your search'
+                : 'No team members yet'
+            }
+            description={
+              search || role !== 'all'
+                ? 'Try adjusting your filters.'
+                : 'Add your first team member using the form below.'
+            }
+          />
         ) : (
           staff.map((member: any) => (
             <Card key={member.id}>

@@ -14,6 +14,7 @@ import { RecipePhotoBatchImport } from '@/components/recipes/recipe-photo-batch-
 import type { RecipeListItem } from '@/lib/recipes/actions'
 import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { RecipeCoverFlow } from '@/components/recipes/recipe-cover-flow'
+import { EmptyState } from '@/components/ui/empty-state'
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'All Categories' },
@@ -367,27 +368,15 @@ export function RecipeLibraryClient({ recipes }: Props) {
 
       {/* Empty state (either view mode) */}
       {recipes.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-stone-500 mb-2">Your Recipe Book is empty.</p>
-            <p className="text-sm text-stone-400 mb-6">
-              Start by importing recipes from text or recording them after your next dinner.
-            </p>
-            <div className="flex gap-3 justify-center">
-              <Link href="/recipes/dump">
-                <Button>Recipe Dump</Button>
-              </Link>
-              <Link href="/recipes/new">
-                <Button variant="secondary">Create Recipe</Button>
-              </Link>
-              <Link href="/import">
-                <Button variant="secondary">Smart Import</Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+        <EmptyState
+          remy="pondering"
+          title="Your Recipe Book is empty"
+          description="Start by importing recipes from text or recording them after your next dinner."
+          action={{ label: 'Recipe Dump', href: '/recipes/dump' }}
+          secondaryAction={{ label: 'Create Recipe', href: '/recipes/new' }}
+        />
       ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-grid">
           {recipes.map((recipe) => {
             const gradient = CATEGORY_GRADIENTS[recipe.category] || CATEGORY_GRADIENTS.other
             return (

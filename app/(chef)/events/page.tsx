@@ -23,6 +23,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { isDemoEvent } from '@/lib/onboarding/demo-data-utils'
 import { createServerClient } from '@/lib/db/server'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export const metadata: Metadata = { title: 'Events' }
 
@@ -153,18 +154,16 @@ async function EventsList({ status }: { status: EventStatus }) {
 
   if (events.length === 0) {
     return (
-      <Card className="p-8 text-center">
-        <p className="text-stone-500 mb-4">
-          {status === 'all'
-            ? 'No events yet. Create your first event!'
-            : `No events with status "${status}"`}
-        </p>
-        {status === 'all' && (
-          <Link href="/events/new">
-            <Button>Create Event</Button>
-          </Link>
-        )}
-      </Card>
+      <EmptyState
+        remy={status === 'all' ? 'idle' : 'straight-face'}
+        title={status === 'all' ? 'No events yet' : `No ${status.replace('_', ' ')} events`}
+        description={
+          status === 'all'
+            ? 'Create your first event to start managing your schedule.'
+            : 'Try a different filter or create a new event.'
+        }
+        action={status === 'all' ? { label: 'Create Event', href: '/events/new' } : undefined}
+      />
     )
   }
 
@@ -268,7 +267,7 @@ export default async function EventsPage({
           <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-500 mb-3">
             {section.heading}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-grid">
             {section.items.map((tile) => (
               <Link key={tile.href} href={tile.href} className="group block">
                 <Card className="h-full transition-colors group-hover:border-brand-700/60 group-hover:bg-stone-800/60">

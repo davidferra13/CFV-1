@@ -383,7 +383,7 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       {/* FOCUS: What needs attention now              */}
       {/* ============================================ */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
         {/* PRIORITY QUEUE (streamed, non-blocking) */}
         <WidgetErrorBoundary name="Priority Queue" compact>
           <Suspense fallback={<PriorityQueueSkeleton />}>
@@ -414,7 +414,7 @@ export default async function ChefDashboard() {
             <MetricsStrip />
           </Suspense>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
           <WidgetErrorBoundary name="Smart Suggestions" compact>
             <Suspense fallback={<SmartSuggestionsSkeleton />}>
               <SmartSuggestions />
@@ -428,7 +428,7 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       <section>
         <div className="section-label mb-4">Today &amp; This Week</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
           <WidgetErrorBoundary name="Schedule" compact>
             <Suspense fallback={<ScheduleCardsSkeleton />}>
               <ScheduleCards />
@@ -460,7 +460,7 @@ export default async function ChefDashboard() {
         {/* ALERTS + INTELLIGENCE */}
         <section className="px-4">
           <div className="section-label mb-4">Alerts &amp; Health</div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
             <WidgetErrorBoundary name="Alerts" compact>
               <Suspense fallback={<AlertCardsSkeleton />}>
                 <AlertCards />
@@ -478,7 +478,7 @@ export default async function ChefDashboard() {
         {/* BUSINESS METRICS */}
         <section className="px-4">
           <div className="section-label mb-4">Business</div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 stagger-grid">
             <WidgetErrorBoundary name="Business" compact>
               <Suspense fallback={<BusinessCardsSkeleton />}>
                 <BusinessCards />

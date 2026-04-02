@@ -185,7 +185,7 @@ export function CommandCenter({ counts }: CommandCenterProps) {
   return (
     <section>
       <div className="section-label mb-4">Core Areas</div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 stagger-grid">
         {areas.map((area) => (
           <CoreAreaCard key={area.label} area={area} />
         ))}

@@ -28,6 +28,7 @@ import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { ChefTourWrapper } from '@/components/onboarding/chef-tour-wrapper'
 import { CommandPalette } from '@/components/search/command-palette'
 import { NavigationPendingProvider } from '@/components/navigation/navigation-pending-provider'
+import { AppContextProvider } from '@/lib/context/app-context'
 
 const FeedbackNudgeCard = dynamic(
   () => import('@/components/feedback/feedback-nudge-card').then((m) => m.FeedbackNudgeCard),
@@ -106,111 +107,115 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const shouldRenderRemy = true
 
   return (
-    <OfflineProvider>
-      <SidebarProvider>
-        <NavigationPendingProvider>
-          <NotificationProvider userId={user.id}>
-            <ToastProvider />
-            <RouteProgress />
-            <TestAccountBanner email={user.email} />
-            <KeyboardShortcutsWrapper>
-              <div
-                data-cf-portal="chef"
-                className="min-h-screen text-stone-100"
-                style={{
-                  backgroundColor: profile.portal_background_color || 'var(--surface-0)',
-                  backgroundImage: profile.portal_background_image_url
-                    ? `url(${profile.portal_background_image_url})`
-                    : undefined,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center center',
-                  backgroundRepeat: 'no-repeat',
-                }}
-              >
-                {/* Skip navigation link for keyboard/screen reader users */}
-                <a
-                  href="#main-content"
-                  className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-brand-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg"
+    <AppContextProvider timezone={layoutData.timezone}>
+      <OfflineProvider>
+        <SidebarProvider>
+          <NavigationPendingProvider>
+            <NotificationProvider userId={user.id}>
+              <ToastProvider />
+              <RouteProgress />
+              <TestAccountBanner email={user.email} />
+              <KeyboardShortcutsWrapper>
+                <div
+                  data-cf-portal="chef"
+                  className="min-h-screen text-stone-100"
+                  style={{
+                    backgroundColor: profile.portal_background_color || 'var(--surface-0)',
+                    backgroundImage: profile.portal_background_image_url
+                      ? `url(${profile.portal_background_image_url})`
+                      : undefined,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center center',
+                    backgroundRepeat: 'no-repeat',
+                  }}
                 >
-                  Skip to main content
-                </a>
-                {/* Platform announcement banner - shown when admin sets one */}
-                {announcement && (
-                  <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
-                )}
-                {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
-                {/* Trial / subscription banner - shown when trial is expiring (≤3 days) or expired */}
-                <TrialBanner chefId={user.entityId} />
-                {/* Account deletion pending banner - shown during 30-day grace period */}
-                {deletionStatus.isPending &&
-                  deletionStatus.scheduledFor &&
-                  deletionStatus.daysRemaining != null && (
-                    <DeletionPendingBanner
-                      scheduledFor={deletionStatus.scheduledFor}
-                      daysRemaining={deletionStatus.daysRemaining}
-                    />
+                  {/* Skip navigation link for keyboard/screen reader users */}
+                  <a
+                    href="#main-content"
+                    className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-brand-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg"
+                  >
+                    Skip to main content
+                  </a>
+                  {/* Platform announcement banner - shown when admin sets one */}
+                  {announcement && (
+                    <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
                   )}
-                {/* Desktop sidebar */}
-                <ChefSidebar
-                  primaryNavHrefs={primaryNavHrefs}
-                  enabledModules={enabledModules}
-                  isAdmin={effectiveAdmin}
-                  focusMode={focusMode}
-                  userId={user.id}
-                  tenantId={user.tenantId ?? user.entityId}
-                />
-                {/* Mobile nav (top bar + bottom tabs) */}
-                <ChefMobileNav
-                  primaryNavHrefs={primaryNavHrefs}
-                  mobileTabHrefs={mobileTabHrefs}
-                  enabledModules={enabledModules}
-                  isAdmin={effectiveAdmin}
-                  focusMode={focusMode}
-                  userId={user.id}
-                  tenantId={user.tenantId ?? user.entityId}
-                />
+                  {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && (
+                    <EnvironmentBadge />
+                  )}
+                  {/* Trial / subscription banner - shown when trial is expiring (≤3 days) or expired */}
+                  <TrialBanner chefId={user.entityId} />
+                  {/* Account deletion pending banner - shown during 30-day grace period */}
+                  {deletionStatus.isPending &&
+                    deletionStatus.scheduledFor &&
+                    deletionStatus.daysRemaining != null && (
+                      <DeletionPendingBanner
+                        scheduledFor={deletionStatus.scheduledFor}
+                        daysRemaining={deletionStatus.daysRemaining}
+                      />
+                    )}
+                  {/* Desktop sidebar */}
+                  <ChefSidebar
+                    primaryNavHrefs={primaryNavHrefs}
+                    enabledModules={enabledModules}
+                    isAdmin={effectiveAdmin}
+                    focusMode={focusMode}
+                    userId={user.id}
+                    tenantId={user.tenantId ?? user.entityId}
+                  />
+                  {/* Mobile nav (top bar + bottom tabs) */}
+                  <ChefMobileNav
+                    primaryNavHrefs={primaryNavHrefs}
+                    mobileTabHrefs={mobileTabHrefs}
+                    enabledModules={enabledModules}
+                    isAdmin={effectiveAdmin}
+                    focusMode={focusMode}
+                    userId={user.id}
+                    tenantId={user.tenantId ?? user.entityId}
+                  />
 
-                {/* Main content - offset adjusts dynamically based on sidebar state */}
-                <ChefMainContent>
-                  <ChefTourWrapper>{children}</ChefTourWrapper>
-                </ChefMainContent>
+                  {/* Main content - offset adjusts dynamically based on sidebar state */}
+                  <ChefMainContent>
+                    <ChefTourWrapper>{children}</ChefTourWrapper>
+                  </ChefMainContent>
 
-                {/* Feedback nudge - slide-in card, idle-detected, queued behind onboarding */}
-                <FeedbackNudgeCard daysSinceCreation={daysSinceCreation} />
+                  {/* Feedback nudge - slide-in card, idle-detected, queued behind onboarding */}
+                  <FeedbackNudgeCard daysSinceCreation={daysSinceCreation} />
 
-                {/* Offline connectivity bar - shows status, queue count, sync progress */}
-                <OfflineStatusBar />
+                  {/* Offline connectivity bar - shows status, queue count, sync progress */}
+                  <OfflineStatusBar />
 
-                {/* Command Palette - Cmd+K universal search and navigation */}
-                <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
+                  {/* Command Palette - Cmd+K universal search and navigation */}
+                  <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
 
-                {/* Remy - AI companion chatbot, available to all chefs */}
-                {shouldRenderRemy && <RemyWrapper />}
+                  {/* Remy - AI companion chatbot, available to all chefs */}
+                  {shouldRenderRemy && <RemyWrapper />}
 
-                {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
-                <QuickCapture />
+                  {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
+                  <QuickCapture />
 
-                {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
-                <BreadcrumbTracker />
+                  {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
+                  <BreadcrumbTracker />
 
-                {/* Analytics identity -- associates events with logged-in user */}
-                <AnalyticsIdentify
-                  userId={user.id}
-                  email={user.email}
-                  role={user.role}
-                  traits={{ entity_id: user.entityId, tenant_id: user.tenantId ?? user.entityId }}
-                />
+                  {/* Analytics identity -- associates events with logged-in user */}
+                  <AnalyticsIdentify
+                    userId={user.id}
+                    email={user.email}
+                    role={user.role}
+                    traits={{ entity_id: user.entityId, tenant_id: user.tenantId ?? user.entityId }}
+                  />
 
-                {/* Presence beacon -- authenticated user presence for live admin visibility */}
-                <PresenceBeacon />
+                  {/* Presence beacon -- authenticated user presence for live admin visibility */}
+                  <PresenceBeacon />
 
-                {/* Route tracker -- stores last active path for session recovery */}
-                <RouteTracker />
-              </div>
-            </KeyboardShortcutsWrapper>
-          </NotificationProvider>
-        </NavigationPendingProvider>
-      </SidebarProvider>
-    </OfflineProvider>
+                  {/* Route tracker -- stores last active path for session recovery */}
+                  <RouteTracker />
+                </div>
+              </KeyboardShortcutsWrapper>
+            </NotificationProvider>
+          </NavigationPendingProvider>
+        </SidebarProvider>
+      </OfflineProvider>
+    </AppContextProvider>
   )
 }

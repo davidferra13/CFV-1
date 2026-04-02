@@ -27,6 +27,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { duplicateMenu, transitionMenu, getMenuQuickViewData } from '@/lib/menus/actions'
 import type { MenuQuickViewData } from '@/lib/menus/actions'
 import { WorkflowNotesPanel } from '@/components/menus/workflow-notes-panel'
+import { EmptyState } from '@/components/ui/empty-state'
 
 type Menu = {
   id: string
@@ -452,7 +453,7 @@ export function MenusClientWrapper({
               ({activeMenus.length} linked to upcoming events)
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 stagger-grid">
             {activeMenus.map((menu) => (
               <MenuCard
                 key={menu.id}
@@ -542,17 +543,15 @@ export function MenusClientWrapper({
       </div>
 
       {filteredMenus.length === 0 ? (
-        <Card>
-          <CardContent className="py-14 text-center">
-            <p className="text-stone-400">No menus match these filters.</p>
-            <p className="mt-1 text-sm text-stone-500">
-              Try adjusting filters or create a new menu.
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          remy="straight-face"
+          title="No menus match these filters"
+          description="Try adjusting your filters or create a new menu."
+          action={{ label: 'Create Menu', href: '/menus/new' }}
+        />
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 stagger-grid">
             {paginatedMenus.map((menu) => (
               <MenuCard
                 key={menu.id}

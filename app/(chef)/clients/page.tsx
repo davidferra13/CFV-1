@@ -84,7 +84,7 @@ export default async function ClientsPage() {
       </div>
 
       {/* Hub tiles */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-grid">
         {hubTiles.map((tile) => (
           <Link key={tile.href} href={tile.href} className="group block">
             <Card className="h-full transition-colors group-hover:border-brand-700/60 group-hover:bg-stone-800/60">

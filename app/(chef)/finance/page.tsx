@@ -226,7 +226,7 @@ export default async function FinancePage() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 stagger-grid">
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">
             {formatCurrency(summary.totalRevenueCents)}
@@ -262,7 +262,7 @@ export default async function FinancePage() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 stagger-grid">
         {SECTIONS.map((section) => (
           <Link key={section.href} href={section.href}>
             <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">

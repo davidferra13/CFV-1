@@ -26,6 +26,7 @@ export type ChefLayoutData = {
   enabled_modules: string[]
   focus_mode: boolean
   subscription_status: string | null
+  timezone: string
 }
 
 export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
@@ -37,7 +38,7 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
         db
           .from('chefs')
           .select(
-            'slug, tagline, business_name, created_at, portal_primary_color, portal_background_color, portal_background_image_url, subscription_status'
+            'slug, tagline, business_name, created_at, portal_primary_color, portal_background_color, portal_background_image_url, subscription_status, timezone'
           )
           .eq('id', chefId)
           .single(),
@@ -67,6 +68,7 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
           : [],
         focus_mode: (prefsResult.data as any)?.focus_mode ?? false,
         subscription_status: (chefResult.data as any)?.subscription_status ?? null,
+        timezone: (chefResult.data as any)?.timezone ?? 'America/New_York',
       }
     },
     [`chef-layout-${chefId}`],

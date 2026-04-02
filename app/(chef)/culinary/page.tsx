@@ -71,7 +71,7 @@ async function CulinaryStats() {
   ]
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 stagger-grid">
       {stats.map((s) => (
         <Card key={s.label}>
           <CardContent className="pt-4 pb-4">
@@ -103,7 +103,7 @@ export default async function CulinaryHubPage() {
       </div>
 
       {/* Nav tiles render immediately */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-grid">
         {tiles.map((tile) => (
           <Link key={tile.href} href={tile.href}>
             <Card className="h-full hover:shadow-md transition-shadow cursor-pointer group">

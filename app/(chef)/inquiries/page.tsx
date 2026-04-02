@@ -28,6 +28,7 @@ import { InquiryQuickActions } from '@/components/inquiries/inquiry-quick-action
 import { formatDistanceToNow, format, differenceInHours } from 'date-fns'
 import type { BookingScore } from '@/lib/analytics/booking-score'
 import { isDemoInquiry } from '@/lib/onboarding/demo-data-utils'
+import { EmptyState } from '@/components/ui/empty-state'
 
 const CHEF_ACTION_STATUSES = new Set(['new', 'awaiting_chef'])
 
@@ -97,18 +98,16 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
 
   if (inquiries.length === 0) {
     return (
-      <Card className="p-8 text-center">
-        <p className="text-stone-500 mb-4">
-          {filter === 'all'
-            ? 'No inquiries yet. Log your first inquiry!'
-            : `No inquiries with status "${filter.replace('_', ' ')}"`}
-        </p>
-        {filter === 'all' && (
-          <Link href="/inquiries/new">
-            <Button>New Inquiry</Button>
-          </Link>
-        )}
-      </Card>
+      <EmptyState
+        remy={filter === 'all' ? 'idle' : 'straight-face'}
+        title={filter === 'all' ? 'No inquiries yet' : `No ${filter.replace('_', ' ')} inquiries`}
+        description={
+          filter === 'all'
+            ? 'Log your first inquiry to start tracking leads.'
+            : 'Try a different filter or log a new inquiry.'
+        }
+        action={filter === 'all' ? { label: 'New Inquiry', href: '/inquiries/new' } : undefined}
+      />
     )
   }
 
