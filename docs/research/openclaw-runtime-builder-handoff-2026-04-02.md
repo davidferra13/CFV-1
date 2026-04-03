@@ -27,6 +27,13 @@ The geographic growth pattern should also be explicit:
 - the target runtime should grow like a frontier from seeded strong cells into adjacent cells and same-chain extensions
 - it should not behave as random nationwide scatter and it should not behave as a rigid one-state-at-a-time checklist
 
+The current method set is good enough to proceed, but it is not final:
+
+- do not assume the first frontier score is the best frontier score forever
+- do not assume the first inference formula is the best inference formula forever
+- do not assume the first repair heuristic or enrichment source mix is final
+- keep refining the method when measured evidence shows a stronger one
+
 ---
 
 ## Canonical Read Order

@@ -78,6 +78,7 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Ownership-enforcement goal:** Every new function must be classified as runtime-owned, website-owned, or handshake-owned. Misalignment is a real defect, not a stylistic preference.
 - **Meta-agent expectation:** The meta-agent is a bounded operational router. It should catch repetitive, measurable classes of runtime gaps, but it will not automatically invent all product requirements unless those requirements are encoded in policy, thresholds, and available task types.
 - **Expansion-order goal:** Growth should be deliberate and explainable. The runtime should expand as a ranked frontier from seeded coverage cells and directory facts, not as a random scatter and not as a simplistic one-state-at-a-time march.
+- **Method-improvement goal:** The current operating method is strong enough to build, but it is not the last possible method. Frontier scoring, source prioritization, inference formulas, enrichment sources, and repair heuristics should keep improving when evidence shows a better approach.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
 - **Refinement rule:** Behavior clarified through developer Q&A must be recorded quickly enough that the downstream builder is operating from the updated spec, not from memory.
 - **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, avoids unnecessary blanks, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, measures metadata completeness and reliability, monitors whether the Pi is under-used, and raises safe parallelism when capacity actually exists.
@@ -768,4 +769,5 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 13. Recipe scaling belongs to ChefFlow, not this runtime. Use OpenClaw to supply package, unit, and product evidence that ChefFlow can consume.
 14. Do not invent expiration dates, gluten-free claims, or allergen labels without explicit upstream evidence.
 15. Before implementing new functionality, classify it as OpenClaw-owned, ChefFlow-owned, or handshake-owned and flag misalignments immediately.
-16. When developer Q&A clarifies intended runtime behavior, update Developer Notes and the build-facing plan before moving on.
+16. Do not treat the current heuristics as final truth. Adjust frontier scoring, inference methods, and repair heuristics when measured evidence proves a better method.
+17. When developer Q&A clarifies intended runtime behavior, update Developer Notes and the build-facing plan before moving on.
