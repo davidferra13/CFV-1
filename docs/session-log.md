@@ -1383,3 +1383,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: c04625f3
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass; no new build or typecheck actions)
 - Notes: Read the planner context, logged arrival, inspected the existing canonical website-build handoff plus the relevant public routes, navigation, booking/inquiry actions, discovery actions, and schema tables. Wrote a new planning spec that does not create a second handoff; it upgrades the current canonical cross-reference in place, captures the developer's words in Developer Notes, answers every Planner Gate validation question with cited file paths and line numbers, and explicitly flags what a builder would get wrong plus what remains assumed but not verified.
+
+## 2026-04-03 00:13 EDT
+
+- Agent: Codex
+- Task: Run a fresh multi-persona research pass across chef, consumer, developer, entrepreneur, and business-buyer workflows, then turn the findings into website-build guidance that improves the current cross-reference instead of creating another disconnected note
+- Status: in_progress
+- Files touched: docs/session-log.md
+- Build state on arrival: inherited green dirty-checkout baseline from `docs/build-state.md`
+- Notes: Loaded `CLAUDE.md`, the current website-build foundation doc, the complete app audit, and the strongest existing cross-persona research memos first. Next step is to cross-check the current local corpus against fresh external sources, identify where the present website guidance is already correct versus under-specified, and then write one implementation-facing synthesis plus any necessary cross-reference refinement.
+
+## 2026-04-03 00:17 EDT
+
+- Agent: Planner (Codex)
+- Task: Plan the chef Getting Started surface consolidation so the floating legacy checklist is removed without losing the important setup job it was trying to do
+- Status: completed
+- Files touched: docs/specs/p1-chef-getting-started-surface-consolidation.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass on verified dirty checkout)
+- Notes: Read the planner context, logged arrival, inspected the chef layout, legacy tour shell, floating checklist, spotlight flow, dashboard setup surfaces, onboarding wizard/hub, related server actions, and the underlying `product_tour_progress` and `onboarding_progress` schemas. Also cross-checked current external onboarding patterns to avoid solving this like a generic SaaS tour. Wrote a builder-safe spec that removes the chef layout overlay, preserves peripheral UI behavior with an explicit visibility bridge, narrows setup language to `Setup Progress` versus `Business Import`, and answers every Planner Gate validation question with cited file paths and line numbers, including what a builder would most likely get wrong and what remains intentionally out of scope.
