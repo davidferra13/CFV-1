@@ -121,6 +121,27 @@ Every OpenClaw-related feature must have a clear owner.
 - Transitional bridges are acceptable, but they must be labeled as bridges so they do not quietly become the permanent owner.
 - If a proposed surface republishes scraped retailer images, detailed stock claims, or health or dietary claims to outsiders, flag it for rights, compliance, and substantiation review before treating it as a normal product feature.
 
+### Risk-Mitigation Posture
+
+The goal is not to guarantee that every outside party is happy. The goal is to reduce avoidable conflict and keep the system inside a defensible operating posture.
+
+Default posture:
+
+- keep OpenClaw internal or founder-facing by default
+- keep chef-facing surfaces outcome-focused and debranded
+- avoid public republication of scraped retailer imagery, detailed stock assertions, or unsupported dietary or health claims
+- prefer licensed feeds, first-party operator data, official APIs, or derived internal intelligence over raw republication whenever possible
+- keep provenance, timestamps, and confidence visible internally so questionable facts can be corrected quickly
+- use takedown, suppression, or source-disable controls when a source becomes legally, contractually, or operationally problematic
+
+If broader exposure is ever desired, require these controls first:
+
+- rights review for logos, imagery, and retailer-branded content
+- substantiation review for allergy, gluten-free, dietary, and inventory claims
+- clear labeling of observed versus inferred data
+- policy for suppression or removal of disputed sources or assets
+- preference for operator-connected first-party data where the operator has its own right to use the data
+
 ### Meta-Agent Scope
 
 Treat the meta-agent as a bounded runtime supervisor, not as a creative architect.

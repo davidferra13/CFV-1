@@ -38,6 +38,7 @@ Legal-exposure note:
 
 - internal founder-facing intelligence use is much lower risk than public or commercial republication
 - if a feature would expose scraped retailer prices, product images, stock assertions, or health-related claims to outsiders, flag it for rights, compliance, and substantiation review before building it as a normal surface
+- default mitigation posture: keep it internal, keep it debranded, prefer licensed or first-party data when possible, label inferred versus observed, and preserve takedown or suppression controls for disputed sources or assets
 
 ---
 
