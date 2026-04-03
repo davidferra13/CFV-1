@@ -1292,3 +1292,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 8294aa2f (`docs: refine consumer discovery plan from multi-persona research`)
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only research and planning refinement pass; no new build or typecheck actions)
 - Notes: Added a new cross-persona research memo covering consumers, chefs, developers, entrepreneurs, and business/corporate planners; refined the active consumer-first spec to add earlier structured planning inputs, work/group intent, `hub_groups.planning_brief`, durable shortlist snapshots, sample-menu-first public menu spotlighting, and clearer planning-group handoff into existing booking surfaces without replacing current routes.
+
+## 2026-04-02 23:05 EDT
+
+- Agent: Research / Website Build Cross-Reference (Codex)
+- Task: Synthesize the website-build research and active specs into one cross-reference document so a builder can execute public discovery, chef-profile, trust, booking, and planning work in dependency order without re-reading the entire research library
+- Status: started
+- Build state on arrival: green on verified dirty checkout per `docs/build-state.md` (`npm run build -- --no-lint` last verified 2026-04-02 on dirty worktree from `f45fec2c`; strict builder pre-flight would still stop on current `git status`)
+- Notes: Proceeding with the narrow website-build scope rather than every research stream in `docs/research/`. The goal is one high-signal synthesis that cross-references verified findings, active specs, no-touch boundaries, and builder order for the public website experience.
+
+## 2026-04-02 23:10 EDT
+
+- Agent: Research / Website Build Cross-Reference (Codex)
+- Task: Synthesize the website-build research and active specs into one cross-reference document so a builder can execute public discovery, chef-profile, trust, booking, and planning work in dependency order without re-reading the entire research library
+- Status: completed
+- Files touched: docs/research/website-build-cross-reference-and-builder-handoff-2026-04-02.md, docs/research/README.md, docs/session-log.md
+- Commits: 87ef05ae (`docs(research): add website build cross-reference handoff`)
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only synthesis pass; no new build or typecheck actions)
+- Notes: Created a narrow website-build cross-reference handoff that maps current public surfaces, competitive and cross-persona findings, active upstream specs, current dirty-worktree constraints, recommended builder read order, recommended implementation order, and explicit no-touch boundaries so future builder work can proceed without re-synthesizing the research library.
