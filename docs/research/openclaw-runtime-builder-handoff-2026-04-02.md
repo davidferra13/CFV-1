@@ -72,10 +72,32 @@ Every OpenClaw build step must satisfy all four conditions:
 2. be additive before it is substitutive
 3. improve either coverage, reliability, visibility, or website usefulness
 4. leave the chef/public boundary intact unless a spec explicitly authorizes new outcome-facing value there
+5. classify the change as OpenClaw-owned, ChefFlow-owned, or handshake-owned before building it
 
 If a change does not create progression in one of those four ways, it is not the next best use of time.
 
 Also: if developer Q&A clarifies intended behavior for this lane, the spec and this handoff should be updated before more implementation planning continues. Do not rely on chat memory.
+
+If ownership is unclear, that uncertainty must be called out before the builder expands the feature. Ambiguous ownership is an architecture risk.
+
+---
+
+## Responsibility Split
+
+Use this split when deciding where new work belongs:
+
+- `OpenClaw-owned`
+  Source discovery, scraping, pingability, source health, direct observations, metadata enrichment, nutrition/allergen evidence linking, anomaly detection, coverage heat maps, internal runtime truth.
+- `ChefFlow-owned`
+  Search UX, filters, product cards, recipe flows, recipe scaling, shopping workflows, exports, saved lists, manual chef overrides, public or chef-facing presentation.
+- `Handshake-owned`
+  OpenClaw emits evidence-rich facts and statuses; ChefFlow consumes them into usable workflows without re-owning the underlying acquisition or inference logic.
+
+Current boundary smells that should be treated as transitional rather than final architecture:
+
+- `lib/openclaw/polish-job.ts` currently performs important enrichment work from the app layer. That is acceptable as a bridge, but long-term canonical enrichment ownership should move into the OpenClaw runtime control plane.
+- `components/recipes/product-lookup-panel.tsx` is a useful website-side lookup tool, but it should not quietly become the durable system-of-record for nutrition or allergen completeness.
+- Recipe scaling should stay on the ChefFlow side even when OpenClaw provides better package, unit, and product evidence.
 
 ---
 
@@ -365,6 +387,7 @@ Minimum required checks:
 - no inferred prices overwrite direct prices
 - no metadata claim is fabricated when evidence is missing or conflicting
 - no destructive schema migration occurs
+- the builder can state whether the slice is OpenClaw-owned, ChefFlow-owned, or handshake-owned
 
 If a builder cannot verify a phase, the phase is not complete.
 

@@ -54,6 +54,7 @@ They added one more operational requirement after the initial draft:
 15. The right architecture is not one tiny agent per field. The runtime should group this work into a few bounded specialist agents for metadata enrichment, nutrition and allergen enrichment, source reliability, and quality auditing.
 16. Recipe scaling is important, but it belongs to ChefFlow's recipe and ingredient math layer rather than the OpenClaw runtime itself.
 17. Expiration dates are not universal OpenClaw catalog facts unless the system has real lot-level or inventory-level evidence from a downstream inventory surface.
+18. Going forward, every new responsibility must be classified as OpenClaw-owned, ChefFlow-owned, or a handshake between them, and any drift across that boundary should be flagged immediately.
 
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
@@ -69,6 +70,7 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Metadata completeness goal:** Price coverage by itself is not enough. The runtime should continuously improve image coverage, source URL coverage, stock freshness, classification quality, and nutrition/allergen completeness where credible evidence exists.
 - **Agent boundary goal:** Use a small number of bounded specialist agents rather than one agent per tiny attribute. Metadata enrichment, nutrition/allergen enrichment, source reliability, and quality auditing are separate responsibilities, but they should each own a coherent domain.
 - **Boundary note:** Recipe scaling belongs to ChefFlow's culinary math and recipe engine, not the OpenClaw runtime. Lot expiration is only a valid OpenClaw fact when backed by real purchased-inventory or lot evidence.
+- **Ownership-enforcement goal:** Every new function must be classified as runtime-owned, website-owned, or handshake-owned. Misalignment is a real defect, not a stylistic preference.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
 - **Refinement rule:** Behavior clarified through developer Q&A must be recorded quickly enough that the downstream builder is operating from the updated spec, not from memory.
 - **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, avoids unnecessary blanks, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, measures metadata completeness and reliability, monitors whether the Pi is under-used, and raises safe parallelism when capacity actually exists.
@@ -84,6 +86,29 @@ This spec defines the ideal future OpenClaw runtime as an internal control plane
 ## Why It Matters
 
 The current system is useful because it captures real grocery price data, but it is still structurally optimized for repeated refreshes of a narrow footprint. That leaves national coverage, source discovery, gap repair, and price estimation underpowered even though the surrounding app and specs already point toward a much larger intelligence system.
+
+---
+
+## Ownership Split
+
+Every OpenClaw-related feature must have a clear owner.
+
+| Concern                          | OpenClaw Owns                                                                                                                                                                   | ChefFlow Owns                                                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Source discovery and acquisition | Source discovery, scraping, pingability checks, source health, source reliability, freshness sampling                                                                           | None                                                                                                                       |
+| Direct product facts             | Observed prices, stock observations, last-confirmed timestamps, source URLs, image sourcing, canonical product metadata, classification, nutrition or allergen evidence linking | Rendering those facts to chefs in usable product views                                                                     |
+| Missing-data recovery            | Metadata enrichment tasks, quality audits, anomaly review, price inference, coverage heat maps, internal completeness tracking                                                  | Deciding how to present incomplete data to the chef without leaking internals                                              |
+| Workflow UX                      | None                                                                                                                                                                            | Search, filters, product cards, detail pages, recipe costing flows, shopping flows, saved lists, manual overrides, exports |
+| Recipe intelligence              | Package and unit evidence only                                                                                                                                                  | Recipe scaling, culinary unit math, substitutions in workflow context, menu costing behavior                               |
+| Inventory-specific facts         | None unless real inventory evidence is synced upstream                                                                                                                          | Inventory management, lot tracking, expiration dates, purchase-specific availability                                       |
+| Admin observability              | Founder-only runtime console, incidents, queue state, coverage state, metadata completeness, capacity state                                                                     | Any website-admin surface that consumes those internal reads under the founder gate                                        |
+
+### Boundary Rules
+
+- If OpenClaw starts owning chef-specific workflow UX, recipe scaling, saved-list behavior, or public presentation logic, that is a misalignment and should be flagged.
+- If ChefFlow starts owning durable scraping, canonical metadata enrichment, source health logic, price inference, or source pingability truth, that is a misalignment and should be flagged.
+- If a feature needs both layers, OpenClaw should emit evidence-rich facts and statuses, and ChefFlow should consume them into chef-facing workflows.
+- Transitional bridges are acceptable, but they must be labeled as bridges so they do not quietly become the permanent owner.
 
 ---
 
@@ -560,6 +585,7 @@ _List anything that could go wrong and what the correct behavior is._
 - Product metadata completeness is measurable by ingredient, category, and geography instead of being treated as an invisible best-effort side effect.
 - The runtime can explain which products still lack an image, source URL, nutrition evidence, allergen evidence, or reliable stock freshness.
 - The runtime can distinguish a missing field from an unverified field and from a conflicting field.
+- Each new OpenClaw-related feature can be classified cleanly as runtime-owned, website-owned, or handshake-owned without ambiguous responsibility.
 - Founder-only internal UI can answer five questions truthfully:
   1. What sources do we know about?
   2. What geography is directly covered?
@@ -610,6 +636,7 @@ _How does the builder agent confirm this works? Be specific._
 16. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
 17. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, queue limits, metadata completeness, and founder-only action buttons.
 18. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
+19. Review one product-detail feature and one recipe-workflow feature and verify runtime-owned acquisition or enrichment logic stays in OpenClaw while website-owned workflow logic stays in ChefFlow.
 
 ---
 
@@ -645,4 +672,5 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 12. Do not create one tiny agent per field. Group metadata completeness work into coherent bounded agents.
 13. Recipe scaling belongs to ChefFlow, not this runtime. Use OpenClaw to supply package, unit, and product evidence that ChefFlow can consume.
 14. Do not invent expiration dates, gluten-free claims, or allergen labels without explicit upstream evidence.
-15. When developer Q&A clarifies intended runtime behavior, update Developer Notes and the build-facing plan before moving on.
+15. Before implementing new functionality, classify it as OpenClaw-owned, ChefFlow-owned, or handshake-owned and flag misalignments immediately.
+16. When developer Q&A clarifies intended runtime behavior, update Developer Notes and the build-facing plan before moving on.
