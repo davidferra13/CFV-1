@@ -132,6 +132,7 @@ This is a canonical policy and sequencing spec.
 | File                                                           | What to Change                                                               |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------- |
 | `docs/specs/openclaw-non-goals-and-never-do-rules.md`          | Add and maintain the explicit guardrail list for what OpenClaw must never do |
+| `docs/specs/openclaw-goal-governor-and-kpi-contract.md`        | Add and maintain the dedicated goal-governor and KPI-contract requirement    |
 | `docs/specs/openclaw-internal-only-boundary-and-debranding.md` | Update the lead-flow decision so raw-source review is not kept chef-facing   |
 | `docs/specs/lead-engine-cartridge.md`                          | Add a policy override so older chef-facing guidance is not followed          |
 | `docs/specs/openclaw-data-completeness-engine.md`              | Ensure example user-facing copy follows the new no-OpenClaw naming rule      |
@@ -218,3 +219,4 @@ This spec defines policy for future UI work:
 3. The current mission is narrow on purpose. Do not expand OpenClaw because a feature seems possible.
 4. The right next implementation work, when implementation is allowed, is debranding and boundary cleanup, not more exposure.
 5. Read `openclaw-non-goals-and-never-do-rules.md` immediately after this file when the task is runtime expansion or boundary-sensitive design.
+6. Read `openclaw-goal-governor-and-kpi-contract.md` before a builder starts any meaningful runtime slice that needs a measurable success definition.

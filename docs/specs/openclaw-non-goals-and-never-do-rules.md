@@ -217,6 +217,19 @@ The builder must not assume the first frontier score, first inference formula, o
 
 OpenClaw should improve by evidence, but it must improve through controlled iteration rather than chaotic redesign.
 
+### 15. Never start a major slice without a KPI contract
+
+OpenClaw must not begin a meaningful runtime slice when success is still vague.
+
+If a slice does not have:
+
+- an objective summary
+- exact KPI targets
+- warning and failure thresholds
+- one dedicated goal-governor owner
+
+then it is not ready to start.
+
 ---
 
 ## Builder Interpretation

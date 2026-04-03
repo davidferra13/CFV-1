@@ -55,9 +55,10 @@ Read these in this exact order:
 1. `docs/build-state.md`
 2. `docs/specs/openclaw-canonical-scope-and-sequence.md`
 3. `docs/specs/openclaw-non-goals-and-never-do-rules.md`
-4. `docs/specs/openclaw-internal-only-boundary-and-debranding.md`
-5. `docs/specs/openclaw-ideal-runtime-and-national-intelligence.md`
-6. `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md`
+4. `docs/specs/openclaw-goal-governor-and-kpi-contract.md`
+5. `docs/specs/openclaw-internal-only-boundary-and-debranding.md`
+6. `docs/specs/openclaw-ideal-runtime-and-national-intelligence.md`
+7. `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md`
 
 Only then inspect live implementation files in this order:
 
@@ -92,13 +93,14 @@ Do not restart the vision from zero. Build from this baseline.
 
 ## Core Build Rule
 
-Every OpenClaw build step must satisfy all four conditions:
+Every OpenClaw build step must satisfy all six conditions:
 
 1. preserve the current Pi runtime unless the new slice fully replaces an old behavior with verification
 2. be additive before it is substitutive
 3. improve either coverage, reliability, visibility, or website usefulness
 4. leave the chef/public boundary intact unless a spec explicitly authorizes new outcome-facing value there
 5. classify the change as OpenClaw-owned, ChefFlow-owned, or handshake-owned before building it
+6. define the KPI contract and the goal-governor owner before starting a meaningful slice
 
 If a change does not create progression in one of those four ways, it is not the next best use of time.
 
@@ -210,6 +212,8 @@ Goal:
 
 Tasks:
 
+- define the KPI contract for the current slice before writing implementation code
+- make sure one goal-governor owner is responsible for the scorecard, warning thresholds, and failure thresholds
 - verify current `/health` and `/api/stats` behavior
 - verify existing SQLite schema and cron jobs
 - verify what the current ingredient-detail and catalog endpoints already expose for image, stock, source URL, and freshness
@@ -226,7 +230,7 @@ Primary files:
 
 Exit condition:
 
-- the builder can describe exactly what the current runtime is doing, what is stale, and where the first additive slice will attach
+- the builder can describe exactly what the current runtime is doing, what is stale, where the first additive slice will attach, and what exact KPI contract defines success for that slice
 
 ### Phase 1. Build the control-plane schema
 

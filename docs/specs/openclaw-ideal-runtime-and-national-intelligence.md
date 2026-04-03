@@ -62,6 +62,7 @@ They added one more operational requirement after the initial draft:
 23. They want to know whether the runtime should move state by state, region by region, ZIP by ZIP, store by store, or some hybrid of those.
 24. They also want a clear answer on legal and business risk if this system were exposed to outsiders. The planning assumption should be that public or commercial exposure of scraped retailer data, product images, stock claims, or health-related claims creates real dispute risk even if the internal engine is valuable.
 25. They also want to know whether OpenClaw is grounded in practical economics or just technical crawling ambition. They asked directly whether the system accounts for realities like conversion rates, financial implications, or cost of capital, and whether those realities are necessary for OpenClaw to be viable.
+26. They also want one dedicated agent singularly focused on the final objective and the exact KPI targets that define success. They want those statistical benchmarks defined before implementation and formally owned from the beginning, not treated as an afterthought.
 
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
@@ -81,6 +82,7 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Meta-agent expectation:** The meta-agent is a bounded operational router. It should catch repetitive, measurable classes of runtime gaps, but it will not automatically invent all product requirements unless those requirements are encoded in policy, thresholds, and available task types.
 - **Expansion-order goal:** Growth should be deliberate and explainable. The runtime should expand as a ranked frontier from seeded coverage cells and directory facts, not as a random scatter and not as a simplistic one-state-at-a-time march.
 - **Economic-grounding goal:** OpenClaw should be economically aware enough to prioritize work by expected ChefFlow value, recipe-completion impact, likely usage, maintenance cost, and acquisition cost. But it should not be turned into a full corporate-finance model inside the day-to-day scheduler.
+- **KPI-governance goal:** Every meaningful OpenClaw slice should start with an explicit KPI contract, and one dedicated goal-governor role should own whether the system is actually converging toward those targets.
 - **Method-improvement goal:** The current operating method is strong enough to build, but it is not the last possible method. Frontier scoring, source prioritization, inference formulas, enrichment sources, and repair heuristics should keep improving when evidence shows a better approach.
 - **Exposure-risk goal:** Treat public or commercial republication of scraped retailer content, images, inventory assertions, or unsupported health claims as a higher-risk mode than founder-only internal intelligence use. Keep internal-only boundaries in place unless rights, licenses, and claim-substantiation controls are explicit.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
@@ -176,6 +178,29 @@ Examples of bounded tasks the meta-agent should spin up:
 - `recompute_metadata_heatmap` after a large ingestion batch changes geography-level completeness
 - `rebalance_parallelism` when queue depth is high and the capacity agent confirms safe headroom
 
+### Goal Governor Scope
+
+Treat the `goal-governor-agent` as the dedicated success owner for the OpenClaw lane.
+
+It should be able to:
+
+- hold the canonical KPI contract for each active slice
+- require exact statistical targets before a major slice begins
+- compare measured results against target, warning, and failure thresholds
+- flag vanity progress where runtime activity rises but outcome metrics do not
+- enqueue bounded follow-up tasks such as `evaluate_kpi_drift`, `recompute_goal_scorecard`, or `reprioritize_for_goal_alignment`
+
+It should not be expected to:
+
+- replace founder judgment
+- invent KPI targets from thin air without a written contract
+- own scraping, enrichment, or inference directly
+- turn the runtime into a corporate-finance engine
+
+Planning rule:
+
+- no meaningful OpenClaw slice should start without a KPI contract that defines exact statistical targets, windows, and owners
+
 ### Expansion Order
 
 The ideal OpenClaw runtime should grow like a deliberate frontier, not like a random spray and not like a rigid 50-state checklist.
@@ -255,8 +280,11 @@ _List every NEW file with its full path and a one-line description._
 | `.openclaw-build/services/quality-audit-agent.mjs`      | Flags weird prices, contradictory stock signals, missing metadata clusters, and unreliable source pingability                           |
 | `.openclaw-build/services/price-inference-engine.mjs`   | Computes formula-based price estimates for uncovered ingredient/geography combinations                                                  |
 | `.openclaw-build/services/hardware-capacity-agent.mjs`  | Measures CPU, RAM, I/O, DB contention, rate-limit pressure, and safe concurrency recommendations                                        |
+| `.openclaw-build/services/goal-governor-agent.mjs`      | Owns KPI contracts, target scorecards, drift detection, and goal-alignment evaluation for active build slices                           |
 | `.openclaw-build/services/meta-agent.mjs`               | Reviews queue state, incidents, capacity drift, and coverage gaps, then creates bounded follow-up tasks for the right specialist agents |
+| `lib/openclaw/goal-governor-actions.ts`                 | Founder-only server actions that expose KPI contracts, scorecards, and goal-drift states                                                |
 | `lib/openclaw/runtime-control-actions.ts`               | Founder-only server actions that expose runtime, directory, coverage, incident, inference, and metadata-completeness views              |
+| `components/admin/openclaw-kpi-scorecard.tsx`           | Founder-only scorecard surface for KPI targets, warnings, failures, and trend direction                                                 |
 | `components/admin/openclaw-runtime-console.tsx`         | Founder-only internal console for the live OpenClaw runtime                                                                             |
 
 ---
@@ -265,16 +293,17 @@ _List every NEW file with its full path and a one-line description._
 
 _List every EXISTING file that needs changes. Be specific about what changes._
 
-| File                                       | What to Change                                                                                                                        |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `.openclaw-build/lib/db.mjs`               | Add additive control-plane tables, metadata-completeness schema, and directory or reliability columns to the Pi SQLite runtime schema |
-| `.openclaw-build/services/aggregator.mjs`  | Roll up direct-observation coverage into geography-cell coverage facts, metadata heat maps, and inference freshness summaries         |
-| `.openclaw-build/services/watchdog.mjs`    | Promote stale, broken, or unreliable-source detection into durable incidents and queue nudges instead of log-only alerts              |
-| `.openclaw-build/services/sync-api.mjs`    | Expose runtime overview, source directory, agent runs, incidents, coverage, metadata completeness, and inference audit endpoints      |
-| `.openclaw-deploy/crontab-v7.txt`          | Add orchestrator and agent cadences; reduce fixed re-scan bias in favor of queue-driven expansion and enrichment logic                |
-| `scripts/openclaw-dashboard/server.mjs`    | Surface agent health, coverage cells, metadata heat maps, incidents, and inference status for mission-control parity                  |
-| `app/(admin)/admin/openclaw/page.tsx`      | Keep founder-only gate, but load a live runtime console instead of a static usage-only page                                           |
-| `components/admin/openclaw-usage-page.tsx` | Convert the current static page into a hybrid policy + live runtime console without losing boundary copy                              |
+| File                                                           | What to Change                                                                                                                        |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `.openclaw-build/lib/db.mjs`                                   | Add additive control-plane tables, metadata-completeness schema, and directory or reliability columns to the Pi SQLite runtime schema |
+| `.openclaw-build/services/aggregator.mjs`                      | Roll up direct-observation coverage into geography-cell coverage facts, metadata heat maps, and inference freshness summaries         |
+| `.openclaw-build/services/watchdog.mjs`                        | Promote stale, broken, or unreliable-source detection into durable incidents and queue nudges instead of log-only alerts              |
+| `.openclaw-build/services/sync-api.mjs`                        | Expose runtime overview, source directory, agent runs, incidents, coverage, metadata completeness, and inference audit endpoints      |
+| `.openclaw-deploy/crontab-v7.txt`                              | Add orchestrator and agent cadences; reduce fixed re-scan bias in favor of queue-driven expansion and enrichment logic                |
+| `scripts/openclaw-dashboard/server.mjs`                        | Surface agent health, coverage cells, metadata heat maps, incidents, and inference status for mission-control parity                  |
+| `app/(admin)/admin/openclaw/page.tsx`                          | Keep founder-only gate, but load a live runtime console instead of a static usage-only page                                           |
+| `components/admin/openclaw-usage-page.tsx`                     | Convert the current static page into a hybrid policy + live runtime console without losing boundary copy                              |
+| `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md` | Make KPI contract definition and goal-governor ownership a pre-implementation build gate                                              |
 
 ---
 
@@ -347,6 +376,40 @@ CREATE TABLE IF NOT EXISTS host_capacity_snapshots (
 CREATE INDEX IF NOT EXISTS idx_host_capacity_host_captured
   ON host_capacity_snapshots(host_name, captured_at DESC);
 
+CREATE TABLE IF NOT EXISTS kpi_contracts (
+  contract_id TEXT PRIMARY KEY,
+  slice_key TEXT NOT NULL UNIQUE,
+  objective_summary TEXT NOT NULL,
+  metric_name TEXT NOT NULL,
+  formula_text TEXT NOT NULL,
+  target_value REAL NOT NULL,
+  warning_threshold REAL,
+  failure_threshold REAL,
+  measurement_window TEXT NOT NULL,
+  data_source TEXT NOT NULL,
+  owner_agent_type TEXT NOT NULL DEFAULT 'goal_governor',
+  review_cadence TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'paused', 'retired')),
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_kpi_contracts_status
+  ON kpi_contracts(status);
+
+CREATE TABLE IF NOT EXISTS kpi_snapshots (
+  snapshot_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  contract_id TEXT NOT NULL,
+  measured_value REAL,
+  trend_direction TEXT CHECK (trend_direction IN ('up', 'down', 'flat', 'unknown')),
+  state TEXT NOT NULL CHECK (state IN ('unknown', 'on_target', 'warning', 'failed')),
+  measured_at TEXT NOT NULL DEFAULT (datetime('now')),
+  notes TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_kpi_snapshots_contract_time
+  ON kpi_snapshots(contract_id, measured_at DESC);
+
 CREATE TABLE IF NOT EXISTS ingredient_metadata_profiles (
   profile_id TEXT PRIMARY KEY,
   canonical_ingredient_id TEXT NOT NULL UNIQUE,
@@ -394,7 +457,7 @@ CREATE INDEX IF NOT EXISTS idx_runtime_limits_scope
 
 CREATE TABLE IF NOT EXISTS agent_runs (
   run_id TEXT PRIMARY KEY,
-  agent_type TEXT NOT NULL CHECK (agent_type IN ('orchestrator', 'discovery', 'repair', 'enrichment', 'nutrition', 'quality', 'math', 'coverage', 'capacity', 'meta')),
+  agent_type TEXT NOT NULL CHECK (agent_type IN ('orchestrator', 'discovery', 'repair', 'enrichment', 'nutrition', 'quality', 'math', 'coverage', 'capacity', 'goal_governor', 'meta')),
   status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'partial', 'skipped')),
   queue_name TEXT NOT NULL DEFAULT 'default',
   started_at TEXT,
@@ -417,8 +480,8 @@ CREATE INDEX IF NOT EXISTS idx_agent_runs_status
 
 CREATE TABLE IF NOT EXISTS agent_tasks (
   task_id TEXT PRIMARY KEY,
-  task_type TEXT NOT NULL CHECK (task_type IN ('discover_source', 'crawl_source', 'repair_source', 'infer_price', 'recompute_cell', 'verify_source', 'verify_pingability', 'enrich_metadata', 'refresh_nutrition', 'audit_quality', 'recompute_metadata_heatmap', 'sample_capacity', 'rebalance_parallelism')),
-  preferred_agent_type TEXT NOT NULL CHECK (preferred_agent_type IN ('discovery', 'repair', 'enrichment', 'nutrition', 'quality', 'math', 'coverage', 'capacity', 'meta', 'orchestrator')),
+  task_type TEXT NOT NULL CHECK (task_type IN ('discover_source', 'crawl_source', 'repair_source', 'infer_price', 'recompute_cell', 'verify_source', 'verify_pingability', 'enrich_metadata', 'refresh_nutrition', 'audit_quality', 'recompute_metadata_heatmap', 'sample_capacity', 'rebalance_parallelism', 'evaluate_kpi_drift', 'recompute_goal_scorecard', 'reprioritize_for_goal_alignment')),
+  preferred_agent_type TEXT NOT NULL CHECK (preferred_agent_type IN ('discovery', 'repair', 'enrichment', 'nutrition', 'quality', 'math', 'coverage', 'capacity', 'goal_governor', 'meta', 'orchestrator')),
   queue_name TEXT NOT NULL DEFAULT 'default',
   status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'claimed', 'running', 'succeeded', 'failed', 'dead_letter', 'skipped')),
   priority INTEGER NOT NULL DEFAULT 50 CHECK (priority BETWEEN 0 AND 100),
@@ -544,7 +607,7 @@ CREATE INDEX IF NOT EXISTS idx_source_registry_next_scan
 
 ## Data Model
 
-The ideal runtime has eight data planes, each with a different trust rule:
+The ideal runtime has nine data planes, each with a different trust rule:
 
 1. **Direct observation plane**
    `current_prices`, `price_changes`, receipt prices, and scraper outputs are authoritative observations. Nothing inferred may overwrite them.
@@ -570,6 +633,9 @@ The ideal runtime has eight data planes, each with a different trust rule:
 8. **Limits plane**
    `runtime_limits` stores the enforced concurrency and rate-limit budgets for queues, sources, domains, and scarce resources like the SQLite writer path. The orchestrator and workers must obey this table instead of improvising their own local limits.
 
+9. **Goal plane**
+   `kpi_contracts` and `kpi_snapshots` define what success means for each active slice and whether the runtime is actually converging on that definition. This is where activity metrics stop being mistaken for goal completion.
+
 Key constraints:
 
 - Direct prices outrank inferred prices everywhere.
@@ -583,6 +649,7 @@ Key constraints:
 - Long-running tasks must refresh a lease or heartbeat so stalled work can be recovered without waiting for a human.
 - CPU-heavy math or transformation work must run in an isolated worker path so bookkeeping, heartbeats, and queue claiming are not starved by a blocked Node event loop.
 - Per-source and per-domain rate-limit budgets are first-class constraints, not just retry delays after failure.
+- No major slice should begin without a KPI contract that defines exact statistical targets, warning states, and failure states.
 - Unnecessary blanks are a product failure. If no direct price exists, the runtime should prefer a clearly labeled estimate over an empty response whenever confidence is sufficient.
 - Coverage expansion wins over repeated low-value re-scrapes when a source or geography is under-covered.
 - Coverage expansion should follow a frontier model: adjacent weak cells, same-chain extensions, and high-value nearby markets should outrank random faraway expansion when all else is equal.
@@ -608,10 +675,12 @@ _List every server action with its signature, auth requirement, and behavior._
 | `getOpenClawInferenceAudit(input)`             | `requireAdmin()` + founder-email gate | `{ canonicalIngredientId, geographyType, geographyKey }` | direct-price context, inferred price, method, confidence, expiry            | None                                                   |
 | `getOpenClawMetadataAudit(input)`              | `requireAdmin()` + founder-email gate | `{ canonicalIngredientId }`                              | image, source URL, nutrition, allergen, dietary, and classification status  | None                                                   |
 | `getOpenClawCapacityOverview()`                | `requireAdmin()` + founder-email gate | none                                                     | recent capacity snapshots, bottleneck view, and recommended parallelism     | None                                                   |
+| `getOpenClawGoalScorecard(sliceKey?)`          | `requireAdmin()` + founder-email gate | `{ sliceKey? }`                                          | KPI contracts, latest KPI snapshots, and goal-alignment state               | None                                                   |
 | `retryOpenClawSource(sourceId)`                | `requireAdmin()` + founder-email gate | `{ sourceId }`                                           | `{ success, queuedTaskId?, error? }`                                        | Enqueues a high-priority `repair_source` task          |
 | `recomputeOpenClawCoverage(cellId)`            | `requireAdmin()` + founder-email gate | `{ cellId }`                                             | `{ success, queuedTaskId?, error? }`                                        | Enqueues a `recompute_cell` task                       |
 | `retryOpenClawMetadata(canonicalIngredientId)` | `requireAdmin()` + founder-email gate | `{ canonicalIngredientId }`                              | `{ success, queuedTaskId?, error? }`                                        | Enqueues `enrich_metadata` or `refresh_nutrition` work |
 | `sampleOpenClawCapacity()`                     | `requireAdmin()` + founder-email gate | none                                                     | `{ success, queuedTaskId?, error? }`                                        | Enqueues a `sample_capacity` task                      |
+| `recomputeOpenClawGoalScorecard(sliceKey?)`    | `requireAdmin()` + founder-email gate | `{ sliceKey? }`                                          | `{ success, queuedTaskId?, error? }`                                        | Enqueues `recompute_goal_scorecard` work               |
 
 ---
 
@@ -623,7 +692,7 @@ This spec only authorizes founder-only internal UI on `/admin/openclaw`. No chef
 
 ### Page Layout
 
-Replace the static usage-only page with a live internal runtime console that keeps the existing boundary copy at the top and adds eight internal tabs below it:
+Replace the static usage-only page with a live internal runtime console that keeps the existing boundary copy at the top and adds nine internal tabs below it:
 
 1. **Overview**
    Global counts: known sources, queued tasks, running agents, open incidents, covered cells, inferred rows, newest scrape, newest inference, stale-source count.
@@ -649,6 +718,9 @@ Replace the static usage-only page with a live internal runtime console that kee
 
 8. **Metadata**
    Completeness tables and heat maps for image coverage, source URL coverage, nutrition coverage, allergen coverage, category hierarchy quality, and source ping reliability. This tab must make it easy to find which categories, regions, or ingredients still need enrichment.
+
+9. **Goals**
+   KPI contracts and scorecards for active slices. Must show objective summary, metric name, target, warning threshold, current measured value, trend direction, and overall state (`on_target`, `warning`, `failed`, `unknown`).
 
 ### States
 
@@ -707,6 +779,8 @@ _List anything that could go wrong and what the correct behavior is._
 - Coverage breadth is measurable by geography cells, not inferred from raw counts alone.
 - The runtime can store inferred prices separately from direct observations and explain how they were derived.
 - The runtime can explain why worker parallelism is currently low, moderate, or high using stored capacity evidence instead of hand-waving.
+- Every meaningful build slice has a KPI contract with explicit target, warning, and failure thresholds before implementation begins.
+- The founder can see whether a slice is actually on target, merely busy, or drifting away from the stated objective.
 - Queue-driven work obeys explicit concurrency and rate-limit budgets for queues, source groups, and scarce resources instead of assuming one global limit fits everything.
 - Task duplication is bounded: repeated founder clicks, repeated incident detection, or repeated scheduler passes do not create unbounded copies of the same active task.
 - Long-running tasks can be recovered after worker death or lease loss without silent duplication or orphaned `running` state.
@@ -725,6 +799,7 @@ _List anything that could go wrong and what the correct behavior is._
   5. Which agent is working on which gap?
 - Founder-only internal UI can also answer a sixth question truthfully: `Are we actually using the machine close to its safe capacity, and if not, why not?`
 - Founder-only internal UI can also answer four more questions truthfully: 7. Which products are still missing critical metadata? 8. Which products have verified versus partial nutrition or allergen evidence? 9. Which sources can be reliably pinged for freshness or stock? 10. Where is metadata coverage strong or weak across the country?
+- Founder-only internal UI can also answer an eleventh question truthfully: `Are we hitting the KPI targets we said mattered, or are we just generating activity?`
 - Repeated re-scrapes of already-covered chains no longer dominate the whole schedule when uncovered geography or broken sources have higher priority.
 - Chef-facing and public-facing product surfaces remain OpenClaw-debranded and outcome-focused.
 
@@ -732,16 +807,17 @@ _List anything that could go wrong and what the correct behavior is._
 
 ## Implementation Order
 
-1. Extend the Pi SQLite runtime schema in `.openclaw-build/lib/db.mjs`.
-2. Add runtime limit, dedupe, heartbeat, incident, coverage, and inference helpers to the Pi runtime.
-3. Add host-capacity sampling and safe-parallelism recommendation helpers to the Pi runtime.
-4. Build `runtime-orchestrator.mjs` so the control plane can prioritize and enqueue work while honoring runtime limits.
-5. Add the bounded specialist agents: discovery, repair, metadata enrichment, nutrition/allergen, quality audit, math, capacity, then meta-agent.
-6. Isolate CPU-heavy math execution from bookkeeping and queue-lease maintenance.
-7. Expose the runtime via new `sync-api.mjs` endpoints.
-8. Wire founder-only server actions in `lib/openclaw/runtime-control-actions.ts`.
-9. Replace the static founder page with the live runtime console.
-10. Adjust cron so fixed scraper cadence and queue-driven work can coexist without starving core scrapes.
+1. Define the KPI contract for the current slice before implementation starts.
+2. Extend the Pi SQLite runtime schema in `.openclaw-build/lib/db.mjs`.
+3. Add runtime limit, dedupe, heartbeat, incident, coverage, inference, and KPI-contract helpers to the Pi runtime.
+4. Add host-capacity sampling and safe-parallelism recommendation helpers to the Pi runtime.
+5. Build `runtime-orchestrator.mjs` so the control plane can prioritize and enqueue work while honoring runtime limits.
+6. Add the bounded specialist agents: discovery, repair, metadata enrichment, nutrition/allergen, quality audit, math, capacity, goal-governor, then meta-agent.
+7. Isolate CPU-heavy math execution from bookkeeping and queue-lease maintenance.
+8. Expose the runtime via new `sync-api.mjs` endpoints.
+9. Wire founder-only server actions in `lib/openclaw/runtime-control-actions.ts` and `lib/openclaw/goal-governor-actions.ts`.
+10. Replace the static founder page with the live runtime console.
+11. Adjust cron so fixed scraper cadence and queue-driven work can coexist without starving core scrapes.
 
 ---
 
@@ -750,25 +826,27 @@ _List anything that could go wrong and what the correct behavior is._
 _How does the builder agent confirm this works? Be specific._
 
 1. Start the Pi runtime locally or on the Raspberry Pi with the new schema and services enabled.
-2. Call `/health` and confirm the existing runtime still reports healthy.
-3. Call the new runtime overview endpoint and verify it returns directory counts, queue counts, incident counts, coverage facts, and inference counts without breaking existing stats endpoints.
-4. Seed one stale source, run the watchdog, and verify an open `source_incidents` row is created or updated.
-5. Run the orchestrator once and verify it enqueues at least one `repair_source` or `discover_source` task based on current state.
-6. Run the repair agent against a known stale source and verify the task, run, and incident states update correctly.
-7. Run the inference engine for a known ingredient/geography gap and verify the result lands in `price_inference_cache`, not `current_prices`, using fallback evidence from nearby geography, same-chain stores, or comparable markets when available.
-8. Queue the same repair task twice with the same `dedupe_key` and verify only one active queued or running copy exists.
-9. Simulate a lease-expired or lock-lost task and verify it becomes recoverable without leaving a silent orphaned `running` task forever.
-10. Simulate source throttling (`429` or equivalent) and verify the source is backed off via `rate_limit_backoff_until` instead of being treated as a generic failure loop.
-11. Verify that a lookup with no direct local price but strong fallback evidence returns a labeled inferred estimate instead of a blank.
-12. Verify that a lookup with genuinely weak evidence stays blank or unavailable, with the reason exposed and follow-up work queued.
-13. Run the catalog enrichment agent on ingredients missing images or source URLs and verify the resulting metadata lands in `ingredient_metadata_profiles` with explicit status fields and provenance.
-14. Run the nutrition/allergen agent on a known packaged product and verify it stores linked or partial evidence without inventing unsupported dietary claims.
-15. Verify the metadata summary or heat-map endpoint shows geography-level completeness for image, source URL, nutrition, and allergen coverage.
-16. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
-17. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, queue limits, metadata completeness, and founder-only action buttons.
-18. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
-19. Review one product-detail feature and one recipe-workflow feature and verify runtime-owned acquisition or enrichment logic stays in OpenClaw while website-owned workflow logic stays in ChefFlow.
-20. Seed a mix of adjacent weak cells and distant weak cells, run the orchestrator, and verify that adjacent frontier expansion and same-chain extensions outrank random distant expansion when priority inputs are otherwise similar.
+2. Verify the current slice has a KPI contract with exact target, warning, and failure thresholds before builder execution is considered valid.
+3. Call `/health` and confirm the existing runtime still reports healthy.
+4. Call the new runtime overview endpoint and verify it returns directory counts, queue counts, incident counts, coverage facts, and inference counts without breaking existing stats endpoints.
+5. Seed one stale source, run the watchdog, and verify an open `source_incidents` row is created or updated.
+6. Run the orchestrator once and verify it enqueues at least one `repair_source` or `discover_source` task based on current state.
+7. Run the repair agent against a known stale source and verify the task, run, and incident states update correctly.
+8. Run the inference engine for a known ingredient/geography gap and verify the result lands in `price_inference_cache`, not `current_prices`, using fallback evidence from nearby geography, same-chain stores, or comparable markets when available.
+9. Queue the same repair task twice with the same `dedupe_key` and verify only one active queued or running copy exists.
+10. Simulate a lease-expired or lock-lost task and verify it becomes recoverable without leaving a silent orphaned `running` task forever.
+11. Simulate source throttling (`429` or equivalent) and verify the source is backed off via `rate_limit_backoff_until` instead of being treated as a generic failure loop.
+12. Verify that a lookup with no direct local price but strong fallback evidence returns a labeled inferred estimate instead of a blank.
+13. Verify that a lookup with genuinely weak evidence stays blank or unavailable, with the reason exposed and follow-up work queued.
+14. Run the catalog enrichment agent on ingredients missing images or source URLs and verify the resulting metadata lands in `ingredient_metadata_profiles` with explicit status fields and provenance.
+15. Run the nutrition/allergen agent on a known packaged product and verify it stores linked or partial evidence without inventing unsupported dietary claims.
+16. Verify the metadata summary or heat-map endpoint shows geography-level completeness for image, source URL, nutrition, and allergen coverage.
+17. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
+18. Run the goal-governor agent and verify it records a KPI snapshot and correctly marks a slice `on_target`, `warning`, `failed`, or `unknown`.
+19. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, queue limits, metadata completeness, KPI scorecards, and founder-only action buttons.
+20. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
+21. Review one product-detail feature and one recipe-workflow feature and verify runtime-owned acquisition or enrichment logic stays in OpenClaw while website-owned workflow logic stays in ChefFlow.
+22. Seed a mix of adjacent weak cells and distant weak cells, run the orchestrator, and verify that adjacent frontier expansion and same-chain extensions outrank random distant expansion when priority inputs are otherwise similar.
 
 ---
 
