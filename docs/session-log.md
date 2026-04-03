@@ -1348,3 +1348,38 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass; no new build or typecheck actions)
 - Notes: Wrote a new parity-doc-program spec instead of a fake one-pass "clone the competitors" build spec. The spec explicitly treats current ChefFlow marketplace/inquiry infrastructure as baseline, defines the required parity document pack, fences authenticated/private competitor workflows as research-first rather than assumed fact, and points future builders back to the existing competitor baseline, gap-closure handoff, and platform-intelligence spec before runtime implementation.
+
+## 2026-04-02 23:50 EDT
+
+- Agent: Planner (Codex)
+- Task: Plan the cross-reference synthesis that ties the current research library and existing specs into one implementation-facing website-build guide for performance and UX improvements
+- Status: started
+- Build state on arrival: green on verified dirty checkout per `docs/build-state.md` (`npm run typecheck:app` and `npm run build -- --no-lint` last verified 2026-04-02 on dirty worktree from `f45fec2c`)
+- Notes: Loaded planner context from `CLAUDE.md`, `docs/specs/_TEMPLATE.md`, `docs/session-log.md`, `docs/build-state.md`, and `docs/app-complete-audit.md`. Next step is to inspect the existing website-build cross-reference docs, active public-surface specs, and the current public code/audit so the new synthesis does not duplicate or contradict already-canonical guidance.
+
+## 2026-04-02 23:57 EDT
+
+- Agent: Planner (Codex)
+- Task: Plan the Getting Started onboarding-surface overhaul, including whether the legacy floating checklist should be removed, replaced, or constrained to a narrower job
+- Status: started
+- Build state on arrival: green on verified dirty checkout per `docs/build-state.md` (`npm run typecheck:app` and `npm run build -- --no-lint` last verified 2026-04-02 on dirty worktree from `f45fec2c`)
+- Notes: Loaded planner context from `CLAUDE.md`, `docs/specs/_TEMPLATE.md`, `docs/session-log.md`, `docs/build-state.md`, `docs/app-complete-audit.md`, and the required dirty-worktree handoff in `docs/research/current-builder-start-handoff-2026-04-02.md`. Next step is deep inspection of the chef onboarding tour shell, floating checklist, dashboard onboarding widgets, related progress tables/actions, and the public audit/research evidence around the current Getting Started experience.
+
+## 2026-04-03 00:03 EDT
+
+- Agent: Codex
+- Task: Resume and complete the post-event trust-loop consolidation after interruption, revalidate the implementation, and bring the builder-facing docs back in sync with the live system
+- Status: completed
+- Files touched: components/events/post-event-trust-panel.tsx, lib/post-event/trust-loop-actions.ts, lib/events/actions.ts, app/(chef)/events/[id]/\_components/event-detail-wrap-tab.tsx, app/(chef)/events/[id]/page.tsx, app/(chef)/surveys/page.tsx, lib/surveys/survey-utils.ts, docs/specs/post-event-trust-loop-consolidation.md, docs/build-state.md, docs/research/built-specs-verification-queue.md, docs/session-log.md
+- Build state on departure: green on verified dirty checkout per `docs/build-state.md` (`npm run typecheck:app`, `node --test --import tsx tests/unit/post-event-trust-loop.test.ts`, and `npm run build -- --no-lint` all passed on 2026-04-03)
+- Notes: Re-read the active trust-loop spec, build/session docs, and touched implementation files instead of trusting the interrupted state. Confirmed the canonical `/feedback/[token]` plus `/surveys` trust-loop path was in place, then revalidated the remaining event-level slice: owner event-detail access now resolves correctly, the wrap tab renders the unified `Post-Event Trust Loop` panel, `/surveys` exposes public-review state and a direct jump back to `/events/[id]?tab=wrap`, and the compatibility `/survey/[token]` route redirects into the canonical public feedback flow. Re-ran typecheck, the trust-loop unit test, and the full app build, then re-verified the live `/surveys` and completed-event wrap-tab routes before marking the spec verified and clearing the stale queue note.
+
+## 2026-04-03 00:08 EDT
+
+- Agent: Planner (Codex)
+- Task: Plan the upgrade of the canonical website-build cross-reference so research, active specs, live website code, and schema touchpoints are tied into one builder-safe implementation guide
+- Status: completed
+- Files touched: docs/specs/website-build-research-spec-code-cross-reference-upgrade.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass; no new build or typecheck actions)
+- Notes: Read the planner context, logged arrival, inspected the existing canonical website-build handoff plus the relevant public routes, navigation, booking/inquiry actions, discovery actions, and schema tables. Wrote a new planning spec that does not create a second handoff; it upgrades the current canonical cross-reference in place, captures the developer's words in Developer Notes, answers every Planner Gate validation question with cited file paths and line numbers, and explicitly flags what a builder would get wrong plus what remains assumed but not verified.
