@@ -1289,6 +1289,6 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Task: Research current chef, consumer, developer, entrepreneur, and business-owner/company workflows around food discovery, private-chef hiring, planning, and supporting systems; then refine the active consumer-first expansion work with the findings
 - Status: completed
 - Files touched: docs/research/multi-persona-workflows-for-food-discovery-private-chef-booking-and-planning-2026-04-02.md, docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md, docs/session-log.md
-- Commits: pending
+- Commits: 8294aa2f (`docs: refine consumer discovery plan from multi-persona research`)
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only research and planning refinement pass; no new build or typecheck actions)
 - Notes: Added a new cross-persona research memo covering consumers, chefs, developers, entrepreneurs, and business/corporate planners; refined the active consumer-first spec to add earlier structured planning inputs, work/group intent, `hub_groups.planning_brief`, durable shortlist snapshots, sample-menu-first public menu spotlighting, and clearer planning-group handoff into existing booking surfaces without replacing current routes.
