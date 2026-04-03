@@ -1380,6 +1380,6 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Task: Plan the upgrade of the canonical website-build cross-reference so research, active specs, live website code, and schema touchpoints are tied into one builder-safe implementation guide
 - Status: completed
 - Files touched: docs/specs/website-build-research-spec-code-cross-reference-upgrade.md, docs/session-log.md
-- Commits: pending
+- Commits: c04625f3
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass; no new build or typecheck actions)
 - Notes: Read the planner context, logged arrival, inspected the existing canonical website-build handoff plus the relevant public routes, navigation, booking/inquiry actions, discovery actions, and schema tables. Wrote a new planning spec that does not create a second handoff; it upgrades the current canonical cross-reference in place, captures the developer's words in Developer Notes, answers every Planner Gate validation question with cited file paths and line numbers, and explicitly flags what a builder would get wrong plus what remains assumed but not verified.

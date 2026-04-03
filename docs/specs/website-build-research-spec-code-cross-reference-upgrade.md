@@ -9,18 +9,18 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event                 | Date                 | Agent/Session   | Commit |
-| --------------------- | -------------------- | --------------- | ------ |
-| Created               | 2026-04-02 23:59 EDT | Planner (Codex) |        |
-| Status: ready         | 2026-04-02 23:59 EDT | Planner (Codex) |        |
-| Claimed (in-progress) |                      |                 |        |
-| Spike completed       |                      |                 |        |
-| Pre-flight passed     |                      |                 |        |
-| Build completed       |                      |                 |        |
-| Type check passed     |                      |                 |        |
-| Build check passed    |                      |                 |        |
-| Playwright verified   |                      |                 |        |
-| Status: verified      |                      |                 |        |
+| Event                 | Date                 | Agent/Session   | Commit   |
+| --------------------- | -------------------- | --------------- | -------- |
+| Created               | 2026-04-02 23:59 EDT | Planner (Codex) |          |
+| Status: ready         | 2026-04-02 23:59 EDT | Planner (Codex) | c04625f3 |
+| Claimed (in-progress) |                      |                 |          |
+| Spike completed       |                      |                 |          |
+| Pre-flight passed     |                      |                 |          |
+| Build completed       |                      |                 |          |
+| Type check passed     |                      |                 |          |
+| Build check passed    |                      |                 |          |
+| Playwright verified   |                      |                 |          |
+| Status: verified      |                      |                 |          |
 
 ---
 
