@@ -1388,10 +1388,10 @@ Every agent appends an entry when they start and when they finish. The next agen
 
 - Agent: Codex
 - Task: Run a fresh multi-persona research pass across chef, consumer, developer, entrepreneur, and business-buyer workflows, then turn the findings into website-build guidance that improves the current cross-reference instead of creating another disconnected note
-- Status: in_progress
-- Files touched: docs/session-log.md
-- Build state on arrival: inherited green dirty-checkout baseline from `docs/build-state.md`
-- Notes: Loaded `CLAUDE.md`, the current website-build foundation doc, the complete app audit, and the strongest existing cross-persona research memos first. Next step is to cross-check the current local corpus against fresh external sources, identify where the present website guidance is already correct versus under-specified, and then write one implementation-facing synthesis plus any necessary cross-reference refinement.
+- Status: completed
+- Files touched: docs/session-log.md, docs/research/foundations/2026-04-03-multi-persona-website-workflow-validation.md, docs/research/foundations/2026-04-02-website-build-research-and-spec-cross-reference.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research pass; no new build or typecheck actions)
+- Notes: Loaded `CLAUDE.md`, the current website-build foundation doc, the complete app audit, the strongest existing cross-persona research memos, and the live public code paths first. Cross-checked the current local corpus against fresh official sources across Take a Chef, Private Chef Manager, HoneyBook, Dubsado, Perfect Venue, Tripleseat, ezCater, Google Workspace, Stripe, Sharetribe, TouchBistro, SevenRooms, Mealime, Samsung Food, and matching community signals. Wrote a new multi-persona validation memo that keeps the user-requested chef, consumer, developer, entrepreneur, and business-buyer split, then refined the canonical website-build cross-reference with the new guardrails: portal optionality, earlier structured planning inputs, simple-versus-complex request separation, and stricter public AI-copy boundaries around admin and operating help rather than recipe generation.
 
 ## 2026-04-03 00:17 EDT
 
