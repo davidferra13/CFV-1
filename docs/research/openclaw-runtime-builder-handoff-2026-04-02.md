@@ -34,6 +34,12 @@ The current method set is good enough to proceed, but it is not final:
 - do not assume the first repair heuristic or enrichment source mix is final
 - keep refining the method when measured evidence shows a stronger one
 
+Economic-grounding note:
+
+- OpenClaw should not prioritize work as if all coverage expansion were equally valuable
+- the runtime should use practical product economics such as recipe-completion lift, lookup utility, likely conversion or retention value, and source maintenance cost when ranking work
+- full corporate-finance concepts like cost of capital belong more to roadmap and founder allocation decisions than to the day-to-day runtime loop
+
 Legal-exposure note:
 
 - internal founder-facing intelligence use is much lower risk than public or commercial republication
@@ -192,7 +198,7 @@ This means the runtime should feel like a colony slowly growing outward with rep
 Ranking rule:
 
 - do not rank frontier work by geography alone
-- use a weighted frontier score that combines adjacency, same-chain expansion, repair urgency, source richness, ChefFlow outcome value, metadata opportunity, and safe execution feasibility
+- use a weighted frontier score that combines adjacency, same-chain expansion, repair urgency, source richness, ChefFlow outcome value, likely recipe-completion or conversion lift, maintenance cost, metadata opportunity, and safe execution feasibility
 - penalize distant isolated cells, low-signal repeated failures, and expansion that would starve repair or freshness
 
 ### Phase 0. Preserve and instrument the baseline

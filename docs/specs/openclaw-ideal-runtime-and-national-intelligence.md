@@ -61,6 +61,7 @@ They added one more operational requirement after the initial draft:
 22. They want the expansion to feel like a colony slowly growing outward, not a scattered blob doing whatever it wants.
 23. They want to know whether the runtime should move state by state, region by region, ZIP by ZIP, store by store, or some hybrid of those.
 24. They also want a clear answer on legal and business risk if this system were exposed to outsiders. The planning assumption should be that public or commercial exposure of scraped retailer data, product images, stock claims, or health-related claims creates real dispute risk even if the internal engine is valuable.
+25. They also want to know whether OpenClaw is grounded in practical economics or just technical crawling ambition. They asked directly whether the system accounts for realities like conversion rates, financial implications, or cost of capital, and whether those realities are necessary for OpenClaw to be viable.
 
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
@@ -79,6 +80,7 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Ownership-enforcement goal:** Every new function must be classified as runtime-owned, website-owned, or handshake-owned. Misalignment is a real defect, not a stylistic preference.
 - **Meta-agent expectation:** The meta-agent is a bounded operational router. It should catch repetitive, measurable classes of runtime gaps, but it will not automatically invent all product requirements unless those requirements are encoded in policy, thresholds, and available task types.
 - **Expansion-order goal:** Growth should be deliberate and explainable. The runtime should expand as a ranked frontier from seeded coverage cells and directory facts, not as a random scatter and not as a simplistic one-state-at-a-time march.
+- **Economic-grounding goal:** OpenClaw should be economically aware enough to prioritize work by expected ChefFlow value, recipe-completion impact, likely usage, maintenance cost, and acquisition cost. But it should not be turned into a full corporate-finance model inside the day-to-day scheduler.
 - **Method-improvement goal:** The current operating method is strong enough to build, but it is not the last possible method. Frontier scoring, source prioritization, inference formulas, enrichment sources, and repair heuristics should keep improving when evidence shows a better approach.
 - **Exposure-risk goal:** Treat public or commercial republication of scraped retailer content, images, inventory assertions, or unsupported health claims as a higher-risk mode than founder-only internal intelligence use. Keep internal-only boundaries in place unless rights, licenses, and claim-substantiation controls are explicit.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
@@ -211,6 +213,8 @@ The frontier should be ranked by a weighted score, not by geography alone. The s
 - repair urgency for cells or sources that recently degraded
 - reachable source richness in the next cell
 - ingredient or category demand value for ChefFlow outcomes
+- likely recipe-completion lift, lookup utility, or conversion lift for ChefFlow workflows
+- expected marginal value relative to refresh or discovery cost
 - metadata completeness opportunity inside the cell
 - safe capacity and rate-limit feasibility
 
@@ -218,7 +222,15 @@ The score should penalize:
 
 - faraway isolated cells with no strong neighboring anchor
 - low-signal source surfaces that repeatedly fail
+- high-maintenance or high-cost expansion that yields little workflow or conversion value
 - speculative expansion that would starve repair or freshness work
+
+Economic interpretation:
+
+- OpenClaw should absolutely account for practical economics in prioritization.
+- It should care about whether a source or geography is expensive to maintain, likely to improve recipe completion, likely to improve chef-facing usefulness, or likely to improve conversion or retention downstream.
+- It does not need to model full cost of capital, enterprise finance, or board-level capital allocation inside the runtime loop.
+- Those broader finance questions belong to founder strategy, product planning, and roadmap allocation, while the runtime should use an operational value score grounded in measurable product economics.
 
 What a founder should see if they watched it all day:
 
