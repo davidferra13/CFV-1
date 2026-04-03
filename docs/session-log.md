@@ -1739,3 +1739,36 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Task: System audit triage into builder-ready specs. Converting production hardening findings (correlation IDs, observability wiring, automated backups, developer action items) into dependency-ordered specs.
 - Status: started
 - Build state on arrival: green (b86f656b8)
+
+## 2026-04-03 17:15 EDT
+
+- Agent: Codex
+- Task: Finish the interrupted builder-handoff triage, resolve the 3 measured interface-philosophy violations, and leave one dependency-ordered builder queue
+- Status: completed
+- Build state on arrival: green baseline from `docs/build-state.md` on preserved dirty checkout
+- Files touched: app/(chef)/dashboard/\_sections/hero-metrics.tsx, app/(chef)/dashboard/\_sections/hero-metrics-client.tsx, components/navigation/nav-config.tsx, lib/billing/focus-mode-actions.ts, docs/interface-philosophy-gap-analysis.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/research/builder-docket-runtime-ownership-map-2026-04-03.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md`; current checkout is typecheck-green with targeted focus-mode tests green, but full build verification is unresolved because `node scripts/run-next-build.mjs` stayed active for an extended window without emitting a final result or producing `.next/BUILD_ID`
+- Notes: Corrected the 3 active interface-philosophy violations locally: hero metrics are now 2 hero + 2 supporting, Focus Mode runtime default now matches the schema default, and the redundant Calendar action-bar shortcut was removed. Rewrote the active builder-start handoff so the default queue is no longer survey-first: builders now enter through the built-verification queue, then the new production-hardening specs (`p1-automated-database-backup-system`, `p1-request-correlation-and-observability-wiring`), then the control-tower trust / continuity order. Updated the control tower, runtime-ownership map, and interface gap analysis to match that queue and to record the UI violations as resolved baseline rather than open work. Preserved the broader dirty snapshot untouched and listed the full file-level baseline explicitly in the handoff so the next builder can distinguish this pass's narrow edits from the surrounding in-flight local ops, runtime, and planning diffs.
+
+## 2026-04-03 17:06 EDT
+
+- Agent: Planner (Codex)
+- Task: Document the OpenClaw runtime separation and PC mirror/backup pipeline so the website reads the local machine copy instead of the Raspberry Pi.
+- Status: started
+- Build state on arrival: green (b86f656b8)
+
+## 2026-04-03 ~17:00 EDT
+
+- Agent: Planner (Claude Opus 4.6)
+- Task: P1 Performance Optimization spec - full audit of cheflowhq.com, bundle analysis, rendering strategy, data fetching, asset optimization
+- Status: started
+- Build state on arrival: green (b86f656b8)
+
+## 2026-04-03 ~17:30 EDT
+
+- Agent: Planner (Claude Opus 4.6)
+- Task: P1 Performance Optimization spec - full audit of cheflowhq.com, bundle analysis, rendering strategy, data fetching, asset optimization
+- Status: completed
+- Files touched: docs/specs/p1-performance-optimization.md (new), docs/session-log.md
+- Build state on departure: green (docs-only session, no code changes; build-state still b86f656b8)
+- Notes: 5-phase spec covering: (1) LCP image priority + resource hints, (2) bundle reduction via dynamic imports + unused dep removal, (3) cache tag/revalidation alignment + React.cache dedup, (4) bundle budget tightening, (5) asset cleanup. Key findings: 1,519 client components, zero priority on LCP images, 40MB unused Remy sprites, 3 unused npm packages (tesseract/xlsx/mammoth), Google Maps + Stripe eagerly loaded. Spec validated with cited evidence for all Planner Gate questions.
