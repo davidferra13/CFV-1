@@ -1757,6 +1757,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Status: started
 - Build state on arrival: green (b86f656b8)
 
+## 2026-04-03 17:28 EDT
+
+- Agent: Planner (Codex)
+- Task: Wrote the builder-ready spec for the OpenClaw PC local-mirror and backup contract, covering durable PC SQLite artifacts, local-only chef-facing reads, and the remaining Pi-direct gaps a builder must replace.
+- Status: completed
+- Files touched: docs/specs/openclaw-pc-local-mirror-and-backup-contract.md, docs/session-log.md
+- Commits: pending docs-only commit for this planner session
+- Build state on departure: unchanged from `docs/build-state.md` (green baseline `b86f656b8`); no new build or typecheck run in this planning session
+- Notes: The new spec captures the developer's raw signal and intent, answers all 14 Planner Gate validation questions with cited evidence, and explicitly calls out the hidden chef-facing Pi dependencies outside Food Catalog (`price-intelligence-actions`, cart refresh, event shopping, weekly briefing, sales, price watch, and store registry reads). The active admin price-catalog route already redirects to `/culinary/price-catalog`, but the app audit and legacy Pi client are stale and are called out in the spec so the builder does not mistake them for the current product truth.
+
 ## 2026-04-03 ~17:00 EDT
 
 - Agent: Planner (Claude Opus 4.6)
