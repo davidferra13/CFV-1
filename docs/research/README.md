@@ -63,7 +63,7 @@ Examples:
 
 These are the most relevant recent supporting documents for current-state understanding and future planning:
 
-- [Website Build Cross-Reference and Builder Handoff - 2026-04-02](./website-build-cross-reference-and-builder-handoff-2026-04-02.md)
+- [Website Build Research and Spec Cross-Reference - 2026-04-02](./foundations/2026-04-02-website-build-research-and-spec-cross-reference.md)
 - [Competitive Intelligence: Take a Chef and Private Chef Manager - 2026-04-02](./competitive-intelligence-takeachef-privatechefmanager-2026-04-02.md)
 - [Competitive Intelligence: ChefFlow Improvement Opportunities - 2026-04-02](./competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md)
 - [Competitive Intelligence Gap-Closure Builder Handoff - 2026-04-02](./competitive-intelligence-gap-closure-builder-handoff-2026-04-02.md)
