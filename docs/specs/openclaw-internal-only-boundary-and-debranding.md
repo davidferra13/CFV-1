@@ -29,10 +29,13 @@ They also said there should be no mention of OpenClaw on the website at all from
 
 They also made the current priority clear: OpenClaw's most important job right now is creating the databases and grocery price coverage the website depends on. The app should consume the results, not expose the mechanism.
 
+They further clarified that some of the risk is no longer really "inside OpenClaw." It depends on how the website presents derived data, claims, images, stock assertions, and source relationships. That means presentation risk belongs to the ChefFlow-facing boundary spec, not only to the OpenClaw runtime spec.
+
 ### Developer Intent
 
 - **Core goal:** Lock OpenClaw behind ChefFlow as internal infrastructure only, and remove all product-facing OpenClaw branding or disclosure.
 - **Key constraints:** No public user path into OpenClaw, no user-facing OpenClaw copy, no product route that exposes OpenClaw by name, no runtime redesign that turns OpenClaw into a public feature.
+- **Presentation boundary:** Risk can be created by website presentation even when the runtime is technically correct. ChefFlow-facing surfaces must treat derived pricing, stock, image, and dietary outputs as presentation-layer responsibilities with their own review bar.
 - **Motivation:** The current UI leaks internal implementation details and weakens the boundary between internal tooling and the product itself.
 - **Success from the developer's perspective:** Users only see ChefFlow and its outputs. OpenClaw stays invisible, internal, and strictly behind the product.
 
@@ -60,6 +63,7 @@ Right now the product leaks internal mechanism language into the user experience
 6. Internal admin or founder-only surfaces may mention OpenClaw when operationally necessary.
 7. This spec overrides older specs anywhere they leak OpenClaw naming into user-facing product surfaces.
 8. Raw OpenClaw lead browsing is not kept as a chef-facing product feature. It is deferred or moved to a separate founder/admin-only internal workflow later.
+9. Public or chef-facing presentation of derived retailer data, stock state, product imagery, or dietary claims is a ChefFlow presentation responsibility and must be reviewed there, even if the underlying data originated in OpenClaw.
 
 ---
 
@@ -203,6 +207,16 @@ These rules are non-negotiable:
 2. No public route should proxy arbitrary user requests to OpenClaw.
 3. OpenClaw cron and sync routes must remain secret-gated or admin-gated.
 4. Public users can consume data that originated in OpenClaw only after it has passed through ChefFlow-owned storage and rules.
+
+### Presentation Review Rule
+
+For any chef-facing or public-facing surface that shows derived grocery or product intelligence:
+
+1. Review the website presentation separately from the OpenClaw acquisition logic.
+2. Prefer neutral ChefFlow language and derived outcomes over raw scraped-source framing.
+3. Clearly distinguish observed versus inferred facts when that distinction affects user trust or decision-making.
+4. Treat stock, allergy, gluten-free, and similar claims as presentation-sensitive. Do not surface them casually just because the runtime has some upstream evidence.
+5. If a new outward-facing presentation increases rights, compliance, or brand-confusion risk, write or update a ChefFlow-facing spec before shipping it.
 
 ### Allowed Internal Visibility
 
