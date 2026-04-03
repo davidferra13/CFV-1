@@ -124,6 +124,10 @@ It should be able to:
 - raise task priority when a known threshold is crossed
 - reduce low-value expansion work when repair or reliability work is more urgent
 
+Planning rule:
+
+- if we expect the meta-agent to notice something, the triggering signal, threshold, and spawned task type must be written explicitly into the spec or handoff before builders rely on that behavior
+
 It should not be expected to:
 
 - independently invent all the product requirements discussed in a conversation unless they were encoded into policy or task types
