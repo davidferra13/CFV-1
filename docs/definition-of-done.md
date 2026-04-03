@@ -33,6 +33,18 @@ Every shipped feature must satisfy all of the following:
 - The feature is tested after implementation by actually running it.
 - There is at least one automated check that would catch the feature drifting out of sync later.
 
+## Interface Philosophy Compliance
+
+Every UI change must comply with the Universal Interface Philosophy (`docs/specs/universal-interface-philosophy.md`). These checks are release blockers:
+
+- No more than one `primary` button per screen (Section 5)
+- No more than 7 items in any nav group, form section, or visible element group (Section 6)
+- No more than 2 hero metrics on any dashboard (Section 6)
+- Every data component handles all five states: Empty, Loading, Loaded, Error, Partial (Section 7)
+- No anti-patterns from the banned list: cluttered dashboards, vanity metrics, redundant controls, competing CTAs, hidden critical actions, empty feature shells (Section 11)
+- Every new widget passes the vanity metric test: "What decision would I make differently based on this number?" (Section 11)
+- Every routine data entry task passes the notepad test: completable in under 10 seconds (Section 9)
+
 ## Release Blockers
 
 Any one of these means the feature is not done:

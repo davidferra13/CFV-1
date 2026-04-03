@@ -57,6 +57,8 @@
 | Build state            | `docs/build-state.md` (last known green build, read before building)               |
 | Spec template          | `docs/specs/_TEMPLATE.md` (Timeline + Developer Notes + all sections)              |
 | Definition of done     | `docs/definition-of-done.md` (verified, honest, resilient against drift)           |
+| Interface philosophy   | `docs/specs/universal-interface-philosophy.md` **(mandatory for UI builders)**     |
+| Interface gap analysis | `docs/interface-philosophy-gap-analysis.md` (violations + fix priority)            |
 | MC Manual panel        | `scripts/launcher/index.html` (panel-manual, live codebase scanner)                |
 | MC Codebase scanner    | `scripts/launcher/server.mjs` (`scanCodebase()`, `GET /api/manual/scan`)           |
 | MC File watcher        | `scripts/launcher/server.mjs` (`initFileWatcher()`, `GET /api/activity/summary`)   |

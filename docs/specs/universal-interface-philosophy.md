@@ -11,6 +11,7 @@
 | ------------- | ---------------- | ------------------ | ------ |
 | Created       | 2026-04-03 16:00 | Planner (Opus 4.6) |        |
 | Status: ready | 2026-04-03 16:30 | Planner (Opus 4.6) |        |
+| Integrated    | 2026-04-03       | Builder (Opus 4.6) |        |
 
 ---
 
@@ -90,7 +91,7 @@ Not applicable.
 
 ---
 
-# THE UNIVERSAL INTERFACE & INTERACTION PHILOSOPHY
+## THE UNIVERSAL INTERFACE & INTERACTION PHILOSOPHY
 
 Every rule below is enforceable. Every rule applies to every surface. No exceptions unless explicitly scoped.
 
@@ -550,6 +551,7 @@ This is a governance document. Verification is ongoing, not one-time:
 ## Notes for Builder Agent
 
 - This document is a **governance spec**, not a feature spec. It does not produce a build. It produces rules.
+- **Start with the gap analysis:** `docs/interface-philosophy-gap-analysis.md` maps every current violation, what's compliant, and the fix priority order. Read it before building anything UI-related.
 - When building any feature, check your implementation against Sections 2, 5, 6, 7, and 11 before marking done.
 - The anti-pattern list (Section 11) is a hard checklist. If you find a violation during implementation, fix it or flag it.
 - The Five States (Section 7) are non-negotiable. Every data component handles Empty, Loading, Loaded, Error, and Partial.

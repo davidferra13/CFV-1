@@ -25,6 +25,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 ## Quick Reference
 
 - **Definition of done:** a feature is only done when it is verified in the real UI, honest about failure, and protected against drift. See `docs/definition-of-done.md`
+- **Interface philosophy:** all UI work must comply with `docs/specs/universal-interface-philosophy.md`. Mandatory read for all builder agents before any UI implementation.
 
 - **Stack:** Next.js · PostgreSQL (Drizzle ORM via postgres.js) · Auth.js v5 · Stripe · Local FS storage · SSE realtime
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
@@ -341,6 +342,7 @@ A feature is not done unless all of the following are true:
 - It handles failure honestly instead of faking success or falling back to misleading UI.
 - It has automated protection against likely drift points.
 - The visible UI, copy, guidance, and progress states match reality exactly.
+- It complies with the Universal Interface Philosophy (`docs/specs/universal-interface-philosophy.md`): anti-pattern checklist (Section 11), cognitive load limits (Section 6), five mandatory states (Section 7), and one primary action per screen (Section 5).
 
 Special rule for onboarding, tours, and guided overlays:
 
