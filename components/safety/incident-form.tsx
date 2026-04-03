@@ -39,10 +39,11 @@ export function IncidentForm({ eventId, onSuccess }: { eventId?: string; onSucce
           immediate_action: immediateAction || undefined,
           event_id: eventId,
         })
+        toast.success('Incident reported')
         onSuccess?.()
         router.push('/safety/incidents')
-      } catch (err) {
-        toast.error('Failed to report incident')
+      } catch {
+        toast.error('Failed to report incident. Please try again.')
       }
     })
   }
@@ -79,6 +80,17 @@ export function IncidentForm({ eventId, onSuccess }: { eventId?: string; onSucce
               ))}
             </select>
           </div>
+          {incidentType === 'food_safety' && (
+            <div className="rounded-lg bg-amber-950/30 border border-amber-800/40 px-4 py-3 text-sm text-amber-200/90 space-y-1">
+              <p className="font-medium">If this involves an allergic reaction, please include:</p>
+              <ul className="list-disc list-inside text-xs space-y-0.5 text-amber-300/80">
+                <li>Which allergen was involved</li>
+                <li>Who was affected (guest name, role)</li>
+                <li>What immediate action was taken</li>
+                <li>Whether emergency services or epinephrine were used</li>
+              </ul>
+            </div>
+          )}
           <div>
             <label className="block text-sm font-medium text-stone-300 mb-1">Description *</label>
             <textarea
@@ -87,7 +99,11 @@ export function IncidentForm({ eventId, onSuccess }: { eventId?: string; onSucce
               rows={4}
               required
               className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
-              placeholder="What happened?"
+              placeholder={
+                incidentType === 'food_safety'
+                  ? 'What happened? Include allergen details if applicable.'
+                  : 'What happened?'
+              }
             />
           </div>
           <div>

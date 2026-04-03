@@ -12,10 +12,10 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                        | Status | Last Verified | Commit                         | Agent |
-| ---------------------------- | ------ | ------------- | ------------------------------ | ----- |
-| `npm run typecheck:app`      | green  | 2026-04-03    | dirty worktree from `f45fec2c` | Codex |
-| `npm run build -- --no-lint` | green  | 2026-04-03    | dirty worktree from `f45fec2c` | Codex |
+| Check                        | Status | Last Verified | Commit                          | Agent           |
+| ---------------------------- | ------ | ------------- | ------------------------------- | --------------- |
+| `npm run typecheck:app`      | green  | 2026-04-03    | dirty worktree from `b9b607a30` | Claude Opus 4.6 |
+| `npm run build -- --no-lint` | green  | 2026-04-03    | dirty worktree from `b9b607a30` | Claude Opus 4.6 |
 
 **Last green build:** 4743f418 (2026-04-02) - UX polish pass (stagger animations + empty states)
 **Last commit on main:** 4743f418 - feat(context): add global app context for timezone, locale, and currency

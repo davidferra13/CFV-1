@@ -18,6 +18,12 @@ import {
 } from '@/lib/booking/series-planning'
 import { z } from 'zod'
 import type Stripe from 'stripe'
+import {
+  parseFreeTextDietary,
+  buildAllergyRecordRows,
+  hasAnaphylaxisCase,
+  recordsToStringArray,
+} from '@/lib/dietary/intake'
 
 function getStripe(): Stripe {
   const StripeLib = require('stripe')
@@ -52,6 +58,7 @@ export type InstantBookResult = {
   checkoutUrl: string
   totalCents: number
   depositCents: number
+  dietarySaveFailed?: boolean
 }
 
 function inferLocationCityState(address: string): { city: string; state: string } {
@@ -148,6 +155,33 @@ export async function createInstantBookingCheckout(
     source: 'website',
   })
 
+  // Parse and persist dietary data (fixes allergy data loss on instant-book path)
+  const dietaryRecords = validated.allergies_food_restrictions
+    ? parseFreeTextDietary(validated.allergies_food_restrictions, 'intake_form')
+    : []
+  const dietaryList = recordsToStringArray(dietaryRecords)
+
+  let dietarySaveFailed = false
+  if (dietaryRecords.length > 0) {
+    const rows = buildAllergyRecordRows(tenantId, client.id, dietaryRecords)
+    try {
+      await db.from('client_allergy_records').upsert(rows, {
+        onConflict: 'client_id,allergen',
+        ignoreDuplicates: true,
+      })
+    } catch (err) {
+      console.error('[instant-book] Allergy record upsert failed (non-blocking):', err)
+      dietarySaveFailed = true
+    }
+  }
+
+  // Block instant checkout for anaphylaxis-level cases
+  if (hasAnaphylaxisCase(dietaryRecords)) {
+    throw new Error(
+      'Severe allergy noted. For your safety, this booking requires chef confirmation first. Please use the inquiry form instead.'
+    )
+  }
+
   const { data: inquiry } = await db
     .from('inquiries')
     .insert({
@@ -161,7 +195,12 @@ export async function createInstantBookingCheckout(
       confirmed_occasion: validated.occasion.trim(),
       source_message: `Instant-book request. Serve time: ${validated.serve_time}. Service mode: ${serviceMode}.${
         recurringSummary ? ` ${recurringSummary}` : ''
-      }${scheduleSummary ? ` ${scheduleSummary}` : ''}`,
+      }${scheduleSummary ? ` ${scheduleSummary}` : ''}${
+        validated.allergies_food_restrictions
+          ? ` Allergies/Dietary: ${validated.allergies_food_restrictions.trim()}`
+          : ''
+      }`,
+      confirmed_dietary_restrictions: dietaryList.length > 0 ? dietaryList : null,
       service_mode: serviceMode,
       schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
       unknown_fields: {
@@ -508,5 +547,6 @@ export async function createInstantBookingCheckout(
     checkoutUrl: session.url!,
     totalCents,
     depositCents,
+    dietarySaveFailed,
   }
 }

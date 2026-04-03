@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ShieldAlert, CheckCircle, AlertTriangle, Sparkles } from '@/components/ui/icons'
 import { TaskLoader } from '@/components/ui/task-loader'
 import { Button } from '@/components/ui/button'
@@ -34,6 +34,7 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
     (AllergenRiskResult & { _aiSource?: 'formula' | 'ai' }) | null
   >(null)
   const [loading, setLoading] = useState(false)
+  const [autoRan, setAutoRan] = useState(false)
 
   async function run() {
     setLoading(true)
@@ -47,6 +48,15 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
     }
   }
 
+  // Auto-run on mount so allergen conflicts surface immediately when a menu exists
+  useEffect(() => {
+    if (!autoRan) {
+      setAutoRan(true)
+      run()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eventId])
+
   if (!result) {
     return (
       <div className="bg-stone-900 border border-stone-700 rounded-lg p-4">
@@ -55,19 +65,19 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
             <ShieldAlert className="w-4 h-4 text-red-500" />
             <span className="text-sm font-medium text-stone-300">Allergen Risk Matrix</span>
           </div>
-          <Button variant="secondary" onClick={run} disabled={loading}>
-            {loading ? (
-              <TaskLoader contextId="ai-allergen-check" />
-            ) : (
-              <>
-                <Sparkles className="w-3 h-3 mr-1" />
-                Run Analysis
-              </>
-            )}
-          </Button>
+          {loading ? (
+            <TaskLoader contextId="ai-allergen-check" />
+          ) : (
+            <Button variant="secondary" onClick={run} disabled={loading}>
+              <Sparkles className="w-3 h-3 mr-1" />
+              Run Analysis
+            </Button>
+          )}
         </div>
         <p className="text-xs text-stone-500 mt-1">
-          Scan every dish against every guest's dietary restrictions and allergies.
+          {loading
+            ? 'Checking every dish against guest dietary restrictions...'
+            : "Scan every dish against every guest's dietary restrictions and allergies."}
         </p>
       </div>
     )

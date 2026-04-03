@@ -94,7 +94,9 @@ export async function clearDemoData(): Promise<ClearDemoDataResult> {
 
     if (eventIds.length > 0) {
       await admin.from('quotes').delete().eq('tenant_id', tenantId).in('event_id', eventIds)
-      await admin.from('ledger_entries').delete().eq('tenant_id', tenantId).in('event_id', eventIds)
+      // ledger_entries are immutable (DB trigger prevents DELETE).
+      // Orphaned rows are harmless: their parent events will be deleted,
+      // so they won't appear in any view or computed summary.
       await admin.from('expenses').delete().eq('tenant_id', tenantId).in('event_id', eventIds)
     }
 

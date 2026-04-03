@@ -3,7 +3,7 @@
 // BookingForm - public booking form for the chef booking page.
 // Dual-mode: inquiry-first (submit inquiry) or instant-book (pay deposit via Stripe Checkout).
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { submitPublicInquiry } from '@/lib/inquiries/public-actions'
 import { createInstantBookingCheckout } from '@/lib/booking/instant-book-actions'
@@ -11,6 +11,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
+import {
+  DietaryIntakeFields,
+  emptyDietaryIntake,
+  type DietaryIntakeValue,
+} from '@/components/forms/dietary-intake-fields'
 import type { BookingConfig } from '@/app/book/[chefSlug]/booking-page-client'
 
 type Props = {
@@ -92,7 +97,23 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
   const [serveTime, setServeTime] = useState('')
   const [address, setAddress] = useState('')
   const [notes, setNotes] = useState('')
-  const [allergies, setAllergies] = useState('')
+  const [dietaryIntake, setDietaryIntake] = useState<DietaryIntakeValue>(emptyDietaryIntake())
+
+  /** Serialize structured dietary intake to a string for server actions */
+  const serializeDietary = useCallback(() => {
+    if (dietaryIntake.accommodationFlag !== 'yes') return undefined
+    const parts: string[] = []
+    if (dietaryIntake.dietaryPatterns.length > 0) {
+      parts.push(...dietaryIntake.dietaryPatterns)
+    }
+    for (const sel of dietaryIntake.allergySelections) {
+      parts.push(`${sel.allergen} (${sel.severity})`)
+    }
+    if (dietaryIntake.additionalNotes.trim()) {
+      parts.push(dietaryIntake.additionalNotes.trim())
+    }
+    return parts.length > 0 ? parts.join(', ') : undefined
+  }, [dietaryIntake])
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -311,7 +332,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           event_date: selectedDate,
           serve_time: serveTime,
           address: address.trim(),
-          allergies_food_restrictions: allergies.trim() || undefined,
+          allergies_food_restrictions: serializeDietary(),
           additional_notes: notes.trim() || undefined,
           service_mode: serviceMode,
           recurring_frequency: serviceMode === 'recurring' ? recurringFrequency : undefined,
@@ -325,6 +346,14 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
               : undefined,
           schedule_request_jsonb: multiDaySchedulePayload,
         })
+        if (!result.checkoutUrl) {
+          setError('Could not create checkout session. Please try again.')
+          return
+        }
+        if (result.dietarySaveFailed) {
+          // Dietary info was submitted but failed to save; chef will see it in notes
+          console.warn('[booking] Dietary records failed to save, included in notes fallback')
+        }
         // Redirect to Stripe Checkout
         window.location.href = result.checkoutUrl
       } else {
@@ -339,7 +368,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
           event_date: selectedDate,
           serve_time: serveTime,
           address: address.trim(),
-          allergies_food_restrictions: allergies.trim() || undefined,
+          allergies_food_restrictions: serializeDietary(),
           additional_notes: notes.trim() || undefined,
           service_mode: serviceMode,
           recurring_frequency: serviceMode === 'recurring' ? recurringFrequency : undefined,
@@ -722,13 +751,12 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
         onChange={(e) => setAddress(e.target.value)}
       />
 
-      <Textarea
-        label="Allergies / Dietary Restrictions"
-        placeholder="Gluten-free, nut allergy, vegan…"
-        value={allergies}
-        onChange={(e) => setAllergies(e.target.value)}
-        rows={2}
-      />
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-stone-300">
+          Allergies / Dietary Restrictions
+        </label>
+        <DietaryIntakeFields value={dietaryIntake} onChange={setDietaryIntake} compact />
+      </div>
 
       <Textarea
         label="Additional Notes"
