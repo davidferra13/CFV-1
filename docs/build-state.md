@@ -14,13 +14,13 @@ Last known state of the app. Updated after every successful type check and build
 
 | Check                        | Status | Last Verified | Commit    | Agent           |
 | ---------------------------- | ------ | ------------- | --------- | --------------- |
-| `npm run typecheck:app`      | green  | 2026-04-03    | 86ddad72c | Claude Opus 4.6 |
-| `npm run build -- --no-lint` | green  | 2026-04-03    | 86ddad72c | Claude Opus 4.6 |
+| `npm run typecheck:app`      | green  | 2026-04-03    | b86f656b8 | Claude Opus 4.6 |
+| `npm run build -- --no-lint` | green  | 2026-04-03    | b86f656b8 | Claude Opus 4.6 |
 
-**Last green build:** 86ddad72c (2026-04-03) - allergy spec build + research docs committed
-**Last commit on main:** 86ddad72c - docs(research): add UX pattern research and interface philosophy rules
+**Last green build:** b86f656b8 (2026-04-03) - full environment sync (interface philosophy spec + uptime history)
+**Last commit on main:** b86f656b8 - chore: update uptime history
 
-**Current blocker:** no repo-wide `tsc` or build blocker is currently active in this checkout. On 2026-04-03, the canonical wrappers were hardened so `npm run build -- --no-lint` clears stale `.next` output before building and `npm run typecheck:app` / `npm run typecheck:next` retry once after resetting stale incremental state. The current survey launch path is still blocked first on deployed host reachability: at 2026-04-03 04:39 EDT, both `https://beta.cheflowhq.com/api/health/readiness?strict=1` and `https://app.cheflowhq.com/api/health/readiness?strict=1` returned Cloudflare `530` / `1033` before any app-level survey verification could run. After deployment reachability is restored, the survey lane is still blocked on actual deployed verification and then phase-3 hardening.
+**Current blocker:** none. All environments verified in sync as of 2026-04-03 ~16:00 EDT. Cloudflare Tunnel was down (service misconfigured, no `tunnel run` argument); reconnected manually via `cloudflared tunnel run chefflow-beta-pc`. The Windows service (`Cloudflared`) starts the binary without tunnel arguments; it needs to be reinstalled with `cloudflared service install` to persist across reboots. Current workaround: manual tunnel process running in background.
 
 **Known non-blocking build noise:** `npm run build -- --no-lint` still emits existing `DYNAMIC_SERVER_USAGE` warnings from unrelated routes during static generation, and Next 14.2.35 still warns that `serverActions` is an unrecognized key in `next.config.js`. The build exits `0`. Treat those warnings as follow-up runtime/config cleanup, not as a blocker for the current baseline.
 
