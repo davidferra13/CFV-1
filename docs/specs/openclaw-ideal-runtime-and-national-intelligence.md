@@ -57,6 +57,9 @@ They added one more operational requirement after the initial draft:
 18. Going forward, every new responsibility must be classified as OpenClaw-owned, ChefFlow-owned, or a handshake between them, and any drift across that boundary should be flagged immediately.
 19. The meta-agent should not be treated as an omniscient founder substitute. It should be good at noticing operational patterns and routing bounded work, but it will only reason from the policies, signals, and task types we explicitly give it.
 20. The developer wants concrete examples of what the meta-agent would spin up, so builders understand it as a task router, not a magic intelligence blob.
+21. The developer wants the growth pattern itself to be explicit: how OpenClaw spreads across the country, where it starts, and whether it moves in a coherent order or just behaves randomly.
+22. They want the expansion to feel like a colony slowly growing outward, not a scattered blob doing whatever it wants.
+23. They want to know whether the runtime should move state by state, region by region, ZIP by ZIP, store by store, or some hybrid of those.
 
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
@@ -74,6 +77,7 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Boundary note:** Recipe scaling belongs to ChefFlow's culinary math and recipe engine, not the OpenClaw runtime. Lot expiration is only a valid OpenClaw fact when backed by real purchased-inventory or lot evidence.
 - **Ownership-enforcement goal:** Every new function must be classified as runtime-owned, website-owned, or handshake-owned. Misalignment is a real defect, not a stylistic preference.
 - **Meta-agent expectation:** The meta-agent is a bounded operational router. It should catch repetitive, measurable classes of runtime gaps, but it will not automatically invent all product requirements unless those requirements are encoded in policy, thresholds, and available task types.
+- **Expansion-order goal:** Growth should be deliberate and explainable. The runtime should expand as a ranked frontier from seeded coverage cells and directory facts, not as a random scatter and not as a simplistic one-state-at-a-time march.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
 - **Refinement rule:** Behavior clarified through developer Q&A must be recorded quickly enough that the downstream builder is operating from the updated spec, not from memory.
 - **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, avoids unnecessary blanks, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, measures metadata completeness and reliability, monitors whether the Pi is under-used, and raises safe parallelism when capacity actually exists.
@@ -144,6 +148,43 @@ Examples of bounded tasks the meta-agent should spin up:
 - `audit_quality` when price movements look contradictory or suspicious
 - `recompute_metadata_heatmap` after a large ingestion batch changes geography-level completeness
 - `rebalance_parallelism` when queue depth is high and the capacity agent confirms safe headroom
+
+### Expansion Order
+
+The ideal OpenClaw runtime should grow like a deliberate frontier, not like a random spray and not like a rigid 50-state checklist.
+
+The order should be:
+
+1. **Build the national directory skeleton first**
+   Know what chains, stores, vendors, and source surfaces exist across the country before pretending coverage exists everywhere.
+
+2. **Seed anchor cells**
+   Start from the strongest currently observed regions and the highest-value reachable markets. Today that means the existing New England footprint is a practical anchor, not the final intended scope.
+
+3. **Expand outward from strong cells**
+   Prefer neighboring ZIPs, metros, and same-chain footprints that are adjacent to already-strong coverage. This creates a visible frontier rather than isolated dots.
+
+4. **Deepen active cells**
+   Once a cell is active, improve store density, vendor coverage, metadata completeness, ping reliability, and refresh quality inside that area.
+
+5. **Repair and stabilize before skipping too far ahead**
+   Stale or broken high-value cells should usually outrank faraway speculative expansion.
+
+6. **Backfill the long tail**
+   Lower-priority remote or sparse cells should still be worked, but only after stronger frontier opportunities, major gaps, or repair work are served.
+
+What this means operationally:
+
+- OpenClaw should not behave as pure state-by-state serial crawling.
+- OpenClaw should not behave as unstructured nationwide randomness.
+- OpenClaw should behave as a ranked frontier: region by region, then metro by metro, then ZIP or store by ZIP or store inside the active frontier, with density and metadata work interleaved behind the frontier edge.
+
+What a founder should see if they watched it all day:
+
+- repair work at the top when strong cells become stale or broken
+- frontier expansion tasks on adjacent uncovered cells or same-chain extensions
+- density and metadata tasks inside active cells
+- slower long-tail backfill tasks when capacity exists
 
 ---
 
@@ -491,6 +532,7 @@ Key constraints:
 - Per-source and per-domain rate-limit budgets are first-class constraints, not just retry delays after failure.
 - Unnecessary blanks are a product failure. If no direct price exists, the runtime should prefer a clearly labeled estimate over an empty response whenever confidence is sufficient.
 - Coverage expansion wins over repeated low-value re-scrapes when a source or geography is under-covered.
+- Coverage expansion should follow a frontier model: adjacent weak cells, same-chain extensions, and high-value nearby markets should outrank random faraway expansion when all else is equal.
 - Metadata gaps should not silently persist forever. Missing image, source URL, nutrition, allergen, or classification fields should be visible, queueable, and measurable.
 - Do not create one tiny runtime agent per attribute. Group product completeness work into bounded enrichment, nutrition/allergen, reliability, and quality domains.
 - Recipe scaling stays in ChefFlow's recipe and ingredient math layer. The OpenClaw runtime may expose unit or package metadata that supports scaling, but it is not the owner of recipe-scaling behavior.
@@ -621,6 +663,7 @@ _List anything that could go wrong and what the correct behavior is._
 - The runtime can explain which products still lack an image, source URL, nutrition evidence, allergen evidence, or reliable stock freshness.
 - The runtime can distinguish a missing field from an unverified field and from a conflicting field.
 - Each new OpenClaw-related feature can be classified cleanly as runtime-owned, website-owned, or handshake-owned without ambiguous responsibility.
+- The founder can explain where the current expansion frontier is, why those cells or sources are next, and why other regions are waiting.
 - Founder-only internal UI can answer five questions truthfully:
   1. What sources do we know about?
   2. What geography is directly covered?
@@ -672,6 +715,7 @@ _How does the builder agent confirm this works? Be specific._
 17. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, queue limits, metadata completeness, and founder-only action buttons.
 18. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
 19. Review one product-detail feature and one recipe-workflow feature and verify runtime-owned acquisition or enrichment logic stays in OpenClaw while website-owned workflow logic stays in ChefFlow.
+20. Seed a mix of adjacent weak cells and distant weak cells, run the orchestrator, and verify that adjacent frontier expansion and same-chain extensions outrank random distant expansion when priority inputs are otherwise similar.
 
 ---
 

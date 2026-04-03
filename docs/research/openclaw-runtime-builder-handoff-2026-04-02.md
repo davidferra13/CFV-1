@@ -21,6 +21,12 @@ That means the next builder should not try to "replace OpenClaw" or jump straigh
 
 This handoff gives the exact order to do that without destroying the current Pi runtime, the existing sync path, or the current website behavior.
 
+The geographic growth pattern should also be explicit:
+
+- today the live runtime is closer to a fixed regional refresh loop than a true frontier-expansion system
+- the target runtime should grow like a frontier from seeded strong cells into adjacent cells and same-chain extensions
+- it should not behave as random nationwide scatter and it should not behave as a rigid one-state-at-a-time checklist
+
 ---
 
 ## Canonical Read Order
@@ -134,6 +140,12 @@ For this lane, progression is not vague activity. It means one or more of these 
 - metadata heat maps and completeness audits are more truthful
 - chef-facing outcomes get more useful without exposing OpenClaw internals
 
+For geography specifically, progression means:
+
+- more cells along the active frontier move from `uncovered` to `partial` to `strong`
+- expansion is visibly contiguous or same-chain-coherent rather than random
+- stale strong cells are repaired before the frontier drifts too far away from trustworthy coverage
+
 ---
 
 ## Do Not Break These Things
@@ -150,6 +162,19 @@ For this lane, progression is not vague activity. It means one or more of these 
 ## Exact Execution Order
 
 The next builder should follow this order exactly.
+
+### Geographic expansion policy
+
+When the control plane starts expanding coverage nationally, use this priority shape:
+
+1. seed the national source directory before pretending we have national coverage
+2. treat the current strongest observed footprint as the anchor frontier
+3. expand into adjacent ZIPs, metros, and same-chain footprints before jumping randomly to distant isolated cells
+4. deepen store, vendor, metadata, and reliability coverage inside active cells
+5. keep repair and freshness work ahead of low-value distant backfill
+6. backfill the long tail only after stronger frontier opportunities are served
+
+This means the runtime should feel like a colony slowly growing outward with repair loops, not like a random crawler and not like a simplistic state-by-state march.
 
 ### Phase 0. Preserve and instrument the baseline
 
