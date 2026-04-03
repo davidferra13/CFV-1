@@ -55,6 +55,8 @@ They added one more operational requirement after the initial draft:
 16. Recipe scaling is important, but it belongs to ChefFlow's recipe and ingredient math layer rather than the OpenClaw runtime itself.
 17. Expiration dates are not universal OpenClaw catalog facts unless the system has real lot-level or inventory-level evidence from a downstream inventory surface.
 18. Going forward, every new responsibility must be classified as OpenClaw-owned, ChefFlow-owned, or a handshake between them, and any drift across that boundary should be flagged immediately.
+19. The meta-agent should not be treated as an omniscient founder substitute. It should be good at noticing operational patterns and routing bounded work, but it will only reason from the policies, signals, and task types we explicitly give it.
+20. The developer wants concrete examples of what the meta-agent would spin up, so builders understand it as a task router, not a magic intelligence blob.
 
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
@@ -71,6 +73,7 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Agent boundary goal:** Use a small number of bounded specialist agents rather than one agent per tiny attribute. Metadata enrichment, nutrition/allergen enrichment, source reliability, and quality auditing are separate responsibilities, but they should each own a coherent domain.
 - **Boundary note:** Recipe scaling belongs to ChefFlow's culinary math and recipe engine, not the OpenClaw runtime. Lot expiration is only a valid OpenClaw fact when backed by real purchased-inventory or lot evidence.
 - **Ownership-enforcement goal:** Every new function must be classified as runtime-owned, website-owned, or handshake-owned. Misalignment is a real defect, not a stylistic preference.
+- **Meta-agent expectation:** The meta-agent is a bounded operational router. It should catch repetitive, measurable classes of runtime gaps, but it will not automatically invent all product requirements unless those requirements are encoded in policy, thresholds, and available task types.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
 - **Refinement rule:** Behavior clarified through developer Q&A must be recorded quickly enough that the downstream builder is operating from the updated spec, not from memory.
 - **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, avoids unnecessary blanks, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, measures metadata completeness and reliability, monitors whether the Pi is under-used, and raises safe parallelism when capacity actually exists.
@@ -109,6 +112,34 @@ Every OpenClaw-related feature must have a clear owner.
 - If ChefFlow starts owning durable scraping, canonical metadata enrichment, source health logic, price inference, or source pingability truth, that is a misalignment and should be flagged.
 - If a feature needs both layers, OpenClaw should emit evidence-rich facts and statuses, and ChefFlow should consume them into chef-facing workflows.
 - Transitional bridges are acceptable, but they must be labeled as bridges so they do not quietly become the permanent owner.
+
+### Meta-Agent Scope
+
+Treat the meta-agent as a bounded runtime supervisor, not as a creative architect.
+
+It should be able to:
+
+- detect stale-source, backlog, rate-limit, metadata-gap, anomaly, and capacity patterns from stored runtime facts
+- escalate or enqueue bounded tasks for existing agent types
+- raise task priority when a known threshold is crossed
+- reduce low-value expansion work when repair or reliability work is more urgent
+
+It should not be expected to:
+
+- independently invent all the product requirements discussed in a conversation unless they were encoded into policy or task types
+- generate arbitrary code
+- create entirely new agent classes on its own
+- decide ChefFlow workflow behavior or public UX
+
+Examples of bounded tasks the meta-agent should spin up:
+
+- `repair_source` for a source that became stale and accumulated repeated failures
+- `verify_pingability` for a source whose stock freshness degraded or whose availability probes became unreliable
+- `enrich_metadata` for popular ingredients missing image or source URL coverage
+- `refresh_nutrition` for packaged products that still lack nutrition or allergen evidence
+- `audit_quality` when price movements look contradictory or suspicious
+- `recompute_metadata_heatmap` after a large ingestion batch changes geography-level completeness
+- `rebalance_parallelism` when queue depth is high and the capacity agent confirms safe headroom
 
 ---
 

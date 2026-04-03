@@ -99,6 +99,21 @@ Current boundary smells that should be treated as transitional rather than final
 - `components/recipes/product-lookup-panel.tsx` is a useful website-side lookup tool, but it should not quietly become the durable system-of-record for nutrition or allergen completeness.
 - Recipe scaling should stay on the ChefFlow side even when OpenClaw provides better package, unit, and product evidence.
 
+Meta-agent interpretation rule:
+
+- do not treat the meta-agent as if it will think of every product requirement the founder might later describe
+- do treat it as a bounded supervisor that notices measurable runtime patterns and routes pre-defined task types
+- if a new idea depends on the meta-agent noticing something, make sure the triggering signal, threshold, and spawned task type are actually written down in the spec first
+
+Examples of valid meta-agent spawns:
+
+- `repair_source` when a source becomes stale and incident severity rises
+- `verify_pingability` when a source can still price products but stock freshness becomes unreliable
+- `enrich_metadata` when high-traffic ingredients are still missing images or source links
+- `refresh_nutrition` when packaged-product categories still lack nutrition or allergen evidence
+- `audit_quality` when price changes or stock states look contradictory
+- `rebalance_parallelism` when queue depth is high and safe host capacity is available
+
 ---
 
 ## What "Progression" Means
