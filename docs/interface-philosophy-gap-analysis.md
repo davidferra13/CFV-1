@@ -60,13 +60,13 @@
 8. Operations (secondary)
 9. Growth (secondary)
 
-**Fix:** The tier split (5 primary + 4 secondary) is already halfway there. Either:
+**Fix: Make Focus Mode default to ON.** Focus Mode already exists and solves this completely. When active, the sidebar shows 5 primary shortcuts (Dashboard, Inbox, Inquiries, Events, Clients) + 4 nav groups. Both under the 7-item limit. Power users toggle it off in Settings > Modules.
 
-- **(a)** Collapse the 4 secondary items behind an explicit "More" disclosure (keeps 5 primary visible + 1 "More" trigger = 6 items), or
-- **(b)** Merge two secondary items (e.g., Operations into Events submenu, Growth into a dashboard widget) to reach 7 total, or
-- **(c)** Use the Action Bar as the primary nav surface (it already has 8 shortcuts) and reduce the sidebar to just Dashboard + All Features
+**Implementation (1-line fix):** In `lib/billing/focus-mode-actions.ts` line 27, change `return (data as any)?.focus_mode ?? false` to `return (data as any)?.focus_mode ?? true`. This aligns the runtime default with the schema default (`focus_mode` column in `chef_preferences` already defaults to `true` per `lib/db/schema/schema.ts` line 24154).
 
-**Note:** The existing tier system and Focus Mode already provide the infrastructure for this fix. The sidebar in Focus Mode may already show fewer items; verify.
+**Bug found:** The schema sets `focus_mode` default to `true` but `isFocusModeEnabled()` returns `false` on null. This means new users (no preferences row yet) see the full 9-item sidebar instead of the intended clean default. Fixing this one line resolves both the bug and the violation.
+
+**Philosophy alignment:** Section 1.5: "Opinionated by default, flexible on demand." Focus Mode ON = opinionated clean sidebar. Toggle OFF = flexible expansion.
 
 ---
 
@@ -76,12 +76,11 @@
 
 **Current state:** `nav-config.tsx` lines 1927-1936 define 8 action bar items: Inbox, Calendar, Events, Clients, Menus, Money, Prep, Circles.
 
-**Fix:** Remove or merge 1 item. Candidates:
+**Fix: Remove Calendar from Action Bar.** Calendar is already in Events' submenu (`nav-config.tsx` line 148: `{ href: '/calendar', label: 'Calendar' }`). Having it as both a standalone Action Bar item and an Events sub-item is a redundant control (anti-pattern, Section 11). Removing it drops the Action Bar to 7 items and eliminates the redundancy.
 
-- **Calendar** could merge into Events (it's already in Events' submenu)
-- **Circles** could move to a secondary position (newer feature, lower daily frequency for most chefs)
+**Implementation:** Remove the Calendar entry from the `actionBarItems` array in `nav-config.tsx` (line ~1929). No other files affected.
 
-**Impact:** Minor. Removing 1 item from 8 to reach 7.
+**Impact:** Minor. Over by 1, and the removed item is already accessible via Events.
 
 ---
 
@@ -136,14 +135,14 @@ The 4 research reports in `docs/research/` contain findings that inform the fix 
 
 ## Fix Priority for Builder Agent
 
-| Priority | Violation                         | Effort                                  | Impact                       |
-| -------- | --------------------------------- | --------------------------------------- | ---------------------------- |
-| 1        | V1: Hero metrics 4 -> 2           | Small (1 file)                          | High (first thing users see) |
-| 2        | V2: Sidebar 9 -> 7 items          | Medium (nav-config + sidebar component) | High (every page load)       |
-| 3        | V3: Action Bar 8 -> 7             | Small (nav-config)                      | Low (over by 1)              |
-| 4        | B2: Large nav groups sub-grouping | Medium (nav-config structure)           | Low (behind All Features)    |
+| Priority | Violation                         | Effort                            | Impact                       | Decision                                               |
+| -------- | --------------------------------- | --------------------------------- | ---------------------------- | ------------------------------------------------------ |
+| 1        | V1: Hero metrics 4 -> 2           | Small (1 file, hero-metrics.tsx)  | High (first thing users see) | Events + Inquiries hero; Revenue + Outstanding demoted |
+| 2        | V2: Sidebar 9 -> 7 items          | Tiny (1 line, focus-mode-actions) | High (every page load)       | Fix runtime default to `true` (match schema)           |
+| 3        | V3: Action Bar 8 -> 7             | Tiny (1 line, nav-config)         | Low (over by 1)              | Remove Calendar (already in Events submenu)            |
+| 4        | B2: Large nav groups sub-grouping | Medium (nav-config structure)     | Low (behind All Features)    | Sub-group items in groups exceeding 7                  |
 
-**Recommended order:** V1 first (smallest change, highest visual impact), then V2 (structural but has existing tier infrastructure), then V3 (trivial).
+**All 3 violations have unambiguous fixes. No decisions needed from the developer.** A builder can execute V1 through V3 sequentially without pausing for input. V2 also fixes a bug (schema/runtime default mismatch).
 
 ---
 
