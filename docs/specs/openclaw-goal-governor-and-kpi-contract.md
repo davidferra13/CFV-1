@@ -34,6 +34,13 @@ They also made the build-process requirement explicit:
 - the role must be integrated into the build process from inception
 - this should reinforce alignment throughout development
 
+They also raised a follow-up concern:
+
+- they want help identifying additional questions that still matter
+- they want to know whether the KPI numbers should be set now or later
+- they do not want to choose heroic numbers too early and accidentally throw the build off course
+- they want a grounded way to establish baseline truth now, while still admitting which metrics are not yet reliable enough to lock
+
 ### Developer Intent
 
 - **Core goal:** Give OpenClaw one explicit goal-governor role that owns the success contract, not just task execution.
@@ -134,8 +141,131 @@ Each KPI contract must include:
 - `review_cadence`
 - `slice_phase`
 - `leading_or_lagging`
+- `baseline_value`
+- `baseline_window`
+- `minimum_sample_size`
+- `calibration_status`
 
 If any of these are missing, the slice is not KPI-ready.
+
+---
+
+## Target-Setting Method
+
+Do not set KPI numbers by vibes, optimism, or fear.
+
+Every KPI should be set in this order:
+
+### 1. Define the metric precisely
+
+Before choosing a number, define:
+
+- numerator
+- denominator
+- inclusion rules
+- exclusion rules
+- time window
+- data source
+
+If the formula is ambiguous, the number is not yet meaningful.
+
+### 2. Capture the baseline first
+
+Before locking a target, collect a baseline over a real window.
+
+The baseline should record:
+
+- current measured value
+- measurement window
+- minimum sample size
+- data quality caveats
+- whether the metric is trustworthy enough to compare over time
+
+### 3. Set three levels, not one
+
+Each serious KPI should have:
+
+- `failure_threshold`
+- `warning_threshold`
+- `target_value`
+
+Optional:
+
+- `stretch_value`
+
+This avoids the mistake of pretending every metric is either perfect or failed.
+
+### 4. Mark the calibration state honestly
+
+Each KPI should be one of:
+
+- `pending` if the formula exists but baseline capture is not yet trustworthy
+- `provisional` if the baseline exists but the metric still needs more sample stability
+- `locked` if the metric has enough evidence to be used as a real build gate
+
+### 5. Ratchet by evidence
+
+Targets should only be tightened when:
+
+- the metric has enough volume
+- the measurement is stable across multiple review windows
+- the stronger target does not simply reward vanity activity
+
+Do not raise the target just because the last number was high once.
+
+---
+
+## Ground Truth We Can Set Now vs Later
+
+We should absolutely define the KPI framework now, but we should not pretend every number is equally trustworthy today.
+
+### High-confidence now
+
+These are usually realistic to baseline early because they come from direct runtime facts or additive instrumentation:
+
+- source count
+- stale-source count
+- source freshness rate
+- source health rate
+- incident count
+- queue lag
+- dead-letter rate
+- direct coverage breadth
+- direct coverage depth
+- image coverage
+- source URL coverage
+- classification completeness
+
+### Medium-confidence after short calibration
+
+These are worth defining now, but should usually start as provisional until we have a stronger sample:
+
+- recipe ingredient price-resolution rate
+- recipe completion success rate
+- inferred-price usefulness
+- blank-result rate
+- nutrition evidence coverage
+- allergen evidence coverage
+- reliable pingability coverage
+- stale-source recovery rate
+
+### Low-confidence until broader instrumentation or longer windows exist
+
+These should still be named now, but their numeric targets should usually remain provisional until the system has enough history:
+
+- conversion-supporting coverage
+- retention-supporting usefulness
+- marginal value per expansion slice
+- maintenance cost efficiency by source family
+- national completeness claims
+- long-term operator workflow lift
+
+Planning rule:
+
+- define the metric family now
+- baseline what we can now
+- lock only what is evidence-ready
+- keep the rest provisional until the ground truth is strong enough
 
 ---
 
@@ -204,9 +334,10 @@ This role must exist from inception of the build lane, not later.
 Before a builder starts a meaningful OpenClaw slice:
 
 1. the slice must name its objective plainly
-2. the KPI contract must define exact statistical targets
+2. the KPI contract must define exact statistical targets or explicitly mark them `provisional` with a real baseline plan
 3. the `goal-governor-agent` must own the scorecard for that slice
 4. the founder must be able to tell what success and failure look like
+5. the builder must know which metrics are already trustworthy and which still need calibration
 
 If that does not exist, implementation should pause until it does.
 
@@ -268,8 +399,9 @@ This scorecard should not be hidden behind raw activity metrics.
 1. Confirm the `goal-governor-agent` is named explicitly in the runtime planning docs.
 2. Confirm the builder handoff says no major slice starts without a KPI contract.
 3. Confirm the KPI contract requires exact statistical targets and not just qualitative language.
-4. Confirm the founder can eventually see KPI alignment separately from raw runtime activity.
-5. Confirm the meta-agent is not mistaken for the KPI owner.
+4. Confirm the KPI contract also requires baseline, sample-size, and calibration-state fields.
+5. Confirm the founder can eventually see KPI alignment separately from raw runtime activity.
+6. Confirm the meta-agent is not mistaken for the KPI owner.
 
 ---
 
@@ -280,7 +412,7 @@ This scorecard should not be hidden behind raw activity metrics.
 - Turning OpenClaw into a corporate-finance model
 - Product-wide KPI policy outside the OpenClaw lane
 
-This spec establishes the role and the gate. Exact numeric benchmarks still need to be filled in per slice.
+This spec establishes the role, the gate, and the calibration method. Exact numeric benchmarks still need to be filled in per slice, but they should now be filled in with a baseline-first process rather than guesswork.
 
 ---
 
@@ -290,3 +422,4 @@ This spec establishes the role and the gate. Exact numeric benchmarks still need
 2. Do not confuse activity metrics with objective metrics.
 3. Do not let the meta-agent quietly become the success-governor by accident.
 4. If a slice has no measurable success definition, it is not ready.
+5. Do not lock heroic KPI targets before baseline evidence exists.

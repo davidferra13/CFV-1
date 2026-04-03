@@ -40,6 +40,14 @@ Economic-grounding note:
 - the runtime should use practical product economics such as recipe-completion lift, lookup utility, likely conversion or retention value, and source maintenance cost when ranking work
 - full corporate-finance concepts like cost of capital belong more to roadmap and founder allocation decisions than to the day-to-day runtime loop
 
+KPI-grounding note:
+
+- define KPI formulas now
+- baseline what is actually measurable now
+- lock targets only where the baseline and sample size are trustworthy
+- use `pending`, `provisional`, and `locked` calibration states instead of pretending every number is equally real on day one
+- do not start with heroic targets just because they sound motivating
+
 Legal-exposure note:
 
 - internal founder-facing intelligence use is much lower risk than public or commercial republication
@@ -213,6 +221,9 @@ Goal:
 Tasks:
 
 - define the KPI contract for the current slice before writing implementation code
+- define the formula, denominator, baseline window, and minimum sample size for each KPI in that slice
+- classify each KPI as `pending`, `provisional`, or `locked`
+- only lock target numbers that already have trustworthy baseline evidence
 - make sure one goal-governor owner is responsible for the scorecard, warning thresholds, and failure thresholds
 - verify current `/health` and `/api/stats` behavior
 - verify existing SQLite schema and cron jobs
@@ -230,7 +241,7 @@ Primary files:
 
 Exit condition:
 
-- the builder can describe exactly what the current runtime is doing, what is stale, where the first additive slice will attach, and what exact KPI contract defines success for that slice
+- the builder can describe exactly what the current runtime is doing, what is stale, where the first additive slice will attach, what exact KPI contract defines success for that slice, and which KPI targets are locked versus still provisional
 
 ### Phase 1. Build the control-plane schema
 

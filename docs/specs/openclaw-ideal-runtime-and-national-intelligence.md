@@ -63,6 +63,7 @@ They added one more operational requirement after the initial draft:
 24. They also want a clear answer on legal and business risk if this system were exposed to outsiders. The planning assumption should be that public or commercial exposure of scraped retailer data, product images, stock claims, or health-related claims creates real dispute risk even if the internal engine is valuable.
 25. They also want to know whether OpenClaw is grounded in practical economics or just technical crawling ambition. They asked directly whether the system accounts for realities like conversion rates, financial implications, or cost of capital, and whether those realities are necessary for OpenClaw to be viable.
 26. They also want one dedicated agent singularly focused on the final objective and the exact KPI targets that define success. They want those statistical benchmarks defined before implementation and formally owned from the beginning, not treated as an afterthought.
+27. They also want help identifying more important unanswered questions and want a grounded way to decide which KPI numbers should be set now versus later. They do not want to lock in inflated targets before baseline truth exists.
 
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
@@ -83,6 +84,7 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Expansion-order goal:** Growth should be deliberate and explainable. The runtime should expand as a ranked frontier from seeded coverage cells and directory facts, not as a random scatter and not as a simplistic one-state-at-a-time march.
 - **Economic-grounding goal:** OpenClaw should be economically aware enough to prioritize work by expected ChefFlow value, recipe-completion impact, likely usage, maintenance cost, and acquisition cost. But it should not be turned into a full corporate-finance model inside the day-to-day scheduler.
 - **KPI-governance goal:** Every meaningful OpenClaw slice should start with an explicit KPI contract, and one dedicated goal-governor role should own whether the system is actually converging toward those targets.
+- **Calibration goal:** KPI numbers should be baseline-first. Define formulas and measurement windows immediately, baseline what is observable now, mark uncertain metrics as provisional, and only lock harder targets when the ground truth is strong enough.
 - **Method-improvement goal:** The current operating method is strong enough to build, but it is not the last possible method. Frontier scoring, source prioritization, inference formulas, enrichment sources, and repair heuristics should keep improving when evidence shows a better approach.
 - **Exposure-risk goal:** Treat public or commercial republication of scraped retailer content, images, inventory assertions, or unsupported health claims as a higher-risk mode than founder-only internal intelligence use. Keep internal-only boundaries in place unless rights, licenses, and claim-substantiation controls are explicit.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
@@ -186,6 +188,7 @@ It should be able to:
 
 - hold the canonical KPI contract for each active slice
 - require exact statistical targets before a major slice begins
+- maintain the baseline window, sample size, and calibration status for each KPI
 - compare measured results against target, warning, and failure thresholds
 - flag vanity progress where runtime activity rises but outcome metrics do not
 - enqueue bounded follow-up tasks such as `evaluate_kpi_drift`, `recompute_goal_scorecard`, or `reprioritize_for_goal_alignment`
@@ -200,6 +203,7 @@ It should not be expected to:
 Planning rule:
 
 - no meaningful OpenClaw slice should start without a KPI contract that defines exact statistical targets, windows, and owners
+- no KPI should be treated as locked if it still lacks a credible baseline, enough sample size, or a stable measurement window
 
 ### Expansion Order
 
@@ -382,9 +386,14 @@ CREATE TABLE IF NOT EXISTS kpi_contracts (
   objective_summary TEXT NOT NULL,
   metric_name TEXT NOT NULL,
   formula_text TEXT NOT NULL,
+  baseline_value REAL,
+  baseline_window TEXT,
+  minimum_sample_size INTEGER,
   target_value REAL NOT NULL,
   warning_threshold REAL,
   failure_threshold REAL,
+  stretch_value REAL,
+  calibration_status TEXT NOT NULL DEFAULT 'pending' CHECK (calibration_status IN ('pending', 'provisional', 'locked')),
   measurement_window TEXT NOT NULL,
   data_source TEXT NOT NULL,
   owner_agent_type TEXT NOT NULL DEFAULT 'goal_governor',
@@ -634,7 +643,7 @@ The ideal runtime has nine data planes, each with a different trust rule:
    `runtime_limits` stores the enforced concurrency and rate-limit budgets for queues, sources, domains, and scarce resources like the SQLite writer path. The orchestrator and workers must obey this table instead of improvising their own local limits.
 
 9. **Goal plane**
-   `kpi_contracts` and `kpi_snapshots` define what success means for each active slice and whether the runtime is actually converging on that definition. This is where activity metrics stop being mistaken for goal completion.
+   `kpi_contracts` and `kpi_snapshots` define what success means for each active slice, what the baseline looked like, whether a metric is still provisional, and whether the runtime is actually converging on that definition. This is where activity metrics stop being mistaken for goal completion.
 
 Key constraints:
 
@@ -650,6 +659,7 @@ Key constraints:
 - CPU-heavy math or transformation work must run in an isolated worker path so bookkeeping, heartbeats, and queue claiming are not starved by a blocked Node event loop.
 - Per-source and per-domain rate-limit budgets are first-class constraints, not just retry delays after failure.
 - No major slice should begin without a KPI contract that defines exact statistical targets, warning states, and failure states.
+- KPI targets must be calibrated against a real baseline and sample-size rule; do not lock heroic numbers before measurement is trustworthy.
 - Unnecessary blanks are a product failure. If no direct price exists, the runtime should prefer a clearly labeled estimate over an empty response whenever confidence is sufficient.
 - Coverage expansion wins over repeated low-value re-scrapes when a source or geography is under-covered.
 - Coverage expansion should follow a frontier model: adjacent weak cells, same-chain extensions, and high-value nearby markets should outrank random faraway expansion when all else is equal.
@@ -720,7 +730,7 @@ Replace the static usage-only page with a live internal runtime console that kee
    Completeness tables and heat maps for image coverage, source URL coverage, nutrition coverage, allergen coverage, category hierarchy quality, and source ping reliability. This tab must make it easy to find which categories, regions, or ingredients still need enrichment.
 
 9. **Goals**
-   KPI contracts and scorecards for active slices. Must show objective summary, metric name, target, warning threshold, current measured value, trend direction, and overall state (`on_target`, `warning`, `failed`, `unknown`).
+   KPI contracts and scorecards for active slices. Must show objective summary, metric name, baseline, calibration status, target, warning threshold, current measured value, trend direction, and overall state (`on_target`, `warning`, `failed`, `unknown`).
 
 ### States
 
@@ -780,6 +790,7 @@ _List anything that could go wrong and what the correct behavior is._
 - The runtime can store inferred prices separately from direct observations and explain how they were derived.
 - The runtime can explain why worker parallelism is currently low, moderate, or high using stored capacity evidence instead of hand-waving.
 - Every meaningful build slice has a KPI contract with explicit target, warning, and failure thresholds before implementation begins.
+- Every KPI contract also records baseline, sample-size expectations, and calibration status so the founder can tell whether a target is truly locked or still provisional.
 - The founder can see whether a slice is actually on target, merely busy, or drifting away from the stated objective.
 - Queue-driven work obeys explicit concurrency and rate-limit budgets for queues, source groups, and scarce resources instead of assuming one global limit fits everything.
 - Task duplication is bounded: repeated founder clicks, repeated incident detection, or repeated scheduler passes do not create unbounded copies of the same active task.
@@ -808,6 +819,7 @@ _List anything that could go wrong and what the correct behavior is._
 ## Implementation Order
 
 1. Define the KPI contract for the current slice before implementation starts.
+   The contract must include formula, baseline plan, minimum sample size, and calibration status.
 2. Extend the Pi SQLite runtime schema in `.openclaw-build/lib/db.mjs`.
 3. Add runtime limit, dedupe, heartbeat, incident, coverage, inference, and KPI-contract helpers to the Pi runtime.
 4. Add host-capacity sampling and safe-parallelism recommendation helpers to the Pi runtime.
@@ -827,6 +839,7 @@ _How does the builder agent confirm this works? Be specific._
 
 1. Start the Pi runtime locally or on the Raspberry Pi with the new schema and services enabled.
 2. Verify the current slice has a KPI contract with exact target, warning, and failure thresholds before builder execution is considered valid.
+   Also verify that the KPI contract records baseline, minimum sample size, and calibration status.
 3. Call `/health` and confirm the existing runtime still reports healthy.
 4. Call the new runtime overview endpoint and verify it returns directory counts, queue counts, incident counts, coverage facts, and inference counts without breaking existing stats endpoints.
 5. Seed one stale source, run the watchdog, and verify an open `source_incidents` row is created or updated.
@@ -843,6 +856,7 @@ _How does the builder agent confirm this works? Be specific._
 16. Verify the metadata summary or heat-map endpoint shows geography-level completeness for image, source URL, nutrition, and allergen coverage.
 17. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
 18. Run the goal-governor agent and verify it records a KPI snapshot and correctly marks a slice `on_target`, `warning`, `failed`, or `unknown`.
+    Verify that it does not mark a provisional KPI as fully locked until the baseline and sample-size rule are satisfied.
 19. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, queue limits, metadata completeness, KPI scorecards, and founder-only action buttons.
 20. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
 21. Review one product-detail feature and one recipe-workflow feature and verify runtime-owned acquisition or enrichment logic stays in OpenClaw while website-owned workflow logic stays in ChefFlow.

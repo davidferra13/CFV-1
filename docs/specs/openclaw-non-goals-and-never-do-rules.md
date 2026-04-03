@@ -225,10 +225,13 @@ If a slice does not have:
 
 - an objective summary
 - exact KPI targets
+- a baseline window and minimum sample-size rule
 - warning and failure thresholds
 - one dedicated goal-governor owner
 
 then it is not ready to start.
+
+Do not lock aggressive KPI numbers before the baseline is trustworthy.
 
 ---
 
