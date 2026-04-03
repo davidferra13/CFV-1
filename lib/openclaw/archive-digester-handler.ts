@@ -4,6 +4,15 @@
  * Archive Digester Sync Handler
  * Pulls discovered clients, events, and financials from the Pi's Archive Digester
  * and creates corresponding records in ChefFlow's PostgreSQL database.
+ *
+ * DATA ISOLATION NOTE: This handler intentionally writes to core business tables
+ * (clients, events) rather than openclaw.* tables. This is an accepted exception
+ * to the OpenClaw data isolation principle because:
+ *   1. It is a one-time bootstrap tool (importing 10 years of business history)
+ *   2. It requires requireChef() (admin-only, never runs via cron)
+ *   3. All writes are INSERT-only with name-based dedup (no updates, no deletes)
+ *   4. All writes are tenant-scoped
+ * Reviewed 2026-04-03 during OpenClaw system audit.
  */
 
 import { requireChef } from '@/lib/auth/get-user'

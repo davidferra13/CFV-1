@@ -1634,3 +1634,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: (pending)
 - Build state on departure: unchanged (no code changes, migration not yet applied)
 - Notes: Full research confirmed OpenClaw cannot autonomously corrupt ChefFlow DB (passive pipeline, not autonomous agent). Migration adds 20 triggers (10 DELETE + 10 TRUNCATE guards) across all openclaw schema + public OpenClaw tables + ingredient_price_history. Includes transaction-scoped escape hatch (SET LOCAL app.allow_openclaw_delete). Codebase audit confirmed zero existing DELETE operations on protected tables. Builder must apply migration with: backup first, then run migration SQL against local PostgreSQL.
+
+## 2026-04-03 ~11:00 EST
+
+- Agent: General (Claude Opus 4.6)
+- Task: System behavior gap analysis - compare system-behavior-specification.md against live codebase
+- Status: started
+- Build state on arrival: green (dirty worktree from f45fec2c)
+- Notes: Created website-goals-survey.md and system-behavior-specification.md earlier this session. Now auditing codebase against the ideal spec to identify divergences. Validation phase rules apply: no new features, only gap identification and targeted fixes.
+
+## 2026-04-03 ~14:00 EDT
+
+- Agent: General (Claude Opus 4.6)
+- Task: OpenClaw dual-survey creation, agent-led system audit, remediation of 3 critical issues
+- Status: completed
+- Files touched: docs/surveys/openclaw-system-audit-survey.md (new), docs/surveys/developer-vision-survey.md (new), docs/surveys/openclaw-audit-remediation.md (new), database/migrations/20260403000002_openclaw_no_delete_guard_extension.sql (new), lib/openclaw/sync.ts (line 404), lib/openclaw/archive-digester-handler.ts (comment), backups/backup-20260403-pre-guard-ext.sql (new)
+- Commits: (pending)
+- Build state on departure: green (migration-only + 1-line code change, no build impact)
+- Notes: Created 2 surveys (agent-led system audit + developer vision). Agent filled the audit survey with cited evidence across 5 sections. Found 3 critical issues: (1) 6 tables missing delete guards, (2) archive digester writing to core tables, (3) "OpenClaw" name in DB notes field. All resolved: new migration adds 12 triggers (32 total), debranded sync notes, accepted archive digester as documented exception. Developer vision survey (42 questions) ready for input. Overall audit score improved from 3.7 to 4.1/5.

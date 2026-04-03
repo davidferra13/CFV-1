@@ -401,7 +401,7 @@ async function syncCore(
                   ${storePrice.normalized_cents}, ${storePrice.normalized_cents},
                   1, ${storePrice.normalized_unit}, ${today},
                   ${storePrice.store}, ${granularSource},
-                  ${`Synced from OpenClaw - ${storePrice.store}`}
+                  ${`Automated price sync - ${storePrice.store}`}
                 )
                 ON CONFLICT (ingredient_id, tenant_id, source, store_name, purchase_date)
                   WHERE source LIKE 'openclaw_%'
