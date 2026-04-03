@@ -50,6 +50,8 @@ These are the highest-value unanswered questions to drive next.
 - What are the highest-priority regions after the current anchor footprint?
 - What categories of products should be prioritized first?
 - What first-party operator data should we ingest to reduce dependence on scraped sources?
+- Which existing data assets in the repo are currently underused by OpenClaw or ChefFlow?
+- Which new synthesis layers would create the most leverage from data we already collect?
 
 ### Inference and Quality
 
@@ -135,6 +137,8 @@ Use this table to capture answers as they are decided.
 | Q31 | What amount of volatility or noise should count as normal drift versus a real KPI warning?          | Prevents overreaction to random swings            | Handshake     | Open    |                                                                                                                                                                                                                                                                                                                                           |
 | Q32 | Which metrics should block rollout even if the primary KPI improves?                                | Protects against harmful local wins               | Handshake     | Open    |                                                                                                                                                                                                                                                                                                                                           |
 | Q33 | When should a KPI target be ratcheted upward, kept flat, or revised downward?                       | Keeps targets ambitious but evidence-based        | Handshake     | Open    |                                                                                                                                                                                                                                                                                                                                           |
+| Q34 | Which existing data assets in the repo are currently underused by OpenClaw or ChefFlow?             | Finds leverage without waiting for new collection | Handshake     | Partial | Underused lanes already visible in the repo include receipt and invoice truth, vendor-import and distributor catalogs, USDA/BLS regional baselines, source-manifest coverage facts, first-party pricing overrides, lookup and coverage telemetry, and nutrition/allergen reference libraries.                                             |
+| Q35 | Which new synthesis layers would create the most leverage from data we already collect?             | Turns dormant data into product lift              | Handshake     | Partial | Highest-leverage next syntheses appear to be: better price-inference backstops from USDA/BLS baselines, stronger first-party truth loops from receipts/invoices and overrides, source-priority scoring from lookup demand and coverage gaps, and richer metadata completeness from existing enrichment and reference-library data.        |
 
 ---
 
