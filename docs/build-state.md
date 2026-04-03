@@ -12,21 +12,21 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                        | Status | Last Verified | Commit    | Agent           |
-| ---------------------------- | ------ | ------------- | --------- | --------------- |
-| `npm run typecheck:app`      | green  | 2026-04-03    | b86f656b8 | Claude Opus 4.6 |
-| `npm run build -- --no-lint` | green  | 2026-04-03    | b86f656b8 | Claude Opus 4.6 |
+| Check                        | Status | Last Verified | Commit               | Agent           |
+| ---------------------------- | ------ | ------------- | -------------------- | --------------- |
+| `npm run typecheck:app`      | green  | 2026-04-03    | dirty from 17aa640d5 | Claude Opus 4.6 |
+| `npm run build -- --no-lint` | green  | 2026-04-03    | dirty from 17aa640d5 | Claude Opus 4.6 |
 
-**Last green build:** b86f656b8 (2026-04-03) - full environment sync (interface philosophy spec + uptime history)
-**Last commit on main:** 9b8ca7f29 - chore: update uptime history
+**Last green build:** dirty checkout from 17aa640d5 (2026-04-03) - engagement badge on client detail + lifecycle progress on event detail
+**Last commit on main:** cd293d526
 
-**Current blocker:** none. All environments verified in sync as of 2026-04-03 ~16:00 EDT. Cloudflare Tunnel was down (service misconfigured, no `tunnel run` argument); reconnected manually via `cloudflared tunnel run chefflow-beta-pc`. The Windows service (`Cloudflared`) starts the binary without tunnel arguments; it needs to be reinstalled with `cloudflared service install` to persist across reboots. Current workaround: manual tunnel process running in background.
+**Current blocker:** none for the last known green baseline. However, the live dirty checkout is ahead of this baseline. A later 2026-04-03 Codex pass re-confirmed `npm.cmd run typecheck:app`, `node --test --import tsx tests/unit/focus-mode.test.ts tests/unit/focus-mode-strict-nav.test.ts`, and `npm.cmd run build -- --no-lint` exiting `0` with the normal route manifest. The remaining gap is post-build artifact integrity on the dirty checkout: `.next/BUILD_ID` and other expected top-level production artifacts were absent immediately after the successful build command. Do not promote the current dirty checkout to green until that artifact persistence is explained or re-verified.
 
 **Known non-blocking build noise:** `npm run build -- --no-lint` still emits existing `DYNAMIC_SERVER_USAGE` warnings from unrelated routes during static generation, and Next 14.2.35 still warns that `serverActions` is an unrecognized key in `next.config.js`. The build exits `0`. Treat those warnings as follow-up runtime/config cleanup, not as a blocker for the current baseline.
 
-**Canonical build command:** use `npm run build -- --no-lint`, not raw `npx next build --no-lint`.
+**Canonical build command:** use `npm run build -- --no-lint`; on Windows PowerShell, prefer `npm.cmd run build -- --no-lint` so warning output from `next build` is not misreported by the `npm.ps1` wrapper. Do not use raw `npx next build --no-lint`.
 
-**Pre-flight caveat:** this verified state is for the current dirty checkout, not a clean commit. Builder pre-flight must use preserved-dirty-checkout mode only when both this file and the latest builder-start handoff explicitly authorize it. That authorization currently exists for the active website handoff and for explicitly assigned OpenClaw runtime work routed through `docs/research/current-openclaw-builder-start-handoff-2026-04-03.md`; do not treat it as a general clean-worktree exemption for unrelated work.
+**Pre-flight caveat:** this file describes the last known green baseline, not every newer uncommitted change on top of it. Builder pre-flight must use preserved-dirty-checkout mode only when both this file and the latest builder-start handoff explicitly authorize it. That handoff now also lists the current dirty snapshot that sits ahead of this baseline; capture `git status --short` again before coding and do not treat the older green state as proof that the current dirty checkout is fully re-verified.
 
 **Current builder-start handoff:** `docs/research/current-builder-start-handoff-2026-04-02.md`
 

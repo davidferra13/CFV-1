@@ -129,6 +129,8 @@ import { EventDetailWrapTab } from './_components/event-detail-wrap-tab'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
+import { getLifecycleProgress } from '@/lib/lifecycle/actions'
+import { LifecycleProgressPanel } from '@/components/lifecycle/lifecycle-progress-panel'
 
 function isEventSoon(eventDate: string): boolean {
   const today = new Date()
@@ -253,6 +255,7 @@ export default async function EventDetailPage({
     substitutionItems,
     eventReadiness,
     timelineEntries,
+    lifecycleProgress,
   ] = await Promise.all([
     getEventFinancialSummary(params.id),
     getEventTransitions(params.id),
@@ -293,6 +296,7 @@ export default async function EventDetailPage({
     getSubstitutions(params.id),
     getEventReadiness(params.id).catch(() => null),
     getEntityActivityTimeline('event', params.id),
+    getLifecycleProgress(event.inquiry_id ?? undefined, params.id).catch(() => null),
   ])
 
   const eventLoyaltyPoints = (eventLoyaltyTxs as { points: number }[]).reduce(
@@ -638,6 +642,20 @@ export default async function EventDetailPage({
           />
         </Suspense>
       </WidgetErrorBoundary>
+
+      {/* Lifecycle Progress */}
+      {lifecycleProgress && lifecycleProgress.stages.length > 0 && (
+        <WidgetErrorBoundary name="Lifecycle Progress" compact>
+          <LifecycleProgressPanel
+            eventId={params.id}
+            inquiryId={event.inquiry_id ?? undefined}
+            stages={lifecycleProgress.stages}
+            overallPercent={lifecycleProgress.overallPercent}
+            currentStage={lifecycleProgress.currentStage}
+            nextActions={lifecycleProgress.nextActions}
+          />
+        </WidgetErrorBoundary>
+      )}
 
       {/* Schedule Summary & DOP Progress */}
       {dopProgress && !['cancelled'].includes(event.status) && (

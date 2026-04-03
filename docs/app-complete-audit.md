@@ -377,6 +377,7 @@
 - Packing Progress Card (confirmed/in_progress, "Open checklist →")
 - Prep Block Nudge Banner (confirmed, no prep blocks)
 - Cost Stale Banner (amber, shown when `cost_needs_refresh=true` after upstream price changes; "Mark as Reviewed" button)
+- Lifecycle Progress Panel (multi-color progress bar, expandable stage checkpoints, next actions; shown when lifecycle data exists for the event's linked inquiry or the event itself)
 
 #### Tab: Overview
 
@@ -493,7 +494,7 @@
 
 **Route:** `/clients/[id]` — ~30 distinct panels
 
-**Header:** name, status dropdown (Active/Dormant/Repeat Ready/VIP), health badge, relationship badge, email, tag manager (add/remove tags), portal link manager (generate/copy/rotate/revoke), "Create Event for Client" → `/events/new?client_id=...`
+**Header:** name, status dropdown (Active/Dormant/Repeat Ready/VIP), health badge, relationship badge, engagement badge (HOT/WARM/COLD based on 14-day portal activity), email, tag manager (add/remove tags), portal link manager (generate/copy/rotate/revoke), "Create Event for Client" → `/events/new?client_id=...`
 
 **All panels on client detail (in order):**
 

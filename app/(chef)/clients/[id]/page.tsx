@@ -78,6 +78,8 @@ import { ServiceDefaultsPanel } from '@/components/clients/service-defaults-pane
 import { BusinessIntelPanel } from '@/components/clients/business-intel-panel'
 import { ClientPhotoGallery } from '@/components/clients/client-photo-gallery'
 import { getClientPhotos } from '@/lib/clients/photo-actions'
+import { computeEngagementScore } from '@/lib/activity/engagement'
+import { EngagementBadge } from '@/components/activity/engagement-badge'
 import { KitchenProfilePanel } from '@/components/clients/kitchen-profile-panel'
 import { ClientIntelligencePanel } from '@/components/intelligence/client-intelligence-panel'
 import { findPotentialClientMatches } from '@/lib/clients/cross-platform-matching'
@@ -169,6 +171,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getTasteProfile(params.id).catch(() => null),
   ])
 
+  const engagementScore = computeEngagementScore(clientPortalActivity as any[])
+
   const clientReviews = allReviews.filter((r: any) => r.client?.id === params.id)
   const avgRating =
     clientReviews.length > 0
@@ -215,6 +219,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 showScore
               />
             )}
+            <EngagementBadge level={engagementScore.level} signals={engagementScore.signals} />
           </div>
           <p className="text-stone-300 mt-1">{client.email}</p>
           {loyaltyProfile && (
