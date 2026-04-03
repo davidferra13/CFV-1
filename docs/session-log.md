@@ -1104,6 +1104,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only follow-up; no new build or typecheck actions)
 - Notes: Added a dedicated capacity agent, host-capacity snapshot schema, capacity-aware runtime/UI requirements, and a clear guardrail that low CPU alone does not justify multiplying concurrency. Also clarified that the meta-agent may create bounded tasks for other agents, but not generate arbitrary code or bypass source/rate-limit ceilings.
 
+## 2026-04-02 22:04 EDT
+
+- Agent: Research / Spec Polish (Codex)
+- Task: Cross-check the ideal OpenClaw runtime spec against current developer practice for queues, crawlers, autoscaling, retries, and host-capacity control, then tighten the spec accordingly
+- Status: completed
+- Files touched: docs/specs/openclaw-ideal-runtime-and-national-intelligence.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research polish; no new build or typecheck actions)
+- Notes: Cross-checked the spec against current official docs and patterns from Scrapy, SQLite, Airflow, Celery, BullMQ, Prefect, Kubernetes HPA, and KEDA. Tightened the spec around per-resource runtime limits, task dedupe, heartbeats and lease recovery, rate-limit-aware crawling, WAL plus busy-timeout awareness, and isolation of CPU-heavy math work from queue bookkeeping.
+
 ## 2026-04-02 20:51 EDT
 
 - Agent: Builder / Trust Verification (Codex)

@@ -169,15 +169,35 @@ CREATE TABLE IF NOT EXISTS host_capacity_snapshots (
 CREATE INDEX IF NOT EXISTS idx_host_capacity_host_captured
   ON host_capacity_snapshots(host_name, captured_at DESC);
 
+CREATE TABLE IF NOT EXISTS runtime_limits (
+  limit_id TEXT PRIMARY KEY,
+  limit_key TEXT NOT NULL UNIQUE,
+  scope_type TEXT NOT NULL CHECK (scope_type IN ('global', 'host', 'queue', 'source', 'domain', 'resource')),
+  scope_key TEXT NOT NULL,
+  limit_type TEXT NOT NULL CHECK (limit_type IN ('concurrency', 'rate')),
+  slot_limit INTEGER NOT NULL,
+  slot_decay_per_second REAL,
+  strict INTEGER NOT NULL DEFAULT 1,
+  active INTEGER NOT NULL DEFAULT 1,
+  notes TEXT,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_runtime_limits_scope
+  ON runtime_limits(scope_type, scope_key, active);
+
 CREATE TABLE IF NOT EXISTS agent_runs (
   run_id TEXT PRIMARY KEY,
   agent_type TEXT NOT NULL CHECK (agent_type IN ('orchestrator', 'discovery', 'repair', 'math', 'coverage', 'capacity', 'meta')),
   status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'partial', 'skipped')),
+  queue_name TEXT NOT NULL DEFAULT 'default',
   started_at TEXT,
   finished_at TEXT,
   duration_ms INTEGER,
   parent_run_id TEXT,
   host_name TEXT,
+  heartbeat_at TEXT,
+  lease_expires_at TEXT,
   input_json TEXT,
   output_json TEXT,
   error_json TEXT,
@@ -193,15 +213,22 @@ CREATE TABLE IF NOT EXISTS agent_tasks (
   task_id TEXT PRIMARY KEY,
   task_type TEXT NOT NULL CHECK (task_type IN ('discover_source', 'crawl_source', 'repair_source', 'infer_price', 'recompute_cell', 'verify_source', 'sample_capacity', 'rebalance_parallelism')),
   preferred_agent_type TEXT NOT NULL CHECK (preferred_agent_type IN ('discovery', 'repair', 'math', 'coverage', 'capacity', 'meta', 'orchestrator')),
+  queue_name TEXT NOT NULL DEFAULT 'default',
   status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'claimed', 'running', 'succeeded', 'failed', 'dead_letter', 'skipped')),
   priority INTEGER NOT NULL DEFAULT 50 CHECK (priority BETWEEN 0 AND 100),
+  pool_slots INTEGER NOT NULL DEFAULT 1,
   source_id TEXT,
   cell_id TEXT,
   canonical_ingredient_id TEXT,
+  dedupe_key TEXT,
   payload_json TEXT,
   attempts INTEGER NOT NULL DEFAULT 0,
+  max_attempts INTEGER NOT NULL DEFAULT 5,
   claimed_by_run_id TEXT,
+  heartbeat_at TEXT,
+  lease_expires_at TEXT,
   next_attempt_at TEXT,
+  not_before TEXT,
   last_error TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -213,6 +240,10 @@ CREATE INDEX IF NOT EXISTS idx_agent_tasks_source
   ON agent_tasks(source_id);
 CREATE INDEX IF NOT EXISTS idx_agent_tasks_cell
   ON agent_tasks(cell_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_tasks_active_dedupe
+  ON agent_tasks(dedupe_key)
+  WHERE dedupe_key IS NOT NULL
+    AND status IN ('queued', 'claimed', 'running');
 
 CREATE TABLE IF NOT EXISTS source_incidents (
   incident_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -272,6 +303,9 @@ ALTER TABLE source_registry ADD COLUMN coverage_status TEXT NOT NULL DEFAULT 'un
 ALTER TABLE source_registry ADD COLUMN priority_score REAL NOT NULL DEFAULT 0;
 ALTER TABLE source_registry ADD COLUMN last_success_at TEXT;
 ALTER TABLE source_registry ADD COLUMN next_recommended_scan_at TEXT;
+ALTER TABLE source_registry ADD COLUMN rate_limit_key TEXT;
+ALTER TABLE source_registry ADD COLUMN rate_limit_backoff_until TEXT;
+ALTER TABLE source_registry ADD COLUMN last_rate_limited_at TEXT;
 ALTER TABLE source_registry ADD COLUMN supports_delivery INTEGER DEFAULT 0;
 ALTER TABLE source_registry ADD COLUMN supports_pickup INTEGER DEFAULT 0;
 ALTER TABLE source_registry ADD COLUMN supports_loyalty INTEGER DEFAULT 0;
@@ -291,13 +325,15 @@ CREATE INDEX IF NOT EXISTS idx_source_registry_next_scan
 
 - No `database/migrations/*.sql` file is required for this first slice because the new control-plane schema lives in the Pi SQLite runtime, initialized and migrated inside `.openclaw-build/lib/db.mjs`.
 - The SQLite changes must remain additive. No table drops, destructive rewrites, or resets of existing price data are allowed.
+- The current runtime already enables WAL mode in `.openclaw-build/lib/db.mjs`; this slice must keep WAL enabled and add an explicit `busy_timeout` plus observable checkpoint behavior rather than assuming write contention will never happen.
+- SQLite remains a Pi-local durability layer, not a license for unbounded concurrent writers. Queue claiming, heartbeats, and run bookkeeping should favor short transactions and a small number of write-active workers.
 - A later implementation spec may mirror selected control-plane facts into PostgreSQL, but that is not part of this slice.
 
 ---
 
 ## Data Model
 
-The ideal runtime has five data planes, each with a different trust rule:
+The ideal runtime has seven data planes, each with a different trust rule:
 
 1. **Direct observation plane**
    `current_prices`, `price_changes`, receipt prices, and scraper outputs are authoritative observations. Nothing inferred may overwrite them.
@@ -317,6 +353,9 @@ The ideal runtime has five data planes, each with a different trust rule:
 6. **Capacity plane**
    `host_capacity_snapshots` stores observed machine headroom and bottleneck facts. Capacity decisions must be made from this evidence, not from guesswork or a single CPU number.
 
+7. **Limits plane**
+   `runtime_limits` stores the enforced concurrency and rate-limit budgets for queues, sources, domains, and scarce resources like the SQLite writer path. The orchestrator and workers must obey this table instead of improvising their own local limits.
+
 Key constraints:
 
 - Direct prices outrank inferred prices everywhere.
@@ -324,6 +363,11 @@ Key constraints:
 - The meta-agent may create tasks for existing agent types and may escalate task priority, but it may not generate arbitrary code or mutate runtime configuration without explicit developer approval.
 - The capacity agent may recommend or enforce bounded concurrency changes for queue-driven workers, but it may not override source rate-limit rules or starve repair work in favor of raw throughput.
 - `10% CPU` does not imply `9x more safe parallelism`. The control plane must treat CPU, memory, I/O wait, database contention, and upstream rate limits as separate ceilings.
+- Queue work must be idempotent enough to survive retries, duplicate delivery, or lease loss without corrupting state.
+- Duplicate tasks for the same active unit of work should be coalesced through `dedupe_key`, not allowed to pile up indefinitely.
+- Long-running tasks must refresh a lease or heartbeat so stalled work can be recovered without waiting for a human.
+- CPU-heavy math or transformation work must run in an isolated worker path so bookkeeping, heartbeats, and queue claiming are not starved by a blocked Node event loop.
+- Per-source and per-domain rate-limit budgets are first-class constraints, not just retry delays after failure.
 - Coverage expansion wins over repeated low-value re-scrapes when a source or geography is under-covered.
 
 ---
@@ -368,6 +412,7 @@ Replace the static usage-only page with a live internal runtime console that kee
 
 4. **Agents**
    Recent agent runs and queue state by agent type. Must show queued, running, failed, partial, and dead-letter counts separately.
+   This tab must also show stalled-task recoveries, lease-expiry counts, and queue lag by queue name.
 
 5. **Incidents**
    Open and recent source incidents with severity, summary, last seen, and one-click retry for founder users.
@@ -376,7 +421,7 @@ Replace the static usage-only page with a live internal runtime console that kee
    Ingredient + geography audit view that explicitly distinguishes direct observation from inferred estimate and shows method, confidence, evidence count, and expiry.
 
 7. **Capacity**
-   Host-capacity panel showing CPU, memory, disk pressure, queue depth, active workers, recommended parallelism, max safe parallelism, and the currently limiting bottleneck. This tab must make it obvious when the machine is under-used versus when concurrency is being capped for a good reason.
+   Host-capacity panel showing CPU, memory, disk pressure, queue depth, active workers, recommended parallelism, max safe parallelism, the currently limiting bottleneck, and any active runtime limits. This tab must make it obvious when the machine is under-used versus when concurrency is being capped for a good reason.
 
 ### States
 
@@ -392,6 +437,7 @@ Replace the static usage-only page with a live internal runtime console that kee
 - Clicking a coverage cell opens its direct-vs-inferred summary.
 - Founder-only actions `Retry Source` and `Recompute Coverage` enqueue tasks; they do not run the repair work synchronously in the browser.
 - Founder-only action `Sample Capacity` queues a fresh capacity measurement and parallelism recommendation.
+- Capacity and agent views must expose when a queue is globally limited, source-limited, or database-limited, instead of collapsing all throttling into a generic `busy` label.
 - Inference audit must always show the underlying direct evidence count and expiry. It may not present inferred rows as if they were scraped facts.
 
 ---
@@ -400,18 +446,22 @@ Replace the static usage-only page with a live internal runtime console that kee
 
 _List anything that could go wrong and what the correct behavior is._
 
-| Scenario                                                   | Correct Behavior                                                                                                  |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Pi runtime API is offline                                  | Founder console loads in degraded mode with explicit `runtime unreachable` state                                  |
-| A source keeps failing and being retried repeatedly        | Create or update one open incident, increment failure evidence, and dead-letter the task after the retry budget   |
-| Inference exists but there is no direct data in that area  | Show the inferred result only with method, confidence, and evidence count, never as a direct price                |
-| Direct and inferred prices disagree sharply                | Keep direct price authoritative, flag a quality incident, and queue repair or recompute                           |
-| Queue grows faster than workers can drain it               | Show backlog counts by priority and status; meta-agent reduces low-priority expansion before dropping repair work |
-| Discovery finds the same source twice                      | Deduplicate by stable source identity and update the existing source row instead of creating duplicates           |
-| Founder clicks retry repeatedly                            | Coalesce duplicate queued repair tasks per source unless the existing task is dead-lettered or completed          |
-| CPU is low but rate-limit pressure is high                 | Keep concurrency capped, record the bottleneck truthfully, and do not mistake idle CPU for safe spare capacity    |
-| CPU is low and queues are deep with no external bottleneck | Capacity agent raises recommended parallelism within configured safety bounds and records the reason              |
-| Meta-agent keeps spawning low-value work                   | Enforce per-agent and per-task-type concurrency ceilings so task creation cannot flood the queue or starve repair |
+| Scenario                                                   | Correct Behavior                                                                                                                                                           |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pi runtime API is offline                                  | Founder console loads in degraded mode with explicit `runtime unreachable` state                                                                                           |
+| A source keeps failing and being retried repeatedly        | Create or update one open incident, increment failure evidence, and dead-letter the task after the retry budget                                                            |
+| Inference exists but there is no direct data in that area  | Show the inferred result only with method, confidence, and evidence count, never as a direct price                                                                         |
+| Direct and inferred prices disagree sharply                | Keep direct price authoritative, flag a quality incident, and queue repair or recompute                                                                                    |
+| Queue grows faster than workers can drain it               | Show backlog counts by priority and status; meta-agent reduces low-priority expansion before dropping repair work                                                          |
+| Discovery finds the same source twice                      | Deduplicate by stable source identity and update the existing source row instead of creating duplicates                                                                    |
+| Founder clicks retry repeatedly                            | Coalesce duplicate queued repair tasks per source unless the existing task is dead-lettered or completed                                                                   |
+| CPU is low but rate-limit pressure is high                 | Keep concurrency capped, record the bottleneck truthfully, and do not mistake idle CPU for safe spare capacity                                                             |
+| CPU is low and queues are deep with no external bottleneck | Capacity agent raises recommended parallelism within configured safety bounds and records the reason                                                                       |
+| Meta-agent keeps spawning low-value work                   | Enforce per-agent and per-task-type concurrency ceilings so task creation cannot flood the queue or starve repair                                                          |
+| A source returns HTTP `429` or equivalent throttling       | Record rate-limit evidence, back off via `rate_limit_backoff_until`, and keep the task in a waiting or rescheduled state instead of treating it as a normal scrape failure |
+| A worker loses its lease while a task is running           | Mark the task stalled, requeue it only if it is idempotent, and keep the recovery visible in the founder console                                                           |
+| SQLite write contention rises under load                   | Preserve WAL, honor `busy_timeout`, keep write-heavy work bounded by the SQLite resource limit, and surface the bottleneck in capacity metrics                             |
+| CPU-heavy inference blocks queue bookkeeping               | Route math work to isolated workers or threads and reduce math concurrency before control-plane heartbeats are lost                                                        |
 
 ---
 
@@ -422,6 +472,9 @@ _List anything that could go wrong and what the correct behavior is._
 - Coverage breadth is measurable by geography cells, not inferred from raw counts alone.
 - The runtime can store inferred prices separately from direct observations and explain how they were derived.
 - The runtime can explain why worker parallelism is currently low, moderate, or high using stored capacity evidence instead of hand-waving.
+- Queue-driven work obeys explicit concurrency and rate-limit budgets for queues, source groups, and scarce resources instead of assuming one global limit fits everything.
+- Task duplication is bounded: repeated founder clicks, repeated incident detection, or repeated scheduler passes do not create unbounded copies of the same active task.
+- Long-running tasks can be recovered after worker death or lease loss without silent duplication or orphaned `running` state.
 - Founder-only internal UI can answer five questions truthfully:
   1. What sources do we know about?
   2. What geography is directly covered?
@@ -437,14 +490,15 @@ _List anything that could go wrong and what the correct behavior is._
 ## Implementation Order
 
 1. Extend the Pi SQLite runtime schema in `.openclaw-build/lib/db.mjs`.
-2. Add queue, incident, coverage, and inference helpers to the Pi runtime.
+2. Add runtime limit, dedupe, heartbeat, incident, coverage, and inference helpers to the Pi runtime.
 3. Add host-capacity sampling and safe-parallelism recommendation helpers to the Pi runtime.
-4. Build `runtime-orchestrator.mjs` so the control plane can prioritize and enqueue work.
+4. Build `runtime-orchestrator.mjs` so the control plane can prioritize and enqueue work while honoring runtime limits.
 5. Add the bounded specialist agents: discovery, repair, math, capacity, then meta-agent.
-6. Expose the runtime via new `sync-api.mjs` endpoints.
-7. Wire founder-only server actions in `lib/openclaw/runtime-control-actions.ts`.
-8. Replace the static founder page with the live runtime console.
-9. Adjust cron so fixed scraper cadence and queue-driven work can coexist without starving core scrapes.
+6. Isolate CPU-heavy math execution from bookkeeping and queue-lease maintenance.
+7. Expose the runtime via new `sync-api.mjs` endpoints.
+8. Wire founder-only server actions in `lib/openclaw/runtime-control-actions.ts`.
+9. Replace the static founder page with the live runtime console.
+10. Adjust cron so fixed scraper cadence and queue-driven work can coexist without starving core scrapes.
 
 ---
 
@@ -459,9 +513,12 @@ _How does the builder agent confirm this works? Be specific._
 5. Run the orchestrator once and verify it enqueues at least one `repair_source` or `discover_source` task based on current state.
 6. Run the repair agent against a known stale source and verify the task, run, and incident states update correctly.
 7. Run the inference engine for a known ingredient/geography gap and verify the result lands in `price_inference_cache`, not `current_prices`.
-8. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
-9. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, and founder-only action buttons.
-10. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
+8. Queue the same repair task twice with the same `dedupe_key` and verify only one active queued or running copy exists.
+9. Simulate a lease-expired or lock-lost task and verify it becomes recoverable without leaving a silent orphaned `running` task forever.
+10. Simulate source throttling (`429` or equivalent) and verify the source is backed off via `rate_limit_backoff_until` instead of being treated as a generic failure loop.
+11. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
+12. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, queue limits, and founder-only action buttons.
+13. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
 
 ---
 
@@ -489,3 +546,5 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 6. When choosing between dense re-scan work and breadth-expansion work, prefer breadth whenever coverage is absent or stale enough that repeated density adds less value than expansion.
 7. Treat agent spawning as durable task creation inside bounded queues, not uncontrolled process forking.
 8. The capacity agent is only useful if it measures the real bottleneck. CPU percentage by itself is not a scheduling policy.
+9. Use explicit runtime limits and pool-style budgets for scarce resources such as the SQLite writer path, source-domain request slots, and math-worker concurrency.
+10. Keep the orchestrator and lease or heartbeat path lightweight. Do not colocate them with CPU-heavy inference in a way that can stall the queue's own bookkeeping.
