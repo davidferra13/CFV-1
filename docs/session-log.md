@@ -1158,6 +1158,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Status: started
 - Build state on arrival: green (commit `e7586911`; working baseline documented as dirty worktree from `f45fec2c` in `docs/build-state.md`)
 
+## 2026-04-02 22:25 EDT
+
+- Agent: Planner (Codex)
+- Task: Wrote the consumer-first discovery and dinner planning expansion spec, validated it against current public discovery, chef marketplace, booking, guest portal, and hub code, and prepared builder handoff
+- Status: completed
+- Files touched: docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md, docs/session-log.md
+- Commits: `9f7289f2`
+- Build state on departure: unchanged from `docs/build-state.md` (spec/docs-only planning pass; no new build or typecheck actions run in this session)
+- Notes: The current product already has strong public primitives, but they are split across `/discover`, `/chefs`, `/book`, guest portals, and Dinner Circles. The new spec keeps those intact and layers in a consumer-first `/eat` route, public menu/package spotlighting, planning-mode Dinner Circles, and picture-first / low-vision hardening. The main builder risk is accidentally replacing existing public flows or exposing non-public menu/recipe data. The spec explicitly fences both off.
+
 ## 2026-04-02 22:41 EDT
 
 - Agent: Research / Product Strategy (Codex)
@@ -1217,3 +1227,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
 - Notes: Verified that ChefFlow already has meaningful public comparison content, but it mostly teaches chefs how to evaluate software rather than teaching buyers how to evaluate private-chef services. Added a new section recommending client-facing educational pages around service formats, pricing coverage, direct-booking expectations, and high-intent occasions, plus stronger pathways between homepage, directory, FAQ, trust, compare, and booking surfaces.
+
+## 2026-04-03 00:08 EDT
+
+- Agent: Research / CTA Continuity (Codex)
+- Task: Extend the ChefFlow improvement memo with a comparison of Take a Chef's consumer navigation and CTA continuity versus ChefFlow's current multi-audience public navigation
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
+- Notes: Verified that ChefFlow already has the major public routes it needs, but still mixes consumer booking, broad discovery, operator adoption, and partner paths in a way that can dilute the main buyer journey. Added a new section recommending one consistent consumer CTA label across header, homepage, directory, profile, and footer, plus clearer separation of operator and partner entry points on buyer-facing pages.
