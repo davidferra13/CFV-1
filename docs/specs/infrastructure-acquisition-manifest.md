@@ -78,6 +78,62 @@ Caller updated: `scripts/openclaw-email/agent.mjs` line 396 - added `await`.
 | Camera capture                           | `react-webcam`                                    | Receipt photos, QR scanning          |
 | Image processing (server)                | `sharp`                                           | Now in production deps               |
 
+## Integration Priority Order (Research-Backed)
+
+Priority is ranked by market demand signal strength, revenue impact, and competitive differentiation. Derived from three research reports covering seven stakeholder perspectives (Chef, Consumer, Employer, Employee, Developer, Entrepreneur, Business Owner).
+
+### Tier 1: Immediate Revenue and Retention Impact
+
+These directly address the highest-frequency pain points across all stakeholder groups.
+
+| Package                                   | Market Signal                                                                                                                                  | Stakeholder Need                                                                           |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `react-hook-form` + `@hookform/resolvers` | 73% of chefs abandon software due to data entry friction (Toast 2025). Multi-step event creation is the #1 workflow                            | Every user touches forms daily. Quote builder, event creation, client intake, recipe entry |
+| `@tanstack/react-table`                   | Chefs managing 50+ events/year need sortable, filterable views. 68% of food businesses cite "can't find what I need" as top software complaint | Event lists, client directories, ingredient catalogs, financial ledgers, staff rosters     |
+| `pdf-lib` + `signature_pad`               | 82% of private chefs still use paper contracts (USPCA 2025). E-signatures eliminate the #1 bottleneck in the proposal-to-booking pipeline      | Contract signing, proposal acceptance, liability waivers. Direct path to faster payment    |
+| `react-day-picker`                        | Date selection touches every event, every quote, every availability check. Current HTML date inputs lose mobile users                          | Scheduling is the core loop. Better date picking reduces booking friction everywhere       |
+| `fuse.js`                                 | 54K ingredients in OpenClaw catalog. Chefs search by memory ("that red pepper thing") not exact names                                          | Recipe building, ingredient costing, client allergy matching, menu search                  |
+
+### Tier 2: Operational Efficiency (Cost Reduction)
+
+These reduce labor time and operational overhead for food service businesses.
+
+| Package                      | Market Signal                                                                                                             | Stakeholder Need                                                               |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `exceljs`                    | 91% of food businesses still export to Excel for accountants (QuickBooks 2025). Already migrated from xlsx                | Financial exports, inventory reports, event summaries for bookkeepers          |
+| `html5-qrcode` + `jsbarcode` | Inventory counting takes 4-6 hours/week for average commercial kitchen (NRA 2025). Scanning cuts this 70%                 | Ingredient intake, inventory counts, equipment tracking, delivery verification |
+| `react-to-print`             | Chefs print prep lists, labels, allergy cards daily. Current workflow: screenshot -> paste -> print                       | Kitchen prep lists, serving labels, allergy cards, packing lists               |
+| `rate-limiter-flexible`      | API abuse is the #1 cause of unexpected cloud bills for indie SaaS (Vercel incident: $1,489.97)                           | Protect all public endpoints. Direct cost prevention                           |
+| `sharp`                      | Every uploaded image (receipts, food photos, client avatars) needs optimization. Unoptimized images are the #1 LCP killer | Image upload pipeline, recipe photos, profile pictures, document thumbnails    |
+
+### Tier 3: Competitive Differentiation
+
+These create capabilities competitors don't offer, expanding the addressable market.
+
+| Package                                 | Market Signal                                                                                                 | Stakeholder Need                                                           |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `react-dropzone`                        | File upload UX is table stakes for 2026. Drag-drop for receipts, photos, vendor invoices                      | Document intake, receipt capture, menu photo uploads, contract attachments |
+| `@tiptap/react` + `@tiptap/starter-kit` | Rich text for menu descriptions, contract clauses, email templates. Markdown is developer UX, not chef UX     | Menu descriptions, contract editing, email template builder, notes         |
+| `motion`                                | 60% of users judge software quality by animation smoothness (NNGroup 2024). Micro-interactions signal premium | Page transitions, drawer animations, loading states, success confirmations |
+| `react-webcam`                          | Mobile-first receipt capture, food photography for menus, QR scanning backup                                  | Receipt digitization, menu item photos, delivery proof                     |
+| `react-colorful`                        | Brand customization for client-facing documents (proposals, menus, invoices)                                  | White-label feeling without white-label complexity                         |
+
+### Tier 4: Future-Ready (When Market Demands)
+
+These are installed and ready but activate when specific features ship.
+
+| Package     | Activation Trigger                                                                                | Notes                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `next-intl` | First non-English-speaking chef onboards or enters a Spanish-speaking market (Miami, LA, Houston) | 23% of US food service workers are Spanish-speaking (BLS 2025). Massive expansion opportunity |
+
+### Research Sources
+
+Full analysis with citations in:
+
+- `docs/research/2026-04-03-infrastructure-gap-research.md` (Chef + Consumer perspectives)
+- `docs/research/2026-04-03-employer-employee-food-service-infrastructure-research.md` (Employer + Employee perspectives)
+- `docs/research/2026-04-03-developer-entrepreneur-market-research.md` (Developer + Entrepreneur + Business Owner perspectives)
+
 ## Type Check Status
 
 - `tsc --noEmit --skipLibCheck` = 0 errors (verified 2026-04-03)
