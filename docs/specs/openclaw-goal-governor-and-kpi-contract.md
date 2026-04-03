@@ -377,6 +377,31 @@ If a metric can be made to look better by quietly shrinking its denominator, the
 
 ---
 
+## Default Drift and Warning Thresholds
+
+Use these defaults unless a narrower slice spec defines stronger rules.
+
+These thresholds only apply after the metric has met its sample floor. Before that, the goal governor may annotate movement, but it should not overreact to it.
+
+### Rate-based metrics
+
+- `normal_noise`: one review window within `2 percentage points` of the rolling baseline or active target
+- `warning`: worse than baseline or target by more than `2 percentage points` for `2 consecutive review windows`, or worse by more than `5 percentage points` in a single window
+- `failed_drift`: worse than baseline or target by more than `5 percentage points` for `2 consecutive review windows`, or worse by more than `8 percentage points` in a single window
+
+### Count, lag, or cost metrics
+
+- `normal_noise`: one review window within `10%` of the rolling baseline or active target
+- `warning`: worse than baseline or target by more than `10%` for `2 consecutive review windows`, or worse by more than `20%` in a single window
+- `failed_drift`: worse than baseline or target by more than `20%` for `2 consecutive review windows`, or worse by more than `35%` in a single window
+
+Interpretation rule:
+
+- do not let one noisy window trigger a slice reprioritization unless the movement also breaches a hard guardrail ceiling or corresponds to a severity-high runtime or compliance incident
+- compare against the stricter of the rolling baseline, the current committed target, or the active warning threshold
+
+---
+
 ## KPI Families
 
 This spec does not force one universal numeric target for everything today, but it does define the metric families that must be considered.
@@ -457,6 +482,18 @@ The goal governor must:
 - surface drift early
 - keep local wins from being mistaken for actual success
 
+### Rollout blockers
+
+Even if a primary outcome metric improves, rollout should pause or stay internal-only when any of the following is true:
+
+- a severity-high rights, compliance, or brand-confusion incident remains open
+- a public or chef-facing surface is showing a suppressed asset, suppressed source link, or unsupported dietary claim
+- any critical guardrail metric is in `failed_drift` for `2 consecutive review windows`
+- build health regresses, auth boundaries weaken, or secret-gated runtime routes become exposed
+- the slice depends on a suppression, dispute, or takedown path that has not yet been tested in the intended scope
+
+The goal governor must treat these as hard blockers, not as soft notes.
+
 ### After implementation
 
 The goal governor must:
@@ -464,6 +501,17 @@ The goal governor must:
 - mark the slice as `on_target`, `warning`, `failed`, or `unknown`
 - explain why
 - recommend whether the next slice should continue, repair, or reprioritize
+
+### Ratchet rules
+
+- ratchet a target upward only when the metric is `locked`, has met its sample floor, and has beaten the committed target for `2 consecutive review windows` while guardrail metrics remain healthy
+- keep the target flat when the metric is within the warning band, the denominator changed recently, the slice is still calibrating, or guardrail behavior is unstable
+- revise a target downward only with explicit founder approval and one of these conditions:
+  - the denominator or scope changed materially
+  - an external source, rights, or platform constraint changed the realistic ceiling
+  - `3 consecutive well-executed review windows` missed the committed target by `failed_drift` margins and the root-cause review shows the old target was unrealistic
+
+Downward revision is a documented policy decision, not a quiet metric edit.
 
 ---
 
@@ -531,3 +579,5 @@ This spec establishes the role, the gate, and the calibration method. Exact nume
 3. Do not let the meta-agent quietly become the success-governor by accident.
 4. If a slice has no measurable success definition, it is not ready.
 5. Do not lock heroic KPI targets before baseline evidence exists.
+6. Do not treat short-term primary-metric improvement as permission to ignore rights, safety, or guardrail failures.
+7. Do not revise targets downward casually; record why the prior target was wrong.

@@ -212,6 +212,7 @@ Ranking rule:
 - use a weighted frontier score that combines adjacency, same-chain expansion, repair urgency, source richness, ChefFlow outcome value, likely recipe-completion or conversion lift, maintenance cost, metadata opportunity, and safe execution feasibility
 - penalize distant isolated cells, low-signal repeated failures, and expansion that would starve repair or freshness
 - until a narrower slice spec overrides it, use the v1 frontier weights, confidence bands, product-usability tiers, and freshness SLAs from `openclaw-ideal-runtime-and-national-intelligence.md`
+- until a narrower slice spec overrides it, use the default nutrition-evidence hierarchy, source lifecycle, suppression rules, KPI drift thresholds, rollout blockers, and ratchet rules too
 
 ### Phase 0. Preserve and instrument the baseline
 
@@ -226,10 +227,12 @@ Tasks:
 - classify each KPI as `pending`, `provisional`, or `locked`
 - only lock target numbers that already have trustworthy baseline evidence
 - make sure one goal-governor owner is responsible for the scorecard, warning thresholds, and failure thresholds
+- define the hard rollout blockers for the slice before implementation starts; do not let later local KPI wins overrule rights, safety, or boundary failures
 - verify current `/health` and `/api/stats` behavior
 - verify existing SQLite schema and cron jobs
 - verify what the current ingredient-detail and catalog endpoints already expose for image, stock, source URL, and freshness
 - verify what the current app-side polish job and packaged-product lookup already do so the new runtime slice extends them instead of duplicating them blindly
+- verify which nutrition and allergen sources currently feed the app, and map them to the new evidence tiers before changing any claim surface
 - add missing runtime readouts only if they do not change scheduling behavior yet
 - document current source count, price count, scrape freshness, and known stale-source behavior
 
@@ -260,7 +263,7 @@ Tasks:
 - add `agent_tasks`
 - add `source_incidents`
 - add `price_inference_cache`
-- extend `source_registry` with directory, rate-limit, and ping-reliability fields
+- extend `source_registry` with directory, health-state, suppression-state, rate-limit, and ping-reliability fields
 - preserve WAL and add `busy_timeout` plus observable checkpoint behavior
 
 Primary file:
@@ -280,8 +283,10 @@ Goal:
 Tasks:
 
 - extend the Pi `sync-api` with runtime overview, source directory, incidents, coverage, metadata summary, metadata audit, agent-run, and inference-audit endpoints
+- make source directory and incident reads expose `health_state`, `suppression_state`, suppression reason, and evidence-tier summaries where relevant
 - build founder-only server actions to read those endpoints
 - replace the static usage page with a live runtime console while keeping the existing boundary copy
+- include founder-only suppress and restore controls so dispute handling is not left as an informal database-edit workflow
 
 Primary files:
 
@@ -334,6 +339,7 @@ Tasks:
 - implement `quality-audit-agent.mjs`
 - implement `meta-agent.mjs` as bounded task creation, not uncontrolled process spawning
 - connect watchdog outputs to `source_incidents` and repair tasks
+- make the nutrition-allergen agent use the evidence hierarchy explicitly instead of treating USDA, Open Food Facts, and label-equivalent evidence as interchangeable
 
 Primary files:
 
@@ -366,6 +372,7 @@ Tasks:
 - expose direct versus inferred state in the founder console
 - expose image, source URL, nutrition, allergen, and ping-reliability completeness in the founder console
 - prioritize under-covered geography over low-value repeated refreshes
+- keep broader public expansion closed by default; only internal or already-approved ChefFlow surfaces may consume the richer outputs until the public expansion gate is explicitly passed
 
 Primary files:
 

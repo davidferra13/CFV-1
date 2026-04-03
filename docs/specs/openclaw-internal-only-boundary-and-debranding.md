@@ -218,6 +218,33 @@ For any chef-facing or public-facing surface that shows derived grocery or produ
 4. Treat stock, allergy, gluten-free, and similar claims as presentation-sensitive. Do not surface them casually just because the runtime has some upstream evidence.
 5. If a new outward-facing presentation increases rights, compliance, or brand-confusion risk, write or update a ChefFlow-facing spec before shipping it.
 
+### Public Expansion Gate
+
+The default state is still `closed`.
+
+No broader public or chef-facing expansion of OpenClaw-derived product intelligence should ship unless all of the following are true:
+
+1. a separate outward-facing ChefFlow spec exists for the exact surface
+2. the intended scope has passed its KPI contract for at least `60 consecutive days`
+3. rights-sensitive assets such as logos, retailer images, and deep links are either licensed, suppressed, or explicitly approved for that scope
+4. diet, allergen, and gluten-free claims on that surface come only from allowed evidence tiers and have a visible fallback for `unknown` or `blocked`
+5. the suppression, dispute, and takedown path has been tested end to end
+6. the founder explicitly approves the gate change
+
+No builder should infer public-readiness from runtime strength alone.
+
+### Dispute and Takedown Rule
+
+If a retailer, marketplace, rights holder, or other credible party objects to a source, asset, or outward claim:
+
+1. immediately suppress the disputed outward asset or claim first
+2. preserve the underlying provenance, timestamps, and audit trail internally
+3. pause non-essential crawling for that source if the objection concerns access, terms, or automated collection
+4. route the incident to founder review instead of letting the runtime make a legal conclusion on its own
+5. resolve the source or asset to one of: `restored`, `narrowed`, `presentation_suppressed`, `crawl_suppressed`, or `retired`
+
+The system should prefer reversible suppression over destructive deletion.
+
 ### Allowed Internal Visibility
 
 OpenClaw naming is still allowed in:
@@ -240,6 +267,8 @@ That is the correct place for it.
 | Internal code still uses `openclaw` symbol names        | Allowed if not user-visible                                                             |
 | Admin/internal pages mention OpenClaw                   | Allowed if access stays internal                                                        |
 | Product copy needs to explain missing data              | Use neutral language like `coverage`, `data sync`, `freshness`, or `price availability` |
+| A retailer disputes image, link, or claim usage         | Suppress the outward asset or claim immediately, preserve audit evidence, and escalate  |
+| Runtime quality improves but takedown flow is untested  | Keep expansion gate closed until the dispute path is verified                           |
 | Route handlers already protected by `verifyCronAuth`    | Keep protection as-is; do not weaken it during cleanup                                  |
 
 ---

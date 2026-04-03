@@ -358,6 +358,26 @@ Do not use one absolute usability bar for every surface. Use tiers.
 
 - trusted nutrition evidence or ingredient-text evidence when the surface is making nutrition, allergy, or dietary claims
 
+#### Trusted nutrition and allergen evidence hierarchy
+
+Use a source hierarchy, not one undifferentiated `nutrition present` flag.
+
+Evidence tiers:
+
+- `tier_1_verified_label`: first-party manufacturer or retailer product pages, verified packaging-label images, official structured catalog feeds, or other label-equivalent evidence captured from the source of record
+- `tier_2_structured_reference`: USDA FoodData Central records, official manufacturer PDFs, official nutrition panels, or other structured reference data with stable identifiers
+- `tier_3_reference_linked`: Open Food Facts, operator-contributed scans, or historical cached product pages that are useful for linking and partial completeness but are not strong enough to stand alone for sensitive outward claims
+- `tier_4_derived_only`: parser output, model inference, or cross-product analogies with no trusted upstream document
+
+Default claim rules:
+
+- nutrition panels may use `tier_1_verified_label` or `tier_2_structured_reference`
+- ingredient text may come from `tier_1_verified_label`, `tier_2_structured_reference`, or corroborated `tier_3_reference_linked`
+- positive allergen presence may be flagged from explicit label language or trusted ingredient-text parsing, but the system must distinguish `declared_contains`, `ingredient_indicated`, and `advisory_may_contain`
+- absence or safety claims such as `gluten_free`, `nut_free`, or `dairy_free` require explicit `tier_1_verified_label` evidence or approved certification evidence; do not infer absence just because an ingredient list lacks an obvious trigger
+- if evidence conflicts across trusted sources, mark the claim `blocked` or `review_required` instead of picking the more convenient answer
+- `tier_4_derived_only` is useful for internal audit and prioritization, but it is not canonical evidence for outward-facing allergy, gluten-free, or nutrition claims
+
 #### Default freshness and reliability SLAs
 
 These are default SLAs, not universal law. Narrower source-family specs may use stricter overrides.
@@ -372,6 +392,28 @@ These are default SLAs, not universal law. Narrower source-family specs may use 
 | Nutrition or allergen evidence | verified `<= 180d`                                  | `> 180d` and `<= 365d`                        | `> 365d` or conflicting evidence     |
 
 If a source cannot be reliably pinged for stock at all, stock should be marked `unknown`, not faked.
+
+#### Default source lifecycle
+
+Every source should have one operational health state in addition to directory and ping flags.
+
+- `healthy`: last successful confirmation is within the source-family current SLA, no severity-high incident is open, and recent failure behavior is intermittent rather than structural
+- `degraded`: the source still works, but only intermittently, only at degraded freshness, or with enough failure pressure that repair should outrank expansion
+- `blocked`: the source is under a technical, rights, or manual block; normal crawl work should stop and only bounded verification or founder-approved recovery work may continue
+- `retired`: the source has been intentionally removed from active rotation because it is duplicate, permanently low-value, non-viable, or explicitly retired by policy
+
+Default transition rules:
+
+- move to `degraded` when the source falls past current freshness into degraded freshness, accumulates repeated failures, or loses reliable pingability
+- move to `blocked` when there is a credible rights/compliance hold, a hard auth or anti-bot wall, repeated hard failure with no successful recovery, or a founder/admin suppression action
+- move from `blocked` back to `degraded` only after bounded verification shows the source is recoverable and the blocking reason is cleared
+- move to `retired` only through explicit founder review or a narrower policy spec; auto-retirement is not allowed
+
+Default suppression rules:
+
+- disputed or rights-sensitive assets should first be `presentation_suppressed`, not silently deleted
+- a `blocked` source may keep internal history and evidence while outward presentation, deep links, or scheduled crawling are suppressed
+- the system should preserve provenance and incident history even when a source is suppressed or retired
 
 ---
 
@@ -683,6 +725,8 @@ ALTER TABLE source_registry ADD COLUMN directory_status TEXT NOT NULL DEFAULT 'k
   CHECK (directory_status IN ('known', 'discovered', 'verified', 'blocked', 'retired'));
 ALTER TABLE source_registry ADD COLUMN coverage_status TEXT NOT NULL DEFAULT 'uncovered'
   CHECK (coverage_status IN ('uncovered', 'partial', 'current', 'stale'));
+ALTER TABLE source_registry ADD COLUMN health_state TEXT NOT NULL DEFAULT 'degraded'
+  CHECK (health_state IN ('healthy', 'degraded', 'blocked', 'retired'));
 ALTER TABLE source_registry ADD COLUMN priority_score REAL NOT NULL DEFAULT 0;
 ALTER TABLE source_registry ADD COLUMN last_success_at TEXT;
 ALTER TABLE source_registry ADD COLUMN next_recommended_scan_at TEXT;
@@ -698,15 +742,22 @@ ALTER TABLE source_registry ADD COLUMN supports_delivery INTEGER DEFAULT 0;
 ALTER TABLE source_registry ADD COLUMN supports_pickup INTEGER DEFAULT 0;
 ALTER TABLE source_registry ADD COLUMN supports_loyalty INTEGER DEFAULT 0;
 ALTER TABLE source_registry ADD COLUMN supports_promos INTEGER DEFAULT 0;
+ALTER TABLE source_registry ADD COLUMN suppression_state TEXT NOT NULL DEFAULT 'none'
+  CHECK (suppression_state IN ('none', 'presentation_suppressed', 'crawl_suppressed', 'full_block'));
+ALTER TABLE source_registry ADD COLUMN suppression_reason TEXT;
 
 CREATE INDEX IF NOT EXISTS idx_source_registry_directory_status
   ON source_registry(directory_status);
 CREATE INDEX IF NOT EXISTS idx_source_registry_coverage_status
   ON source_registry(coverage_status);
+CREATE INDEX IF NOT EXISTS idx_source_registry_health_state
+  ON source_registry(health_state);
 CREATE INDEX IF NOT EXISTS idx_source_registry_priority
   ON source_registry(priority_score DESC);
 CREATE INDEX IF NOT EXISTS idx_source_registry_next_scan
   ON source_registry(next_recommended_scan_at);
+CREATE INDEX IF NOT EXISTS idx_source_registry_suppression_state
+  ON source_registry(suppression_state);
 ```
 
 ### Migration Notes
@@ -792,6 +843,8 @@ _List every server action with its signature, auth requirement, and behavior._
 | `getOpenClawCapacityOverview()`                | `requireAdmin()` + founder-email gate | none                                                     | recent capacity snapshots, bottleneck view, and recommended parallelism     | None                                                   |
 | `getOpenClawGoalScorecard(sliceKey?)`          | `requireAdmin()` + founder-email gate | `{ sliceKey? }`                                          | KPI contracts, latest KPI snapshots, and goal-alignment state               | None                                                   |
 | `retryOpenClawSource(sourceId)`                | `requireAdmin()` + founder-email gate | `{ sourceId }`                                           | `{ success, queuedTaskId?, error? }`                                        | Enqueues a high-priority `repair_source` task          |
+| `suppressOpenClawSource(input)`                | `requireAdmin()` + founder-email gate | `{ sourceId, scope, reason }`                            | `{ success, updatedState, error? }`                                         | Sets suppression state and may pause scheduled crawl   |
+| `restoreOpenClawSource(sourceId)`              | `requireAdmin()` + founder-email gate | `{ sourceId }`                                           | `{ success, updatedState, error? }`                                         | Clears suppression after founder review                |
 | `recomputeOpenClawCoverage(cellId)`            | `requireAdmin()` + founder-email gate | `{ cellId }`                                             | `{ success, queuedTaskId?, error? }`                                        | Enqueues a `recompute_cell` task                       |
 | `retryOpenClawMetadata(canonicalIngredientId)` | `requireAdmin()` + founder-email gate | `{ canonicalIngredientId }`                              | `{ success, queuedTaskId?, error? }`                                        | Enqueues `enrich_metadata` or `refresh_nutrition` work |
 | `sampleOpenClawCapacity()`                     | `requireAdmin()` + founder-email gate | none                                                     | `{ success, queuedTaskId?, error? }`                                        | Enqueues a `sample_capacity` task                      |
@@ -813,7 +866,7 @@ Replace the static usage-only page with a live internal runtime console that kee
    Global counts: known sources, queued tasks, running agents, open incidents, covered cells, inferred rows, newest scrape, newest inference, stale-source count.
 
 2. **Directory**
-   Filterable national source directory with chain/store/source rows, geography, capability flags, last success, next recommended scan, directory status, coverage status, priority score, and open-incident badge.
+   Filterable national source directory with chain/store/source rows, geography, capability flags, last success, next recommended scan, directory status, coverage status, health state, suppression state, priority score, and open-incident badge.
 
 3. **Coverage**
    Geography rollup table with ZIP/metro/state/region scope, direct vs inferred counts, coverage score, last direct observation, and stale markers.
@@ -823,7 +876,7 @@ Replace the static usage-only page with a live internal runtime console that kee
    This tab must also show stalled-task recoveries, lease-expiry counts, and queue lag by queue name.
 
 5. **Incidents**
-   Open and recent source incidents with severity, summary, last seen, and one-click retry for founder users.
+   Open and recent source incidents with severity, summary, last seen, suppression relationship, and one-click retry or suppress actions for founder users.
 
 6. **Inference**
    Ingredient + geography audit view that explicitly distinguishes direct observation from inferred estimate and shows method, confidence, evidence count, and expiry.
@@ -832,7 +885,7 @@ Replace the static usage-only page with a live internal runtime console that kee
    Host-capacity panel showing CPU, memory, disk pressure, queue depth, active workers, recommended parallelism, max safe parallelism, the currently limiting bottleneck, and any active runtime limits. This tab must make it obvious when the machine is under-used versus when concurrency is being capped for a good reason.
 
 8. **Metadata**
-   Completeness tables and heat maps for image coverage, source URL coverage, nutrition coverage, allergen coverage, category hierarchy quality, and source ping reliability. This tab must make it easy to find which categories, regions, or ingredients still need enrichment.
+   Completeness tables and heat maps for image coverage, source URL coverage, nutrition coverage, allergen coverage, category hierarchy quality, source ping reliability, and evidence-tier mix. This tab must make it easy to find which categories, regions, or ingredients still need enrichment.
 
 9. **Goals**
    KPI contracts and scorecards for active slices. Must show objective summary, metric name, baseline, calibration status, target, warning threshold, current measured value, trend direction, and overall state (`on_target`, `warning`, `failed`, `unknown`).
@@ -850,11 +903,13 @@ Replace the static usage-only page with a live internal runtime console that kee
 - Clicking a source opens a detail drawer or inline panel showing capabilities, last runs, current incidents, and queued tasks.
 - Clicking a coverage cell opens its direct-vs-inferred summary.
 - Founder-only actions `Retry Source` and `Recompute Coverage` enqueue tasks; they do not run the repair work synchronously in the browser.
+- Founder-only actions `Suppress Source` and `Restore Source` update suppression state explicitly and create an audit trail; they do not hard-delete history.
 - Founder-only action `Retry Metadata` enqueues metadata enrichment or nutrition refresh work; it does not fetch or compute metadata synchronously in the browser.
 - Founder-only action `Sample Capacity` queues a fresh capacity measurement and parallelism recommendation.
 - Capacity and agent views must expose when a queue is globally limited, source-limited, or database-limited, instead of collapsing all throttling into a generic `busy` label.
 - Inference audit must always show the underlying direct evidence count and expiry. It may not present inferred rows as if they were scraped facts.
 - Metadata views must distinguish `missing`, `partial`, `linked`, and `verified` states rather than collapsing everything into `present` or `not present`.
+- Metadata views must show evidence tier and claim basis for allergy or gluten-free surfaces rather than collapsing all dietary facts into one generic `verified` badge.
 
 ---
 
