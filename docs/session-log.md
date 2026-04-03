@@ -1624,3 +1624,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/session-log.md
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only routing refinement; no new typecheck, build, or browser verification run)
 - Notes: Added one explicit website-performance branch to the default builder-start handoff and one supporting-reference pointer in the control tower so render-path, loading, caching, and Core Web Vitals work now have a direct routing path from the canonical sequencing documents. This removes the last need for a future builder to infer the performance packet from the website cross-reference alone.
+
+## 2026-04-03 ~10:00 EDT
+
+- Agent: Research + General (Claude Opus 4.6)
+- Task: OpenClaw failure-modes investigation, delete prevention guardrail migration, cross-referenced pattern research
+- Status: completed
+- Files touched: database/migrations/20260403000001_openclaw_no_delete_guard.sql (new), docs/research/openclaw-failure-modes-and-safeguards.md (new), docs/research/openclaw-delete-prevention-patterns.md (new), docs/session-log.md
+- Commits: (pending)
+- Build state on departure: unchanged (no code changes, migration not yet applied)
+- Notes: Full research confirmed OpenClaw cannot autonomously corrupt ChefFlow DB (passive pipeline, not autonomous agent). Migration adds 20 triggers (10 DELETE + 10 TRUNCATE guards) across all openclaw schema + public OpenClaw tables + ingredient_price_history. Includes transaction-scoped escape hatch (SET LOCAL app.allow_openclaw_delete). Codebase audit confirmed zero existing DELETE operations on protected tables. Builder must apply migration with: backup first, then run migration SQL against local PostgreSQL.
