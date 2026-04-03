@@ -34,6 +34,11 @@ The current method set is good enough to proceed, but it is not final:
 - do not assume the first repair heuristic or enrichment source mix is final
 - keep refining the method when measured evidence shows a stronger one
 
+Legal-exposure note:
+
+- internal founder-facing intelligence use is much lower risk than public or commercial republication
+- if a feature would expose scraped retailer prices, product images, stock assertions, or health-related claims to outsiders, flag it for rights, compliance, and substantiation review before building it as a normal surface
+
 ---
 
 ## Canonical Read Order

@@ -60,6 +60,7 @@ They added one more operational requirement after the initial draft:
 21. The developer wants the growth pattern itself to be explicit: how OpenClaw spreads across the country, where it starts, and whether it moves in a coherent order or just behaves randomly.
 22. They want the expansion to feel like a colony slowly growing outward, not a scattered blob doing whatever it wants.
 23. They want to know whether the runtime should move state by state, region by region, ZIP by ZIP, store by store, or some hybrid of those.
+24. They also want a clear answer on legal and business risk if this system were exposed to outsiders. The planning assumption should be that public or commercial exposure of scraped retailer data, product images, stock claims, or health-related claims creates real dispute risk even if the internal engine is valuable.
 
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
@@ -79,6 +80,7 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Meta-agent expectation:** The meta-agent is a bounded operational router. It should catch repetitive, measurable classes of runtime gaps, but it will not automatically invent all product requirements unless those requirements are encoded in policy, thresholds, and available task types.
 - **Expansion-order goal:** Growth should be deliberate and explainable. The runtime should expand as a ranked frontier from seeded coverage cells and directory facts, not as a random scatter and not as a simplistic one-state-at-a-time march.
 - **Method-improvement goal:** The current operating method is strong enough to build, but it is not the last possible method. Frontier scoring, source prioritization, inference formulas, enrichment sources, and repair heuristics should keep improving when evidence shows a better approach.
+- **Exposure-risk goal:** Treat public or commercial republication of scraped retailer content, images, inventory assertions, or unsupported health claims as a higher-risk mode than founder-only internal intelligence use. Keep internal-only boundaries in place unless rights, licenses, and claim-substantiation controls are explicit.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
 - **Refinement rule:** Behavior clarified through developer Q&A must be recorded quickly enough that the downstream builder is operating from the updated spec, not from memory.
 - **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, avoids unnecessary blanks, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, measures metadata completeness and reliability, monitors whether the Pi is under-used, and raises safe parallelism when capacity actually exists.
@@ -117,6 +119,7 @@ Every OpenClaw-related feature must have a clear owner.
 - If ChefFlow starts owning durable scraping, canonical metadata enrichment, source health logic, price inference, or source pingability truth, that is a misalignment and should be flagged.
 - If a feature needs both layers, OpenClaw should emit evidence-rich facts and statuses, and ChefFlow should consume them into chef-facing workflows.
 - Transitional bridges are acceptable, but they must be labeled as bridges so they do not quietly become the permanent owner.
+- If a proposed surface republishes scraped retailer images, detailed stock claims, or health or dietary claims to outsiders, flag it for rights, compliance, and substantiation review before treating it as a normal product feature.
 
 ### Meta-Agent Scope
 
@@ -749,6 +752,7 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 - Assuming unused CPU automatically means safe spare throughput
 - Recipe scaling logic that belongs to ChefFlow's recipe math and culinary workflow layer
 - Expiration-date facts without real lot-level or inventory-level evidence
+- Public commercialization of scraped retailer content, product imagery, or unsupported inventory or health claims without an explicit compliance and rights strategy
 
 ---
 
