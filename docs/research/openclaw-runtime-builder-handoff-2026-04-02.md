@@ -52,8 +52,11 @@ Treat these as baseline truths, not as pending design questions:
 
 - the Pi runtime already stores sources, canonical ingredients, current prices, price changes, and normalization mappings
 - the Pi runtime already exposes a simple sync and query API
+- the Pi runtime already exposes some useful ingredient detail fields such as stock state, source URL, image URL, brand, category, and last confirmation time
 - the Pi runtime already runs on fixed cron cadences
 - the app already has chef-facing price surfaces consuming mirrored OpenClaw outputs
+- the app already has an app-side polish job that fills images, categories, nutrition links, and source URLs outside the Pi runtime control plane
+- the app already has a separate packaged-product lookup surface for nutrition and allergen research
 - the app already has a founder-only `/admin/openclaw` route, but it is still a static usage/policy page rather than a runtime console
 - the ideal future-state spec is already written
 
@@ -85,9 +88,13 @@ For this lane, progression is not vague activity. It means one or more of these 
 - more prices are directly observed
 - more gaps are inferred with auditability
 - fewer ingredient lookups fall back to blank results when defensible estimated prices are available
+- more products carry image, source URL, stock freshness, and classification completeness
+- more products carry verified or partial nutrition and allergen evidence with provenance
+- more source pingability or reliability truth is visible instead of guessed
 - more stale or broken sources are repaired automatically
 - more machine capacity is used safely
 - founder visibility is more truthful
+- metadata heat maps and completeness audits are more truthful
 - chef-facing outcomes get more useful without exposing OpenClaw internals
 
 ---
@@ -117,6 +124,8 @@ Tasks:
 
 - verify current `/health` and `/api/stats` behavior
 - verify existing SQLite schema and cron jobs
+- verify what the current ingredient-detail and catalog endpoints already expose for image, stock, source URL, and freshness
+- verify what the current app-side polish job and packaged-product lookup already do so the new runtime slice extends them instead of duplicating them blindly
 - add missing runtime readouts only if they do not change scheduling behavior yet
 - document current source count, price count, scrape freshness, and known stale-source behavior
 
@@ -135,18 +144,19 @@ Exit condition:
 
 Goal:
 
-- create the data structures required for queueing, coverage, inference, incidents, and capacity without changing public behavior yet
+- create the data structures required for queueing, coverage, inference, incidents, metadata completeness, and capacity without changing public behavior yet
 
 Tasks:
 
 - add `coverage_cells`
+- add `ingredient_metadata_profiles`
 - add `host_capacity_snapshots`
 - add `runtime_limits`
 - add `agent_runs`
 - add `agent_tasks`
 - add `source_incidents`
 - add `price_inference_cache`
-- extend `source_registry` with directory and rate-limit fields
+- extend `source_registry` with directory, rate-limit, and ping-reliability fields
 - preserve WAL and add `busy_timeout` plus observable checkpoint behavior
 
 Primary file:
@@ -165,7 +175,7 @@ Goal:
 
 Tasks:
 
-- extend the Pi `sync-api` with runtime overview, source directory, incidents, coverage, agent-run, and inference-audit endpoints
+- extend the Pi `sync-api` with runtime overview, source directory, incidents, coverage, metadata summary, metadata audit, agent-run, and inference-audit endpoints
 - build founder-only server actions to read those endpoints
 - replace the static usage page with a live runtime console while keeping the existing boundary copy
 
@@ -215,6 +225,9 @@ Tasks:
 
 - implement `source-repair-agent.mjs`
 - implement `source-discovery-agent.mjs`
+- implement `catalog-enrichment-agent.mjs`
+- implement `nutrition-allergen-agent.mjs`
+- implement `quality-audit-agent.mjs`
 - implement `meta-agent.mjs` as bounded task creation, not uncontrolled process spawning
 - connect watchdog outputs to `source_incidents` and repair tasks
 
@@ -222,12 +235,15 @@ Primary files:
 
 - `.openclaw-build/services/source-repair-agent.mjs`
 - `.openclaw-build/services/source-discovery-agent.mjs`
+- `.openclaw-build/services/catalog-enrichment-agent.mjs`
+- `.openclaw-build/services/nutrition-allergen-agent.mjs`
+- `.openclaw-build/services/quality-audit-agent.mjs`
 - `.openclaw-build/services/meta-agent.mjs`
 - `.openclaw-build/services/watchdog.mjs`
 
 Exit condition:
 
-- stale or broken sources can automatically become incidents and then real repair work, with visible state transitions
+- stale or broken sources can automatically become incidents and then real repair work, with visible state transitions, while missing metadata gaps can become real enrichment work instead of remaining invisible forever
 
 ### Phase 5. Add inference and coverage expansion
 
@@ -239,10 +255,12 @@ Tasks:
 
 - implement `price-inference-engine.mjs`
 - compute and store coverage cells from direct observations
+- compute metadata completeness rollups and geography heat-map inputs from direct observations plus enrichment state
 - keep inferred prices separate from direct prices
 - implement the fallback order for missing local prices: nearby geography, same-chain evidence, then comparable-market evidence
 - leave results blank only when confidence remains below threshold after fallback evidence is exhausted
 - expose direct versus inferred state in the founder console
+- expose image, source URL, nutrition, allergen, and ping-reliability completeness in the founder console
 - prioritize under-covered geography over low-value repeated refreshes
 
 Primary files:
@@ -254,7 +272,7 @@ Primary files:
 
 Exit condition:
 
-- the founder console can show where coverage is direct, where it is inferred, and where it is missing
+- the founder console can show where coverage is direct, where it is inferred, where it is missing, and where metadata completeness is strong or weak
 
 ### Phase 6. Add capacity-aware orchestration
 
@@ -289,6 +307,7 @@ Goal:
 Tasks:
 
 - improve chef-facing pricing usefulness through better freshness, broader store coverage, and explicit "best available" behavior
+- improve chef-facing product lookup usefulness through better price detail, image coverage, stock freshness, source links, and product completeness where the runtime has real evidence
 - keep OpenClaw debranded on chef/public surfaces
 - only surface derived value, never raw runtime internals
 - use research to decide which outcome-facing site surfaces benefit most from improved pricing intelligence next
@@ -344,6 +363,7 @@ Minimum required checks:
 - existing sync behavior still works unless the replacement path is verified
 - founder-only runtime UI loads without exposing internals publicly
 - no inferred prices overwrite direct prices
+- no metadata claim is fabricated when evidence is missing or conflicting
 - no destructive schema migration occurs
 
 If a builder cannot verify a phase, the phase is not complete.
@@ -358,6 +378,7 @@ The parallel research program should keep answering:
 
 - which new chains, stores, and source surfaces should enter the national directory next
 - which chef/admin website surfaces would benefit most from improved price intelligence
+- which upstream metadata sources best improve image, source URL, nutrition, allergen, and classification completeness
 - where support, operations, or growth workflows on the site need stronger data backing
 - which runtime bottlenecks are measured versus assumed
 - which fallback signals most improve missing-price estimation quality without creating fake certainty

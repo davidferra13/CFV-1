@@ -47,6 +47,13 @@ They added one more operational requirement after the initial draft:
 8. A blank result is only acceptable when the evidence is genuinely too weak to support a trustworthy estimate.
 9. Nearby geography, same-chain stores, and comparable markets should all be used as fallback evidence before the system gives up.
 10. The developer wants thread-level Q&A like this to function as a refinement loop: once behavior is clarified and agreed, it should be captured in Developer Notes and reflected into the build plan immediately.
+11. When a chef looks up a product or ingredient, the ideal system should eventually make it easy to see price, stock state, last confirmation time, source website, and a quick image without forcing slow manual reading.
+12. Product metadata completeness matters: nutritional facts, gluten-free or allergy-related flags, ingredient text, titles, categories, and subcategories should be filled and audited wherever credible source evidence exists.
+13. OpenClaw should also know which products and sources are reliably pingable, which ones are weak, and where metadata coverage is strong or thin across the country.
+14. Heat maps or similar geography views should show where more information is flowing in and where the system is still weak.
+15. The right architecture is not one tiny agent per field. The runtime should group this work into a few bounded specialist agents for metadata enrichment, nutrition and allergen enrichment, source reliability, and quality auditing.
+16. Recipe scaling is important, but it belongs to ChefFlow's recipe and ingredient math layer rather than the OpenClaw runtime itself.
+17. Expiration dates are not universal OpenClaw catalog facts unless the system has real lot-level or inventory-level evidence from a downstream inventory surface.
 
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
@@ -59,9 +66,12 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Key constraints:** Keep OpenClaw internal-only and founder-facing; do not expose raw OpenClaw branding or internals to chef/public product surfaces; preserve additive migrations only; keep direct observations authoritative; do not replace math with opaque AI guesses.
 - **Capacity constraint:** CPU alone is not the truth. Capacity decisions must consider CPU, RAM, I/O wait, SQLite contention, network saturation, and external source rate limits before increasing concurrency.
 - **Gap-fill constraint:** Missing local prices should usually degrade to explicit inferred estimates, not empty results. Empty is the fallback of last resort when evidence quality is below threshold.
+- **Metadata completeness goal:** Price coverage by itself is not enough. The runtime should continuously improve image coverage, source URL coverage, stock freshness, classification quality, and nutrition/allergen completeness where credible evidence exists.
+- **Agent boundary goal:** Use a small number of bounded specialist agents rather than one agent per tiny attribute. Metadata enrichment, nutrition/allergen enrichment, source reliability, and quality auditing are separate responsibilities, but they should each own a coherent domain.
+- **Boundary note:** Recipe scaling belongs to ChefFlow's culinary math and recipe engine, not the OpenClaw runtime. Lot expiration is only a valid OpenClaw fact when backed by real purchased-inventory or lot evidence.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
 - **Refinement rule:** Behavior clarified through developer Q&A must be recorded quickly enough that the downstream builder is operating from the updated spec, not from memory.
-- **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, avoids unnecessary blanks, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, monitors whether the Pi is under-used, and raises safe parallelism when capacity actually exists.
+- **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, avoids unnecessary blanks, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, measures metadata completeness and reliability, monitors whether the Pi is under-used, and raises safe parallelism when capacity actually exists.
 
 ---
 
@@ -81,16 +91,19 @@ The current system is useful because it captures real grocery price data, but it
 
 _List every NEW file with its full path and a one-line description._
 
-| File                                                   | Purpose                                                                                                                                 |
-| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `.openclaw-build/services/runtime-orchestrator.mjs`    | Main control-plane scheduler that ranks sources, coverage gaps, and repair work, then enqueues tasks                                    |
-| `.openclaw-build/services/source-discovery-agent.mjs`  | Expands the national source directory with new chains, stores, markets, and source surfaces                                             |
-| `.openclaw-build/services/source-repair-agent.mjs`     | Re-tests stale or broken sources, records incidents, and restores source health                                                         |
-| `.openclaw-build/services/price-inference-engine.mjs`  | Computes formula-based price estimates for uncovered ingredient/geography combinations                                                  |
-| `.openclaw-build/services/hardware-capacity-agent.mjs` | Measures CPU, RAM, I/O, DB contention, rate-limit pressure, and safe concurrency recommendations                                        |
-| `.openclaw-build/services/meta-agent.mjs`              | Reviews queue state, incidents, capacity drift, and coverage gaps, then creates bounded follow-up tasks for the right specialist agents |
-| `lib/openclaw/runtime-control-actions.ts`              | Founder-only server actions that expose runtime, directory, coverage, incident, and inference views                                     |
-| `components/admin/openclaw-runtime-console.tsx`        | Founder-only internal console for the live OpenClaw runtime                                                                             |
+| File                                                    | Purpose                                                                                                                                 |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `.openclaw-build/services/runtime-orchestrator.mjs`     | Main control-plane scheduler that ranks sources, coverage gaps, and repair work, then enqueues tasks                                    |
+| `.openclaw-build/services/source-discovery-agent.mjs`   | Expands the national source directory with new chains, stores, markets, and source surfaces                                             |
+| `.openclaw-build/services/source-repair-agent.mjs`      | Re-tests stale or broken sources, records incidents, and restores source health                                                         |
+| `.openclaw-build/services/catalog-enrichment-agent.mjs` | Fills image, source URL, title, brand, category, and subcategory gaps for products and ingredients                                      |
+| `.openclaw-build/services/nutrition-allergen-agent.mjs` | Links nutrition facts, ingredient text, dietary flags, and allergen evidence from trusted upstream sources                              |
+| `.openclaw-build/services/quality-audit-agent.mjs`      | Flags weird prices, contradictory stock signals, missing metadata clusters, and unreliable source pingability                           |
+| `.openclaw-build/services/price-inference-engine.mjs`   | Computes formula-based price estimates for uncovered ingredient/geography combinations                                                  |
+| `.openclaw-build/services/hardware-capacity-agent.mjs`  | Measures CPU, RAM, I/O, DB contention, rate-limit pressure, and safe concurrency recommendations                                        |
+| `.openclaw-build/services/meta-agent.mjs`               | Reviews queue state, incidents, capacity drift, and coverage gaps, then creates bounded follow-up tasks for the right specialist agents |
+| `lib/openclaw/runtime-control-actions.ts`               | Founder-only server actions that expose runtime, directory, coverage, incident, inference, and metadata-completeness views              |
+| `components/admin/openclaw-runtime-console.tsx`         | Founder-only internal console for the live OpenClaw runtime                                                                             |
 
 ---
 
@@ -98,16 +111,16 @@ _List every NEW file with its full path and a one-line description._
 
 _List every EXISTING file that needs changes. Be specific about what changes._
 
-| File                                       | What to Change                                                                                            |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `.openclaw-build/lib/db.mjs`               | Add additive control-plane tables and directory columns to the Pi SQLite runtime schema                   |
-| `.openclaw-build/services/aggregator.mjs`  | Roll up direct-observation coverage into geography-cell coverage facts and inference freshness summaries  |
-| `.openclaw-build/services/watchdog.mjs`    | Promote stale/broken-source detection into durable incidents and queue nudges instead of log-only alerts  |
-| `.openclaw-build/services/sync-api.mjs`    | Expose runtime overview, source directory, agent runs, incidents, coverage, and inference audit endpoints |
-| `.openclaw-deploy/crontab-v7.txt`          | Add orchestrator and agent cadences; reduce fixed re-scan bias in favor of queue-driven expansion logic   |
-| `scripts/openclaw-dashboard/server.mjs`    | Surface agent health, coverage cells, incidents, and inference status for mission-control parity          |
-| `app/(admin)/admin/openclaw/page.tsx`      | Keep founder-only gate, but load a live runtime console instead of a static usage-only page               |
-| `components/admin/openclaw-usage-page.tsx` | Convert the current static page into a hybrid policy + live runtime console without losing boundary copy  |
+| File                                       | What to Change                                                                                                                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `.openclaw-build/lib/db.mjs`               | Add additive control-plane tables, metadata-completeness schema, and directory or reliability columns to the Pi SQLite runtime schema |
+| `.openclaw-build/services/aggregator.mjs`  | Roll up direct-observation coverage into geography-cell coverage facts, metadata heat maps, and inference freshness summaries         |
+| `.openclaw-build/services/watchdog.mjs`    | Promote stale, broken, or unreliable-source detection into durable incidents and queue nudges instead of log-only alerts              |
+| `.openclaw-build/services/sync-api.mjs`    | Expose runtime overview, source directory, agent runs, incidents, coverage, metadata completeness, and inference audit endpoints      |
+| `.openclaw-deploy/crontab-v7.txt`          | Add orchestrator and agent cadences; reduce fixed re-scan bias in favor of queue-driven expansion and enrichment logic                |
+| `scripts/openclaw-dashboard/server.mjs`    | Surface agent health, coverage cells, metadata heat maps, incidents, and inference status for mission-control parity                  |
+| `app/(admin)/admin/openclaw/page.tsx`      | Keep founder-only gate, but load a live runtime console instead of a static usage-only page                                           |
+| `components/admin/openclaw-usage-page.tsx` | Convert the current static page into a hybrid policy + live runtime console without losing boundary copy                              |
 
 ---
 
@@ -134,7 +147,12 @@ CREATE TABLE IF NOT EXISTS coverage_cells (
   current_source_count INTEGER NOT NULL DEFAULT 0,
   direct_price_count INTEGER NOT NULL DEFAULT 0,
   inferred_price_count INTEGER NOT NULL DEFAULT 0,
+  metadata_complete_count INTEGER NOT NULL DEFAULT 0,
   distinct_ingredient_count INTEGER NOT NULL DEFAULT 0,
+  image_coverage_pct REAL NOT NULL DEFAULT 0,
+  source_url_coverage_pct REAL NOT NULL DEFAULT 0,
+  nutrition_coverage_pct REAL NOT NULL DEFAULT 0,
+  allergen_coverage_pct REAL NOT NULL DEFAULT 0,
   last_direct_observation_at TEXT,
   last_inference_at TEXT,
   coverage_score REAL NOT NULL DEFAULT 0,
@@ -175,6 +193,34 @@ CREATE TABLE IF NOT EXISTS host_capacity_snapshots (
 CREATE INDEX IF NOT EXISTS idx_host_capacity_host_captured
   ON host_capacity_snapshots(host_name, captured_at DESC);
 
+CREATE TABLE IF NOT EXISTS ingredient_metadata_profiles (
+  profile_id TEXT PRIMARY KEY,
+  canonical_ingredient_id TEXT NOT NULL UNIQUE,
+  representative_title TEXT,
+  representative_brand TEXT,
+  primary_image_url TEXT,
+  primary_source_url TEXT,
+  ingredient_text TEXT,
+  category_l1 TEXT,
+  category_l2 TEXT,
+  dietary_flags_json TEXT,
+  allergens_json TEXT,
+  nutrition_json TEXT,
+  image_status TEXT NOT NULL DEFAULT 'missing' CHECK (image_status IN ('missing', 'direct', 'external', 'rejected')),
+  source_url_status TEXT NOT NULL DEFAULT 'missing' CHECK (source_url_status IN ('missing', 'direct', 'derived', 'rejected')),
+  classification_status TEXT NOT NULL DEFAULT 'missing' CHECK (classification_status IN ('missing', 'partial', 'linked', 'verified')),
+  nutrition_status TEXT NOT NULL DEFAULT 'missing' CHECK (nutrition_status IN ('missing', 'partial', 'linked', 'verified', 'blocked')),
+  allergen_status TEXT NOT NULL DEFAULT 'missing' CHECK (allergen_status IN ('missing', 'partial', 'linked', 'verified', 'blocked')),
+  metadata_confidence REAL NOT NULL DEFAULT 0 CHECK (metadata_confidence >= 0 AND metadata_confidence <= 1),
+  provenance_json TEXT,
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_ingredient_metadata_profiles_ingredient
+  ON ingredient_metadata_profiles(canonical_ingredient_id);
+CREATE INDEX IF NOT EXISTS idx_ingredient_metadata_profiles_quality
+  ON ingredient_metadata_profiles(image_status, nutrition_status, allergen_status, classification_status);
+
 CREATE TABLE IF NOT EXISTS runtime_limits (
   limit_id TEXT PRIMARY KEY,
   limit_key TEXT NOT NULL UNIQUE,
@@ -194,7 +240,7 @@ CREATE INDEX IF NOT EXISTS idx_runtime_limits_scope
 
 CREATE TABLE IF NOT EXISTS agent_runs (
   run_id TEXT PRIMARY KEY,
-  agent_type TEXT NOT NULL CHECK (agent_type IN ('orchestrator', 'discovery', 'repair', 'math', 'coverage', 'capacity', 'meta')),
+  agent_type TEXT NOT NULL CHECK (agent_type IN ('orchestrator', 'discovery', 'repair', 'enrichment', 'nutrition', 'quality', 'math', 'coverage', 'capacity', 'meta')),
   status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'partial', 'skipped')),
   queue_name TEXT NOT NULL DEFAULT 'default',
   started_at TEXT,
@@ -217,8 +263,8 @@ CREATE INDEX IF NOT EXISTS idx_agent_runs_status
 
 CREATE TABLE IF NOT EXISTS agent_tasks (
   task_id TEXT PRIMARY KEY,
-  task_type TEXT NOT NULL CHECK (task_type IN ('discover_source', 'crawl_source', 'repair_source', 'infer_price', 'recompute_cell', 'verify_source', 'sample_capacity', 'rebalance_parallelism')),
-  preferred_agent_type TEXT NOT NULL CHECK (preferred_agent_type IN ('discovery', 'repair', 'math', 'coverage', 'capacity', 'meta', 'orchestrator')),
+  task_type TEXT NOT NULL CHECK (task_type IN ('discover_source', 'crawl_source', 'repair_source', 'infer_price', 'recompute_cell', 'verify_source', 'verify_pingability', 'enrich_metadata', 'refresh_nutrition', 'audit_quality', 'recompute_metadata_heatmap', 'sample_capacity', 'rebalance_parallelism')),
+  preferred_agent_type TEXT NOT NULL CHECK (preferred_agent_type IN ('discovery', 'repair', 'enrichment', 'nutrition', 'quality', 'math', 'coverage', 'capacity', 'meta', 'orchestrator')),
   queue_name TEXT NOT NULL DEFAULT 'default',
   status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'claimed', 'running', 'succeeded', 'failed', 'dead_letter', 'skipped')),
   priority INTEGER NOT NULL DEFAULT 50 CHECK (priority BETWEEN 0 AND 100),
@@ -254,7 +300,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_agent_tasks_active_dedupe
 CREATE TABLE IF NOT EXISTS source_incidents (
   incident_id INTEGER PRIMARY KEY AUTOINCREMENT,
   source_id TEXT NOT NULL,
-  incident_type TEXT NOT NULL CHECK (incident_type IN ('stale', 'http', 'schema', 'auth', 'empty', 'quality', 'anomaly')),
+  incident_type TEXT NOT NULL CHECK (incident_type IN ('stale', 'http', 'schema', 'auth', 'empty', 'quality', 'anomaly', 'metadata', 'reliability')),
   severity TEXT NOT NULL CHECK (severity IN ('low', 'medium', 'high', 'critical')),
   status TEXT NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'suppressed', 'resolved')),
   summary TEXT NOT NULL,
@@ -312,6 +358,11 @@ ALTER TABLE source_registry ADD COLUMN next_recommended_scan_at TEXT;
 ALTER TABLE source_registry ADD COLUMN rate_limit_key TEXT;
 ALTER TABLE source_registry ADD COLUMN rate_limit_backoff_until TEXT;
 ALTER TABLE source_registry ADD COLUMN last_rate_limited_at TEXT;
+ALTER TABLE source_registry ADD COLUMN ping_status TEXT NOT NULL DEFAULT 'unknown'
+  CHECK (ping_status IN ('unknown', 'healthy', 'degraded', 'blocked'));
+ALTER TABLE source_registry ADD COLUMN ping_reliability_score REAL NOT NULL DEFAULT 0;
+ALTER TABLE source_registry ADD COLUMN last_ping_at TEXT;
+ALTER TABLE source_registry ADD COLUMN last_inventory_probe_at TEXT;
 ALTER TABLE source_registry ADD COLUMN supports_delivery INTEGER DEFAULT 0;
 ALTER TABLE source_registry ADD COLUMN supports_pickup INTEGER DEFAULT 0;
 ALTER TABLE source_registry ADD COLUMN supports_loyalty INTEGER DEFAULT 0;
@@ -339,27 +390,30 @@ CREATE INDEX IF NOT EXISTS idx_source_registry_next_scan
 
 ## Data Model
 
-The ideal runtime has seven data planes, each with a different trust rule:
+The ideal runtime has eight data planes, each with a different trust rule:
 
 1. **Direct observation plane**
    `current_prices`, `price_changes`, receipt prices, and scraper outputs are authoritative observations. Nothing inferred may overwrite them.
 
-2. **Source directory plane**
+2. **Metadata plane**
+   `ingredient_metadata_profiles` stores representative product metadata that improves lookup usefulness: images, source URLs, ingredient text, title or brand normalization, category hierarchy, dietary flags, allergens, and nutrition evidence. These facts must carry provenance and confidence, and they must never be hallucinated when the source evidence is missing.
+
+3. **Source directory plane**
    `source_registry` becomes the national directory of known chains, stores, source surfaces, and source capabilities. This is where OpenClaw stops behaving like a tiny list of current jobs and starts behaving like a complete map of what still needs to be captured.
 
-3. **Coverage plane**
-   `coverage_cells` describes where coverage is strong, partial, stale, or absent by ZIP, metro, state, and region. The orchestrator uses this to decide whether the next job should refresh density or expand breadth.
+4. **Coverage plane**
+   `coverage_cells` describes where coverage is strong, partial, stale, or absent by ZIP, metro, state, and region. It also carries metadata completeness rollups so the founder can see not just where price coverage is strong, but where images, source URLs, nutrition, and allergen data are weak.
 
-4. **Agent plane**
+5. **Agent plane**
    `agent_tasks` and `agent_runs` form the durable control plane. Agents do not invent new runtime behavior on the fly; they claim bounded tasks, emit evidence, and update status.
 
-5. **Inference plane**
+6. **Inference plane**
    `price_inference_cache` stores estimated prices for uncovered combinations. These rows are clearly separate from direct observations and must carry method, evidence count, and expiration.
 
-6. **Capacity plane**
+7. **Capacity plane**
    `host_capacity_snapshots` stores observed machine headroom and bottleneck facts. Capacity decisions must be made from this evidence, not from guesswork or a single CPU number.
 
-7. **Limits plane**
+8. **Limits plane**
    `runtime_limits` stores the enforced concurrency and rate-limit budgets for queues, sources, domains, and scarce resources like the SQLite writer path. The orchestrator and workers must obey this table instead of improvising their own local limits.
 
 Key constraints:
@@ -377,6 +431,10 @@ Key constraints:
 - Per-source and per-domain rate-limit budgets are first-class constraints, not just retry delays after failure.
 - Unnecessary blanks are a product failure. If no direct price exists, the runtime should prefer a clearly labeled estimate over an empty response whenever confidence is sufficient.
 - Coverage expansion wins over repeated low-value re-scrapes when a source or geography is under-covered.
+- Metadata gaps should not silently persist forever. Missing image, source URL, nutrition, allergen, or classification fields should be visible, queueable, and measurable.
+- Do not create one tiny runtime agent per attribute. Group product completeness work into bounded enrichment, nutrition/allergen, reliability, and quality domains.
+- Recipe scaling stays in ChefFlow's recipe and ingredient math layer. The OpenClaw runtime may expose unit or package metadata that supports scaling, but it is not the owner of recipe-scaling behavior.
+- Lot expiration is out of scope for default catalog scraping. Only real lot-level or inventory evidence may create expiration facts.
 
 ---
 
@@ -384,18 +442,21 @@ Key constraints:
 
 _List every server action with its signature, auth requirement, and behavior._
 
-| Action                                | Auth                                  | Input                                                    | Output                                                                      | Side Effects                                  |
-| ------------------------------------- | ------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
-| `getOpenClawRuntimeOverview()`        | `requireAdmin()` + founder-email gate | none                                                     | runtime summary with directory, coverage, incidents, queue, inference stats | None                                          |
-| `getOpenClawSourceDirectory(filters)` | `requireAdmin()` + founder-email gate | `{ query?, state?, directoryStatus?, coverageStatus? }`  | paginated source rows with queue and incident facts                         | None                                          |
-| `getOpenClawCoverageSummary(scope)`   | `requireAdmin()` + founder-email gate | `{ geographyType, geographyKey? }`                       | coverage-cell summaries and freshness rollups                               | None                                          |
-| `getOpenClawAgentRuns(filters)`       | `requireAdmin()` + founder-email gate | `{ agentType?, status?, limit? }`                        | recent run history with task/result evidence                                | None                                          |
-| `getOpenClawIncidents(filters)`       | `requireAdmin()` + founder-email gate | `{ sourceId?, status?, severity? }`                      | current and recent source incidents                                         | None                                          |
-| `getOpenClawInferenceAudit(input)`    | `requireAdmin()` + founder-email gate | `{ canonicalIngredientId, geographyType, geographyKey }` | direct-price context, inferred price, method, confidence, expiry            | None                                          |
-| `getOpenClawCapacityOverview()`       | `requireAdmin()` + founder-email gate | none                                                     | recent capacity snapshots, bottleneck view, and recommended parallelism     | None                                          |
-| `retryOpenClawSource(sourceId)`       | `requireAdmin()` + founder-email gate | `{ sourceId }`                                           | `{ success, queuedTaskId?, error? }`                                        | Enqueues a high-priority `repair_source` task |
-| `recomputeOpenClawCoverage(cellId)`   | `requireAdmin()` + founder-email gate | `{ cellId }`                                             | `{ success, queuedTaskId?, error? }`                                        | Enqueues a `recompute_cell` task              |
-| `sampleOpenClawCapacity()`            | `requireAdmin()` + founder-email gate | none                                                     | `{ success, queuedTaskId?, error? }`                                        | Enqueues a `sample_capacity` task             |
+| Action                                         | Auth                                  | Input                                                    | Output                                                                      | Side Effects                                           |
+| ---------------------------------------------- | ------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `getOpenClawRuntimeOverview()`                 | `requireAdmin()` + founder-email gate | none                                                     | runtime summary with directory, coverage, incidents, queue, inference stats | None                                                   |
+| `getOpenClawSourceDirectory(filters)`          | `requireAdmin()` + founder-email gate | `{ query?, state?, directoryStatus?, coverageStatus? }`  | paginated source rows with queue and incident facts                         | None                                                   |
+| `getOpenClawCoverageSummary(scope)`            | `requireAdmin()` + founder-email gate | `{ geographyType, geographyKey? }`                       | coverage-cell summaries and freshness rollups                               | None                                                   |
+| `getOpenClawMetadataSummary(scope)`            | `requireAdmin()` + founder-email gate | `{ geographyType?, geographyKey?, category? }`           | metadata completeness rollups, heat-map inputs, and missing-field counts    | None                                                   |
+| `getOpenClawAgentRuns(filters)`                | `requireAdmin()` + founder-email gate | `{ agentType?, status?, limit? }`                        | recent run history with task/result evidence                                | None                                                   |
+| `getOpenClawIncidents(filters)`                | `requireAdmin()` + founder-email gate | `{ sourceId?, status?, severity? }`                      | current and recent source incidents                                         | None                                                   |
+| `getOpenClawInferenceAudit(input)`             | `requireAdmin()` + founder-email gate | `{ canonicalIngredientId, geographyType, geographyKey }` | direct-price context, inferred price, method, confidence, expiry            | None                                                   |
+| `getOpenClawMetadataAudit(input)`              | `requireAdmin()` + founder-email gate | `{ canonicalIngredientId }`                              | image, source URL, nutrition, allergen, dietary, and classification status  | None                                                   |
+| `getOpenClawCapacityOverview()`                | `requireAdmin()` + founder-email gate | none                                                     | recent capacity snapshots, bottleneck view, and recommended parallelism     | None                                                   |
+| `retryOpenClawSource(sourceId)`                | `requireAdmin()` + founder-email gate | `{ sourceId }`                                           | `{ success, queuedTaskId?, error? }`                                        | Enqueues a high-priority `repair_source` task          |
+| `recomputeOpenClawCoverage(cellId)`            | `requireAdmin()` + founder-email gate | `{ cellId }`                                             | `{ success, queuedTaskId?, error? }`                                        | Enqueues a `recompute_cell` task                       |
+| `retryOpenClawMetadata(canonicalIngredientId)` | `requireAdmin()` + founder-email gate | `{ canonicalIngredientId }`                              | `{ success, queuedTaskId?, error? }`                                        | Enqueues `enrich_metadata` or `refresh_nutrition` work |
+| `sampleOpenClawCapacity()`                     | `requireAdmin()` + founder-email gate | none                                                     | `{ success, queuedTaskId?, error? }`                                        | Enqueues a `sample_capacity` task                      |
 
 ---
 
@@ -407,7 +468,7 @@ This spec only authorizes founder-only internal UI on `/admin/openclaw`. No chef
 
 ### Page Layout
 
-Replace the static usage-only page with a live internal runtime console that keeps the existing boundary copy at the top and adds seven internal tabs below it:
+Replace the static usage-only page with a live internal runtime console that keeps the existing boundary copy at the top and adds eight internal tabs below it:
 
 1. **Overview**
    Global counts: known sources, queued tasks, running agents, open incidents, covered cells, inferred rows, newest scrape, newest inference, stale-source count.
@@ -431,6 +492,9 @@ Replace the static usage-only page with a live internal runtime console that kee
 7. **Capacity**
    Host-capacity panel showing CPU, memory, disk pressure, queue depth, active workers, recommended parallelism, max safe parallelism, the currently limiting bottleneck, and any active runtime limits. This tab must make it obvious when the machine is under-used versus when concurrency is being capped for a good reason.
 
+8. **Metadata**
+   Completeness tables and heat maps for image coverage, source URL coverage, nutrition coverage, allergen coverage, category hierarchy quality, and source ping reliability. This tab must make it easy to find which categories, regions, or ingredients still need enrichment.
+
 ### States
 
 - **Loading:** Skeleton cards and tables. Never show fake zeros while data is still loading.
@@ -444,9 +508,11 @@ Replace the static usage-only page with a live internal runtime console that kee
 - Clicking a source opens a detail drawer or inline panel showing capabilities, last runs, current incidents, and queued tasks.
 - Clicking a coverage cell opens its direct-vs-inferred summary.
 - Founder-only actions `Retry Source` and `Recompute Coverage` enqueue tasks; they do not run the repair work synchronously in the browser.
+- Founder-only action `Retry Metadata` enqueues metadata enrichment or nutrition refresh work; it does not fetch or compute metadata synchronously in the browser.
 - Founder-only action `Sample Capacity` queues a fresh capacity measurement and parallelism recommendation.
 - Capacity and agent views must expose when a queue is globally limited, source-limited, or database-limited, instead of collapsing all throttling into a generic `busy` label.
 - Inference audit must always show the underlying direct evidence count and expiry. It may not present inferred rows as if they were scraped facts.
+- Metadata views must distinguish `missing`, `partial`, `linked`, and `verified` states rather than collapsing everything into `present` or `not present`.
 
 ---
 
@@ -468,6 +534,10 @@ _List anything that could go wrong and what the correct behavior is._
 | CPU is low and queues are deep with no external bottleneck          | Capacity agent raises recommended parallelism within configured safety bounds and records the reason                                                                       |
 | Meta-agent keeps spawning low-value work                            | Enforce per-agent and per-task-type concurrency ceilings so task creation cannot flood the queue or starve repair                                                          |
 | No direct local price exists and the evidence remains weak          | Leave the result blank or unavailable, mark the reason explicitly, and queue discovery or repair work instead of inventing certainty                                       |
+| A price row exists but image or source URL data is missing          | Keep the price visible, mark the metadata gap explicitly, and queue bounded enrichment instead of pretending the row is complete                                           |
+| Nutrition or allergen evidence is unavailable or conflicting        | Keep the field missing or partial, record provenance, and never invent gluten-free or allergen claims without source support                                               |
+| A source can be priced but not reliably pinged for stock            | Show stock freshness or reliability as degraded or unknown, and queue pingability verification rather than reporting false certainty                                       |
+| Metadata coverage is strong in one region but weak in another       | Show separate metadata heat maps and completeness percentages so gaps are visible even when direct price coverage looks healthy                                            |
 | A source returns HTTP `429` or equivalent throttling                | Record rate-limit evidence, back off via `rate_limit_backoff_until`, and keep the task in a waiting or rescheduled state instead of treating it as a normal scrape failure |
 | A worker loses its lease while a task is running                    | Mark the task stalled, requeue it only if it is idempotent, and keep the recovery visible in the founder console                                                           |
 | SQLite write contention rises under load                            | Preserve WAL, honor `busy_timeout`, keep write-heavy work bounded by the SQLite resource limit, and surface the bottleneck in capacity metrics                             |
@@ -487,6 +557,9 @@ _List anything that could go wrong and what the correct behavior is._
 - Long-running tasks can be recovered after worker death or lease loss without silent duplication or orphaned `running` state.
 - A missing local price usually resolves to a labeled inferred estimate rather than an empty value.
 - Empty results occur only when evidence is below threshold, and that weakness is visible and actionable rather than silent.
+- Product metadata completeness is measurable by ingredient, category, and geography instead of being treated as an invisible best-effort side effect.
+- The runtime can explain which products still lack an image, source URL, nutrition evidence, allergen evidence, or reliable stock freshness.
+- The runtime can distinguish a missing field from an unverified field and from a conflicting field.
 - Founder-only internal UI can answer five questions truthfully:
   1. What sources do we know about?
   2. What geography is directly covered?
@@ -494,6 +567,7 @@ _List anything that could go wrong and what the correct behavior is._
   4. What is stale or broken?
   5. Which agent is working on which gap?
 - Founder-only internal UI can also answer a sixth question truthfully: `Are we actually using the machine close to its safe capacity, and if not, why not?`
+- Founder-only internal UI can also answer four more questions truthfully: 7. Which products are still missing critical metadata? 8. Which products have verified versus partial nutrition or allergen evidence? 9. Which sources can be reliably pinged for freshness or stock? 10. Where is metadata coverage strong or weak across the country?
 - Repeated re-scrapes of already-covered chains no longer dominate the whole schedule when uncovered geography or broken sources have higher priority.
 - Chef-facing and public-facing product surfaces remain OpenClaw-debranded and outcome-focused.
 
@@ -505,7 +579,7 @@ _List anything that could go wrong and what the correct behavior is._
 2. Add runtime limit, dedupe, heartbeat, incident, coverage, and inference helpers to the Pi runtime.
 3. Add host-capacity sampling and safe-parallelism recommendation helpers to the Pi runtime.
 4. Build `runtime-orchestrator.mjs` so the control plane can prioritize and enqueue work while honoring runtime limits.
-5. Add the bounded specialist agents: discovery, repair, math, capacity, then meta-agent.
+5. Add the bounded specialist agents: discovery, repair, metadata enrichment, nutrition/allergen, quality audit, math, capacity, then meta-agent.
 6. Isolate CPU-heavy math execution from bookkeeping and queue-lease maintenance.
 7. Expose the runtime via new `sync-api.mjs` endpoints.
 8. Wire founder-only server actions in `lib/openclaw/runtime-control-actions.ts`.
@@ -530,9 +604,12 @@ _How does the builder agent confirm this works? Be specific._
 10. Simulate source throttling (`429` or equivalent) and verify the source is backed off via `rate_limit_backoff_until` instead of being treated as a generic failure loop.
 11. Verify that a lookup with no direct local price but strong fallback evidence returns a labeled inferred estimate instead of a blank.
 12. Verify that a lookup with genuinely weak evidence stays blank or unavailable, with the reason exposed and follow-up work queued.
-13. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
-14. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, queue limits, and founder-only action buttons.
-15. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
+13. Run the catalog enrichment agent on ingredients missing images or source URLs and verify the resulting metadata lands in `ingredient_metadata_profiles` with explicit status fields and provenance.
+14. Run the nutrition/allergen agent on a known packaged product and verify it stores linked or partial evidence without inventing unsupported dietary claims.
+15. Verify the metadata summary or heat-map endpoint shows geography-level completeness for image, source URL, nutrition, and allergen coverage.
+16. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
+17. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, queue limits, metadata completeness, and founder-only action buttons.
+18. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
 
 ---
 
@@ -547,6 +624,8 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 - Dynamic code-generation agents that write or deploy new runtime code on their own
 - Replacing direct observation with AI-only price guessing
 - Assuming unused CPU automatically means safe spare throughput
+- Recipe scaling logic that belongs to ChefFlow's recipe math and culinary workflow layer
+- Expiration-date facts without real lot-level or inventory-level evidence
 
 ---
 
@@ -563,4 +642,7 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 9. Use explicit runtime limits and pool-style budgets for scarce resources such as the SQLite writer path, source-domain request slots, and math-worker concurrency.
 10. Keep the orchestrator and lease or heartbeat path lightweight. Do not colocate them with CPU-heavy inference in a way that can stall the queue's own bookkeeping.
 11. Treat blank price results as exceptions to be justified, not as the normal answer when direct coverage is missing.
-12. When developer Q&A clarifies intended runtime behavior, update Developer Notes and the build-facing plan before moving on.
+12. Do not create one tiny agent per field. Group metadata completeness work into coherent bounded agents.
+13. Recipe scaling belongs to ChefFlow, not this runtime. Use OpenClaw to supply package, unit, and product evidence that ChefFlow can consume.
+14. Do not invent expiration dates, gluten-free claims, or allergen labels without explicit upstream evidence.
+15. When developer Q&A clarifies intended runtime behavior, update Developer Notes and the build-facing plan before moving on.
