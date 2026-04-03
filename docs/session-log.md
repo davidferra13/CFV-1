@@ -1114,6 +1114,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only research polish; no new build or typecheck actions)
 - Notes: Cross-checked the spec against current official docs and patterns from Scrapy, SQLite, Airflow, Celery, BullMQ, Prefect, Kubernetes HPA, and KEDA. Tightened the spec around per-resource runtime limits, task dedupe, heartbeats and lease recovery, rate-limit-aware crawling, WAL plus busy-timeout awareness, and isolation of CPU-heavy math work from queue bookkeeping.
 
+## 2026-04-02 22:31 EDT
+
+- Agent: Planning / Builder Handoff (Codex)
+- Task: Turn the OpenClaw vision and runtime spec into a concrete dependency-ordered build handoff that preserves the current Pi runtime and defines exact execution order for additive implementation
+- Status: completed
+- Files touched: docs/research/openclaw-runtime-builder-handoff-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass; no new build or typecheck actions)
+- Notes: Created a dedicated OpenClaw builder handoff instead of rewriting the repo-wide builder-start packet. The handoff defines the exact phase order, file scope, non-destructive guardrails, verification rules, and the parallel research program so future work keeps creating progression without destabilizing the current runtime or violating the internal-only boundary.
+
 ## 2026-04-02 20:51 EDT
 
 - Agent: Builder / Trust Verification (Codex)
@@ -1133,3 +1143,77 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only research/planning pass; no new build or typecheck actions)
 - Notes: The public-surface report was already broad, but the missing piece was execution order. Added a builder-ready handoff that separates completed baseline research from the highest-value unknowns, orders the remaining work by dependency, and defines prerequisites, artifacts, verification rules, and common failure modes. Also linked the new handoff from the main research report, the research index, and `docs/specs/platform-intelligence-hub.md` so future agents start from the correct packet instead of redoing low-value public reconnaissance.
+
+## 2026-04-02 22:14 EDT
+
+- Agent: Planner (Codex)
+- Task: Plan the allergy, dietary trust, public reassurance, and multi-party handling expansion across ChefFlow without destabilizing the existing system
+- Status: started
+- Build state on arrival: green on verified dirty checkout per `docs/build-state.md` (`npm run typecheck:app` and `npm run build -- --no-lint` last verified 2026-04-02 on dirty worktree from `f45fec2c`)
+
+## 2026-04-02 22:02 EDT
+
+- Agent: Planner (Codex)
+- Task: Plan the consumer-first discovery and planning expansion that aligns the developer's goals around hungry-user inspiration, chef discovery, social planning, recipe visibility, and accessibility without breaking existing public surfaces
+- Status: started
+- Build state on arrival: green (commit `e7586911`; working baseline documented as dirty worktree from `f45fec2c` in `docs/build-state.md`)
+
+## 2026-04-02 22:41 EDT
+
+- Agent: Research / Product Strategy (Codex)
+- Task: Derive direct ChefFlow product and website improvements from the Take a Chef / Private Chef Manager evidence base
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md, docs/research/competitive-intelligence-takeachef-privatechefmanager-2026-04-02.md, docs/research/README.md, docs/specs/platform-intelligence-hub.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research synthesis pass; no new build or typecheck actions)
+- Notes: Used the competitor report plus additional help-center, review, and public discussion evidence to isolate the product lessons that most directly improve ChefFlow. The resulting memo prioritizes response control, take-home clarity, richer inquiry context, communication-state trust, cancellation/change transparency, direct-booking confidence, and stronger public profile conversion rather than generic marketplace imitation.
+
+## 2026-04-02 23:04 EDT
+
+- Agent: Research / Website Conversion (Codex)
+- Task: Extend the ChefFlow improvement memo with public-profile, FAQ, directory, and inquiry-funnel conversion lessons from Take a Chef
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
+- Notes: Added a new section showing that the competitor website is doing conversion work at every layer, not just at the final booking step. Pulled public signals from the chef directory, sample chef pages, and booking wizard to sharpen ChefFlow's website recommendations around trust framing, qualification proof, FAQs, structured intake, low-friction reassurance, and conversion-grade public profiles.
+
+## 2026-04-02 23:19 EDT
+
+- Agent: Research / SEO Alignment (Codex)
+- Task: Compare competitor public-site SEO and conversion patterns against ChefFlow's current public implementation
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research comparison pass; no new build or typecheck actions)
+- Notes: Verified that ChefFlow already has stronger public foundations than a generic brochure site, including structured data on profile and directory surfaces, aggregated review proof, and a structured inquiry form. Updated the improvement memo to distinguish between what ChefFlow already has and what still needs to be added: trust microcopy, FAQ/process explanation, conversion-focused inquiry messaging, and city/service/occasion landing-page architecture.
+
+## 2026-04-02 23:33 EDT
+
+- Agent: Research / Public Demand Capture (Codex)
+- Task: Extend the ChefFlow improvement memo with a landing-architecture comparison between Take a Chef's public intent lattice and ChefFlow's current public route map
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
+- Notes: Verified that the next high-value website gap is not more raw schema or proof blocks, but a stronger public search-intent system around them. Added research showing that Take a Chef segments public demand capture across directory, destination, landing, profile, and wizard surfaces, then contrasted that with ChefFlow's current sitemap and route map. The memo now recommends supply-backed city, service-type, and occasion landing pages, stronger internal linking, and conversion-grade local FAQ/process content instead of thin programmatic SEO.
+
+## 2026-04-02 23:44 EDT
+
+- Agent: Research / Buyer Reassurance (Codex)
+- Task: Extend the ChefFlow improvement memo with a comparison of buyer-facing operational reassurance between Take a Chef and ChefFlow's current public trust, FAQ, booking, and inquiry surfaces
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
+- Notes: Verified that ChefFlow already communicates some trust signals, but still fragments them across operator-oriented FAQ, trust-center language, booking copy, and inquiry copy. Added a new research section showing that Take a Chef more aggressively reduces buyer anxiety by explaining service inclusions, booking flow, payment protection, chef communication, and cancellation outcomes in client-facing language. The memo now recommends buyer-facing FAQ modules, clearer "what happens next" blocks, payment/deposit explanation, and cancellation/rescheduling/replacement guidance near inquiry surfaces.
+
+## 2026-04-02 23:56 EDT
+
+- Agent: Research / Buyer Education Content (Codex)
+- Task: Extend the ChefFlow improvement memo with a comparison of Take a Chef's pre-decision educational content versus ChefFlow's current operator-heavy compare and FAQ surfaces
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
+- Notes: Verified that ChefFlow already has meaningful public comparison content, but it mostly teaches chefs how to evaluate software rather than teaching buyers how to evaluate private-chef services. Added a new section recommending client-facing educational pages around service formats, pricing coverage, direct-booking expectations, and high-intent occasions, plus stronger pathways between homepage, directory, FAQ, trust, compare, and booking surfaces.
