@@ -1168,6 +1168,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: unchanged from `docs/build-state.md` (spec/docs-only planning pass; no new build or typecheck actions run in this session)
 - Notes: The current product already has strong public primitives, but they are split across `/discover`, `/chefs`, `/book`, guest portals, and Dinner Circles. The new spec keeps those intact and layers in a consumer-first `/eat` route, public menu/package spotlighting, planning-mode Dinner Circles, and picture-first / low-vision hardening. The main builder risk is accidentally replacing existing public flows or exposing non-public menu/recipe data. The spec explicitly fences both off.
 
+## 2026-04-02 22:33 EDT
+
+- Agent: Research (Codex)
+- Task: Research current chef, consumer, developer, entrepreneur, and business-owner/company workflows around food discovery, private-chef hiring, planning, and supporting systems; then refine the active consumer-first expansion work with the findings
+- Status: started
+- Build state on arrival: green on verified dirty checkout per `docs/build-state.md` (`npm run typecheck:app` and `npm run build -- --no-lint` last verified 2026-04-02 on dirty worktree from `f45fec2c`)
+
 ## 2026-04-02 22:41 EDT
 
 - Agent: Research / Product Strategy (Codex)
@@ -1237,3 +1244,23 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
 - Notes: Verified that ChefFlow already has the major public routes it needs, but still mixes consumer booking, broad discovery, operator adoption, and partner paths in a way that can dilute the main buyer journey. Added a new section recommending one consistent consumer CTA label across header, homepage, directory, profile, and footer, plus clearer separation of operator and partner entry points on buyer-facing pages.
+
+## 2026-04-03 00:19 EDT
+
+- Agent: Research / Public Proof Density (Codex)
+- Task: Extend the ChefFlow improvement memo with a comparison of Take a Chef's site-level review and service-proof density versus ChefFlow's current profile-first review architecture
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
+- Notes: Verified that ChefFlow already has honest, real review infrastructure on chef profiles and inquiry pages, but still lacks the broader freshness and outcome proof that Take a Chef puts on its homepage and chef surfaces. Added a new section recommending approved customer stories, recent-review excerpts, aggregate outcome proof, and more prominent cross-platform proof, while preserving the existing no-fabrication rule.
+
+## 2026-04-02 22:36 EDT
+
+- Agent: Planner (Codex)
+- Task: Plan the allergy, dietary trust, public reassurance, and multi-party handling expansion across ChefFlow without destabilizing the existing system
+- Status: completed
+- Files touched: docs/specs/p1-allergy-and-dietary-trust-alignment.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (planning/docs-only pass; no new build or typecheck actions)
+- Notes: Loaded planner context from `CLAUDE.md`, `docs/specs/_TEMPLATE.md`, `docs/build-state.md`, `docs/session-log.md`, and `docs/app-complete-audit.md`; deep-inspected the public booking, inquiry, discovery, profile, service-config, dietary, onboarding, readiness, and safety-incident flows; cross-checked current chef/consumer market patterns against Take a Chef, OpenTable, FDA, and food-allergy guidance; wrote a phased additive spec that fixes the instant-book dietary loss, introduces a canonical dietary normalization layer, surfaces quiet trust signals on public surfaces, and keeps the existing internal safety model as the backbone.
