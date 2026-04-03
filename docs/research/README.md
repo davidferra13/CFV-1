@@ -47,6 +47,11 @@ Examples:
 - [ChefFlow Current State Baseline - 2026-04-02](./foundations/2026-04-02-chefflow-current-state-baseline.md)
 - [ChefFlow Repo Structure and Navigation Map - 2026-04-02](./foundations/2026-04-02-repo-structure-and-navigation-map.md)
 - [Website Build Research and Spec Cross-Reference - 2026-04-02](./foundations/2026-04-02-website-build-research-and-spec-cross-reference.md)
+- [Website Performance Hardening Handoff - 2026-04-03](./website-performance-hardening-handoff-2026-04-03.md)
+- [Source-to-Close Funnel Truth Map - 2026-04-03](./foundations/2026-04-03-source-to-close-funnel-truth-map.md)
+- [Chef Activation Signal Inventory and Execution Order - 2026-04-03](./foundations/2026-04-03-chef-activation-signal-inventory-and-execution-order.md)
+- [Platform Intelligence Evidence Gaps and Spec Corrections - 2026-04-03](./foundations/2026-04-03-platform-intelligence-evidence-gaps-and-spec-corrections.md)
+- [System Improvement Control Tower - 2026-04-03](./foundations/2026-04-03-system-improvement-control-tower.md)
 
 ### Core supporting docs outside this folder
 
@@ -56,6 +61,8 @@ Examples:
 - [Feature Inventory](../feature-inventory.md)
 - [Build State](../build-state.md)
 - [Current Builder Start Handoff - 2026-04-02](./current-builder-start-handoff-2026-04-02.md)
+- [Current OpenClaw Builder Start Handoff - 2026-04-03](./current-openclaw-builder-start-handoff-2026-04-03.md)
+- [Builder Docket Runtime Ownership Map - 2026-04-03](./builder-docket-runtime-ownership-map-2026-04-03.md)
 - [Verification Report - 2026-03-31](../verification-report-2026-03-31.md)
 - [OpenClaw Data Pipeline](../openclaw-data-pipeline.md)
 
@@ -63,10 +70,17 @@ Examples:
 
 These are the most relevant recent supporting documents for current-state understanding and future planning:
 
+- [System Improvement Control Tower - 2026-04-03](./foundations/2026-04-03-system-improvement-control-tower.md)
+- [Builder Docket Runtime Ownership Map - 2026-04-03](./builder-docket-runtime-ownership-map-2026-04-03.md)
 - [Website Build Research and Spec Cross-Reference - 2026-04-02](./foundations/2026-04-02-website-build-research-and-spec-cross-reference.md)
+- [Website Performance Hardening Handoff - 2026-04-03](./website-performance-hardening-handoff-2026-04-03.md)
+- [Source-to-Close Funnel Truth Map - 2026-04-03](./foundations/2026-04-03-source-to-close-funnel-truth-map.md)
+- [Chef Activation Signal Inventory and Execution Order - 2026-04-03](./foundations/2026-04-03-chef-activation-signal-inventory-and-execution-order.md)
 - [Competitive Intelligence: Take a Chef and Private Chef Manager - 2026-04-02](./competitive-intelligence-takeachef-privatechefmanager-2026-04-02.md)
 - [Competitive Intelligence: ChefFlow Improvement Opportunities - 2026-04-02](./competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md)
 - [Competitive Intelligence Gap-Closure Builder Handoff - 2026-04-02](./competitive-intelligence-gap-closure-builder-handoff-2026-04-02.md)
+- [Platform Intelligence Cross-Persona Ground Truth - 2026-04-02](./platform-intelligence-cross-persona-ground-truth-2026-04-02.md)
+- [Platform Intelligence Evidence Gaps and Spec Corrections - 2026-04-03](./foundations/2026-04-03-platform-intelligence-evidence-gaps-and-spec-corrections.md)
 - [Cross-Persona Workflow Patterns and Breakpoints - 2026-04-02](./cross-persona-workflow-patterns-and-breakpoints-2026-04-02.md)
 - [Multi-Persona Workflows for Food Discovery, Private-Chef Booking, and Dinner Planning - 2026-04-02](./multi-persona-workflows-for-food-discovery-private-chef-booking-and-planning-2026-04-02.md)
 - [Developer and Chef Workflow Research for Surface Classification - 2026-04-02](./developer-and-chef-workflow-research-for-surface-classification-2026-04-02.md)
@@ -119,6 +133,54 @@ These are the most relevant recent supporting documents for current-state unders
 
 If someone asks for the current shape of ChefFlow, start with the foundational baseline in `foundations/`, then read the supporting docs linked from that file before opening narrower research threads.
 
+If someone asks for the current planning boundary for platform-intelligence work, start with:
+
+- [Platform Intelligence Evidence Gaps and Spec Corrections - 2026-04-03](./foundations/2026-04-03-platform-intelligence-evidence-gaps-and-spec-corrections.md)
+- [Platform Intelligence Cross-Persona Ground Truth - 2026-04-02](./platform-intelligence-cross-persona-ground-truth-2026-04-02.md)
+- [Competitive Intelligence: ChefFlow Improvement Opportunities - 2026-04-02](./competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md)
+
 If someone asks what research/specs matter for the website build specifically, start with:
 
 - [Website Build Research and Spec Cross-Reference - 2026-04-02](./foundations/2026-04-02-website-build-research-and-spec-cross-reference.md)
+- [Source-to-Close Funnel Truth Map - 2026-04-03](./foundations/2026-04-03-source-to-close-funnel-truth-map.md)
+
+If someone asks about website performance hardening, render-path optimization, or the current state of public-shell loading work, start with:
+
+- [Website Performance Hardening Handoff - 2026-04-03](./website-performance-hardening-handoff-2026-04-03.md)
+- [Website Build Research and Spec Cross-Reference - 2026-04-02](./foundations/2026-04-02-website-build-research-and-spec-cross-reference.md)
+- [Build State](../build-state.md)
+
+If someone asks about chef activation, setup friction, or the correct order for `Getting Started` cleanup versus broader onboarding changes, start with:
+
+- [Chef Activation Signal Inventory and Execution Order - 2026-04-03](./foundations/2026-04-03-chef-activation-signal-inventory-and-execution-order.md)
+- [Spec: Chef Getting Started Surface Consolidation](../specs/p1-chef-getting-started-surface-consolidation.md)
+
+If someone asks about demo readiness, public-to-portal proof, or what should make the product feel believable end-to-end in a showcase, start with:
+
+- [Cross-Persona Workflow Patterns and Breakpoints - 2026-04-02](./cross-persona-workflow-patterns-and-breakpoints-2026-04-02.md)
+- [Multi-Persona Website Workflow Validation - 2026-04-03](./foundations/2026-04-03-multi-persona-website-workflow-validation.md)
+- [Spec: Demo Continuity and Portal Proof](../specs/p1-demo-continuity-and-portal-proof.md)
+
+If someone asks what to improve next across the system, or how to prioritize builder work, start with:
+
+- [System Improvement Control Tower - 2026-04-03](./foundations/2026-04-03-system-improvement-control-tower.md)
+
+If someone asks where a builder should start right now, or what the current execution chain is, start with:
+
+- [Build State](../build-state.md)
+- [Current Builder Start Handoff - 2026-04-02](./current-builder-start-handoff-2026-04-02.md)
+- [System Improvement Control Tower - 2026-04-03](./foundations/2026-04-03-system-improvement-control-tower.md)
+
+If someone asks where a builder should start for explicitly assigned OpenClaw runtime work, start with:
+
+- [Build State](../build-state.md)
+- [Current Builder Start Handoff - 2026-04-02](./current-builder-start-handoff-2026-04-02.md)
+- [Builder Docket Runtime Ownership Map - 2026-04-03](./builder-docket-runtime-ownership-map-2026-04-03.md)
+- [Current OpenClaw Builder Start Handoff - 2026-04-03](./current-openclaw-builder-start-handoff-2026-04-03.md)
+- [OpenClaw Runtime Builder Handoff - 2026-04-02](./openclaw-runtime-builder-handoff-2026-04-02.md)
+
+If someone asks how to sort work between ChefFlow website tasks, OpenClaw runtime tasks, Raspberry Pi host tasks, or mixed handshake tasks, start with:
+
+- [Builder Docket Runtime Ownership Map - 2026-04-03](./builder-docket-runtime-ownership-map-2026-04-03.md)
+- [System Improvement Control Tower - 2026-04-03](./foundations/2026-04-03-system-improvement-control-tower.md)
+- [Current Builder Start Handoff - 2026-04-02](./current-builder-start-handoff-2026-04-02.md)

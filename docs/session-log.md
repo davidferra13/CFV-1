@@ -219,6 +219,24 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: green (5511b1e9, research-only, no code changes)
 - Notes: 11 web searches across 5 categories. Key finding: no existing tool connects component-level recipe data to event-based reverse-calendar prep timelines. meez owns recipes, Puree owns catering dockets, but neither maps make-ahead windows to calendar dates. Grace's pain points validated as universal. Recommendations: add printable prep list view, group by station within day, surface storage notes prominently. Current spec is well-aligned with industry practices.
 
+## 2026-04-03 ~01:45 EST
+
+- Agent: Codex (research)
+- Task: Refresh cross-persona workflow research for developers, entrepreneurs, and business operators using current official docs, reports, and community signals, then tie it back to ChefFlow's active demo and portal work.
+- Status: started
+- Build state on arrival: unknown/unchanged (docs-only research session; worktree already dirty)
+- Files in focus: docs/research/cross-persona-workflow-patterns-and-breakpoints-2026-04-02.md, docs/session-log.md
+- Notes: Updating the canonical synthesis in place instead of scattering overlapping persona notes across the repo.
+
+## 2026-04-03 ~02:25 EST
+
+- Agent: Codex (research)
+- Task: Refresh cross-persona workflow research for developers, entrepreneurs, and business operators using current official docs, reports, and community signals, then tie it back to ChefFlow's active demo and portal work.
+- Status: completed
+- Files touched: docs/research/cross-persona-workflow-patterns-and-breakpoints-2026-04-02.md, docs/session-log.md
+- Build state on departure: unchanged (docs-only session; no build or test run)
+- Notes: Strengthened the canonical research doc with current-market validation, sharper workflow breakpoints, and more explicit implications for demo richness, portal scope, payment-state proof, and role separation.
+
 ## 2026-03-31 20:35 EST
 
 - Agent: Planner + Research
@@ -1429,6 +1447,15 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only builder-handoff refinement on a verified dirty checkout; no new typecheck or build run)
 - Notes: Re-read the current `Getting Started` spec and inspected the adjacent telemetry, feedback, survey, preference, and analytics paths before making any planning changes. Wrote a new foundational activation memo that inventories the underused internal signals already available for onboarding decisions, defines what each one can answer, and locks the correct phase order: ship the scoped surface cleanup first, synthesize activation evidence second, and only then consider a broader activation-model rewrite. Tightened the existing `Getting Started` spec to explicitly keep that broader evidence work out of the current build and indexed the new memo in the research library retrieval rules.
 
+## 2026-04-03 00:46 EDT
+
+- Agent: Planner / Builder Handoff Refinement (Codex)
+- Task: Close the remaining builder-context gap by wiring the chef `Getting Started` cleanup thread into the canonical builder-start handoff without changing the current survey-first execution order
+- Status: completed
+- Files touched: docs/research/current-builder-start-handoff-2026-04-02.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only handoff refinement on a verified dirty checkout; no new typecheck or build run)
+- Notes: Verified that the new activation memo and ready `Getting Started` cleanup spec were indexed in research docs but not yet surfaced in the canonical builder-start handoff. Updated that handoff so future builders can see the chef activation/setup work as a parallel ready thread with the right prerequisite caveat: it is builder-ready if explicitly assigned, but it is still not the default next execution step while survey deploy verification remains open.
+
 ## 2026-04-03 00:47 EDT
 
 - Agent: Codex
@@ -1446,3 +1473,136 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/openclaw-ideal-runtime-and-national-intelligence.md, docs/specs/openclaw-goal-governor-and-kpi-contract.md, docs/specs/openclaw-internal-only-boundary-and-debranding.md, docs/research/openclaw-runtime-builder-handoff-2026-04-02.md, docs/research/openclaw-open-questions-decision-log-2026-04-02.md, docs/session-log.md
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only OpenClaw planning pass on the verified dirty checkout; no new build, typecheck, or test run)
 - Notes: Re-read the current OpenClaw runtime spec, KPI contract, boundary spec, builder handoff, and decision log first, then locked the next unresolved defaults in dependency order: nutrition and allergen evidence tiers, source health and suppression lifecycle, default dispute and takedown posture, public-expansion gate, KPI drift thresholds, rollout blockers, and ratchet rules. Propagated the same defaults into the builder handoff and decision log, updated the remaining top-question order, and kept the work additive so future builders can execute against one coherent set of runtime, KPI, and boundary assumptions.
+
+## 2026-04-03 01:26 EDT
+
+- Agent: Codex
+- Task: Finish the builder-context doc graph integration so the system-level control tower, research index, and active builder handoff all point to the same intake-routing and platform-intelligence planning truth
+- Status: completed
+- Files touched: docs/research/README.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only doc-graph integration and verification pass; no new build, typecheck, or test run)
+- Notes: Verified the research index and builder-start handoff first, then completed the remaining system-level wiring. Indexed the source-to-close funnel truth map in the research retrieval rules, surfaced both the system-improvement control tower and source-to-close truth map as parallel completed research threads in the canonical builder-start handoff, and upgraded the control tower so its canonical inputs and decision matrix now explicitly account for source-to-close routing truth and the platform-intelligence correction packet. Finished with a cross-reference verification pass to confirm the builder-facing planning stack now points to one coherent set of routing, sequencing, and evidence-boundary documents.
+
+## 2026-04-03 01:36 EDT
+
+- Agent: Codex
+- Task: Resolve the remaining builder-execution contradiction so the canonical builder prompt, build-state, and active handoff agree on how to operate on the intentionally preserved dirty checkout
+- Status: completed
+- Files touched: docs/specs/README.md, docs/build-state.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only workflow-alignment pass; no new typecheck, build, or test run)
+- Notes: Re-read the canonical builder prompt, build-state, active builder-start handoff, and system-improvement control tower to find the last live contradiction: the repo baseline was intentionally preserved on a dirty checkout, but the canonical builder pre-flight still implied a hard clean-worktree stop. Updated the launcher guidance so preserved-dirty-checkout mode is explicit rather than improvised, tightened the build-state caveat to require both files to authorize that mode, expanded the active handoff with exact dirty-worktree behavior, and updated the control tower so future planner or builder work keeps this distinction clear instead of turning one lane's preserved baseline into a repo-wide exception.
+
+## 2026-04-03 02:30 EDT
+
+- Agent: Codex (research)
+- Task: Refresh cross-persona workflow research for developers, entrepreneurs, and business operators using current official docs, reports, and community signals, then tie it back to ChefFlow's active demo and portal work.
+- Status: completed
+- Files touched: docs/research/cross-persona-workflow-patterns-and-breakpoints-2026-04-02.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only session; no build, typecheck, or test run)
+- Notes: Refreshed the canonical cross-persona synthesis with current market validation from live vendor docs, the 2025 QuickBooks late-payments report, current platform-engineering and small-business workflow signals, and explicit ChefFlow implications for demo richness, portal scope, payment-state proof, and role separation. This entry is the canonical close-out for that pass; earlier EST-tagged entries in this file refer to the same work.
+
+## 2026-04-03 03:30 EDT
+
+- Agent: Codex (planner)
+- Task: Convert the refreshed cross-persona demo/portal research into builder-ready execution context and sequence it correctly behind the active survey lane.
+- Status: completed
+- Files touched: docs/specs/p1-demo-continuity-and-portal-proof.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass; no build, typecheck, or test run)
+- Notes: Deep-inspected the demo seed, demo-account bootstrap, client preview, public chef/inquiry surfaces, and token client portal. Captured the key structural gap: the authenticated demo client account is separate from the richer seeded hero client story. Wrote a ready post-survey spec that fixes that split, wires it into the builder-start handoff and control tower, and keeps the lane explicitly non-default until survey deploy verification is complete.
+
+## 2026-04-03 03:42 EDT
+
+- Agent: Codex (planner)
+- Task: Remove the last builder-order ambiguity by making the post-survey redirect explicit in the active handoff and the system-level control tower.
+- Status: completed
+- Files touched: docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only sequencing refinement; no build, typecheck, or test run)
+- Notes: Added one explicit post-survey redirect section to the canonical builder-start handoff and one proof-readiness branch to the control tower so a fresh builder no longer has to infer when the new demo-continuity spec should be picked up. Survey verification still remains the active lane; demo continuity is now the clean next redirect when that lane closes or the developer explicitly changes focus.
+
+## 2026-04-03 03:50 EDT
+
+- Agent: Codex (planner)
+- Task: Close the last research-index and maintenance-rule gaps so future agents can find the new demo-proof lane from the library index and keep the control tower current when that lane changes.
+- Status: completed
+- Files touched: docs/research/README.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only index/maintenance refinement; no build, typecheck, or test run)
+- Notes: Added an explicit research-library retrieval rule for demo readiness / public-to-portal proof and extended the control tower maintenance rule to include the new demo-continuity spec plus its key evidence docs. This closes the last known builder-context gap in this planning thread; implementation work still remains in the queued specs themselves.
+
+## 2026-04-03 04:00 EDT
+
+- Agent: Codex (planner)
+- Task: Sync the canonical website-build cross-reference with the new source-to-close truth map and demo-continuity packet so builders can find the public-to-portal proof lane from website-facing entry points too.
+- Status: completed
+- Files touched: docs/research/foundations/2026-04-02-website-build-research-and-spec-cross-reference.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only continuity-routing refinement; no build, typecheck, or test run)
+- Notes: The remaining drift was in the website cross-reference: it still treated website-to-operator continuity as research-backed only even though the repo now had both the source-to-close truth map and the ready demo-continuity spec. Updated that cross-reference to route continuity work through those artifacts, added a dedicated demo-readiness phase to the website execution order, and synced the control tower row in the same pass so the maintenance rule stays true. Implementation work still remains in the queued specs.
+
+## 2026-04-03 04:08 EDT
+
+- Agent: Codex (planner)
+- Task: Remove the remaining queue-selection ambiguity in the canonical builder launcher so builders cannot bypass the active handoff and control tower by scanning `docs/specs/` naively.
+- Status: completed
+- Files touched: docs/specs/README.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only launcher refinement; no build, typecheck, or test run)
+- Notes: The planning docs were already aligned, but the canonical builder prompt still said "scan the queue" without explicitly stating that queue choice must follow the active builder-start handoff and the control tower. Tightened the rules, builder-start prompt, and continuous-builder prompt so spec selection itself is now dependency-aware and routed through the authoritative handoff before a builder claims work. Implementation work still remains in the queued specs.
+
+## 2026-04-03 04:11 EDT
+
+- Agent: Codex (planner)
+- Task: Finish the builder-context stack by wiring the runtime-ownership docket into research retrieval, the active handoff, the system control tower, and the launcher prompts.
+- Status: completed
+- Files touched: docs/research/builder-docket-runtime-ownership-map-2026-04-03.md, docs/research/README.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/specs/README.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only builder-context integration; no build, typecheck, or test run)
+- Notes: Added one supplemental ownership sorter for `website-owned`, `runtime-owned`, `host-owned`, and `bridge-owned` work, then wired it into the canonical retrieval and sequencing stack instead of creating a competing handoff. The research index can now route backlog-sorting questions to the right documents, the active builder-start handoff records the docket as a completed supporting artifact, the control tower tells planners to classify mixed-lane work before choosing a spec, and the canonical planner/builder prompts now require that classification whenever work crosses ChefFlow, OpenClaw, and Raspberry Pi boundaries.
+
+## 2026-04-03 04:19 EDT
+
+- Agent: Codex (planner)
+- Task: Make the simple 19-item builder-admission split canonical so future builders can see what belongs in the current docket versus what stays out by default.
+- Status: completed
+- Files touched: docs/research/builder-docket-runtime-ownership-map-2026-04-03.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only docket-clarification pass; no build, typecheck, or test run)
+- Notes: Added a `Simple Admission Rollup` to the runtime-ownership docket so the current builder-facing split is explicit: 9 items get into the current builder-admissible queue and 10 do not. Kept the sequencing rule unchanged by restating that survey deploy verification is still the default next step, then added one pointer from the active builder-start handoff so a future builder can find the admission split without re-synthesizing it from chat or from the broader control-tower matrix.
+
+## 2026-04-03 04:40 EDT
+
+- Agent: Codex (builder)
+- Task: Execute the active survey deploy-verification lane far enough to determine whether it can run end to end from the current environment, then record the true blocker if not.
+- Status: completed
+- Files touched: docs/build-state.md, docs/specs/p0-survey-passive-voluntary-deploy-verification.md, docs/specs/p0-survey-passive-voluntary-surfacing.md, docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/survey-distribution-brief-2026-04-02.md, docs/research/survey-readiness-and-outreach-audit-2026-04-02.md, docs/session-log.md
+- Build state on departure: `npm run typecheck:app` passed and `npm run build -- --no-lint` passed again on the current dirty checkout; deployed survey verification remains blocked externally
+- Notes: Ran the builder pre-flight for the active lane: `git status --short` confirmed the preserved dirty checkout, `npm run typecheck:app` passed, and `npm run build -- --no-lint` passed with the already-known `DYNAMIC_SERVER_USAGE` noise. The phase could not proceed into route/banner/admin verification because both `https://beta.cheflowhq.com/api/health/readiness?strict=1` and `https://app.cheflowhq.com/api/health/readiness?strict=1` returned Cloudflare `530` / `1033` before app-level checks. Also confirmed that beta chef/client browser states exist in `.auth/chef-beta-verified.json` and `.auth/client-beta-verified.json`, while `.auth/admin.json` is empty and will need a fresh authenticated session once host reachability is restored.
+
+## 2026-04-03 04:55 EDT
+
+- Agent: Codex (builder)
+- Task: Run the builder gate for the OpenClaw lane and determine whether an OpenClaw spec can be claimed from the current checkout
+- Status: started
+- Build state on arrival: green (`dirty worktree from f45fec2c`)
+
+## 2026-04-03 05:01 EDT
+
+- Agent: Codex (builder)
+- Task: Run the builder gate for the OpenClaw lane and determine whether an OpenClaw spec can be claimed from the current checkout
+- Status: blocked
+- Files touched: docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md`; builder pre-flight failed before any OpenClaw spec claim or implementation
+- Notes: Stopped at pre-flight. `git status --short` showed a heavily dirty checkout well beyond the required session-log entry. `npx tsc --noEmit --skipLibCheck` did not complete within the command timeout. `npx next build --no-lint` failed with a Node heap out-of-memory crash during production build. No OpenClaw spec was claimed, no implementation started, and no Playwright verification ran because the builder gate was not satisfied.
+
+## 2026-04-03 05:03 EDT
+
+- Agent: Codex (planner)
+- Task: Convert the failed OpenClaw builder attempt into a canonical runtime-start handoff so the next builder can enter the OpenClaw lane cleanly and in the right order.
+- Status: started
+- Build state on arrival: unchanged from `docs/build-state.md` (docs-only planning pass on the current verified dirty checkout)
+- Files in focus: docs/build-state.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/builder-docket-runtime-ownership-map-2026-04-03.md, docs/research/current-openclaw-builder-start-handoff-2026-04-03.md, docs/research/openclaw-runtime-builder-handoff-2026-04-02.md, docs/research/README.md, docs/specs/README.md, docs/session-log.md
+- Notes: The core gap was not missing OpenClaw specs. It was missing runtime-specific builder routing that overrode the default website-first handoff when the developer explicitly redirected work into the OpenClaw lane.
+
+## 2026-04-03 05:13 EDT
+
+- Agent: Codex (planner)
+- Task: Convert the failed OpenClaw builder attempt into a canonical runtime-start handoff so the next builder can enter the OpenClaw lane cleanly and in the right order.
+- Status: completed
+- Files touched: docs/build-state.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/builder-docket-runtime-ownership-map-2026-04-03.md, docs/research/current-openclaw-builder-start-handoff-2026-04-03.md, docs/research/openclaw-runtime-builder-handoff-2026-04-02.md, docs/research/README.md, docs/specs/README.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass; no new typecheck, build, or browser verification run)
+- Notes: Added one explicit runtime-only builder-start handoff, then wired it into build-state, the default builder-start handoff, the runtime-ownership docket, the research index, the canonical launcher prompts, and the deeper OpenClaw runtime handoff. Also corrected the read-order wording so the routing stack is no longer circular: the website-first handoff remains the default repo entrypoint, but explicitly assigned `runtime-owned` OpenClaw work now branches into a single current runtime handoff that owns queue order and preserved-dirty-checkout interpretation for that lane.

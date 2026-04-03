@@ -9,6 +9,11 @@ This directory contains implementation specs for ChefFlow features.
 3. Each spec is self-contained: a fresh agent with zero prior context can build from it
 4. **Developer Notes** in each spec preserve the conversation context so builders understand WHY, not just WHAT
 
+Prompt source of truth:
+
+- `docs/specs/README.md` holds the canonical launcher prompts for planner, builder, and research agents.
+- `prompts/` holds reusable prompt assets, drafts, and queue items. It is not the launcher prompt source of truth.
+
 ## Spec Lifecycle
 
 | Status        | Meaning                                               |
@@ -28,7 +33,11 @@ Every status transition gets a timestamped row in the spec's Timeline table.
 - **Specs are read-only for builders.** The builder implements what the spec says. If the spec is wrong, the builder updates the spec first (does not improvise).
 - **Planning agents write nothing but specs.** They read the codebase, they write a `.md` file here. No code changes.
 - **Developer Notes are mandatory.** Every spec must have the developer's conversation context preserved. A spec without Developer Notes is incomplete.
-- **Session awareness is mandatory.** Every agent reads `docs/session-log.md` and `docs/build-state.md` before starting work.
+- **Session awareness is mandatory.** Every agent reads `docs/session-log.md` and `docs/build-state.md` before starting work. If `docs/build-state.md` is broken, the agent must also read the latest recovery / handoff doc under `docs/research/` before choosing a spec.
+- **Dirty-worktree awareness is mandatory.** If `docs/build-state.md` reports a verified dirty checkout, the agent must also read the latest builder-start handoff under `docs/research/` before choosing a spec.
+- **Preserved dirty-checkout mode is explicit, not assumed.** A builder may continue on a dirty checkout only when both `docs/build-state.md` and the latest builder-start handoff explicitly say the current lane is running on an intentionally preserved dirty baseline. In that mode, capture `git status`, do not clean/reset/revert unrelated work, keep edits scoped, and record touched files clearly.
+- **Queue choice must follow the current handoff, not filename sorting.** If more than one spec is `ready`, do not pick by priority prefix or recency alone. Read the latest builder-start handoff under `docs/research/` first, then `docs/research/foundations/2026-04-03-system-improvement-control-tower.md` when that handoff points to broader prioritization, and then any narrower cross-reference doc that owns the assigned surface.
+- **Ownership classification is mandatory for mixed backlog selection.** If a task spans ChefFlow website work, OpenClaw runtime work, Raspberry Pi host work, or a bridge between them, read `docs/research/builder-docket-runtime-ownership-map-2026-04-03.md` before choosing or writing a spec.
 
 ## Naming Convention
 
@@ -68,6 +77,9 @@ STEP 1 - LOAD CONTEXT
 - Read CLAUDE.md cover to cover.
 - Read docs/specs/_TEMPLATE.md for the spec format.
 - Read docs/session-log.md (last 5 entries) and docs/build-state.md.
+- If `docs/build-state.md` is broken: read the latest recovery / handoff doc under `docs/research/` before doing anything else.
+- If `docs/build-state.md` reports a verified dirty checkout: read the latest builder-start handoff under `docs/research/` before doing anything else.
+- If the task crosses ChefFlow website work, OpenClaw runtime work, or Raspberry Pi host work: read `docs/research/builder-docket-runtime-ownership-map-2026-04-03.md` before planning.
 - Look up what I'm describing in docs/app-complete-audit.md first.
 
 STEP 2 - SESSION LOG
@@ -111,20 +123,27 @@ You are a builder agent. Follow the Builder Gate in CLAUDE.md exactly.
 STEP 1 - LOAD CONTEXT
 - Read CLAUDE.md cover to cover.
 - Read docs/session-log.md (last 5 entries) and docs/build-state.md.
-- If build state is broken: STOP. Report what's broken. Do not build on a broken foundation.
+- If build state is broken: read the latest recovery / handoff doc under `docs/research/`, then STOP. Report what's broken. Do not build on a broken foundation.
+- If build state is green but explicitly tied to a verified dirty checkout: read the latest builder-start handoff under `docs/research/` before pre-flight.
+- If the assignment or queue selection spans ChefFlow website work, OpenClaw runtime work, or Raspberry Pi host work: read `docs/research/builder-docket-runtime-ownership-map-2026-04-03.md` before choosing a spec.
+- If the developer explicitly assigns `runtime-owned` OpenClaw work: read `docs/research/current-openclaw-builder-start-handoff-2026-04-03.md` before claiming or continuing a spec.
+- Before claiming a spec from the queue, use the latest builder-start handoff as the queue-order authority. If it points to broader prioritization or a parallel post-survey lane, read `docs/research/foundations/2026-04-03-system-improvement-control-tower.md` and the named cross-reference doc before picking a spec.
 
 STEP 2 - SESSION LOG
 Log your arrival in docs/session-log.md before doing anything else.
 
 STEP 3 - PRE-FLIGHT CHECK (MANDATORY)
 Run these BEFORE writing any code:
-  a. git status (repo must be clean)
-  b. npx tsc --noEmit --skipLibCheck (must exit 0)
-  c. npx next build --no-lint (must exit 0, skip if .multi-agent-lock exists)
+  a. git status --short (capture the exact worktree state)
+  b. if the repo is clean: continue
+  c. if the repo is dirty: STOP unless `docs/build-state.md` and the latest builder-start handoff explicitly authorize a preserved dirty checkout for the active lane. If they do, continue in preserved-dirty-checkout mode without cleaning the repo.
+  d. npm run typecheck:app (must exit 0)
+  e. npm run build -- --no-lint (must exit 0, skip if .multi-agent-lock exists)
 If ANY fails: STOP. Do not write code. Fix or report.
 
 STEP 4 - PICK OR RECEIVE SPEC
-Either scan the queue (docs/specs/) for the next ready spec, or build what the developer specifies. Claim it: change status to in-progress, add Timeline entry, commit the claim.
+Either build what the developer specifies, or choose the next ready spec by following the latest builder-start handoff and any referenced control-tower / cross-reference docs. Do not pick from `docs/specs/` by filename or status alone. Claim it: change status to in-progress, add Timeline entry, commit the claim.
+If multiple unrelated specs are in play across website, OpenClaw, Pi, or handshake work, classify the task with the runtime-ownership map before picking one.
 
 STEP 5 - SPIKE
 - Read the spec. Read the Developer Notes carefully - understand WHY, not just WHAT.
@@ -134,12 +153,12 @@ STEP 5 - SPIKE
 
 STEP 6 - BUILD (with continuous verification)
 - Implement exactly what the spec defines.
-- After every significant change: run npx tsc --noEmit --skipLibCheck. Fix failures immediately.
+- After every significant change: run npm run typecheck:app. Fix failures immediately.
 - No bonus features. No "while I'm here" refactors.
 
 STEP 7 - FINAL VERIFICATION (all required, show output)
-  a. npx tsc --noEmit --skipLibCheck (paste output)
-  b. npx next build --no-lint (paste output, skip if .multi-agent-lock)
+  a. npm run typecheck:app (paste output)
+  b. npm run build -- --no-lint (paste output, skip if .multi-agent-lock)
   c. Playwright: sign in, navigate, full user flow, screenshots
   d. Edge cases: test each one from the spec, report what happened
   e. Regression: verify at least one adjacent page still works
@@ -163,8 +182,8 @@ ANTI-LOOP: 3 failures on the same problem = stop and report. See CLAUDE.md.
 Show me your evidence. For each item below, paste the actual output (not a description):
 
 1. Pre-flight check output (tsc + build BEFORE you started coding)
-2. TypeScript check output (final)
-3. Build output (final)
+2. TypeScript check output (`npm run typecheck:app`, final)
+3. Build output (`npm run build -- --no-lint`, final)
 4. Playwright screenshots of the feature working in the real app
 5. Every edge case from the spec: what you tested, what happened
 6. At least one screenshot of an adjacent page confirming no regression
@@ -178,7 +197,7 @@ Answer honestly: if a real user touched this feature right now, what would break
 ### BUILDER CONTINUOUS (Queue Drain)
 
 ```
-You are a builder agent in continuous mode. Follow the BUILDER START prompt for each spec. After completing STEP 8, loop back to STEP 4 and pick the next buildable spec. Keep going until the queue is empty.
+You are a builder agent in continuous mode. Follow the BUILDER START prompt for each spec. After completing STEP 8, loop back to STEP 4 and pick the next buildable spec using the latest builder-start handoff and any referenced control-tower / cross-reference docs, not directory sorting. Keep going until the queue is empty.
 
 If the Anti-Loop rule triggers on any spec: set status back to ready with a note about what failed, move to the next spec. One bad spec does not block the queue.
 

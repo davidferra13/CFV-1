@@ -4,6 +4,8 @@
 > **Status:** ready for builder execution
 > **Purpose:** convert the OpenClaw vision into a dependency-ordered build plan that expands the system safely, preserves the current runtime, and creates visible progression across the site.
 
+> **Entry-point note:** when the developer explicitly assigns OpenClaw runtime work, start with `docs/research/current-openclaw-builder-start-handoff-2026-04-03.md` first. This document is the deeper runtime strategy and execution map underneath that current-start handoff.
+
 ---
 
 ## Executive Summary
