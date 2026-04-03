@@ -1255,6 +1255,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
 - Notes: Verified that ChefFlow already has honest, real review infrastructure on chef profiles and inquiry pages, but still lacks the broader freshness and outcome proof that Take a Chef puts on its homepage and chef surfaces. Added a new section recommending approved customer stories, recent-review excerpts, aggregate outcome proof, and more prominent cross-platform proof, while preserving the existing no-fabrication rule.
 
+## 2026-04-03 00:31 EDT
+
+- Agent: Research / Alternate Intent Paths (Codex)
+- Task: Extend the ChefFlow improvement memo with a comparison of Take a Chef's public gift/support/contact visibility versus ChefFlow's current public edge routes
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
+- Notes: Verified that ChefFlow already has consumer-adjacent public routes such as contact, trust, and chef-level gift-card flows, but they are quieter and less integrated into the main public booking journey than on Take a Chef. Added a new section recommending stronger promotion of gift-card entry points, clearer support visibility near booking surfaces, and tighter linkage between trust, FAQ, contact, and booking pages so the site feels more complete and reachable before account creation.
+
 ## 2026-04-02 22:36 EDT
 
 - Agent: Planner (Codex)
@@ -1264,3 +1274,21 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending
 - Build state on departure: unchanged from `docs/build-state.md` (planning/docs-only pass; no new build or typecheck actions)
 - Notes: Loaded planner context from `CLAUDE.md`, `docs/specs/_TEMPLATE.md`, `docs/build-state.md`, `docs/session-log.md`, and `docs/app-complete-audit.md`; deep-inspected the public booking, inquiry, discovery, profile, service-config, dietary, onboarding, readiness, and safety-incident flows; cross-checked current chef/consumer market patterns against Take a Chef, OpenTable, FDA, and food-allergy guidance; wrote a phased additive spec that fixes the instant-book dietary loss, introduces a canonical dietary normalization layer, surfaces quiet trust signals on public surfaces, and keeps the existing internal safety model as the backbone.
+
+## 2026-04-02 22:33 EDT
+
+- Agent: Research (Codex)
+- Task: Research current chef, consumer, developer, entrepreneur, and business-owner/company workflows around food discovery, private-chef hiring, planning, and supporting systems; then refine the active consumer-first expansion work with the findings
+- Status: started
+- Build state on arrival: green on verified dirty checkout per `docs/build-state.md` (baseline verified; no new build or typecheck actions run in this research pass before edits)
+- Notes: Loaded recent session context, used existing ChefFlow research plus current external marketplace, meal-planning, operations, and community sources to cross-check how discovery, trust, planning, and booking actually work across personas before refining the active public-consumer spec.
+
+## 2026-04-02 22:50 EDT
+
+- Agent: Research (Codex)
+- Task: Research current chef, consumer, developer, entrepreneur, and business-owner/company workflows around food discovery, private-chef hiring, planning, and supporting systems; then refine the active consumer-first expansion work with the findings
+- Status: completed
+- Files touched: docs/research/multi-persona-workflows-for-food-discovery-private-chef-booking-and-planning-2026-04-02.md, docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research and planning refinement pass; no new build or typecheck actions)
+- Notes: Added a new cross-persona research memo covering consumers, chefs, developers, entrepreneurs, and business/corporate planners; refined the active consumer-first spec to add earlier structured planning inputs, work/group intent, `hub_groups.planning_brief`, durable shortlist snapshots, sample-menu-first public menu spotlighting, and clearer planning-group handoff into existing booking surfaces without replacing current routes.

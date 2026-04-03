@@ -77,6 +77,8 @@ That is useful infrastructure, but it is not yet a consumer-native "help me deci
 
 Competitive research points in the same direction. The strongest marketplace lesson is that menus, chef bios, chat, and trust proof are decision inputs before booking, not optional extras (`docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md:109`, `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md:341`, `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md:349`, `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md:356`, `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md:367`).
 
+The multi-persona workflow research sharpens the build details. Consumers discover visually, chefs separate public proof from private operations, developers need strict public/private boundaries, and business/group planners need headcount, date, dietary, and budget context earlier than lifestyle search usually provides (`docs/research/multi-persona-workflows-for-food-discovery-private-chef-booking-and-planning-2026-04-02.md`).
+
 ---
 
 ## Current-State Summary
@@ -136,14 +138,16 @@ Competitive research points in the same direction. The strongest marketplace les
 | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `app/(public)/eat/page.tsx`                                     | New consumer-first public route for craving-led and occasion-led discovery                                         |
 | `app/(public)/eat/_components/consumer-intent-shell.tsx`        | Main `/eat` shell with intent chips, result sections, and fallback routing                                         |
-| `app/(public)/eat/_components/consumer-intent-filters.tsx`      | Mood, occasion, fulfillment, budget, dietary, and visual-mode filters                                              |
+| `app/(public)/eat/_components/consumer-intent-filters.tsx`      | Mood, occasion, event-style, date-window, party-size, budget, dietary, work-intent, and visual-mode filters        |
 | `app/(public)/eat/_components/consumer-result-card.tsx`         | Unified image-first card that can represent a chef, listing, menu/package, or planning CTA                         |
 | `app/(public)/eat/_components/discovery-view-mode-toggle.tsx`   | Picture-first / low-vision-friendly public browsing toggle                                                         |
 | `components/public/chef-menu-spotlight.tsx`                     | Public chef-page component for featured menu / package / item spotlight                                            |
 | `components/hub/planning-candidate-board.tsx`                   | Planning-group shortlist board rendered inside the existing hub shell                                              |
+| `components/hub/planning-brief-summary.tsx`                     | Planning-group brief summary/editor shell for date, headcount, budget, dietary, accessibility, and occasion        |
 | `lib/public-consumer/discovery-actions.ts`                      | Public read layer that merges directory listings, chef discovery, and menu/package spotlights into one intent feed |
 | `lib/public-consumer/menu-actions.ts`                           | Public read helpers for featured booking menu, showcase menus, package spotlights, and meal prep items             |
 | `lib/hub/planning-candidate-actions.ts`                         | Read/write actions for planning-group shortlist candidates                                                         |
+| `lib/hub/planning-brief.ts`                                     | Shared type helpers and normalization for planning-brief shape and candidate snapshot shape                        |
 | `database/migrations/[next-timestamp]_hub_group_candidates.sql` | Add shortlist candidate storage for planning-mode Dinner Circles                                                   |
 
 ---
@@ -165,7 +169,8 @@ Competitive research points in the same direction. The strongest marketplace les
 | `lib/profile/actions.ts`                             | Extend `getPublicChefProfile()` with menu/package spotlight data lookups                                                                                   |
 | `lib/hub/group-actions.ts`                           | Add a thin helper for planning-group creation that reuses `createHubGroup()` and existing membership behavior                                              |
 | `lib/hub/profile-actions.ts`                         | Reuse `getOrCreateProfile()` for public planning-group creation from `/eat`                                                                                |
-| `lib/db/schema/schema.ts`                            | Add generated schema definitions for `hub_group_candidates` after migration generation                                                                     |
+| `lib/hub/types.ts`                                   | Add typed planning-brief and planning-candidate snapshot contracts where the hub UI already relies on shared types                                         |
+| `lib/db/schema/schema.ts`                            | Add generated schema definitions for `hub_group_candidates` and `hub_groups.planning_brief` after migration generation                                     |
 
 ---
 
@@ -186,6 +191,7 @@ CREATE TABLE hub_group_candidates (
   menu_id uuid REFERENCES menus(id) ON DELETE CASCADE,
   experience_package_id uuid REFERENCES experience_packages(id) ON DELETE CASCADE,
   meal_prep_item_id uuid REFERENCES meal_prep_items(id) ON DELETE CASCADE,
+  snapshot jsonb NOT NULL,
   notes text,
   sort_order integer DEFAULT 0 NOT NULL,
   created_at timestamptz DEFAULT now() NOT NULL,
@@ -194,16 +200,23 @@ CREATE TABLE hub_group_candidates (
 
 CREATE INDEX idx_hub_group_candidates_group ON hub_group_candidates(group_id, sort_order);
 CREATE INDEX idx_hub_group_candidates_type ON hub_group_candidates(candidate_type);
+
+ALTER TABLE hub_groups
+ADD COLUMN planning_brief jsonb;
 ```
 
 ### New Columns on Existing Tables
 
-None.
+`hub_groups.planning_brief jsonb`
+
+- Only used when `group_type = 'planning'`
+- Stores a structured summary of the group's planning context so the shortlist, `/book` handoff, and share view do not have to reverse-engineer user intent from free text
 
 ### Migration Notes
 
 - This is intentionally narrow. Do not add a new consumer account system or a second social graph.
-- The planning container should be `hub_groups` with `group_type = 'planning'`. The new table only stores candidate entities.
+- The planning container should be `hub_groups` with `group_type = 'planning'`. `planning_brief` stores structured context; `hub_group_candidates` stores decision options.
+- `hub_group_candidates.snapshot` is mandatory because the planning board must still render coherent decision cards even if the live source later changes shape, loses photos, or becomes temporarily unavailable.
 - The builder must check the current highest migration before choosing the real timestamp.
 - The builder must update generated schema artifacts after the migration. Note the existing repo mismatch where `chef_marketplace_profiles` exists in migration and generated outputs but not in `lib/db/schema/schema.ts`; do not repeat that inconsistency.
 
@@ -236,6 +249,42 @@ None.
 
 It exists for one reason: the hub already handles people, sharing, notes, photos, chat, and schedule, but it does not currently have a first-class model for "these are the options we are deciding between."
 
+`hub_groups.planning_brief` becomes the canonical structured planning context for public shortlist groups.
+
+It exists for one reason: the repo already has `description`, `display_area`, `dietary_theme`, `open_seats`, and `max_group_size`, but those fields do not fully capture the decision brief that the multi-persona research showed repeatedly across consumer, chef, and business-planner workflows (`lib/db/schema/schema.ts:14723-14749`, `docs/research/multi-persona-workflows-for-food-discovery-private-chef-booking-and-planning-2026-04-02.md`).
+
+### Planning brief shape
+
+`planning_brief` should be normalized into a typed JSON object with at least:
+
+- `occasion`
+- `useCase` (`personal`, `friends`, `family`, `team`, `work`, `corporate`)
+- `dateWindow`
+- `partySize`
+- `eventStyle`
+- `budget`
+- `dietarySummary`
+- `accessibilityNotes`
+- `locationSummary`
+
+Do not over-model procurement or approvals in this phase. The brief is there to keep the shortlist, share view, and booking prefill honest and structured.
+
+### Candidate snapshot shape
+
+`hub_group_candidates.snapshot` should contain the display-ready data needed to render a stable planning card:
+
+- `title`
+- `subtitle`
+- `imageUrl`
+- `eyebrow`
+- `locationLabel`
+- `priceLabel`
+- `dietaryTags`
+- `serviceModes`
+- `ctaLabel`
+- `href`
+- `sourceUpdatedAt`
+
 ### Public menu/package spotlight selection rules
 
 When rendering a public chef-page spotlight or `/eat` result enrichment, the selection order is:
@@ -260,15 +309,16 @@ This spec only prepares the consumer journey for intentional chef-controlled rec
 
 ## Server Actions
 
-| Action                                    | Auth              | Input                                                                              | Output                                                                                    | Side Effects                                                                                                                  |
-| ----------------------------------------- | ----------------- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `getConsumerDiscoveryFeed(filters)`       | none              | `{ craving?, occasion?, fulfillment?, location?, budget?, dietary?, visualMode? }` | grouped, intent-scored public results combining chefs, listings, and spotlight candidates | none                                                                                                                          |
-| `getChefMenuSpotlight(slug)`              | none              | `{ slug }`                                                                         | `{ featuredMenu?, showcaseMenus?, packages?, mealPrepItems? }`                            | none                                                                                                                          |
-| `createPlanningGroupFromDiscovery(input)` | none              | `{ displayName, email?, name, description?, seedCandidates[] }`                    | `{ groupToken, profileToken }`                                                            | creates or reuses `hub_guest_profiles`, creates `hub_groups` row with `group_type = 'planning'`, inserts shortlist candidates |
-| `addPlanningCandidate(input)`             | public link-based | `{ groupToken, profileToken, candidate }`                                          | `{ success, candidate }`                                                                  | writes `hub_group_candidates`                                                                                                 |
-| `removePlanningCandidate(input)`          | public link-based | `{ groupToken, profileToken, candidateId }`                                        | `{ success }`                                                                             | deletes `hub_group_candidates`                                                                                                |
-| `reorderPlanningCandidates(input)`        | public link-based | `{ groupToken, profileToken, orderedIds[] }`                                       | `{ success }`                                                                             | updates `sort_order`                                                                                                          |
-| `submitPublicInquiry(input)`              | none              | existing inquiry payload                                                           | existing response                                                                         | unchanged; remains the write path into inquiry/event creation (`lib/inquiries/public-actions.ts:57-325`)                      |
+| Action                                    | Auth              | Input                                                                                                                              | Output                                                                                    | Side Effects                                                                                                                                           |
+| ----------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `getConsumerDiscoveryFeed(filters)`       | none              | `{ craving?, occasion?, fulfillment?, location?, budget?, dietary?, visualMode?, dateWindow?, partySize?, eventStyle?, useCase? }` | grouped, intent-scored public results combining chefs, listings, and spotlight candidates | none                                                                                                                                                   |
+| `getChefMenuSpotlight(slug)`              | none              | `{ slug }`                                                                                                                         | `{ featuredMenu?, showcaseMenus?, packages?, mealPrepItems? }`                            | none                                                                                                                                                   |
+| `createPlanningGroupFromDiscovery(input)` | none              | `{ displayName, email?, name, description?, planningBrief?, seedCandidates[] }`                                                    | `{ groupToken, profileToken }`                                                            | creates or reuses `hub_guest_profiles`, creates `hub_groups` row with `group_type = 'planning'`, stores `planning_brief`, inserts shortlist candidates |
+| `updatePlanningBrief(input)`              | public link-based | `{ groupToken, profileToken, planningBrief }`                                                                                      | `{ success, planningBrief }`                                                              | updates `hub_groups.planning_brief`                                                                                                                    |
+| `addPlanningCandidate(input)`             | public link-based | `{ groupToken, profileToken, candidate, snapshot }`                                                                                | `{ success, candidate }`                                                                  | writes `hub_group_candidates` with stable snapshot                                                                                                     |
+| `removePlanningCandidate(input)`          | public link-based | `{ groupToken, profileToken, candidateId }`                                                                                        | `{ success }`                                                                             | deletes `hub_group_candidates`                                                                                                                         |
+| `reorderPlanningCandidates(input)`        | public link-based | `{ groupToken, profileToken, orderedIds[] }`                                                                                       | `{ success }`                                                                             | updates `sort_order`                                                                                                                                   |
+| `submitPublicInquiry(input)`              | none              | existing inquiry payload                                                                                                           | existing response                                                                         | unchanged; remains the write path into inquiry/event creation (`lib/inquiries/public-actions.ts:57-325`)                                               |
 
 ### Important reuse rules
 
@@ -290,13 +340,16 @@ Required sections:
 
 1. Intent header
    - question-led copy such as "What should I eat?"
-   - quick-select chips for `Tonight`, `Dinner Party`, `Meal Prep`, `Private Chef`, `Going Out`, `Something Visual`
+   - quick-select chips for `Tonight`, `Dinner Party`, `Meal Prep`, `Private Chef`, `Going Out`, `Team Dinner`, `Work Lunch`, `Something Visual`
 2. Guided filter row
    - mood / craving
    - fulfillment mode
-   - group size
+   - date window
+   - group size / headcount
+   - event style
    - budget
    - dietary needs
+   - use case / work intent
    - location
    - visual mode toggle
 3. Result groups
@@ -304,9 +357,12 @@ Required sections:
    - top places/listings
    - spotlight menus/packages when available
 4. Planning CTA
-   - "Start a shortlist with friends"
+   - "Start a shortlist with friends or coworkers"
 5. Booking CTA
    - "Book a chef" when intent clearly indicates hosted/private service
+6. Outcome language
+   - when an option needs tailoring, the CTA language must say `Request / Discuss / Customize`
+   - when an option is structurally close to direct booking, the CTA can say `Book now`
 
 #### B. Public chef page
 
@@ -317,6 +373,9 @@ Insert one new spotlight block between proof and credentials:
 - featured booking menu or showcase menu
 - package highlight if no menu exists
 - meal-prep items when meal-prep is the dominant service type
+- include dietary tags, guest-range labels, and "what's included" notes when the source data actually exists
+- prefer sample-menu framing over recipe framing
+- show lead-time or service-style cues when available
 
 The public chef page must still remain the canonical proof page.
 
@@ -327,13 +386,15 @@ Do not create a new route family if the existing hub route can be reused.
 For `group_type = 'planning'`, use the current hub shell but change the default tab order:
 
 1. shortlist
-2. chat
-3. schedule
-4. notes
-5. members
-6. photos
+2. brief
+3. chat
+4. schedule
+5. notes
+6. members
+7. photos
 
 Keep meals/events tabs available only when they are relevant. Planning groups should not pretend to already be event groups.
+Show the planning brief above or alongside the shortlist so anyone opening the shared link immediately understands occasion, headcount, budget, dietary scope, and accessibility context.
 
 ### States
 
@@ -342,10 +403,13 @@ Keep meals/events tabs available only when they are relevant. Planning groups sh
 - **No photos:** fall back cleanly to branded placeholders instead of broken image boxes
 - **Low-vision mode:** larger cards, larger text, stronger contrast, fewer competing secondary actions, and image-first arrangement
 - **Anonymous planning:** allow creation through `getOrCreateProfile()` using name and optional email; do not force auth
+- **Business/group intent without procurement:** support work/team/corporate intent in the public planner without inventing PO, approval, or procurement workflows in this phase
+- **Candidate drift:** if a source entity changes after it was shortlisted, the board still renders from `snapshot` and can optionally show that the live source has changed
 
 ### Interactions
 
 - Clicking an intent chip should preconfigure filters, not hard-navigate unless the user chooses a deeper route
+- Creating a planning group from `/eat` should persist the current guided-filter state into `planning_brief`, not drop it after the route transition
 - The result card primary CTA should vary by type:
   - chef -> `View chef` or `Book chef`
   - listing -> `View place`
@@ -372,20 +436,26 @@ Keep meals/events tabs available only when they are relevant. Planning groups sh
    - The feed must tolerate missing images, missing websites, missing menus, missing geo details, and missing review counts.
 6. Existing hub assumptions
    - Circle and bridge behaviors already exist. Planning behavior must branch explicitly and not silently alter event-linked groups.
+7. Structured-brief incompleteness
+   - A planning group can exist with a partial brief, but the UI should surface which fields are still missing before handoff into booking.
+8. Work-intent overreach
+   - `team` / `work` / `corporate` intent must improve discovery and planning language only. It must not imply procurement, approvals, or invoicing features that this spec does not build.
 
 ---
 
 ## Verification Steps
 
 1. Open `/eat` and confirm the page renders guided intent chips and a mixed result feed without breaking `/discover`, `/chefs`, or `/book`.
-2. Toggle visual mode and confirm card density, text sizing, and action hierarchy change on `/eat`, `/discover`, and `/chefs`.
-3. From `/eat`, create a planning group as an unauthenticated user with only name and optional email. Confirm a `hub_guest_profiles` row is created/reused and a `hub_groups` row is created with `group_type = 'planning'`.
-4. Add at least one chef and one directory listing into the planning shortlist. Confirm `hub_group_candidates` rows are created and render in the planning-group shortlist tab.
-5. Open an existing non-planning circle and confirm nothing about meals/events/chat regresses.
-6. Open a public chef page with a featured booking menu or showcase menu and confirm the menu/package spotlight renders below the proof section without disrupting reviews, credentials, or partner showcase.
-7. Open a public chef page without any menu/package spotlight data and confirm the page still renders correctly with no fake menu block.
-8. Route from `/eat` to `/book` and confirm booking still uses the existing public booking flow and creates inquiry + draft event through current server logic.
-9. Confirm that no public recipe directory is exposed and that recipe sharing remains limited to existing controlled document paths.
+2. Trigger `Team Dinner` or `Work Lunch` from `/eat` and confirm the guided filters update `useCase`, `partySize`, and other relevant planning defaults without leaving the page.
+3. Toggle visual mode and confirm card density, text sizing, and action hierarchy change on `/eat`, `/discover`, and `/chefs`.
+4. From `/eat`, create a planning group as an unauthenticated user with only name and optional email. Confirm a `hub_guest_profiles` row is created/reused and a `hub_groups` row is created with `group_type = 'planning'` and a stored `planning_brief`.
+5. Add at least one chef and one directory listing into the planning shortlist. Confirm `hub_group_candidates` rows are created with `snapshot` payloads and render in the planning-group shortlist tab.
+6. Open an existing non-planning circle and confirm nothing about meals/events/chat regresses.
+7. Open a planning-group share link and confirm the brief summary is visible before or alongside the shortlist so another person can understand date, headcount, budget, dietary, and accessibility context immediately.
+8. Open a public chef page with a featured booking menu or showcase menu and confirm the menu/package spotlight renders below the proof section without disrupting reviews, credentials, or partner showcase.
+9. Open a public chef page without any menu/package spotlight data and confirm the page still renders correctly with no fake menu block.
+10. Route from `/eat` to `/book` and confirm booking still uses the existing public booking flow and creates inquiry + draft event through current server logic, optionally prefilling values from `planning_brief`.
+11. Confirm that no public recipe directory is exposed and that recipe sharing remains limited to existing controlled document paths.
 
 ---
 
@@ -408,6 +478,8 @@ Keep meals/events tabs available only when they are relevant. Planning groups sh
 - Add a new read layer that merges current directory and chef data rather than replacing either source
 - Add menu/package spotlighting to the public chef page using existing showcase/public data
 - Add planning-group shortlist storage via one new table and render that inside the existing hub shell
+- Add structured planning-brief storage on `hub_groups` so date, headcount, event style, budget, dietary, accessibility, and work/group intent survive route changes and sharing
+- Require durable shortlist snapshots instead of storing only foreign keys
 - Add visual-mode support to public discovery surfaces
 - Keep `submitPublicInquiry()` and `POST /api/book` as the only booking write paths
 
@@ -419,9 +491,11 @@ Nothing in this spec removes `/discover`, `/chefs`, `/book`, guest portal routes
 - **Verified:** public hub guest profiles can be created without auth (`lib/hub/profile-actions.ts:17-72`)
 - **Verified:** public showcase menus and dishes already have public-read capability (`lib/db/schema/schema.ts:11799`, `lib/db/schema/schema.ts:1107`)
 - **Verified:** public meal-prep items and experience packages already have public-read capability (`lib/db/schema/schema.ts:20449`, `lib/db/schema/schema.ts:21453`)
+- **Verified:** `hub_groups` already has some display and group-shape fields (`description`, `display_area`, `dietary_theme`, `open_seats`, `max_group_size`) but no structured planning brief field today (`lib/db/schema/schema.ts:14723-14749`)
 - **Verified:** current public chef page does not yet fetch or render menu/package spotlight data; it focuses on proof, credentials, partners, reviews, and availability (`app/(public)/chef/[slug]/page.tsx:161-185`, `app/(public)/chef/[slug]/page.tsx:419-545`, `lib/profile/actions.ts:102-128`, `lib/profile/actions.ts:156-216`)
 - **Unverified but flagged:** the density and quality of showcase menu/package data across live chefs is not yet measured from runtime. The UI must therefore degrade cleanly when data is absent.
 - **Unverified but flagged:** accessibility quality has not been screen-reader audited in this session. This spec only claims concrete UI hardening, not full WCAG verification.
+- **Unverified but flagged:** real work/corporate intent clearly needs earlier structure per the research memo, but live ChefFlow demand volume by intent mix is not runtime-quantified in this session (`docs/research/multi-persona-workflows-for-food-discovery-private-chef-booking-and-planning-2026-04-02.md`).
 
 ### 4. Where will this most likely break?
 
@@ -431,21 +505,29 @@ Nothing in this spec removes `/discover`, `/chefs`, `/book`, guest portal routes
    - It is easy for a builder to accidentally expose internal menu or recipe data instead of only showcase/public content.
 3. Hub behavior collision
    - The hub already has `circle` and `bridge` behaviors. A sloppy `planning` branch could unintentionally change event-linked hub experiences.
+4. Planning-brief under-modeling
+   - If the builder treats work/team/corporate intent as just copy, the handoff back into shortlist and booking will stay lossy.
+5. Snapshot drift handling
+   - If the builder renders only live joins and ignores `snapshot`, shortlist cards will collapse whenever source data changes.
 
 ### 5. What is underspecified?
 
-Two areas would cause builder guessing if not pinned down:
+Four areas would cause builder guessing if not pinned down:
 
 1. Planning-group storage
    - Without `hub_group_candidates`, a builder will be tempted to overload notes/messages for shortlist storage. This spec forbids that.
-2. Menu spotlight source order
+2. Planning-brief storage
+   - Without `planning_brief`, a builder will be tempted to overload `description`, `open_seats`, or query params for structured planning context. This spec forbids that.
+3. Candidate presentation stability
+   - Without a required `snapshot`, a builder will be tempted to store only foreign keys and assume all source data is stable. This spec forbids that.
+4. Menu spotlight source order
    - Without explicit selection rules, builders will guess between `featured_booking_menu_id`, showcase menus, packages, and meal-prep items. This spec defines the order in `## Data Model`.
 
 ### 6. What dependencies or prerequisites exist?
 
 - Current public marketplace routes must remain healthy: `/discover`, `/chefs`, `/book` (`docs/app-complete-audit.md:1920-1976`)
 - Existing public proof work should already be in place because chef-page spotlighting depends on the current proof-first page structure (`app/(public)/chef/[slug]/page.tsx:419-545`)
-- A new migration is required for `hub_group_candidates`
+- A new migration is required for `hub_group_candidates` and `hub_groups.planning_brief`
 - Generated schema artifacts must be updated after the migration
 
 ### 7. What existing logic could this conflict with?
@@ -462,34 +544,40 @@ Two areas would cause builder guessing if not pinned down:
    - `directory_listings`
    - chef discovery data
    - public menu/package/item sources
+   - guided intent inputs including date window, party size, event style, and use case
 3. User either:
    - clicks through to an existing chef/listing detail route, or
    - starts a planning group
 4. Planning path:
    - `getOrCreateProfile()` creates/reuses `hub_guest_profiles` (`lib/hub/profile-actions.ts:17-72`)
    - `createHubGroup()` creates `hub_groups` with `group_type = 'planning'` (`lib/hub/group-actions.ts:26-53`)
-   - shortlist items are written to `hub_group_candidates`
+   - the current guided state is persisted into `hub_groups.planning_brief`
+   - shortlist items are written to `hub_group_candidates` with stable snapshots
    - user shares `/hub/g/[groupToken]`
 5. Booking path:
    - user routes to `/book` or public chef inquiry
    - current booking logic writes inquiry, Dinner Circle, and draft event (`lib/inquiries/public-actions.ts:182-325` or `app/api/book/route.ts:107-246`)
+   - optional booking prefill reads from `planning_brief` but does not change booking semantics
 
 ### 9. What is the correct implementation order?
 
-1. Add migration for `hub_group_candidates`
+1. Add migration for `hub_group_candidates` plus `hub_groups.planning_brief`
 2. Update generated schema artifacts
-3. Build `lib/public-consumer/*` read layer
-4. Build `/eat` route and unified result cards
-5. Add public chef menu/package spotlighting
-6. Add planning-group shortlist actions and hub rendering
-7. Add visual-mode hardening across `/eat`, `/discover`, and `/chefs`
-8. Add optional `/book` prefill from planning/intent context
+3. Add typed planning-brief and candidate-snapshot helpers
+4. Build `lib/public-consumer/*` read layer
+5. Build `/eat` route and unified result cards
+6. Add public chef menu/package spotlighting
+7. Add planning-group brief + shortlist actions and hub rendering
+8. Add visual-mode hardening across `/eat`, `/discover`, and `/chefs`
+9. Add optional `/book` prefill from planning/intent context
 
 ### 10. What are the exact success criteria?
 
 - `/eat` exists and helps a user browse food/service options by intent instead of forcing them to start from a schema-specific route
+- `/eat` supports both lifestyle and work/group intent without pretending to be a procurement system
 - Public chef pages surface at least one intentional menu/package spotlight when eligible public data exists
 - Planning groups can be created publicly and shared without requiring an inquiry first
+- Planning groups keep a structured brief and stable shortlist cards after the initial discovery session
 - Existing `/discover`, `/chefs`, `/book`, guest portal, and current Dinner Circle flows still behave correctly
 - No internal/private recipe data becomes publicly visible
 - Visual-mode improvements are real across the touched public surfaces
@@ -501,6 +589,7 @@ Two areas would cause builder guessing if not pinned down:
 - No public recipe library in this spec
 - No exposure of non-showcase menus, private recipes, cost data, or internal notes
 - Keep planning collaboration inside the existing hub membership/profile model
+- No procurement, approvals, invoicing, or corporate policy engine in this phase
 
 ### 12. What should NOT be touched?
 
@@ -522,12 +611,14 @@ The spec intentionally avoids:
 - a voting system for shortlists in phase one
 
 It uses the current public marketplace, current hub stack, and current menu/package data instead of inventing new product categories.
+It adds only the minimum new persistence needed to stop planning context and shortlist presentation from collapsing between discovery, sharing, and booking.
 
 ### 14. If implemented exactly as written, what would still be wrong?
 
 - It would still not fully solve follow/save/repeat chef relationships outside planning groups
 - It would still rely on chefs having enough public menu/package/photo data for discovery richness
 - It would improve low-vision usability but would not by itself certify complete accessibility compliance
+- It would still stop short of true business procurement features such as approvals, budgets enforcement, PO capture, or invoicing workflows
 
 ---
 
@@ -552,13 +643,15 @@ Recommended PR order:
 1. migration + schema + read layer
 2. `/eat` route and unified result cards
 3. chef menu/package spotlighting
-4. planning-group shortlist board
+4. planning-group brief + shortlist board
 5. visual-mode hardening and booking prefill polish
 
-The two biggest builder mistakes would be:
+The biggest builder mistakes would be:
 
 1. trying to replace the current public routes instead of composing them
 2. exposing too much menu/recipe detail because the public experience feels sparse
+3. storing only IDs for planning candidates and then discovering too late that shared shortlists do not render stably
+4. treating work/team/corporate intent like marketing copy instead of structured planning context
 
 The correct posture is additive, strict about privacy, and disciplined about reusing the systems that already exist.
 
@@ -566,9 +659,10 @@ The correct posture is additive, strict about privacy, and disciplined about reu
 
 ## Final Check
 
-This spec is production-ready for planning and builder handoff, with two explicit non-blocking uncertainties:
+This spec is production-ready for planning and builder handoff, with three explicit non-blocking uncertainties:
 
 1. live showcase menu/package density per chef is not runtime-verified in this session
 2. accessibility quality is not screen-reader-audited in this session
+3. real work/corporate intent mix is research-validated but not runtime-quantified in this session
 
-Neither uncertainty affects the structural correctness of the build plan because the spec already requires clean empty states and forbids overclaiming accessibility completeness.
+None of these uncertainties affect the structural correctness of the build plan because the spec already requires clean empty states and forbids overclaiming accessibility completeness.
