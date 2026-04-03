@@ -43,6 +43,10 @@ They added one more operational requirement after the initial draft:
 
 5. OpenClaw should have a dedicated internal capacity agent that continuously measures real machine headroom and recommends or enforces higher safe parallelism when the Raspberry Pi is under-utilized.
 6. OpenClaw should also have a meta-level task router that can create new bounded tasks for other agents whenever the runtime detects a gap, a bottleneck, or a repair need.
+7. When a town, ZIP, or state lacks a direct observed price for an ingredient, OpenClaw should usually fill the gap with the best defensible estimate it can produce rather than leaving the price blank.
+8. A blank result is only acceptable when the evidence is genuinely too weak to support a trustworthy estimate.
+9. Nearby geography, same-chain stores, and comparable markets should all be used as fallback evidence before the system gives up.
+10. The developer wants thread-level Q&A like this to function as a refinement loop: once behavior is clarified and agreed, it should be captured in Developer Notes and reflected into the build plan immediately.
 
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
@@ -54,8 +58,10 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Expanded runtime goal:** Add explicit control-plane logic that measures actual hardware headroom and uses that evidence to raise or lower safe concurrency, rather than leaving the machine idle while queues remain under-served.
 - **Key constraints:** Keep OpenClaw internal-only and founder-facing; do not expose raw OpenClaw branding or internals to chef/public product surfaces; preserve additive migrations only; keep direct observations authoritative; do not replace math with opaque AI guesses.
 - **Capacity constraint:** CPU alone is not the truth. Capacity decisions must consider CPU, RAM, I/O wait, SQLite contention, network saturation, and external source rate limits before increasing concurrency.
+- **Gap-fill constraint:** Missing local prices should usually degrade to explicit inferred estimates, not empty results. Empty is the fallback of last resort when evidence quality is below threshold.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
-- **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, monitors whether the Pi is under-used, and raises safe parallelism when capacity actually exists.
+- **Refinement rule:** Behavior clarified through developer Q&A must be recorded quickly enough that the downstream builder is operating from the updated spec, not from memory.
+- **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, avoids unnecessary blanks, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, monitors whether the Pi is under-used, and raises safe parallelism when capacity actually exists.
 
 ---
 
@@ -360,6 +366,7 @@ Key constraints:
 
 - Direct prices outrank inferred prices everywhere.
 - Inferred prices must be queryable and auditable, not silently mixed into `current_prices`.
+- Missing local observations should trigger fallback estimation in a clear order: direct local -> nearby geography -> same-chain evidence -> comparable-market evidence -> blank only if confidence stays below threshold.
 - The meta-agent may create tasks for existing agent types and may escalate task priority, but it may not generate arbitrary code or mutate runtime configuration without explicit developer approval.
 - The capacity agent may recommend or enforce bounded concurrency changes for queue-driven workers, but it may not override source rate-limit rules or starve repair work in favor of raw throughput.
 - `10% CPU` does not imply `9x more safe parallelism`. The control plane must treat CPU, memory, I/O wait, database contention, and upstream rate limits as separate ceilings.
@@ -368,6 +375,7 @@ Key constraints:
 - Long-running tasks must refresh a lease or heartbeat so stalled work can be recovered without waiting for a human.
 - CPU-heavy math or transformation work must run in an isolated worker path so bookkeeping, heartbeats, and queue claiming are not starved by a blocked Node event loop.
 - Per-source and per-domain rate-limit budgets are first-class constraints, not just retry delays after failure.
+- Unnecessary blanks are a product failure. If no direct price exists, the runtime should prefer a clearly labeled estimate over an empty response whenever confidence is sufficient.
 - Coverage expansion wins over repeated low-value re-scrapes when a source or geography is under-covered.
 
 ---
@@ -446,22 +454,24 @@ Replace the static usage-only page with a live internal runtime console that kee
 
 _List anything that could go wrong and what the correct behavior is._
 
-| Scenario                                                   | Correct Behavior                                                                                                                                                           |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pi runtime API is offline                                  | Founder console loads in degraded mode with explicit `runtime unreachable` state                                                                                           |
-| A source keeps failing and being retried repeatedly        | Create or update one open incident, increment failure evidence, and dead-letter the task after the retry budget                                                            |
-| Inference exists but there is no direct data in that area  | Show the inferred result only with method, confidence, and evidence count, never as a direct price                                                                         |
-| Direct and inferred prices disagree sharply                | Keep direct price authoritative, flag a quality incident, and queue repair or recompute                                                                                    |
-| Queue grows faster than workers can drain it               | Show backlog counts by priority and status; meta-agent reduces low-priority expansion before dropping repair work                                                          |
-| Discovery finds the same source twice                      | Deduplicate by stable source identity and update the existing source row instead of creating duplicates                                                                    |
-| Founder clicks retry repeatedly                            | Coalesce duplicate queued repair tasks per source unless the existing task is dead-lettered or completed                                                                   |
-| CPU is low but rate-limit pressure is high                 | Keep concurrency capped, record the bottleneck truthfully, and do not mistake idle CPU for safe spare capacity                                                             |
-| CPU is low and queues are deep with no external bottleneck | Capacity agent raises recommended parallelism within configured safety bounds and records the reason                                                                       |
-| Meta-agent keeps spawning low-value work                   | Enforce per-agent and per-task-type concurrency ceilings so task creation cannot flood the queue or starve repair                                                          |
-| A source returns HTTP `429` or equivalent throttling       | Record rate-limit evidence, back off via `rate_limit_backoff_until`, and keep the task in a waiting or rescheduled state instead of treating it as a normal scrape failure |
-| A worker loses its lease while a task is running           | Mark the task stalled, requeue it only if it is idempotent, and keep the recovery visible in the founder console                                                           |
-| SQLite write contention rises under load                   | Preserve WAL, honor `busy_timeout`, keep write-heavy work bounded by the SQLite resource limit, and surface the bottleneck in capacity metrics                             |
-| CPU-heavy inference blocks queue bookkeeping               | Route math work to isolated workers or threads and reduce math concurrency before control-plane heartbeats are lost                                                        |
+| Scenario                                                            | Correct Behavior                                                                                                                                                           |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pi runtime API is offline                                           | Founder console loads in degraded mode with explicit `runtime unreachable` state                                                                                           |
+| A source keeps failing and being retried repeatedly                 | Create or update one open incident, increment failure evidence, and dead-letter the task after the retry budget                                                            |
+| Inference exists but there is no direct data in that area           | Show the inferred result only with method, confidence, and evidence count, never as a direct price                                                                         |
+| No direct local price exists but nearby or chain evidence is strong | Return a clearly labeled inferred estimate instead of a blank result                                                                                                       |
+| Direct and inferred prices disagree sharply                         | Keep direct price authoritative, flag a quality incident, and queue repair or recompute                                                                                    |
+| Queue grows faster than workers can drain it                        | Show backlog counts by priority and status; meta-agent reduces low-priority expansion before dropping repair work                                                          |
+| Discovery finds the same source twice                               | Deduplicate by stable source identity and update the existing source row instead of creating duplicates                                                                    |
+| Founder clicks retry repeatedly                                     | Coalesce duplicate queued repair tasks per source unless the existing task is dead-lettered or completed                                                                   |
+| CPU is low but rate-limit pressure is high                          | Keep concurrency capped, record the bottleneck truthfully, and do not mistake idle CPU for safe spare capacity                                                             |
+| CPU is low and queues are deep with no external bottleneck          | Capacity agent raises recommended parallelism within configured safety bounds and records the reason                                                                       |
+| Meta-agent keeps spawning low-value work                            | Enforce per-agent and per-task-type concurrency ceilings so task creation cannot flood the queue or starve repair                                                          |
+| No direct local price exists and the evidence remains weak          | Leave the result blank or unavailable, mark the reason explicitly, and queue discovery or repair work instead of inventing certainty                                       |
+| A source returns HTTP `429` or equivalent throttling                | Record rate-limit evidence, back off via `rate_limit_backoff_until`, and keep the task in a waiting or rescheduled state instead of treating it as a normal scrape failure |
+| A worker loses its lease while a task is running                    | Mark the task stalled, requeue it only if it is idempotent, and keep the recovery visible in the founder console                                                           |
+| SQLite write contention rises under load                            | Preserve WAL, honor `busy_timeout`, keep write-heavy work bounded by the SQLite resource limit, and surface the bottleneck in capacity metrics                             |
+| CPU-heavy inference blocks queue bookkeeping                        | Route math work to isolated workers or threads and reduce math concurrency before control-plane heartbeats are lost                                                        |
 
 ---
 
@@ -475,6 +485,8 @@ _List anything that could go wrong and what the correct behavior is._
 - Queue-driven work obeys explicit concurrency and rate-limit budgets for queues, source groups, and scarce resources instead of assuming one global limit fits everything.
 - Task duplication is bounded: repeated founder clicks, repeated incident detection, or repeated scheduler passes do not create unbounded copies of the same active task.
 - Long-running tasks can be recovered after worker death or lease loss without silent duplication or orphaned `running` state.
+- A missing local price usually resolves to a labeled inferred estimate rather than an empty value.
+- Empty results occur only when evidence is below threshold, and that weakness is visible and actionable rather than silent.
 - Founder-only internal UI can answer five questions truthfully:
   1. What sources do we know about?
   2. What geography is directly covered?
@@ -512,13 +524,15 @@ _How does the builder agent confirm this works? Be specific._
 4. Seed one stale source, run the watchdog, and verify an open `source_incidents` row is created or updated.
 5. Run the orchestrator once and verify it enqueues at least one `repair_source` or `discover_source` task based on current state.
 6. Run the repair agent against a known stale source and verify the task, run, and incident states update correctly.
-7. Run the inference engine for a known ingredient/geography gap and verify the result lands in `price_inference_cache`, not `current_prices`.
+7. Run the inference engine for a known ingredient/geography gap and verify the result lands in `price_inference_cache`, not `current_prices`, using fallback evidence from nearby geography, same-chain stores, or comparable markets when available.
 8. Queue the same repair task twice with the same `dedupe_key` and verify only one active queued or running copy exists.
 9. Simulate a lease-expired or lock-lost task and verify it becomes recoverable without leaving a silent orphaned `running` task forever.
 10. Simulate source throttling (`429` or equivalent) and verify the source is backed off via `rate_limit_backoff_until` instead of being treated as a generic failure loop.
-11. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
-12. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, queue limits, and founder-only action buttons.
-13. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
+11. Verify that a lookup with no direct local price but strong fallback evidence returns a labeled inferred estimate instead of a blank.
+12. Verify that a lookup with genuinely weak evidence stays blank or unavailable, with the reason exposed and follow-up work queued.
+13. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
+14. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, queue limits, and founder-only action buttons.
+15. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
 
 ---
 
@@ -548,3 +562,5 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 8. The capacity agent is only useful if it measures the real bottleneck. CPU percentage by itself is not a scheduling policy.
 9. Use explicit runtime limits and pool-style budgets for scarce resources such as the SQLite writer path, source-domain request slots, and math-worker concurrency.
 10. Keep the orchestrator and lease or heartbeat path lightweight. Do not colocate them with CPU-heavy inference in a way that can stall the queue's own bookkeeping.
+11. Treat blank price results as exceptions to be justified, not as the normal answer when direct coverage is missing.
+12. When developer Q&A clarifies intended runtime behavior, update Developer Notes and the build-facing plan before moving on.

@@ -72,6 +72,8 @@ Every OpenClaw build step must satisfy all four conditions:
 
 If a change does not create progression in one of those four ways, it is not the next best use of time.
 
+Also: if developer Q&A clarifies intended behavior for this lane, the spec and this handoff should be updated before more implementation planning continues. Do not rely on chat memory.
+
 ---
 
 ## What "Progression" Means
@@ -82,6 +84,7 @@ For this lane, progression is not vague activity. It means one or more of these 
 - more geography is covered
 - more prices are directly observed
 - more gaps are inferred with auditability
+- fewer ingredient lookups fall back to blank results when defensible estimated prices are available
 - more stale or broken sources are repaired automatically
 - more machine capacity is used safely
 - founder visibility is more truthful
@@ -237,6 +240,8 @@ Tasks:
 - implement `price-inference-engine.mjs`
 - compute and store coverage cells from direct observations
 - keep inferred prices separate from direct prices
+- implement the fallback order for missing local prices: nearby geography, same-chain evidence, then comparable-market evidence
+- leave results blank only when confidence remains below threshold after fallback evidence is exhausted
 - expose direct versus inferred state in the founder console
 - prioritize under-covered geography over low-value repeated refreshes
 
@@ -355,6 +360,7 @@ The parallel research program should keep answering:
 - which chef/admin website surfaces would benefit most from improved price intelligence
 - where support, operations, or growth workflows on the site need stronger data backing
 - which runtime bottlenecks are measured versus assumed
+- which fallback signals most improve missing-price estimation quality without creating fake certainty
 
 Research should produce:
 
