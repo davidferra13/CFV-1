@@ -176,6 +176,12 @@ When the control plane starts expanding coverage nationally, use this priority s
 
 This means the runtime should feel like a colony slowly growing outward with repair loops, not like a random crawler and not like a simplistic state-by-state march.
 
+Ranking rule:
+
+- do not rank frontier work by geography alone
+- use a weighted frontier score that combines adjacency, same-chain expansion, repair urgency, source richness, ChefFlow outcome value, metadata opportunity, and safe execution feasibility
+- penalize distant isolated cells, low-signal repeated failures, and expansion that would starve repair or freshness
+
 ### Phase 0. Preserve and instrument the baseline
 
 Goal:

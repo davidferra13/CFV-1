@@ -179,6 +179,22 @@ What this means operationally:
 - OpenClaw should not behave as unstructured nationwide randomness.
 - OpenClaw should behave as a ranked frontier: region by region, then metro by metro, then ZIP or store by ZIP or store inside the active frontier, with density and metadata work interleaved behind the frontier edge.
 
+The frontier should be ranked by a weighted score, not by geography alone. The score should favor:
+
+- adjacency to already-strong cells
+- same-chain or same-source-family extensions
+- repair urgency for cells or sources that recently degraded
+- reachable source richness in the next cell
+- ingredient or category demand value for ChefFlow outcomes
+- metadata completeness opportunity inside the cell
+- safe capacity and rate-limit feasibility
+
+The score should penalize:
+
+- faraway isolated cells with no strong neighboring anchor
+- low-signal source surfaces that repeatedly fail
+- speculative expansion that would starve repair or freshness work
+
 What a founder should see if they watched it all day:
 
 - repair work at the top when strong cells become stale or broken
