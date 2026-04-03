@@ -64,6 +64,7 @@ They added one more operational requirement after the initial draft:
 25. They also want to know whether OpenClaw is grounded in practical economics or just technical crawling ambition. They asked directly whether the system accounts for realities like conversion rates, financial implications, or cost of capital, and whether those realities are necessary for OpenClaw to be viable.
 26. They also want one dedicated agent singularly focused on the final objective and the exact KPI targets that define success. They want those statistical benchmarks defined before implementation and formally owned from the beginning, not treated as an afterthought.
 27. They also want help identifying more important unanswered questions and want a grounded way to decide which KPI numbers should be set now versus later. They do not want to lock in inflated targets before baseline truth exists.
+28. They explicitly delegated the next decision batch and asked for the most intelligent defaults to be chosen on their behalf, in the correct order, rather than waiting for another open-ended loop.
 
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
@@ -85,6 +86,7 @@ _Translate the raw signal into clear system-level requirements. What were they a
 - **Economic-grounding goal:** OpenClaw should be economically aware enough to prioritize work by expected ChefFlow value, recipe-completion impact, likely usage, maintenance cost, and acquisition cost. But it should not be turned into a full corporate-finance model inside the day-to-day scheduler.
 - **KPI-governance goal:** Every meaningful OpenClaw slice should start with an explicit KPI contract, and one dedicated goal-governor role should own whether the system is actually converging toward those targets.
 - **Calibration goal:** KPI numbers should be baseline-first. Define formulas and measurement windows immediately, baseline what is observable now, mark uncertain metrics as provisional, and only lock harder targets when the ground truth is strong enough.
+- **Default-decision goal:** When the remaining ambiguity is mostly about tuning rather than direction, choose a clear v1 default and mark it as provisional instead of leaving the build blocked by avoidable indecision.
 - **Method-improvement goal:** The current operating method is strong enough to build, but it is not the last possible method. Frontier scoring, source prioritization, inference formulas, enrichment sources, and repair heuristics should keep improving when evidence shows a better approach.
 - **Exposure-risk goal:** Treat public or commercial republication of scraped retailer content, images, inventory assertions, or unsupported health claims as a higher-risk mode than founder-only internal intelligence use. Keep internal-only boundaries in place unless rights, licenses, and claim-substantiation controls are explicit.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
@@ -267,6 +269,109 @@ What a founder should see if they watched it all day:
 - frontier expansion tasks on adjacent uncovered cells or same-chain extensions
 - density and metadata tasks inside active cells
 - slower long-tail backfill tasks when capacity exists
+
+### Default Operating Thresholds (v1)
+
+Use these defaults unless a narrower slice spec overrides them with stronger evidence.
+
+#### Frontier score defaults
+
+Score each candidate frontier cell or source family on normalized inputs from `0.0` to `1.0`.
+
+Positive weights:
+
+- `repair_urgency`: `22`
+- `adjacency_strength`: `18`
+- `same_chain_extension`: `14`
+- `chef_outcome_value`: `14`
+- `source_richness`: `10`
+- `metadata_opportunity`: `8`
+- `first_party_signal`: `7`
+- `execution_feasibility`: `7`
+
+Penalties:
+
+- `repeated_failure_penalty`: up to `10`
+- `maintenance_cost_penalty`: up to `10`
+
+Default formula:
+
+`frontier_score_v1 = positive_weights_total - penalties_total`
+
+Interpretation:
+
+- `>= 60`: high-value frontier
+- `45-59`: standard frontier
+- `< 45`: speculative frontier
+
+Override rule:
+
+- if `repair_urgency >= 0.80`, treat the work as priority repair even if the frontier score is lower
+
+#### Inference confidence defaults
+
+Use these confidence bands for inferred prices:
+
+- `>= 0.85`: strong inferred
+  Counts as price-resolved. May be shown in ChefFlow as an estimated price.
+- `0.70-0.84`: usable inferred
+  Counts as price-resolved, but should remain clearly marked as estimated and should increase refresh or repair priority when the ingredient matters.
+- `0.55-0.69`: weak inferred
+  Keep for internal audit only. Do not count as recipe-complete.
+- `< 0.55`: unresolved
+  Leave blank and queue follow-up work if the ingredient or geography matters.
+
+#### Recipe completion rule
+
+A recipe-pricing run is:
+
+- `successful` when every required ingredient resolves to:
+  - a direct price that is still within current or degraded freshness tolerance, or
+  - an inferred price with confidence `>= 0.70`
+- `warning` when it completes, but one or more required ingredients depend on:
+  - degraded direct freshness, or
+  - inferred confidence below `0.85`
+- `failed` when even one required ingredient:
+  - has no eligible direct price
+  - has no inferred price with confidence `>= 0.70`
+  - or remains unresolved after normalization and fallback
+
+#### Product usability tiers
+
+Do not use one absolute usability bar for every surface. Use tiers.
+
+`price_usable` requires:
+
+- canonical title or canonical ingredient link
+- normalized quantity or unit context
+- direct or eligible inferred price
+- source or store identity
+- price freshness state
+
+`lookup_usable` requires everything in `price_usable`, plus:
+
+- source URL or verified source reference
+- at least one fast visual cue: image or brand
+- stock state when the source supports stock observations
+
+`nutrition_usable` requires everything in `lookup_usable`, plus:
+
+- trusted nutrition evidence or ingredient-text evidence when the surface is making nutrition, allergy, or dietary claims
+
+#### Default freshness and reliability SLAs
+
+These are default SLAs, not universal law. Narrower source-family specs may use stricter overrides.
+
+| Field                          | Current                                             | Degraded                                      | Stale                                |
+| ------------------------------ | --------------------------------------------------- | --------------------------------------------- | ------------------------------------ |
+| Direct price                   | `<= 72h` since last confirmation                    | `> 72h` and `<= 7d`                           | `> 7d`                               |
+| Inferred price                 | recomputed `<= 7d` and backed by non-stale evidence | `> 7d` and `<= 14d`                           | `> 14d` or backing evidence is stale |
+| Stock or pingability           | `<= 24h` since last successful check                | `> 24h` and `<= 72h`                          | `> 72h`                              |
+| Source URL                     | verified success `<= 30d`                           | `> 30d` and `<= 90d` or intermittent failures | `> 90d` or repeated failure          |
+| Image                          | verified fetch `<= 30d`                             | `> 30d` and `<= 120d`                         | `> 120d` or repeated fetch failure   |
+| Nutrition or allergen evidence | verified `<= 180d`                                  | `> 180d` and `<= 365d`                        | `> 365d` or conflicting evidence     |
+
+If a source cannot be reliably pinged for stock at all, stock should be marked `unknown`, not faked.
 
 ---
 

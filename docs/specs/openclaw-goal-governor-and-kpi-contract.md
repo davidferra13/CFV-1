@@ -269,6 +269,114 @@ Planning rule:
 
 ---
 
+## Default Calibration Windows and Sample Floors
+
+Use these defaults unless a narrower slice spec gives a stronger reason to do something else.
+
+### Operational and coverage metrics
+
+- baseline window: `14 days`
+- minimum sample size: `200 events` or `50 distinct sources/cells/entities`, whichever is more appropriate
+- examples: source freshness, stale-source count, incident rate, queue lag, direct coverage breadth, metadata completeness
+
+### Chef lookup metrics
+
+- baseline window: `28 days`
+- minimum sample size: `250 eligible lookups`
+- examples: lookup success rate, blank-result rate, lookup-usable product rate
+
+### Recipe-pricing metrics
+
+- baseline window: `28 days`
+- minimum sample size: `50 eligible recipe-pricing runs`
+- examples: recipe completion rate, ingredient price-resolution rate
+
+### Low-volume strategic metrics
+
+- baseline window: `56 days`
+- minimum sample size: enough activity to satisfy two consecutive review windows
+- examples: conversion-supporting coverage, retention-supporting usefulness, marginal value per expansion slice
+
+Rule:
+
+- if a metric does not meet its sample floor, it stays `provisional` or `pending`
+- do not upgrade a KPI to `locked` after one lucky window
+
+---
+
+## Metric Hierarchy Defaults
+
+Unless a slice spec says otherwise, classify metrics like this:
+
+### Primary outcome metrics
+
+- lookup success rate
+- recipe completion rate
+- ingredient price-resolution rate
+- high-value-cell coverage
+
+These decide whether the slice is actually helping the product.
+
+### Guardrail metrics
+
+- blank-result rate
+- stale-source rate
+- incident rate
+- dead-letter rate
+- queue lag
+- unsafe capacity utilization
+
+These decide whether apparent progress is arriving in a dangerous or misleading way.
+
+### Leading indicators
+
+- source freshness rate
+- frontier progression
+- metadata completeness
+- inference recompute lag
+- queue lag
+
+### Lagging indicators
+
+- lookup success rate
+- recipe completion rate
+- conversion-supporting coverage
+- retention-supporting usefulness
+
+The goal governor should not overreact when a leading indicator moves before a lagging indicator catches up, but it should also not celebrate activity that never reaches the lagging outcome.
+
+---
+
+## Denominator Defaults
+
+Metric definitions should be hard to game.
+
+Use these defaults unless a narrower slice spec overrides them explicitly:
+
+### Lookup success rate
+
+- denominator: every non-empty chef-initiated lookup request that survives normalization and is not user-cancelled
+- numerator: denominator rows that return at least one `lookup_usable` result
+
+### Recipe completion rate
+
+- denominator: every recipe-pricing run with at least one required ingredient after parsing, excluding explicit user cancellation
+- numerator: denominator runs where every required ingredient resolves to an eligible direct or inferred price under the current confidence and freshness rules
+
+### Ingredient price-resolution rate
+
+- denominator: every required ingredient line inside eligible recipe-pricing runs
+- numerator: denominator rows that resolve to an eligible direct or inferred price
+
+### Product usability rate
+
+- denominator: every eligible product row surfaced to a chef-facing catalog or detail experience within the slice's scope
+- numerator: denominator rows that meet the required usability tier for that surface
+
+If a metric can be made to look better by quietly shrinking its denominator, the metric definition is wrong.
+
+---
+
 ## KPI Families
 
 This spec does not force one universal numeric target for everything today, but it does define the metric families that must be considered.

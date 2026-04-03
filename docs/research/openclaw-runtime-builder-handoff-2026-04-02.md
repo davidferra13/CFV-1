@@ -211,6 +211,7 @@ Ranking rule:
 - do not rank frontier work by geography alone
 - use a weighted frontier score that combines adjacency, same-chain expansion, repair urgency, source richness, ChefFlow outcome value, likely recipe-completion or conversion lift, maintenance cost, metadata opportunity, and safe execution feasibility
 - penalize distant isolated cells, low-signal repeated failures, and expansion that would starve repair or freshness
+- until a narrower slice spec overrides it, use the v1 frontier weights, confidence bands, product-usability tiers, and freshness SLAs from `openclaw-ideal-runtime-and-national-intelligence.md`
 
 ### Phase 0. Preserve and instrument the baseline
 
