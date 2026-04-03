@@ -393,7 +393,7 @@ async function processEmail(db, rawEmail) {
     if (ext === 'pdf') {
       extracted = await extractPricesFromPdf(att.content)
     } else if (['xls', 'xlsx', 'csv'].includes(ext)) {
-      extracted = parseSpreadsheet(att.content, filename)
+      extracted = await parseSpreadsheet(att.content, filename)
     } else {
       console.log(`[SKIP] Unsupported attachment type: ${filename}`)
       continue

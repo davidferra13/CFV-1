@@ -1,31 +1,36 @@
 /**
  * Spreadsheet Parser
  * Extracts price data from XLS, XLSX, and CSV attachments.
+ * Uses exceljs for Excel parsing (replaces xlsx/SheetJS).
  */
 
-import XLSX from 'xlsx'
+import ExcelJS from 'exceljs'
 import { parse as csvParse } from 'csv-parse/sync'
 
 /**
  * Parse a spreadsheet buffer into price rows.
  * Returns array of { product, price, unit, case_size }
  */
-export function parseSpreadsheet(buffer, filename) {
+export async function parseSpreadsheet(buffer, filename) {
   const ext = (filename || '').split('.').pop()?.toLowerCase()
 
   if (ext === 'csv') return parseCsv(buffer)
   return parseExcel(buffer)
 }
 
-function parseExcel(buffer) {
-  const workbook = XLSX.read(buffer, { type: 'buffer' })
+async function parseExcel(buffer) {
+  const workbook = new ExcelJS.Workbook()
+  await workbook.xlsx.load(buffer)
   const results = []
 
-  for (const sheetName of workbook.SheetNames) {
-    const sheet = workbook.Sheets[sheetName]
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 })
+  workbook.eachSheet((sheet) => {
+    const rows = []
+    sheet.eachRow({ includeEmpty: false }, (row) => {
+      // row.values is 1-indexed; slice(1) to get 0-indexed array
+      rows.push(row.values.slice(1).map(v => v == null ? '' : v))
+    })
     results.push(...extractPricesFromRows(rows))
-  }
+  })
 
   return results
 }

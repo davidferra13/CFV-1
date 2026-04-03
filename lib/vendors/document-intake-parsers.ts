@@ -138,30 +138,26 @@ export function parseCsv(text: string): ParsedCsv {
 }
 
 export async function parseSpreadsheet(buffer: Buffer): Promise<ParsedCsv> {
-  const XLSX = await import('xlsx')
-  const workbook = XLSX.read(buffer, { type: 'buffer', raw: false })
-  const firstSheetName = workbook.SheetNames[0]
+  const ExcelJS = await import('exceljs')
+  const workbook = new ExcelJS.Workbook()
+  await workbook.xlsx.load(buffer as unknown as ArrayBuffer)
 
-  if (!firstSheetName) {
+  const sheet = workbook.worksheets[0]
+  if (!sheet) {
     throw new Error('Spreadsheet does not contain any sheets')
   }
 
-  const sheet = workbook.Sheets[firstSheetName]
-  const matrix = XLSX.utils.sheet_to_json(sheet, {
-    header: 1,
-    blankrows: false,
-    defval: '',
-    raw: false,
-  }) as unknown[][]
+  const rows: string[][] = []
+  sheet.eachRow({ includeEmpty: false }, (row) => {
+    const cells = (row.values as unknown[]).slice(1).map((cell) => String(cell ?? '').trim())
+    rows.push(cells)
+  })
 
-  const rows = matrix
-    .map((rawRow) => rawRow.map((cell) => String(cell ?? '').trim()))
-    .filter((row) => row.some((cell) => cell.length > 0))
-
-  const headers = rows[0] ?? []
+  const filtered = rows.filter((row) => row.some((cell) => cell.length > 0))
+  const headers = filtered[0] ?? []
   return {
     headers,
-    rows: rows.slice(1),
+    rows: filtered.slice(1),
   }
 }
 
