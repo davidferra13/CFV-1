@@ -129,12 +129,13 @@ This is a canonical policy and sequencing spec.
 
 ## Files to Modify
 
-| File                                                           | What to Change                                                             |
-| -------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| `docs/specs/openclaw-internal-only-boundary-and-debranding.md` | Update the lead-flow decision so raw-source review is not kept chef-facing |
-| `docs/specs/lead-engine-cartridge.md`                          | Add a policy override so older chef-facing guidance is not followed        |
-| `docs/specs/openclaw-data-completeness-engine.md`              | Ensure example user-facing copy follows the new no-OpenClaw naming rule    |
-| `docs/specs/openclaw-developer-usage-page.md`                  | Point the internal usage-map spec at this canonical policy                 |
+| File                                                           | What to Change                                                               |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `docs/specs/openclaw-non-goals-and-never-do-rules.md`          | Add and maintain the explicit guardrail list for what OpenClaw must never do |
+| `docs/specs/openclaw-internal-only-boundary-and-debranding.md` | Update the lead-flow decision so raw-source review is not kept chef-facing   |
+| `docs/specs/lead-engine-cartridge.md`                          | Add a policy override so older chef-facing guidance is not followed          |
+| `docs/specs/openclaw-data-completeness-engine.md`              | Ensure example user-facing copy follows the new no-OpenClaw naming rule      |
+| `docs/specs/openclaw-developer-usage-page.md`                  | Point the internal usage-map spec at this canonical policy                   |
 
 ---
 
@@ -216,3 +217,4 @@ This spec defines policy for future UI work:
 2. If a more detailed spec conflicts with this one, this one wins.
 3. The current mission is narrow on purpose. Do not expand OpenClaw because a feature seems possible.
 4. The right next implementation work, when implementation is allowed, is debranding and boundary cleanup, not more exposure.
+5. Read `openclaw-non-goals-and-never-do-rules.md` immediately after this file when the task is runtime expansion or boundary-sensitive design.

@@ -54,9 +54,10 @@ Read these in this exact order:
 
 1. `docs/build-state.md`
 2. `docs/specs/openclaw-canonical-scope-and-sequence.md`
-3. `docs/specs/openclaw-internal-only-boundary-and-debranding.md`
-4. `docs/specs/openclaw-ideal-runtime-and-national-intelligence.md`
-5. `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md`
+3. `docs/specs/openclaw-non-goals-and-never-do-rules.md`
+4. `docs/specs/openclaw-internal-only-boundary-and-debranding.md`
+5. `docs/specs/openclaw-ideal-runtime-and-national-intelligence.md`
+6. `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md`
 
 Only then inspect live implementation files in this order:
 
