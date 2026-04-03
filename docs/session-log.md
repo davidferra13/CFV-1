@@ -836,6 +836,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files in focus: docs/app-complete-audit.md, docs/specs/\_TEMPLATE.md, docs/specs/comprehensive-domain-inventory-phase-1.md, middleware.ts, lib/auth/\*, app route-group layouts and token/public entry routes, navigation config, relevant schema/migration files for role storage
 - Notes: Goal is to define the correct system surfaces, role boundaries, feature-placement rules, and current misalignment risks without redoing the inventory agent's domain listing work.
 
+## 2026-04-03 00:52 EDT
+
+- Agent: Planner (Codex)
+- Task: Planner intake for the Take a Chef / Private Chef Manager follow-through thread, loading planner context, identifying the likely product/spec surface, and preparing the current-state checkpoint before any new spec edits
+- Status: in-progress
+- Files touched: docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (planner intake only; no runtime changes, no build actions)
+- Notes: Read `CLAUDE.md`, `docs/specs/_TEMPLATE.md`, `docs/build-state.md`, `docs/app-complete-audit.md`, and the latest session-log context first per the Planner Gate. Next step is deep inspection of the relevant spec and touched source files, then a plain-English current-state summary before any spec write.
+
 ## 2026-04-02 13:40 EST
 
 - Agent: Planner (Codex)
@@ -884,3 +894,212 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: `3ebd8d57`
 - Build state on departure: green (unchanged from `docs/build-state.md`; spec-only research pass, no build actions)
 - Notes: Cross-checked local repo evidence, prior ChefFlow research, official product docs, and community workflow signals. The findings reinforce the existing model but tighten it in three important ways: (1) treat invite and token delivery as transport, not ownership; (2) split lifecycle features by actor boundary because discovery, drafting, approval, execution, and reporting are often different placements; (3) keep admin as a true internal control plane and staff as a constrained role lane inside chef operations. Added a permanent research artifact and updated the planner spec to require lifecycle ownership and lifecycle-splitting guidance.
+
+## 2026-04-02 22:05 EDT
+
+- Agent: Planner + Builder (Codex)
+- Task: Survey wave-1 internal launch planning, public-route crawl protection, and builder queue setup
+- Status: completed
+- Files touched: app/beta-survey/public/[slug]/page.tsx, app/robots.ts, tests/load/scenarios/08-public-surveys.js, docs/research/survey-distribution-brief-2026-04-02.md, docs/research/survey-readiness-and-outreach-audit-2026-04-02.md, docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md, docs/specs/p0-survey-passive-voluntary-surfacing.md, docs/specs/p1-survey-public-hardening-and-results-scale.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: mixed (`docs/build-state.md` unchanged; targeted eslint passed on the route/robots/load-scenario slice; repo-wide `npm run typecheck:app` still broken in unrelated `lib/db/migrations/schema.ts`)
+- Notes: Locked the internal beta-survey system in as the primary wave-1 path, blocked crawler discovery of public survey routes, added a survey-specific load scenario, and wrote the canonical builder sequence: verify current internal path first, then add passive voluntary surfacing, then harden anonymous intake/admin scale, then finalize outreach ops.
+
+## 2026-04-02 23:10 EDT
+
+- Agent: Builder (Codex)
+- Task: Implement passive voluntary survey surfacing across public, chef, and client surfaces; recover corrupted builder docs; realign handoff state
+- Status: completed
+- Files touched: components/beta-survey/beta-survey-banner.tsx, components/beta-survey/beta-survey-form.tsx, components/beta-survey/market-research-banner-wrapper.tsx, components/beta-survey/public-market-research-entry.tsx, lib/beta-survey/actions.ts, lib/beta-survey/survey-presence.ts, app/(chef)/layout.tsx, app/(client)/layout.tsx, app/(public)/layout.tsx, tests/unit/beta-survey-utils.test.ts, docs/research/survey-distribution-brief-2026-04-02.md, docs/research/survey-readiness-and-outreach-audit-2026-04-02.md, docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md, docs/specs/p0-survey-passive-voluntary-surfacing.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: mixed (targeted eslint passed on the passive-surfacing slice; `node --test --import tsx "tests/unit/beta-survey-utils.test.ts"` passed; repo-wide build baseline still governed by `docs/build-state.md`)
+- Notes: Added the public optional survey card and role-specific chef/client portal banners that point to the existing anonymous public survey routes. Added browser-scoped completion suppression via `localStorage` plus a server completion cookie so the same browser is not repeatedly prompted after anonymous submission. During re-alignment after interruption, found null-byte corruption in the survey brief, readiness audit, builder handoff, and local session-log copy; restored the tracked session log from HEAD, rebuilt the corrupted survey docs from verified runtime state, and kept phase-3 hardening explicitly out of scope for this pass.
+
+## 2026-04-02 23:25 EDT
+
+- Agent: Planner (Codex)
+- Task: Final builder-context tightening for the survey thread
+- Status: completed
+- Files touched: docs/research/dev-survey-launch-workflows-2026-04-02.md, docs/specs/client-survey-launch-console.md, docs/specs/food-operator-survey-launch-console.md, docs/specs/client-survey-launch-without-openclaw.md, docs/specs/food-operator-survey-launch-without-openclaw.md, docs/specs/p1-survey-public-hardening-and-results-scale.md, docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: Removed the last active-path ambiguity by downgrading older Google Forms launch docs to explicit fallback-only status, changing the phase-3 hardening spec from generic `ready` to `queued after phase-1 deploy verification`, and adding an explicit read order plus build-baseline caveat to the canonical survey builder handoff.
+
+## 2026-04-02 23:35 EDT
+
+- Agent: Planner (Codex)
+- Task: Final contradiction sweep for survey builder context
+- Status: completed
+- Files touched: docs/specs/client-survey-launch-without-openclaw.md, docs/specs/food-operator-survey-launch-without-openclaw.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: Audited the remaining survey docs for stale "Google Forms as active path" reasoning. Reframed the deepest fallback-only sections as historical rationale so even a deep read stays aligned with the current internal survey execution path. No further active-path contradictions were found in the survey builder chain.
+
+## 2026-04-02 23:50 EDT
+
+- Agent: Planner (Codex)
+- Task: Add explicit phase-1 deploy verification spec to the survey builder chain
+- Status: completed
+- Files touched: docs/specs/p0-survey-passive-voluntary-deploy-verification.md, docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md, docs/specs/p1-survey-public-hardening-and-results-scale.md, docs/research/survey-distribution-brief-2026-04-02.md, docs/research/survey-launch-checklist-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: The handoff previously described deployment verification only as bullets. Added a dedicated spec so the next builder has an explicit acceptance sequence for deployed public routes, owned-surface entry points, same-browser completion suppression, and admin tracked-metadata checks before phase-3 hardening begins.
+
+## 2026-04-02 20:14 EDT
+
+- Agent: Builder (Codex)
+- Task: Resume the survey passive-surfacing slice, revalidate the actual repo state, fix any unstable foundation before continuing, and carry the wave-1 survey launch path to a clean builder-ready state.
+- Status: completed
+- Files touched: lib/beta-survey/survey-cache.ts, lib/beta-survey/actions.ts, components/beta-survey/market-research-banner-wrapper.tsx, components/beta-survey/public-market-research-entry.tsx, components/beta-survey/beta-survey-banner-wrapper.tsx, app/beta-survey/page.tsx, app/beta-survey/public/[slug]/page.tsx, docs/build-state.md, docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md, docs/research/current-build-recovery-handoff-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: green on the current dirty checkout. `npm run typecheck:app` passed. `npm run build -- --no-lint` passed.
+- Notes: Reconstructed the actual in-progress survey state from file inspection instead of assuming the prior session was still valid. Confirmed the passive voluntary surfacing slice was already present in the worktree, then verified targeted eslint and survey unit coverage. A fresh build exposed a real regression: the new public survey entry path was issuing uncached survey-definition lookups during static generation, exhausting DB clients and destabilizing the build. Fixed that by adding `lib/beta-survey/survey-cache.ts` with `unstable_cache`, switching the survey wrappers and public survey route to cached read paths, and invalidating those tags on survey activate/deactivate. Re-ran targeted eslint, `node --test --import tsx "tests/unit/beta-survey-utils.test.ts"`, `npm run typecheck:app`, and `npm run build -- --no-lint`; all passed. Updated the build-state and survey builder handoff so the repo no longer advertises a false red baseline. Remaining work is now deployment verification of the passive-surfacing slice, followed by phase-3 public hardening and only then broader outreach.
+
+## 2026-04-02 20:22 EDT
+
+- Agent: Builder / Recovery (Codex)
+- Task: Re-align after interruption, re-read the live recovery context, rerun the baseline gates, and tighten the builder-facing docs to the canonical command path
+- Status: completed
+- Files touched: docs/build-state.md, docs/research/current-build-recovery-handoff-2026-04-02.md, docs/research/built-specs-verification-queue.md, docs/specs/README.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: green on the current dirty checkout. `npm run typecheck:app` passed. `npm run build -- --no-lint` passed.
+- Notes: Re-read CLAUDE.md, the current build-state file, the historical recovery handoff, the builder prompt source, package/build config, and the latest session-log entries before resuming. Found that the repo narrative was partially recovered but still inconsistent: the verification queue still claimed a global red baseline, and the builder prompt still told future agents to use raw `npx tsc` / `npx next build` instead of the canonical wrapper commands. Re-ran both baseline gates from the current checkout, confirmed the green state remained valid, preserved the newer survey-cache recovery notes, and updated the remaining builder docs so the next agent starts from current repo truth.
+
+## 2026-04-02 20:34 EDT
+
+- Agent: Builder / Context Alignment (Codex)
+- Task: Finalize the active survey builder chain so the next builder has one entry doc, one immediate next spec, and no stale blocker language
+- Status: completed
+- Files touched: docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md, docs/specs/p0-survey-passive-voluntary-surfacing.md, docs/research/survey-distribution-brief-2026-04-02.md, docs/research/survey-launch-checklist-2026-04-02.md, docs/research/survey-readiness-and-outreach-audit-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no new runtime changes, no new build actions)
+- Notes: Found the last meaningful contradiction inside the survey docs: the handoff mixed read order with build order, and the passive-surfacing spec still carried stale baseline-red language. Tightened the chain so the builder starts from `docs/build-state.md`, then the survey handoff, then the deploy-verification spec as the immediate next task. Marked the passive-surfacing spec as implementation reference rather than the next executable step, propagated the same order into the survey brief, readiness audit, and fallback checklist, and made the dirty-worktree pre-flight caveat explicit so a strict builder prompt does not surprise the next agent.
+
+## 2026-04-02 20:46 EDT
+
+- Agent: Builder / Launch Context (Codex)
+- Task: Close the last builder-start ambiguity by creating one canonical builder-start handoff for the verified dirty checkout and linking it from the build-state / survey chain
+- Status: completed
+- Files touched: docs/research/current-builder-start-handoff-2026-04-02.md, docs/build-state.md, docs/specs/README.md, docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md, docs/research/README.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no new runtime changes, no new build actions)
+- Notes: The remaining gap was not feature scope. It was launch posture. The build was green, the next survey task was clear, but the strict builder prompt still had no single place explaining how to interpret a verified dirty checkout. Added a canonical builder-start handoff that states the repo truth, the immediate next spec, the exact read order, and how the next builder should treat the dirty worktree without guessing or discarding work.
+
+## 2026-04-03 00:12 EDT
+
+- Agent: Planner (Codex)
+- Task: Final survey-chain consistency check
+- Status: completed
+- Files touched: docs/specs/p0-survey-passive-voluntary-surfacing.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: Verified the active survey chain against the current green build baseline and current handoff ordering. Added `lib/beta-survey/survey-cache.ts` to the passive-surfacing spec so the implementation-reference doc now matches the handoff's description of the build-safe public survey path.
+
+## 2026-04-03 00:18 EDT
+
+- Agent: Planner (Codex)
+- Task: Final fallback-console redirect alignment for the survey thread
+- Status: completed
+- Files touched: docs/specs/client-survey-launch-console.md, docs/specs/food-operator-survey-launch-console.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: Updated the fallback survey launch consoles so their "Canonical Current Next Step" blocks now redirect to the same active read order as the main survey handoff: `build-state.md`, then the handoff, then deploy verification, then implementation reference, then phase-3 hardening.
+
+## 2026-04-03 00:24 EDT
+
+- Agent: Builder / Context Alignment (Codex)
+- Task: Normalize the remaining fallback survey docs so every active-path redirect resolves through the current builder-start handoff
+- Status: completed
+- Files touched: docs/specs/client-survey-launch-console.md, docs/specs/food-operator-survey-launch-console.md, docs/specs/client-survey-launch-without-openclaw.md, docs/specs/food-operator-survey-launch-without-openclaw.md, docs/research/survey-launch-checklist-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: The new builder-start handoff existed, but a few fallback docs still skipped it and redirected straight to the survey handoff. Updated those remaining "current next step" paths so every active-path redirect now runs through `docs/research/current-builder-start-handoff-2026-04-02.md` before the survey handoff and deploy-verification spec.
+
+## 2026-04-03 00:30 EDT
+
+- Agent: Builder / Context Alignment (Codex)
+- Task: Re-verify the current checkout, then tighten the survey builder packet so the next agent has one clean execution order and no stale baseline ambiguity
+- Status: completed
+- Files touched: docs/build-state.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/current-build-recovery-handoff-2026-04-02.md, docs/research/survey-distribution-brief-2026-04-02.md, docs/specs/p0-survey-passive-voluntary-surfacing.md, docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: green on the current dirty checkout. `npm run typecheck:app` passed. `npm run build -- --no-lint` passed. `node --test --import tsx "tests/unit/beta-survey-utils.test.ts"` passed.
+- Notes: Re-ran the actual repo gates instead of trusting prior status, confirmed the survey slice remains locally stable, and found the remaining drift was documentation-only. Updated the build-state file with fresh proof and explicit non-blocking build-noise guidance, aligned the survey handoff and builder-start handoff around the same next action, updated the passive-surfacing implementation spec to reflect the cached survey-read path, and marked the old recovery handoff more aggressively as a regression-only reference. No new runtime work was added because deployed verification is still the next dependency gate.
+
+## 2026-04-03 00:32 EDT
+
+- Agent: Planner / Research Close-out (Codex)
+- Task: Finalize the Take a Chef / Private Chef Manager competitive-intelligence thread for archive-ready reuse
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-takeachef-privatechefmanager-2026-04-02.md, docs/specs/platform-intelligence-hub.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: Marked the competitive-intelligence report as archive-ready, clarified that the report itself is the completed deliverable for this thread, and linked it explicitly as research input for `docs/specs/platform-intelligence-hub.md` so future platform-integration work can reuse the public-evidence baseline without redoing the same reconnaissance.
+
+## 2026-04-03 00:36 EDT
+
+- Agent: Builder / Context Alignment (Codex)
+- Task: Index the active competitive-intelligence report in the research library so future agents can discover it from normal repo entry points
+- Status: completed
+- Files touched: docs/research/README.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: The active Take a Chef / Private Chef Manager intelligence report was complete but not linked from the research index. Added it to the recent research set and operator/market behavior stream so future planner or builder agents can find it without relying on open-editor context.
+
+## 2026-04-03 00:40 EDT
+
+- Agent: Builder / Context Alignment (Codex)
+- Task: Separate the active survey execution lane from the completed competitive-intelligence research lane in the builder-start handoff
+- Status: completed
+- Files touched: docs/research/current-builder-start-handoff-2026-04-02.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: The active builder packet was already survey-first, but the newly completed Take a Chef / Private Chef Manager report was visible in the working context and could be misread as the next implementation task. Added an explicit "Parallel Completed Research Threads" note to the builder-start handoff so future agents know that competitive-intelligence work is archived background for `platform-intelligence-hub`, not a reason to diverge from the survey deploy-verification lane.
+
+## 2026-04-03 00:44 EDT
+
+- Agent: Builder / Context Alignment (Codex)
+- Task: Final contradiction sweep across the survey builder packet and fallback docs before close-out
+- Status: completed
+- Files touched: docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: Re-checked the active builder-start handoff, survey execution chain, and competitive-intelligence references for any remaining stale "next step" ambiguity inside the primary builder packet. The builder-start path itself was stable at this point. A later perimeter sweep still expanded the cleanup to additional fallback and research docs outside that core packet.
+
+## 2026-04-03 00:52 EDT
+
+- Agent: Builder / Context Alignment (Codex)
+- Task: Normalize the remaining survey research and fallback docs so all builder-order authority now resolves through the builder-start handoff, and remove stale baseline language from the long-term control-plane spec
+- Status: completed
+- Files touched: docs/specs/client-survey-launch-console.md, docs/specs/food-operator-survey-launch-console.md, docs/specs/client-survey-launch-without-openclaw.md, docs/specs/food-operator-survey-launch-without-openclaw.md, docs/research/client-survey-launch-messages.md, docs/research/food-operator-survey-launch-messages.md, docs/research/dev-survey-launch-workflows-2026-04-02.md, docs/research/survey-client.md, docs/research/survey-food-operator.md, docs/research/survey-client-wave-1-google-forms-ready.md, docs/research/survey-food-operator-wave-1-google-forms-ready.md, docs/research/survey-client-follow-up-opt-in-google-forms-ready.md, docs/research/survey-operator-follow-up-opt-in-google-forms-ready.md, docs/research/surveys-google-forms-ready.md, docs/research/survey-wave-1-analysis-codebook-2026-04-02.md, docs/research/survey-distribution-brief-2026-04-02.md, docs/research/survey-launch-checklist-2026-04-02.md, docs/research/current-build-recovery-handoff-2026-04-02.md, docs/specs/p0-zero-manual-entry-form-control-plane.md, docs/specs/p0-survey-passive-voluntary-surfacing.md, docs/specs/p0-survey-passive-voluntary-deploy-verification.md, docs/specs/p1-survey-public-hardening-and-results-scale.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only pass; no runtime changes, no new build actions)
+- Notes: The main remaining drift was not product logic. It was authority drift across fallback, research, and long-term planning docs that still treated the survey handoff as the top-level entry point or still described the baseline as red. Updated those docs so the canonical start point is consistently `docs/research/current-builder-start-handoff-2026-04-02.md`, while preserving `docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md` as the survey-specific execution handoff underneath it. Also removed the stale red-baseline language from the zero-manual-entry control-plane spec so it no longer contradicts the verified green build state.
+
+## 2026-04-02 21:25 EDT
+
+- Agent: Planner (Codex)
+- Task: Plan the ideal OpenClaw runtime/spec direction, starting from current Pi behavior, current app surfaces, and the existing OpenClaw doc/spec corpus
+- Status: started
+- Files in focus: CLAUDE.md, docs/specs/\_TEMPLATE.md, docs/build-state.md, docs/session-log.md, docs/app-complete-audit.md, docs/openclaw-_.md, docs/specs/openclaw-_.md, .openclaw-build/**, .openclaw-deploy/**, scripts/openclaw-dashboard/**, scripts/openclaw-archive-digester/**, app/lib/components paths that currently surface OpenClaw-backed data
+- Build state on arrival: green on the current dirty checkout per `docs/build-state.md` (`npm run typecheck:app` and `npm run build -- --no-lint` last verified 2026-04-02; no new build actions yet)
+- Notes: Developer wants a new planning/spec pass for the ideal OpenClaw, not the currently bounded regional system. Must preserve the developer's voice in Developer Notes, summarize current state before spec writing, answer every Planner Gate validation question with cited file paths and line numbers, and make explicit what the present system is missing relative to a full national autonomous pricing intelligence engine.
+
+## 2026-04-02 21:36 EDT
+
+- Agent: Planner (Codex)
+- Task: Draft and validate the ideal OpenClaw runtime spec as an internal national pricing-intelligence control-plane plan
+- Status: completed
+- Files touched: docs/specs/openclaw-ideal-runtime-and-national-intelligence.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only planner pass; no new build or typecheck actions)
+- Notes: Completed the Planner Gate flow for a new master runtime spec covering the source directory, coverage cells, formula-first inference cache, bounded specialist agents, and founder-only runtime console. The current-state summary was grounded in the live Pi runtime, the app's existing OpenClaw mirror surfaces, and the existing OpenClaw spec corpus. Main caution for builders: this spec is intentionally a master runtime direction with a concrete first slice, not a license to attempt nationwide completion in one pass.
+
+## 2026-04-02 20:51 EDT
+
+- Agent: Builder / Trust Verification (Codex)
+- Task: Reconstruct the interrupted trust-spec verification pass from live repo state, fix the broken public inquiry submission path, and truthfully clear or preserve the remaining trust blockers
+- Status: completed
+- Files touched: lib/clients/actions.ts, docs/build-state.md, docs/specs/featured-chef-public-proof-and-booking.md, docs/specs/public-chef-credentials-showcase.md, docs/specs/post-event-trust-loop-consolidation.md, docs/research/built-specs-verification-queue.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: green on the current dirty checkout. `npm run typecheck:app` passed. `npm run build -- --no-lint` passed.
+- Notes: Re-read the live verification queue, trust specs, build-state file, and affected source files before resuming. Confirmed the baseline gates were green again, then found the actual runtime blocker in `createClientFromLead`: the public inquiry path was forcing empty array values into the client insert payload, which produced the `malformed array literal: "[]"` failure. Patched the lead-client insert path to normalize and omit empty dietary/allergy arrays, re-ran typecheck and build, and then re-verified the featured-chef trust funnel end to end with the seeded `agent-test` chef. Verified homepage proof links and CTA logic, review anchor navigation, external Google-review handoff, desktop and mobile inquiry layouts, and successful public inquiry submission that now creates the client, inquiry, and linked draft event. Re-verified the credentials stack on the public profile, inquiry surface, preview, settings page, and professional settings route, then ran controlled source-toggle audits to prove work history, achievements, portfolio, community impact, and the resume note disappear cleanly without fake placeholders and restore correctly afterward. Cleared the two trust blockers in the spec/build docs and marked `post-event-trust-loop-consolidation.md` as unblocked for the next builder.
