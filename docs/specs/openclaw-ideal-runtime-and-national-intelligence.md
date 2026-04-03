@@ -39,6 +39,11 @@ They called out four missing ambitions very clearly:
 3. The system should use serious math to estimate what almost anything should cost anywhere in the country, not just replay a tiny regional scrape loop.
 4. OpenClaw should have constantly running internal agents working on source discovery, repair, coverage expansion, and pricing logic, including a meta-level agent that notices failures and routes work to the right specialist.
 
+They added one more operational requirement after the initial draft:
+
+5. OpenClaw should have a dedicated internal capacity agent that continuously measures real machine headroom and recommends or enforces higher safe parallelism when the Raspberry Pi is under-utilized.
+6. OpenClaw should also have a meta-level task router that can create new bounded tasks for other agents whenever the runtime detects a gap, a bottleneck, or a repair need.
+
 They specifically want this planning doc to say, in plain terms, that the current version mostly keeps refreshing a limited footprint, while the ideal version would become a self-expanding national pricing intelligence engine. The goal is to plan exactly how that ideal OpenClaw should run.
 
 ### Developer Intent
@@ -46,15 +51,17 @@ They specifically want this planning doc to say, in plain terms, that the curren
 _Translate the raw signal into clear system-level requirements. What were they actually trying to achieve beneath what they said? Preserve reasoning, not just outcomes._
 
 - **Core goal:** Turn OpenClaw from a bounded regional scrape rig into an internal national pricing intelligence control plane with a full source directory, a coverage map, a formula-first inference engine, and self-healing operational loops.
+- **Expanded runtime goal:** Add explicit control-plane logic that measures actual hardware headroom and uses that evidence to raise or lower safe concurrency, rather than leaving the machine idle while queues remain under-served.
 - **Key constraints:** Keep OpenClaw internal-only and founder-facing; do not expose raw OpenClaw branding or internals to chef/public product surfaces; preserve additive migrations only; keep direct observations authoritative; do not replace math with opaque AI guesses.
+- **Capacity constraint:** CPU alone is not the truth. Capacity decisions must consider CPU, RAM, I/O wait, SQLite contention, network saturation, and external source rate limits before increasing concurrency.
 - **Motivation:** The current runtime proves the concept, but it mostly densifies known coverage instead of systematically expanding across the country, repairing stale areas, and estimating missing prices with disciplined confidence.
-- **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, and gives the founder a truthful internal mission-control view of all of that.
+- **Success from the developer's perspective:** OpenClaw continuously grows a national source directory, decides what should be scanned next, estimates missing prices with explicit evidence and confidence, notices stale or broken sources automatically, routes recovery work to bounded specialist agents, monitors whether the Pi is under-used, and raises safe parallelism when capacity actually exists.
 
 ---
 
 ## What This Does (Plain English)
 
-This spec defines the ideal future OpenClaw runtime as an internal control plane. Instead of only running fixed scrapers on a regional loop, OpenClaw becomes a national source-directory engine with four always-on layers: direct observation, source coverage tracking, price inference, and bounded specialist agents. Founder-only internal surfaces get a real runtime console that shows what sources exist, what geography is covered, what is inferred versus observed, what is stale or broken, and which agents are working on each gap. ChefFlow continues consuming the results without exposing OpenClaw internals publicly.
+This spec defines the ideal future OpenClaw runtime as an internal control plane. Instead of only running fixed scrapers on a regional loop, OpenClaw becomes a national source-directory engine with five always-on layers: direct observation, source coverage tracking, price inference, bounded specialist agents, and capacity-aware orchestration. Founder-only internal surfaces get a real runtime console that shows what sources exist, what geography is covered, what is inferred versus observed, what is stale or broken, which agents are working on each gap, and whether the machine is being used close to its safe operating ceiling. ChefFlow continues consuming the results without exposing OpenClaw internals publicly.
 
 ---
 
@@ -68,15 +75,16 @@ The current system is useful because it captures real grocery price data, but it
 
 _List every NEW file with its full path and a one-line description._
 
-| File                                                  | Purpose                                                                                              |
-| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `.openclaw-build/services/runtime-orchestrator.mjs`   | Main control-plane scheduler that ranks sources, coverage gaps, and repair work, then enqueues tasks |
-| `.openclaw-build/services/source-discovery-agent.mjs` | Expands the national source directory with new chains, stores, markets, and source surfaces          |
-| `.openclaw-build/services/source-repair-agent.mjs`    | Re-tests stale or broken sources, records incidents, and restores source health                      |
-| `.openclaw-build/services/price-inference-engine.mjs` | Computes formula-based price estimates for uncovered ingredient/geography combinations               |
-| `.openclaw-build/services/meta-agent.mjs`             | Reviews queue state, incidents, and coverage drift, then nudges the right specialist agents          |
-| `lib/openclaw/runtime-control-actions.ts`             | Founder-only server actions that expose runtime, directory, coverage, incident, and inference views  |
-| `components/admin/openclaw-runtime-console.tsx`       | Founder-only internal console for the live OpenClaw runtime                                          |
+| File                                                   | Purpose                                                                                                                                 |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `.openclaw-build/services/runtime-orchestrator.mjs`    | Main control-plane scheduler that ranks sources, coverage gaps, and repair work, then enqueues tasks                                    |
+| `.openclaw-build/services/source-discovery-agent.mjs`  | Expands the national source directory with new chains, stores, markets, and source surfaces                                             |
+| `.openclaw-build/services/source-repair-agent.mjs`     | Re-tests stale or broken sources, records incidents, and restores source health                                                         |
+| `.openclaw-build/services/price-inference-engine.mjs`  | Computes formula-based price estimates for uncovered ingredient/geography combinations                                                  |
+| `.openclaw-build/services/hardware-capacity-agent.mjs` | Measures CPU, RAM, I/O, DB contention, rate-limit pressure, and safe concurrency recommendations                                        |
+| `.openclaw-build/services/meta-agent.mjs`              | Reviews queue state, incidents, capacity drift, and coverage gaps, then creates bounded follow-up tasks for the right specialist agents |
+| `lib/openclaw/runtime-control-actions.ts`              | Founder-only server actions that expose runtime, directory, coverage, incident, and inference views                                     |
+| `components/admin/openclaw-runtime-console.tsx`        | Founder-only internal console for the live OpenClaw runtime                                                                             |
 
 ---
 
@@ -136,9 +144,34 @@ CREATE INDEX IF NOT EXISTS idx_coverage_cells_state
 CREATE INDEX IF NOT EXISTS idx_coverage_cells_region
   ON coverage_cells(region);
 
+CREATE TABLE IF NOT EXISTS host_capacity_snapshots (
+  snapshot_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  host_name TEXT NOT NULL,
+  cpu_percent REAL NOT NULL,
+  load_avg_1m REAL,
+  load_avg_5m REAL,
+  total_memory_mb INTEGER NOT NULL,
+  used_memory_mb INTEGER NOT NULL,
+  available_memory_mb INTEGER NOT NULL,
+  disk_busy_percent REAL,
+  network_rx_kbps REAL,
+  network_tx_kbps REAL,
+  sqlite_write_wait_ms REAL,
+  active_worker_count INTEGER NOT NULL DEFAULT 0,
+  queued_task_count INTEGER NOT NULL DEFAULT 0,
+  rate_limit_pressure REAL NOT NULL DEFAULT 0,
+  recommended_parallelism INTEGER NOT NULL DEFAULT 1,
+  max_safe_parallelism INTEGER NOT NULL DEFAULT 1,
+  bottleneck TEXT,
+  captured_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_host_capacity_host_captured
+  ON host_capacity_snapshots(host_name, captured_at DESC);
+
 CREATE TABLE IF NOT EXISTS agent_runs (
   run_id TEXT PRIMARY KEY,
-  agent_type TEXT NOT NULL CHECK (agent_type IN ('orchestrator', 'discovery', 'repair', 'math', 'coverage', 'meta')),
+  agent_type TEXT NOT NULL CHECK (agent_type IN ('orchestrator', 'discovery', 'repair', 'math', 'coverage', 'capacity', 'meta')),
   status TEXT NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed', 'partial', 'skipped')),
   started_at TEXT,
   finished_at TEXT,
@@ -158,8 +191,8 @@ CREATE INDEX IF NOT EXISTS idx_agent_runs_status
 
 CREATE TABLE IF NOT EXISTS agent_tasks (
   task_id TEXT PRIMARY KEY,
-  task_type TEXT NOT NULL CHECK (task_type IN ('discover_source', 'crawl_source', 'repair_source', 'infer_price', 'recompute_cell', 'verify_source')),
-  preferred_agent_type TEXT NOT NULL CHECK (preferred_agent_type IN ('discovery', 'repair', 'math', 'coverage', 'meta', 'orchestrator')),
+  task_type TEXT NOT NULL CHECK (task_type IN ('discover_source', 'crawl_source', 'repair_source', 'infer_price', 'recompute_cell', 'verify_source', 'sample_capacity', 'rebalance_parallelism')),
+  preferred_agent_type TEXT NOT NULL CHECK (preferred_agent_type IN ('discovery', 'repair', 'math', 'coverage', 'capacity', 'meta', 'orchestrator')),
   status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'claimed', 'running', 'succeeded', 'failed', 'dead_letter', 'skipped')),
   priority INTEGER NOT NULL DEFAULT 50 CHECK (priority BETWEEN 0 AND 100),
   source_id TEXT,
@@ -281,11 +314,16 @@ The ideal runtime has five data planes, each with a different trust rule:
 5. **Inference plane**
    `price_inference_cache` stores estimated prices for uncovered combinations. These rows are clearly separate from direct observations and must carry method, evidence count, and expiration.
 
+6. **Capacity plane**
+   `host_capacity_snapshots` stores observed machine headroom and bottleneck facts. Capacity decisions must be made from this evidence, not from guesswork or a single CPU number.
+
 Key constraints:
 
 - Direct prices outrank inferred prices everywhere.
 - Inferred prices must be queryable and auditable, not silently mixed into `current_prices`.
-- The meta-agent may create tasks for existing agent types, but it may not generate arbitrary code or mutate runtime configuration without explicit developer approval.
+- The meta-agent may create tasks for existing agent types and may escalate task priority, but it may not generate arbitrary code or mutate runtime configuration without explicit developer approval.
+- The capacity agent may recommend or enforce bounded concurrency changes for queue-driven workers, but it may not override source rate-limit rules or starve repair work in favor of raw throughput.
+- `10% CPU` does not imply `9x more safe parallelism`. The control plane must treat CPU, memory, I/O wait, database contention, and upstream rate limits as separate ceilings.
 - Coverage expansion wins over repeated low-value re-scrapes when a source or geography is under-covered.
 
 ---
@@ -302,8 +340,10 @@ _List every server action with its signature, auth requirement, and behavior._
 | `getOpenClawAgentRuns(filters)`       | `requireAdmin()` + founder-email gate | `{ agentType?, status?, limit? }`                        | recent run history with task/result evidence                                | None                                          |
 | `getOpenClawIncidents(filters)`       | `requireAdmin()` + founder-email gate | `{ sourceId?, status?, severity? }`                      | current and recent source incidents                                         | None                                          |
 | `getOpenClawInferenceAudit(input)`    | `requireAdmin()` + founder-email gate | `{ canonicalIngredientId, geographyType, geographyKey }` | direct-price context, inferred price, method, confidence, expiry            | None                                          |
+| `getOpenClawCapacityOverview()`       | `requireAdmin()` + founder-email gate | none                                                     | recent capacity snapshots, bottleneck view, and recommended parallelism     | None                                          |
 | `retryOpenClawSource(sourceId)`       | `requireAdmin()` + founder-email gate | `{ sourceId }`                                           | `{ success, queuedTaskId?, error? }`                                        | Enqueues a high-priority `repair_source` task |
 | `recomputeOpenClawCoverage(cellId)`   | `requireAdmin()` + founder-email gate | `{ cellId }`                                             | `{ success, queuedTaskId?, error? }`                                        | Enqueues a `recompute_cell` task              |
+| `sampleOpenClawCapacity()`            | `requireAdmin()` + founder-email gate | none                                                     | `{ success, queuedTaskId?, error? }`                                        | Enqueues a `sample_capacity` task             |
 
 ---
 
@@ -315,7 +355,7 @@ This spec only authorizes founder-only internal UI on `/admin/openclaw`. No chef
 
 ### Page Layout
 
-Replace the static usage-only page with a live internal runtime console that keeps the existing boundary copy at the top and adds six internal tabs below it:
+Replace the static usage-only page with a live internal runtime console that keeps the existing boundary copy at the top and adds seven internal tabs below it:
 
 1. **Overview**
    Global counts: known sources, queued tasks, running agents, open incidents, covered cells, inferred rows, newest scrape, newest inference, stale-source count.
@@ -335,6 +375,9 @@ Replace the static usage-only page with a live internal runtime console that kee
 6. **Inference**
    Ingredient + geography audit view that explicitly distinguishes direct observation from inferred estimate and shows method, confidence, evidence count, and expiry.
 
+7. **Capacity**
+   Host-capacity panel showing CPU, memory, disk pressure, queue depth, active workers, recommended parallelism, max safe parallelism, and the currently limiting bottleneck. This tab must make it obvious when the machine is under-used versus when concurrency is being capped for a good reason.
+
 ### States
 
 - **Loading:** Skeleton cards and tables. Never show fake zeros while data is still loading.
@@ -348,6 +391,7 @@ Replace the static usage-only page with a live internal runtime console that kee
 - Clicking a source opens a detail drawer or inline panel showing capabilities, last runs, current incidents, and queued tasks.
 - Clicking a coverage cell opens its direct-vs-inferred summary.
 - Founder-only actions `Retry Source` and `Recompute Coverage` enqueue tasks; they do not run the repair work synchronously in the browser.
+- Founder-only action `Sample Capacity` queues a fresh capacity measurement and parallelism recommendation.
 - Inference audit must always show the underlying direct evidence count and expiry. It may not present inferred rows as if they were scraped facts.
 
 ---
@@ -356,15 +400,18 @@ Replace the static usage-only page with a live internal runtime console that kee
 
 _List anything that could go wrong and what the correct behavior is._
 
-| Scenario                                                  | Correct Behavior                                                                                                  |
-| --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Pi runtime API is offline                                 | Founder console loads in degraded mode with explicit `runtime unreachable` state                                  |
-| A source keeps failing and being retried repeatedly       | Create or update one open incident, increment failure evidence, and dead-letter the task after the retry budget   |
-| Inference exists but there is no direct data in that area | Show the inferred result only with method, confidence, and evidence count, never as a direct price                |
-| Direct and inferred prices disagree sharply               | Keep direct price authoritative, flag a quality incident, and queue repair or recompute                           |
-| Queue grows faster than workers can drain it              | Show backlog counts by priority and status; meta-agent reduces low-priority expansion before dropping repair work |
-| Discovery finds the same source twice                     | Deduplicate by stable source identity and update the existing source row instead of creating duplicates           |
-| Founder clicks retry repeatedly                           | Coalesce duplicate queued repair tasks per source unless the existing task is dead-lettered or completed          |
+| Scenario                                                   | Correct Behavior                                                                                                  |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Pi runtime API is offline                                  | Founder console loads in degraded mode with explicit `runtime unreachable` state                                  |
+| A source keeps failing and being retried repeatedly        | Create or update one open incident, increment failure evidence, and dead-letter the task after the retry budget   |
+| Inference exists but there is no direct data in that area  | Show the inferred result only with method, confidence, and evidence count, never as a direct price                |
+| Direct and inferred prices disagree sharply                | Keep direct price authoritative, flag a quality incident, and queue repair or recompute                           |
+| Queue grows faster than workers can drain it               | Show backlog counts by priority and status; meta-agent reduces low-priority expansion before dropping repair work |
+| Discovery finds the same source twice                      | Deduplicate by stable source identity and update the existing source row instead of creating duplicates           |
+| Founder clicks retry repeatedly                            | Coalesce duplicate queued repair tasks per source unless the existing task is dead-lettered or completed          |
+| CPU is low but rate-limit pressure is high                 | Keep concurrency capped, record the bottleneck truthfully, and do not mistake idle CPU for safe spare capacity    |
+| CPU is low and queues are deep with no external bottleneck | Capacity agent raises recommended parallelism within configured safety bounds and records the reason              |
+| Meta-agent keeps spawning low-value work                   | Enforce per-agent and per-task-type concurrency ceilings so task creation cannot flood the queue or starve repair |
 
 ---
 
@@ -374,12 +421,14 @@ _List anything that could go wrong and what the correct behavior is._
 - `source_registry` can represent national directory state, not just a small list of currently scraped sources.
 - Coverage breadth is measurable by geography cells, not inferred from raw counts alone.
 - The runtime can store inferred prices separately from direct observations and explain how they were derived.
+- The runtime can explain why worker parallelism is currently low, moderate, or high using stored capacity evidence instead of hand-waving.
 - Founder-only internal UI can answer five questions truthfully:
   1. What sources do we know about?
   2. What geography is directly covered?
   3. What is inferred instead of observed?
   4. What is stale or broken?
   5. Which agent is working on which gap?
+- Founder-only internal UI can also answer a sixth question truthfully: `Are we actually using the machine close to its safe capacity, and if not, why not?`
 - Repeated re-scrapes of already-covered chains no longer dominate the whole schedule when uncovered geography or broken sources have higher priority.
 - Chef-facing and public-facing product surfaces remain OpenClaw-debranded and outcome-focused.
 
@@ -389,12 +438,13 @@ _List anything that could go wrong and what the correct behavior is._
 
 1. Extend the Pi SQLite runtime schema in `.openclaw-build/lib/db.mjs`.
 2. Add queue, incident, coverage, and inference helpers to the Pi runtime.
-3. Build `runtime-orchestrator.mjs` so the control plane can prioritize and enqueue work.
-4. Add the bounded specialist agents: discovery, repair, math, then meta-agent.
-5. Expose the runtime via new `sync-api.mjs` endpoints.
-6. Wire founder-only server actions in `lib/openclaw/runtime-control-actions.ts`.
-7. Replace the static founder page with the live runtime console.
-8. Adjust cron so fixed scraper cadence and queue-driven work can coexist without starving core scrapes.
+3. Add host-capacity sampling and safe-parallelism recommendation helpers to the Pi runtime.
+4. Build `runtime-orchestrator.mjs` so the control plane can prioritize and enqueue work.
+5. Add the bounded specialist agents: discovery, repair, math, capacity, then meta-agent.
+6. Expose the runtime via new `sync-api.mjs` endpoints.
+7. Wire founder-only server actions in `lib/openclaw/runtime-control-actions.ts`.
+8. Replace the static founder page with the live runtime console.
+9. Adjust cron so fixed scraper cadence and queue-driven work can coexist without starving core scrapes.
 
 ---
 
@@ -409,8 +459,9 @@ _How does the builder agent confirm this works? Be specific._
 5. Run the orchestrator once and verify it enqueues at least one `repair_source` or `discover_source` task based on current state.
 6. Run the repair agent against a known stale source and verify the task, run, and incident states update correctly.
 7. Run the inference engine for a known ingredient/geography gap and verify the result lands in `price_inference_cache`, not `current_prices`.
-8. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, and founder-only action buttons.
-9. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
+8. Run the capacity agent on an intentionally under-utilized queue and verify it records a `host_capacity_snapshots` row and increases recommended parallelism only when no harder bottleneck is present.
+9. Open `/admin/openclaw` as the founder account and verify the runtime console renders live data, degraded states, capacity evidence, and founder-only action buttons.
+10. Confirm chef-facing pricing pages and public surfaces still do not expose OpenClaw naming or raw runtime internals.
 
 ---
 
@@ -424,6 +475,7 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 - Multi-node cluster orchestration beyond the current Pi-first runtime
 - Dynamic code-generation agents that write or deploy new runtime code on their own
 - Replacing direct observation with AI-only price guessing
+- Assuming unused CPU automatically means safe spare throughput
 
 ---
 
@@ -435,3 +487,5 @@ _What does this spec explicitly NOT cover? Prevents scope creep._
 4. Do not silently merge inferred prices into direct-observation tables.
 5. Do not delete or rewrite current scrapers just to make the architecture look cleaner. The first slice is additive.
 6. When choosing between dense re-scan work and breadth-expansion work, prefer breadth whenever coverage is absent or stale enough that repeated density adds less value than expansion.
+7. Treat agent spawning as durable task creation inside bounded queues, not uncontrolled process forking.
+8. The capacity agent is only useful if it measures the real bottleneck. CPU percentage by itself is not a scheduling policy.

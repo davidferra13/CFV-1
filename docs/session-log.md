@@ -1094,6 +1094,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only planner pass; no new build or typecheck actions)
 - Notes: Completed the Planner Gate flow for a new master runtime spec covering the source directory, coverage cells, formula-first inference cache, bounded specialist agents, and founder-only runtime console. The current-state summary was grounded in the live Pi runtime, the app's existing OpenClaw mirror surfaces, and the existing OpenClaw spec corpus. Main caution for builders: this spec is intentionally a master runtime direction with a concrete first slice, not a license to attempt nationwide completion in one pass.
 
+## 2026-04-02 21:48 EDT
+
+- Agent: Planner Follow-up (Codex)
+- Task: Capture the new requirement for task-spawning orchestration and hardware-capacity maximization inside the ideal OpenClaw runtime spec
+- Status: completed
+- Files touched: docs/specs/openclaw-ideal-runtime-and-national-intelligence.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only follow-up; no new build or typecheck actions)
+- Notes: Added a dedicated capacity agent, host-capacity snapshot schema, capacity-aware runtime/UI requirements, and a clear guardrail that low CPU alone does not justify multiplying concurrency. Also clarified that the meta-agent may create bounded tasks for other agents, but not generate arbitrary code or bypass source/rate-limit ceilings.
+
 ## 2026-04-02 20:51 EDT
 
 - Agent: Builder / Trust Verification (Codex)
@@ -1103,3 +1113,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending
 - Build state on departure: green on the current dirty checkout. `npm run typecheck:app` passed. `npm run build -- --no-lint` passed.
 - Notes: Re-read the live verification queue, trust specs, build-state file, and affected source files before resuming. Confirmed the baseline gates were green again, then found the actual runtime blocker in `createClientFromLead`: the public inquiry path was forcing empty array values into the client insert payload, which produced the `malformed array literal: "[]"` failure. Patched the lead-client insert path to normalize and omit empty dietary/allergy arrays, re-ran typecheck and build, and then re-verified the featured-chef trust funnel end to end with the seeded `agent-test` chef. Verified homepage proof links and CTA logic, review anchor navigation, external Google-review handoff, desktop and mobile inquiry layouts, and successful public inquiry submission that now creates the client, inquiry, and linked draft event. Re-verified the credentials stack on the public profile, inquiry surface, preview, settings page, and professional settings route, then ran controlled source-toggle audits to prove work history, achievements, portfolio, community impact, and the resume note disappear cleanly without fake placeholders and restore correctly afterward. Cleared the two trust blockers in the spec/build docs and marked `post-event-trust-loop-consolidation.md` as unblocked for the next builder.
+
+## 2026-04-02 22:18 EDT
+
+- Agent: Research / Planning (Codex)
+- Task: Convert the Take a Chef / Private Chef Manager intelligence thread into a dependency-ordered gap-closure packet for the next builder
+- Status: completed
+- Files touched: docs/research/competitive-intelligence-gap-closure-builder-handoff-2026-04-02.md, docs/research/competitive-intelligence-takeachef-privatechefmanager-2026-04-02.md, docs/research/assets/competitive-intel-2026-04-02/public-validation-derived-data-2026-04-02.md, docs/research/README.md, docs/specs/platform-intelligence-hub.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only research/planning pass; no new build or typecheck actions)
+- Notes: The public-surface report was already broad, but the missing piece was execution order. Added a builder-ready handoff that separates completed baseline research from the highest-value unknowns, orders the remaining work by dependency, and defines prerequisites, artifacts, verification rules, and common failure modes. Also linked the new handoff from the main research report, the research index, and `docs/specs/platform-intelligence-hub.md` so future agents start from the correct packet instead of redoing low-value public reconnaissance.
