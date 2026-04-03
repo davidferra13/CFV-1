@@ -17,15 +17,7 @@ function formatDate(dateStr: string): string {
 
 export function WfpFeed({ stories }: { stories: WfpStory[] }) {
   if (stories.length === 0) {
-    return (
-      <Card className="p-5">
-        <h2 className="text-sm font-medium text-stone-300 flex items-center gap-2 mb-3">
-          <Globe className="w-4 h-4" />
-          World Food Programme
-        </h2>
-        <p className="text-sm text-stone-500">Could not load WFP news feed. Check back later.</p>
-      </Card>
-    )
+    return null
   }
 
   return (
@@ -33,7 +25,7 @@ export function WfpFeed({ stories }: { stories: WfpStory[] }) {
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-sm font-medium text-stone-300 flex items-center gap-2">
           <Globe className="w-4 h-4" />
-          World Food Programme - Latest
+          World Food Programme stories
         </h2>
         <a
           href="https://www.wfp.org/news"

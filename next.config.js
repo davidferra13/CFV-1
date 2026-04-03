@@ -93,6 +93,8 @@ const nextConfig = {
     }
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 2678400,
     remotePatterns: [
       {
         protocol: 'https',
@@ -116,6 +118,33 @@ const nextConfig = {
   },
   async headers() {
     return [
+      {
+        source: '/images/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, stale-while-revalidate=604800',
+          },
+        ],
+      },
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
+      {
+        source: '/manifest.json',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
       // Embed pages — allow framing from any origin (the whole point is external embeds)
       {
         source: '/embed/:path*',
@@ -243,13 +272,13 @@ const nextConfig = {
               // NOTE: Do NOT add 'strict-dynamic' — it overrides 'self' and 'unsafe-inline'
               // in CSP3 browsers, requiring nonce-based script loading which Next.js 14
               // does not support. Adding it blocks ALL JS and kills hydration.
-              `script-src 'self' 'unsafe-inline'${devEval} https://js.stripe.com https://us-assets.i.posthog.com https://maps.googleapis.com`,
+              `script-src 'self' 'unsafe-inline'${devEval} https://js.stripe.com https://us-assets.i.posthog.com https://maps.googleapis.com https://challenges.cloudflare.com`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com ",
               "font-src 'self' https://fonts.gstatic.com",
-              `connect-src 'self' https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com https://maps.googleapis.com ${devConnectSrc.join(' ')}`.trim(),
+              `connect-src 'self' https://api.stripe.com https://hooks.stripe.com https://accounts.google.com https://us.i.posthog.com https://us-assets.i.posthog.com https://maps.googleapis.com https://challenges.cloudflare.com ${devConnectSrc.join(' ')}`.trim(),
               "worker-src 'self'",
-              'frame-src https://js.stripe.com https://www.openstreetmap.org',
+              'frame-src https://js.stripe.com https://www.openstreetmap.org https://challenges.cloudflare.com',
               "frame-ancestors 'none'",
               "object-src 'none'",
               "base-uri 'self'",
@@ -263,6 +292,16 @@ const nextConfig = {
   async redirects() {
     return [
       // Common alternative URL patterns that should reach the correct page
+      {
+        source: '/admin/price-catalog',
+        destination: '/culinary/price-catalog',
+        permanent: false,
+      },
+      {
+        source: '/admin/price-catalog/:path*',
+        destination: '/culinary/price-catalog/:path*',
+        permanent: false,
+      },
       {
         source: '/privacy-policy',
         destination: '/privacy',

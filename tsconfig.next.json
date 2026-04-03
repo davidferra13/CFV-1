@@ -27,7 +27,8 @@
     "types/**/*.tsx",
     ".next/types/**/*.ts",
     ".next-dev/types/**/*.ts",
-    ".next-test/types/**/*.ts"
+    ".next-test/types/**/*.ts",
+    ".next-perf-verify/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
@@ -57,6 +58,7 @@
     "tmp",
     "types/database.generated.d.ts",
     "types/types",
+    "lib/db/migrations",
     "worker"
   ]
 }

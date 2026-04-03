@@ -4,6 +4,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api'
 import { Input } from '@/components/ui/input'
+import { useDeferredGoogleMapsLoader } from '@/hooks/use-deferred-google-maps-loader'
 
 const LIBRARIES: ['places'] = ['places']
 
@@ -26,14 +27,50 @@ export function StoreAutocomplete({
   onPlaceSelect,
   placeholder = 'Search store name',
 }: StoreAutocompleteProps) {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
+  const { shouldLoad, prime } = useDeferredGoogleMapsLoader(Boolean(apiKey))
+
+  if (!apiKey || !shouldLoad) {
+    return (
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onPointerEnter={prime}
+        onTouchStart={prime}
+        placeholder={placeholder}
+      />
+    )
+  }
+
+  return (
+    <LoadedStoreAutocomplete
+      apiKey={apiKey}
+      value={value}
+      onChange={onChange}
+      onPlaceSelect={onPlaceSelect}
+      placeholder={placeholder}
+    />
+  )
+}
+
+type LoadedStoreAutocompleteProps = StoreAutocompleteProps & {
+  apiKey: string
+}
+
+function LoadedStoreAutocomplete({
+  apiKey,
+  value,
+  onChange,
+  onPlaceSelect,
+  placeholder = 'Search store name',
+}: LoadedStoreAutocompleteProps) {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
   // Only load Google Maps script when we have an API key.
   // Empty key triggers an infinite retry loop in the loader.
   const { isLoaded, loadError: sdkError } = useJsApiLoader({
-    googleMapsApiKey: apiKey || 'SKIP',
+    googleMapsApiKey: apiKey,
     libraries: LIBRARIES,
     preventGoogleFontsLoading: true,
   })

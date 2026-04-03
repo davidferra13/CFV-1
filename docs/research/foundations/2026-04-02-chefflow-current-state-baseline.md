@@ -19,6 +19,7 @@ It is meant to answer four recurring questions quickly:
 
 This baseline is grounded in direct repository inspection plus these primary documents:
 
+- [Canonical Project Definition and Scope](../../project-definition-and-scope.md)
 - [Product Definition](../../chefflow-product-definition.md)
 - [System Architecture](../../system-architecture.md)
 - [Feature Inventory](../../feature-inventory.md)

@@ -1,8 +1,8 @@
 'use client'
 
 /**
- * CatalogTab - Browse the full 9,000+ OpenClaw ingredient catalog.
- * Admin-only. Calls the Pi directly for data.
+ * CatalogTab - Browse the full OpenClaw ingredient catalog.
+ * Legacy table view for chef users. Calls the Pi directly for data.
  *
  * Power Tools:
  * 1. Price comparison bars (expanded row)
@@ -407,7 +407,7 @@ export function CatalogTab() {
     if (pricedOnly) params.set('priced', '1')
     if (sort !== 'name') params.set('sort', sort)
     const qs = params.toString()
-    return `/admin/price-catalog/csv-export${qs ? `?${qs}` : ''}`
+    return `/culinary/price-catalog/csv-export${qs ? `?${qs}` : ''}`
   }
 
   const totalPages = Math.ceil(total / 50)

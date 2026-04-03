@@ -8,6 +8,7 @@
 import { requireChef, requireClient, getCurrentUser } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { z } from 'zod'
 import crypto from 'crypto'
 import { shortenUrl } from '@/lib/links/url-shortener'
@@ -294,7 +295,11 @@ async function enforcePublicActionRateLimit(key: string, max: number, windowMs: 
 
 async function verifyCaptchaIfProvided(token?: string, ipHint?: string) {
   if (!token) return
-  const result = await verifyTurnstileToken(token, ipHint)
+  const hdrs = await headers()
+  const result = await verifyTurnstileToken(token, {
+    ip: ipHint,
+    host: hdrs.get('host') || undefined,
+  })
   if (!result.success) {
     throw new Error(result.error || 'CAPTCHA verification failed')
   }

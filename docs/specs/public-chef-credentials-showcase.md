@@ -1,7 +1,7 @@
 # Spec: Public Chef Credentials Showcase
 
-> **Status:** built
-> **Priority:** P1 (next up)
+> **Status:** verified
+> **Priority:** P1
 > **Depends on:** `featured-chef-public-proof-and-booking.md`
 > **Estimated complexity:** large (9+ files)
 
@@ -18,9 +18,9 @@ _Every status change, every claim, every verification gets a row. This is the au
 | Pre-flight passed     | 2026-04-01           | Builder            |        |
 | Build completed       | 2026-04-01           | Builder            |        |
 | Type check passed     | 2026-04-01           | Builder            | clean  |
-| Build check passed    |                      |                    |        |
-| Playwright verified   |                      |                    |        |
-| Status: verified      |                      |                    |        |
+| Build check passed    | 2026-04-02 20:51 EDT | Codex              |        |
+| Playwright verified   | 2026-04-02 20:51 EDT | Codex              |        |
+| Status: verified      | 2026-04-02 20:51 EDT | Codex              |        |
 
 ---
 

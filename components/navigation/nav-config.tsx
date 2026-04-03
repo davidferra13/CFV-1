@@ -235,13 +235,6 @@ export const standaloneTop: NavItem[] = [
     adminOnly: true,
     tier: 'secondary',
   },
-  {
-    href: '/admin/price-catalog',
-    label: 'Price Catalog',
-    icon: Store,
-    adminOnly: true,
-    tier: 'secondary',
-  },
 ]
 
 // ─── NAV GROUPS ─────────────────────────────────────────────────
@@ -303,7 +296,6 @@ export const navGroups: NavGroup[] = [
         adminOnly: true,
       },
       { href: '/admin', label: 'Overview', icon: LayoutDashboard, adminOnly: true },
-      { href: '/admin/price-catalog', label: 'Price Catalog', icon: Store, adminOnly: true },
       { href: '/admin/reconciliation', label: 'Reconciliation', icon: Scales, adminOnly: true },
       {
         href: '/admin/referral-partners',
@@ -1071,8 +1063,9 @@ export const navGroups: NavGroup[] = [
     items: [
       {
         href: '/charity',
-        label: 'Charity Hub',
+        label: 'Community Impact',
         icon: HeartHandshake,
+        hidden: true,
         children: [{ href: '/charity/hours', label: 'Volunteer Hours' }],
       },
       {

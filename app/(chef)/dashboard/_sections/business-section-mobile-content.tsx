@@ -573,8 +573,8 @@ export function BusinessSectionMobileContent(
     // Cannabis Control Center card hidden - feature disabled
     {
       id: 'charity_impact',
-      title: 'Charity Impact',
-      href: '/charity',
+      title: 'Community Impact',
+      href: '/charity/hours',
       rows: [
         { label: 'Upcoming Events', value: toInteger(charityUpcomingEventCount) },
         { label: 'Hours Logged', value: toInteger(charityHoursSummary.totalHours) },

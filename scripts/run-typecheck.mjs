@@ -110,6 +110,65 @@ function stopChildTree(child, signal = 'SIGTERM') {
   }
 }
 
+async function runTypeScript(args, maxOldSpaceSizeMb) {
+  const tscCliPath = require.resolve('typescript/bin/tsc')
+
+  return await new Promise((resolve, reject) => {
+    const child = spawn(
+      process.execPath,
+      [`--max-old-space-size=${maxOldSpaceSizeMb}`, tscCliPath, ...args],
+      {
+        stdio: 'inherit',
+        shell: false,
+        detached: process.platform !== 'win32',
+        env: process.env,
+      }
+    )
+
+    const stopChild = (signal = 'SIGTERM') => {
+      stopChildTree(child, signal)
+    }
+
+    const signalHandlers = ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK'].map((signal) => {
+      const handler = () => {
+        stopChild(signal === 'SIGBREAK' ? 'SIGTERM' : signal)
+        setTimeout(() => stopChild('SIGKILL'), 5_000).unref()
+      }
+      process.on(signal, handler)
+      return { signal, handler }
+    })
+
+    const exitHandler = () => {
+      stopChild('SIGTERM')
+    }
+
+    const cleanup = () => {
+      for (const { signal, handler } of signalHandlers) {
+        process.off(signal, handler)
+      }
+      process.off('exit', exitHandler)
+    }
+
+    process.on('exit', exitHandler)
+
+    child.on('exit', (code, signal) => {
+      cleanup()
+
+      if (signal) {
+        reject(new Error(`tsc terminated by signal ${signal}`))
+        return
+      }
+
+      resolve(code ?? 1)
+    })
+
+    child.on('error', (error) => {
+      cleanup()
+      reject(error)
+    })
+  })
+}
+
 async function main() {
   const forwardedArgs = process.argv.slice(2)
   const hasIncrementalFlag = forwardedArgs.includes('--incremental')
@@ -132,6 +191,7 @@ async function main() {
     path.join(projectDir, 'tsconfig.tsbuildinfo'),
     path.join(projectDir, `${projectBaseName}.tsbuildinfo`),
   ]
+  const buildInfoExistedBeforeRun = await Promise.all(buildInfoPaths.map((buildInfoPath) => exists(buildInfoPath)))
 
   await Promise.all(
     buildInfoPaths.map(async (buildInfoPath) => {
@@ -148,43 +208,21 @@ async function main() {
   args.push(...forwardedArgs)
   if (!hasIncrementalFlag) args.push('--incremental')
 
-  const tscCliPath = require.resolve('typescript/bin/tsc')
   const maxOldSpaceSizeMb = String(process.env.TSC_MAX_OLD_SPACE_SIZE || '8192').trim()
+  let exitCode = await runTypeScript(args, maxOldSpaceSizeMb)
 
-  const child = spawn(process.execPath, [`--max-old-space-size=${maxOldSpaceSizeMb}`, tscCliPath, ...args], {
-    stdio: 'inherit',
-    shell: false,
-    detached: process.platform !== 'win32',
-    env: process.env,
-  })
-
-  const stopChild = (signal = 'SIGTERM') => {
-    stopChildTree(child, signal)
+  if (exitCode !== 0 && buildInfoExistedBeforeRun.some(Boolean)) {
+    console.error(
+      '[run-typecheck] Initial incremental pass failed; resetting build info and retrying once.'
+    )
+    await Promise.all(buildInfoPaths.map((buildInfoPath) => removeIfPresent(buildInfoPath)))
+    exitCode = await runTypeScript(args, maxOldSpaceSizeMb)
   }
 
-  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) {
-    process.on(signal, () => {
-      stopChild(signal === 'SIGBREAK' ? 'SIGTERM' : signal)
-      setTimeout(() => stopChild('SIGKILL'), 5_000).unref()
-    })
-  }
-
-  process.on('exit', () => {
-    stopChild('SIGTERM')
-  })
-
-  child.on('exit', (code, signal) => {
-    if (signal) {
-      process.exit(1)
-      return
-    }
-    process.exit(code ?? 1)
-  })
-
-  child.on('error', (error) => {
-    console.error('[run-typecheck] Failed to start TypeScript:', error)
-    process.exit(1)
-  })
+  process.exit(exitCode)
 }
 
-await main()
+await main().catch((error) => {
+  console.error('[run-typecheck] Failed to start TypeScript:', error)
+  process.exit(1)
+})

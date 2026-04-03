@@ -28,7 +28,7 @@ function readCookieConsent(): CookieConsent {
  *
  * Place this inside <body> in the root layout.
  */
-export function PostHogProvider({ children }: { children: React.ReactNode }) {
+export function PostHogProvider({ children }: { children?: React.ReactNode }) {
   const pathname = usePathname()
   const initialized = useRef(false)
   const [isReady, setIsReady] = useState(false)

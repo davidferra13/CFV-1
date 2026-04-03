@@ -52,6 +52,8 @@ export default async function ClientPreviewPage() {
           verified501cOrgs: 0,
           publicCharityPercent: null,
           publicCharityNote: null,
+          showPublicCharity: false,
+          organizations: [],
         })),
         getPublicPortfolio(chefId).catch(() => []),
         (async () => {
@@ -80,6 +82,8 @@ export default async function ClientPreviewPage() {
           verified501cOrgs: 0,
           publicCharityPercent: null,
           publicCharityNote: null,
+          showPublicCharity: false,
+          organizations: [],
         },
         [],
         { showResumeAvailableNote: false },
@@ -96,6 +100,8 @@ export default async function ClientPreviewPage() {
       verified501cOrgs: 0,
       publicCharityPercent: null,
       publicCharityNote: null,
+      showPublicCharity: false,
+      organizations: [],
     },
     showResumeNote: (chefCredRow as any)?.showResumeAvailableNote ?? false,
   }

@@ -16,12 +16,12 @@ type EmailDraft = {
 
 export function PostEventOutreachPanel({ eventId }: { eventId: string }) {
   const [draft, setDraft] = useState<EmailDraft | null>(null)
-  const [draftType, setDraftType] = useState<'followup' | 'testimonial' | null>(null)
+  const [draftType, setDraftType] = useState<'followup' | 'guest_testimonial' | null>(null)
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleDraft(type: 'followup' | 'testimonial') {
+  async function handleDraft(type: 'followup' | 'guest_testimonial') {
     setLoading(true)
     setError('')
     setDraftType(type)
@@ -60,7 +60,8 @@ export function PostEventOutreachPanel({ eventId }: { eventId: string }) {
     <Card className="p-4">
       <h3 className="font-semibold text-stone-100 mb-2">Guest Outreach</h3>
       <p className="text-xs text-stone-500 mb-3">
-        Draft emails for your event guests. Review before sending from your email.
+        Draft emails for your event guests. Client post-event surveys live in the canonical survey
+        flow; this panel is only for guest follow-up.
       </p>
 
       {!draft ? (
@@ -77,15 +78,19 @@ export function PostEventOutreachPanel({ eventId }: { eventId: string }) {
             variant="secondary"
             className="text-sm"
             disabled={loading}
-            onClick={() => handleDraft('testimonial')}
+            onClick={() => handleDraft('guest_testimonial')}
           >
-            {loading && draftType === 'testimonial' ? 'Drafting...' : 'Testimonial Request'}
+            {loading && draftType === 'guest_testimonial'
+              ? 'Drafting...'
+              : 'Guest Testimonial Request'}
           </Button>
         </div>
       ) : (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Badge variant="info">{draftType === 'followup' ? 'Thank You' : 'Testimonial'}</Badge>
+            <Badge variant="info">
+              {draftType === 'followup' ? 'Thank You' : 'Guest Testimonial'}
+            </Badge>
             <Badge variant="default">{draft.recipientCount} recipients</Badge>
           </div>
 

@@ -2,7 +2,8 @@
 // Checks if there's an active survey the user hasn't submitted,
 // and renders the client banner if so. Non-blocking - fails silently.
 
-import { getActiveSurvey, getMyBetaSurveyStatus } from '@/lib/beta-survey/actions'
+import { getMyBetaSurveyStatus } from '@/lib/beta-survey/actions'
+import { getCachedActiveSurvey } from '@/lib/beta-survey/survey-cache'
 import { BetaSurveyBannerClient } from './beta-survey-banner'
 
 interface BetaSurveyBannerWrapperProps {
@@ -14,7 +15,7 @@ export async function BetaSurveyBannerWrapper({ href }: BetaSurveyBannerWrapperP
   try {
     // Check pre-beta first, then post-beta
     for (const type of ['pre_beta', 'post_beta'] as const) {
-      const survey = await getActiveSurvey(type)
+      const survey = await getCachedActiveSurvey(type)
       if (!survey) continue
 
       const status = await getMyBetaSurveyStatus(type)

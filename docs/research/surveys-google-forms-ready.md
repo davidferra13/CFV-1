@@ -1,5 +1,7 @@
 # Google Forms - Ready to Paste
 
+> **Scope note:** This document preserves the earlier manual Google Forms build path as content reference and fallback launch material only. It is not the canonical builder execution path. For the current internal ChefFlow launch sequence, start with `docs/research/current-builder-start-handoff-2026-04-02.md`.
+
 Two surveys, formatted for manual Google Forms creation. Follow each step in order.
 
 ---

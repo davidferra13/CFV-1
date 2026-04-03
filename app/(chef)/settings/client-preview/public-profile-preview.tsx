@@ -5,6 +5,7 @@
 import type { CSSProperties } from 'react'
 import Link from 'next/link'
 import { PartnerShowcase } from '@/components/public/partner-showcase'
+import { ChefProofSummary } from '@/components/public/chef-proof-summary'
 import { ReviewShowcase } from '@/components/public/review-showcase'
 import { ChefCredentialsPanel } from '@/components/public/chef-credentials-panel'
 import {
@@ -28,6 +29,7 @@ type PublicProfileData = {
     tagline: string | null
     bio: string | null
     website_url: string | null
+    google_review_url: string | null
     show_website_on_public_profile: boolean
     preferred_inquiry_destination: string | null
     portal_primary_color: string | null
@@ -69,6 +71,20 @@ type CredentialsData = {
     verified501cOrgs: number
     publicCharityPercent: number | null
     publicCharityNote: string | null
+    showPublicCharity: boolean
+    organizations: Array<{
+      id: string | null
+      organizationName: string
+      organizationAddress: string | null
+      totalHours: number
+      isVerified501c: boolean
+      websiteUrl: string | null
+      links: {
+        websiteUrl: string | null
+        mapsUrl: string | null
+        verificationUrl: string | null
+      }
+    }>
   }
   showResumeNote: boolean
 }
@@ -139,6 +155,7 @@ export function PublicProfilePreview({
   const backgroundImageUrl = chef.portal_background_image_url
   const hasWebsiteLink = Boolean(chef.website_url && chef.show_website_on_public_profile)
   const preferWebsite = chef.preferred_inquiry_destination === 'website_only'
+  const preferChefFlow = chef.preferred_inquiry_destination === 'chefflow_only'
   const publicSlug = chef.public_slug || slug
 
   const pageBackgroundStyle: CSSProperties = backgroundImageUrl
@@ -233,6 +250,26 @@ export function PublicProfilePreview({
               </div>
             </div>
           </section>
+
+          {reviewFeed &&
+            (reviewFeed.stats.totalReviews > 0 ||
+              chef.google_review_url ||
+              (chef.website_url && chef.show_website_on_public_profile)) && (
+              <section className="px-6 pt-8">
+                <div className="max-w-5xl mx-auto">
+                  <ChefProofSummary
+                    slug={publicSlug}
+                    stats={reviewFeed.stats}
+                    googleReviewUrl={chef.google_review_url}
+                    websiteUrl={chef.website_url ?? null}
+                    showWebsite={chef.show_website_on_public_profile}
+                    acceptingInquiries={discovery.accepting_inquiries}
+                    preferWebsite={preferWebsite}
+                    preferChefFlow={preferChefFlow}
+                  />
+                </div>
+              </section>
+            )}
 
           {!discovery.accepting_inquiries && (
             <section className="px-6 pt-8">

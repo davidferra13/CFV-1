@@ -28,6 +28,64 @@ const DRY_RUN = args.includes('--dry-run')
 const LIMIT = args.find(a => a.startsWith('--limit='))?.split('=')[1]
 const STATE_FILTER = args.find(a => a.startsWith('--state='))?.split('=')[1]?.toUpperCase()
 
+const US_STATES = {
+  AL: 'Alabama',
+  AK: 'Alaska',
+  AZ: 'Arizona',
+  AR: 'Arkansas',
+  CA: 'California',
+  CO: 'Colorado',
+  CT: 'Connecticut',
+  DE: 'Delaware',
+  DC: 'District of Columbia',
+  FL: 'Florida',
+  GA: 'Georgia',
+  HI: 'Hawaii',
+  ID: 'Idaho',
+  IL: 'Illinois',
+  IN: 'Indiana',
+  IA: 'Iowa',
+  KS: 'Kansas',
+  KY: 'Kentucky',
+  LA: 'Louisiana',
+  ME: 'Maine',
+  MD: 'Maryland',
+  MA: 'Massachusetts',
+  MI: 'Michigan',
+  MN: 'Minnesota',
+  MS: 'Mississippi',
+  MO: 'Missouri',
+  MT: 'Montana',
+  NE: 'Nebraska',
+  NV: 'Nevada',
+  NH: 'New Hampshire',
+  NJ: 'New Jersey',
+  NM: 'New Mexico',
+  NY: 'New York',
+  NC: 'North Carolina',
+  ND: 'North Dakota',
+  OH: 'Ohio',
+  OK: 'Oklahoma',
+  OR: 'Oregon',
+  PA: 'Pennsylvania',
+  RI: 'Rhode Island',
+  SC: 'South Carolina',
+  SD: 'South Dakota',
+  TN: 'Tennessee',
+  TX: 'Texas',
+  UT: 'Utah',
+  VT: 'Vermont',
+  VA: 'Virginia',
+  WA: 'Washington',
+  WV: 'West Virginia',
+  WI: 'Wisconsin',
+  WY: 'Wyoming',
+}
+
+const US_STATE_NAME_TO_CODE = Object.fromEntries(
+  Object.entries(US_STATES).map(([code, name]) => [name.toLowerCase(), code])
+)
+
 // ─── Cuisine Mapping (OSM -> ChefFlow) ──────────────────────────────────────
 
 const CUISINE_MAP = {
@@ -130,6 +188,21 @@ function slugify(text) {
     .slice(0, 80)
 }
 
+function normalizeStateCode(rawState, fallbackState) {
+  const normalizedFallback = typeof fallbackState === 'string' ? fallbackState.trim().toUpperCase() : ''
+  const normalizedRaw = typeof rawState === 'string' ? rawState.replace(/^US\//, '').trim() : ''
+
+  if (normalizedRaw) {
+    const upperRaw = normalizedRaw.toUpperCase()
+    if (US_STATES[upperRaw]) return upperRaw
+
+    const mappedCode = US_STATE_NAME_TO_CODE[normalizedRaw.toLowerCase()]
+    if (mappedCode) return mappedCode
+  }
+
+  return US_STATES[normalizedFallback] ? normalizedFallback : null
+}
+
 // ─── Extract Archive ─────────────────────────────────────────────────────────
 
 function extractArchive() {
@@ -189,7 +262,7 @@ function collectRecords(findingsDir) {
           records.push({
             name: biz.name.trim(),
             city: biz.address?.city || file.replace('.json', '').replace(/_/g, ' '),
-            state: (biz.address?.state || state).replace(/^US\//, ''),
+            state: normalizeStateCode(biz.address?.state, state),
             address: buildAddress(biz),
             postcode: biz.address?.postcode || null,
             phone: biz.phone || null,

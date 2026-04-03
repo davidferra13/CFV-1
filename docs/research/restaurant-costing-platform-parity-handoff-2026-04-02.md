@@ -31,8 +31,9 @@ The next conversation should ask:
 Read these in this exact order:
 
 1. `docs/research/restaurant-costing-platform-landscape-2026-04-02.md`
-2. `docs/specs/openclaw-ideal-runtime-and-national-intelligence.md`
-3. `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md`
+2. `docs/research/restaurant-costing-platform-copy-improve-avoid-2026-04-02.md`
+3. `docs/specs/openclaw-ideal-runtime-and-national-intelligence.md`
+4. `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md`
 
 Only then decide whether the next task is:
 
@@ -138,13 +139,13 @@ Those answers are already in the baseline memo.
 The next useful deliverable would be one of these:
 
 1. a feature-parity matrix
-2. a "copy / improve / avoid" memo
-3. a dedicated spec intake for ChefFlow operator-costing parity
+2. a dedicated spec intake for ChefFlow operator-costing parity
 
 Best option:
 
-- start with `copy / improve / avoid`
-- then convert that into a spec sequence
+- use `docs/research/restaurant-costing-platform-copy-improve-avoid-2026-04-02.md` as the qualitative deep-dive baseline
+- then build a feature-parity matrix from it
+- then convert the matrix into a spec sequence
 
 ---
 

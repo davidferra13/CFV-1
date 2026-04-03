@@ -185,6 +185,8 @@ export default async function ChefProfilePage({ params }: Props) {
       verified501cOrgs: 0,
       publicCharityPercent: null,
       publicCharityNote: null,
+      showPublicCharity: false,
+      organizations: [],
     })),
     getPublicPortfolio(chef.id).catch(() => []),
     (async () => {

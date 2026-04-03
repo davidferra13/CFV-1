@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { toOpenClawImageProxyUrl } from '@/lib/openclaw/image-proxy'
 
 const CATEGORY_ICONS: Record<string, { svg: string; bgColor: string }> = {
   produce: {
@@ -79,8 +80,13 @@ interface ImageWithFallbackProps {
 
 export function ImageWithFallback({ src, alt, category, className = '' }: ImageWithFallbackProps) {
   const [failed, setFailed] = useState(false)
+  const resolvedSrc = toOpenClawImageProxyUrl(src)
 
-  if (!src || failed) {
+  useEffect(() => {
+    setFailed(false)
+  }, [resolvedSrc])
+
+  if (!resolvedSrc || failed) {
     const cat = category?.toLowerCase() || ''
     const icon = CATEGORY_ICONS[cat] || DEFAULT_ICON
     return (
@@ -93,7 +99,7 @@ export function ImageWithFallback({ src, alt, category, className = '' }: ImageW
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       className={`object-cover ${className}`}
       onError={() => setFailed(true)}

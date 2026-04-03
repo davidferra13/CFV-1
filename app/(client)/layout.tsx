@@ -16,6 +16,7 @@ import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 import { ClientTourWrapper } from '@/components/onboarding/client-tour-wrapper'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
+import { MarketResearchBannerWrapper } from '@/components/beta-survey/market-research-banner-wrapper'
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
   let user
@@ -41,6 +42,10 @@ export default async function ClientLayout({ children }: { children: React.React
           <ClientMobileNav userEmail={user.email} />
           <ActivityTracker eventType="portal_login" />
           <ClientMainContent>
+            <MarketResearchBannerWrapper
+              surveyType="market_research_client"
+              channel="client_portal"
+            />
             <ClientTourWrapper>{children}</ClientTourWrapper>
           </ClientMainContent>
           <AnalyticsIdentify

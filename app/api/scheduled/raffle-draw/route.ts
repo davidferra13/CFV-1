@@ -7,7 +7,7 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
-import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
+import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 import { drawRaffleWinner } from '@/lib/raffle/actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
@@ -15,6 +15,7 @@ async function handleRaffleDraw(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
+  const startedAt = Date.now()
   const db = createServerClient({ admin: true })
   const today = new Date().toISOString().split('T')[0]
 
@@ -27,6 +28,7 @@ async function handleRaffleDraw(request: NextRequest): Promise<NextResponse> {
 
   if (error) {
     console.error('[Raffle Draw Cron] Failed to query rounds:', error)
+    await recordCronError('raffle-draw', 'Failed to query raffle rounds', Date.now() - startedAt)
     return NextResponse.json({ error: 'Failed to query raffle rounds' }, { status: 500 })
   }
 
@@ -60,7 +62,7 @@ async function handleRaffleDraw(request: NextRequest): Promise<NextResponse> {
   }
 
   const summary = { roundsProcessed: results.length, drawn, failed, details: results }
-  await recordCronHeartbeat('raffle-draw', summary)
+  await recordCronHeartbeat('raffle-draw', summary, Date.now() - startedAt)
   return NextResponse.json(summary)
 }
 

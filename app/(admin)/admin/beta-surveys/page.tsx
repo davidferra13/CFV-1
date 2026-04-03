@@ -2,11 +2,12 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getAllBetaSurveys } from '@/lib/beta-survey/actions'
+import { formatSurveyTypeLabel } from '@/lib/beta-survey/survey-utils'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { BetaSurveyListActions } from './list-actions'
 
-export const metadata: Metadata = { title: 'Surveys - Admin' }
+export const metadata: Metadata = { title: 'Forms - Admin' }
 
 export default async function AdminBetaSurveysPage() {
   await requireAdmin()
@@ -16,21 +17,23 @@ export default async function AdminBetaSurveysPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Surveys</h1>
-        <p className="text-slate-400 text-sm mt-1">Surveys for gathering participant feedback.</p>
+        <h1 className="text-2xl font-bold text-white">Forms Control Plane</h1>
+        <p className="text-slate-400 text-sm mt-1">
+          Launch, track, and review ChefFlow-native research and feedback forms from one dashboard.
+        </p>
       </div>
 
       {/* Summary */}
       <div className="flex flex-wrap gap-2">
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-slate-700 text-slate-200">
-          {surveys.length} surveys
+          {surveys.length} forms
         </span>
         <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-emerald-900 text-emerald-300">
           {surveys.reduce((sum, s) => sum + s.submittedResponses, 0)} total responses
         </span>
       </div>
 
-      {/* Survey cards */}
+      {/* Form cards */}
       <div className="space-y-4">
         {surveys.map((survey) => (
           <div key={survey.id} className="bg-slate-800 rounded-lg border border-slate-700 p-5">
@@ -53,7 +56,7 @@ export default async function AdminBetaSurveysPage() {
                     {survey.is_active ? 'Active' : 'Inactive'}
                   </span>
                   <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-700 text-slate-300">
-                    {survey.survey_type === 'pre_beta' ? 'Pre-Launch' : 'Post-Launch'}
+                    {formatSurveyTypeLabel(survey.survey_type)}
                   </span>
                 </div>
                 <p className="text-sm text-slate-400 mb-3">{survey.description}</p>
@@ -80,7 +83,7 @@ export default async function AdminBetaSurveysPage() {
                   href={`/admin/beta-surveys/${survey.id}`}
                   className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors"
                 >
-                  View Results
+                  Open Dashboard
                 </Link>
               </div>
             </div>
@@ -89,7 +92,7 @@ export default async function AdminBetaSurveysPage() {
 
         {surveys.length === 0 && (
           <div className="text-center py-12 text-slate-500">
-            No survey definitions found. Run the migration to seed the initial surveys.
+            No form definitions found. Run the migration to seed the initial forms.
           </div>
         )}
       </div>

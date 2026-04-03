@@ -94,7 +94,7 @@ export function NonprofitSearch() {
     <Card className="p-5">
       <h2 className="text-sm font-medium text-stone-300 flex items-center gap-2 mb-4">
         <Search className="w-4 h-4" />
-        Find Charities to Volunteer At
+        Browse verified organizations
       </h2>
 
       {/* State dropdown */}
@@ -145,7 +145,7 @@ export function NonprofitSearch() {
           <Input
             value={keyword}
             onChange={(e) => handleKeywordChange(e.target.value)}
-            placeholder="e.g. Harrison Food Bank"
+            placeholder="e.g. Harrison Food Pantry"
           />
         </div>
       )}
@@ -204,14 +204,16 @@ export function NonprofitSearch() {
             </div>
           )}
 
-          <p className="text-xs text-stone-600 pt-3">Click any result to log hours there</p>
+          <p className="text-xs text-stone-600 pt-3">
+            Click any result to prefill the volunteer log.
+          </p>
         </div>
       )}
 
       {!state && !searched && (
         <p className="text-xs text-stone-600 mt-2">
-          Select a state to browse registered nonprofits. All 1.8M IRS-registered 501(c)
-          organizations are searchable.
+          Select a state to browse registered nonprofits. This is optional and meant to help when
+          you want a verified organization before saving hours.
         </p>
       )}
     </Card>

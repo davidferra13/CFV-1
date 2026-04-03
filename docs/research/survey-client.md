@@ -4,6 +4,8 @@
 > **Purpose:** Validate assumptions about how clients book, communicate with, and evaluate private chefs/food operators
 > **Derived from:** System audit + gap detection in `docs/research/phase-shift-system-audit-and-validation.md`
 > **Target respondents:** People who have hired (or considered hiring) a private chef, caterer, or food service for a personal event
+>
+> **Scope note:** This is the master question bank and research-content source, not the canonical launch execution doc. Use it to understand the full client survey logic or recover wording, but use `docs/research/current-builder-start-handoff-2026-04-02.md` for builder order and `docs/research/survey-client-wave-1-google-forms-ready.md` only as fallback content reference.
 
 ---
 

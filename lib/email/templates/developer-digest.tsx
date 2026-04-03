@@ -7,9 +7,10 @@ import { BaseLayout } from './base-layout'
 
 export type CronHealthEntry = {
   name: string
-  status: 'ok' | 'stale' | 'missing' | 'error'
+  status: 'ok' | 'warning' | 'stale' | 'missing' | 'error'
   lastRunAt: string | null
   minutesSince: number | null
+  message?: string
 }
 
 export type CircuitEntry = {
@@ -35,6 +36,7 @@ export type DeveloperDigestEmailProps = {
 
 const STATUS_ICON: Record<string, string> = {
   ok: 'OK',
+  warning: 'WARN',
   stale: 'STALE',
   missing: 'MISSING',
   error: 'ERROR',
@@ -42,6 +44,7 @@ const STATUS_ICON: Record<string, string> = {
 
 const STATUS_COLOR: Record<string, string> = {
   ok: '#16a34a',
+  warning: '#f59e0b',
   stale: '#f59e0b',
   missing: '#9ca3af',
   error: '#ef4444',
@@ -103,6 +106,7 @@ export function DeveloperDigestEmail({
               {cron.minutesSince !== null
                 ? ` (last ran ${cron.minutesSince}m ago)`
                 : ' (never ran)'}
+              {cron.message ? ` - ${cron.message}` : ''}
             </Text>
           ))}
           <Text style={summaryLine}>

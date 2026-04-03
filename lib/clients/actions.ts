@@ -600,6 +600,8 @@ export async function createClientFromLead(
   }
 ) {
   const db: any = createServerClient({ admin: true })
+  const dietaryRestrictions = lead.dietary_restrictions?.map((item) => item.trim()).filter(Boolean)
+  const allergies = lead.allergies?.map((item) => item.trim()).filter(Boolean)
 
   // Idempotent: check if client already exists with this email
   const findExisting = async (withSoftDeleteFilter: boolean) => {
@@ -620,29 +622,33 @@ export async function createClientFromLead(
     return { id: existing.id, created: false }
   }
 
+  const insertData: Record<string, unknown> = {
+    tenant_id: tenantId,
+    email: lead.email,
+    full_name: lead.full_name,
+    phone: lead.phone || null,
+    status: 'active',
+    referral_source:
+      (lead.source as
+        | 'email'
+        | 'phone'
+        | 'instagram'
+        | 'take_a_chef'
+        | 'referral'
+        | 'website'
+        | 'other') || 'email',
+  }
+
+  if (dietaryRestrictions && dietaryRestrictions.length > 0) {
+    insertData.dietary_restrictions = dietaryRestrictions
+  }
+
+  if (allergies && allergies.length > 0) {
+    insertData.allergies = allergies
+  }
+
   // Create the client record
-  const { data: client, error } = await db
-    .from('clients')
-    .insert({
-      tenant_id: tenantId,
-      email: lead.email,
-      full_name: lead.full_name,
-      phone: lead.phone || null,
-      dietary_restrictions: lead.dietary_restrictions || [],
-      allergies: lead.allergies || [],
-      status: 'active',
-      referral_source:
-        (lead.source as
-          | 'email'
-          | 'phone'
-          | 'instagram'
-          | 'take_a_chef'
-          | 'referral'
-          | 'website'
-          | 'other') || 'email',
-    })
-    .select('id')
-    .single()
+  const { data: client, error } = await db.from('clients').insert(insertData).select('id').single()
 
   if (error) {
     console.error('[createClientFromLead] Error:', error)

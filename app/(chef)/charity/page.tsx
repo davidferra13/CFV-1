@@ -1,28 +1,21 @@
-// Charity Hub - aggregates all charity-related entities across the system.
-// Read-only visibility layer. No new data creation - just surfaces existing records
-// that match charity keywords (charity, nonprofit, fundraiser, donation, etc.)
-
-import Link from 'next/link'
 import type { Metadata } from 'next'
-import { requireChef } from '@/lib/auth/get-user'
-import { requireAdmin } from '@/lib/auth/admin'
-import {
-  getCharityEvents,
-  getCharityMenus,
-  getCharityFinancials,
-  getCharityMisc,
-} from '@/lib/charity/actions'
-import { getCharityHoursSummary } from '@/lib/charity/hours-actions'
-import { CHARITY_KEYWORDS } from '@/lib/charity/charity-keywords'
-import { Card } from '@/components/ui/card'
+import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CharitySection } from '@/components/charity/charity-section'
+import { Card } from '@/components/ui/card'
 import { Clock } from '@/components/ui/icons'
+import { CharitySection } from '@/components/charity/charity-section'
+import { requireChef } from '@/lib/auth/get-user'
+import {
+  getCharityEvents,
+  getCharityFinancials,
+  getCharityMenus,
+  getCharityMisc,
+} from '@/lib/charity/actions'
+import { CHARITY_KEYWORDS } from '@/lib/charity/charity-keywords'
+import { getCharityHoursSummary } from '@/lib/charity/hours-actions'
 
-export const metadata: Metadata = { title: 'Charity Hub' }
-
-// ─── Status badge variant helper ──────────────────────────────────────────────
+export const metadata: Metadata = { title: 'Community Impact' }
 
 function eventStatusVariant(status: string): 'default' | 'success' | 'warning' | 'error' | 'info' {
   switch (status) {
@@ -56,11 +49,8 @@ function formatDate(dateStr: string | null): string {
   })
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default async function CharityHubPage() {
   await requireChef()
-  await requireAdmin()
 
   const [events, menus, financials, misc, hoursSummary] = await Promise.all([
     getCharityEvents().catch(() => []),
@@ -80,153 +70,158 @@ export default async function CharityHubPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-stone-100">Charity Hub</h1>
-          <p className="text-sm text-stone-500 mt-1">
-            All charity, nonprofit, and fundraiser-related activity across your account
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="max-w-2xl">
+          <h1 className="text-2xl font-bold text-stone-100">Community Impact</h1>
+          <p className="mt-1 text-sm text-stone-500">
+            A quieter workspace for service work, nonprofit activity, and impact-related references
+            across your account. This stays available without needing to dominate your profile.
           </p>
         </div>
-        <Link href="/charity/hours">
-          <Button variant="primary">
-            <Clock className="w-4 h-4 mr-1.5" />
-            Log Charity Hours
-          </Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/settings/credentials">
+            <Button variant="ghost">Credentials settings</Button>
+          </Link>
+          <Link href="/charity/hours">
+            <Button variant="primary">
+              <Clock className="mr-1.5 h-4 w-4" />
+              Open volunteer log
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      {/* Summary cards */}
       {(totalCount > 0 || hoursSummary.totalHours > 0) && (
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div className="grid gap-4 md:grid-cols-5">
           <Card className="p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{events.length}</p>
-            <p className="text-xs text-stone-500 mt-1">Events</p>
+            <p className="mt-1 text-xs text-stone-500">Related events</p>
           </Card>
           <Card className="p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{menus.length}</p>
-            <p className="text-xs text-stone-500 mt-1">Menus</p>
+            <p className="mt-1 text-xs text-stone-500">Related menus</p>
           </Card>
           <Card className="p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{financials.length}</p>
-            <p className="text-xs text-stone-500 mt-1">Financial Entries</p>
+            <p className="mt-1 text-xs text-stone-500">Financial references</p>
           </Card>
           <Card className="p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{misc.length}</p>
-            <p className="text-xs text-stone-500 mt-1">Misc Mentions</p>
+            <p className="mt-1 text-xs text-stone-500">Notes and mentions</p>
           </Card>
           <Link href="/charity/hours" className="block">
-            <Card className="p-4 text-center hover:bg-stone-800/50 transition-colors h-full">
+            <Card className="h-full p-4 text-center transition-colors hover:bg-stone-800/50">
               <p className="text-2xl font-bold text-stone-100">{hoursSummary.totalHours}</p>
-              <p className="text-xs text-stone-500 mt-1">Volunteer Hours</p>
+              <p className="mt-1 text-xs text-stone-500">Volunteer hours</p>
             </Card>
           </Link>
         </div>
       )}
 
-      {/* Empty state */}
-      {totalCount === 0 && (
+      {totalCount === 0 && hoursSummary.totalHours === 0 && (
         <Card className="p-10 text-center">
-          <p className="text-lg font-medium text-stone-400">No charity-related items found</p>
-          <p className="text-sm text-stone-500 mt-2 max-w-md mx-auto">
+          <p className="text-lg font-medium text-stone-400">No community impact signals yet</p>
+          <p className="mx-auto mt-2 max-w-md text-sm text-stone-500">
             When events, menus, financial entries, or notes mention keywords like{' '}
             <span className="text-stone-400">{CHARITY_KEYWORDS.slice(0, 6).join(', ')}</span>, they
-            will appear here automatically.
+            will quietly collect here for reference.
           </p>
         </Card>
       )}
 
-      {/* ── Charity Events ────────────────────────────────────────────────── */}
-      <CharitySection title="Charity-Related Events" count={events.length}>
+      <CharitySection title="Impact-related events" count={events.length} defaultOpen={false}>
         <div className="divide-y divide-stone-800">
-          {events.map((e) => (
+          {events.map((event) => (
             <Link
-              key={e.id}
-              href={`/events/${e.id}`}
-              className="flex items-center justify-between py-3 hover:bg-stone-800/30 -mx-1 px-1 rounded transition-colors"
+              key={event.id}
+              href={`/events/${event.id}`}
+              className="mx-[-4px] flex items-center justify-between rounded px-1 py-3 transition-colors hover:bg-stone-800/30"
             >
               <div>
                 <p className="text-sm font-medium text-stone-200">
-                  {e.occasion || 'Untitled Event'}
+                  {event.occasion || 'Untitled event'}
                 </p>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs text-stone-500">{formatDate(e.event_date)}</span>
-                  {e.client_name && (
-                    <span className="text-xs text-stone-500">· {e.client_name}</span>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <span className="text-xs text-stone-500">{formatDate(event.event_date)}</span>
+                  {event.client_name && (
+                    <span className="text-xs text-stone-500">{event.client_name}</span>
                   )}
-                  {e.guest_count != null && e.guest_count > 0 && (
-                    <span className="text-xs text-stone-500">· {e.guest_count} guests</span>
+                  {event.guest_count != null && event.guest_count > 0 && (
+                    <span className="text-xs text-stone-500">{event.guest_count} guests</span>
                   )}
                 </div>
               </div>
-              <Badge variant={eventStatusVariant(e.status)}>{e.status}</Badge>
+              <Badge variant={eventStatusVariant(event.status)}>{event.status}</Badge>
             </Link>
           ))}
         </div>
       </CharitySection>
 
-      {/* ── Charity Menus ─────────────────────────────────────────────────── */}
-      <CharitySection title="Charity-Related Menus" count={menus.length}>
+      <CharitySection title="Impact-related menus" count={menus.length} defaultOpen={false}>
         <div className="divide-y divide-stone-800">
-          {menus.map((m) => (
+          {menus.map((menu) => (
             <Link
-              key={m.id}
-              href={m.event_id ? `/events/${m.event_id}` : '/menus'}
-              className="flex items-center justify-between py-3 hover:bg-stone-800/30 -mx-1 px-1 rounded transition-colors"
+              key={menu.id}
+              href={menu.event_id ? `/events/${menu.event_id}` : '/menus'}
+              className="mx-[-4px] flex items-center justify-between rounded px-1 py-3 transition-colors hover:bg-stone-800/30"
             >
               <div>
-                <p className="text-sm font-medium text-stone-200">{m.name}</p>
-                {m.description && (
-                  <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{m.description}</p>
+                <p className="text-sm font-medium text-stone-200">{menu.name}</p>
+                {menu.description && (
+                  <p className="mt-0.5 line-clamp-1 text-xs text-stone-500">{menu.description}</p>
                 )}
               </div>
-              <span className="text-xs text-stone-500 flex-shrink-0 ml-4">
-                {formatDate(m.created_at)}
+              <span className="ml-4 flex-shrink-0 text-xs text-stone-500">
+                {formatDate(menu.created_at)}
               </span>
             </Link>
           ))}
         </div>
       </CharitySection>
 
-      {/* ── Charity Financials ────────────────────────────────────────────── */}
-      <CharitySection title="Charity-Related Financial Entries" count={financials.length}>
+      <CharitySection
+        title="Impact-related financial entries"
+        count={financials.length}
+        defaultOpen={false}
+      >
         <div className="divide-y divide-stone-800">
-          {financials.map((le) => (
+          {financials.map((entry) => (
             <Link
-              key={le.id}
+              key={entry.id}
               href="/finance/ledger"
-              className="flex items-center justify-between py-3 hover:bg-stone-800/30 -mx-1 px-1 rounded transition-colors"
+              className="mx-[-4px] flex items-center justify-between rounded px-1 py-3 transition-colors hover:bg-stone-800/30"
             >
               <div>
                 <p className="text-sm font-medium text-stone-200">
-                  {le.description || 'Ledger Entry'}
+                  {entry.description || 'Ledger entry'}
                 </p>
-                <span className="text-xs text-stone-500">{formatDate(le.created_at)}</span>
+                <span className="text-xs text-stone-500">{formatDate(entry.created_at)}</span>
               </div>
-              <div className="text-right flex-shrink-0 ml-4">
-                <p className="text-sm font-medium text-stone-200">{formatCents(le.amount_cents)}</p>
-                <Badge variant="default">{le.entry_type}</Badge>
+              <div className="ml-4 flex-shrink-0 text-right">
+                <p className="text-sm font-medium text-stone-200">
+                  {formatCents(entry.amount_cents)}
+                </p>
+                <Badge variant="default">{entry.entry_type}</Badge>
               </div>
             </Link>
           ))}
         </div>
       </CharitySection>
 
-      {/* ── Misc Mentions ─────────────────────────────────────────────────── */}
-      <CharitySection title="Misc Mentions (Notes, Tags, Inquiries)" count={misc.length}>
+      <CharitySection title="Related notes and mentions" count={misc.length} defaultOpen={false}>
         <div className="divide-y divide-stone-800">
           {misc.map((item) => (
             <Link
               key={item.id}
               href={item.link_href}
-              className="flex items-center justify-between py-3 hover:bg-stone-800/30 -mx-1 px-1 rounded transition-colors"
+              className="mx-[-4px] flex items-center justify-between rounded px-1 py-3 transition-colors hover:bg-stone-800/30"
             >
               <div>
                 <div className="flex items-center gap-2">
                   <Badge variant="default">{item.label}</Badge>
                   <span className="text-xs text-stone-500">{formatDate(item.created_at)}</span>
                 </div>
-                <p className="text-xs text-stone-400 mt-1 line-clamp-2">{item.snippet}</p>
+                <p className="mt-1 line-clamp-2 text-xs text-stone-400">{item.snippet}</p>
               </div>
             </Link>
           ))}

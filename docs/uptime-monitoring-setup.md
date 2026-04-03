@@ -1,5 +1,7 @@
 # Uptime Monitoring Setup
 
+Related internal reference: [docs/cron-monitoring-architecture.md](/c:/Users/david/Documents/CFv1/docs/cron-monitoring-architecture.md)
+
 ## Monitor Targets
 
 Use two endpoints for different purposes.
@@ -11,9 +13,13 @@ Use two endpoints for different purposes.
 
 Do not use `/api/health` for external paging. It is not the strict release-health signal.
 
+Do not use `/api/scheduled/monitor` for unauthenticated uptime tools. It is the deeper internal scheduler diagnostic endpoint and requires cron auth.
+
 ## Readiness Contract
 
 `GET /api/health/readiness?strict=1`
+
+The `backgroundJobs` check is derived from the shared cron monitor registry in `lib/cron/definitions.ts` and the shared report in `lib/cron/monitor.ts`.
 
 Expected headers:
 
@@ -35,6 +41,29 @@ Expected body shape:
   "build": {}
 }
 ```
+
+`details.backgroundJobs` summarizes the monitored critical jobs:
+
+- `observedCrons`: registered jobs with at least one recorded run
+- `missing`: registered jobs with no heartbeat
+- `stale`: registered jobs whose latest run exceeded `maxExpectedMinutes`
+
+## Internal Scheduler Monitor
+
+Use the authenticated cron monitor for deeper diagnosis and controlled alert routing.
+
+`GET /api/scheduled/monitor?strict=1`
+
+Query parameters:
+
+- `strict=1`: return `503` when any critical job is stale or missing
+- `notify=0`: return the report without sending an aggregate alert email
+
+Expected usage:
+
+- Internal scheduled health audits
+- Manual diagnostics after scheduler changes
+- Builder verification when adding or reclassifying critical jobs
 
 ## UptimeRobot Configuration
 
@@ -92,3 +121,10 @@ curl -I https://beta.cheflowhq.com/api/health/ping
 ```
 
 Confirm that readiness returns `200` only when the beta environment is actually healthy.
+
+Internal scheduler verification:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" "http://localhost:3100/api/scheduled/monitor?strict=1&notify=0"
+node --test --import tsx tests/unit/cron-monitoring-coverage.test.ts
+```

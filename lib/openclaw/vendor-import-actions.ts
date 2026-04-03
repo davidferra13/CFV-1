@@ -2,12 +2,11 @@
 
 /**
  * Vendor Price List Import
- * Admin uploads PDF price lists from vendors, Pi parses them,
- * admin reviews matches, then confirms import.
+ * Chef users upload PDF price lists from vendors, Pi parses them,
+ * the user reviews matches, then confirms import.
  * Two-step flow: parse (read-only) then confirm (mutating).
  */
 
-import { isAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
 import { revalidateTag } from 'next/cache'
@@ -47,17 +46,7 @@ export type ConfirmResult = {
 // --- Actions ---
 
 export async function parseVendorPriceList(formData: FormData): Promise<ParseResult> {
-  const user = await requireChef()
-  const admin = await isAdmin()
-  if (!admin)
-    return {
-      success: false,
-      parsed_items: 0,
-      matched: 0,
-      unmatched: 0,
-      items: [],
-      error: 'Admin access required',
-    }
+  await requireChef()
 
   const file = formData.get('file') as File | null
   const vendorName = formData.get('vendor_name') as string
@@ -165,9 +154,7 @@ export async function confirmVendorImport(payload: {
   vendor_source_id: string
   items: { canonical_id: string; raw_name: string; price_cents: number; unit: string }[]
 }): Promise<ConfirmResult> {
-  const user = await requireChef()
-  const admin = await isAdmin()
-  if (!admin) return { success: false, imported: 0, error: 'Admin access required' }
+  await requireChef()
 
   if (!payload.items || payload.items.length === 0) {
     return { success: false, imported: 0, error: 'No items to import' }
@@ -192,7 +179,7 @@ export async function confirmVendorImport(payload: {
 
     const data = await res.json()
 
-    revalidatePath('/admin/price-catalog')
+    revalidatePath('/culinary/price-catalog')
     revalidateTag('pi-data')
 
     return {

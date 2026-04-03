@@ -5,6 +5,8 @@
 //   - If TURNSTILE_SECRET_KEY is not set → bypass (returns success)
 //   - If Cloudflare API is unreachable → log warning and allow through (non-blocking)
 
+import { isLocalTurnstileHost, TURNSTILE_TEST_SECRET_KEY } from '@/lib/security/turnstile-constants'
+
 const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
 interface TurnstileVerifyResult {
@@ -16,14 +18,20 @@ interface TurnstileVerifyResult {
  * Verify a Cloudflare Turnstile token server-side.
  *
  * @param token - The Turnstile response token from the client widget
- * @param ip - Optional client IP for additional verification
+ * @param options.ip - Optional client IP for additional verification
+ * @param options.host - Optional request host for local test-key resolution
  * @returns { success: boolean, error?: string }
  */
 export async function verifyTurnstileToken(
   token: string,
-  ip?: string
+  options?: { ip?: string; host?: string }
 ): Promise<TurnstileVerifyResult> {
-  const secretKey = process.env.TURNSTILE_SECRET_KEY
+  const ip = options?.ip
+  const host = options?.host
+  const secretKey =
+    process.env.NODE_ENV !== 'production' && isLocalTurnstileHost(host)
+      ? process.env.TURNSTILE_TEST_SECRET_KEY || TURNSTILE_TEST_SECRET_KEY
+      : process.env.TURNSTILE_SECRET_KEY
 
   // In production, missing secret key = reject (fail-closed).
   // In dev/test, missing key = bypass (allows local development without Turnstile).

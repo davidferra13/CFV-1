@@ -2,8 +2,15 @@
 // Drop-in replacement for text inputs - returns structured address + lat/lng
 'use client'
 
-import { useRef, useCallback, useState } from 'react'
+import {
+  useRef,
+  useCallback,
+  useState,
+  type PointerEventHandler,
+  type TouchEventHandler,
+} from 'react'
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api'
+import { useDeferredGoogleMapsLoader } from '@/hooks/use-deferred-google-maps-loader'
 
 const LIBRARIES: ['places'] = ['places']
 
@@ -68,14 +75,62 @@ export function AddressAutocomplete({
   helperText,
   error,
 }: AddressAutocompleteProps) {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
+  const { shouldLoad, prime } = useDeferredGoogleMapsLoader(Boolean(apiKey))
+
+  if (!apiKey || !shouldLoad) {
+    return (
+      <AddressTextInput
+        label={label}
+        required={required}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        helperText={helperText}
+        error={error}
+        onPointerEnter={prime}
+        onTouchStart={prime}
+      />
+    )
+  }
+
+  return (
+    <LoadedAddressAutocomplete
+      apiKey={apiKey}
+      label={label}
+      required={required}
+      value={value}
+      onPlaceSelect={onPlaceSelect}
+      onChange={onChange}
+      placeholder={placeholder}
+      helperText={helperText}
+      error={error}
+    />
+  )
+}
+
+type LoadedAddressAutocompleteProps = AddressAutocompleteProps & {
+  apiKey: string
+}
+
+function LoadedAddressAutocomplete({
+  apiKey,
+  label,
+  required,
+  value,
+  onPlaceSelect,
+  onChange,
+  placeholder = 'Start typing an address...',
+  helperText,
+  error,
+}: LoadedAddressAutocompleteProps) {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
   // Only load Google Maps script when we have an API key.
   // Empty key triggers an infinite retry loop in the loader.
   const { isLoaded, loadError: sdkError } = useJsApiLoader({
-    googleMapsApiKey: apiKey || 'SKIP',
+    googleMapsApiKey: apiKey,
     libraries: LIBRARIES,
     preventGoogleFontsLoading: true,
   })
@@ -113,22 +168,7 @@ export function AddressAutocomplete({
   // Plain input fallback while Google Maps JS loads (or if no API key)
   if (!ready) {
     return (
-      <div className="w-full">
-        {label && (
-          <label className="block text-sm font-medium text-stone-300 mb-1.5">
-            {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
-          </label>
-        )}
-        <input
-          type="text"
-          className={inputClasses}
-          value={value}
-          onChange={(e) => onChange?.(e.target.value)}
-          placeholder={placeholder}
-        />
-        {helperText && <p className="mt-1.5 text-sm text-stone-400">{helperText}</p>}
-      </div>
+      <AddressTextInput {...{ label, required, value, onChange, placeholder, helperText, error }} />
     )
   }
 
@@ -145,6 +185,7 @@ export function AddressAutocomplete({
         onPlaceChanged={onPlaceChanged}
         options={{
           componentRestrictions: { country: 'us' },
+          fields: ['address_components', 'formatted_address', 'geometry'],
           types: ['address'],
         }}
       >
@@ -156,6 +197,56 @@ export function AddressAutocomplete({
           placeholder={placeholder}
         />
       </Autocomplete>
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {helperText && !error && <p className="mt-1.5 text-sm text-stone-400">{helperText}</p>}
+    </div>
+  )
+}
+
+type AddressTextInputProps = Pick<
+  AddressAutocompleteProps,
+  'label' | 'required' | 'value' | 'onChange' | 'placeholder' | 'helperText' | 'error'
+> & {
+  onPointerEnter?: PointerEventHandler<HTMLInputElement>
+  onTouchStart?: TouchEventHandler<HTMLInputElement>
+}
+
+function AddressTextInput({
+  label,
+  required,
+  value,
+  onChange,
+  placeholder,
+  helperText,
+  error,
+  onPointerEnter,
+  onTouchStart,
+}: AddressTextInputProps) {
+  const inputClasses = `
+    block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100
+    placeholder:text-stone-400
+    focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
+    disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500
+    ${error ? 'border-red-300 focus:border-red-400 focus:ring-red-500/20' : ''}
+  `.trim()
+
+  return (
+    <div className="w-full">
+      {label && (
+        <label className="block text-sm font-medium text-stone-300 mb-1.5">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+      )}
+      <input
+        type="text"
+        className={inputClasses}
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        onPointerEnter={onPointerEnter}
+        onTouchStart={onTouchStart}
+        placeholder={placeholder}
+      />
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
       {helperText && !error && <p className="mt-1.5 text-sm text-stone-400">{helperText}</p>}
     </div>

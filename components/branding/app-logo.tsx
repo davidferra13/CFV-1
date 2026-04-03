@@ -13,7 +13,6 @@ export function AppLogo({ size = 32, className = '' }: AppLogoProps) {
       width={size}
       height={size}
       className={`h-auto w-auto rounded-lg object-cover ${className}`.trim()}
-      priority
     />
   )
 }

@@ -113,7 +113,6 @@ import { GuestCodePanel } from '@/components/events/guest-code-panel'
 import { getEventGuestLeadCount } from '@/lib/guest-leads/actions'
 import { HostMessageTemplate } from '@/components/sharing/host-message-template'
 import { GuestMessagesPanel } from '@/components/events/guest-messages-panel'
-import { PostEventOutreachPanel } from '@/components/events/post-event-outreach-panel'
 import { PhotoConsentSummary } from '@/components/events/photo-consent-summary'
 import { RSVPTrackerPanel } from '@/components/events/rsvp-tracker-panel'
 import { getEventMessagesForChef } from '@/lib/guest-messages/actions'
@@ -805,6 +804,8 @@ export default async function EventDetailPage({
         eventId={event.id}
         eventStatus={event.status}
         eventClientId={event.client_id}
+        followUpSent={(event as any).follow_up_sent ?? false}
+        followUpSentAt={(event as any).follow_up_sent_at ?? null}
         debriefCompletedAt={(event as any).debrief_completed_at ?? null}
         hasAAR={!!aar}
         hasClosureStatus={!!closureStatus}

@@ -75,7 +75,7 @@ export async function searchCatalog(params: {
   page?: number
   limit?: number
 }): Promise<CatalogSearchResult> {
-  await requireAdmin()
+  await requireChef()
 
   const { search, category, store, pricedOnly, sort, page = 1, limit = 50 } = params
 
@@ -166,7 +166,7 @@ export async function getCatalogStores(): Promise<CatalogStore[]> {
 }
 
 export async function getCatalogStats(): Promise<CatalogStats> {
-  await requireAdmin()
+  await requireChef()
 
   try {
     const controller = new AbortController()
@@ -195,7 +195,7 @@ export async function getCatalogStats(): Promise<CatalogStats> {
 }
 
 export async function getCatalogItemPrices(ingredientId: string): Promise<CatalogItemDetail[]> {
-  await requireAdmin()
+  await requireChef()
 
   try {
     const controller = new AbortController()
@@ -500,7 +500,7 @@ export async function searchCatalogForExport(params: {
   pricedOnly?: boolean
   sort?: 'name' | 'price' | 'stores' | 'updated'
 }): Promise<CatalogItem[]> {
-  await requireAdmin()
+  await requireChef()
 
   const { search, category, store, pricedOnly, sort } = params
 
@@ -553,7 +553,7 @@ export async function searchCatalogForExport(params: {
 }
 
 export async function getCategoryCoverage(): Promise<CategoryCoverage[]> {
-  await requireAdmin()
+  await requireChef()
 
   try {
     const controller = new AbortController()

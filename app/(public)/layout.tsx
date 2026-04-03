@@ -1,6 +1,8 @@
 // Public Layout - No authentication required
 
 import dynamic from 'next/dynamic'
+import { Suspense } from 'react'
+import { PublicMarketResearchEntry } from '@/components/beta-survey/public-market-research-entry'
 import { PublicHeader } from '@/components/navigation/public-header'
 import { PublicFooter } from '@/components/navigation/public-footer'
 
@@ -27,6 +29,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <main id="main-content" className="flex-1 animate-fade-slide-up">
         {children}
       </main>
+      <Suspense fallback={null}>
+        <PublicMarketResearchEntry />
+      </Suspense>
       <PublicFooter />
     </div>
   )

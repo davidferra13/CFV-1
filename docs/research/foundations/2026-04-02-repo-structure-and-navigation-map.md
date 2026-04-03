@@ -30,6 +30,8 @@ Result: all three measurements are within the requested bounds.
 
 Use this document to understand where things live.
 
+Use [Canonical Project Definition and Scope](../../project-definition-and-scope.md) to understand what ChefFlow is, who it serves, and how identity or monetization conflicts should be resolved.
+
 Use [ChefFlow Current State Baseline](./2026-04-02-chefflow-current-state-baseline.md) to understand what the system is trying to do.
 
 ## Top-Level Structure by Role
@@ -40,6 +42,37 @@ The top level of the workspace falls into four practical categories:
 2. Reference and research material
 3. Operational state, integration mirrors, and local assets
 4. Generated artifacts, caches, and QA outputs
+
+## Expected vs Actual Layout
+
+One navigation trap in this repo is that it does not follow every common top-level naming convention a large web codebase might suggest.
+
+What exists:
+
+- `app/` as the primary Next.js App Router surface
+- `app/api/` as the API/service endpoint tree
+- `lib/` as the main business-logic, utility, and service-module area
+- `database/` as the schema and migration root
+- `components/` for shared UI
+- `docs/` for architecture, specs, audits, and research
+
+What does **not** exist as a major top-level root:
+
+- `pages/`
+- `services/`
+- `modules/`
+- `server/`
+- top-level `api/`
+- `supabase/`
+- `db/`
+
+Practical translation:
+
+- if you expect `pages/`, look in `app/`
+- if you expect `services/`, `modules/`, or `server/`, start in `lib/` and `app/api/`
+- if you expect `supabase/` or `db/`, start in `database/` plus root schema/config files like `clean-schema.sql` and `drizzle.config.ts`
+
+This matters because a generic repo heuristic can send a reader into the wrong search zones even when the workspace is structurally coherent.
 
 ## 1. Product Source and Business Logic
 
@@ -194,6 +227,16 @@ Start with:
 - `.git/`
 - `.claude/`
 
+### "Why can't I find expected folders like `pages/`, `services/`, or `supabase/`?"
+
+Start with:
+
+- `app/`
+- `app/api/`
+- `lib/`
+- `database/`
+- root config/schema files such as `clean-schema.sql`, `drizzle.config.ts`, and `package.json`
+
 ## Areas That Are Structurally Clear
 
 These parts of the repo are easy to interpret:
@@ -246,6 +289,17 @@ These names do not clearly communicate their purpose unless you inspect them:
 ### 5. Root-level loose files remain noisy
 
 The root contains many logs, screenshots, probes, test scripts, and operational artifacts alongside canonical files like `package.json`, `README.md`, `CLAUDE.md`, and config files. This does not break understanding, but it weakens discoverability.
+
+### 6. Artifact weight can distort structural intuition
+
+The folder counts and disk usage are accurate, but they can mislead readers if they are interpreted as proof that the authored system is spread evenly across the repo.
+
+The opposite is true:
+
+- most authored implementation lives in `app/`, `components/`, `lib/`, `database/`, `docs/`, `scripts/`, and `tests/`
+- most storage volume lives in `.next*`, `.git/`, `node_modules/`, and `.claude/`
+
+That distinction should always be preserved in planning and navigation conversations.
 
 ## Practical Interpretation
 

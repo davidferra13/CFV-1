@@ -1,22 +1,43 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { TurnstileWidget } from '@/components/security/turnstile-widget'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup } from '@/components/ui/radio-group'
 import { RatingScale } from '@/components/ui/rating-scale'
 import { CheckboxGroup } from '@/components/ui/checkbox-group'
 import type { BetaSurveyDefinition, SurveyQuestion } from '@/lib/beta-survey/survey-utils'
-import { getStepsForSurvey } from '@/lib/beta-survey/survey-utils'
-import { submitBetaSurveyAuthenticated, submitBetaSurveyPublic } from '@/lib/beta-survey/actions'
+import {
+  getDefaultRespondentRoleForSurveyType,
+  getStepsForSurvey,
+  isQuestionVisible,
+} from '@/lib/beta-survey/survey-utils'
+import { getBetaSurveyCompletionKey } from '@/lib/beta-survey/survey-presence'
+import {
+  submitBetaSurveyAnonymous,
+  submitBetaSurveyAuthenticated,
+  submitBetaSurveyPublic,
+} from '@/lib/beta-survey/actions'
 
 type BetaSurveyFormProps = {
   survey: BetaSurveyDefinition
   /** For authenticated submissions */
-  mode: 'authenticated' | 'public'
+  mode: 'authenticated' | 'public' | 'public_shared'
   /** For public mode - invite token */
   inviteToken?: string
+  /** For public shared mode - survey slug */
+  surveySlug?: string
+  /** Optional source/channel tracking for shared links */
+  trackedSource?: string
+  trackedChannel?: string
+  trackedCampaign?: string
+  trackedWave?: string
+  trackedLaunch?: string
+  /** Optional respondent role for shared public links */
+  respondentRole?: string
   /** Pre-filled respondent info (from invite) */
   prefillName?: string
   prefillEmail?: string
@@ -28,6 +49,13 @@ export function BetaSurveyForm({
   survey,
   mode,
   inviteToken,
+  surveySlug,
+  trackedSource,
+  trackedChannel,
+  trackedCampaign,
+  trackedWave,
+  trackedLaunch,
+  respondentRole,
   prefillName,
   prefillEmail,
   redirectTo,
@@ -40,11 +68,10 @@ export function BetaSurveyForm({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const [websiteUrl, setWebsiteUrl] = useState('')
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
 
-  const steps = useMemo(
-    () => getStepsForSurvey(survey.survey_type as 'pre_beta' | 'post_beta', survey.questions),
-    [survey]
-  )
+  const isPublicMode = mode !== 'authenticated'
 
   const questionsMap = useMemo(() => {
     const map = new Map<string, SurveyQuestion>()
@@ -53,6 +80,26 @@ export function BetaSurveyForm({
     }
     return map
   }, [survey.questions])
+
+  const steps = useMemo(() => {
+    const baseSteps = getStepsForSurvey(survey.survey_type, survey.questions)
+
+    return baseSteps
+      .map((step) => ({
+        ...step,
+        questionIds: step.questionIds.filter((id) => {
+          const question = questionsMap.get(id)
+          return !!question && isQuestionVisible(question, answers)
+        }),
+      }))
+      .filter((step) => step.questionIds.length > 0)
+  }, [answers, questionsMap, survey.questions, survey.survey_type])
+
+  useEffect(() => {
+    if (currentStep > steps.length - 1) {
+      setCurrentStep(Math.max(steps.length - 1, 0))
+    }
+  }, [currentStep, steps.length])
 
   const currentQuestionIds = steps[currentStep]?.questionIds || []
   const isLastStep = currentStep === steps.length - 1
@@ -65,6 +112,7 @@ export function BetaSurveyForm({
     const val = answers[id]
     if (val === undefined || val === null || val === '') return false
     if (Array.isArray(val) && val.length === 0) return false
+    if (Array.isArray(val) && q.max_selections && val.length > q.max_selections) return false
     return true
   })
 
@@ -85,15 +133,40 @@ export function BetaSurveyForm({
         result = await submitBetaSurveyPublic(inviteToken, answers, {
           name: name.trim() || undefined,
           email: email.trim() || undefined,
+          source: trackedSource,
+          channel: trackedChannel,
+          campaign: trackedCampaign,
+          wave: trackedWave,
+          launch: trackedLaunch,
+          websiteUrl,
+          captchaToken: turnstileToken || undefined,
+        })
+      } else if (mode === 'public_shared' && surveySlug) {
+        result = await submitBetaSurveyAnonymous(surveySlug, answers, {
+          source: trackedSource,
+          channel: trackedChannel,
+          campaign: trackedCampaign,
+          wave: trackedWave,
+          launch: trackedLaunch,
+          respondentRole:
+            respondentRole || getDefaultRespondentRoleForSurveyType(survey.survey_type),
+          websiteUrl,
+          captchaToken: turnstileToken || undefined,
         })
       } else {
-        result = { success: false, error: 'Missing invite token.' }
+        result = { success: false, error: 'Missing public survey configuration.' }
       }
 
       if (!result.success) {
         setError(result.error || 'Failed to submit survey.')
         setLoading(false)
         return
+      }
+
+      try {
+        localStorage.setItem(getBetaSurveyCompletionKey(survey.slug), new Date().toISOString())
+      } catch {
+        // Ignore storage failures; server-side completion markers still apply where available.
       }
 
       setSubmitted(true)
@@ -136,6 +209,26 @@ export function BetaSurveyForm({
 
   return (
     <div className="space-y-6">
+      {isPublicMode && (
+        <>
+          <div className="absolute left-[-9999px] h-0 overflow-hidden" aria-hidden="true">
+            <input
+              type="text"
+              name="website_url"
+              value={websiteUrl}
+              onChange={(e) => setWebsiteUrl(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+            />
+          </div>
+          <TurnstileWidget
+            onVerify={(token) => setTurnstileToken(token)}
+            onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken(null)}
+          />
+        </>
+      )}
+
       {/* Progress bar */}
       <div className="space-y-2">
         <div className="flex justify-between text-xs text-stone-500">
@@ -282,6 +375,21 @@ function QuestionRenderer({
           options={question.options || []}
           value={(value as string[]) || []}
           onValueChange={onChange}
+          required={question.required}
+          maxSelections={question.max_selections}
+          helperText={
+            question.max_selections ? `Pick up to ${question.max_selections}.` : undefined
+          }
+        />
+      )
+
+    case 'short_text':
+      return (
+        <Input
+          label={question.label}
+          placeholder={question.placeholder || ''}
+          value={(value as string) || ''}
+          onChange={(e) => onChange(e.target.value)}
           required={question.required}
         />
       )

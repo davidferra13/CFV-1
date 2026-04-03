@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { spawn, spawnSync } from 'node:child_process'
-import { access, cp, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { access, cp, mkdir, rename, rm } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { dirname, join, resolve } from 'node:path'
 import { resolveBuildSurfaceManifest } from './build-surface-manifest.mjs'
@@ -123,7 +123,25 @@ async function stageBuildSurface(rootDir, surfaceName) {
   }
 }
 
+async function prepareBuildDist(rootDir, distDirName) {
+  if (distDirName !== '.next') {
+    return
+  }
+
+  const distDir = resolve(rootDir, distDirName)
+  if (!(await pathExists(distDir))) {
+    return
+  }
+
+  await rm(distDir, { recursive: true, force: true })
+
+  console.log(
+    `[run-next-build] Cleared stale production dist directory "${distDirName}" before build.`
+  )
+}
+
 async function main() {
+  const rootDir = process.cwd()
   const forwardedArgs = process.argv.slice(2)
   const nextCliPath = require.resolve('next/dist/bin/next')
   const maxOldSpaceSizeMb = String(process.env.NEXT_BUILD_MAX_OLD_SPACE_SIZE || '12288').trim()
@@ -133,10 +151,13 @@ async function main() {
   )
   const tempTsconfigPath = 'tsconfig.next.json'
   const buildSurface = String(process.env.NEXT_BUILD_SURFACE || '').trim()
-  const restoreBuildSurface = await stageBuildSurface(process.cwd(), buildSurface)
+  const distDirName = String(process.env.NEXT_DIST_DIR || '').trim() || '.next'
+  const restoreBuildSurface = await stageBuildSurface(rootDir, buildSurface)
   let exitCode = 1
 
   try {
+    await prepareBuildDist(rootDir, distDirName)
+
     const child = spawn(process.execPath, [nextCliPath, 'build', ...forwardedArgs], {
       stdio: 'inherit',
       shell: false,

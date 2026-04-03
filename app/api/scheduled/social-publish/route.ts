@@ -6,6 +6,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { runPublishingEngine } from '@/lib/social/publishing/engine'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 async function handle(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -14,19 +15,23 @@ async function handle(request: NextRequest): Promise<NextResponse> {
   const start = Date.now()
 
   try {
-    const result = await runPublishingEngine()
-    const elapsed = Date.now() - start
+    const result = await runMonitoredCronJob('social-publish', async () => {
+      const publishResult = await runPublishingEngine()
+      const elapsed = Date.now() - start
 
-    console.log(
-      `[social-publish] processed=${result.processed} succeeded=${result.succeeded} ` +
-        `failed=${result.failed} skipped=${result.skipped} ms=${elapsed}`
-    )
+      console.log(
+        `[social-publish] processed=${publishResult.processed} succeeded=${publishResult.succeeded} ` +
+          `failed=${publishResult.failed} skipped=${publishResult.skipped} ms=${elapsed}`
+      )
 
-    if (result.errors.length > 0) {
-      console.error('[social-publish] errors:', result.errors)
-    }
+      if (publishResult.errors.length > 0) {
+        console.error('[social-publish] errors:', publishResult.errors)
+      }
 
-    return NextResponse.json({ ...result, elapsed_ms: elapsed })
+      return { ...publishResult, elapsed_ms: elapsed }
+    })
+
+    return NextResponse.json(result)
   } catch (err) {
     console.error('[social-publish] engine crash:', err)
     return NextResponse.json(

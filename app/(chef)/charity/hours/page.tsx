@@ -1,23 +1,21 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
+import Link from 'next/link'
+import { ArrowLeft, ChevronDown } from '@/components/ui/icons'
+import { CharityHoursClient } from '@/components/charity/charity-hours-client'
+import { CharityHoursSummaryCards } from '@/components/charity/charity-hours-summary'
+import { WfpFeed } from '@/components/charity/wfp-feed'
 import { requireChef } from '@/lib/auth/get-user'
-import { requireAdmin } from '@/lib/auth/admin'
 import {
   getCharityHours,
-  getRecentCharityOrgs,
   getCharityHoursSummary,
+  getRecentCharityOrgs,
 } from '@/lib/charity/hours-actions'
 import { getWfpNews } from '@/lib/charity/wfp-actions'
-import { CharityHoursSummaryCards } from '@/components/charity/charity-hours-summary'
-import { CharityHoursClient } from '@/components/charity/charity-hours-client'
-import { WfpFeed } from '@/components/charity/wfp-feed'
-import { ArrowLeft } from '@/components/ui/icons'
 
-export const metadata: Metadata = { title: 'Charity Hours' }
+export const metadata: Metadata = { title: 'Volunteer Log' }
 
 export default async function CharityHoursPage() {
   await requireChef()
-  await requireAdmin()
 
   const [entries, recentOrgs, summary, wfpStories] = await Promise.all([
     getCharityHours().catch(() => []),
@@ -34,27 +32,42 @@ export default async function CharityHoursPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header with back link */}
       <div>
         <Link
           href="/charity"
-          className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-300 transition-colors mb-3"
+          className="mb-3 inline-flex items-center gap-1.5 text-sm text-stone-500 transition-colors hover:text-stone-300"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Charity Hub
+          <ArrowLeft className="h-4 w-4" />
+          Community Impact
         </Link>
-        <h1 className="text-2xl font-bold text-stone-100">Charity Hours</h1>
-        <p className="text-sm text-stone-500 mt-1">Track your volunteer and charity work</p>
+        <h1 className="text-2xl font-bold text-stone-100">Volunteer Log</h1>
+        <p className="mt-1 max-w-2xl text-sm text-stone-500">
+          Track service hours, keep organizations linked, and decide later whether any of this shows
+          up on public surfaces.
+        </p>
       </div>
 
-      {/* Summary cards */}
       <CharityHoursSummaryCards summary={summary} />
-
-      {/* Client-side interactive section: form + search + list */}
       <CharityHoursClient entries={entries} recentOrgs={recentOrgs} />
 
-      {/* WFP news feed */}
-      <WfpFeed stories={wfpStories} />
+      {wfpStories.length > 0 && (
+        <details className="rounded-xl border border-stone-700 bg-stone-900/60">
+          <summary className="cursor-pointer list-none px-5 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-stone-200">Food relief watchlist</p>
+                <p className="mt-1 text-xs text-stone-500">
+                  Optional reading if you want inspiration or context beyond your own local work.
+                </p>
+              </div>
+              <ChevronDown className="h-4 w-4 text-stone-500" />
+            </div>
+          </summary>
+          <div className="border-t border-stone-800 px-5 pb-5 pt-4">
+            <WfpFeed stories={wfpStories} />
+          </div>
+        </details>
+      )}
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { executeFinalPurge } from '@/lib/compliance/account-deletion-actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 const dbAdmin = createAdminClient()
 
@@ -15,31 +16,35 @@ export async function GET(request: Request) {
   if (authError) return authError
 
   try {
-    const { data: pendingDeletions, error } = await dbAdmin
-      .from('chefs')
-      .select('id, auth_user_id, email, business_name')
-      .lte('deletion_scheduled_for', new Date().toISOString())
-      .eq('is_deleted', false)
-      .not('deletion_requested_at', 'is', null)
+    const result = await runMonitoredCronJob('account-purge', async () => {
+      const { data: pendingDeletions, error } = await dbAdmin
+        .from('chefs')
+        .select('id, auth_user_id, email, business_name')
+        .lte('deletion_scheduled_for', new Date().toISOString())
+        .eq('is_deleted', false)
+        .not('deletion_requested_at', 'is', null)
 
-    if (error) {
-      console.error('[account-purge] DB query failed:', error.message)
-      return NextResponse.json({ error: 'Failed to query pending deletions' }, { status: 500 })
-    }
+      if (error) {
+        console.error('[account-purge] DB query failed:', error.message)
+        throw new Error('Failed to query pending deletions')
+      }
 
-    const results: Array<{ chefId: string; success: boolean; error?: string }> = []
+      const results: Array<{ chefId: string; success: boolean; error?: string }> = []
 
-    for (const chef of pendingDeletions || []) {
-      const result = await executeFinalPurge(chef.id)
-      results.push({ chefId: chef.id, ...result })
-    }
+      for (const chef of pendingDeletions || []) {
+        const purgeResult = await executeFinalPurge(chef.id)
+        results.push({ chefId: chef.id, ...purgeResult })
+      }
 
-    return NextResponse.json({
-      checked: pendingDeletions?.length || 0,
-      purged: results.filter((r) => r.success).length,
-      failed: results.filter((r) => !r.success).length,
-      results,
+      return {
+        checked: pendingDeletions?.length || 0,
+        purged: results.filter((r) => r.success).length,
+        failed: results.filter((r) => !r.success).length,
+        results,
+      }
     })
+
+    return NextResponse.json(result)
   } catch (err) {
     console.error('[account-purge] Unexpected error:', err)
     return NextResponse.json({ error: 'Account purge failed' }, { status: 500 })

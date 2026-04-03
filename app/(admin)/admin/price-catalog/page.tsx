@@ -1,11 +1,9 @@
-import { requireAdmin } from '@/lib/auth/admin'
-import { PriceCatalogClient } from './price-catalog-client'
+import { redirect } from 'next/navigation'
 
 export const metadata = {
   title: 'Price Catalog | Admin',
 }
 
 export default async function PriceCatalogPage() {
-  await requireAdmin()
-  return <PriceCatalogClient />
+  redirect('/culinary/price-catalog')
 }

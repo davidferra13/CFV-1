@@ -1,6 +1,7 @@
 // Chef Surveys Dashboard
 // Displays all post-event surveys with response stats and individual responses.
 
+import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getChefSurveys } from '@/lib/surveys/actions'
 import { computeSurveyStats } from '@/lib/surveys/survey-utils'
@@ -94,9 +95,20 @@ export default async function SurveysPage() {
                     <p className="font-medium text-stone-100">{clientName}</p>
                     <p className="text-sm text-stone-500">{occasion}</p>
                   </div>
-                  <Badge variant={isSubmitted ? 'success' : 'default'}>
-                    {isSubmitted ? 'Responded' : 'Pending'}
-                  </Badge>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <Badge variant={isSubmitted ? 'success' : 'default'}>
+                      {isSubmitted ? 'Responded' : 'Pending'}
+                    </Badge>
+                    {survey.public_review_shared ? (
+                      <Badge variant="success">Public review shared</Badge>
+                    ) : survey.review_request_sent_at ? (
+                      <Badge variant="info">Review request sent</Badge>
+                    ) : survey.review_request_eligible ? (
+                      <Badge variant="warning">Review ready</Badge>
+                    ) : isSubmitted ? (
+                      <Badge variant="default">No public review ask</Badge>
+                    ) : null}
+                  </div>
                 </div>
 
                 {isSubmitted ? (
@@ -145,11 +157,27 @@ export default async function SurveysPage() {
                         ✓ Consented to testimonial display
                       </p>
                     )}
+                    <div className="mt-3">
+                      <Link
+                        href={`/events/${survey.event_id}?tab=wrap`}
+                        className="text-sm font-medium text-brand-400 hover:text-brand-300 hover:underline"
+                      >
+                        Open event trust panel
+                      </Link>
+                    </div>
                   </>
                 ) : (
-                  <p className="text-sm text-stone-400">
-                    Survey link sent - awaiting client response.
-                  </p>
+                  <div className="space-y-2">
+                    <p className="text-sm text-stone-400">
+                      Survey link sent - awaiting client response.
+                    </p>
+                    <Link
+                      href={`/events/${survey.event_id}?tab=wrap`}
+                      className="text-sm font-medium text-brand-400 hover:text-brand-300 hover:underline"
+                    >
+                      Open event trust panel
+                    </Link>
+                  </div>
                 )}
               </div>
             )

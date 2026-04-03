@@ -1,7 +1,7 @@
 # Spec: Featured Chef Public Proof and Booking Upgrade
 
-> **Status:** built
-> **Priority:** P1 (next up)
+> **Status:** verified
+> **Priority:** P1
 > **Depends on:** `featured-chef-links-and-conversion.md`
 > **Estimated complexity:** medium (3-8 files)
 
@@ -17,10 +17,10 @@ _Every status change, every claim, every verification gets a row. This is the au
 | Spike completed     |                      |                    |          |
 | Pre-flight passed   |                      |                    |          |
 | Build completed     |                      |                    |          |
-| Type check passed   |                      |                    |          |
-| Build check passed  |                      |                    |          |
-| Playwright verified |                      |                    |          |
-| Status: verified    |                      |                    |          |
+| Type check passed   | 2026-04-02 20:51 EDT | Codex              |          |
+| Build check passed  | 2026-04-02 20:51 EDT | Codex              |          |
+| Playwright verified | 2026-04-02 20:51 EDT | Codex              |          |
+| Status: verified    | 2026-04-02 20:51 EDT | Codex              |          |
 
 ---
 

@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { processSequences, processBirthdayEnrollments } from '@/lib/marketing/actions'
 
 export async function GET(req: NextRequest) {
@@ -13,19 +14,22 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Run birthday enrollment check and step processing in parallel
-    const [birthdays, steps] = await Promise.all([
-      processBirthdayEnrollments()
-        .then(() => 'ok')
-        .catch((e: unknown) => String(e)),
-      processSequences(),
-    ])
+    const result = await runMonitoredCronJob('sequences', async () => {
+      const [birthdays, steps] = await Promise.all([
+        processBirthdayEnrollments()
+          .then(() => 'ok')
+          .catch((e: unknown) => String(e)),
+        processSequences(),
+      ])
 
-    return NextResponse.json({
-      ok: true,
-      stepsProcessed: steps.processed,
-      birthdayCheck: birthdays,
+      return {
+        ok: true,
+        stepsProcessed: steps.processed,
+        birthdayCheck: birthdays,
+      }
     })
+
+    return NextResponse.json(result)
   } catch (err) {
     console.error('[cron/sequences] Error:', err)
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 })

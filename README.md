@@ -1,6 +1,8 @@
 # ChefFlow V1
 
-Ops for Artists. The operating system for chefs.
+Ops for Artists. The chef-first operating system for independent and small culinary businesses.
+
+Canonical project identity and scope live in `docs/project-definition-and-scope.md`.
 
 ## Run
 

@@ -1598,6 +1598,15 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files in focus: docs/build-state.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/builder-docket-runtime-ownership-map-2026-04-03.md, docs/research/current-openclaw-builder-start-handoff-2026-04-03.md, docs/research/openclaw-runtime-builder-handoff-2026-04-02.md, docs/research/README.md, docs/specs/README.md, docs/session-log.md
 - Notes: The core gap was not missing OpenClaw specs. It was missing runtime-specific builder routing that overrode the default website-first handoff when the developer explicitly redirected work into the OpenClaw lane.
 
+## 2026-04-03 05:09 EDT
+
+- Agent: Codex (builder)
+- Task: Finish the website performance hardening pass, restore truthful build and typecheck verification, and record the builder-facing handoff
+- Status: completed
+- Files touched: app/layout.tsx, app/(public)/layout.tsx, components/runtime/deferred-root-runtime.tsx, components/analytics/posthog-provider.tsx, components/ui/global-tooltip-provider.tsx, components/ui/location-autocomplete.tsx, components/ui/address-autocomplete.tsx, components/ui/store-autocomplete.tsx, components/navigation/public-footer.tsx, components/branding/app-logo.tsx, hooks/use-deferred-google-maps-loader.ts, next.config.js, scripts/run-next-build.mjs, scripts/run-typecheck.mjs, tests/unit/typecheck-config.test.ts, docs/build-state.md, docs/research/README.md, docs/research/foundations/2026-04-02-website-build-research-and-spec-cross-reference.md, docs/research/website-performance-hardening-handoff-2026-04-03.md, docs/session-log.md
+- Build state on departure: `npm run typecheck:app`, `npm run typecheck:next`, `node --test --import tsx tests/unit/typecheck-config.test.ts`, and `npm run build -- --no-lint` all passed on the current dirty checkout
+- Notes: Deferred non-critical root runtime work out of the public shell, lazy-loaded Google Maps Places on idle or user intent for the shared autocomplete inputs, streamed optional public-layout UI, tightened image and caching defaults, and removed unconditional logo priority. The same pass also hardened the canonical wrappers so stale `.next` output and stale `.tsbuildinfo` state no longer create false red baselines. The default build now passes again; remaining non-blocking noise is the existing `DYNAMIC_SERVER_USAGE` warnings plus Next's `serverActions` config warning.
+
 ## 2026-04-03 05:13 EDT
 
 - Agent: Codex (planner)
@@ -1606,3 +1615,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/build-state.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/builder-docket-runtime-ownership-map-2026-04-03.md, docs/research/current-openclaw-builder-start-handoff-2026-04-03.md, docs/research/openclaw-runtime-builder-handoff-2026-04-02.md, docs/research/README.md, docs/specs/README.md, docs/session-log.md
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass; no new typecheck, build, or browser verification run)
 - Notes: Added one explicit runtime-only builder-start handoff, then wired it into build-state, the default builder-start handoff, the runtime-ownership docket, the research index, the canonical launcher prompts, and the deeper OpenClaw runtime handoff. Also corrected the read-order wording so the routing stack is no longer circular: the website-first handoff remains the default repo entrypoint, but explicitly assigned `runtime-owned` OpenClaw work now branches into a single current runtime handoff that owns queue order and preserved-dirty-checkout interpretation for that lane.
+
+## 2026-04-03 05:16 EDT
+
+- Agent: Codex (planner)
+- Task: Close the last routing gap so explicitly assigned website-performance work branches through the dedicated performance handoff instead of relying on inference from the broader website packet
+- Status: completed
+- Files touched: docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only routing refinement; no new typecheck, build, or browser verification run)
+- Notes: Added one explicit website-performance branch to the default builder-start handoff and one supporting-reference pointer in the control tower so render-path, loading, caching, and Core Web Vitals work now have a direct routing path from the canonical sequencing documents. This removes the last need for a future builder to infer the performance packet from the website cross-reference alone.

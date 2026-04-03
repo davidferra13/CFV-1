@@ -7,7 +7,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { pgClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
-import { slugify, ITEMS_PER_PAGE } from './constants'
+import { slugify, ITEMS_PER_PAGE, normalizeUsStateCode, US_STATES } from './constants'
 import {
   sendDirectoryWelcomeEmail,
   sendDirectoryClaimedEmail,
@@ -77,6 +77,24 @@ export type PaginatedListings = {
   totalPages: number
 }
 
+function escapeSqlLiteral(value: string) {
+  return value.replace(/'/g, "''")
+}
+
+function buildCanonicalStateSql(columnName: string) {
+  const trimmedColumn = `btrim(${columnName})`
+  const upperColumn = `upper(${trimmedColumn})`
+  const lowerColumn = `lower(${trimmedColumn})`
+  const cases = Object.entries(US_STATES).flatMap(([code, name]) => [
+    `WHEN ${upperColumn} = '${escapeSqlLiteral(code)}' THEN '${escapeSqlLiteral(code)}'`,
+    `WHEN ${lowerColumn} = '${escapeSqlLiteral(name.toLowerCase())}' THEN '${escapeSqlLiteral(code)}'`,
+  ])
+
+  return `CASE WHEN ${columnName} IS NULL THEN NULL ${cases.join(' ')} ELSE NULL END`
+}
+
+const CANONICAL_STATE_SQL = buildCanonicalStateSql('state')
+
 // ─── Public Queries ───────────────────────────────────────────────────────────
 
 export type DiscoverFilters = {
@@ -94,6 +112,11 @@ export async function getDirectoryListings(
 ): Promise<PaginatedListings> {
   const page = Math.max(1, filters.page || 1)
   const offset = (page - 1) * ITEMS_PER_PAGE
+  const normalizedStateFilter = filters.state ? normalizeUsStateCode(filters.state) : null
+
+  if (filters.state && !normalizedStateFilter) {
+    return { listings: [], total: 0, page, totalPages: 1 }
+  }
 
   try {
     // Build WHERE conditions
@@ -125,8 +148,8 @@ export async function getDirectoryListings(
     }
 
     if (filters.state) {
-      conditions.push(`upper(state) = upper($${paramIndex})`)
-      params.push(filters.state)
+      conditions.push(`${CANONICAL_STATE_SQL} = $${paramIndex}`)
+      params.push(normalizedStateFilter)
       paramIndex++
     }
 
@@ -154,7 +177,7 @@ export async function getDirectoryListings(
 
     // Data query
     const dataResult = await pgClient.unsafe(
-      `SELECT id, name, slug, city, state, cuisine_types, business_type, website_url,
+      `SELECT id, name, slug, city, ${CANONICAL_STATE_SQL} as state, cuisine_types, business_type, website_url,
               status, price_range, featured, description, photo_urls, phone, address,
               lat, lon, lead_score
        FROM directory_listings
@@ -190,7 +213,10 @@ export async function getDirectoryListingBySlug(slug: string): Promise<Directory
     return null
   }
 
-  return data as DirectoryListing
+  return {
+    ...(data as DirectoryListing),
+    state: normalizeUsStateCode(data.state) ?? data.state,
+  }
 }
 
 export async function getDirectoryFacets(): Promise<{
@@ -208,11 +234,15 @@ export async function getDirectoryFacets(): Promise<{
         ORDER BY count DESC
       `,
       pgClient`
-        SELECT upper(state) as value, count(*)::int as count
-        FROM directory_listings
-        WHERE status IN ('discovered', 'claimed', 'verified') AND state IS NOT NULL
-        GROUP BY upper(state)
-        ORDER BY value
+        SELECT canonical_state as value, count(*)::int as count
+        FROM (
+          SELECT ${pgClient.unsafe(CANONICAL_STATE_SQL)} as canonical_state
+          FROM directory_listings
+          WHERE status IN ('discovered', 'claimed', 'verified')
+        ) states
+        WHERE canonical_state IS NOT NULL
+        GROUP BY canonical_state
+        ORDER BY canonical_state
       `,
     ])
 
@@ -250,17 +280,25 @@ export async function getDirectoryStats(): Promise<{
         WHERE status IN ('discovered', 'claimed', 'verified')
       `,
       pgClient`
-        SELECT upper(state) as state, count(*)::int as count
-        FROM directory_listings
-        WHERE status IN ('discovered', 'claimed', 'verified') AND state IS NOT NULL
-        GROUP BY upper(state)
-        ORDER BY state
+        SELECT canonical_state as state, count(*)::int as count
+        FROM (
+          SELECT ${pgClient.unsafe(CANONICAL_STATE_SQL)} as canonical_state
+          FROM directory_listings
+          WHERE status IN ('discovered', 'claimed', 'verified')
+        ) states
+        WHERE canonical_state IS NOT NULL
+        GROUP BY canonical_state
+        ORDER BY canonical_state
       `,
       pgClient`
-        SELECT city, upper(state) as state, count(*)::int as count
-        FROM directory_listings
-        WHERE status IN ('discovered', 'claimed', 'verified') AND city IS NOT NULL
-        GROUP BY city, upper(state)
+        SELECT city, canonical_state as state, count(*)::int as count
+        FROM (
+          SELECT city, ${pgClient.unsafe(CANONICAL_STATE_SQL)} as canonical_state
+          FROM directory_listings
+          WHERE status IN ('discovered', 'claimed', 'verified') AND city IS NOT NULL
+        ) cities
+        WHERE canonical_state IS NOT NULL
+        GROUP BY city, canonical_state
         ORDER BY count DESC
         LIMIT 20
       `,

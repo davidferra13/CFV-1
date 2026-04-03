@@ -1,10 +1,15 @@
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { Suspense } from 'react'
+import { getBusinessHoursForChef } from '@/lib/communication/business-hours'
+import { buildContactSupportInfo } from '@/lib/contact/public-support'
+import { createServerClient } from '@/lib/db/server'
+import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
 
 export const revalidate = 60
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+const SUPPORT_EMAIL = 'support@cheflowhq.com'
 
 export const metadata: Metadata = {
   title: 'Contact Us',
@@ -56,7 +61,27 @@ const ContactForm = dynamic(() => import('./_components/contact-form'), {
   ),
 })
 
-export default function ContactPage() {
+async function getSupportInfo() {
+  try {
+    const db = createServerClient({ admin: true })
+    const ownerIdentity = await resolveOwnerIdentity(db)
+    const businessHours = ownerIdentity.ownerChefId
+      ? await getBusinessHoursForChef(ownerIdentity.ownerChefId)
+      : null
+
+    return buildContactSupportInfo({
+      supportEmail: SUPPORT_EMAIL,
+      businessHoursConfig: businessHours,
+    })
+  } catch (err) {
+    console.error('[contact/page] Failed to load support info:', err)
+    return buildContactSupportInfo({ supportEmail: SUPPORT_EMAIL })
+  }
+}
+
+export default async function ContactPage() {
+  const supportInfo = await getSupportInfo()
+
   return (
     <main>
       {/* Page Header - server rendered */}
@@ -73,7 +98,7 @@ export default function ContactPage() {
       <section className="container mx-auto px-4 pb-16 md:pb-24">
         <div className="max-w-4xl mx-auto">
           <Suspense>
-            <ContactForm />
+            <ContactForm supportInfo={supportInfo} />
           </Suspense>
         </div>
       </section>

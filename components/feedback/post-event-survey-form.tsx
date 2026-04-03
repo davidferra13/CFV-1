@@ -50,6 +50,8 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
   const [whatCouldImprove, setWhatCouldImprove] = useState('')
   const [wouldBookAgain, setWouldBookAgain] = useState<boolean | null>(null)
   const [additionalComments, setAdditionalComments] = useState('')
+  const [publicReviewText, setPublicReviewText] = useState('')
+  const [publicReviewConsent, setPublicReviewConsent] = useState(false)
   const [dishFeedback, setDishFeedback] = useState<
     Record<string, { rating: number; comment: string }>
   >({})
@@ -80,6 +82,8 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
           what_could_improve: whatCouldImprove || undefined,
           would_book_again: wouldBookAgain,
           additional_comments: additionalComments || undefined,
+          public_review_text: publicReviewText || undefined,
+          public_review_consent: publicReviewConsent,
           dish_feedback:
             dishes.length > 0
               ? dishes
@@ -203,6 +207,44 @@ export function PostEventSurveyForm({ token, occasion, dishes, chefName }: Props
           />
         </div>
       </div>
+
+      {overall >= 4 && (
+        <div className="bg-stone-900 border border-stone-800 rounded-lg p-6 space-y-4">
+          <div>
+            <h3 className="text-lg font-semibold text-stone-100 mb-1">Optional public review</h3>
+            <p className="text-sm text-stone-400">
+              If you would like, you can leave a short public note that may appear on {chefName}
+              &apos;s profile.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm text-stone-300 mb-1">
+              Public review text (optional)
+            </label>
+            <textarea
+              value={publicReviewText}
+              onChange={(e) => setPublicReviewText(e.target.value)}
+              rows={3}
+              placeholder="The food was exceptional and the evening felt effortless..."
+              className="w-full bg-stone-800 border border-stone-700 rounded px-3 py-2 text-stone-100 text-sm placeholder-stone-500"
+            />
+          </div>
+
+          <label className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              checked={publicReviewConsent}
+              onChange={(e) => setPublicReviewConsent(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-stone-600"
+            />
+            <span className="text-sm text-stone-400">
+              I consent to this note being used in ChefFlow&apos;s public review feed for {chefName}
+              .
+            </span>
+          </label>
+        </div>
+      )}
 
       {/* Dish Feedback */}
       {dishes.length > 0 && (

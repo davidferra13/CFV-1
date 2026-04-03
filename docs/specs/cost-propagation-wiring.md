@@ -31,7 +31,7 @@
 
 ## What This Does (Plain English)
 
-After this is built: (1) Recipe ingredient costs use the 10-tier price resolution chain instead of a stale single column, so recipe and menu costs always reflect the freshest available market data. (2) Adding or removing dishes from a menu automatically flags the linked event for cost review. (3) Menu and event pages get cache invalidation after mutations so the UI never shows stale numbers. (4) The smart quote suggestion engine weighs historical profitability, so it recommends prices that were profitable, not just prices that were charged before.
+After this is built: (1) Recipe ingredient costs use the 10-tier price resolution chain instead of a stale single column, so recipe and menu costs always reflect the freshest available market data. (2) Adding, updating, or deleting menu components automatically flags the linked event for cost review. (3) Menu and event pages get cache invalidation after mutations so the UI never shows stale numbers. (4) The smart quote suggestion engine weighs historical profitability, so it recommends prices that were profitable, not just prices that were charged before.
 
 ---
 
@@ -43,13 +43,13 @@ The price resolution engine is the most sophisticated part of ChefFlow (10-tier,
 
 ## Files to Modify
 
-| File                                             | What to Change                                                                                                                                       |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lib/recipes/actions.ts`                         | `computeRecipeIngredientCost()` (~line 1811): replace `ingredients.cost_per_unit_cents` read with `resolvePrice()` call                              |
-| `lib/menus/actions.ts`                           | `addComponentToDish()`, `updateComponent()`, `removeComponent()` (~line 1131+): add event cost flagging + revalidatePath after mutations             |
-| `lib/intelligence/smart-quote-suggestions.ts`    | `getSmartQuoteSuggestion()`: add profitability weighting from `event-profitability.ts` to suggestion scoring                                         |
-| `lib/pricing/cost-refresh-actions.ts`            | `propagatePriceChange()`: add revalidatePath for `/menus/*` and `/events/*` (currently only revalidates `/culinary/costing` and `/culinary/recipes`) |
-| `components/intelligence/smart-pricing-hint.tsx` | Display profitability context alongside price suggestion (e.g., "Similar events averaged 42% margin")                                                |
+| File                                             | What to Change                                                                                                                                                                 |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `lib/recipes/actions.ts`                         | `computeRecipeIngredientCost()` (~line 1811): replace `ingredients.cost_per_unit_cents` read with `resolvePrice()` call                                                        |
+| `lib/menus/actions.ts`                           | `addComponentToDish()`, `updateComponent()`, and `deleteComponent()` (~line 1131+): add event cost flagging plus real menu/event revalidation after mutations                  |
+| `lib/intelligence/smart-quote-suggestions.ts`    | `getSmartQuoteSuggestion()`: add profitability weighting from `event-profitability.ts` to suggestion scoring                                                                   |
+| `lib/pricing/cost-refresh-actions.ts`            | `propagatePriceChange()`: keep `/culinary/costing` and `/culinary/recipes`, and add real menu/event path revalidation (`/menus`, `/events`, affected detail pages where known) |
+| `components/intelligence/smart-pricing-hint.tsx` | Display profitability context alongside price suggestion (e.g., "Similar events averaged 42% margin")                                                                          |
 
 ---
 
@@ -97,11 +97,11 @@ Adding/removing/updating menu components does NOT:
 - Call `revalidatePath` for any page
 
 **New behavior:**
-After every component mutation (add/update/remove):
+After every component mutation (add/update/delete):
 
-1. Query the menu's `event_id` (menus are linked to events)
-2. If event exists, set `events.cost_needs_refresh = true`
-3. Call `revalidatePath('/culinary/menus')` and `revalidatePath('/events')`
+1. Query the component's dish, then the parent menu and its `event_id`
+2. If an event exists, set `events.cost_needs_refresh = true`
+3. Revalidate the real routes already present in the repo: `/menus`, `/menus/[id]`, `/events`, and `/events/[id]` when the corresponding ids are known
 
 ```typescript
 // After component INSERT/UPDATE/DELETE:
@@ -112,19 +112,22 @@ if (menu.event_id) {
     .eq('id', menu.event_id)
     .eq('cost_needs_refresh', false) // CAS guard - only if not already flagged
 }
-revalidatePath('/culinary/menus')
+revalidatePath('/menus')
+revalidatePath(`/menus/${menu.id}`)
 revalidatePath('/events')
+revalidatePath(`/events/${menu.event_id}`)
 ```
 
 ### M1: Cache invalidation after menu edits
 
-**Current behavior:** `propagatePriceChange()` revalidates `/culinary/costing` and `/culinary/recipes` but NOT menus or events.
+**Current behavior:** `propagatePriceChange()` revalidates `/culinary/costing` and `/culinary/recipes` but not the real menu and event routes that surface stale cost state.
 
 **New behavior:** Add to `propagatePriceChange()`:
 
 ```typescript
-revalidatePath('/culinary/menus')
+revalidatePath('/menus')
 revalidatePath('/events')
+// Also revalidate affected detail pages when the menu/event ids are available
 ```
 
 ### H1: Profitability-aware quote suggestions
@@ -154,7 +157,7 @@ No new server actions. All changes are internal to existing functions.
 | `computeRecipeIngredientCost()` | Internal (called by server actions) | Use `resolvePrice()` instead of stale column | Recipe costs become dynamic                        |
 | `addComponentToDish()`          | `requireChef()`                     | Add event flagging + revalidation            | `events.cost_needs_refresh = true`, revalidatePath |
 | `updateComponent()`             | `requireChef()`                     | Same as above                                | Same                                               |
-| `removeComponent()`             | `requireChef()`                     | Same as above                                | Same                                               |
+| `deleteComponent()`             | `requireChef()`                     | Same as above                                | Same                                               |
 | `propagatePriceChange()`        | Internal                            | Add menu/event revalidation                  | revalidatePath for menus and events                |
 | `getSmartQuoteSuggestion()`     | `requireChef()`                     | Add profitability weighting                  | None (read-only enhancement)                       |
 
@@ -207,8 +210,10 @@ No new server actions. All changes are internal to existing functions.
 
 3. **Unit conversion matters.** `resolvePrice()` returns a price per unit (e.g., $3.49/lb). `recipe_ingredients` has a quantity and unit that may differ (e.g., 8 oz). The existing `computeRecipeIngredientCost()` already handles unit conversion; preserve that logic.
 
-4. **Menu component mutations are in `lib/menus/actions.ts`.** There are multiple functions: `addComponentToDish`, `updateComponent`, `removeComponent`, `reorderComponents`. All that change what's in the menu need event flagging. `reorderComponents` does NOT (order doesn't affect cost).
+4. **Menu component mutations are in `lib/menus/actions.ts`.** The relevant functions are `addComponentToDish`, `updateComponent`, `deleteComponent`, and `reorderComponents`. The first three change menu cost composition and need event flagging. `reorderComponents` does not because order alone does not affect cost.
 
-5. **The profitability integration is additive.** If `getEventProfitability()` fails or returns no data, the quote suggestion still works exactly as before. The profitability weighting is a bonus signal, not a requirement.
+5. **Use real route paths, not guessed aliases.** This repo has both `/menus` and `/events` surfaces, plus `/menus/[id]` and `/events/[id]` detail pages. Do not add revalidation calls for nonexistent `/culinary/menus` pages when the stale state is actually rendered on the real menu and event routes.
 
-6. **Reference:** `docs/research/cross-system-continuity-audit.md` documents all 16 break points. This spec fixes C2, C3, M1, and H1. The companion vendor spec fixes H3 and M3.
+6. **The profitability integration is additive.** If `getEventProfitability()` fails or returns no data, the quote suggestion still works exactly as before. The profitability weighting is a bonus signal, not a requirement.
+
+7. **Reference:** `docs/research/cross-system-continuity-audit.md` documents all 16 break points. This spec fixes C2, C3, M1, and H1. The companion vendor spec fixes H3 and M3.

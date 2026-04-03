@@ -4,8 +4,8 @@
 // All data is pre-fetched server-side and passed as props.
 // This component renders nothing if there is no credential data.
 
-import Link from 'next/link'
 import { PortfolioShowcase } from '@/components/portfolio/portfolio-showcase'
+import { ExternalLink } from '@/components/ui/icons'
 import type { ChefWorkHistoryEntry, PublicCharityImpact } from '@/lib/credentials/actions'
 import type { PublicPortfolioPhoto } from '@/lib/events/photo-actions'
 
@@ -74,10 +74,12 @@ export function ChefCredentialsPanel({
   const hasWorkHistory = workHistory.length > 0
   const hasAchievements = achievements.length > 0
   const hasPortfolio = portfolio.length > 0
-  const hasCharityData =
+  const hasCharityContent =
     charityImpact.totalHours > 0 ||
     charityImpact.publicCharityPercent !== null ||
-    charityImpact.publicCharityNote
+    charityImpact.publicCharityNote ||
+    charityImpact.organizations.length > 0
+  const hasCharityData = charityImpact.showPublicCharity && hasCharityContent
 
   const hasAnything =
     hasWorkHistory || hasAchievements || hasPortfolio || hasCharityData || showResumeNote
@@ -226,53 +228,83 @@ export function ChefCredentialsPanel({
 
       {/* Community Impact */}
       {hasCharityData && (
-        <section className="py-14 px-6 bg-stone-900/75">
+        <section className="px-6 py-10 bg-stone-900/70">
           <div className="max-w-4xl mx-auto">
-            <div className="mb-8 text-center">
-              <h2 className="text-2xl font-bold text-stone-100">Community Impact</h2>
-              <p className="text-stone-400 mt-2 text-sm">
-                {chefName}&apos;s commitment to giving back.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-stone-700 bg-stone-950/70 p-6 space-y-5">
-              {charityImpact.publicCharityPercent !== null && (
-                <div className="text-center">
-                  <p className="text-4xl font-bold text-emerald-400">
-                    {charityImpact.publicCharityPercent}%
+            <div className="rounded-2xl border border-stone-700 bg-stone-950/70 p-6">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-2xl">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-stone-500">
+                    Community Impact
                   </p>
-                  <p className="text-sm text-stone-400 mt-1">of revenue donated to charity</p>
-                </div>
-              )}
-
-              {charityImpact.publicCharityNote && (
-                <p className="text-stone-300 text-sm leading-relaxed text-center">
-                  {charityImpact.publicCharityNote}
-                </p>
-              )}
-
-              {charityImpact.totalHours > 0 && (
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 pt-2 border-t border-stone-800">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-stone-100">
-                      {charityImpact.totalHours.toLocaleString()}
+                  <p className="mt-2 text-sm leading-relaxed text-stone-400">
+                    Shared as a supporting part of {chefName}&apos;s story, not the centerpiece.
+                  </p>
+                  {charityImpact.publicCharityNote && (
+                    <p className="mt-3 text-sm leading-relaxed text-stone-300">
+                      {charityImpact.publicCharityNote}
                     </p>
-                    <p className="text-xs text-stone-400 mt-0.5">volunteer hours</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-stone-100">{charityImpact.uniqueOrgs}</p>
-                    <p className="text-xs text-stone-400 mt-0.5">organizations served</p>
-                  </div>
-                  {charityImpact.verified501cOrgs > 0 && (
-                    <div className="text-center col-span-2 sm:col-span-1">
-                      <p className="text-2xl font-bold text-emerald-400">
-                        {charityImpact.verified501cOrgs}
-                      </p>
-                      <p className="text-xs text-stone-400 mt-0.5">verified nonprofits</p>
+                  )}
+                  {charityImpact.organizations.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {charityImpact.organizations.map((organization) =>
+                        organization.links.websiteUrl ||
+                        organization.links.mapsUrl ||
+                        organization.links.verificationUrl ? (
+                          <a
+                            key={`${organization.id ?? organization.organizationName}-public-impact`}
+                            href={
+                              organization.links.websiteUrl ||
+                              organization.links.mapsUrl ||
+                              organization.links.verificationUrl ||
+                              '#'
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 rounded-full border border-stone-700 bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-200 transition-colors hover:border-stone-600 hover:text-stone-100"
+                          >
+                            <span>
+                              {organization.organizationName} • {organization.totalHours}h
+                            </span>
+                            <ExternalLink className="h-3 w-3 text-stone-500" />
+                          </a>
+                        ) : (
+                          <span
+                            key={`${organization.id ?? organization.organizationName}-public-impact`}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-stone-700 bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-200"
+                          >
+                            {organization.organizationName} • {organization.totalHours}h
+                          </span>
+                        )
+                      )}
                     </div>
                   )}
                 </div>
-              )}
+
+                <div className="flex flex-wrap gap-2 lg:max-w-sm lg:justify-end">
+                  {charityImpact.publicCharityPercent !== null && (
+                    <span className="rounded-full border border-emerald-700/50 bg-emerald-950/40 px-3 py-1.5 text-xs font-medium text-emerald-300">
+                      {charityImpact.publicCharityPercent}% donated
+                    </span>
+                  )}
+                  {charityImpact.totalHours > 0 && (
+                    <span className="rounded-full border border-stone-700 bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-200">
+                      {charityImpact.totalHours.toLocaleString()} volunteer hours
+                    </span>
+                  )}
+                  {charityImpact.uniqueOrgs > 0 && (
+                    <span className="rounded-full border border-stone-700 bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-200">
+                      {charityImpact.uniqueOrgs} organization
+                      {charityImpact.uniqueOrgs === 1 ? '' : 's'}
+                    </span>
+                  )}
+                  {charityImpact.verified501cOrgs > 0 && (
+                    <span className="rounded-full border border-stone-700 bg-stone-900 px-3 py-1.5 text-xs font-medium text-stone-200">
+                      {charityImpact.verified501cOrgs} verified nonprofit
+                      {charityImpact.verified501cOrgs === 1 ? '' : 's'}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </section>

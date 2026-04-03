@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 /**
  * OpenCLAW Data Polish Cron
@@ -14,17 +15,19 @@ export async function POST(request: Request) {
   if (authError) return authError
 
   try {
-    const { runPolishJobInternal } = await import('@/lib/openclaw/polish-job')
+    const result = await runMonitoredCronJob('openclaw-polish', async () => {
+      const { runPolishJobInternal } = await import('@/lib/openclaw/polish-job')
+      const url = new URL(request.url)
+      const dryRun = url.searchParams.get('dry-run') === 'true'
+      const polishResult = await runPolishJobInternal({ dryRun })
 
-    const url = new URL(request.url)
-    const dryRun = url.searchParams.get('dry-run') === 'true'
-
-    const result = await runPolishJobInternal({ dryRun })
-
-    return NextResponse.json({
-      ...result,
-      timestamp: new Date().toISOString(),
+      return {
+        ...polishResult,
+        timestamp: new Date().toISOString(),
+      }
     })
+
+    return NextResponse.json(result)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error('[openclaw-polish cron] Error:', message)

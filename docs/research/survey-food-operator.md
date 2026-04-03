@@ -4,6 +4,8 @@
 > **Purpose:** Validate assumptions baked into ChefFlow by asking real food operators (private chefs, caterers, meal prep services, artisan producers) how they actually work
 > **Derived from:** System audit + gap detection in `docs/research/phase-shift-system-audit-and-validation.md`
 > **Target respondents:** Independent food operators (private chefs, personal chefs, caterers, grazing/charcuterie operators, meal prep services, food truck operators)
+>
+> **Scope note:** This is the master question bank and research-content source, not the canonical launch execution doc. Use it to understand the full operator survey logic or recover wording, but use `docs/research/current-builder-start-handoff-2026-04-02.md` for builder order and `docs/research/survey-food-operator-wave-1-google-forms-ready.md` only as fallback content reference.
 
 ---
 

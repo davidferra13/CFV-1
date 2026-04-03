@@ -42,6 +42,7 @@ const BookingSchema = z.object({
 
 export async function POST(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const host = request.headers.get('host') || undefined
 
   // Rate limit: 5 open bookings per 10 minutes per IP
   try {
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     // Turnstile CAPTCHA (non-blocking if not configured)
     try {
       const { verifyTurnstileToken } = await import('@/lib/security/turnstile')
-      const result = await verifyTurnstileToken(data.turnstile_token || '', ip)
+      const result = await verifyTurnstileToken(data.turnstile_token || '', { ip, host })
       if (!result.success) {
         return NextResponse.json(
           { error: result.error || 'CAPTCHA verification failed' },

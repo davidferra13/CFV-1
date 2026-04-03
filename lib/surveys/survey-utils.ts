@@ -4,6 +4,7 @@
 
 export type ChefSurveyRow = {
   id: string
+  event_id: string
   token: string
   submitted_at: string | null
   created_at: string
@@ -14,6 +15,9 @@ export type ChefSurveyRow = {
   would_book_again: string | null
   highlight_text: string | null
   testimonial_consent: boolean
+  review_request_eligible: boolean
+  review_request_sent_at: string | null
+  public_review_shared: boolean
   event: {
     id: string
     occasion: string | null

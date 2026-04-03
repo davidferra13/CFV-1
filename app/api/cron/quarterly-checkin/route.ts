@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
-import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 const dbAdmin = createAdminClient()
 
@@ -17,35 +17,33 @@ export async function GET(request: Request) {
   if (authError) return authError
 
   try {
-    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
-    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
-    const quarterKey = getQuarterKey(new Date())
-    const { data: chefs } = await dbAdmin.from('chefs').select('id').limit(10000)
+    const result = await runMonitoredCronJob('quarterly-checkin', async () => {
+      const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+      const quarterKey = getQuarterKey(new Date())
+      const { data: chefs } = await dbAdmin.from('chefs').select('id').limit(10000)
 
-    if (!chefs || chefs.length === 0) {
-      const emptyResult = { processed: 0, due: 0, notified: 0, skipped: 0 }
-      await recordCronHeartbeat('quarterly-checkin', emptyResult)
-      return NextResponse.json(emptyResult)
-    }
+      if (!chefs || chefs.length === 0) {
+        return { processed: 0, due: 0, notified: 0, skipped: 0 }
+      }
 
-    const recipientCache = new Map<string, string | null>()
-    let due = 0
-    let notified = 0
-    let skipped = 0
+      const recipientCache = new Map<string, string | null>()
+      let due = 0
+      let notified = 0
+      let skipped = 0
 
-    for (const chef of chefs) {
-      // Find most recent check-in
-      const { data: lastCheckin } = await dbAdmin
-        .from('chef_growth_checkins')
-        .select('checkin_date')
-        .eq('tenant_id', chef.id)
-        .order('checkin_date', { ascending: false })
-        .limit(1)
-        .single()
+      for (const chef of chefs) {
+        const { data: lastCheckin } = await dbAdmin
+          .from('chef_growth_checkins')
+          .select('checkin_date')
+          .eq('tenant_id', chef.id)
+          .order('checkin_date', { ascending: false })
+          .limit(1)
+          .single()
 
-      const isDue = !lastCheckin || lastCheckin.checkin_date < ninetyDaysAgo.split('T')[0]
+        const isDue = !lastCheckin || lastCheckin.checkin_date < ninetyDaysAgo.split('T')[0]
 
-      if (isDue) {
+        if (!isDue) continue
         due++
 
         const cached = recipientCache.get(chef.id)
@@ -93,10 +91,10 @@ export async function GET(request: Request) {
         console.log(`[quarterly-checkin] Chef ${chef.id} is due for quarterly check-in`)
         notified++
       }
-    }
 
-    const result = { processed: chefs.length, due, notified, skipped }
-    await recordCronHeartbeat('quarterly-checkin', result)
+      return { processed: chefs.length, due, notified, skipped }
+    })
+
     return NextResponse.json(result)
   } catch (err) {
     console.error('[quarterly-checkin] Cron failed:', err)

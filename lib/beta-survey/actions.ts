@@ -1,21 +1,17 @@
 'use server'
 
-// DEFERRED: Beta Survey System
-// Status: Code complete, but database tables not yet created (migration 20260330000021 pending).
-// Tables required: beta_survey_definitions, beta_survey_responses, beta_survey_invites
-// This file can be type-checked once the core database schema (tenants, etc.) is migrated.
-// See: db/migrations/20260330000021_beta_survey_system.sql
-// TODO: Apply pending migrations once dev server is free
-
 // Beta Survey Actions
 // Handles public (token-based) and authenticated survey submission,
 // admin results, invite management, and CSV export.
 // Tables: beta_survey_definitions, beta_survey_responses, beta_survey_invites
 
 import { createAdminClient } from '@/lib/db/admin'
+import { revalidateTag } from 'next/cache'
 import { requireAuth } from '@/lib/auth/get-user'
 import { requireAdmin } from '@/lib/auth/admin'
-import { headers } from 'next/headers'
+import { checkRateLimit } from '@/lib/rateLimit'
+import { verifyTurnstileToken } from '@/lib/security/turnstile'
+import { cookies, headers } from 'next/headers'
 import { sendEmail } from '@/lib/email/send'
 import { BetaSurveyInviteEmail } from '@/lib/email/templates/beta-survey-invite'
 import type {
@@ -24,32 +20,28 @@ import type {
   SurveyType,
   SurveyQuestion,
 } from './survey-utils'
-import { extractFixedColumns, computeBetaSurveyStats } from './survey-utils'
+import { getBetaSurveyCompletionKey } from './survey-presence'
+import { BETA_SURVEY_CACHE_TAG } from './survey-cache'
+import {
+  buildBetaSurveyAnswersWithMeta,
+  computeBetaSurveyStats,
+  extractFixedColumns,
+  getDefaultRespondentRoleForSurveyType,
+  getBetaSurveyResponseMeta,
+} from './survey-utils'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 // ── In-memory IP rate limiting (same pattern as beta signups) ──
-const ipBuckets = new Map<string, { count: number; windowStart: number }>()
 const RATE_LIMIT_MAX = 5
 const RATE_LIMIT_WINDOW_MS = 60_000 * 5 // 5 minutes
-
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const bucket = ipBuckets.get(ip)
-  if (!bucket || now - bucket.windowStart > RATE_LIMIT_WINDOW_MS) {
-    ipBuckets.set(ip, { count: 1, windowStart: now })
-    return true
-  }
-  bucket.count++
-  if (bucket.count % 50 === 0) {
-    for (const [key, b] of ipBuckets) {
-      if (now - b.windowStart > RATE_LIMIT_WINDOW_MS * 2) ipBuckets.delete(key)
-    }
-  }
-  return bucket.count <= RATE_LIMIT_MAX
-}
+const COMPLETION_MARKER_MAX_AGE_SECONDS = 60 * 60 * 24 * 180
 
 type DbErrorLike = { code?: string; message?: string } | null | undefined
+type PublicSubmissionMeta = {
+  websiteUrl?: string
+  captchaToken?: string
+}
 
 function isMissingBetaSurveyTableError(error: DbErrorLike): boolean {
   return error?.code === 'PGRST205' && /beta_survey_/i.test(error?.message ?? '')
@@ -57,6 +49,43 @@ function isMissingBetaSurveyTableError(error: DbErrorLike): boolean {
 
 function shouldLogBetaSurveyError(error: DbErrorLike): boolean {
   return !!error && !isMissingBetaSurveyTableError(error)
+}
+
+async function guardPublicSurveySubmission(
+  meta?: PublicSubmissionMeta
+): Promise<{ success: boolean; error?: string } | null> {
+  const hdrs = await headers()
+  const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+
+  try {
+    await checkRateLimit(`beta-survey-public:${ip}`, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS)
+  } catch {
+    return { success: false, error: 'Too many submissions. Please try again later.' }
+  }
+
+  if (meta?.websiteUrl?.trim()) {
+    return { success: true }
+  }
+
+  const turnstileResult = await verifyTurnstileToken(meta?.captchaToken || '', {
+    ip,
+    host: hdrs.get('host') || undefined,
+  })
+  if (!turnstileResult.success) {
+    return { success: false, error: turnstileResult.error || 'CAPTCHA verification failed.' }
+  }
+
+  return null
+}
+
+function markSurveyCompletionInBrowser(surveySlug: string) {
+  const cookieStore = cookies()
+  cookieStore.set(getBetaSurveyCompletionKey(surveySlug), new Date().toISOString(), {
+    path: '/',
+    maxAge: COMPLETION_MARKER_MAX_AGE_SECONDS,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  })
 }
 
 // ─── Get Active Survey ──────────────────────────────────────────────────────
@@ -105,6 +134,35 @@ export async function getSurveyBySlug(slug: string): Promise<BetaSurveyDefinitio
   if (error) {
     if (shouldLogBetaSurveyError(error)) {
       console.error('[getSurveyBySlug]', error)
+    }
+    return null
+  }
+
+  if (!data) return null
+
+  return {
+    ...data,
+    questions: (data.questions as unknown as SurveyQuestion[]) || [],
+  } as BetaSurveyDefinition
+}
+
+/**
+ * Fetch a survey definition by slug for public share-link delivery.
+ * Only active surveys are returned.
+ */
+export async function getPublicSurveyBySlug(slug: string): Promise<BetaSurveyDefinition | null> {
+  const db: any = createAdminClient()
+
+  const { data, error } = await db
+    .from('beta_survey_definitions')
+    .select('*')
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (error) {
+    if (shouldLogBetaSurveyError(error)) {
+      console.error('[getPublicSurveyBySlug]', error)
     }
     return null
   }
@@ -193,7 +251,7 @@ export async function submitBetaSurveyAuthenticated(
   // Look up the survey
   const { data: survey } = await db
     .from('beta_survey_definitions')
-    .select('id, survey_type')
+    .select('id, slug, survey_type')
     .eq('slug', surveySlug)
     .maybeSingle()
 
@@ -255,6 +313,7 @@ export async function submitBetaSurveyAuthenticated(
     }
   }
 
+  markSurveyCompletionInBrowser(survey.slug)
   return { success: true }
 }
 
@@ -267,13 +326,21 @@ export async function submitBetaSurveyAuthenticated(
 export async function submitBetaSurveyPublic(
   inviteToken: string,
   answers: Record<string, unknown>,
-  meta: { name?: string; email?: string }
+  meta: {
+    name?: string
+    email?: string
+    source?: string
+    channel?: string
+    campaign?: string
+    wave?: string
+    launch?: string
+    websiteUrl?: string
+    captchaToken?: string
+  }
 ): Promise<{ success: boolean; error?: string }> {
-  // Rate limit
-  const hdrs = await headers()
-  const ip = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
-  if (!checkRateLimit(ip)) {
-    return { success: false, error: 'Too many submissions. Please try again later.' }
+  const guard = await guardPublicSurveySubmission(meta)
+  if (guard) {
+    return guard
   }
 
   const db: any = createAdminClient()
@@ -297,8 +364,14 @@ export async function submitBetaSurveyPublic(
     return { success: false, error: 'This survey has already been submitted.' }
   }
 
-  // Extract fixed columns
-  const fixed = extractFixedColumns(answers)
+  const enrichedAnswers = buildBetaSurveyAnswersWithMeta(answers, {
+    source: meta.source,
+    channel: meta.channel,
+    campaign: meta.campaign,
+    wave: meta.wave,
+    launch: meta.launch,
+  })
+  const fixed = extractFixedColumns(enrichedAnswers)
 
   // Create the response
   const { data: response, error: insertError } = await db
@@ -308,7 +381,7 @@ export async function submitBetaSurveyPublic(
       respondent_role: invite.role,
       respondent_name: meta.name?.trim() || null,
       respondent_email: meta.email?.trim().toLowerCase() || null,
-      answers,
+      answers: enrichedAnswers,
       ...fixed,
       submitted_at: new Date().toISOString(),
     })
@@ -329,6 +402,71 @@ export async function submitBetaSurveyPublic(
     })
     .eq('id', invite.id)
 
+  return { success: true }
+}
+
+/**
+ * Submit a publicly shared anonymous survey by definition slug.
+ * Used for shareable research links that do not require invite tokens.
+ */
+export async function submitBetaSurveyAnonymous(
+  surveySlug: string,
+  answers: Record<string, unknown>,
+  meta?: {
+    source?: string
+    channel?: string
+    campaign?: string
+    wave?: string
+    launch?: string
+    respondentRole?: string
+    websiteUrl?: string
+    captchaToken?: string
+  }
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await guardPublicSurveySubmission(meta)
+  if (guard) {
+    return guard
+  }
+
+  const db: any = createAdminClient()
+
+  const { data: survey } = await db
+    .from('beta_survey_definitions')
+    .select('id, slug, survey_type')
+    .eq('slug', surveySlug)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (!survey) {
+    return { success: false, error: 'Survey not found.' }
+  }
+
+  const enrichedAnswers = buildBetaSurveyAnswersWithMeta(answers, {
+    source: meta?.source,
+    channel: meta?.channel,
+    campaign: meta?.campaign,
+    wave: meta?.wave,
+    launch: meta?.launch,
+    surveySlug: survey.slug,
+    respondentRole: meta?.respondentRole,
+  })
+  const fixed = extractFixedColumns(enrichedAnswers)
+
+  const { error } = await db.from('beta_survey_responses').insert({
+    survey_id: survey.id,
+    respondent_role:
+      meta?.respondentRole || getDefaultRespondentRoleForSurveyType(survey.survey_type),
+    answers: enrichedAnswers,
+    ...fixed,
+    submitted_at: new Date().toISOString(),
+  })
+
+  if (error) {
+    console.error('[submitBetaSurveyAnonymous]', error)
+    return { success: false, error: 'Failed to submit survey.' }
+  }
+
+  markSurveyCompletionInBrowser(survey.slug)
   return { success: true }
 }
 
@@ -533,16 +671,20 @@ export async function toggleBetaSurveyActive(
 ): Promise<{ success: boolean; error?: string }> {
   await requireAdmin()
   const db: any = createAdminClient()
+  let activeSurveyType: string | null = null
+  let activeSurveySlug: string | null = null
 
   if (active) {
     // Get the survey type to deactivate others
     const { data: survey } = await db
       .from('beta_survey_definitions')
-      .select('survey_type')
+      .select('survey_type, slug')
       .eq('id', surveyId)
       .single()
 
     if (!survey) return { success: false, error: 'Survey not found.' }
+    activeSurveyType = survey.survey_type
+    activeSurveySlug = survey.slug
 
     // Deactivate other surveys of the same type
     await db
@@ -560,6 +702,30 @@ export async function toggleBetaSurveyActive(
   if (error) {
     console.error('[toggleBetaSurveyActive]', error)
     return { success: false, error: 'Failed to update survey.' }
+  }
+
+  if (!activeSurveyType || !activeSurveySlug) {
+    const { data: survey } = await db
+      .from('beta_survey_definitions')
+      .select('survey_type, slug')
+      .eq('id', surveyId)
+      .single()
+
+    activeSurveyType = survey?.survey_type ?? null
+    activeSurveySlug = survey?.slug ?? null
+  }
+
+  revalidateTag(BETA_SURVEY_CACHE_TAG)
+  revalidateTag(`${BETA_SURVEY_CACHE_TAG}-active`)
+
+  if (activeSurveyType) {
+    revalidateTag(`${BETA_SURVEY_CACHE_TAG}-active-${activeSurveyType}`)
+  }
+
+  revalidateTag(`${BETA_SURVEY_CACHE_TAG}-public`)
+
+  if (activeSurveySlug) {
+    revalidateTag(`${BETA_SURVEY_CACHE_TAG}-public-${activeSurveySlug}`)
   }
 
   return { success: true }
@@ -606,6 +772,11 @@ export async function exportBetaSurveyResultsCsv(
     'Role',
     'Name',
     'Email',
+    'Source',
+    'Channel',
+    'Campaign',
+    'Wave',
+    'Launch',
     'NPS Score',
     'Satisfaction',
     'Would Pay',
@@ -615,11 +786,17 @@ export async function exportBetaSurveyResultsCsv(
 
   const rows: Array<Array<string | number | boolean | null>> = (responses || []).map((r: any) => {
     const answers = (r.answers as Record<string, unknown>) || {}
+    const meta = getBetaSurveyResponseMeta(answers)
     return [
       r.submitted_at || 'In progress',
       r.respondent_role || '',
       r.respondent_name || '',
       r.respondent_email || '',
+      meta.source ?? '',
+      meta.channel ?? '',
+      meta.campaign ?? '',
+      meta.wave ?? '',
+      meta.launch ?? '',
       r.nps_score ?? '',
       r.overall_satisfaction ?? '',
       r.would_pay === null ? '' : r.would_pay ? 'Yes' : 'No',

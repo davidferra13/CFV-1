@@ -8,6 +8,7 @@ import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { upload, remove } from '@/lib/storage'
+import { getOrganizationLinks } from '@/lib/charity/organization-links'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,6 +36,20 @@ export type PublicCharityImpact = {
   verified501cOrgs: number
   publicCharityPercent: number | null
   publicCharityNote: string | null
+  showPublicCharity: boolean
+  organizations: Array<{
+    id: string | null
+    organizationName: string
+    organizationAddress: string | null
+    totalHours: number
+    isVerified501c: boolean
+    websiteUrl: string | null
+    links: {
+      websiteUrl: string | null
+      mapsUrl: string | null
+      verificationUrl: string | null
+    }
+  }>
 }
 
 export type PrivateResumeStatus = {
@@ -70,6 +85,7 @@ const WorkHistorySchema = z.object({
 const CredentialProfileSchema = z.object({
   publicCharityPercent: z.number().min(0).max(100).optional().nullable(),
   publicCharityNote: z.string().max(500).optional().nullable(),
+  showPublicCharity: z.boolean(),
   showResumeAvailableNote: z.boolean(),
 })
 
@@ -80,6 +96,13 @@ const RESUME_ALLOWED_TYPES = [
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ]
+
+function normalizeOptionalUuid(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!trimmed || trimmed === '$undefined' || trimmed === '$null') return null
+  return z.string().uuid().safeParse(trimmed).success ? trimmed : null
+}
 
 function revalidateCredentialPaths(slug: string | null) {
   revalidatePath('/settings/credentials')
@@ -106,7 +129,7 @@ export async function listWorkHistoryEntries(): Promise<ChefWorkHistoryEntry[]> 
   const { data, error } = await db
     .from('chef_work_history_entries')
     .select('*')
-    .eq('chef_id', chef.id)
+    .eq('chef_id', chef.entityId)
     .order('display_order', { ascending: true })
     .order('start_date', { ascending: false, nullsFirst: false })
 
@@ -137,8 +160,9 @@ export async function saveWorkHistoryEntry(
   }
 
   const db: any = createServerClient()
+  const workHistoryId = normalizeOptionalUuid(input.id)
   const row = {
-    chef_id: chef.id,
+    chef_id: chef.entityId,
     role_title: data.roleTitle,
     organization_name: data.organizationName,
     location_label: data.locationLabel ?? null,
@@ -153,12 +177,12 @@ export async function saveWorkHistoryEntry(
   }
 
   let result: any
-  if (input.id) {
+  if (workHistoryId) {
     result = await db
       .from('chef_work_history_entries')
       .update(row)
-      .eq('id', input.id)
-      .eq('chef_id', chef.id)
+      .eq('id', workHistoryId)
+      .eq('chef_id', chef.entityId)
       .select()
       .single()
   } else {
@@ -174,7 +198,7 @@ export async function saveWorkHistoryEntry(
     return { success: false, error: 'Failed to save work history entry' }
   }
 
-  const slug = await getChefSlugForRevalidation(chef.id)
+  const slug = await getChefSlugForRevalidation(chef.entityId)
   revalidateCredentialPaths(slug)
 
   return { success: true, entry: result.data }
@@ -191,14 +215,14 @@ export async function deleteWorkHistoryEntry(
     .from('chef_work_history_entries')
     .delete()
     .eq('id', id)
-    .eq('chef_id', chef.id)
+    .eq('chef_id', chef.entityId)
 
   if (error) {
     console.error('[deleteWorkHistoryEntry]', error)
     return { success: false, error: 'Failed to delete entry' }
   }
 
-  const slug = await getChefSlugForRevalidation(chef.id)
+  const slug = await getChefSlugForRevalidation(chef.entityId)
   revalidateCredentialPaths(slug)
   return { success: true }
 }
@@ -217,7 +241,7 @@ export async function reorderWorkHistoryEntries(
       .from('chef_work_history_entries')
       .update({ display_order: idx, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .eq('chef_id', chef.id)
+      .eq('chef_id', chef.entityId)
   )
 
   const results = await Promise.all(updates)
@@ -227,7 +251,7 @@ export async function reorderWorkHistoryEntries(
     return { success: false, error: 'Failed to reorder entries' }
   }
 
-  const slug = await getChefSlugForRevalidation(chef.id)
+  const slug = await getChefSlugForRevalidation(chef.entityId)
   revalidateCredentialPaths(slug)
   return { success: true }
 }
@@ -291,6 +315,8 @@ export async function getPublicCharityImpact(chefId: string): Promise<PublicChar
     verified501cOrgs: 0,
     publicCharityPercent: null,
     publicCharityNote: null,
+    showPublicCharity: false,
+    organizations: [],
   }
 
   if (!chefId) return fallback
@@ -298,39 +324,135 @@ export async function getPublicCharityImpact(chefId: string): Promise<PublicChar
   try {
     const db: any = createServerClient({ admin: true })
 
-    // Fetch charity hours and chef charity fields in parallel
-    const [hoursResult, chefResult] = await Promise.all([
+    const [hoursResultWithOrganizations, chefResultWithVisibility] = await Promise.all([
       db
         .from('charity_hours')
-        .select('hours, organization_name, is_verified_501c')
+        .select(
+          'hours, organization_name, organization_address, google_place_id, ein, is_verified_501c, community_organization_id'
+        )
         .eq('chef_id', chefId),
       db
         .from('chefs')
-        .select('public_charity_percent, public_charity_note')
+        .select('public_charity_percent, public_charity_note, show_public_charity')
         .eq('id', chefId)
         .single(),
     ])
 
-    const hours: Array<{ hours: number; organization_name: string; is_verified_501c: boolean }> =
-      hoursResult.data ?? []
+    let chefResult = chefResultWithVisibility
+    if (chefResult.error?.code === '42703') {
+      chefResult = await db
+        .from('chefs')
+        .select('public_charity_percent, public_charity_note')
+        .eq('id', chefId)
+        .single()
+    }
 
-    const orgMap = new Map<string, { hours: number; isVerified: boolean }>()
+    let hoursResult = hoursResultWithOrganizations
+    if (hoursResult.error?.code === '42703') {
+      hoursResult = await db
+        .from('charity_hours')
+        .select(
+          'hours, organization_name, organization_address, google_place_id, ein, is_verified_501c'
+        )
+        .eq('chef_id', chefId)
+    }
+
+    const hours: Array<{
+      hours: number
+      organization_name: string
+      organization_address: string | null
+      google_place_id: string | null
+      ein: string | null
+      is_verified_501c: boolean
+      community_organization_id?: string | null
+    }> = hoursResult.data ?? []
+
+    const organizationIds = Array.from(
+      new Set(hours.map((entry) => entry.community_organization_id).filter(Boolean) as string[])
+    )
+    const organizationMap = new Map<
+      string,
+      {
+        id: string
+        display_name: string
+        address: string | null
+        google_place_id: string | null
+        ein: string | null
+        website_url: string | null
+        verification_url: string | null
+        is_verified_501c: boolean
+      }
+    >()
+
+    if (organizationIds.length > 0) {
+      const { data: organizations } = await db
+        .from('community_organizations')
+        .select(
+          'id, display_name, address, google_place_id, ein, website_url, verification_url, is_verified_501c'
+        )
+        .in('id', organizationIds)
+      for (const organization of organizations ?? []) {
+        organizationMap.set(organization.id as string, organization as any)
+      }
+    }
+
+    const orgMap = new Map<
+      string,
+      {
+        id: string | null
+        organizationName: string
+        organizationAddress: string | null
+        googlePlaceId: string | null
+        ein: string | null
+        websiteUrl: string | null
+        verificationUrl: string | null
+        hours: number
+        isVerified: boolean
+      }
+    >()
     let totalHours = 0
 
     for (const entry of hours) {
       totalHours += Number(entry.hours)
-      const existing = orgMap.get(entry.organization_name)
+      const organization =
+        entry.community_organization_id != null
+          ? organizationMap.get(entry.community_organization_id)
+          : null
+      const organizationName = organization?.display_name ?? entry.organization_name
+      const organizationAddress = organization?.address ?? entry.organization_address ?? null
+      const googlePlaceId = organization?.google_place_id ?? entry.google_place_id ?? null
+      const ein = organization?.ein ?? entry.ein ?? null
+      const websiteUrl = organization?.website_url ?? null
+      const verificationUrl = organization?.verification_url ?? null
+      const key =
+        entry.community_organization_id ?? `${organizationName}::${organizationAddress ?? ''}`
+      const existing = orgMap.get(key)
       if (existing) {
         existing.hours += Number(entry.hours)
       } else {
-        orgMap.set(entry.organization_name, {
+        orgMap.set(key, {
+          id: entry.community_organization_id ?? null,
+          organizationName,
+          organizationAddress,
+          googlePlaceId,
+          ein,
+          websiteUrl,
+          verificationUrl,
           hours: Number(entry.hours),
-          isVerified: entry.is_verified_501c,
+          isVerified: organization?.is_verified_501c ?? entry.is_verified_501c,
         })
       }
     }
 
     const chefData = chefResult.data
+    const hasStoredCharityStory =
+      chefData?.public_charity_percent !== null ||
+      Boolean(chefData?.public_charity_note) ||
+      totalHours > 0
+    const showPublicCharity =
+      typeof chefData?.show_public_charity === 'boolean'
+        ? chefData.show_public_charity
+        : hasStoredCharityStory
 
     return {
       totalHours: Math.round(totalHours * 100) / 100,
@@ -339,6 +461,26 @@ export async function getPublicCharityImpact(chefId: string): Promise<PublicChar
       verified501cOrgs: Array.from(orgMap.values()).filter((o) => o.isVerified).length,
       publicCharityPercent: chefData?.public_charity_percent ?? null,
       publicCharityNote: chefData?.public_charity_note ?? null,
+      showPublicCharity,
+      organizations: Array.from(orgMap.values())
+        .sort((a, b) => b.hours - a.hours)
+        .slice(0, 3)
+        .map((organization) => ({
+          id: organization.id,
+          organizationName: organization.organizationName,
+          organizationAddress: organization.organizationAddress,
+          totalHours: Math.round(organization.hours * 100) / 100,
+          isVerified501c: organization.isVerified,
+          websiteUrl: organization.websiteUrl,
+          links: getOrganizationLinks({
+            organizationName: organization.organizationName,
+            organizationAddress: organization.organizationAddress,
+            googlePlaceId: organization.googlePlaceId,
+            ein: organization.ein,
+            websiteUrl: organization.websiteUrl,
+            verificationUrl: organization.verificationUrl,
+          }),
+        })),
     }
   } catch (err) {
     console.error('[getPublicCharityImpact] unexpected error', err)
@@ -376,16 +518,17 @@ export async function updatePublicCredentialProfile(
     .update({
       public_charity_percent: data.publicCharityPercent ?? null,
       public_charity_note: data.publicCharityNote ?? null,
+      show_public_charity: data.showPublicCharity,
       show_resume_available_note: data.showResumeAvailableNote,
     })
-    .eq('id', chef.id)
+    .eq('id', chef.entityId)
 
   if (error) {
     console.error('[updatePublicCredentialProfile]', error)
     return { success: false, error: 'Failed to save credential settings' }
   }
 
-  const slug = await getChefSlugForRevalidation(chef.id)
+  const slug = await getChefSlugForRevalidation(chef.entityId)
   revalidateCredentialPaths(slug)
   return { success: true }
 }
@@ -496,7 +639,7 @@ export async function savePrivateResume(
       storage_bucket: RESUME_BUCKET,
       mime_type: file.type,
       file_size_bytes: file.size,
-      source_type: 'upload',
+      source_type: 'file_upload',
       content_text: '',
       created_by: chef.id,
       updated_by: chef.id,
@@ -552,12 +695,12 @@ export async function deletePrivateResume(): Promise<{ success: boolean; error?:
   }
 
   // If the resume note was enabled, turn it off automatically
-  await db.from('chefs').update({ show_resume_available_note: false }).eq('id', chef.id)
+  await db.from('chefs').update({ show_resume_available_note: false }).eq('id', chef.entityId)
 
   revalidatePath('/settings/credentials')
   revalidatePath('/settings/client-preview')
 
-  const slug = await getChefSlugForRevalidation(chef.id)
+  const slug = await getChefSlugForRevalidation(chef.entityId)
   if (slug) revalidatePath(`/chef/${slug}`)
 
   return { success: true }

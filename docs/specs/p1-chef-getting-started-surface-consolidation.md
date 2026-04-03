@@ -208,10 +208,23 @@ Builder note: do not modify the behavior of these actions in this pass. This is 
 
 - Rewriting the first-run wizard or changing its step model.
 - Rewriting the business-setup progress model in `lib/onboarding/progress-actions.ts`.
+- Building a broader activation reporting layer that joins breadcrumbs, feedback, survey metadata, and preference data. That is a follow-up planning/build track after this surface cleanup.
 - Deleting `product_tour_progress`, `tour-actions`, `tour-config`, `ChefTourWrapper`, or `ReplayTourButton` as cleanup. User-visible chef deactivation is enough for this pass.
 - Changing client or staff onboarding tours.
 - Cleaning the existing schema drift between migration SQL and generated schema files.
 - Redesigning the `/onboarding` hub UI.
+
+---
+
+## Follow-On Activation Work
+
+This spec is intentionally phase 1.
+
+Build this surface cleanup first. If the product later wants to rethink the broader chef activation model, use:
+
+- `docs/research/foundations/2026-04-03-chef-activation-signal-inventory-and-execution-order.md`
+
+That companion memo documents the underused internal signals that already exist in ChefFlow, what they can answer, and the correct order for any follow-up activation redesign. Do not fold that broader activation-analysis work into this implementation pass.
 
 ---
 
@@ -221,6 +234,7 @@ Builder note: do not modify the behavior of these actions in this pass. This is 
   - `Setup Progress`: passive dashboard/setup guidance for real migration work.
   - `Business Import`: historical import and first-live-workflow accelerator.
   - `OnboardingBanner`: first-run wizard summary/nudge.
+- Treat the new activation-signal memo as a follow-up input, not as permission to widen this build. The correct sequence is surface cleanup first, evidence synthesis second, architecture decisions third.
 - The legacy tour contract test does **not** prove the chef spotlight targets are real. It only checks that configured routes exist and that selector tokens appear in at most one source file. It does not require a token to exist at all (`tests/unit/onboarding.tour-contract.test.ts:67-70,81-82,109,131-132`).
 - The current chef tour targets do not match the chef-side `data-tour` markers that actually exist. Treat the chef spotlight system as already untrustworthy; do not try to salvage it inside this spec.
 - Do not move business logic out of existing server actions. This is a surface-consolidation pass, not an activation-logic rewrite.

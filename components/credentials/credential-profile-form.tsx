@@ -1,31 +1,41 @@
 'use client'
 
-// CredentialProfileForm - manages community impact settings and resume note toggle.
+// CredentialProfileForm - manages optional public charity visibility and private resume controls.
 // Lives on the credentials settings page.
 
-import { useState, useTransition } from 'react'
+import { useRef, useState, useTransition } from 'react'
+import Link from 'next/link'
 import {
   updatePublicCredentialProfile,
   savePrivateResume,
   deletePrivateResume,
   type PrivateResumeStatus,
 } from '@/lib/credentials/actions'
-import { useRef } from 'react'
+import { Switch } from '@/components/ui/switch'
 
 type Props = {
   initialValues: {
     publicCharityPercent: number | null
     publicCharityNote: string | null
+    showPublicCharity: boolean
     showResumeAvailableNote: boolean
   }
   resumeStatus: PrivateResumeStatus
+  totalCharityHours: number
+  trackedOrganizations: number
 }
 
-export function CredentialProfileForm({ initialValues, resumeStatus: initialResumeStatus }: Props) {
+export function CredentialProfileForm({
+  initialValues,
+  resumeStatus: initialResumeStatus,
+  totalCharityHours,
+  trackedOrganizations,
+}: Props) {
   const [charityPercent, setCharityPercent] = useState(
     initialValues.publicCharityPercent !== null ? String(initialValues.publicCharityPercent) : ''
   )
   const [charityNote, setCharityNote] = useState(initialValues.publicCharityNote ?? '')
+  const [showPublicCharity, setShowPublicCharity] = useState(initialValues.showPublicCharity)
   const [showResumeNote, setShowResumeNote] = useState(initialValues.showResumeAvailableNote)
   const [resumeStatus, setResumeStatus] = useState<PrivateResumeStatus>(initialResumeStatus)
   const [saved, setSaved] = useState(false)
@@ -34,6 +44,11 @@ export function CredentialProfileForm({ initialValues, resumeStatus: initialResu
   const [uploadSuccess, setUploadSuccess] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const [isCharityEditorOpen, setIsCharityEditorOpen] = useState(
+    initialValues.showPublicCharity ||
+      initialValues.publicCharityPercent !== null ||
+      Boolean(initialValues.publicCharityNote)
+  )
   const fileRef = useRef<HTMLInputElement>(null)
 
   function handleSave() {
@@ -51,6 +66,7 @@ export function CredentialProfileForm({ initialValues, resumeStatus: initialResu
         const res = await updatePublicCredentialProfile({
           publicCharityPercent: percentVal,
           publicCharityNote: charityNote.trim() || null,
+          showPublicCharity,
           showResumeAvailableNote: showResumeNote,
         })
         if (!res.success) {
@@ -137,51 +153,153 @@ export function CredentialProfileForm({ initialValues, resumeStatus: initialResu
         year: 'numeric',
       })
     : null
+  const hasCharityDetails = charityPercent.trim() !== '' || charityNote.trim() !== ''
+  const charitySummary: string[] = []
+
+  if (totalCharityHours > 0) {
+    charitySummary.push(
+      `${totalCharityHours.toLocaleString(undefined, { maximumFractionDigits: 2 })} volunteer hours logged`
+    )
+  }
+  if (trackedOrganizations > 0) {
+    charitySummary.push(
+      `${trackedOrganizations} organization${trackedOrganizations === 1 ? '' : 's'} linked`
+    )
+  }
+  if (charityPercent.trim() !== '') {
+    charitySummary.push(`${charityPercent.trim()}% donation pledge saved`)
+  }
+  if (charityNote.trim() !== '') {
+    charitySummary.push('community statement saved')
+  }
 
   return (
     <div className="space-y-6">
-      {/* Community Impact Fields */}
       <div className="rounded-xl border border-stone-700 bg-stone-900/60 p-5 space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <label className="block text-xs font-medium text-stone-400 mb-1">
-              Charity donation percent (optional)
-            </label>
             <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.1"
-                value={charityPercent}
-                onChange={(e) => setCharityPercent(e.target.value)}
-                className="w-24 rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-600 focus:border-stone-500 focus:outline-none"
-                placeholder="e.g. 5"
-              />
-              <span className="text-stone-400 text-sm">%</span>
+              <p className="text-sm font-medium text-stone-100">Community impact</p>
+              <span className="rounded-full border border-stone-700 px-2 py-0.5 text-[11px] uppercase tracking-wide text-stone-500">
+                Optional
+              </span>
             </div>
-            <p className="text-xs text-stone-600 mt-1">
-              Shown publicly if set. E.g. &quot;5% of revenue donated to charity.&quot;
+            <p className="mt-1 text-xs text-stone-500">
+              Keep charity support fully in the system without making it the first thing people see.
+              Save the details here and only show them publicly when you want to.
             </p>
           </div>
+          <button
+            type="button"
+            onClick={() => setIsCharityEditorOpen((current) => !current)}
+            className="text-xs text-stone-400 underline transition-colors hover:text-stone-200"
+          >
+            {isCharityEditorOpen
+              ? 'Hide charity details'
+              : hasCharityDetails || totalCharityHours > 0
+                ? 'Edit charity details'
+                : 'Add charity details'}
+          </button>
+        </div>
 
-          <div>
-            <label className="block text-xs font-medium text-stone-400 mb-1">
-              Community impact statement (optional)
-            </label>
-            <textarea
-              value={charityNote}
-              onChange={(e) => setCharityNote(e.target.value)}
-              maxLength={500}
-              rows={3}
-              className="w-full rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-600 focus:border-stone-500 focus:outline-none resize-none"
-              placeholder="I volunteer at local food banks and support youth cooking programs..."
+        <div className="rounded-xl border border-stone-800 bg-stone-950/70 p-4 space-y-3">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm text-stone-200">Show on public profile</p>
+              <p className="mt-1 text-xs text-stone-500">
+                Turn this on only when you want your profile and inquiry view to include your
+                community work.
+              </p>
+            </div>
+            <Switch
+              checked={showPublicCharity}
+              onCheckedChange={setShowPublicCharity}
+              disabled={isPending}
+              aria-label="Show community impact on public profile"
             />
           </div>
+
+          {charitySummary.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {charitySummary.map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-stone-700 bg-stone-900 px-2.5 py-1 text-[11px] text-stone-300"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-stone-600">
+              Nothing is shown publicly until you add a note, a donation percent, or volunteer
+              hours.
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500">
+            <span>
+              {showPublicCharity
+                ? 'Currently visible on public surfaces.'
+                : 'Currently hidden from public surfaces.'}
+            </span>
+            <Link
+              href="/charity/hours"
+              className="underline transition-colors hover:text-stone-300"
+            >
+              Open volunteer log
+            </Link>
+            <Link href="/charity" className="underline transition-colors hover:text-stone-300">
+              Open impact workspace
+            </Link>
+          </div>
         </div>
+
+        {isCharityEditorOpen && (
+          <div className="grid gap-4 rounded-xl border border-stone-800 bg-stone-950/40 p-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-stone-400">
+                Donation percent
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  value={charityPercent}
+                  onChange={(e) => setCharityPercent(e.target.value)}
+                  className="w-24 rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-600 focus:border-stone-500 focus:outline-none"
+                  placeholder="e.g. 5"
+                />
+                <span className="text-sm text-stone-400">%</span>
+              </div>
+              <p className="mt-1 text-xs text-stone-600">
+                Saved even if hidden. Example: &quot;5% of revenue donated to local food
+                access.&quot;
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-medium text-stone-400">
+                Community impact statement
+              </label>
+              <textarea
+                value={charityNote}
+                onChange={(e) => setCharityNote(e.target.value)}
+                maxLength={500}
+                rows={3}
+                className="w-full rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder-stone-600 focus:border-stone-500 focus:outline-none resize-none"
+                placeholder="I volunteer at local food banks and support youth cooking programs..."
+              />
+              <p className="mt-1 text-xs text-stone-600">
+                Keep this short. It appears as supporting context when displayed publicly.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Private Resume */}
       <div className="rounded-xl border border-stone-700 bg-stone-900/60 p-5 space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -234,6 +352,7 @@ export function CredentialProfileForm({ initialValues, resumeStatus: initialResu
 
             <div className="flex items-center gap-3">
               <button
+                type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={isPending}
                 className="text-xs text-stone-400 hover:text-stone-200 underline disabled:opacity-40 transition-colors"
@@ -244,6 +363,7 @@ export function CredentialProfileForm({ initialValues, resumeStatus: initialResu
                 <span className="text-xs flex items-center gap-2">
                   <span className="text-stone-400">Remove this resume?</span>
                   <button
+                    type="button"
                     onClick={handleDeleteResume}
                     disabled={isPending}
                     className="text-red-400 hover:text-red-300 font-medium disabled:opacity-40"
@@ -251,6 +371,7 @@ export function CredentialProfileForm({ initialValues, resumeStatus: initialResu
                     Remove
                   </button>
                   <button
+                    type="button"
                     onClick={() => setDeleteConfirm(false)}
                     className="text-stone-500 hover:text-stone-300"
                   >
@@ -259,6 +380,7 @@ export function CredentialProfileForm({ initialValues, resumeStatus: initialResu
                 </span>
               ) : (
                 <button
+                  type="button"
                   onClick={() => setDeleteConfirm(true)}
                   disabled={isPending}
                   className="text-xs text-stone-600 hover:text-red-400 disabled:opacity-40 transition-colors"
@@ -293,6 +415,7 @@ export function CredentialProfileForm({ initialValues, resumeStatus: initialResu
               No resume on file. Upload a PDF, DOC, or DOCX (max 10 MB).
             </p>
             <button
+              type="button"
               onClick={() => fileRef.current?.click()}
               disabled={isPending}
               className="px-4 py-2 rounded-lg border border-stone-700 text-sm text-stone-300 hover:bg-stone-800 disabled:opacity-40 transition-colors"
@@ -311,7 +434,6 @@ export function CredentialProfileForm({ initialValues, resumeStatus: initialResu
         />
       </div>
 
-      {/* Save button */}
       {error && (
         <div className="rounded-lg border border-red-800 bg-red-950/60 px-4 py-3 text-sm text-red-300">
           {error}
@@ -324,6 +446,7 @@ export function CredentialProfileForm({ initialValues, resumeStatus: initialResu
       )}
 
       <button
+        type="button"
         onClick={handleSave}
         disabled={isPending}
         className="px-5 py-2.5 bg-stone-100 text-stone-900 text-sm font-medium rounded-lg hover:bg-white disabled:opacity-40 transition-colors"

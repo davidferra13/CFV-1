@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 // ---------------------------------------------------------------------------
 // OpenClaw Price Sync Cron (LEGACY - kept for backwards compatibility)
@@ -15,29 +16,31 @@ export async function GET(request: Request) {
   if (authError) return authError
 
   try {
-    // Delegate to the unified sync receiver with price-intel as the cartridge
-    const { syncCartridgeInternal } = await import('@/lib/openclaw/sync-receiver')
-    const result = await syncCartridgeInternal('price-intel')
+    const result = await runMonitoredCronJob('price-sync', async () => {
+      const { syncCartridgeInternal } = await import('@/lib/openclaw/sync-receiver')
+      const syncResult = await syncCartridgeInternal('price-intel')
 
-    // Also grab Pi stats for the legacy response format
-    const { getOpenClawStatsInternal } = await import('@/lib/openclaw/sync')
-    const stats = await getOpenClawStatsInternal()
+      const { getOpenClawStatsInternal } = await import('@/lib/openclaw/sync')
+      const stats = await getOpenClawStatsInternal()
 
-    return NextResponse.json({
-      success: result.success,
-      matched: result.matched,
-      updated: result.updated,
-      skipped: result.skipped,
-      notFound: result.errors,
-      piStats: stats
-        ? {
-            sources: stats.sources,
-            prices: stats.currentPrices,
-            lastScrape: stats.lastScrapeAt,
-          }
-        : null,
-      timestamp: new Date().toISOString(),
+      return {
+        success: syncResult.success,
+        matched: syncResult.matched,
+        updated: syncResult.updated,
+        skipped: syncResult.skipped,
+        notFound: syncResult.errors,
+        piStats: stats
+          ? {
+              sources: stats.sources,
+              prices: stats.currentPrices,
+              lastScrape: stats.lastScrapeAt,
+            }
+          : null,
+        timestamp: new Date().toISOString(),
+      }
     })
+
+    return NextResponse.json(result)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error('[price-sync cron] Error:', message)

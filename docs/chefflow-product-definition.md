@@ -1,23 +1,24 @@
 # ChefFlow: Product Definition Document
 
-> **Version:** 1.0 | **Date:** 2026-03-22
-> **Purpose:** Canonical reference defining what ChefFlow is, who it serves, and every function it provides.
+> **Version:** 1.1 | **Date:** 2026-04-02
+> **Purpose:** Detailed product-definition reference for ChefFlow's functions, personas, and strategic intent.
+> **Canonical scope note:** Project identity, audience, and scope are now governed by `docs/project-definition-and-scope.md`. This document should remain consistent with that file.
 
 ---
 
 ## Part 1: What ChefFlow Is
 
-ChefFlow is a universal culinary operating system built for food service professionals. It eliminates the fragmented stack of tools that chefs currently rely on: spreadsheets for costing, separate apps for invoicing, notes apps for recipes, messaging platforms for client communication, and manual calendars for scheduling. ChefFlow replaces all of that with one integrated platform.
+ChefFlow is a chef-first operating system for independent and small culinary businesses. It eliminates the fragmented stack of tools that chef-led operators typically rely on: spreadsheets for costing, separate apps for invoicing, notes apps for recipes, messaging platforms for client communication, and manual calendars for scheduling. ChefFlow replaces that stack with one integrated platform.
 
 The tagline is **Ops for Artists**. The platform handles the operational weight of running a culinary business so the chef can focus on the creative work.
 
-ChefFlow has two distinct surfaces that serve different audiences:
+ChefFlow has one primary product and several supporting surfaces:
 
-**1. The Operator Platform (behind auth)**
-The full business management system for chefs, caterers, meal prep services, food truck operators, and any food service professional. This is where the business lives: events, clients, money, menus, recipes, staff, and analytics.
+**1. The Operator Platform (primary, behind auth)**
+The full business management system for chef-led businesses, including private chefs, caterers, meal prep operators, and adjacent small culinary operations. This is where the business lives: events, clients, money, menus, recipes, staff, and analytics.
 
-**2. The Public Food Directory (no auth required)**
-A consumer-facing discovery platform where anyone can find private chefs, caterers, restaurants, food trucks, and bakeries near them. Consumers search and connect directly with providers at no cost and with no commission taken. The platform redirects, not transacts.
+**2. Supporting Surfaces**
+These include the public discovery layer, client portal, partner views, staff workflows, admin mission control, and tokenized delivery paths. The public directory is an important supporting acquisition surface, but it is not the primary identity of the product.
 
 ---
 
@@ -41,8 +42,8 @@ Independent food professionals have no centralized place to be found. The ChefFl
 **Goal 6: Build community among culinary professionals.**
 ChefFlow's network and community features let chefs share recipes, collaborate on events, refer clients to each other, and build professional relationships within the platform.
 
-**Goal 7: Stay free for the people who need it.**
-All features are free. Revenue comes from voluntary supporter contributions. There are no paywalls, no locked features, no Pro tiers. Community growth is the priority.
+**Goal 7: Monetize respectfully without distorting the product.**
+ChefFlow currently positions core access around universal availability and voluntary support. Legacy Pro-era implementation terms still exist in the repo, but the product-facing direction should describe support, not aggressive lockout or upsell pressure.
 
 ---
 

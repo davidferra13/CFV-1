@@ -17,6 +17,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 const PUSH_INACTIVE_PURGE_DAYS = 90 // hard-delete inactive subscriptions after 90 days
 const SMS_LOG_RETENTION_HOURS = 48 // SMS rate-limit log retention window
@@ -25,68 +26,84 @@ async function handlePushCleanup(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const db = createServerClient({ admin: true })
-  const now = new Date()
+  try {
+    const result = await runMonitoredCronJob('push-cleanup', async () => {
+      const db = createServerClient({ admin: true })
+      const now = new Date()
 
-  // ── 1a. Deactivate subscriptions with too many failures ──────────────────
-  // failed_count >= 5 means the send path couldn't reach this endpoint repeatedly.
-  // Deactivate them so they stop being attempted in future sends.
-  const { data: deactivatedRows, error: deactivateError } = await db
-    .from('push_subscriptions')
-    .update({ is_active: false })
-    .gte('failed_count', 5)
-    .eq('is_active', true)
-    .select('id')
+      // ── 1a. Deactivate subscriptions with too many failures ──────────────────
+      // failed_count >= 5 means the send path couldn't reach this endpoint repeatedly.
+      // Deactivate them so they stop being attempted in future sends.
+      const { data: deactivatedRows, error: deactivateError } = await db
+        .from('push_subscriptions')
+        .update({ is_active: false })
+        .gte('failed_count', 5)
+        .eq('is_active', true)
+        .select('id')
 
-  const deactivated = deactivatedRows?.length ?? 0
+      const deactivated = deactivatedRows?.length ?? 0
 
-  if (deactivateError) {
-    console.error('[Push Cleanup Cron] Failed to deactivate failed subscriptions:', deactivateError)
-    // Non-fatal - continue to next step
+      if (deactivateError) {
+        console.error(
+          '[Push Cleanup Cron] Failed to deactivate failed subscriptions:',
+          deactivateError
+        )
+        // Non-fatal - continue to next step
+      }
+
+      // ── 1b. Hard-delete old inactive subscriptions ───────────────────────────
+      // Subscriptions that have been is_active = false for 90+ days are safe to remove.
+      const inactiveCutoff = new Date(
+        now.getTime() - PUSH_INACTIVE_PURGE_DAYS * 24 * 60 * 60 * 1000
+      ).toISOString()
+
+      const { count: deleted, error: deleteError } = await db
+        .from('push_subscriptions')
+        .delete({ count: 'exact' })
+        .eq('is_active', false)
+        .lt('updated_at', inactiveCutoff)
+
+      if (deleteError) {
+        console.error(
+          '[Push Cleanup Cron] Failed to delete old inactive subscriptions:',
+          deleteError
+        )
+        // Non-fatal - continue to SMS cleanup
+      }
+
+      // ── 2. SMS send log cleanup ──────────────────────────────────────────────
+      // Rate-limit windows expire after 48h. Old rows are just noise after that.
+      const smsCutoff = new Date(
+        now.getTime() - SMS_LOG_RETENTION_HOURS * 60 * 60 * 1000
+      ).toISOString()
+
+      const { count: smsDeleted, error: smsError } = await db
+        .from('sms_send_log')
+        .delete({ count: 'exact' })
+        .lt('sent_at', smsCutoff)
+
+      if (smsError) {
+        console.error('[Push Cleanup Cron] Failed to clean SMS send log:', smsError)
+        // Non-fatal
+      }
+
+      const result = {
+        pushSubscriptionsDeactivated: deactivated ?? 0,
+        pushSubscriptionsDeleted: deleted ?? 0,
+        smsLogRowsDeleted: smsDeleted ?? 0,
+        inactiveCutoff,
+        smsCutoff,
+      }
+
+      console.log('[Push Cleanup Cron]', result)
+      return result
+    })
+
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('[push-cleanup] Cron failed:', error)
+    return NextResponse.json({ error: 'Push cleanup failed' }, { status: 500 })
   }
-
-  // ── 1b. Hard-delete old inactive subscriptions ───────────────────────────
-  // Subscriptions that have been is_active = false for 90+ days are safe to remove.
-  const inactiveCutoff = new Date(
-    now.getTime() - PUSH_INACTIVE_PURGE_DAYS * 24 * 60 * 60 * 1000
-  ).toISOString()
-
-  const { count: deleted, error: deleteError } = await db
-    .from('push_subscriptions')
-    .delete({ count: 'exact' })
-    .eq('is_active', false)
-    .lt('updated_at', inactiveCutoff)
-
-  if (deleteError) {
-    console.error('[Push Cleanup Cron] Failed to delete old inactive subscriptions:', deleteError)
-    // Non-fatal - continue to SMS cleanup
-  }
-
-  // ── 2. SMS send log cleanup ──────────────────────────────────────────────
-  // Rate-limit windows expire after 48h. Old rows are just noise after that.
-  const smsCutoff = new Date(now.getTime() - SMS_LOG_RETENTION_HOURS * 60 * 60 * 1000).toISOString()
-
-  const { count: smsDeleted, error: smsError } = await db
-    .from('sms_send_log')
-    .delete({ count: 'exact' })
-    .lt('sent_at', smsCutoff)
-
-  if (smsError) {
-    console.error('[Push Cleanup Cron] Failed to clean SMS send log:', smsError)
-    // Non-fatal
-  }
-
-  const result = {
-    pushSubscriptionsDeactivated: deactivated ?? 0,
-    pushSubscriptionsDeleted: deleted ?? 0,
-    smsLogRowsDeleted: smsDeleted ?? 0,
-    inactiveCutoff,
-    smsCutoff,
-  }
-
-  console.log('[Push Cleanup Cron]', result)
-
-  return NextResponse.json(result)
 }
 
 export { handlePushCleanup as GET, handlePushCleanup as POST }

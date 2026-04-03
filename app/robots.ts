@@ -29,6 +29,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/api/',
           '/auth/',
+          '/beta-survey/',
           '/event/',
           '/share/',
           '/g/',

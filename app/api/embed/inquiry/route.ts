@@ -56,6 +56,7 @@ export async function OPTIONS() {
 export async function POST(request: NextRequest) {
   // Rate limit by IP: 10 submissions per 5 minutes (uses Upstash Redis when configured)
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  const host = request.headers.get('host') || undefined
   try {
     await checkRateLimit(`embed-inquiry:${ip}`, 10, 5 * 60_000)
   } catch {
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
     // Cloudflare Turnstile CAPTCHA verification
     // Non-blocking if TURNSTILE_SECRET_KEY is not set (graceful bypass for dev/testing)
     // Returns 403 only if Turnstile IS configured and the token is definitively invalid
-    const turnstileResult = await verifyTurnstileToken(data.turnstile_token || '', ip)
+    const turnstileResult = await verifyTurnstileToken(data.turnstile_token || '', { ip, host })
     if (!turnstileResult.success) {
       return NextResponse.json(
         { error: turnstileResult.error || 'CAPTCHA verification failed' },

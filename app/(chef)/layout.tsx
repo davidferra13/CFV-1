@@ -19,6 +19,7 @@ import { DeletionPendingBanner } from '@/components/settings/deletion-pending-ba
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
+import { MarketResearchBannerWrapper } from '@/components/beta-survey/market-research-banner-wrapper'
 import {
   getCachedCannabisAccess,
   getCachedDeletionStatus,
@@ -176,6 +177,10 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
                   {/* Main content - offset adjusts dynamically based on sidebar state */}
                   <ChefMainContent>
+                    <MarketResearchBannerWrapper
+                      surveyType="market_research_operator"
+                      channel="chef_portal"
+                    />
                     <ChefTourWrapper>{children}</ChefTourWrapper>
                   </ChefMainContent>
 

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
-import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
+import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 import { getRevenueGoalSnapshotForTenantAdmin } from '@/lib/revenue-goals/actions'
 import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
 import {
@@ -29,118 +29,128 @@ async function handleRevenueGoals(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const db = createServerClient({ admin: true }) as any
-  const now = new Date()
-  const today = now.toISOString().slice(0, 10)
+  const startedAt = Date.now()
+  try {
+    const db = createServerClient({ admin: true }) as any
+    const now = new Date()
+    const today = now.toISOString().slice(0, 10)
 
-  // ── 1. Collect all tenant IDs to process ────────────────────────────────────
-  // Legacy: chefs with revenue_goal_program_enabled
-  const { data: prefRows } = await db
-    .from('chef_preferences')
-    .select('tenant_id')
-    .eq('revenue_goal_program_enabled', true)
+    // ── 1. Collect all tenant IDs to process ────────────────────────────────────
+    // Legacy: chefs with revenue_goal_program_enabled
+    const { data: prefRows } = await db
+      .from('chef_preferences')
+      .select('tenant_id')
+      .eq('revenue_goal_program_enabled', true)
 
-  // New-style: chefs with any active chef_goals
-  const { data: activeGoalRows } = await db
-    .from('chef_goals')
-    .select('tenant_id')
-    .eq('status', 'active')
+    // New-style: chefs with any active chef_goals
+    const { data: activeGoalRows } = await db
+      .from('chef_goals')
+      .select('tenant_id')
+      .eq('status', 'active')
 
-  // Union of tenant IDs (deduplicated)
-  const tenantSet = new Set<string>()
-  for (const row of (prefRows || []) as Array<{ tenant_id: string }>) {
-    if (row.tenant_id) tenantSet.add(row.tenant_id)
-  }
-  for (const row of (activeGoalRows || []) as Array<{ tenant_id: string }>) {
-    if (row.tenant_id) tenantSet.add(row.tenant_id)
-  }
-
-  const tenantIds = Array.from(tenantSet)
-  if (tenantIds.length === 0) {
-    return NextResponse.json({ processed: 0, notified: 0, skipped: 0, errors: [] })
-  }
-
-  let notified = 0
-  let skipped = 0
-  let milestoneNotified = 0
-  let weeklyDigestNotified = 0
-  let goalSignalSkipped = 0
-  const errors: string[] = []
-
-  for (const tenantId of tenantIds) {
-    try {
-      // ── 2. Write goal snapshots for new-style chef_goals ─────────────────────
-      await writeGoalSnapshotsForTenant(db, tenantId, now, today)
-      const goalSignalResult = await emitGoalSignalNotifications(db, tenantId, now, today)
-      milestoneNotified += goalSignalResult.milestoneNotified
-      weeklyDigestNotified += goalSignalResult.weeklyDigestNotified
-      goalSignalSkipped += goalSignalResult.skipped
-
-      // ── 3. Legacy revenue-goal snapshot + notification ────────────────────────
-      const snapshot = await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, db)
-      if (
-        !snapshot.enabled ||
-        snapshot.monthly.gapCents <= 0 ||
-        snapshot.recommendations.length === 0
-      ) {
-        skipped += 1
-        continue
-      }
-
-      // De-duplicate: max 1 goal nudge per tenant per day
-      const { data: existingToday } = await db
-        .from('notifications')
-        .select('id')
-        .eq('tenant_id', tenantId)
-        .eq('action', 'goal_nudge')
-        .gte('created_at', `${today}T00:00:00.000Z`)
-        .contains('metadata', { system_key: 'revenue_goal_nudge' })
-        .limit(1)
-
-      if (existingToday && existingToday.length > 0) {
-        skipped += 1
-        continue
-      }
-
-      const recipientId = await getChefAuthUserId(tenantId)
-      if (!recipientId) {
-        skipped += 1
-        continue
-      }
-
-      const top = snapshot.recommendations[0]
-      await createNotification({
-        tenantId,
-        recipientId,
-        category: 'goals',
-        action: 'goal_nudge',
-        title: top.title,
-        body: top.description,
-        actionUrl: '/goals',
-        metadata: {
-          system_key: 'revenue_goal_nudge',
-          monthly_gap_cents: snapshot.monthly.gapCents,
-          monthly_target_cents: snapshot.monthly.targetCents,
-          recommendation_id: top.id,
-        },
-      })
-      notified += 1
-    } catch (err) {
-      errors.push(`${tenantId}: ${(err as Error).message}`)
+    // Union of tenant IDs (deduplicated)
+    const tenantSet = new Set<string>()
+    for (const row of (prefRows || []) as Array<{ tenant_id: string }>) {
+      if (row.tenant_id) tenantSet.add(row.tenant_id)
     }
-  }
+    for (const row of (activeGoalRows || []) as Array<{ tenant_id: string }>) {
+      if (row.tenant_id) tenantSet.add(row.tenant_id)
+    }
 
-  const result = {
-    processed: tenantIds.length,
-    notified,
-    skipped,
-    milestoneNotified,
-    weeklyDigestNotified,
-    goalSignalSkipped,
-    errors,
+    const tenantIds = Array.from(tenantSet)
+    if (tenantIds.length === 0) {
+      const emptyResult = { processed: 0, notified: 0, skipped: 0, errors: [] }
+      await recordCronHeartbeat('revenue-goals', emptyResult, Date.now() - startedAt)
+      return NextResponse.json(emptyResult)
+    }
+
+    let notified = 0
+    let skipped = 0
+    let milestoneNotified = 0
+    let weeklyDigestNotified = 0
+    let goalSignalSkipped = 0
+    const errors: string[] = []
+
+    for (const tenantId of tenantIds) {
+      try {
+        // ── 2. Write goal snapshots for new-style chef_goals ─────────────────────
+        await writeGoalSnapshotsForTenant(db, tenantId, now, today)
+        const goalSignalResult = await emitGoalSignalNotifications(db, tenantId, now, today)
+        milestoneNotified += goalSignalResult.milestoneNotified
+        weeklyDigestNotified += goalSignalResult.weeklyDigestNotified
+        goalSignalSkipped += goalSignalResult.skipped
+
+        // ── 3. Legacy revenue-goal snapshot + notification ────────────────────────
+        const snapshot = await getRevenueGoalSnapshotForTenantAdmin(tenantId, now, db)
+        if (
+          !snapshot.enabled ||
+          snapshot.monthly.gapCents <= 0 ||
+          snapshot.recommendations.length === 0
+        ) {
+          skipped += 1
+          continue
+        }
+
+        // De-duplicate: max 1 goal nudge per tenant per day
+        const { data: existingToday } = await db
+          .from('notifications')
+          .select('id')
+          .eq('tenant_id', tenantId)
+          .eq('action', 'goal_nudge')
+          .gte('created_at', `${today}T00:00:00.000Z`)
+          .contains('metadata', { system_key: 'revenue_goal_nudge' })
+          .limit(1)
+
+        if (existingToday && existingToday.length > 0) {
+          skipped += 1
+          continue
+        }
+
+        const recipientId = await getChefAuthUserId(tenantId)
+        if (!recipientId) {
+          skipped += 1
+          continue
+        }
+
+        const top = snapshot.recommendations[0]
+        await createNotification({
+          tenantId,
+          recipientId,
+          category: 'goals',
+          action: 'goal_nudge',
+          title: top.title,
+          body: top.description,
+          actionUrl: '/goals',
+          metadata: {
+            system_key: 'revenue_goal_nudge',
+            monthly_gap_cents: snapshot.monthly.gapCents,
+            monthly_target_cents: snapshot.monthly.targetCents,
+            recommendation_id: top.id,
+          },
+        })
+        notified += 1
+      } catch (err) {
+        errors.push(`${tenantId}: ${(err as Error).message}`)
+      }
+    }
+
+    const result = {
+      processed: tenantIds.length,
+      notified,
+      skipped,
+      milestoneNotified,
+      weeklyDigestNotified,
+      goalSignalSkipped,
+      errors,
+    }
+    await recordCronHeartbeat('revenue-goals', result, Date.now() - startedAt)
+    return NextResponse.json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    await recordCronError('revenue-goals', message, Date.now() - startedAt)
+    console.error('[revenue-goals] Cron failed:', error)
+    return NextResponse.json({ error: 'Revenue goal processing failed' }, { status: 500 })
   }
-  await recordCronHeartbeat('revenue-goals', result)
-  return NextResponse.json(result)
 }
 
 export { handleRevenueGoals as GET, handleRevenueGoals as POST }

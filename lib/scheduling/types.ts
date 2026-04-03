@@ -573,7 +573,7 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   reports_snapshot: 'Reports Snapshot',
   task_automation: 'Task & Automation',
   cannabis_control_center: 'Cannabis Control Center',
-  charity_impact: 'Charity Impact',
+  charity_impact: 'Community Impact',
   community_commands: 'Community & Commands',
   guest_ops: 'Guest Operations',
   receipts_reconciliation: 'Receipts Reconciliation',

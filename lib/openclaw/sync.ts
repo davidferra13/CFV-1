@@ -10,12 +10,12 @@
  *   - Deduplicates via partial unique index (idx_iph_openclaw_dedup)
  *   - Feeds unmatched names back to Pi for catalog growth
  *
- * Runs on-demand from the admin price catalog page or via cron.
+ * Runs on-demand from the culinary price catalog page or via cron.
  */
 
 'use server'
 
-import { requireAdmin } from '@/lib/auth/admin'
+import { requireChef } from '@/lib/auth/get-user'
 import { db } from '@/lib/db'
 import { ingredients } from '@/lib/db/schema/schema'
 import { eq, sql } from 'drizzle-orm'
@@ -108,7 +108,7 @@ export async function getOpenClawStatsInternal(): Promise<OpenClawStats | null> 
 }
 
 export async function getOpenClawStats(): Promise<OpenClawStats | null> {
-  await requireAdmin()
+  await requireChef()
   return getOpenClawStatsInternal()
 }
 
@@ -117,7 +117,7 @@ export async function getOpenClawPrices(params?: {
   ingredient?: string
   limit?: number
 }): Promise<OpenClawPrice[]> {
-  await requireAdmin()
+  await requireChef()
   try {
     const searchParams = new URLSearchParams()
     if (params?.tier) searchParams.set('tier', params.tier)
@@ -140,7 +140,7 @@ export async function getOpenClawPrices(params?: {
 }
 
 export async function getOpenClawSources(): Promise<any[]> {
-  await requireAdmin()
+  await requireChef()
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10000)
@@ -158,7 +158,7 @@ export async function getOpenClawSources(): Promise<any[]> {
 }
 
 export async function getOpenClawChanges(limit = 50): Promise<any[]> {
-  await requireAdmin()
+  await requireChef()
   try {
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), 10000)
@@ -272,18 +272,22 @@ function tierToConfidence(tier: string): number {
  * Core sync logic (V2 - enriched).
  *
  * Strategy:
- *   1. Load ALL ingredients with their tenant_id
+ *   1. Load the tenant's ingredients (or all ingredients for internal sync)
  *   2. Deduplicate names for Pi lookup (one lookup per unique name)
  *   3. Send to Pi's enriched endpoint (batches of 200)
- *   4. For each enriched result, update ALL tenant-specific ingredients
+ *   4. For each enriched result, update the matching tenant-specific ingredients
  *   5. Write to ingredient_price_history (upsert via partial unique index)
  *   6. Update ingredients table with source, store, confidence, trend
  *   7. Feed unmatched names back to Pi for catalog growth
  */
-async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
+async function syncCore(
+  tier: string,
+  dryRun: boolean,
+  tenantId?: string | null
+): Promise<SyncResult> {
   try {
-    // Step 1: Load all ChefFlow ingredients
-    const cfIngredients = await db
+    // Step 1: Load ChefFlow ingredients for the current tenant, unless this is an internal sync.
+    const ingredientQuery = db
       .select({
         id: ingredients.id,
         name: ingredients.name,
@@ -292,6 +296,9 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
         tenantId: ingredients.tenantId,
       })
       .from(ingredients)
+    const cfIngredients = tenantId
+      ? await ingredientQuery.where(eq(ingredients.tenantId, tenantId))
+      : await ingredientQuery
 
     // Step 2: Deduplicate names (send both original and normalized for better match rates)
     const uniqueNames = [
@@ -458,6 +465,9 @@ async function syncCore(tier: string, dryRun: boolean): Promise<SyncResult> {
       revalidatePath('/recipes')
       revalidatePath('/events')
       revalidatePath('/ingredients')
+      revalidatePath('/culinary/price-catalog')
+      revalidatePath('/culinary/ingredients')
+      revalidatePath('/culinary/costing')
       revalidateTag('recipe-costs')
       revalidateTag('ingredient-prices')
     }
@@ -531,6 +541,6 @@ export async function syncPricesToChefFlow(options?: {
   tier?: string
   dryRun?: boolean
 }): Promise<SyncResult> {
-  await requireAdmin()
-  return syncCore(options?.tier || 'retail', options?.dryRun ?? false)
+  const user = await requireChef()
+  return syncCore(options?.tier || 'retail', options?.dryRun ?? false, user.tenantId)
 }

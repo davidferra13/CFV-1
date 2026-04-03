@@ -8,63 +8,70 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
 import { processWixSubmission } from '@/lib/wix/process'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 async function handleWixProcess(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const db = createServerClient({ admin: true })
+  try {
+    const result = await runMonitoredCronJob('wix-process', async () => {
+      const db = createServerClient({ admin: true })
+      const { data: pendingSubmissions, error } = await db
+        .from('wix_submissions')
+        .select('id, wix_submission_id, processing_attempts')
+        .in('status', ['pending', 'failed'])
+        .lt('processing_attempts', 3)
+        .order('created_at', { ascending: true })
+        .limit(50)
 
-  // Find pending or failed (retryable) submissions
-  const { data: pendingSubmissions, error } = await db
-    .from('wix_submissions')
-    .select('id, wix_submission_id, processing_attempts')
-    .in('status', ['pending', 'failed'])
-    .lt('processing_attempts', 3)
-    .order('created_at', { ascending: true })
-    .limit(50)
+      if (error) {
+        console.error('[Wix Process Cron] Query failed:', error)
+        throw new Error('Failed to query pending submissions')
+      }
 
-  if (error) {
-    console.error('[Wix Process Cron] Query failed:', error)
+      if (!pendingSubmissions || pendingSubmissions.length === 0) {
+        return { message: 'No pending submissions', processed: 0, failed: 0 }
+      }
+
+      let completed = 0
+      let failed = 0
+      let duplicates = 0
+
+      for (const submission of pendingSubmissions) {
+        try {
+          const result = await processWixSubmission(submission.id)
+
+          switch (result.status) {
+            case 'completed':
+              completed++
+              break
+            case 'duplicate':
+              duplicates++
+              break
+            case 'failed':
+              failed++
+              break
+          }
+        } catch (err) {
+          const e = err as Error
+          console.error(`[Wix Process Cron] Failed for submission ${submission.id}:`, e.message)
+          failed++
+        }
+      }
+
+      return {
+        processed: pendingSubmissions.length,
+        completed,
+        duplicates,
+        failed,
+      }
+    })
+
+    return NextResponse.json(result)
+  } catch {
     return NextResponse.json({ error: 'Failed to query pending submissions' }, { status: 500 })
   }
-
-  if (!pendingSubmissions || pendingSubmissions.length === 0) {
-    return NextResponse.json({ message: 'No pending submissions', processed: 0 })
-  }
-
-  let completed = 0
-  let failed = 0
-  let duplicates = 0
-
-  for (const submission of pendingSubmissions) {
-    try {
-      const result = await processWixSubmission(submission.id)
-
-      switch (result.status) {
-        case 'completed':
-          completed++
-          break
-        case 'duplicate':
-          duplicates++
-          break
-        case 'failed':
-          failed++
-          break
-      }
-    } catch (err) {
-      const e = err as Error
-      console.error(`[Wix Process Cron] Failed for submission ${submission.id}:`, e.message)
-      failed++
-    }
-  }
-
-  return NextResponse.json({
-    processed: pendingSubmissions.length,
-    completed,
-    duplicates,
-    failed,
-  })
 }
 
 export { handleWixProcess as GET, handleWixProcess as POST }

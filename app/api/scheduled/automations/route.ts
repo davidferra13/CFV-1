@@ -10,161 +10,174 @@ import { evaluateAutomations } from '@/lib/automations/engine'
 import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
 import type { TriggerEvent } from '@/lib/automations/types'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 async function handleAutomations(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const db = createServerClient({ admin: true })
-  let evaluated = 0
-  let timeTrackingReminders = 0
-  const errors: string[] = []
-
-  // ── 1. No-response timeout ──────────────────────────────────────────────
-  // Fires for inquiries in awaiting_client with no activity for N days.
-  // Each tenant can configure their own threshold (default 3 days).
-
   try {
-    const { data: staleInquiries } = await db
-      .from('inquiries')
-      .select(
-        'id, tenant_id, status, channel, confirmed_occasion, last_response_at, client:clients(full_name)'
-      )
-      .eq('status', 'awaiting_client')
-      .not('last_response_at', 'is', null)
+    const result = await runMonitoredCronJob('automations', async () => {
+      const db = createServerClient({ admin: true })
+      let evaluated = 0
+      let timeTrackingReminders = 0
+      const errors: string[] = []
 
-    for (const inquiry of staleInquiries || []) {
+      // ── 1. No-response timeout ──────────────────────────────────────────────
+      // Fires for inquiries in awaiting_client with no activity for N days.
+      // Each tenant can configure their own threshold (default 3 days).
+
       try {
-        const tenantSettings = await getAutomationSettingsForTenant(inquiry.tenant_id)
+        const { data: staleInquiries } = await db
+          .from('inquiries')
+          .select(
+            'id, tenant_id, status, channel, confirmed_occasion, last_response_at, client:clients(full_name)'
+          )
+          .eq('status', 'awaiting_client')
+          .not('last_response_at', 'is', null)
 
-        if (!tenantSettings.no_response_alerts_enabled) continue
+        for (const inquiry of staleInquiries || []) {
+          try {
+            const tenantSettings = await getAutomationSettingsForTenant(inquiry.tenant_id)
 
-        const thresholdMs = tenantSettings.no_response_threshold_days * 24 * 60 * 60 * 1000
-        const daysSince = Math.floor(
-          (Date.now() - new Date(inquiry.last_response_at!).getTime()) / (24 * 60 * 60 * 1000)
-        )
+            if (!tenantSettings.no_response_alerts_enabled) continue
 
-        if (Date.now() - new Date(inquiry.last_response_at!).getTime() < thresholdMs) continue
+            const thresholdMs = tenantSettings.no_response_threshold_days * 24 * 60 * 60 * 1000
+            const daysSince = Math.floor(
+              (Date.now() - new Date(inquiry.last_response_at!).getTime()) / (24 * 60 * 60 * 1000)
+            )
 
-        const clientName = (inquiry.client as { full_name: string } | null)?.full_name || 'Unknown'
-        await evaluateAutomations(inquiry.tenant_id, 'no_response_timeout', {
-          entityId: inquiry.id,
-          entityType: 'inquiry',
-          fields: {
-            status: inquiry.status,
-            channel: inquiry.channel,
-            client_name: clientName,
-            days_since_last_contact: daysSince,
-          },
-        })
-        evaluated++
+            if (Date.now() - new Date(inquiry.last_response_at!).getTime() < thresholdMs) continue
+
+            const clientName =
+              (inquiry.client as { full_name: string } | null)?.full_name || 'Unknown'
+            await evaluateAutomations(inquiry.tenant_id, 'no_response_timeout', {
+              entityId: inquiry.id,
+              entityType: 'inquiry',
+              fields: {
+                status: inquiry.status,
+                channel: inquiry.channel,
+                client_name: clientName,
+                days_since_last_contact: daysSince,
+              },
+            })
+            evaluated++
+          } catch (err) {
+            errors.push(`no_response_timeout inquiry ${inquiry.id}: ${(err as Error).message}`)
+          }
+        }
       } catch (err) {
-        errors.push(`no_response_timeout inquiry ${inquiry.id}: ${(err as Error).message}`)
+        errors.push(`no_response_timeout: ${(err as Error).message}`)
       }
-    }
-  } catch (err) {
-    errors.push(`no_response_timeout: ${(err as Error).message}`)
-  }
 
-  // ── 2. Event approaching ────────────────────────────────────────────────
-  // Fires for confirmed/paid events within the tenant's configured window.
-  // Deduplication in the engine prevents repeat fires within the cooldown window.
+      // ── 2. Event approaching ────────────────────────────────────────────────
+      // Fires for confirmed/paid events within the tenant's configured window.
+      // Deduplication in the engine prevents repeat fires within the cooldown window.
 
-  try {
-    const now = new Date()
-    // Query up to 168h away (max configurable window); per-tenant filtering below
-    const in168h = new Date(now.getTime() + 168 * 60 * 60 * 1000).toISOString()
-
-    const { data: approachingEvents } = await db
-      .from('events')
-      .select('id, tenant_id, status, occasion, event_date, client:clients(full_name)')
-      .in('status', ['confirmed', 'paid'])
-      .gte('event_date', now.toISOString())
-      .lte('event_date', in168h)
-
-    for (const event of approachingEvents || []) {
       try {
-        const tenantSettings = await getAutomationSettingsForTenant(event.tenant_id)
+        const now = new Date()
+        // Query up to 168h away (max configurable window); per-tenant filtering below
+        const in168h = new Date(now.getTime() + 168 * 60 * 60 * 1000).toISOString()
 
-        if (!tenantSettings.event_approaching_alerts_enabled) continue
+        const { data: approachingEvents } = await db
+          .from('events')
+          .select('id, tenant_id, status, occasion, event_date, client:clients(full_name)')
+          .in('status', ['confirmed', 'paid'])
+          .gte('event_date', now.toISOString())
+          .lte('event_date', in168h)
 
-        const hoursUntil = Math.floor(
-          (new Date(event.event_date!).getTime() - now.getTime()) / (60 * 60 * 1000)
-        )
+        for (const event of approachingEvents || []) {
+          try {
+            const tenantSettings = await getAutomationSettingsForTenant(event.tenant_id)
 
-        // Only fire within this tenant's configured window
-        if (hoursUntil > tenantSettings.event_approaching_hours) continue
+            if (!tenantSettings.event_approaching_alerts_enabled) continue
 
-        const clientName = (event.client as { full_name: string } | null)?.full_name || 'Unknown'
-        await evaluateAutomations(event.tenant_id, 'event_approaching', {
-          entityId: event.id,
-          entityType: 'event',
-          fields: {
-            status: event.status,
-            occasion: event.occasion,
-            client_name: clientName,
-            hours_until_event: hoursUntil,
-          },
-        })
-        evaluated++
+            const hoursUntil = Math.floor(
+              (new Date(event.event_date!).getTime() - now.getTime()) / (60 * 60 * 1000)
+            )
+
+            // Only fire within this tenant's configured window
+            if (hoursUntil > tenantSettings.event_approaching_hours) continue
+
+            const clientName =
+              (event.client as { full_name: string } | null)?.full_name || 'Unknown'
+            await evaluateAutomations(event.tenant_id, 'event_approaching', {
+              entityId: event.id,
+              entityType: 'event',
+              fields: {
+                status: event.status,
+                occasion: event.occasion,
+                client_name: clientName,
+                hours_until_event: hoursUntil,
+              },
+            })
+            evaluated++
+          } catch (err) {
+            errors.push(`event_approaching event ${event.id}: ${(err as Error).message}`)
+          }
+        }
       } catch (err) {
-        errors.push(`event_approaching event ${event.id}: ${(err as Error).message}`)
+        errors.push(`event_approaching: ${(err as Error).message}`)
       }
-    }
-  } catch (err) {
-    errors.push(`event_approaching: ${(err as Error).message}`)
-  }
 
-  // ── 3. Overdue follow-ups (custom rules only) ───────────────────────────
-  // The built-in follow-up cron (/api/scheduled/follow-ups) handles the default
-  // notification. This fires the custom rule engine for chefs with a
-  // follow_up_overdue rule. Engine deduplication prevents double-firing.
+      // ── 3. Overdue follow-ups (custom rules only) ───────────────────────────
+      // The built-in follow-up cron (/api/scheduled/follow-ups) handles the default
+      // notification. This fires the custom rule engine for chefs with a
+      // follow_up_overdue rule. Engine deduplication prevents double-firing.
 
-  try {
-    const { data: overdueInquiries } = await db
-      .from('inquiries')
-      .select('id, tenant_id, status, channel, confirmed_occasion, client:clients(full_name)')
-      .eq('status', 'awaiting_client')
-      .not('follow_up_due_at', 'is', null)
-      .lte('follow_up_due_at', new Date().toISOString())
-
-    for (const inquiry of overdueInquiries || []) {
       try {
-        const clientName = (inquiry.client as { full_name: string } | null)?.full_name || 'Unknown'
-        await evaluateAutomations(inquiry.tenant_id, 'follow_up_overdue', {
-          entityId: inquiry.id,
-          entityType: 'inquiry',
-          fields: {
-            status: inquiry.status,
-            channel: inquiry.channel,
-            occasion: inquiry.confirmed_occasion,
-            client_name: clientName,
-          },
-        })
-        evaluated++
+        const { data: overdueInquiries } = await db
+          .from('inquiries')
+          .select('id, tenant_id, status, channel, confirmed_occasion, client:clients(full_name)')
+          .eq('status', 'awaiting_client')
+          .not('follow_up_due_at', 'is', null)
+          .lte('follow_up_due_at', new Date().toISOString())
+
+        for (const inquiry of overdueInquiries || []) {
+          try {
+            const clientName =
+              (inquiry.client as { full_name: string } | null)?.full_name || 'Unknown'
+            await evaluateAutomations(inquiry.tenant_id, 'follow_up_overdue', {
+              entityId: inquiry.id,
+              entityType: 'inquiry',
+              fields: {
+                status: inquiry.status,
+                channel: inquiry.channel,
+                occasion: inquiry.confirmed_occasion,
+                client_name: clientName,
+              },
+            })
+            evaluated++
+          } catch (err) {
+            errors.push(`follow_up_overdue inquiry ${inquiry.id}: ${(err as Error).message}`)
+          }
+        }
       } catch (err) {
-        errors.push(`follow_up_overdue inquiry ${inquiry.id}: ${(err as Error).message}`)
+        errors.push(`follow_up_overdue: ${(err as Error).message}`)
       }
-    }
-  } catch (err) {
-    errors.push(`follow_up_overdue: ${(err as Error).message}`)
+
+      // ── 4. Time-tracking reminders ─────────────────────────────────────────
+      // Gentle chef reminders for running timers and completion gaps.
+
+      try {
+        const { runTimeTrackingReminderSweep } = await import('@/lib/events/time-reminders')
+        const reminderResult = await runTimeTrackingReminderSweep()
+        timeTrackingReminders = reminderResult.runningReminders + reminderResult.completionReminders
+        if (reminderResult.errors.length > 0) {
+          errors.push(...reminderResult.errors)
+        }
+      } catch (err) {
+        errors.push(`time_tracking_reminders: ${(err as Error).message}`)
+      }
+
+      return { evaluated, timeTrackingReminders, errors }
+    })
+
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('[automations] Cron failed:', error)
+    return NextResponse.json({ error: 'Scheduled automations failed' }, { status: 500 })
   }
-
-  // ── 4. Time-tracking reminders ─────────────────────────────────────────
-  // Gentle chef reminders for running timers and completion gaps.
-
-  try {
-    const { runTimeTrackingReminderSweep } = await import('@/lib/events/time-reminders')
-    const reminderResult = await runTimeTrackingReminderSweep()
-    timeTrackingReminders = reminderResult.runningReminders + reminderResult.completionReminders
-    if (reminderResult.errors.length > 0) {
-      errors.push(...reminderResult.errors)
-    }
-  } catch (err) {
-    errors.push(`time_tracking_reminders: ${(err as Error).message}`)
-  }
-
-  return NextResponse.json({ evaluated, timeTrackingReminders, errors })
 }
 
 export { handleAutomations as GET, handleAutomations as POST }

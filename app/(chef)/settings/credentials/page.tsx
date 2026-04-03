@@ -4,6 +4,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { listWorkHistoryEntries, getPrivateResumeStatus } from '@/lib/credentials/actions'
+import { getCharityHoursSummary } from '@/lib/charity/hours-actions'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { WorkHistoryEditor } from '@/components/credentials/work-history-editor'
@@ -14,26 +15,46 @@ export const metadata: Metadata = { title: 'Credentials' }
 export default async function CredentialsSettingsPage() {
   const chef = await requireChef()
   const db: any = createServerClient()
+  const chefId = chef.entityId
 
-  const [workHistory, resumeStatus, chefResult, charityResult] = await Promise.all([
+  const [workHistory, resumeStatus, chefResult, charitySummary] = await Promise.all([
     listWorkHistoryEntries(),
     getPrivateResumeStatus(),
     db
       .from('chefs')
-      .select('public_charity_percent, public_charity_note, show_resume_available_note')
-      .eq('id', chef.id)
+      .select(
+        'public_charity_percent, public_charity_note, show_resume_available_note, show_public_charity'
+      )
+      .eq('id', chefId)
       .single(),
-    db.from('charity_hours').select('hours').eq('chef_id', chef.id),
+    getCharityHoursSummary().catch(() => ({
+      totalHours: 0,
+      totalEntries: 0,
+      uniqueOrgs: 0,
+      verified501cOrgs: 0,
+      hoursByOrg: [],
+    })),
   ])
 
-  const charityRows: Array<{ hours: number }> = charityResult.data ?? []
-  const totalCharityHours = charityRows.reduce((sum, r) => sum + Number(r.hours), 0)
+  let chefSettings = chefResult.data
 
-  const chefSettings = chefResult.data ?? {
-    public_charity_percent: null,
-    public_charity_note: null,
-    show_resume_available_note: false,
+  if (chefResult.error?.code === '42703') {
+    const legacyChefResult = await db
+      .from('chefs')
+      .select('public_charity_percent, public_charity_note, show_resume_available_note')
+      .eq('id', chefId)
+      .single()
+    chefSettings = legacyChefResult.data
   }
+
+  const hasLegacyCharityData =
+    (chefSettings?.public_charity_percent ?? null) !== null ||
+    Boolean(chefSettings?.public_charity_note) ||
+    charitySummary.totalHours > 0
+  const showPublicCharity =
+    typeof chefSettings?.show_public_charity === 'boolean'
+      ? chefSettings.show_public_charity
+      : hasLegacyCharityData
 
   return (
     <div className="max-w-3xl mx-auto space-y-10">
@@ -79,34 +100,21 @@ export default async function CredentialsSettingsPage() {
         <div>
           <h2 className="text-lg font-semibold text-stone-100">Community Impact and Resume</h2>
           <p className="text-stone-400 text-sm mt-0.5">
-            Set a public statement about your charitable giving and keep a private resume on file.
+            Keep community impact available without making it dominate your profile, and keep a
+            private resume on file.
           </p>
         </div>
 
-        {totalCharityHours > 0 && (
-          <div className="rounded-xl border border-stone-700 bg-stone-900/60 px-5 py-3 flex items-center gap-4">
-            <div>
-              <p className="text-xs text-stone-500">Logged volunteer hours</p>
-              <p className="text-2xl font-bold text-stone-100">
-                {Math.round(totalCharityHours * 100) / 100}
-              </p>
-            </div>
-            <Link
-              href="/charity/hours"
-              className="ml-auto text-xs text-stone-500 hover:text-stone-300 underline transition-colors"
-            >
-              Manage logs
-            </Link>
-          </div>
-        )}
-
         <CredentialProfileForm
           initialValues={{
-            publicCharityPercent: chefSettings.public_charity_percent ?? null,
-            publicCharityNote: chefSettings.public_charity_note ?? null,
-            showResumeAvailableNote: chefSettings.show_resume_available_note ?? false,
+            publicCharityPercent: chefSettings?.public_charity_percent ?? null,
+            publicCharityNote: chefSettings?.public_charity_note ?? null,
+            showPublicCharity,
+            showResumeAvailableNote: chefSettings?.show_resume_available_note ?? false,
           }}
           resumeStatus={resumeStatus}
+          totalCharityHours={Math.round(charitySummary.totalHours * 100) / 100}
+          trackedOrganizations={charitySummary.uniqueOrgs}
         />
       </section>
     </div>

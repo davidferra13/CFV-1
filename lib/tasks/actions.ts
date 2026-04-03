@@ -354,7 +354,7 @@ export async function listTasks(filters?: ListTasksFilter) {
 
   let query = db
     .from('tasks')
-    .select('*, staff_member:staff_members!tasks_assigned_to_fkey(id, name, role)')
+    .select('*, staff_member:staff_members!assigned_to(id, name, role)')
     .eq('chef_id', user.tenantId!)
     .order('due_date', { ascending: true })
     .order('due_time', { ascending: true, nullsFirst: false })
@@ -393,7 +393,7 @@ export async function getTasksByDate(date: string) {
 
   const { data, error } = await db
     .from('tasks')
-    .select('*, staff_member:staff_members!tasks_assigned_to_fkey(id, name, role)')
+    .select('*, staff_member:staff_members!assigned_to(id, name, role)')
     .eq('chef_id', user.tenantId!)
     .eq('due_date', date)
     .order('due_time', { ascending: true, nullsFirst: false })

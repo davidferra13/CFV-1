@@ -73,8 +73,17 @@ test('typecheck wrapper invalidates build info when config files change', () => 
 
   assert.ok(wrapper.includes('configStat.mtimeMs > buildInfoStat.mtimeMs'))
   assert.ok(wrapper.includes("const rootTsconfigPath = path.resolve(projectDir, 'tsconfig.json')"))
-  assert.ok(wrapper.includes("for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK'])"))
+  assert.ok(
+    wrapper.includes(
+      "const signalHandlers = ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK'].map((signal) => {"
+    )
+  )
   assert.ok(wrapper.includes("setTimeout(() => stopChild('SIGKILL'), 5_000).unref()"))
+  assert.ok(
+    wrapper.includes(
+      '[run-typecheck] Initial incremental pass failed; resetting build info and retrying once.'
+    )
+  )
 })
 
 test('build wrapper propagates heap settings through NODE_OPTIONS', () => {
@@ -84,7 +93,8 @@ test('build wrapper propagates heap settings through NODE_OPTIONS', () => {
   assert.ok(wrapper.includes("existingOptions.includes('--max-old-space-size=')"))
   assert.ok(wrapper.includes('NODE_OPTIONS: nodeOptions'))
   assert.ok(wrapper.includes('NEXT_TSCONFIG_PATH: tempTsconfigPath'))
-  assert.ok(wrapper.includes("const tempTsconfigPath = resolve('.next-build.tsconfig.json')"))
+  assert.ok(wrapper.includes("const tempTsconfigPath = 'tsconfig.next.json'"))
+  assert.ok(wrapper.includes('[run-next-build] Cleared stale production dist directory'))
   assert.ok(wrapper.includes("spawn(process.execPath, [nextCliPath, 'build', ...forwardedArgs]"))
 })
 

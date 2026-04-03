@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 // ---------------------------------------------------------------------------
 // Unified OpenClaw Sync Cron
@@ -20,25 +21,23 @@ export async function POST(request: Request) {
   const cartridge = url.searchParams.get('cartridge') || 'price-intel'
 
   try {
-    // Dynamic import to avoid loading openclaw module at build time
-    const { syncCartridgeInternal } = await import('@/lib/openclaw/sync-receiver')
+    const result = await runMonitoredCronJob('openclaw-sync', async () => {
+      const { syncCartridgeInternal } = await import('@/lib/openclaw/sync-receiver')
+      const syncResult = await syncCartridgeInternal(cartridge)
 
-    const result = await syncCartridgeInternal(cartridge)
+      return {
+        ...syncResult,
+        timestamp: new Date().toISOString(),
+      }
+    })
 
     if (!result.success) {
-      return NextResponse.json(
-        {
-          ...result,
-          timestamp: new Date().toISOString(),
-        },
-        { status: result.errorDetails?.[0]?.includes('Unknown cartridge') ? 400 : 500 }
-      )
+      return NextResponse.json(result, {
+        status: result.errorDetails?.[0]?.includes('Unknown cartridge') ? 400 : 500,
+      })
     }
 
-    return NextResponse.json({
-      ...result,
-      timestamp: new Date().toISOString(),
-    })
+    return NextResponse.json(result)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     console.error(`[openclaw-sync cron] Error for cartridge '${cartridge}':`, message)

@@ -53,6 +53,7 @@ import { MenuRevisionChefEmail } from './templates/menu-revision-chef'
 import { AvailabilitySignalEmail } from './templates/availability-signal'
 import { CircleMessageEmail } from './templates/circle-message'
 import { FriendRequestEmail } from './templates/friend-request'
+import { ContactMessageReceivedEmail } from './templates/contact-message-received'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -97,6 +98,24 @@ export async function sendInquiryReceivedEmail(params: {
       occasion: params.occasion,
       eventDate: params.eventDate,
       circleUrl: params.circleUrl,
+    }),
+  })
+}
+
+export async function sendContactMessageReceivedEmail(params: {
+  contactEmail: string
+  contactName: string
+  supportEmail: string
+  responseWindowText: string
+}) {
+  await sendEmail({
+    to: params.contactEmail,
+    subject: 'We received your message',
+    replyTo: params.supportEmail,
+    react: createElement(ContactMessageReceivedEmail, {
+      contactName: params.contactName,
+      supportEmail: params.supportEmail,
+      responseWindowText: params.responseWindowText,
     }),
   })
 }

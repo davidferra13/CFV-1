@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, FormEvent } from 'react'
+import type { ContactSupportInfo } from '@/lib/contact/public-support'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
@@ -21,7 +22,11 @@ interface FormErrors {
   message?: string
 }
 
-export default function ContactForm() {
+type ContactFormProps = {
+  supportInfo: ContactSupportInfo
+}
+
+export default function ContactForm({ supportInfo }: ContactFormProps) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -32,6 +37,9 @@ export default function ContactForm() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [successMessage, setSuccessMessage] = useState(
+    "We received your message. We'll reply soon."
+  )
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const validateForm = (): boolean => {
@@ -68,13 +76,14 @@ export default function ContactForm() {
     setSubmitError(null)
 
     try {
-      await submitContactForm(formData)
+      const result = await submitContactForm(formData)
       trackEvent(ANALYTICS_EVENTS.CONTACT_FORM_SUBMITTED, {
         source: 'contact_page',
         has_subject: Boolean(formData.subject.trim()),
         message_length: formData.message.trim().length,
       })
 
+      setSuccessMessage(result.userMessage ?? "We received your message. We'll reply soon.")
       setShowSuccess(true)
       setFormData({ name: '', email: '', subject: '', message: '' })
 
@@ -122,7 +131,7 @@ export default function ContactForm() {
                   </svg>
                   <div>
                     <h4 className="font-semibold text-green-900 mb-1">Message sent!</h4>
-                    <p className="text-green-700 text-sm">We&apos;ll respond within 24 hours.</p>
+                    <p className="text-green-700 text-sm">{successMessage}</p>
                   </div>
                 </div>
               </div>
@@ -198,6 +207,32 @@ export default function ContactForm() {
             <CardTitle>Contact Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
+            {supportInfo.statusLabel && (
+              <div
+                className={`rounded-lg border px-4 py-3 ${
+                  supportInfo.isOpen
+                    ? 'border-emerald-200 bg-emerald-50'
+                    : 'border-amber-200 bg-amber-50'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <h4 className="font-semibold text-stone-900">Support Status</h4>
+                  <span
+                    className={`text-xs font-semibold uppercase tracking-wide ${
+                      supportInfo.isOpen ? 'text-emerald-700' : 'text-amber-700'
+                    }`}
+                  >
+                    {supportInfo.statusLabel}
+                  </span>
+                </div>
+                {supportInfo.currentTimeLabel && (
+                  <p className="mt-2 text-sm text-stone-600">
+                    Current support time: {supportInfo.currentTimeLabel}
+                  </p>
+                )}
+              </div>
+            )}
+
             <div>
               <div className="flex items-start mb-4">
                 <div className="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
@@ -218,10 +253,10 @@ export default function ContactForm() {
                 <div>
                   <h4 className="font-semibold text-stone-900 mb-1">Email</h4>
                   <a
-                    href="mailto:support@cheflowhq.com"
+                    href={`mailto:${supportInfo.supportEmail}`}
                     className="text-brand-700 hover:text-brand-800"
                   >
-                    support@cheflowhq.com
+                    {supportInfo.supportEmail}
                   </a>
                 </div>
               </div>
@@ -247,7 +282,9 @@ export default function ContactForm() {
                 <div>
                   <h4 className="font-semibold text-stone-900 mb-1">Response Time</h4>
                   <p className="text-stone-600 text-sm">
-                    We typically respond within 24 hours during business days
+                    {supportInfo.isOpen === true
+                      ? 'We are currently online and usually respond as soon as possible.'
+                      : 'We typically respond within 1 business day.'}
                   </p>
                 </div>
               </div>
@@ -272,11 +309,18 @@ export default function ContactForm() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-stone-900 mb-1">Support Hours</h4>
-                  <p className="text-stone-600 text-sm">
-                    Monday - Friday
-                    <br />
-                    9:00 AM - 5:00 PM PST
-                  </p>
+                  <div className="space-y-1">
+                    {supportInfo.hoursSummary.map((line) => (
+                      <p
+                        key={`${line.dayLabel}-${line.hoursLabel}`}
+                        className="text-stone-600 text-sm"
+                      >
+                        {line.dayLabel}
+                        <br />
+                        {line.hoursLabel}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

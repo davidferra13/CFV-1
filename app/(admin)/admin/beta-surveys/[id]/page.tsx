@@ -4,12 +4,12 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { createAdminClient } from '@/lib/db/admin'
 import { getBetaSurveyResults, getBetaSurveyInvites } from '@/lib/beta-survey/actions'
-import type { SurveyQuestion } from '@/lib/beta-survey/survey-utils'
+import { formatSurveyTypeLabel, type SurveyQuestion } from '@/lib/beta-survey/survey-utils'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SurveyResultsClient } from './results-client'
 
-export const metadata: Metadata = { title: 'Survey Results - Admin' }
+export const metadata: Metadata = { title: 'Form Dashboard - Admin' }
 
 export default async function AdminBetaSurveyDetailPage({ params }: { params: { id: string } }) {
   await requireAdmin()
@@ -46,11 +46,11 @@ export default async function AdminBetaSurveyDetailPage({ params }: { params: { 
             href="/admin/beta-surveys"
             className="text-sm text-slate-400 hover:text-slate-200 mb-2 inline-block"
           >
-            &larr; Back to surveys
+            &larr; Back to forms
           </Link>
           <h1 className="text-2xl font-bold text-white">{survey.title}</h1>
           <p className="text-slate-400 text-sm mt-1">
-            {survey.survey_type === 'pre_beta' ? 'Pre-Beta' : 'Post-Beta'} &middot;{' '}
+            {formatSurveyTypeLabel(survey.survey_type)} &middot;{' '}
             {survey.is_active ? 'Active' : 'Inactive'} &middot; {questions.length} questions
           </p>
         </div>
@@ -168,6 +168,8 @@ export default async function AdminBetaSurveyDetailPage({ params }: { params: { 
       {/* Client component for interactive parts (export, invites, response table) */}
       <SurveyResultsClient
         surveyId={params.id}
+        surveySlug={survey.slug}
+        surveyType={survey.survey_type}
         responses={responses}
         invites={invites}
         appUrl={APP_URL}

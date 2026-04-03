@@ -2,6 +2,8 @@
 
 ChefFlow uses a single Docker container running PostgreSQL 15. No Supabase, no cloud database dependency.
 
+> Builder note (2026-04-02): this guide describes the intended local architecture, but the active developer-machine runtime has verified drift in credentials, bootstrap helpers, and schema freshness. Read `docs/research/local-docker-runtime-builder-handoff-2026-04-02.md` before changing Docker or local DB state.
+
 ## Architecture
 
 ```

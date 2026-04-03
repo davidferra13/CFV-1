@@ -155,7 +155,7 @@ export function VendorImportTab() {
           <h3 className="font-semibold">Upload Vendor Price List</h3>
           <p className="text-sm text-stone-400">
             Upload a PDF price list from a vendor. The system will extract prices and match them to
-            known ingredients.
+            known ingredients, then publish confirmed matches into the shared market catalog.
           </p>
 
           <div className="grid grid-cols-2 gap-4">

@@ -4,46 +4,66 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { X, ClipboardList } from '@/components/ui/icons'
 import { useOnboardingPeripheralsEnabled } from '@/lib/onboarding/peripheral-visibility'
-
-const DISMISS_KEY = 'beta-survey-banner-dismissed'
-const DISMISS_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
+import {
+  BETA_SURVEY_BANNER_DISMISS_DURATION_MS,
+  getBetaSurveyBannerDismissKey,
+  getBetaSurveyCompletionKey,
+} from '@/lib/beta-survey/survey-presence'
 
 interface BetaSurveyBannerClientProps {
   surveySlug: string
   surveyTitle: string
   /** Route to the survey page (differs by portal) */
   href: string
+  respectOnboardingPeripherals?: boolean
 }
 
 export function BetaSurveyBannerClient({
   surveySlug,
   surveyTitle,
   href,
+  respectOnboardingPeripherals = true,
 }: BetaSurveyBannerClientProps) {
   const onboardingPeripheralsEnabled = useOnboardingPeripheralsEnabled()
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    if (!onboardingPeripheralsEnabled) {
+    if (respectOnboardingPeripherals && !onboardingPeripheralsEnabled) {
       setVisible(false)
       return
     }
 
-    // Check if dismissed within the last 24 hours
-    const dismissedAt = localStorage.getItem(`${DISMISS_KEY}-${surveySlug}`)
-    if (dismissedAt) {
-      const elapsed = Date.now() - Number(dismissedAt)
-      if (elapsed < DISMISS_DURATION_MS) return
+    try {
+      if (localStorage.getItem(getBetaSurveyCompletionKey(surveySlug))) {
+        setVisible(false)
+        return
+      }
+
+      const dismissedAt = localStorage.getItem(getBetaSurveyBannerDismissKey(surveySlug))
+      if (dismissedAt) {
+        const elapsed = Date.now() - Number(dismissedAt)
+        if (elapsed < BETA_SURVEY_BANNER_DISMISS_DURATION_MS) {
+          setVisible(false)
+          return
+        }
+      }
+    } catch {
+      // Fail open if browser storage is unavailable.
     }
+
     setVisible(true)
-  }, [onboardingPeripheralsEnabled, surveySlug])
+  }, [onboardingPeripheralsEnabled, respectOnboardingPeripherals, surveySlug])
 
   const dismiss = () => {
-    localStorage.setItem(`${DISMISS_KEY}-${surveySlug}`, String(Date.now()))
+    try {
+      localStorage.setItem(getBetaSurveyBannerDismissKey(surveySlug), String(Date.now()))
+    } catch {
+      // Ignore storage failures and still hide the banner for this render.
+    }
     setVisible(false)
   }
 
-  if (!onboardingPeripheralsEnabled) return null
+  if (respectOnboardingPeripherals && !onboardingPeripheralsEnabled) return null
   if (!visible) return null
 
   return (

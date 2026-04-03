@@ -34,6 +34,7 @@ type PublicProfileData = {
     tagline: string | null
     bio: string | null
     website_url: string | null
+    google_review_url: string | null
     show_website_on_public_profile: boolean
     preferred_inquiry_destination: string | null
     portal_primary_color: string | null
@@ -59,6 +60,20 @@ type CredentialsData = {
     verified501cOrgs: number
     publicCharityPercent: number | null
     publicCharityNote: string | null
+    showPublicCharity: boolean
+    organizations: Array<{
+      id: string | null
+      organizationName: string
+      organizationAddress: string | null
+      totalHours: number
+      isVerified501c: boolean
+      websiteUrl: string | null
+      links: {
+        websiteUrl: string | null
+        mapsUrl: string | null
+        verificationUrl: string | null
+      }
+    }>
   }
   showResumeNote: boolean
 }

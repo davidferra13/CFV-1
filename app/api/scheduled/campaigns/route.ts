@@ -4,6 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { processScheduledCampaigns } from '@/lib/marketing/actions'
 
 export async function GET(req: NextRequest) {
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const result = await processScheduledCampaigns()
+    const result = await runMonitoredCronJob('campaigns', async () => processScheduledCampaigns())
     return NextResponse.json({ ok: true, ...result })
   } catch (err) {
     console.error('[cron/campaigns] Error:', err)

@@ -5,7 +5,8 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { getCurrentUser } from '@/lib/auth/get-user'
-import { getActiveSurvey, getMyBetaSurveyStatus } from '@/lib/beta-survey/actions'
+import { getMyBetaSurveyStatus } from '@/lib/beta-survey/actions'
+import { getCachedActiveSurvey } from '@/lib/beta-survey/survey-cache'
 import { BetaSurveyForm } from '@/components/beta-survey/beta-survey-form'
 
 export const metadata: Metadata = {
@@ -22,11 +23,11 @@ export default async function BetaSurveyPage() {
   const redirectTo = user.role === 'chef' ? '/dashboard' : '/my-events'
 
   // Find the active survey - check pre-beta first, then post-beta
-  let survey = await getActiveSurvey('pre_beta')
+  let survey = await getCachedActiveSurvey('pre_beta')
   let type: 'pre_beta' | 'post_beta' = 'pre_beta'
 
   if (!survey) {
-    survey = await getActiveSurvey('post_beta')
+    survey = await getCachedActiveSurvey('post_beta')
     type = 'post_beta'
   }
 

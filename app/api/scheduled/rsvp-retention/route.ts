@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 async function purgeTable(params: {
   table: string
@@ -31,45 +32,54 @@ async function handleRSVPRetention(request: NextRequest): Promise<NextResponse> 
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
-  const now = Date.now()
-  const cutoff180d = new Date(now - 180 * 24 * 60 * 60 * 1000).toISOString()
-  const cutoff365d = new Date(now - 365 * 24 * 60 * 60 * 1000).toISOString()
+  try {
+    const result = await runMonitoredCronJob('rsvp-retention', async () => {
+      const now = Date.now()
+      const cutoff180d = new Date(now - 180 * 24 * 60 * 60 * 1000).toISOString()
+      const cutoff365d = new Date(now - 365 * 24 * 60 * 60 * 1000).toISOString()
 
-  const results = await Promise.all([
-    purgeTable({
-      table: 'rsvp_reminder_log',
-      timestampColumn: 'created_at',
-      cutoffIso: cutoff180d,
-    }),
-    purgeTable({
-      table: 'event_join_requests',
-      timestampColumn: 'created_at',
-      cutoffIso: cutoff180d,
-      extraFilter: (query) => query.neq('status', 'pending'),
-    }),
-    purgeTable({
-      table: 'event_guest_rsvp_audit',
-      timestampColumn: 'created_at',
-      cutoffIso: cutoff365d,
-    }),
-    purgeTable({
-      table: 'event_share_invite_events',
-      timestampColumn: 'created_at',
-      cutoffIso: cutoff365d,
-    }),
-    purgeTable({
-      table: 'guest_communication_logs',
-      timestampColumn: 'created_at',
-      cutoffIso: cutoff365d,
-    }),
-  ])
+      const results = await Promise.all([
+        purgeTable({
+          table: 'rsvp_reminder_log',
+          timestampColumn: 'created_at',
+          cutoffIso: cutoff180d,
+        }),
+        purgeTable({
+          table: 'event_join_requests',
+          timestampColumn: 'created_at',
+          cutoffIso: cutoff180d,
+          extraFilter: (query) => query.neq('status', 'pending'),
+        }),
+        purgeTable({
+          table: 'event_guest_rsvp_audit',
+          timestampColumn: 'created_at',
+          cutoffIso: cutoff365d,
+        }),
+        purgeTable({
+          table: 'event_share_invite_events',
+          timestampColumn: 'created_at',
+          cutoffIso: cutoff365d,
+        }),
+        purgeTable({
+          table: 'guest_communication_logs',
+          timestampColumn: 'created_at',
+          cutoffIso: cutoff365d,
+        }),
+      ])
 
-  const failed = results.filter((result) => !!result.error)
-  return NextResponse.json({
-    success: failed.length === 0,
-    cutoffs: { cutoff180d, cutoff365d },
-    results,
-  })
+      const failed = results.filter((entry) => !!entry.error)
+      return {
+        success: failed.length === 0,
+        cutoffs: { cutoff180d, cutoff365d },
+        results,
+      }
+    })
+
+    return NextResponse.json(result)
+  } catch (error) {
+    console.error('[rsvp-retention] Cron failed:', error)
+    return NextResponse.json({ error: 'RSVP retention cleanup failed' }, { status: 500 })
+  }
 }
 
 export { handleRSVPRetention as GET, handleRSVPRetention as POST }

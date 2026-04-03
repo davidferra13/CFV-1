@@ -7,15 +7,25 @@
 > **Created:** 2026-03-29
 > **Built by:** Claude Code session 2026-03-29 (Phase 1)
 
+Research input:
+
+- `docs/research/competitive-intelligence-takeachef-privatechefmanager-2026-04-02.md` is the current public-evidence baseline for Take a Chef and Private Chef Manager positioning, monetization, public architecture, and surface-level workflow assumptions.
+- `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md` translates the competitor findings into direct ChefFlow product and website priorities.
+- `docs/research/competitive-intelligence-gap-closure-builder-handoff-2026-04-02.md` is the dependency-ordered next-step research packet for closing the highest-value authenticated, operational, and longitudinal gaps before further spec expansion.
+- `docs/research/platform-intelligence-cross-persona-ground-truth-2026-04-02.md` is the current cross-checked grounding doc for how chefs, developers, entrepreneurs, and business operators actually handle multi-channel inquiry capture, scheduling, quoting, portals, and response operations today.
+- `docs/research/foundations/2026-04-03-platform-intelligence-evidence-gaps-and-spec-corrections.md` is the current correction packet for underused repo evidence, missing live evidence, and required planning changes around portal activation, lifecycle completeness, trust and abuse boundaries, and validation order.
+
 ---
 
 ## What This Does (Plain English)
 
-ChefFlow becomes the single command center for every third-party platform a chef uses. Today, chefs juggle TakeAChef, Private Chef Manager, Thumbtack, Bark, Cozymeal, TheKnot, GigSalad, and others. They log into each platform separately, miss response deadlines, quote without knowing their take-home after commission, and can't tell which platforms actually make them money. This spec eliminates all of that.
+ChefFlow becomes the single command center for every third-party platform a chef uses. Today, chefs juggle TakeAChef, Private Chef Manager, Thumbtack, Bark, Cozymeal, TheKnot, GigSalad, and others. They log into each platform separately, miss response deadlines, quote without knowing their take-home after commission, and can't tell which platforms actually make them money. This spec is the staged plan for eliminating that fragmentation.
 
 After this is built: a chef connects Gmail, selects which platforms they're active on, and ChefFlow automatically captures every inquiry from every platform. Each inquiry shows a response deadline countdown. The quote builder shows net take-home after commission. A dashboard shows which platforms are worth the chef's time. When the same person inquires through two different platforms, ChefFlow detects it and suggests a merge. When a chef wants to respond, ChefFlow drafts the message and deep-links them straight to the right conversation on the platform.
 
 This works for every chef who creates a ChefFlow account. Not a personal tool. A product feature.
+
+The initial implementation must stay honest about the capture layer. Based on the current workflow research, phase one is email-first and source-tracking-first, not a fantasy of full bidirectional APIs for every marketplace on day one.
 
 ---
 
@@ -25,7 +35,36 @@ Chefs lose leads because they're spread across 5-10 platforms with no unified vi
 
 ---
 
-## Architecture: 12 Phases
+## Ground Truth Constraints
+
+The current cross-persona workflow research adds six planning constraints that should govern every phase in this spec:
+
+- The first believable win is centralizing email, website-form, and routed marketplace demand into one queue. Deep native integrations are later-stage work.
+- Gmail and calendar sync are hybrid reliability problems. Watches expire, notifications can be delayed or dropped, and fallback sync plus manual correction are part of the product.
+- Website, social, and direct-link lead capture matter as much as marketplace parsing. Adjacent event-sales tools sell source tracking and website connection as core or premium capabilities for a reason.
+- Client portals and schedulers are useful, but optional. Real operators still preserve direct-link and email-first paths because many clients do not want another login.
+- Calendar awareness is advisory. A selected time or synced event is not equivalent to a commercially confirmed booking without approval and payment context.
+- Trust comes from reconciliation, not automation claims. The chef needs to see what was captured, what was classified, what is missing, and how channel fees change take-home.
+
+These constraints are sourced in `docs/research/platform-intelligence-cross-persona-ground-truth-2026-04-02.md` and should override any builder instinct to jump straight to "integrate everything."
+
+---
+
+## Additional Planning Corrections
+
+The current correction packet adds five directives that must govern all phases in this spec:
+
+- Portal activation must be value-first. Do not build client entry paths around empty portal invitations or password-first first visits.
+- The lifecycle model must include agreement, venue or kitchen assessment, cancellation and reschedule handling, and repeat-client continuity instead of assuming the happy path.
+- Trust requirements include abuse resistance, invite hardening, and public-account credibility, not only visible quote math and message capture.
+- Validation is a real phase. Moderated task testing, activation measurement, sync telemetry, and survey evidence are now part of the planning boundary.
+- The next strongest unknowns are live evidence gaps, not another round of broad public-market browsing.
+
+Read `docs/research/foundations/2026-04-03-platform-intelligence-evidence-gaps-and-spec-corrections.md` before executing further planning or implementation phases from this spec.
+
+---
+
+## Architecture: 14 Phases
 
 Each phase is independently buildable and shippable. Phases are ordered by dependency, not priority. A builder agent should build them in order but can mark each phase as a standalone deliverable.
 
@@ -96,17 +135,17 @@ The existing `getTakeAChefIntegrationSettings()` and `updateTakeAChefIntegration
 
 ## Phase 2: Parser Hardening + Historical Backfill
 
-**Goal:** Get all 12 parsers to production quality. Auto-trigger historical backfill on first Gmail connect.
+**Goal:** Get all 12 parsers to production quality, keep Gmail capture healthy with watch + history fallbacks, and auto-trigger historical backfill on first Gmail connect.
 
 ### Files to Modify
 
-| File                                     | What to Change                                                                                                                                                                                                             |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lib/gmail/privatechefmanager-parser.ts` | Tune regex patterns with real email samples. Remove "Parser needs real email samples" warnings once verified. Target: extract clientName, eventDate, guestCount, location, occasion, budget, dietary from new lead emails. |
-| `lib/gmail/hireachef-parser.ts`          | Same as above. Note: HireAChef is a directory (USPCA), emails may be direct contact rather than platform-mediated. Parser should handle both notification-style and direct-contact-style emails.                           |
-| `lib/gmail/cuisineistchef-parser.ts`     | Same as above. Extra: conciergeNote field (line 33) is unique to this parser. Luxury platform may use more verbose email templates.                                                                                        |
-| `lib/gmail/historical-scan.ts`           | Add auto-trigger logic: when `google_connections.historical_scan_status` is null AND `gmail_connected` just became true, start first batch automatically. Add progress tracking fields for UI display.                     |
-| `lib/gmail/sync.ts`                      | After successful Gmail OAuth connect callback, call `triggerInitialHistoricalScan(chefId)`.                                                                                                                                |
+| File                                     | What to Change                                                                                                                                                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `lib/gmail/privatechefmanager-parser.ts` | Tune regex patterns with real email samples. Remove "Parser needs real email samples" warnings once verified. Target: extract clientName, eventDate, guestCount, location, occasion, budget, dietary from new lead emails.     |
+| `lib/gmail/hireachef-parser.ts`          | Same as above. Note: HireAChef is a directory (USPCA), emails may be direct contact rather than platform-mediated. Parser should handle both notification-style and direct-contact-style emails.                               |
+| `lib/gmail/cuisineistchef-parser.ts`     | Same as above. Extra: conciergeNote field (line 33) is unique to this parser. Luxury platform may use more verbose email templates.                                                                                            |
+| `lib/gmail/historical-scan.ts`           | Add auto-trigger logic: when `google_connections.historical_scan_status` is null AND `gmail_connected` just became true, start first batch automatically. Add progress tracking fields for UI display.                         |
+| `lib/gmail/sync.ts`                      | After successful Gmail OAuth connect callback, call `triggerInitialHistoricalScan(chefId)`. Ensure the sync path treats Gmail watch expiry, stale `historyId`, and fallback re-sync as first-class cases, not silent failures. |
 
 ### Files to Create
 
@@ -141,6 +180,13 @@ CREATE INDEX idx_parser_feedback_platform ON parser_feedback_log(platform, creat
 The settings UI should include, for each active platform: "Forward a recent email from [Platform] to parserfeedback@cheflowhq.com to help us improve detection." This is optional, non-blocking, and helps tune parsers across all chef accounts.
 
 Alternatively (and preferably), when a parser partially fails (extracts <50% of expected fields), the inquiry detail page shows: "We couldn't read all details from this [Platform] email. [View raw email] [Report issue]". The "Report issue" button logs to `parser_feedback_log` with the extracted fields and what's missing.
+
+### Reliability Constraints
+
+- Push notifications reduce polling but do not remove the need for history-based reconciliation.
+- If Gmail returns an out-of-date history cursor, the system should force a full re-sync and surface that event in sync health instead of pretending everything is current.
+- Parser confidence needs a visible operator path: raw email, missing fields, manual correction, and retry.
+- "All caught up" must be withheld when sync freshness is stale or watch renewal has failed.
 
 ---
 
@@ -645,6 +691,22 @@ All templates are stored in `MARKETPLACE_PLATFORMS` config and are overridable. 
 3. Open a Thumbtack inquiry, click "Ask Remy to draft"
 4. Verify draft tone matches Thumbtack context (direct, casual)
 5. Verify morning briefing notification appears on dashboard (after cron runs)
+
+### Phase 13
+
+1. Navigate to the raw platform feed or equivalent trust-verification surface
+2. Verify captured platform emails show classification, confidence, and missing-field visibility
+3. Force or mock a stale sync condition, verify the UI does not claim "all caught up"
+4. Verify a parser-correction or report-issue action creates an audit trail
+5. Verify trust metrics reflect real capture state, not optimistic assumptions
+
+### Phase 14
+
+1. Navigate to the unified email feed
+2. Verify counts render for inquiries, opportunities, marketing, and spam or scams
+3. Reclassify one non-inquiry item into an inquiry, verify the minimal inquiry is created and original classification is preserved
+4. Star an opportunity, refresh, and verify persistence
+5. Verify scam warnings are surfaced both in the feed and on affected inquiry records
 
 ---
 

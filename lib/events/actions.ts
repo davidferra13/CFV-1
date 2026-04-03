@@ -288,39 +288,77 @@ export async function getEvents() {
  * The explicit tenant_id filter has been removed so both groups can load the page.
  */
 export async function getEventById(eventId: string) {
-  await requireChef()
+  const user = await requireChef()
   const db: any = createServerClient()
+  const adminDb: any = createServerClient({ admin: true })
 
-  const runQuery = (withSoftDeleteFilter: boolean) => {
-    let query = db
-      .from('events')
-      .select(
-        `
-      *,
-      client:clients(id, full_name, email, phone),
-      referral_partner:referral_partners!events_referral_partner_id_fkey(id, name),
-      partner_location:partner_locations(id, name, city, state)
-    `
-      )
-      .eq('id', eventId)
+  const runBaseQuery = async (client: any, withSoftDeleteFilter: boolean, tenantId?: string) => {
+    let query = client.from('events').select('*').eq('id', eventId)
+    if (tenantId) {
+      query = query.eq('tenant_id', tenantId)
+    }
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }
-    return query.single()
+    return query.maybeSingle()
   }
 
-  let response = await runQuery(true)
-  if (isMissingSoftDeleteColumn(response.error)) {
-    response = await runQuery(false)
+  let ownerResponse = await runBaseQuery(adminDb, true, user.tenantId ?? user.entityId)
+  if (isMissingSoftDeleteColumn(ownerResponse.error)) {
+    ownerResponse = await runBaseQuery(adminDb, false, user.tenantId ?? user.entityId)
   }
-  const { data: event, error } = response
 
-  if (error) {
-    console.error('[getEventById] Error:', error)
+  let event = ownerResponse.data
+  let error = ownerResponse.error
+
+  // Collaborators still need the route. Fall back to the RLS-scoped read path
+  // only after the explicit owner query misses.
+  if (!event) {
+    let collaboratorResponse = await runBaseQuery(db, true)
+    if (isMissingSoftDeleteColumn(collaboratorResponse.error)) {
+      collaboratorResponse = await runBaseQuery(db, false)
+    }
+    event = collaboratorResponse.data
+    error = collaboratorResponse.error
+  }
+
+  if (error || !event) {
+    if (error) {
+      console.error('[getEventById] Error:', error)
+    }
     return null
   }
 
-  return event
+  const [clientResponse, referralPartnerResponse, partnerLocationResponse] = await Promise.all([
+    event.client_id
+      ? adminDb
+          .from('clients')
+          .select('id, full_name, email, phone')
+          .eq('id', event.client_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    event.referral_partner_id
+      ? adminDb
+          .from('referral_partners')
+          .select('id, name')
+          .eq('id', event.referral_partner_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    event.partner_location_id
+      ? adminDb
+          .from('partner_locations')
+          .select('id, name, city, state')
+          .eq('id', event.partner_location_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ])
+
+  return {
+    ...event,
+    client: clientResponse.data ?? null,
+    referral_partner: referralPartnerResponse.data ?? null,
+    partner_location: partnerLocationResponse.data ?? null,
+  }
 }
 
 /**

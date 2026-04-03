@@ -86,6 +86,22 @@ If they say yes, they land on a page that lets them "create their listing" (whic
 | Spam report                      | Auto-suppressed by Resend. Email permanently blocked. Listing stays.                                                      |
 | Positive reply / clicks "Join"   | Route to claim flow. Listing upgraded to claimed.                                                                         |
 
+### Research Constraints (2026-04-02)
+
+Recent operator and developer research tightened the shape of this spec:
+
+- Operators already manage multiple public surfaces, especially Google, Apple Maps, websites, ordering links, reservations, and social profiles.
+- The highest-value fields are hours, menu/order/reservation links, photos, logos, and seasonal promotions.
+- Operators increasingly care about direct guest relationships and first-party ordering, not just passive directory presence.
+- Shared management is normal. Real businesses often involve an owner, a general manager, and sometimes an agency or marketing contractor.
+- Cross-platform sync is strategically valuable, but not a good v1 assumption. Google Business Profile API access is gated and has no sandbox. Apple's API path is aimed at scaled listing-management workflows.
+
+What this means for this spec:
+
+- The join flow should feel like claim and correct, not build from scratch.
+- The first post-claim enhancement tasks should prioritize operational accuracy and direct action links.
+- Delegated management and external listing sync should be recognized, but remain out of scope for this spec.
+
 ---
 
 ## Files to Create
@@ -280,6 +296,8 @@ The `ref` param is a hashed listing ID (not the raw UUID). Used to silently matc
 - After submit: redirect to `/discover/[slug]/enhance` (existing enhance flow)
 - No ChefFlow branding on this page (or minimal, just the domain in the URL which is unavoidable)
 
+**Important UX constraint:** The join page should stay minimal because the outreach email promises a short flow. The heavy lifting belongs after claim. The operator should not be asked to fully rebuild their profile before they can proceed.
+
 **Matching logic on submit (exact algorithm, in order):**
 
 1. If `ref` param decrypts to a valid listing UUID: claim that listing directly
@@ -289,6 +307,20 @@ The `ref` param is a hashed listing ID (not the raw UUID). Used to silently matc
    - **Tier 3 (no match):** Create a new `pending_submission` listing with the submitted data
 3. In all cases: send the standard `DirectoryClaimedEmail` (which DOES mention ChefFlow, but by this point they've opted in)
 4. Set `outreach_status = 'claimed_via_outreach'` on the matched listing (in addition to normal claim fields)
+
+**Source-field constraint:** If Tier 3 creates a new listing, it must reuse an already-valid `directory_listings.source` value such as `submission` unless a separate migration explicitly expands the source check. Do not invent `outreach_join` under the current schema contract.
+
+### Post-Claim Enhancement Priorities
+
+After a successful claim, the redirected enhance flow should prioritize the fields operators are most likely to care about and already maintain elsewhere:
+
+1. Confirm or correct hours
+2. Add or fix website URL
+3. Add or fix menu link, order link, or reservation link
+4. Upload logo / hero photo
+5. Add a short business description or current promotion
+
+This ordering matters. It aligns ChefFlow with the real operator workflow instead of forcing low-value profile completion first.
 
 ### Admin Dashboard: `/admin/outreach`
 
@@ -318,6 +350,8 @@ The `ref` param is a hashed listing ID (not the raw UUID). Used to silently matc
 | Listing already claimed by someone else                   | Skip in queue selection (status != 'discovered').                                                                              |
 | Email in opt-out list                                     | Skip in queue selection (checked against `directory_email_preferences`).                                                       |
 | `ref` hash is tampered/invalid                            | Ignore it. Fall through to fuzzy match or new submission. No error shown to user.                                              |
+| Submitted claim appears to match multiple businesses      | Do not auto-claim silently. Route to manual review or a safer fallback instead of guessing ownership.                          |
+| Claimer is a manager or agency, not the owner             | Claim may still proceed, but long-term delegated-access support is a separate follow-up requirement.                           |
 
 ---
 
@@ -358,6 +392,8 @@ The existing `buildOptOutUrl()` and `optOutDirectoryEmail()` in `lib/discover/ou
 - **Multi-step drip sequences** (future: this spec is single-touch only. One email per operator, ever.)
 - **Outreach domain registration** - the developer must register and verify a domain with Resend before this system can send. The spec reads from env vars.
 - **Google Places API enrichment** - separate spec for pulling photos/menus
+- **Google / Apple / Yelp profile sync** - separate future spec. This spec only handles ChefFlow-side discovery, claim, and enhancement.
+- **Delegated manager / agency access model** - separate future spec. This spec assumes a single successful claim path.
 - **Automated removal honoring** - removal requests go to manual review, not auto-processed
 
 ---

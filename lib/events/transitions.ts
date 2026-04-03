@@ -627,33 +627,8 @@ export async function transitionEvent({
   // Create post-event survey and email client (non-blocking)
   if (toStatus === 'completed' && fromStatus === 'in_progress') {
     try {
-      const dbAdmin = createServerClient({ admin: true })
-      const { data: client } = await dbAdmin
-        .from('clients')
-        .select('email, full_name')
-        .eq('id', event.client_id)
-        .single()
-
-      const { data: chef } = await dbAdmin
-        .from('chefs')
-        .select('business_name')
-        .eq('id', event.tenant_id)
-        .single()
-
-      const { createSurveyForEvent } = await import('@/lib/surveys/actions')
-      const surveyToken = await createSurveyForEvent(eventId, event.tenant_id)
-
-      if (surveyToken && client?.email) {
-        const { sendPostEventSurveyEmail } = await import('@/lib/email/notifications')
-        const surveyUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/survey/${surveyToken}`
-        await sendPostEventSurveyEmail({
-          clientEmail: client.email,
-          clientName: client.full_name,
-          chefName: chef?.business_name || 'Your Chef',
-          occasion: event.occasion || 'your event',
-          surveyUrl,
-        })
-      }
+      const { sendPostEventSurveyForEvent } = await import('@/lib/post-event/trust-loop-actions')
+      await sendPostEventSurveyForEvent(eventId, event.tenant_id)
     } catch (surveyErr) {
       log.events.warn('Survey creation failed (non-blocking)', { error: surveyErr })
     }

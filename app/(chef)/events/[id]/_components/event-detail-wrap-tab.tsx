@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { sendClientSurvey } from '@/lib/surveys/actions'
 import type { EventDetailTab } from '@/components/events/event-detail-mobile-nav'
 import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
 import { AARGeneratorPanel } from '@/components/ai/aar-generator-panel'
@@ -8,6 +7,7 @@ import { ReviewRequestPanel } from '@/components/ai/review-request-panel'
 import { GratuityPanel } from '@/components/ai/gratuity-panel'
 import { SocialCaptionsPanel } from '@/components/ai/social-captions-panel'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
+import { PostEventTrustPanel } from '@/components/events/post-event-trust-panel'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -24,6 +24,8 @@ type EventDetailWrapTabProps = {
   eventId: string
   eventStatus: string
   eventClientId: string | null
+  followUpSent: boolean
+  followUpSentAt: string | null
   debriefCompletedAt: string | null
   hasAAR: boolean
   hasClosureStatus: boolean
@@ -36,6 +38,8 @@ export function EventDetailWrapTab({
   eventId,
   eventStatus,
   eventClientId,
+  followUpSent,
+  followUpSentAt,
   debriefCompletedAt,
   hasAAR,
   hasClosureStatus,
@@ -98,29 +102,13 @@ export function EventDetailWrapTab({
         </Card>
       )}
 
-      {/* Client Satisfaction Survey */}
-      {eventStatus === 'completed' && eventClientId && (
-        <Card className="p-6 border-brand-200 bg-brand-950">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h3 className="font-semibold text-brand-900">Client Satisfaction Survey</h3>
-              <p className="text-sm text-brand-700 mt-1">
-                Send a post-event survey to collect NPS score, ratings, and a testimonial.
-              </p>
-            </div>
-            <form
-              action={async (_: FormData) => {
-                'use server'
-                await sendClientSurvey(eventId)
-              }}
-            >
-              <Button variant="secondary" size="sm" type="submit">
-                Send Survey
-              </Button>
-            </form>
-          </div>
-        </Card>
-      )}
+      <PostEventTrustPanel
+        eventId={eventId}
+        eventStatus={eventStatus}
+        hasClient={Boolean(eventClientId)}
+        followUpSent={followUpSent}
+        followUpSentAt={followUpSentAt}
+      />
 
       {/* AI AAR Generator - for completed events without a filed review */}
       {eventStatus === 'completed' && !hasAAR && <AARGeneratorPanel eventId={eventId} />}

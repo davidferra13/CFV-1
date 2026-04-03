@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
+import { runMonitoredCronJob } from '@/lib/cron/monitor'
 
 // ---------------------------------------------------------------------------
 // Circle Digest Cron
@@ -13,23 +14,24 @@ export async function GET(request: Request) {
   if (authError) return authError
 
   try {
-    const { processDigests } = await import('@/lib/hub/circle-digest')
+    const result = await runMonitoredCronJob('circle-digest', async () => {
+      const { processDigests } = await import('@/lib/hub/circle-digest')
+      const hourlyResult = await processDigests('hourly')
 
-    // Always process hourly digests
-    const hourlyResult = await processDigests('hourly')
+      const currentHour = new Date().getUTCHours()
+      let dailyResult = { sent: 0, skipped: 0 }
+      if (currentHour === 9) {
+        dailyResult = await processDigests('daily')
+      }
 
-    // Process daily digests at 9 AM UTC (roughly morning for US timezones)
-    const currentHour = new Date().getUTCHours()
-    let dailyResult = { sent: 0, skipped: 0 }
-    if (currentHour === 9) {
-      dailyResult = await processDigests('daily')
-    }
-
-    return NextResponse.json({
-      success: true,
-      hourly: hourlyResult,
-      daily: dailyResult,
+      return {
+        success: true,
+        hourly: hourlyResult,
+        daily: dailyResult,
+      }
     })
+
+    return NextResponse.json(result)
   } catch (err) {
     console.error('[circle-digest cron] Internal error:', err)
     return NextResponse.json(

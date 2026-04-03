@@ -11,7 +11,7 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
-import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
+import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
@@ -46,6 +46,7 @@ async function handleStaleLeads(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
 
+  const startedAt = Date.now()
   const db = createServerClient({ admin: true })
 
   const staleThreshold = new Date(Date.now() - STALE_THRESHOLD_HOURS * 60 * 60 * 1000).toISOString()
@@ -60,11 +61,12 @@ async function handleStaleLeads(request: NextRequest): Promise<NextResponse> {
 
   if (error) {
     console.error('[Stale Leads Cron] Query failed:', error)
+    await recordCronError('stale-leads', 'Failed to query stale leads', Date.now() - startedAt)
     return NextResponse.json({ error: 'Failed to query stale leads' }, { status: 500 })
   }
 
   if (!staleLeads || staleLeads.length === 0) {
-    await recordCronHeartbeat('stale-leads', { processed: 0, notified: 0 })
+    await recordCronHeartbeat('stale-leads', { processed: 0, notified: 0 }, Date.now() - startedAt)
     return NextResponse.json({ message: 'No stale marketplace leads', processed: 0 })
   }
 
@@ -153,7 +155,7 @@ async function handleStaleLeads(request: NextRequest): Promise<NextResponse> {
   }
 
   const result = { processed: staleLeads.length, tenants: byTenant.size, notified, errors }
-  await recordCronHeartbeat('stale-leads', result)
+  await recordCronHeartbeat('stale-leads', result, Date.now() - startedAt)
   return NextResponse.json(result)
 }
 

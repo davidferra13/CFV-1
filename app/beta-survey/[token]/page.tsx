@@ -9,7 +9,21 @@ export const metadata: Metadata = {
   title: 'Beta Survey',
 }
 
-export default async function PublicBetaSurveyPage({ params }: { params: { token: string } }) {
+function firstValue(value: string | string[] | undefined): string | undefined {
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+
+  return value
+}
+
+export default async function PublicBetaSurveyPage({
+  params,
+  searchParams,
+}: {
+  params: { token: string }
+  searchParams?: Record<string, string | string[] | undefined>
+}) {
   const result = await getSurveyByInviteToken(params.token)
 
   if (!result) {
@@ -50,6 +64,13 @@ export default async function PublicBetaSurveyPage({ params }: { params: { token
     )
   }
 
+  const trackedSource = firstValue(searchParams?.source) || firstValue(searchParams?.utm_source)
+  const trackedChannel = firstValue(searchParams?.channel) || firstValue(searchParams?.utm_medium)
+  const trackedCampaign =
+    firstValue(searchParams?.campaign) || firstValue(searchParams?.utm_campaign)
+  const trackedWave = firstValue(searchParams?.wave)
+  const trackedLaunch = firstValue(searchParams?.launch)
+
   return (
     <div className="min-h-screen bg-stone-950 py-8 px-4">
       <div className="max-w-2xl mx-auto">
@@ -73,6 +94,11 @@ export default async function PublicBetaSurveyPage({ params }: { params: { token
             survey={result.survey}
             mode="public"
             inviteToken={params.token}
+            trackedSource={trackedSource}
+            trackedChannel={trackedChannel}
+            trackedCampaign={trackedCampaign}
+            trackedWave={trackedWave}
+            trackedLaunch={trackedLaunch}
             prefillName={result.invite.name || undefined}
             prefillEmail={result.invite.email || undefined}
           />

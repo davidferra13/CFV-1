@@ -1,16 +1,15 @@
 import type { Metadata, Viewport } from 'next'
+import dynamic from 'next/dynamic'
 import { DM_Sans, DM_Serif_Display } from 'next/font/google'
-import { Suspense } from 'react'
-import { CookieConsent } from '@/components/ui/cookie-consent'
 import { IconProvider } from '@/components/ui/icon-provider'
-import { SwRegister } from '@/components/pwa/sw-register'
-import { PostHogProvider } from '@/components/analytics/posthog-provider'
-import { PerformanceTelemetry } from '@/components/analytics/performance-telemetry'
 import { ColorPaletteProvider, PaletteScript } from '@/components/ui/color-palette-provider'
-import { GlobalTooltipProvider } from '@/components/ui/global-tooltip-provider'
 import { AppThemeProvider } from '@/components/ui/app-theme-provider'
-import { AppContextProvider } from '@/lib/context/app-context'
 import './globals.css'
+
+const DeferredRootRuntime = dynamic(
+  () => import('@/components/runtime/deferred-root-runtime').then((m) => m.DeferredRootRuntime),
+  { ssr: false }
+)
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -118,22 +117,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             Skip to main content
           </a>
 
-          <AppContextProvider>
-            <IconProvider>
-              <ColorPaletteProvider>
-                <PostHogProvider>
-                  <GlobalTooltipProvider>
-                    <Suspense fallback={null}>
-                      <PerformanceTelemetry />
-                    </Suspense>
-                    {children}
-                  </GlobalTooltipProvider>
-                </PostHogProvider>
-              </ColorPaletteProvider>
-            </IconProvider>
-          </AppContextProvider>
-          <CookieConsent />
-          <SwRegister />
+          <IconProvider>
+            <ColorPaletteProvider>
+              {children}
+              <DeferredRootRuntime />
+            </ColorPaletteProvider>
+          </IconProvider>
         </AppThemeProvider>
       </body>
     </html>

@@ -5,6 +5,7 @@
 import { afterEach, describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { verifyTurnstileToken } from '../../lib/security/turnstile.js'
+import { TURNSTILE_TEST_SECRET_KEY } from '../../lib/security/turnstile-constants.js'
 
 const originalFetch = global.fetch
 const originalSecret = process.env.TURNSTILE_SECRET_KEY
@@ -58,6 +59,21 @@ describe('security/turnstile - verification behavior', () => {
     }
 
     const result = await verifyTurnstileToken('tok_123')
+    assert.deepEqual(result, { success: true })
+  })
+
+  it('uses Cloudflare test secret on localhost in non-production', async () => {
+    process.env.TURNSTILE_SECRET_KEY = 'secret'
+    global.fetch = async (_input, init) => {
+      assert.ok(String(init?.body).includes(`secret=${TURNSTILE_TEST_SECRET_KEY}`))
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ success: true }),
+      } as any
+    }
+
+    const result = await verifyTurnstileToken('tok_123', { host: 'localhost:3100' })
     assert.deepEqual(result, { success: true })
   })
 

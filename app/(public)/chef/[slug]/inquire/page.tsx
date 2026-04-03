@@ -10,10 +10,17 @@ import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { PublicInquiryForm } from '@/components/public/public-inquiry-form'
 import { ReviewShowcase } from '@/components/public/review-showcase'
+import { ExternalLink } from '@/components/ui/icons'
 import { getPublicChefProfile } from '@/lib/profile/actions'
 import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
 import { getOptimizedAvatar } from '@/lib/images/cloudinary'
+import {
+  getPublicAchievements,
+  getPublicCharityImpact,
+  getPublicWorkHistory,
+} from '@/lib/credentials/actions'
+import { createServerClient } from '@/lib/db/server'
 
 type Props = { params: { slug: string } }
 
@@ -54,14 +61,53 @@ export default async function InquirePage({ params }: Props) {
 
   const hasWebsiteLink = Boolean(data.chef.website_url && data.chef.show_website_on_public_profile)
 
-  const [reviewFeed, availabilitySignals] = await Promise.all([
-    getPublicChefReviewFeed(data.chef.id),
-    data.chef.show_availability_signals
-      ? getPublicAvailabilitySignals(data.chef.id)
-      : Promise.resolve([]),
-  ])
+  const [reviewFeed, availabilitySignals, workHistory, achievements, charityImpact, chefCredRow] =
+    await Promise.all([
+      getPublicChefReviewFeed(data.chef.id),
+      data.chef.show_availability_signals
+        ? getPublicAvailabilitySignals(data.chef.id)
+        : Promise.resolve([]),
+      getPublicWorkHistory(data.chef.id).catch(() => []),
+      getPublicAchievements(data.chef.id).catch(() => []),
+      getPublicCharityImpact(data.chef.id).catch(() => ({
+        totalHours: 0,
+        totalEntries: 0,
+        uniqueOrgs: 0,
+        verified501cOrgs: 0,
+        publicCharityPercent: null,
+        publicCharityNote: null,
+        showPublicCharity: false,
+        organizations: [],
+      })),
+      (async () => {
+        try {
+          const db: any = createServerClient({ admin: true })
+          const { data: chefRow } = await db
+            .from('chefs')
+            .select('show_resume_available_note')
+            .eq('id', data.chef.id)
+            .single()
+          return { showResumeAvailableNote: chefRow?.show_resume_available_note ?? false }
+        } catch {
+          return { showResumeAvailableNote: false }
+        }
+      })(),
+    ])
 
   const nextSignals = availabilitySignals.slice(0, 3)
+  const topWorkHistory = workHistory.slice(0, 2)
+  const topAchievements = achievements.slice(0, 2)
+  const showCompactCharity =
+    charityImpact.showPublicCharity &&
+    (charityImpact.totalHours > 0 ||
+      charityImpact.publicCharityPercent !== null ||
+      Boolean(charityImpact.publicCharityNote) ||
+      charityImpact.organizations.length > 0)
+  const hasCompactCredentials =
+    topWorkHistory.length > 0 ||
+    topAchievements.length > 0 ||
+    showCompactCharity ||
+    chefCredRow.showResumeAvailableNote
 
   return (
     <div className="min-h-screen" style={pageBackgroundStyle}>
@@ -170,6 +216,100 @@ export default async function InquirePage({ params }: Props) {
                           </div>
                         )
                       })}
+                    </div>
+                  </div>
+                )}
+
+                {hasCompactCredentials && (
+                  <div className="p-5 border-b border-stone-800">
+                    <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+                      Professional background
+                    </p>
+
+                    <div className="space-y-3 text-xs text-stone-300">
+                      {topWorkHistory.length > 0 && (
+                        <div className="space-y-2">
+                          {topWorkHistory.map((entry) => (
+                            <div key={entry.id}>
+                              <p className="font-medium text-stone-200">{entry.role_title}</p>
+                              <p className="text-stone-500">
+                                {entry.organization_name}
+                                {entry.location_label ? ` · ${entry.location_label}` : ''}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {topAchievements.length > 0 && (
+                        <div className="space-y-1">
+                          {topAchievements.map((achievement: any) => (
+                            <p key={achievement.id} className="text-stone-400">
+                              {achievement.title}
+                            </p>
+                          ))}
+                        </div>
+                      )}
+
+                      {showCompactCharity && (
+                        <div className="rounded-lg border border-stone-700 bg-stone-800/70 px-3 py-2.5">
+                          <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
+                            Community impact
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {charityImpact.publicCharityPercent !== null && (
+                              <span className="rounded-full border border-emerald-700/50 bg-emerald-950/40 px-2 py-1 text-[11px] font-medium text-emerald-300">
+                                {charityImpact.publicCharityPercent}% donated
+                              </span>
+                            )}
+                            {charityImpact.totalHours > 0 && (
+                              <span className="rounded-full border border-stone-600 bg-stone-900 px-2 py-1 text-[11px] text-stone-300">
+                                {charityImpact.totalHours} volunteer hour
+                                {charityImpact.totalHours === 1 ? '' : 's'}
+                              </span>
+                            )}
+                          </div>
+                          {charityImpact.publicCharityNote && (
+                            <p className="mt-2 text-stone-500">{charityImpact.publicCharityNote}</p>
+                          )}
+                          {charityImpact.organizations.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {charityImpact.organizations.slice(0, 2).map((organization) => {
+                                const href =
+                                  organization.links.websiteUrl ||
+                                  organization.links.mapsUrl ||
+                                  organization.links.verificationUrl
+
+                                return href ? (
+                                  <a
+                                    key={`${organization.id ?? organization.organizationName}-inquire`}
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 rounded-full border border-stone-600 bg-stone-900 px-2 py-1 text-[11px] text-stone-300 transition-colors hover:border-stone-500 hover:text-stone-100"
+                                  >
+                                    {organization.organizationName}
+                                    <ExternalLink className="h-3 w-3" />
+                                  </a>
+                                ) : (
+                                  <span
+                                    key={`${organization.id ?? organization.organizationName}-inquire`}
+                                    className="rounded-full border border-stone-600 bg-stone-900 px-2 py-1 text-[11px] text-stone-300"
+                                  >
+                                    {organization.organizationName}
+                                  </span>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {chefCredRow.showResumeAvailableNote && (
+                        <p className="text-stone-400">
+                          Resume available upon request through ChefFlow.
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}

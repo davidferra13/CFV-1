@@ -120,8 +120,27 @@ export const US_STATES: Record<string, string> = {
   WY: 'Wyoming',
 }
 
+const US_STATE_NAME_TO_CODE = Object.fromEntries(
+  Object.entries(US_STATES).map(([code, name]) => [name.toLowerCase(), code])
+) as Record<string, string>
+
+function normalizeStateInput(value: string | null | undefined) {
+  return typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : ''
+}
+
+export function normalizeUsStateCode(value: string | null | undefined): string | null {
+  const normalized = normalizeStateInput(value)
+  if (!normalized) return null
+
+  const upper = normalized.toUpperCase()
+  if (upper in US_STATES) return upper
+
+  return US_STATE_NAME_TO_CODE[normalized.toLowerCase()] ?? null
+}
+
 export function getStateName(code: string): string {
-  return US_STATES[code.toUpperCase()] || code
+  const normalizedCode = normalizeUsStateCode(code)
+  return normalizedCode ? US_STATES[normalizedCode] : code
 }
 
 export function slugify(text: string): string {

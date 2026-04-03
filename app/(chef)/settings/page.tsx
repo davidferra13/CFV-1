@@ -735,8 +735,8 @@ export default async function SettingsPage() {
               >
                 <p className="font-medium text-stone-100">Credentials</p>
                 <p className="text-sm text-stone-500 mt-1">
-                  Manage your career timeline, awards, charity impact, and private resume for your
-                  public profile.
+                  Manage your career timeline, awards, optional community impact, and private resume
+                  for your public profile.
                 </p>
               </Link>
             </div>

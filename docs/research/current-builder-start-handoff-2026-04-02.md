@@ -67,6 +67,12 @@ Then branch by assignment:
 3. the narrower cross-reference or research packet named by the control tower
 4. the exact implementation spec for that slice
 
+If that explicit website assignment is specifically render-path, loading, caching, or Core Web Vitals work, branch through:
+
+3. `docs/research/foundations/2026-04-02-website-build-research-and-spec-cross-reference.md`
+4. `docs/research/website-performance-hardening-handoff-2026-04-03.md`
+5. the exact narrow implementation slice or measurement task for that performance lane
+
 Only read `docs/research/current-build-recovery-handoff-2026-04-02.md` if the baseline regresses or the build-state file becomes contradictory again.
 
 ---
@@ -156,6 +162,12 @@ If the developer explicitly assigns `runtime-owned` OpenClaw work, branch to:
 - `docs/research/current-openclaw-builder-start-handoff-2026-04-03.md`
 
 and let that document become the queue-order authority for the runtime lane. Do not keep using this website-first handoff as if it owned the OpenClaw queue too.
+
+If the developer explicitly assigns website-performance work, branch to:
+
+- `docs/research/website-performance-hardening-handoff-2026-04-03.md`
+
+and treat that handoff plus the website cross-reference as the governing context for render-path and loading work instead of trying to infer a performance queue from the broader survey-first default.
 
 ---
 

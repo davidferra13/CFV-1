@@ -1,12 +1,20 @@
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { AppLogo } from '@/components/branding/app-logo'
-import { NewsletterSignup } from '@/components/marketing/newsletter-signup'
 import { LAUNCH_MODE } from '@/lib/marketing/launch-mode'
 import {
   PLATFORM_AUDIENCE_LABEL,
   PLATFORM_SHORT_DESCRIPTION,
 } from '@/lib/marketing/platform-positioning'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
+
+const NewsletterSignup = dynamic(
+  () => import('@/components/marketing/newsletter-signup').then((m) => m.NewsletterSignup),
+  {
+    ssr: false,
+    loading: () => <div className="h-[74px]" aria-hidden="true" />,
+  }
+)
 
 const FOOTER_LINKS = {
   discover: [

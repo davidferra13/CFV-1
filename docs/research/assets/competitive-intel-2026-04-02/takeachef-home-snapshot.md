@@ -1,0 +1,218 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e78]:
+    - generic [ref=e81]:
+      - generic [ref=e83]:
+        - generic [ref=e84]: Hey! We have a specific page for your location. Go to
+        - link "United States" [ref=e85] [cursor=pointer]:
+          - /url: https://www.takeachef.com/en-us
+      - button [ref=e87] [cursor=pointer]:
+        - img [ref=e88]
+  - generic [ref=e90]:
+    - navigation [ref=e91]:
+      - link [ref=e93] [cursor=pointer]:
+        - /url: https://www.takeachef.com
+        - img [ref=e94]
+      - list [ref=e105]:
+        - listitem [ref=e106]:
+          - link "La Experiencia" [ref=e107] [cursor=pointer]:
+            - /url: https://www.takeachef.com/experience
+        - listitem [ref=e108]:
+          - link "Nuestros Chefs" [ref=e109] [cursor=pointer]:
+            - /url: https://www.takeachef.com/our-chefs
+        - listitem [ref=e110]:
+          - link "Regala" [ref=e111] [cursor=pointer]:
+            - /url: https://www.takeachef.com/gift-wizard
+        - listitem [ref=e112]:
+          - link "Registro Chef" [ref=e113] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef/chef-registration
+        - listitem [ref=e114]:
+          - link "Explorar más" [ref=e115] [cursor=pointer]:
+            - /url: "javascript:"
+      - button "Menú de navegación" [ref=e120] [cursor=pointer]
+      - generic [ref=e125]:
+        - list [ref=e127]:
+          - listitem [ref=e128]
+          - listitem [ref=e130]
+          - listitem [ref=e132]
+          - listitem [ref=e134]
+          - listitem [ref=e136]
+          - listitem [ref=e138]
+          - listitem [ref=e140]
+          - listitem [ref=e170]
+        - list [ref=e178]:
+          - listitem [ref=e179]
+          - listitem [ref=e182]
+    - main [ref=e185]:
+      - generic [ref=e188]:
+        - heading "Chef a domicilio" [level=1] [ref=e189]
+        - paragraph [ref=e190]: Disfruta de una experiencia gastronómica en la comodidad de tu casa con un chef a domicilio.
+        - button "Empezar" [ref=e192] [cursor=pointer]:
+          - generic [ref=e193]: Empezar
+      - generic [ref=e231]:
+        - generic [ref=e232]:
+          - heading "Disfruta la experiencia" [level=2] [ref=e233]
+          - button "Saber más" [ref=e235] [cursor=pointer]
+        - paragraph [ref=e238]: No hay restaurante más íntimo que tu propia casa, donde poder disfrutar cómodamente de una experiencia única con familia y amigos. Encuentra tu chef, personaliza cada detalle del menú, y descubre otra forma de celebrar con los tuyos trayendo la magia de un restaurante de alta cocina a tu mesa.
+        - paragraph [ref=e240]: Convierte tu casa en un restaurante y disfruta de una experiencia gastronómica única.
+      - generic [ref=e259]:
+        - paragraph [ref=e262]: ¿Cómo funciona?
+        - generic [ref=e266]:
+          - generic [ref=e267]
+          - generic [ref=e275]
+          - generic [ref=e283]
+          - generic [ref=e291]
+          - generic [ref=e299]
+          - generic [ref=e307]
+      - generic [ref=e314]:
+        - generic [ref=e316]:
+          - heading "Los mejores chefs" [level=2] [ref=e317]
+          - paragraph [ref=e319]: Hemos creado la mayor comunidad de chefs privados del mundo para que puedas acceder a chefs privados profesionales, apasionados por la cocina y la hospitalidad.
+          - link "Ver más" [ref=e321] [cursor=pointer]:
+            - /url: https://www.takeachef.com/our-chefs
+        - generic [ref=e322]:
+          - button "Next slide" [ref=e323] [cursor=pointer]
+          - generic [ref=e328]
+      - generic [ref=e667]:
+        - generic [ref=e668]:
+          - generic [ref=e669]
+          - generic [ref=e678]
+        - generic [ref=e712]:
+          - group "1 / 20" [ref=e713]
+          - group "2 / 20" [ref=e729]
+          - group "3 / 20" [ref=e745]
+          - group "4 / 20" [ref=e761]
+          - group "5 / 20" [ref=e774]
+          - group "6 / 20" [ref=e787]
+          - group "7 / 20" [ref=e803]
+          - group "8 / 20" [ref=e816]
+          - group "9 / 20" [ref=e832]
+          - group "10 / 20" [ref=e848]
+          - group "11 / 20" [ref=e861]
+          - group "12 / 20" [ref=e877]
+          - group "13 / 20" [ref=e893]
+          - group "14 / 20" [ref=e909]
+          - group "15 / 20" [ref=e922]
+          - group "16 / 20" [ref=e935]
+          - group "17 / 20" [ref=e951]
+          - group "18 / 20" [ref=e964]
+          - group "19 / 20" [ref=e980]
+          - group "20 / 20" [ref=e996]
+      - generic [ref=e1016]:
+        - generic [ref=e1018]:
+          - heading "139548 menús personalizados por nuestros Chefs a domicilio en España" [level=2] [ref=e1019]
+          - paragraph [ref=e1021]: Cada ocasión requiere un menú diferente, ¡personaliza el tuyo!
+        - generic [ref=e1023]:
+          - button "Previous slide" [ref=e1024] [cursor=pointer]
+          - generic [ref=e1029]
+          - button "Next slide" [ref=e1150] [cursor=pointer]
+      - generic [ref=e1158]:
+        - heading "Personaliza tu menú" [level=2] [ref=e1159]
+        - paragraph [ref=e1161]: Una cena romántica, una reunión familiar o una celebración entre amigos, platos tradicionales que todos conocemos o sabores exóticos. Invitados vegetarianos, intolerantes o alérgicos. ¡Cada experiencia es única!
+        - paragraph [ref=e1162]:
+          - button "Personalizar Menú" [ref=e1163] [cursor=pointer]
+      - generic [ref=e1175]:
+        - generic [ref=e1176]:
+          - heading "Sobre nosotros" [level=2] [ref=e1177]
+          - paragraph [ref=e1179]: Fundada en 2012, Take a Chef nació con la convicción de que el talento de millones de chefs no debería permanecer escondido detrás de los gruesos muros de la cocina de un restaurante; debería brillar donde la gente disfruta de las cenas más inolvidables- en su propia mesa.
+        - generic [ref=e1180]:
+          - generic [ref=e1181]
+          - img "Sobre nosotros" [ref=e1198]
+        - generic [ref=e1199]:
+          - generic [ref=e1200]
+          - generic [ref=e1203]
+          - generic [ref=e1206]
+      - generic [ref=e1209]:
+        - generic [ref=e1211]:
+          - heading "Ellos confían en Take a Chef" [level=2] [ref=e1212]
+          - paragraph [ref=e1214]: Con la combinación de tecnología, pasión por la gastronomía y obsesión por un servicio de calidad, hemos creado la única solución global en el mercado para ofrecer servicios de chef privado de forma fácil e intuitiva, en cualquier destino y en cualquier momento.
+        - generic [ref=e1216]:
+          - img "Airbnb" [ref=e1219]
+          - img "American Express" [ref=e1222]
+          - img "Four Seasons - Hotels and resorts" [ref=e1225]
+          - img "Inspirato" [ref=e1228]
+          - img "John Paul" [ref=e1231]
+          - img "Velocity Black" [ref=e1234]
+          - img "Oliver's Travels" [ref=e1237]
+          - img "Airbnb Luxe" [ref=e1240]
+          - img "Onefinestay" [ref=e1243]
+          - img "Wyndham" [ref=e1246]
+      - generic [ref=e1249]:
+        - generic [ref=e1250]:
+          - heading "Take a Chef en España" [level=2] [ref=e1251]
+          - paragraph [ref=e1253]: Descubre ciudades de España donde podrás disfrutar de nuestras experiencias.
+        - generic [ref=e1254]:
+          - link "Chef en Alicante" [ref=e1256] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/alicante
+          - link "Chef en Barcelona" [ref=e1261] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/barcelona
+          - link "Chef en Bilbao" [ref=e1266] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/bilbao
+          - link "Chef en Bizkaia" [ref=e1271] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/bizkaia
+          - link "Chef en Córdoba" [ref=e1276] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/cordoba
+          - link "Chef en Gasteiz / Vitoria" [ref=e1281] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/vitoria
+          - link "Chef en Gijón" [ref=e1286] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/gijon
+          - link "Chef en Hospitalet De Llobregat" [ref=e1291] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/hospitalet-de-llobregat
+          - link "Chef en La Coruña" [ref=e1296] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/la-coruna
+          - link "Chef en Las Palmas" [ref=e1301] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/las-palmas
+          - link "Chef en Las Palmas De Gran Canaria" [ref=e1306] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/las-palmas-de-gran-canaria
+          - link "Chef en Madrid" [ref=e1311] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/madrid
+          - link "Chef en Murcia" [ref=e1316] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/murcia
+          - link "Chef en Málaga" [ref=e1321] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/malaga
+          - link "Chef en Palma De Mallorca" [ref=e1326] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/palma-de-mallorca
+          - link "Chef en Sevilla" [ref=e1331] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/sevilla
+          - link "Chef en Valencia" [ref=e1336] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/valencia
+          - link "Chef en Valladolid" [ref=e1341] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/valladolid
+          - link "Chef en Vigo" [ref=e1346] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/vigo
+          - link "Chef en Zaragoza" [ref=e1351] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio/zaragoza
+          - link "Chef en Todos Los Destinos" [ref=e1356] [cursor=pointer]:
+            - /url: https://www.takeachef.com/destinations
+      - generic [ref=e1362]:
+        - generic [ref=e1363]:
+          - heading "Tipos de servicio" [level=2] [ref=e1364]
+          - paragraph [ref=e1366]: Descubre los servicios que Take a Chef ofrece en España.
+        - generic [ref=e1367]:
+          - link "Cena de Navidad" [ref=e1369] [cursor=pointer]:
+            - /url: https://www.takeachef.com/cena-de-navidad
+          - link "Cena Navidad" [ref=e1372] [cursor=pointer]:
+            - /url: https://www.takeachef.com/cena-navidad
+          - link "Cena Nochevieja" [ref=e1375] [cursor=pointer]:
+            - /url: https://www.takeachef.com/cena-nochevieja
+          - link "Cena Romántica" [ref=e1378] [cursor=pointer]:
+            - /url: https://www.takeachef.com/cena-romantica
+          - link "Chef a Domicilio" [ref=e1381] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-a-domicilio
+          - link "Chef Privado" [ref=e1384] [cursor=pointer]:
+            - /url: https://www.takeachef.com/chef-privado
+          - link "Cocinero a Domicilio" [ref=e1387] [cursor=pointer]:
+            - /url: https://www.takeachef.com/cocinero-a-domicilio
+          - link "Villas" [ref=e1390] [cursor=pointer]:
+            - /url: https://www.takeachef.com/villas
+    - contentinfo [ref=e1392]:
+      - generic [ref=e1394]:
+        - generic [ref=e1395]:
+          - generic [ref=e1396]
+          - generic [ref=e1435]
+          - generic [ref=e1465]
+        - generic [ref=e1484]:
+          - img [ref=e1486]
+          - paragraph [ref=e1497]
+  - iframe [ref=e1500]:
+  - button [ref=e1502] [cursor=pointer]:
+    - img [ref=e1504]

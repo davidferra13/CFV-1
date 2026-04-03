@@ -5,6 +5,7 @@
 
 import { useRef, useCallback, useState } from 'react'
 import { useJsApiLoader, Autocomplete } from '@react-google-maps/api'
+import { useDeferredGoogleMapsLoader } from '@/hooks/use-deferred-google-maps-loader'
 
 const LIBRARIES: ['places'] = ['places']
 
@@ -75,14 +76,65 @@ export function LocationAutocomplete({
   required,
   name,
 }: LocationAutocompleteProps) {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
+  const { shouldLoad, prime } = useDeferredGoogleMapsLoader(Boolean(apiKey))
+
+  if (!apiKey || !shouldLoad) {
+    return (
+      <input
+        type="text"
+        id={id}
+        name={name}
+        required={required}
+        className={className || defaultInputClass}
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        onPointerEnter={prime}
+        onTouchStart={prime}
+        placeholder={placeholder}
+      />
+    )
+  }
+
+  return (
+    <LoadedLocationAutocomplete
+      apiKey={apiKey}
+      value={value}
+      onSelect={onSelect}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={className}
+      types={types}
+      id={id}
+      required={required}
+      name={name}
+    />
+  )
+}
+
+type LoadedLocationAutocompleteProps = LocationAutocompleteProps & {
+  apiKey: string
+}
+
+function LoadedLocationAutocomplete({
+  apiKey,
+  value,
+  onSelect,
+  onChange,
+  placeholder = 'City, state, or ZIP code',
+  className,
+  types = ['(regions)'],
+  id,
+  required,
+  name,
+}: LoadedLocationAutocompleteProps) {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
 
   // Only load the Google Maps script when we have an API key.
   // Calling useJsApiLoader with an empty key triggers an infinite retry loop.
   const { isLoaded, loadError: sdkError } = useJsApiLoader({
-    googleMapsApiKey: apiKey || 'SKIP',
+    googleMapsApiKey: apiKey,
     libraries: LIBRARIES,
     preventGoogleFontsLoading: true,
   })
@@ -109,9 +161,6 @@ export function LocationAutocomplete({
     }
   }, [onSelect, onChange])
 
-  const defaultInputClass =
-    'w-full bg-transparent px-3 py-4 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none'
-
   const inputClass = className || defaultInputClass
 
   // Plain input fallback (no API key or still loading)
@@ -136,6 +185,7 @@ export function LocationAutocomplete({
       onPlaceChanged={onPlaceChanged}
       options={{
         componentRestrictions: { country: 'us' },
+        fields: ['address_components', 'formatted_address', 'geometry'],
         types,
       }}
     >
@@ -152,3 +202,6 @@ export function LocationAutocomplete({
     </Autocomplete>
   )
 }
+
+const defaultInputClass =
+  'w-full bg-transparent px-3 py-4 text-sm text-stone-100 placeholder:text-stone-500 focus:outline-none'

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition, Suspense } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import {
   getOpenClawStats,
   getOpenClawPrices,
@@ -11,13 +11,13 @@ import {
   type OpenClawStats,
   type SyncResult,
 } from '@/lib/openclaw/sync'
-import { CatalogTab } from './catalog-tab'
+import { CatalogBrowser } from '@/app/(chef)/culinary/price-catalog/catalog-browser'
 import { VendorImportTab } from './vendor-import-tab'
 
 type Tab = 'overview' | 'prices' | 'sources' | 'changes' | 'sync' | 'catalog' | 'vendor-import'
 
 export function PriceCatalogClient() {
-  const [tab, setTab] = useState<Tab>('overview')
+  const [tab, setTab] = useState<Tab>('catalog')
   const [stats, setStats] = useState<OpenClawStats | null>(null)
   const [prices, setPrices] = useState<OpenClawPrice[]>([])
   const [sources, setSources] = useState<any[]>([])
@@ -85,21 +85,21 @@ export function PriceCatalogClient() {
   }
 
   const tabs: { key: Tab; label: string }[] = [
+    { key: 'catalog', label: 'Catalog' },
     { key: 'overview', label: 'Overview' },
     { key: 'prices', label: 'Prices' },
     { key: 'sources', label: 'Sources' },
     { key: 'changes', label: 'Changes' },
-    { key: 'sync', label: 'Sync to ChefFlow' },
-    { key: 'catalog', label: 'Catalog' },
+    { key: 'sync', label: 'Sync My Ingredients' },
     { key: 'vendor-import', label: 'Vendor Import' },
   ]
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-2">Price Catalog</h1>
+      <h1 className="text-2xl font-bold mb-2">Food Catalog</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        Price intelligence from the data engine. View scraped prices, manage sources, and sync to
-        ChefFlow.
+        Browse live market pricing, inspect source coverage, import vendor lists, and sync current
+        prices into your ingredient library.
       </p>
 
       {/* Tabs */}
@@ -365,11 +365,11 @@ export function PriceCatalogClient() {
       {tab === 'sync' && (
         <div>
           <div className="border rounded-lg p-6 mb-4">
-            <h2 className="text-lg font-semibold mb-2">Sync Prices to ChefFlow</h2>
+            <h2 className="text-lg font-semibold mb-2">Sync Prices to My Ingredients</h2>
             <p className="text-sm text-muted-foreground mb-4">
-              Match engine ingredient prices to your ChefFlow ingredients and update{' '}
-              <code>last_price_cents</code>. This triggers automatic recipe and menu cost
-              recalculation.
+              Match engine ingredient prices to your ingredient library and update{' '}
+              <code>last_price_cents</code>. This only updates your tenant's ingredients and
+              triggers recipe and menu cost recalculation from there.
             </p>
 
             <div className="flex gap-3 mb-4">
@@ -447,11 +447,7 @@ export function PriceCatalogClient() {
       )}
 
       {/* Catalog Tab */}
-      {tab === 'catalog' && (
-        <Suspense fallback={<div className="animate-pulse h-96 bg-stone-900 rounded-lg" />}>
-          <CatalogTab />
-        </Suspense>
-      )}
+      {tab === 'catalog' && <CatalogBrowser />}
 
       {/* Vendor Import Tab */}
       {tab === 'vendor-import' && <VendorImportTab />}

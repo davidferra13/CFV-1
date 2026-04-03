@@ -6,7 +6,22 @@
 
 ## Summary
 
-10 specs are in "built" status, meaning code was written and type checks passed, but no Playwright verification or manual QA has been performed. This document catalogs each one with the exact routes, UI elements, and flows a QA agent needs to verify. Specs are ordered by priority (P0 first, then P1).
+8 specs remain in active "built" status, meaning code was written and type checks passed, but Playwright verification or manual QA is still pending. The two trust-blocker specs were verified on 2026-04-02 and are retained below as cleared blockers for audit context. Specs are ordered by priority (P0 first, then P1).
+
+Current baseline status:
+
+- `npm run typecheck:app` is green on the current dirty checkout.
+- `npm run build -- --no-lint` is green on the current dirty checkout.
+- Verification work may proceed again.
+- Before starting, read `docs/build-state.md`.
+- If build state regresses, then read `docs/research/current-build-recovery-handoff-2026-04-02.md` before continuing.
+
+Dependency note for the next trust-focused build:
+
+- Trust blockers cleared on 2026-04-02 20:51 EDT.
+- `docs/specs/post-event-trust-loop-consolidation.md` was implemented and verified on 2026-04-03 00:03 EDT.
+- `docs/specs/featured-chef-public-proof-and-booking.md` and `docs/specs/public-chef-credentials-showcase.md` are no longer active items in this queue.
+- No trust-focused build prerequisite remains open in this queue.
 
 ---
 
@@ -162,7 +177,7 @@
 
 ---
 
-### P1 Specs (6)
+### P1 Specs (4 active + 2 cleared trust blockers)
 
 ---
 
@@ -242,6 +257,8 @@
 - **Spec:** `docs/specs/featured-chef-public-proof-and-booking.md`
 - **What was built:** Homepage featured chef cards with proof links (See reviews, Google reviews, Website), public chef profile proof summary block, two-column inquiry page, client preview parity.
 - **Priority:** P1
+- **Dependency role:** Verification blocker for `docs/specs/public-chef-credentials-showcase.md` and `docs/specs/post-event-trust-loop-consolidation.md`
+- **Active queue status:** verified on 2026-04-02 20:51 EDT; retained here as audit context, not as an open verification item
 
 #### Routes to Test
 
@@ -275,6 +292,8 @@
 - **Spec:** `docs/specs/public-chef-credentials-showcase.md`
 - **What was built:** Work history entries, public credentials panel on chef profile, private resume storage, charity impact display, achievements integration.
 - **Priority:** P1 (depends on featured-chef-public-proof-and-booking)
+- **Dependency role:** Verification blocker for `docs/specs/post-event-trust-loop-consolidation.md`
+- **Active queue status:** verified on 2026-04-02 20:51 EDT; retained here as audit context, not as an open verification item
 
 #### Routes to Test
 

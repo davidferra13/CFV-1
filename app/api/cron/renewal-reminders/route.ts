@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import type { NotificationAction } from '@/lib/notifications/types'
-import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
+import { recordCronHeartbeat, recordCronError } from '@/lib/cron/heartbeat'
 
 const dbAdmin = createAdminClient()
 
@@ -44,6 +44,8 @@ async function hasRenewalNotification({
 export async function GET(request: Request) {
   const authError = verifyCronAuth(request.headers.get('authorization'))
   if (authError) return authError
+
+  const startedAt = Date.now()
 
   try {
     const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
@@ -180,9 +182,11 @@ export async function GET(request: Request) {
     }
 
     const result = { message: `Processed ${notified} renewal alerts`, notified, skipped }
-    await recordCronHeartbeat('renewal-reminders', result)
+    await recordCronHeartbeat('renewal-reminders', result, Date.now() - startedAt)
     return NextResponse.json(result)
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    await recordCronError('renewal-reminders', message, Date.now() - startedAt)
     console.error('[renewal-reminders] Cron failed:', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }

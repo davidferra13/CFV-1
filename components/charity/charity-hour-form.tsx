@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useTransition, useCallback } from 'react'
+import { useCallback, useMemo, useState, useTransition } from 'react'
+import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { Clock, ExternalLink, MapPin, X } from '@/components/ui/icons'
 import { StoreAutocomplete, type StorePlaceData } from '@/components/ui/store-autocomplete'
-import { NonprofitBadge } from './nonprofit-badge'
+import { toast } from 'sonner'
 import { logCharityHours, updateCharityHours } from '@/lib/charity/hours-actions'
+import { getOrganizationLinks } from '@/lib/charity/organization-links'
 import { searchNonprofits } from '@/lib/charity/propublica-actions'
 import type { CharityHourEntry, CharityOrganization } from '@/lib/charity/hours-types'
-import { toast } from 'sonner'
-import { Clock, MapPin, X } from '@/components/ui/icons'
+import { NonprofitBadge } from './nonprofit-badge'
 
 type FormMode = 'create' | 'edit'
 
@@ -25,12 +26,13 @@ export function CharityHourForm({
 }) {
   const mode: FormMode = editEntry ? 'edit' : 'create'
   const [pending, startTransition] = useTransition()
-
-  // Form state
   const [orgName, setOrgName] = useState(editEntry?.organizationName ?? '')
   const [orgAddress, setOrgAddress] = useState(editEntry?.organizationAddress ?? '')
   const [googlePlaceId, setGooglePlaceId] = useState(editEntry?.googlePlaceId ?? '')
   const [ein, setEin] = useState(editEntry?.ein ?? '')
+  const [organizationWebsiteUrl, setOrganizationWebsiteUrl] = useState(
+    editEntry?.organizationWebsiteUrl ?? ''
+  )
   const [isVerified, setIsVerified] = useState(editEntry?.isVerified501c ?? false)
   const [serviceDate, setServiceDate] = useState(
     editEntry?.serviceDate ?? new Date().toISOString().slice(0, 10)
@@ -38,15 +40,26 @@ export function CharityHourForm({
   const [hours, setHours] = useState(editEntry?.hours?.toString() ?? '')
   const [notes, setNotes] = useState(editEntry?.notes ?? '')
   const [manualMode, setManualMode] = useState(false)
-
-  // ProPublica enrichment
   const [enriching, setEnriching] = useState(false)
+
+  const selectedLinks = useMemo(
+    () =>
+      getOrganizationLinks({
+        organizationName: orgName,
+        organizationAddress: orgAddress || null,
+        googlePlaceId: googlePlaceId || null,
+        ein: ein || null,
+        websiteUrl: organizationWebsiteUrl || null,
+      }),
+    [ein, googlePlaceId, orgAddress, orgName, organizationWebsiteUrl]
+  )
 
   function resetForm() {
     setOrgName('')
     setOrgAddress('')
     setGooglePlaceId('')
     setEin('')
+    setOrganizationWebsiteUrl('')
     setIsVerified(false)
     setServiceDate(new Date().toISOString().slice(0, 10))
     setHours('')
@@ -54,31 +67,29 @@ export function CharityHourForm({
     setManualMode(false)
   }
 
-  // Extract state abbreviation from address for ProPublica search
   function extractState(address: string): string | undefined {
     const match = address.match(/,\s*([A-Z]{2})\s+\d{5}/)
     return match?.[1]
   }
 
-  // After Google Places selection, try to verify via ProPublica
   const enrichWithProPublica = useCallback(async (name: string, address: string) => {
     setEnriching(true)
     try {
       const state = extractState(address)
       const { results } = await searchNonprofits(name, state)
       if (results.length > 0) {
-        // Find best match (exact or close name match)
         const nameLower = name.toLowerCase()
         const match =
           results.find(
-            (r) =>
-              r.name.toLowerCase().includes(nameLower) || nameLower.includes(r.name.toLowerCase())
+            (result) =>
+              result.name.toLowerCase().includes(nameLower) ||
+              nameLower.includes(result.name.toLowerCase())
           ) ?? results[0]
         setEin(match.ein)
         setIsVerified(true)
       }
     } catch {
-      // Non-blocking - form works without ProPublica
+      // Non-blocking.
     } finally {
       setEnriching(false)
     }
@@ -89,13 +100,9 @@ export function CharityHourForm({
     setOrgAddress(data.address)
     setGooglePlaceId(data.place_id ?? '')
     setManualMode(false)
-    // Reset previous verification
     setEin('')
     setIsVerified(false)
-    // Try ProPublica enrichment
-    if (data.name && data.address) {
-      enrichWithProPublica(data.name, data.address)
-    }
+    if (data.name && data.address) enrichWithProPublica(data.name, data.address)
   }
 
   function handleRecentOrgClick(org: CharityOrganization) {
@@ -103,11 +110,11 @@ export function CharityHourForm({
     setOrgAddress(org.organizationAddress ?? '')
     setGooglePlaceId(org.googlePlaceId ?? '')
     setEin(org.ein ?? '')
+    setOrganizationWebsiteUrl(org.websiteUrl ?? '')
     setIsVerified(org.isVerified501c)
     setManualMode(false)
   }
 
-  /** Fill form from the nonprofit search panel */
   function handleNonprofitSelect(nonprofit: {
     name: string
     city: string
@@ -118,12 +125,11 @@ export function CharityHourForm({
     setOrgAddress(`${nonprofit.city}, ${nonprofit.state}`)
     setGooglePlaceId('')
     setEin(nonprofit.ein)
+    setOrganizationWebsiteUrl('')
     setIsVerified(true)
     setManualMode(false)
   }
 
-  // Expose the fill function to parent via ref or callback
-  // We use a global event approach for simplicity
   if (typeof window !== 'undefined') {
     ;(window as any).__charityHourFormFill = handleNonprofitSelect
   }
@@ -133,7 +139,7 @@ export function CharityHourForm({
 
     const parsedHours = parseFloat(hours)
     if (!orgName.trim() || isNaN(parsedHours) || parsedHours <= 0) {
-      toast.error('Please fill in the organization and hours')
+      toast.error('Add an organization and hours before saving.')
       return
     }
 
@@ -144,6 +150,7 @@ export function CharityHourForm({
           organizationAddress: orgAddress.trim() || undefined,
           googlePlaceId: googlePlaceId || undefined,
           ein: ein || undefined,
+          organizationWebsiteUrl: organizationWebsiteUrl.trim() || undefined,
           isVerified501c: isVerified,
           serviceDate,
           hours: parsedHours,
@@ -152,67 +159,73 @@ export function CharityHourForm({
 
         if (mode === 'edit' && editEntry) {
           await updateCharityHours({ ...input, id: editEntry.id })
-          toast.success('Hours updated')
+          toast.success('Volunteer entry updated.')
         } else {
           await logCharityHours(input)
-          toast.success('Charity hours logged!')
+          toast.success('Volunteer hours logged.')
           resetForm()
         }
         onDone?.()
-      } catch (err) {
-        toast.error(mode === 'edit' ? 'Failed to update' : 'Failed to log hours')
+      } catch {
+        toast.error(mode === 'edit' ? 'Failed to update entry.' : 'Failed to log hours.')
       }
     })
   }
 
   return (
     <Card className="p-5">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-medium text-stone-300 flex items-center gap-2">
-          <Clock className="w-4 h-4" />
-          {mode === 'edit' ? 'Edit Hours' : 'Log Charity Hours'}
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-sm font-medium text-stone-300">
+          <Clock className="h-4 w-4" />
+          {mode === 'edit' ? 'Edit volunteer entry' : 'Log volunteer hours'}
         </h2>
         {mode === 'edit' && onDone && (
-          <button onClick={onDone} className="text-stone-500 hover:text-stone-300">
-            <X className="w-4 h-4" />
+          <button
+            type="button"
+            onClick={onDone}
+            className="text-stone-500 transition-colors hover:text-stone-300"
+          >
+            <X className="h-4 w-4" />
           </button>
         )}
       </div>
 
-      {/* Recent orgs chips */}
       {recentOrgs.length > 0 && mode === 'create' && (
-        <div className="flex flex-wrap gap-2 mb-3">
-          {recentOrgs.slice(0, 6).map((org) => (
-            <button
-              key={org.organizationName}
-              type="button"
-              onClick={() => handleRecentOrgClick(org)}
-              className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded-full bg-stone-800 text-stone-300 hover:bg-stone-700 hover:text-stone-100 transition-colors"
-            >
-              {org.isVerified501c && <span className="text-emerald-500">✓</span>}
-              {org.organizationName}
-              <span className="text-stone-500 ml-1">{org.totalHours}h</span>
-            </button>
-          ))}
+        <div className="mb-4 space-y-2">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-stone-500">
+            Recently used organizations
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {recentOrgs.slice(0, 6).map((org) => (
+              <button
+                key={org.id ?? org.organizationName}
+                type="button"
+                onClick={() => handleRecentOrgClick(org)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-stone-700 bg-stone-900 px-3 py-1 text-xs text-stone-300 transition-colors hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100"
+              >
+                <span>{org.organizationName}</span>
+                <span className="text-stone-500">{org.totalHours}h</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-3">
-        {/* Organization search */}
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="text-xs text-stone-500 mb-1 block">Organization</label>
+          <label className="mb-1 block text-xs text-stone-500">Organization</label>
           {manualMode ? (
             <div className="flex gap-2">
               <Input
                 value={orgName}
-                onChange={(e) => setOrgName(e.target.value)}
+                onChange={(event) => setOrgName(event.target.value)}
                 placeholder="Organization name"
                 required
               />
               <button
                 type="button"
                 onClick={() => setManualMode(false)}
-                className="text-xs text-stone-500 hover:text-stone-300 whitespace-nowrap"
+                className="whitespace-nowrap text-xs text-stone-500 transition-colors hover:text-stone-300"
               >
                 Search instead
               </button>
@@ -223,45 +236,105 @@ export function CharityHourForm({
                 value={orgName}
                 onChange={setOrgName}
                 onPlaceSelect={handlePlaceSelect}
-                placeholder="Search for a food bank, shelter, nonprofit..."
+                placeholder="Search for a pantry, shelter, nonprofit, or community kitchen"
               />
               <button
                 type="button"
                 onClick={() => setManualMode(true)}
-                className="text-xs text-stone-600 hover:text-stone-400 mt-1"
+                className="mt-1 text-xs text-stone-600 transition-colors hover:text-stone-400"
               >
-                Can&apos;t find it? Enter manually
+                Can&apos;t find it? Enter it manually
               </button>
             </div>
           )}
-          {orgAddress && (
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <MapPin className="w-3 h-3 text-stone-600" />
-              <span className="text-xs text-stone-500">{orgAddress}</span>
-              <NonprofitBadge verified={isVerified} />
-              {enriching && <span className="text-xs text-stone-600">Verifying...</span>}
+
+          {(orgAddress || isVerified || selectedLinks.websiteUrl || selectedLinks.mapsUrl) && (
+            <div className="mt-2 rounded-xl border border-stone-800 bg-stone-950/60 p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {orgAddress && (
+                  <span className="inline-flex items-center gap-1.5 text-xs text-stone-400">
+                    <MapPin className="h-3 w-3 text-stone-600" />
+                    {orgAddress}
+                  </span>
+                )}
+                <NonprofitBadge verified={isVerified} />
+                {enriching && (
+                  <span className="text-xs text-stone-500">Verifying nonprofit status...</span>
+                )}
+              </div>
+
+              {(selectedLinks.websiteUrl ||
+                selectedLinks.mapsUrl ||
+                selectedLinks.verificationUrl) && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {selectedLinks.websiteUrl && (
+                    <a
+                      href={selectedLinks.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-full border border-stone-700 px-2.5 py-1 text-[11px] text-stone-300 transition-colors hover:border-stone-600 hover:text-stone-100"
+                    >
+                      Website <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {selectedLinks.mapsUrl && (
+                    <a
+                      href={selectedLinks.mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-full border border-stone-700 px-2.5 py-1 text-[11px] text-stone-300 transition-colors hover:border-stone-600 hover:text-stone-100"
+                    >
+                      Maps <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {selectedLinks.verificationUrl && (
+                    <a
+                      href={selectedLinks.verificationUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-full border border-stone-700 px-2.5 py-1 text-[11px] text-stone-300 transition-colors hover:border-stone-600 hover:text-stone-100"
+                    >
+                      Verification <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Date + Hours side by side */}
+        <div>
+          <label className="mb-1 block text-xs text-stone-500">
+            Organization website (optional)
+          </label>
+          <Input
+            type="url"
+            value={organizationWebsiteUrl}
+            onChange={(event) => setOrganizationWebsiteUrl(event.target.value)}
+            placeholder="https://example.org"
+          />
+          <p className="mt-1 text-xs text-stone-600">
+            Add a direct link if you want people to be able to jump straight to this organization.
+          </p>
+        </div>
+
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-stone-500 mb-1 block">Date</label>
+            <label className="mb-1 block text-xs text-stone-500">Date</label>
             <Input
               type="date"
               value={serviceDate}
-              onChange={(e) => setServiceDate(e.target.value)}
+              onChange={(event) => setServiceDate(event.target.value)}
               max={new Date().toISOString().slice(0, 10)}
               required
             />
           </div>
           <div>
-            <label className="text-xs text-stone-500 mb-1 block">Hours</label>
+            <label className="mb-1 block text-xs text-stone-500">Hours</label>
             <Input
               type="number"
               value={hours}
-              onChange={(e) => setHours(e.target.value)}
+              onChange={(event) => setHours(event.target.value)}
               placeholder="e.g. 4.5"
               step="0.25"
               min="0.25"
@@ -271,21 +344,20 @@ export function CharityHourForm({
           </div>
         </div>
 
-        {/* Notes */}
         <div>
-          <label className="text-xs text-stone-500 mb-1 block">Notes (optional)</label>
+          <label className="mb-1 block text-xs text-stone-500">What happened? (optional)</label>
           <textarea
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="What did you do? (sorted donations, cooked meals, etc.)"
-            className="w-full rounded-lg bg-stone-800 border border-stone-700 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-            rows={2}
+            onChange={(event) => setNotes(event.target.value)}
+            placeholder="Cooked meals, sorted donations, ran pantry setup, supported a scheduled event..."
+            className="w-full resize-none rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            rows={3}
             maxLength={2000}
           />
         </div>
 
         <Button type="submit" disabled={pending} loading={pending}>
-          {mode === 'edit' ? 'Update Hours' : 'Log Hours'}
+          {mode === 'edit' ? 'Update volunteer entry' : 'Save volunteer entry'}
         </Button>
       </form>
     </Card>

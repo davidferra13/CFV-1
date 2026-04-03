@@ -7,11 +7,17 @@
 export type QuestionType =
   | 'single_select'
   | 'multi_select'
+  | 'short_text'
   | 'textarea'
   | 'rating_scale'
   | 'nps'
   | 'yes_no'
   | 'number'
+
+export type SurveyQuestionVisibilityRule = {
+  questionId: string
+  equals: string | string[]
+}
 
 export type SurveyQuestion = {
   id: string
@@ -20,6 +26,9 @@ export type SurveyQuestion = {
   options?: string[]
   required: boolean
   order: number
+  section?: string
+  show_if?: SurveyQuestionVisibilityRule
+  max_selections?: number
   placeholder?: string
   min?: number
   max?: number
@@ -27,7 +36,44 @@ export type SurveyQuestion = {
   max_label?: string
 }
 
-export type SurveyType = 'pre_beta' | 'post_beta'
+export type SurveyType =
+  | 'pre_beta'
+  | 'post_beta'
+  | 'market_research_operator'
+  | 'market_research_client'
+
+export const BETA_SURVEY_META_KEYS = {
+  source: '__source',
+  channel: '__channel',
+  campaign: '__campaign',
+  wave: '__wave',
+  launch: '__launch',
+  surveySlug: '__public_survey_slug',
+  respondentRole: '__respondent_role',
+} as const
+
+export type BetaSurveyResponseMeta = {
+  source: string | null
+  channel: string | null
+  campaign: string | null
+  wave: string | null
+  launch: string | null
+  surveySlug: string | null
+  respondentRole: string | null
+}
+
+export function getDefaultRespondentRoleForSurveyType(type: SurveyType | string): string {
+  switch (type) {
+    case 'market_research_operator':
+      return 'food_operator'
+    case 'market_research_client':
+      return 'consumer'
+    case 'post_beta':
+    case 'pre_beta':
+    default:
+      return 'tester'
+  }
+}
 
 // ─── Survey Definition ─────────────────────────────────────────────────────────
 
@@ -41,6 +87,42 @@ export type BetaSurveyDefinition = {
   is_active: boolean
   created_at: string
   updated_at: string
+}
+
+export function formatSurveyTypeLabel(type: SurveyType | string): string {
+  switch (type) {
+    case 'pre_beta':
+      return 'Pre-Launch'
+    case 'post_beta':
+      return 'Post-Launch'
+    case 'market_research_operator':
+      return 'Operator Research'
+    case 'market_research_client':
+      return 'Client Research'
+    default:
+      return type
+        .split('_')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ')
+  }
+}
+
+export function isQuestionVisible(
+  question: SurveyQuestion,
+  answers: Record<string, unknown>
+): boolean {
+  if (!question.show_if) return true
+
+  const sourceValue = answers[question.show_if.questionId]
+  const expectedValues = Array.isArray(question.show_if.equals)
+    ? question.show_if.equals
+    : [question.show_if.equals]
+
+  if (Array.isArray(sourceValue)) {
+    return sourceValue.some((value) => expectedValues.includes(String(value)))
+  }
+
+  return typeof sourceValue === 'string' && expectedValues.includes(sourceValue)
 }
 
 // ─── Response Types ────────────────────────────────────────────────────────────
@@ -74,6 +156,63 @@ export type BetaSurveyInvite = {
   response_id: string | null
   expires_at: string | null
   created_at: string
+}
+
+function normalizeMetaValue(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+export function buildBetaSurveyAnswersWithMeta(
+  answers: Record<string, unknown>,
+  meta?: {
+    source?: string
+    channel?: string
+    campaign?: string
+    wave?: string
+    launch?: string
+    surveySlug?: string
+    respondentRole?: string
+  }
+): Record<string, unknown> {
+  const enrichedAnswers: Record<string, unknown> = { ...answers }
+
+  const assignments: Array<[keyof typeof BETA_SURVEY_META_KEYS, string | undefined]> = [
+    ['source', meta?.source],
+    ['channel', meta?.channel],
+    ['campaign', meta?.campaign],
+    ['wave', meta?.wave],
+    ['launch', meta?.launch],
+    ['surveySlug', meta?.surveySlug],
+    ['respondentRole', meta?.respondentRole],
+  ]
+
+  for (const [metaKey, value] of assignments) {
+    const normalized = normalizeMetaValue(value)
+    if (normalized) {
+      enrichedAnswers[BETA_SURVEY_META_KEYS[metaKey]] = normalized
+    }
+  }
+
+  return enrichedAnswers
+}
+
+export function getBetaSurveyResponseMeta(
+  answers: Record<string, unknown> | null | undefined
+): BetaSurveyResponseMeta {
+  const answerMap = answers || {}
+
+  return {
+    source: normalizeMetaValue(answerMap[BETA_SURVEY_META_KEYS.source]),
+    channel: normalizeMetaValue(answerMap[BETA_SURVEY_META_KEYS.channel]),
+    campaign: normalizeMetaValue(answerMap[BETA_SURVEY_META_KEYS.campaign]),
+    wave: normalizeMetaValue(answerMap[BETA_SURVEY_META_KEYS.wave]),
+    launch: normalizeMetaValue(answerMap[BETA_SURVEY_META_KEYS.launch]),
+    surveySlug: normalizeMetaValue(answerMap[BETA_SURVEY_META_KEYS.surveySlug]),
+    respondentRole: normalizeMetaValue(answerMap[BETA_SURVEY_META_KEYS.respondentRole]),
+  }
 }
 
 // ─── Survey Stats ──────────────────────────────────────────────────────────────
@@ -241,6 +380,20 @@ export function getStepsForSurvey(
   surveyType: SurveyType,
   questions: SurveyQuestion[]
 ): { label: string; questionIds: string[] }[] {
+  const sectionedQuestions = questions.filter((q) => q.section?.trim())
+  if (sectionedQuestions.length > 0) {
+    const grouped = new Map<string, string[]>()
+    for (const q of [...questions].sort((a, b) => a.order - b.order)) {
+      const section = q.section?.trim()
+      if (!section) continue
+      if (!grouped.has(section)) grouped.set(section, [])
+      grouped.get(section)!.push(q.id)
+    }
+    if (grouped.size > 0) {
+      return Array.from(grouped.entries()).map(([label, questionIds]) => ({ label, questionIds }))
+    }
+  }
+
   const predefined = surveyType === 'pre_beta' ? PRE_BETA_STEPS : POST_BETA_STEPS
 
   // Validate that all question IDs in the grouping actually exist

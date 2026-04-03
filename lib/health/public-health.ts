@@ -1,36 +1,10 @@
 import { randomUUID } from 'crypto'
-import { createAdminClient } from '@/lib/db/admin'
+import { CRON_MONITOR_DEFINITIONS } from '@/lib/cron/definitions'
+import { buildCronHealthReport } from '@/lib/cron/monitor'
 import { getCircuitBreakerHealth } from '@/lib/resilience/circuit-breaker'
 
 export type PublicHealthStatus = 'ok' | 'degraded'
 export type PublicHealthScope = 'health' | 'readiness'
-
-const CRON_EXPECTED_INTERVALS: Record<string, number> = {
-  'gmail-sync': 10,
-  'integrations-pull': 10,
-  'wix-process': 10,
-  'social-publish': 10,
-  automations: 30,
-  copilot: 30,
-  'email-history-scan': 30,
-  'call-reminders': 60,
-  'integrations-retry': 120,
-  campaigns: 120,
-  'revenue-goals': 720,
-  'follow-ups': 720,
-  'reviews-sync': 720,
-  'wellbeing-signals': 720,
-  lifecycle: 2880,
-  sequences: 2880,
-  'activity-cleanup': 2880,
-  'loyalty-expiry': 2880,
-  'waitlist-sweep': 2880,
-  'push-cleanup': 2880,
-  'renewal-reminders': 2880,
-  'cooling-alert': 2880,
-  'quarterly-checkin': 2880,
-  'brand-monitor': 2880,
-}
 
 type BackgroundJobSummary = {
   status: PublicHealthStatus
@@ -69,7 +43,7 @@ async function getBackgroundJobSummary(): Promise<BackgroundJobSummary> {
       status: 'degraded',
       summary: {
         observedCrons: 0,
-        missing: Object.keys(CRON_EXPECTED_INTERVALS).length,
+        missing: CRON_MONITOR_DEFINITIONS.length,
         stale: 0,
       },
       reason: 'missing_db_admin_env',
@@ -77,55 +51,14 @@ async function getBackgroundJobSummary(): Promise<BackgroundJobSummary> {
   }
 
   try {
-    const db: any = createAdminClient()
-    const { data: recentRunsRaw, error } = await db
-      .from('cron_executions')
-      .select('cron_name, executed_at')
-      .order('executed_at', { ascending: false })
-
-    if (error) {
-      console.error('[public-health] Failed to query cron_executions:', error)
-      return {
-        status: 'degraded',
-        summary: {
-          observedCrons: 0,
-          missing: Object.keys(CRON_EXPECTED_INTERVALS).length,
-          stale: 0,
-        },
-        reason: 'cron_query_failed',
-      }
-    }
-
-    const latestByName = new Map<string, string>()
-    for (const row of recentRunsRaw ?? []) {
-      if (!latestByName.has(row.cron_name)) {
-        latestByName.set(row.cron_name, row.executed_at)
-      }
-    }
-
-    const now = Date.now()
-    let missing = 0
-    let stale = 0
-
-    for (const [cronName, maxMinutes] of Object.entries(CRON_EXPECTED_INTERVALS)) {
-      const lastRunAt = latestByName.get(cronName)
-      if (!lastRunAt) {
-        missing += 1
-        continue
-      }
-
-      const minutesSince = Math.round((now - new Date(lastRunAt).getTime()) / 60_000)
-      if (minutesSince > maxMinutes) {
-        stale += 1
-      }
-    }
+    const report = await buildCronHealthReport()
 
     return {
-      status: missing === 0 && stale === 0 ? 'ok' : 'degraded',
+      status: report.healthy ? 'ok' : 'degraded',
       summary: {
-        observedCrons: latestByName.size,
-        missing,
-        stale,
+        observedCrons: report.crons.filter((entry) => entry.lastRunAt).length,
+        missing: report.missingCrons.length,
+        stale: report.staleCrons.length,
       },
       reason: null,
     }
@@ -135,7 +68,7 @@ async function getBackgroundJobSummary(): Promise<BackgroundJobSummary> {
       status: 'degraded',
       summary: {
         observedCrons: 0,
-        missing: Object.keys(CRON_EXPECTED_INTERVALS).length,
+        missing: CRON_MONITOR_DEFINITIONS.length,
         stale: 0,
       },
       reason: 'unexpected_error',

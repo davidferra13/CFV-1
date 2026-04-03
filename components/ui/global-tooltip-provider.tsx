@@ -263,7 +263,7 @@ function computeTooltipPosition(
   }
 }
 
-export function GlobalTooltipProvider({ children }: { children: React.ReactNode }) {
+export function GlobalTooltipProvider({ children }: { children?: React.ReactNode }) {
   const [renderedTooltip, setRenderedTooltip] = useState<RenderedTooltip | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [position, setPosition] = useState<TooltipPosition>(DEFAULT_POSITION)

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
+import { isLocalTurnstileHost, TURNSTILE_TEST_SITE_KEY } from '@/lib/security/turnstile-constants'
 
 // Extend Window to include Turnstile types
 declare global {
@@ -103,7 +104,12 @@ export function TurnstileWidget({
   onExpireRef.current = onExpire
   onErrorRef.current = onError
 
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+  const host =
+    typeof window !== 'undefined' ? window.location.hostname || window.location.host : undefined
+  const siteKey =
+    process.env.NODE_ENV !== 'production' && isLocalTurnstileHost(host)
+      ? process.env.NEXT_PUBLIC_TURNSTILE_TEST_SITE_KEY || TURNSTILE_TEST_SITE_KEY
+      : process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
   const initWidget = useCallback(async () => {
     if (!siteKey || !containerRef.current) return

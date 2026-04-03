@@ -5,23 +5,39 @@
 
 export type CharityHourEntry = {
   id: string
+  organizationId: string | null
   organizationName: string
   organizationAddress: string | null
   googlePlaceId: string | null
   ein: string | null
   isVerified501c: boolean
+  organizationWebsiteUrl: string | null
+  organizationVerificationSource: string | null
+  organizationVerificationUrl: string | null
+  links: CharityOrganizationLinks
   serviceDate: string // YYYY-MM-DD
   hours: number // decimal
   notes: string | null
   createdAt: string
 }
 
+export type CharityOrganizationLinks = {
+  websiteUrl: string | null
+  mapsUrl: string | null
+  verificationUrl: string | null
+}
+
 export type CharityOrganization = {
+  id: string | null
   organizationName: string
   organizationAddress: string | null
   googlePlaceId: string | null
   ein: string | null
   isVerified501c: boolean
+  websiteUrl: string | null
+  verificationSource: string | null
+  verificationUrl: string | null
+  links: CharityOrganizationLinks
   lastUsed: string // most recent service_date
   totalHours: number
 }
@@ -31,7 +47,13 @@ export type CharityHoursSummary = {
   totalEntries: number
   uniqueOrgs: number
   verified501cOrgs: number
-  hoursByOrg: { name: string; hours: number; isVerified: boolean }[]
+  hoursByOrg: Array<{
+    id: string | null
+    name: string
+    hours: number
+    isVerified: boolean
+    links: CharityOrganizationLinks
+  }>
 }
 
 export type ProPublicaNonprofit = {

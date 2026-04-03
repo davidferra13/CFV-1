@@ -1,9 +1,10 @@
 # ChefFlow V1 - Comprehensive System Manual
 
 > **Generated:** 2026-03-17 | **Baseline Version:** commit `56f4d197e`
-> **Purpose:** Authoritative, single-source-of-truth technical manual for ChefFlow V1.
+> **Purpose:** Technical manual for ChefFlow V1.
 > All subsequent changes are "patches" to this documented baseline.
 > **Maintainer:** Claude Code (Lead Engineer)
+> **Canonical scope note:** Project identity, audience, and scope are governed by `docs/project-definition-and-scope.md`. This manual is implementation-facing and should not override that file.
 
 ---
 
@@ -31,7 +32,7 @@
 
 ### What ChefFlow Is
 
-ChefFlow is a **multi-tenant private chef operations platform** built on Next.js 14, PostgreSQL (PostgreSQL), and Stripe. It manages the complete lifecycle of a private chef's business: client acquisition, event management, quoting, invoicing, payments, menu/recipe management, staff coordination, and business analytics. The tagline is "Ops for Artists."
+ChefFlow is a **chef-first operating system for independent and small culinary businesses** built on Next.js 14, PostgreSQL (PostgreSQL), and Stripe. It manages the complete lifecycle of a chef-led business: client acquisition, event management, quoting, invoicing, payments, menu and recipe management, staff coordination, and business analytics. The tagline is "Ops for Artists."
 
 ### Codebase Metrics (as of 2026-03-17)
 
@@ -565,24 +566,23 @@ Quotes have their own state machine with transitions logged to `quote_state_tran
 
 ```
 lib/billing/
-  tier.ts          -- Resolves chef's current tier (free/pro)
+  tier.ts          -- Legacy tier-resolution support
   modules.ts       -- Module definitions (feature groupings)
-  pro-features.ts  -- Registry of all Pro features
-  require-pro.ts   -- Server-side enforcement (requirePro())
+  pro-features.ts  -- Legacy Pro feature registry retained for compatibility
+  require-pro.ts   -- Compatibility wrapper; no longer hard-enforces paid access
 
 components/billing/
-  upgrade-gate.tsx -- Client-side UI gating
+  upgrade-gate.tsx -- Compatibility wrapper; currently pass-through UI gate
 
-Admins bypass all tier restrictions.
+Admins bypass legacy tier restrictions.
 ```
 
-**Tier resolution flow:**
+**Current interpretation:**
 
-1. Check `chefs.subscription_tier` column
-2. If `pro`, all features unlocked
-3. If `free`, check `pro-features.ts` registry for feature gating
-4. `requirePro('module-slug')` throws if chef is on free tier
-5. `<UpgradeGate>` renders upgrade prompt instead of feature UI
+1. The repo still contains legacy tier and Pro-era naming.
+2. `requirePro('module-slug')` is currently a compatibility wrapper around chef auth, not an active hard paywall.
+3. `<UpgradeGate>` is currently a pass-through wrapper retained so old call sites continue to compile.
+4. Product-facing monetization language should follow `docs/project-definition-and-scope.md` and `docs/monetization-shift.md`, not the older tier-era assumptions in this manual.
 
 ### AI Policy (Canonical: `docs/AI_POLICY.md`)
 
@@ -887,14 +887,15 @@ Measures over 100+ repeated navigation loops:
 
 ### Quality Gates
 
-| Gate       | Command                                                 | When                 |
-| ---------- | ------------------------------------------------------- | -------------------- |
-| TypeScript | `npx tsc --noEmit --skipLibCheck`                       | Before merge to main |
-| Build      | `npx next build --no-lint`                              | Before merge to main |
-| Unit tests | `npm run test:unit`                                     | Before merge to main |
-| Smoke E2E  | `npm run test:e2e:smoke`                                | Before merge to main |
-| AI stress  | `npm run test:stress:ollama` (3 modes)                  | If AI/queue changes  |
-| Formatting | `prettier --check` (via lint-staged + Husky pre-commit) | Every commit         |
+| Gate       | Command                                                                | When                         |
+| ---------- | ---------------------------------------------------------------------- | ---------------------------- |
+| TypeScript | `npx tsc --noEmit --skipLibCheck`                                      | Before merge to main         |
+| Build      | `npx next build --no-lint`                                             | Before merge to main         |
+| Unit tests | `npm run test:unit`                                                    | Before merge to main         |
+| Cron guard | `node --test --import tsx tests/unit/cron-monitoring-coverage.test.ts` | When touching scheduled jobs |
+| Smoke E2E  | `npm run test:e2e:smoke`                                               | Before merge to main         |
+| AI stress  | `npm run test:stress:ollama` (3 modes)                                 | If AI/queue changes          |
+| Formatting | `prettier --check` (via lint-staged + Husky pre-commit)                | Every commit                 |
 
 ### Audit Scripts
 
@@ -1041,29 +1042,33 @@ Production:   Self-hosted     (app.cheflowhq.com, Cloudflare Tunnel)
 
 #### Scheduled/Cron Jobs
 
-| Route                          | Purpose                            |
-| ------------------------------ | ---------------------------------- |
-| `api/cron/morning-briefing`    | Daily morning briefing             |
-| `api/cron/brand-monitor`       | Brand mention monitoring           |
-| `api/cron/cooling-alert`       | Client relationship cooling alerts |
-| `api/cron/momentum-snapshot`   | Business momentum tracking         |
-| `api/cron/recall-check`        | Food recall monitoring             |
-| `api/cron/renewal-reminders`   | Subscription renewal reminders     |
-| `api/cron/account-purge`       | Inactive account cleanup           |
-| `api/cron/circle-digest`       | Community digest                   |
-| `api/cron/quarterly-checkin`   | Quarterly check-in triggers        |
-| `api/scheduled/*` (20+ routes) | Various scheduled tasks            |
+| Route                          | Purpose                              |
+| ------------------------------ | ------------------------------------ |
+| `api/cron/morning-briefing`    | Daily morning briefing               |
+| `api/cron/brand-monitor`       | Brand mention monitoring             |
+| `api/cron/cooling-alert`       | Client relationship cooling alerts   |
+| `api/cron/momentum-snapshot`   | Business momentum tracking           |
+| `api/cron/recall-check`        | Food recall monitoring               |
+| `api/cron/renewal-reminders`   | Subscription renewal reminders       |
+| `api/cron/account-purge`       | Inactive account cleanup             |
+| `api/cron/circle-digest`       | Community digest                     |
+| `api/cron/quarterly-checkin`   | Quarterly check-in triggers          |
+| `api/cron/developer-digest`    | Daily developer system-health digest |
+| `api/scheduled/*` (20+ routes) | Various scheduled tasks              |
 
 #### Health & Monitoring
 
-| Route                         | Purpose                     |
-| ----------------------------- | --------------------------- |
-| `api/health`                  | Primary health check        |
-| `api/health/readiness`        | Readiness probe             |
-| `api/health/ping`             | Simple ping                 |
-| `api/system/health`           | System health dashboard     |
-| `api/system/heal`             | Self-healing endpoint       |
-| `api/monitoring/report-error` | Client-side error reporting |
+| Route                         | Purpose                                           |
+| ----------------------------- | ------------------------------------------------- |
+| `api/health`                  | Primary health check                              |
+| `api/health/readiness`        | Readiness probe                                   |
+| `api/health/ping`             | Simple ping                                       |
+| `api/scheduled/monitor`       | Authenticated cron health report and alert router |
+| `api/system/health`           | System health dashboard                           |
+| `api/system/heal`             | Self-healing endpoint                             |
+| `api/monitoring/report-error` | Client-side error reporting                       |
+
+Background-job health is driven by the shared registry in `lib/cron/definitions.ts` and the report builder in `lib/cron/monitor.ts`, which are also consumed by readiness and the developer digest.
 
 #### Public/Embed
 
