@@ -12,13 +12,13 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                        | Status | Last Verified | Commit                          | Agent           |
-| ---------------------------- | ------ | ------------- | ------------------------------- | --------------- |
-| `npm run typecheck:app`      | green  | 2026-04-03    | dirty worktree from `b9b607a30` | Claude Opus 4.6 |
-| `npm run build -- --no-lint` | green  | 2026-04-03    | dirty worktree from `b9b607a30` | Claude Opus 4.6 |
+| Check                        | Status | Last Verified | Commit    | Agent           |
+| ---------------------------- | ------ | ------------- | --------- | --------------- |
+| `npm run typecheck:app`      | green  | 2026-04-03    | 86ddad72c | Claude Opus 4.6 |
+| `npm run build -- --no-lint` | green  | 2026-04-03    | 86ddad72c | Claude Opus 4.6 |
 
-**Last green build:** 4743f418 (2026-04-02) - UX polish pass (stagger animations + empty states)
-**Last commit on main:** 4743f418 - feat(context): add global app context for timezone, locale, and currency
+**Last green build:** 86ddad72c (2026-04-03) - allergy spec build + research docs committed
+**Last commit on main:** 86ddad72c - docs(research): add UX pattern research and interface philosophy rules
 
 **Current blocker:** no repo-wide `tsc` or build blocker is currently active in this checkout. On 2026-04-03, the canonical wrappers were hardened so `npm run build -- --no-lint` clears stale `.next` output before building and `npm run typecheck:app` / `npm run typecheck:next` retry once after resetting stale incremental state. The current survey launch path is still blocked first on deployed host reachability: at 2026-04-03 04:39 EDT, both `https://beta.cheflowhq.com/api/health/readiness?strict=1` and `https://app.cheflowhq.com/api/health/readiness?strict=1` returned Cloudflare `530` / `1033` before any app-level survey verification could run. After deployment reachability is restored, the survey lane is still blocked on actual deployed verification and then phase-3 hardening.
 
