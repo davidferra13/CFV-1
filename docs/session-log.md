@@ -1401,3 +1401,39 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/p1-chef-getting-started-surface-consolidation.md, docs/session-log.md
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass on verified dirty checkout)
 - Notes: Read the planner context, logged arrival, inspected the chef layout, legacy tour shell, floating checklist, spotlight flow, dashboard setup surfaces, onboarding wizard/hub, related server actions, and the underlying `product_tour_progress` and `onboarding_progress` schemas. Also cross-checked current external onboarding patterns to avoid solving this like a generic SaaS tour. Wrote a builder-safe spec that removes the chef layout overlay, preserves peripheral UI behavior with an explicit visibility bridge, narrows setup language to `Setup Progress` versus `Business Import`, and answers every Planner Gate validation question with cited file paths and line numbers, including what a builder would most likely get wrong and what remains intentionally out of scope.
+
+## 2026-04-03 00:38 EDT
+
+- Agent: Research / Planner (Codex)
+- Task: Consolidate the highest-value unused platform-intelligence research into one canonical correction packet, then wire it into the current planning stack without disrupting the active survey lane
+- Status: completed
+- Files touched: docs/research/foundations/2026-04-03-platform-intelligence-evidence-gaps-and-spec-corrections.md, docs/specs/platform-intelligence-hub.md, docs/research/README.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only synthesis and spec-alignment pass; no new build or typecheck actions)
+- Notes: Reviewed the current platform-intelligence spec, research index, and active builder handoff first to avoid creating another disconnected memo. Created a single foundational correction document that integrates the underused portal-adoption, lifecycle-gap, validation-framework, abuse-audit, and cross-persona breakpoint research; then linked it into `platform-intelligence-hub.md`, corrected the stale `12 phases` header to `14 phases`, added missing verification coverage for Phases 13 and 14, and indexed the new correction packet in both the research library and the active builder-start handoff as a parallel completed research thread rather than the current survey execution step.
+
+## 2026-04-03 00:39 EDT
+
+- Agent: Codex
+- Task: Build the next highest-leverage builder-facing synthesis by mapping every real intake path to the downstream workflow, trust points, and routing implications for website and product work
+- Status: in_progress
+- Files touched: docs/session-log.md
+- Build state on arrival: inherited green dirty-checkout baseline from `docs/build-state.md`
+- Notes: This pass is intentionally focused on source-to-close funnel truth. Next step is deep inspection of the real intake entrypoints and their downstream workflow anchors, including `/api/book`, embed inquiry, kiosk inquiry, Wix ingestion, instant checkout, inquiry conversion, reviews sync, partner analytics, and the relevant state and schema docs, before writing a dependency-ordered builder-facing synthesis.
+
+## 2026-04-03 00:41 EDT
+
+- Agent: Planner / Research Synthesis (Codex)
+- Task: Package the next activation decision sequence after the chef `Getting Started` audit so a future builder can separate the immediate surface cleanup from the broader activation evidence still sitting elsewhere in the system
+- Status: completed
+- Files touched: docs/research/foundations/2026-04-03-chef-activation-signal-inventory-and-execution-order.md, docs/research/README.md, docs/specs/p1-chef-getting-started-surface-consolidation.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only builder-handoff refinement on a verified dirty checkout; no new typecheck or build run)
+- Notes: Re-read the current `Getting Started` spec and inspected the adjacent telemetry, feedback, survey, preference, and analytics paths before making any planning changes. Wrote a new foundational activation memo that inventories the underused internal signals already available for onboarding decisions, defines what each one can answer, and locks the correct phase order: ship the scoped surface cleanup first, synthesize activation evidence second, and only then consider a broader activation-model rewrite. Tightened the existing `Getting Started` spec to explicitly keep that broader evidence work out of the current build and indexed the new memo in the research library retrieval rules.
+
+## 2026-04-03 00:47 EDT
+
+- Agent: Codex
+- Task: Build the next highest-leverage builder-facing synthesis by mapping every real intake path to the downstream workflow, trust points, and routing implications for website and product work
+- Status: completed
+- Files touched: docs/research/foundations/2026-04-03-source-to-close-funnel-truth-map.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only synthesis pass on the verified dirty checkout; no new build, typecheck, or test run)
+- Notes: Deep-inspected the live intake and trust paths before writing anything: open booking, public chef inquiry, embed inquiry, kiosk inquiry, Wix webhook staging and processing, instant checkout, chef-created inquiries, review sync, lifecycle review requests, public review aggregation, source analytics, and the underlying `inquiries`, `events`, `event_state_transitions`, `wix_submissions`, `gmail_sync_log`, and `device_events` schemas. Wrote one canonical source-to-close truth map that separates synchronous planning lanes, staged async website-form intake, event-first instant booking, and operator-only inquiry creation; calls out the instant-book dietary persistence gap, the incomplete source-conversion analytics, the duplicate post-event review-request path, and the schema-stale API v2 inquiry surface; and locks the recommended next execution order for any future website or routing work.
