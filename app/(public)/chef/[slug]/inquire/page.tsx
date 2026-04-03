@@ -10,6 +10,7 @@ import { notFound } from 'next/navigation'
 import { Card } from '@/components/ui/card'
 import { PublicInquiryForm } from '@/components/public/public-inquiry-form'
 import { ReviewShowcase } from '@/components/public/review-showcase'
+import { DietaryTrustStrip } from '@/components/public/dietary-trust-strip'
 import { ExternalLink } from '@/components/ui/icons'
 import { getPublicChefProfile } from '@/lib/profile/actions'
 import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
@@ -174,6 +175,16 @@ export default async function InquirePage({ params }: Props) {
                     </div>
                   )}
                 </div>
+
+                {/* Dietary trust context */}
+                {data.chef.dietaryTrust && (
+                  <div className="p-5 border-b border-stone-800">
+                    <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+                      Dietary handling
+                    </p>
+                    <DietaryTrustStrip summary={data.chef.dietaryTrust} compact maxChips={4} />
+                  </div>
+                )}
 
                 {/* Review excerpts */}
                 {reviewFeed.reviews.length > 0 && (

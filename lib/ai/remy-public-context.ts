@@ -28,14 +28,20 @@ export interface RemyPublicContext {
 export async function loadRemyPublicContext(tenantId: string): Promise<RemyPublicContext> {
   const db: any = createAdminClient()
 
-  // Load chef public profile + service config in parallel
-  const [{ data: chef }, serviceConfig] = await Promise.all([
+  // Load chef public profile, service config, and directory listing in parallel
+  const [{ data: chef }, serviceConfig, { data: directoryListing }] = await Promise.all([
     db
       .from('chefs')
       .select('display_name, business_name, tagline, bio')
       .eq('id', tenantId)
       .single(),
     getServiceConfigForTenant(tenantId).catch(() => null),
+    db
+      .from('chef_directory_listings')
+      .select('cuisines, service_types, dietary_specialties, city, state')
+      .eq('chef_id', tenantId)
+      .maybeSingle()
+      .catch(() => ({ data: null })),
   ])
 
   // Load culinary profile (public-safe subset)
@@ -67,15 +73,37 @@ export async function loadRemyPublicContext(tenantId: string): Promise<RemyPubli
     // Table may not exist yet - no problem
   }
 
+  // Derive dietary capabilities from service config + directory specialties
+  const dietaryCaps: string[] = []
+  if (serviceConfig?.handles_allergies) dietaryCaps.push('Allergy-aware')
+  if (serviceConfig?.handles_medical_diets) dietaryCaps.push('Medical diets')
+  if (serviceConfig?.handles_religious_diets) dietaryCaps.push('Religious diets')
+  const dirSpecialties: string[] = Array.isArray(directoryListing?.dietary_specialties)
+    ? directoryListing.dietary_specialties.filter(Boolean)
+    : []
+  for (const spec of dirSpecialties) {
+    if (!dietaryCaps.includes(spec)) dietaryCaps.push(spec)
+  }
+
+  const dirCuisines: string[] = Array.isArray(directoryListing?.cuisines)
+    ? directoryListing.cuisines.filter(Boolean)
+    : []
+  const dirServiceTypes: string[] = Array.isArray(directoryListing?.service_types)
+    ? directoryListing.service_types.filter(Boolean)
+    : []
+
+  const serviceArea =
+    [directoryListing?.city, directoryListing?.state].filter(Boolean).join(', ') || null
+
   return {
     chefName: chef?.display_name ?? chef?.business_name ?? null,
     businessName: chef?.business_name ?? null,
     tagline: chef?.tagline ?? null,
     bio: chef?.bio ?? null,
-    cuisines: [],
-    serviceTypes: [],
-    dietaryCapabilities: [],
-    serviceArea: null,
+    cuisines: dirCuisines,
+    serviceTypes: dirServiceTypes,
+    dietaryCapabilities: dietaryCaps,
+    serviceArea,
     culinaryProfile,
     serviceConfigPrompt: serviceConfig ? await formatServiceConfigForPrompt(serviceConfig) : null,
   }
@@ -93,6 +121,8 @@ export function formatPublicContext(ctx: RemyPublicContext): string {
   if (ctx.bio) parts.push(`- About: ${ctx.bio}`)
   if (ctx.cuisines.length > 0) parts.push(`- Cuisines: ${ctx.cuisines.join(', ')}`)
   if (ctx.serviceTypes.length > 0) parts.push(`- Services: ${ctx.serviceTypes.join(', ')}`)
+  if (ctx.dietaryCapabilities.length > 0)
+    parts.push(`- Dietary capabilities: ${ctx.dietaryCapabilities.join(', ')}`)
   if (ctx.serviceArea) parts.push(`- Service area: ${ctx.serviceArea}`)
 
   if (ctx.culinaryProfile) {

@@ -9,6 +9,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
 import { submitPublicInquiry } from '@/lib/inquiries/public-actions'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
+import {
+  DietaryIntakeFields,
+  emptyDietaryIntake,
+  type DietaryIntakeValue,
+} from '@/components/forms/dietary-intake-fields'
 
 interface Props {
   chefSlug: string
@@ -28,9 +33,7 @@ interface FormData {
   guest_count: string
   occasion: string
   budget: string
-  allergy_flag: string
   favorite_ingredients_dislikes: string
-  allergies_food_restrictions: string
   additional_notes: string
   website_url: string
 }
@@ -47,8 +50,6 @@ interface FormErrors {
   guest_count?: string
   occasion?: string
   budget?: string
-  allergy_flag?: string
-  allergies_food_restrictions?: string
 }
 
 const MONTH_OPTIONS = [
@@ -66,12 +67,6 @@ const MONTH_OPTIONS = [
   { value: '12', label: 'December' },
 ]
 
-const ALLERGY_FLAG_OPTIONS = [
-  { value: 'none', label: 'No known allergies or restrictions' },
-  { value: 'yes', label: "Yes - I'll describe below" },
-  { value: 'unknown', label: 'Not sure yet' },
-]
-
 const GUEST_COUNT_OPTIONS = [
   { value: '1', label: '1 Guest' },
   { value: '2', label: '2 Guests' },
@@ -87,6 +82,21 @@ const GUEST_COUNT_OPTIONS = [
   { value: '15', label: '15 Guests' },
   { value: '20', label: '20+ Guests' },
 ]
+
+function serializeDietaryIntake(intake: DietaryIntakeValue): string {
+  if (intake.accommodationFlag === 'no') return ''
+  const parts: string[] = []
+  if (intake.dietaryPatterns.length > 0) {
+    parts.push(intake.dietaryPatterns.join(', '))
+  }
+  for (const sel of intake.allergySelections) {
+    parts.push(`${sel.allergen} (${sel.severity})`)
+  }
+  if (intake.additionalNotes.trim()) {
+    parts.push(intake.additionalNotes.trim())
+  }
+  return parts.join('; ')
+}
 
 function parseBudgetCents(text: string): number | null {
   const cleaned = text.replace(/[,$\s]/g, '')
@@ -108,13 +118,12 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
     guest_count: '',
     occasion: '',
     budget: '',
-    allergy_flag: '',
     favorite_ingredients_dislikes: '',
-    allergies_food_restrictions: '',
     additional_notes: '',
     website_url: '',
   })
 
+  const [dietaryIntake, setDietaryIntake] = useState<DietaryIntakeValue>(emptyDietaryIntake())
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
@@ -218,14 +227,6 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       newErrors.budget = 'Budget is required'
     }
 
-    if (!formData.allergy_flag) {
-      newErrors.allergy_flag = 'Please indicate allergy status'
-    }
-
-    if (formData.allergy_flag === 'yes' && !formData.allergies_food_restrictions.trim()) {
-      newErrors.allergies_food_restrictions = 'Please describe your allergies or restrictions'
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -261,9 +262,13 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         budget_cents: budgetCents,
         budget_range: budgetText || undefined,
         allergy_flag:
-          (formData.allergy_flag as 'none' | 'yes' | 'unknown' | undefined) || undefined,
+          dietaryIntake.accommodationFlag === 'yes'
+            ? 'yes'
+            : dietaryIntake.accommodationFlag === 'unsure'
+              ? 'unknown'
+              : 'none',
         favorite_ingredients_dislikes: formData.favorite_ingredients_dislikes.trim(),
-        allergies_food_restrictions: formData.allergies_food_restrictions.trim(),
+        allergies_food_restrictions: serializeDietaryIntake(dietaryIntake),
         additional_notes: formData.additional_notes.trim(),
         website_url: formData.website_url,
       })
@@ -277,6 +282,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       })
 
       setShowSuccess(true)
+      setDietaryIntake(emptyDietaryIntake())
       setFormData({
         full_name: '',
         address: '',
@@ -289,9 +295,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         guest_count: '',
         occasion: '',
         budget: '',
-        allergy_flag: '',
         favorite_ingredients_dislikes: '',
-        allergies_food_restrictions: '',
         additional_notes: '',
         website_url: '',
       })
@@ -518,25 +522,12 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             rows={4}
           />
 
-          <Select
-            label="Allergies or dietary restrictions? *"
-            name="allergy_flag"
-            value={formData.allergy_flag}
-            onChange={handleChange}
-            error={errors.allergy_flag}
-            options={ALLERGY_FLAG_OPTIONS}
-          />
-
-          {formData.allergy_flag === 'yes' && (
-            <Textarea
-              label="Please describe your allergies or restrictions"
-              name="allergies_food_restrictions"
-              value={formData.allergies_food_restrictions}
-              onChange={handleChange}
-              error={errors.allergies_food_restrictions}
-              rows={4}
-            />
-          )}
+          <div>
+            <h3 className="text-base font-medium text-stone-200 mb-2">
+              Allergies or dietary restrictions
+            </h3>
+            <DietaryIntakeFields value={dietaryIntake} onChange={setDietaryIntake} compact />
+          </div>
 
           <Input
             label="Additional Notes"

@@ -19,6 +19,7 @@ type DirectoryFiltersFormProps = {
   locationSource: DirectoryLocationSource
   cuisineFilter: string
   serviceTypeFilter: string
+  dietaryFilter: string
   priceRangeFilter: string
   partnerTypeFilter: string
   acceptingOnly: boolean
@@ -40,6 +41,7 @@ export function DirectoryFiltersForm({
   locationSource,
   cuisineFilter,
   serviceTypeFilter,
+  dietaryFilter,
   priceRangeFilter,
   partnerTypeFilter,
   acceptingOnly,
@@ -307,6 +309,26 @@ export function DirectoryFiltersForm({
               {option.label} ({option.count})
             </option>
           ))}
+        </select>
+      </label>
+
+      <label>
+        <span className="text-xs font-semibold uppercase tracking-wide text-stone-400">
+          Dietary fit
+        </span>
+        <select
+          name="dietary"
+          defaultValue={dietaryFilter}
+          className="mt-1 block w-full rounded-xl border border-stone-600 bg-stone-950 px-3 py-2.5 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        >
+          <option value="">Any dietary</option>
+          <option value="vegan">Vegan</option>
+          <option value="vegetarian">Vegetarian</option>
+          <option value="gluten_free">Gluten-Free</option>
+          <option value="dairy_free">Dairy-Free</option>
+          <option value="allergy_aware">Allergy-Aware</option>
+          <option value="medical_diets">Medical Diets</option>
+          <option value="religious_diets">Religious Diets</option>
         </select>
       </label>
 

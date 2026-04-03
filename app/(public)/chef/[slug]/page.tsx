@@ -25,6 +25,7 @@ import { getPublicChefProfile } from '@/lib/profile/actions'
 import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
 import { ChefProofSummary } from '@/components/public/chef-proof-summary'
 import { ChefCredentialsPanel } from '@/components/public/chef-credentials-panel'
+import { DietaryTrustStrip } from '@/components/public/dietary-trust-strip'
 import {
   getPublicWorkHistory,
   getPublicAchievements,
@@ -492,6 +493,15 @@ export default async function ChefProfilePage({ params }: Props) {
                 </div>
               )}
             </div>
+          </div>
+        </section>
+      )}
+
+      {chef.dietaryTrust && (
+        <section className="py-12 px-6 bg-stone-900/70">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-xl font-semibold text-stone-100 mb-4">Dietary Fit</h2>
+            <DietaryTrustStrip summary={chef.dietaryTrust} showSummary maxChips={7} />
           </div>
         </section>
       )}

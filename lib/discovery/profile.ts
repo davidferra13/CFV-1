@@ -9,6 +9,7 @@ export type DiscoveryProfileSource = 'marketplace' | 'listing' | 'legacy'
 export type DiscoveryProfile = {
   cuisine_types: string[]
   service_types: string[]
+  dietary_specialties: string[]
   price_range: string | null
   min_guest_count: number | null
   max_guest_count: number | null
@@ -31,6 +32,7 @@ export type DiscoveryProfile = {
 export const DEFAULT_DISCOVERY_PROFILE: DiscoveryProfile = {
   cuisine_types: [],
   service_types: [],
+  dietary_specialties: [],
   price_range: null,
   min_guest_count: null,
   max_guest_count: null,
@@ -135,9 +137,14 @@ export function marketplaceRowToDiscoveryProfile(row: any): Partial<DiscoveryPro
 export function directoryListingToDiscoveryProfile(row: any): Partial<DiscoveryProfile> {
   if (!row) return {}
 
+  const dietarySpecialties = Array.isArray(row.dietary_specialties)
+    ? dedupe(row.dietary_specialties.filter((s: unknown) => typeof s === 'string' && s.trim()))
+    : []
+
   return {
     cuisine_types: normalizeCanonicalArray(row.cuisines, canonicalizeDiscoveryCuisine),
     service_types: normalizeCanonicalArray(row.service_types, canonicalizeDiscoveryServiceType),
+    dietary_specialties: dietarySpecialties,
     price_range: inferPriceRangeFromPriceCents(row.min_price_cents, row.max_price_cents),
     service_area_city: normalizeText(row.city),
     service_area_state: normalizeText(row.state),
@@ -170,6 +177,8 @@ export function mergeDiscoveryProfile(
 
     if (profile.cuisine_types?.length) merged.cuisine_types = [...profile.cuisine_types]
     if (profile.service_types?.length) merged.service_types = [...profile.service_types]
+    if (profile.dietary_specialties?.length)
+      merged.dietary_specialties = [...profile.dietary_specialties]
     if (profile.price_range) merged.price_range = profile.price_range
     if (profile.min_guest_count != null) merged.min_guest_count = profile.min_guest_count
     if (profile.max_guest_count != null) merged.max_guest_count = profile.max_guest_count

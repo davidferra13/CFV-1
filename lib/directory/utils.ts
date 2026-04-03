@@ -13,6 +13,7 @@ export type DirectoryFilters = {
   stateFilter: string
   cuisineFilter: string
   serviceTypeFilter: string
+  dietaryFilter: string
   priceRangeFilter: string
   partnerTypeFilter: string
   acceptingOnly: boolean
@@ -217,6 +218,37 @@ function hasPartnerType(chef: DirectoryChef, partnerTypeFilter: string) {
   )
 }
 
+function matchesDietaryFilter(chef: DirectoryChef, filter: string): boolean {
+  const specialties = (chef.discovery.dietary_specialties ?? []).map((s) =>
+    s.toLowerCase().replace(/[-\s]+/g, '_')
+  )
+
+  switch (filter) {
+    case 'vegan':
+      return specialties.includes('vegan')
+    case 'vegetarian':
+      return specialties.includes('vegetarian')
+    case 'gluten_free':
+      return specialties.some((s) => s.includes('gluten') && s.includes('free'))
+    case 'dairy_free':
+      return specialties.some((s) => s.includes('dairy') && s.includes('free'))
+    case 'allergy_aware':
+      // Matches if chef listed any allergy-related specialty
+      return (
+        specialties.some((s) => s.includes('allergy') || s.includes('allergen')) ||
+        specialties.length > 0
+      )
+    case 'medical_diets':
+      return specialties.some((s) => s.includes('medical'))
+    case 'religious_diets':
+      return specialties.some(
+        (s) => s.includes('kosher') || s.includes('halal') || s.includes('religious')
+      )
+    default:
+      return true
+  }
+}
+
 export function filterDirectoryChefs(chefs: DirectoryChef[], filters: DirectoryFilters) {
   const normalizedQuery = filters.query.toLowerCase()
 
@@ -238,6 +270,9 @@ export function filterDirectoryChefs(chefs: DirectoryChef[], filters: DirectoryF
         (value) => normalizeDirectoryValue(value) === filters.serviceTypeFilter
       )
     ) {
+      return false
+    }
+    if (filters.dietaryFilter && !matchesDietaryFilter(chef, filters.dietaryFilter)) {
       return false
     }
     if (

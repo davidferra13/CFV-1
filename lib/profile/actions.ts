@@ -20,6 +20,8 @@ import { createServerClient } from '@/lib/db/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
+import { derivePublicTrustSummary } from '@/lib/dietary/public-trust'
+import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-actions'
 
 const SlugSchema = z
   .string()
@@ -201,6 +203,7 @@ export async function getPublicChefProfile(slug: string) {
           'chef_id',
           'cuisines',
           'service_types',
+          'dietary_specialties',
           'city',
           'state',
           'zip_code',
@@ -215,6 +218,14 @@ export async function getPublicChefProfile(slug: string) {
       .eq('chef_id', chef.id)
       .maybeSingle(),
   ])
+
+  // Fetch service config for dietary trust summary (non-blocking)
+  let serviceConfig: any = null
+  try {
+    serviceConfig = await getServiceConfigForTenant(chef.id)
+  } catch {
+    // Service config table may not exist yet
+  }
 
   const showcasePartners = (partnersResult.data || []).map((partner: any) => ({
     ...partner,
@@ -245,6 +256,8 @@ export async function getPublicChefProfile(slug: string) {
   const publicSlug = getPublicChefPathSlug(chef)
   const inquirySlug = getPublicInquirySlug(chef)
 
+  const dietaryTrust = derivePublicTrustSummary(serviceConfig, discovery.dietary_specialties)
+
   return {
     chef: {
       id: chef.id,
@@ -269,6 +282,7 @@ export async function getPublicChefProfile(slug: string) {
       social_links: chef.social_links ?? {},
       google_review_url: chef.google_review_url ?? null,
       discovery,
+      dietaryTrust,
     },
     partners: showcasePartners,
   }

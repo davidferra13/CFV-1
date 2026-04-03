@@ -1,6 +1,6 @@
 # Spec: Allergy and Dietary Trust Alignment
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
@@ -9,18 +9,18 @@
 
 _Every status change, every claim, every verification gets a row. This is the audit trail._
 
-| Event                 | Date                 | Agent/Session   | Commit |
-| --------------------- | -------------------- | --------------- | ------ |
-| Created               | 2026-04-02 22:27 EDT | Planner (Codex) |        |
-| Status: ready         | 2026-04-02 22:27 EDT | Planner (Codex) |        |
-| Claimed (in-progress) |                      |                 |        |
-| Spike completed       |                      |                 |        |
-| Pre-flight passed     |                      |                 |        |
-| Build completed       |                      |                 |        |
-| Type check passed     |                      |                 |        |
-| Build check passed    |                      |                 |        |
-| Playwright verified   |                      |                 |        |
-| Status: verified      |                      |                 |        |
+| Event                 | Date                           | Agent/Session         | Commit |
+| --------------------- | ------------------------------ | --------------------- | ------ |
+| Created               | 2026-04-02 22:27 EDT           | Planner (Codex)       |        |
+| Status: ready         | 2026-04-02 22:27 EDT           | Planner (Codex)       |        |
+| Claimed (in-progress) | 2026-04-03 14:30 EDT           | Builder (Claude Code) |        |
+| Spike completed       | 2026-04-03 14:30 EDT           | Builder (Claude Code) |        |
+| Pre-flight passed     | 2026-04-03 14:30 EDT           | Builder (Claude Code) |        |
+| Build completed       | 2026-04-03 15:45 EDT           | Builder (Claude Code) |        |
+| Type check passed     | 2026-04-03 15:45 EDT           | Builder (Claude Code) |        |
+| Build check passed    | 2026-04-03 15:45 EDT           | Builder (Claude Code) |        |
+| Playwright verified   | BLOCKED: Docker/DB not running |                       |        |
+| Status: built         | 2026-04-03 15:45 EDT           | Builder (Claude Code) |        |
 
 ---
 

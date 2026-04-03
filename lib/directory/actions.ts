@@ -180,6 +180,7 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
             'chef_id',
             'cuisines',
             'service_types',
+            'dietary_specialties',
             'city',
             'state',
             'zip_code',

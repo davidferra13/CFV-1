@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { generateOnboardingToken, verifyOnboardingToken } from '@/lib/clients/onboarding-tokens'
 import { createServerClient } from '@/lib/db/server'
+import { normalizeAllergyRecords, buildAllergyRecordRows } from '@/lib/dietary/intake'
 
 export async function generateOnboardingLink(
   clientId: string
@@ -41,7 +42,7 @@ const OnboardingSubmissionSchema = z.object({
     .array(
       z.object({
         allergen: z.string().min(1),
-        severity: z.enum(['life_threatening', 'intolerance', 'preference']),
+        severity: z.string().min(1),
       })
     )
     .optional(),
@@ -144,14 +145,8 @@ export async function submitOnboarding(
   }
 
   if (parsed.data.allergies?.length) {
-    const allergyRecords = parsed.data.allergies.map((allergy) => ({
-      tenant_id: tenantId,
-      client_id: clientId,
-      allergen: allergy.allergen,
-      severity: allergy.severity,
-      source: 'onboarding',
-      confirmed_by_chef: false,
-    }))
+    const normalized = normalizeAllergyRecords(parsed.data.allergies, 'client_stated')
+    const allergyRecords = buildAllergyRecordRows(tenantId, clientId, normalized)
 
     await db.from('client_allergy_records').upsert(allergyRecords, {
       onConflict: 'client_id,allergen',

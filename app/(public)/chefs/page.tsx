@@ -84,6 +84,7 @@ type PageProps = {
     state?: string | string[]
     cuisine?: string | string[]
     serviceType?: string | string[]
+    dietary?: string | string[]
     priceRange?: string | string[]
     partnerType?: string | string[]
     accepting?: string | string[]
@@ -355,6 +356,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
   const requestedState = normalizeDirectoryValue(firstParam(searchParams?.state))
   const requestedCuisine = normalizeDirectoryValue(firstParam(searchParams?.cuisine))
   const requestedServiceType = normalizeDirectoryValue(firstParam(searchParams?.serviceType))
+  const requestedDietary = normalizeDirectoryValue(firstParam(searchParams?.dietary))
   const requestedPriceRange = normalizeDirectoryValue(firstParam(searchParams?.priceRange))
   const requestedPartnerType = normalizeDirectoryValue(firstParam(searchParams?.partnerType))
   const acceptingOnly = parseDirectoryBooleanParam(firstParam(searchParams?.accepting))
@@ -376,6 +378,16 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
   )
     ? requestedPartnerType
     : ''
+  const allowedDietaryFilters = new Set([
+    'vegan',
+    'vegetarian',
+    'gluten_free',
+    'dairy_free',
+    'allergy_aware',
+    'medical_diets',
+    'religious_diets',
+  ])
+  const dietaryFilter = allowedDietaryFilters.has(requestedDietary) ? requestedDietary : ''
   const allowedPriceRanges = new Set(['budget', 'mid', 'premium', 'luxury'])
   const priceRangeFilter = allowedPriceRanges.has(requestedPriceRange) ? requestedPriceRange : ''
 
@@ -412,6 +424,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
     stateFilter,
     cuisineFilter,
     serviceTypeFilter,
+    dietaryFilter,
     priceRangeFilter,
     partnerTypeFilter,
     acceptingOnly,
@@ -507,6 +520,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
             locationSource={initialLocationSource}
             cuisineFilter={cuisineFilter}
             serviceTypeFilter={serviceTypeFilter}
+            dietaryFilter={dietaryFilter}
             priceRangeFilter={priceRangeFilter}
             partnerTypeFilter={partnerTypeFilter}
             acceptingOnly={acceptingOnly}

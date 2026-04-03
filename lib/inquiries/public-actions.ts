@@ -16,6 +16,11 @@ import {
 } from '@/lib/booking/schedule-schema'
 import { FOUNDER_EMAIL, resolveOwnerChefId } from '@/lib/platform/owner-account'
 import { z } from 'zod'
+import {
+  parseFreeTextDietary,
+  buildAllergyRecordRows,
+  recordsToStringArray,
+} from '@/lib/dietary/intake'
 
 const DEFAULT_BOOKING_CHEF_EMAIL = FOUNDER_EMAIL
 
@@ -72,12 +77,10 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   )
 
   const db = createServerClient({ admin: true })
-  const allergiesList = validated.allergies_food_restrictions
-    ? validated.allergies_food_restrictions
-        .split(/[\n,]/)
-        .map((item) => item.trim())
-        .filter(Boolean)
-    : null
+  const dietaryRecords = validated.allergies_food_restrictions
+    ? parseFreeTextDietary(validated.allergies_food_restrictions, 'intake_form')
+    : []
+  const allergiesList = dietaryRecords.length > 0 ? recordsToStringArray(dietaryRecords) : null
   const serviceMode = validated.service_mode ?? 'one_off'
   const scheduleSummary = summarizeScheduleRequest(validated.schedule_request_jsonb)
 
@@ -186,6 +189,19 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     phone: validated.phone?.trim() || null,
     source: 'website',
   })
+
+  // Persist structured allergy records for the client
+  if (dietaryRecords.length > 0) {
+    const rows = buildAllergyRecordRows(tenantId, client.id, dietaryRecords)
+    try {
+      await db.from('client_allergy_records').upsert(rows, {
+        onConflict: 'client_id,allergen',
+        ignoreDuplicates: true,
+      })
+    } catch (err) {
+      console.error('[submitPublicInquiry] Allergy record upsert failed (non-blocking):', err)
+    }
+  }
 
   // Only persist exact budget cents when explicitly provided.
   const budgetCents = validated.budget_cents ?? null

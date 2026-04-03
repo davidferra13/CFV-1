@@ -233,3 +233,23 @@ scripts/data/usda-sr-legacy/
 
 # OpenClaw temp files
 .openclaw-temp/
+
+# Codex video analysis artifacts
+.codex-video-analysis*/
+
+# Stray media files (not app assets)
+thumb.jpg
+*.vtt
+
+# Ad-hoc fix/update scripts (one-off debug, not app code)
+scripts/fix-test*.mjs
+scripts/update-test.mjs
+
+# Temp working directory
+tmp/
+
+# Ad-hoc test screenshots
+tests/screenshots/
+qa-screenshots/
+.qa-screenshots/
+tmp-screenshots/

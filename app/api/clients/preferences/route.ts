@@ -3,6 +3,8 @@ import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { verifyCsrfOrigin } from '@/lib/security/csrf'
 import { updateClient } from '@/lib/clients/actions'
+import { createServerClient } from '@/lib/db/server'
+import { normalizeAllergyRecords, buildAllergyRecordRows } from '@/lib/dietary/intake'
 
 const ClientPreferencesSchema = z.object({
   clientId: z.string().uuid(),
@@ -25,8 +27,9 @@ export async function POST(request: NextRequest) {
   const csrfError = verifyCsrfOrigin(request)
   if (csrfError) return csrfError
 
+  let user
   try {
-    await requireChef()
+    user = await requireChef()
   } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
@@ -39,8 +42,26 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { clientId, ...input } = payload
-    const result = await updateClient(clientId, input)
+    const { clientId, allergies, ...input } = payload
+    const result = await updateClient(clientId, input as any)
+
+    // Persist structured allergy records alongside the legacy flat array
+    if (allergies && allergies.length > 0) {
+      try {
+        const db: any = createServerClient()
+        const normalized = normalizeAllergyRecords(
+          allergies.map((a) => ({ allergen: a, severity: 'allergy' })),
+          'chef_entered'
+        )
+        const rows = buildAllergyRecordRows(user.tenantId!, clientId, normalized)
+        await db.from('client_allergy_records').upsert(rows, {
+          onConflict: 'client_id,allergen',
+          ignoreDuplicates: false,
+        })
+      } catch (err) {
+        console.error('[client-preferences] Allergy records sync failed (non-blocking):', err)
+      }
+    }
 
     return NextResponse.json(
       { success: true, client: result.client },

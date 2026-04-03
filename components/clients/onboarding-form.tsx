@@ -48,9 +48,7 @@ export function OnboardingForm({ token, client, chefName }: Props) {
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>(
     client.dietary_restrictions ?? []
   )
-  const [allergies, setAllergies] = useState<
-    { allergen: string; severity: 'life_threatening' | 'intolerance' | 'preference' }[]
-  >([])
+  const [allergies, setAllergies] = useState<{ allergen: string; severity: string }[]>([])
   const [favoriteCuisines, setFavoriteCuisines] = useState<string[]>(client.favorite_cuisines ?? [])
   const [dislikes, setDislikes] = useState<string[]>(client.dislikes ?? [])
   const [spiceTolerance, setSpiceTolerance] = useState(client.spice_tolerance ?? 'medium')
@@ -82,10 +80,7 @@ export function OnboardingForm({ token, client, chefName }: Props) {
     setAllergies((prev) => prev.filter((a) => a.allergen !== allergen))
   }
 
-  function updateSeverity(
-    allergen: string,
-    severity: 'life_threatening' | 'intolerance' | 'preference'
-  ) {
+  function updateSeverity(allergen: string, severity: string) {
     setAllergies((prev) => prev.map((a) => (a.allergen === allergen ? { ...a, severity } : a)))
   }
 
@@ -234,9 +229,10 @@ export function OnboardingForm({ token, client, chefName }: Props) {
                       onChange={(e) => updateSeverity(a.allergen, e.target.value as any)}
                       className="bg-stone-900 border border-stone-700 rounded px-2 py-1 text-sm text-stone-100"
                     >
-                      <option value="life_threatening">Life-threatening</option>
+                      <option value="preference">Preference (avoid if possible)</option>
                       <option value="intolerance">Intolerance</option>
-                      <option value="preference">Preference</option>
+                      <option value="allergy">Allergy</option>
+                      <option value="anaphylaxis">Anaphylaxis (severe)</option>
                     </select>
                     <button
                       type="button"
