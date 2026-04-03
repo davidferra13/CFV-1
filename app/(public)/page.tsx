@@ -161,7 +161,7 @@ const SOCIAL_ICONS: Record<string, { label: string; icon: React.ReactNode }> = {
   },
 }
 
-function FeaturedChefCard({ chef }: { chef: DirectoryChef }) {
+function FeaturedChefCard({ chef, priority = false }: { chef: DirectoryChef; priority?: boolean }) {
   const rawHeroImage = chef.discovery.hero_image_url || chef.profile_image_url
   const heroImage = rawHeroImage
     ? getOptimizedImageUrl(rawHeroImage, { width: 600, height: 450, fit: 'fill', gravity: 'auto' })
@@ -195,6 +195,7 @@ function FeaturedChefCard({ chef }: { chef: DirectoryChef }) {
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              priority={priority}
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
@@ -474,8 +475,8 @@ export default async function Home() {
             </Link>
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featuredChefs.map((chef) => (
-              <FeaturedChefCard key={chef.id} chef={chef} />
+            {featuredChefs.map((chef, i) => (
+              <FeaturedChefCard key={chef.id} chef={chef} priority={i < 2} />
             ))}
           </div>
           <div className="mt-8 text-center sm:hidden">

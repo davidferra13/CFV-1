@@ -1,24 +1,20 @@
 # Spec: Production Performance Optimization
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** none
 > **Estimated complexity:** large (9+ files)
 
 ## Timeline
 
-| Event                 | Date             | Agent/Session      | Commit |
-| --------------------- | ---------------- | ------------------ | ------ |
-| Created               | 2026-04-03 17:00 | Planner (Opus 4.6) |        |
-| Status: ready         | 2026-04-03 17:00 | Planner (Opus 4.6) |        |
-| Claimed (in-progress) |                  |                    |        |
-| Spike completed       |                  |                    |        |
-| Pre-flight passed     |                  |                    |        |
-| Build completed       |                  |                    |        |
-| Type check passed     |                  |                    |        |
-| Build check passed    |                  |                    |        |
-| Playwright verified   |                  |                    |        |
-| Status: verified      |                  |                    |        |
+| Event                 | Date             | Agent/Session      | Commit    |
+| --------------------- | ---------------- | ------------------ | --------- |
+| Created               | 2026-04-03 17:00 | Planner (Opus 4.6) |           |
+| Status: ready         | 2026-04-03 17:00 | Planner (Opus 4.6) | 391fc1b37 |
+| Claimed (in-progress) | 2026-04-03 17:30 | Builder (Opus 4.6) |           |
+| Type check passed     | 2026-04-03 17:35 | Builder (Opus 4.6) |           |
+| Build check passed    | 2026-04-03 17:35 | Builder (Opus 4.6) | pending   |
+| Status: built         | 2026-04-03 17:35 | Builder (Opus 4.6) | pending   |
 
 ---
 

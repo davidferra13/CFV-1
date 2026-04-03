@@ -106,6 +106,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${dmSans.variable} ${dmSerif.variable}`} suppressHydrationWarning>
       <head>
         <PaletteScript />
+        {/* Resource hints: preconnect to origins used on first paint */}
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
       </head>
       <body className="font-sans">
         <AppThemeProvider>

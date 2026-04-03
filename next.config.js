@@ -55,7 +55,7 @@ const nextConfig = {
   staticPageGenerationTimeout: 180,
   experimental: {
     // Large shared icon/chart barrels otherwise dominate the module graph during production builds.
-    optimizePackageImports: ['@phosphor-icons/react', 'recharts'],
+    optimizePackageImports: ['@phosphor-icons/react', 'recharts', 'lucide-react', 'date-fns'],
     // Next 14 still uses the experimental flag for keeping server-only SDKs out of the
     // RSC/route-handler bundle graph. These packages are only instantiated on Node.
     serverComponentsExternalPackages: ['resend', 'stripe', 'svix'],

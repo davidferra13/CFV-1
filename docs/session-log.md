@@ -1757,6 +1757,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Status: started
 - Build state on arrival: green (b86f656b8)
 
+## 2026-04-03 ~23:45 EDT
+
+- Agent: Planner (Codex)
+- Task: Convert the verified completeness audit into builder-ready repo context: new completeness foundation doc, release-contract truth spec, task/todo contract truth spec, pipeline analytics truth spec, and control-tower / builder-start handoff updates.
+- Status: completed
+- Files touched: docs/research/foundations/2026-04-03-system-completeness-gap-map.md (new), docs/specs/p1-build-and-release-contract-truth.md (new), docs/specs/p1-task-and-todo-contract-truth.md (new), docs/specs/p1-pipeline-analytics-truth-and-honesty.md (new), docs/research/README.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/session-log.md
+- Commits: (pending)
+- Build state on departure: unchanged from docs/build-state.md (docs-only planning pass; additionally verified that targeted release-contract tests are stale/failing on the live checkout)
+- Notes: Added one foundational completeness gap map and three builder-ready specs grounded in direct code/test verification. Verified current contract drift by rerunning `node --test --import tsx tests/unit/api.health-route.test.ts tests/unit/launch-surface-guards.test.ts tests/unit/web-beta-build-surface.test.ts`, which failed 4/7 due stale env assertions and missing file expectations. Updated the control tower and builder-start handoff so the next builder has an explicit order: verification debt -> backup -> request correlation -> build/release contract truth -> trust/continuity -> dead-zone and false-completion closure lanes.
+
 ## 2026-04-03 17:28 EDT
 
 - Agent: Planner (Codex)
@@ -1782,3 +1792,22 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/specs/p1-performance-optimization.md (new), docs/session-log.md
 - Build state on departure: green (docs-only session, no code changes; build-state still b86f656b8)
 - Notes: 5-phase spec covering: (1) LCP image priority + resource hints, (2) bundle reduction via dynamic imports + unused dep removal, (3) cache tag/revalidation alignment + React.cache dedup, (4) bundle budget tightening, (5) asset cleanup. Key findings: 1,519 client components, zero priority on LCP images, 40MB unused Remy sprites, 3 unused npm packages (tesseract/xlsx/mammoth), Google Maps + Stripe eagerly loaded. Spec validated with cited evidence for all Planner Gate questions.
+
+## 2026-04-03 17:35 EDT
+
+- Agent: Codex
+- Task: Reconcile the builder handoff and build-state with the actual current verification result after the interrupted planner pass
+- Status: completed
+- Build state on arrival: preserved dirty checkout ahead of `docs/build-state.md` baseline
+- Files touched: docs/build-state.md, docs/research/current-builder-start-handoff-2026-04-02.md, docs/research/foundations/2026-04-03-system-improvement-control-tower.md, docs/specs/p1-build-and-release-contract-truth.md, docs/session-log.md
+- Build state on departure: unchanged from `docs/build-state.md` baseline; current dirty checkout now has fresh `npm.cmd run typecheck:app`, focused focus-mode/nav tests, and `npm.cmd run build -- --no-lint` exit `0`, but post-build artifact integrity is still unresolved because `.next/BUILD_ID` is absent immediately afterward
+- Notes: Confirmed the canonical build no longer hangs when invoked through `npm.cmd`; it emits the full route manifest and exits successfully on the live dirty checkout. Also confirmed that this does not fully close the release-contract lane because `.next/BUILD_ID` still does not persist after the build, even though `/api/build-version` and `/api/sentinel/health` still treat that file as canonical build identity. Updated the active builder-start handoff, build-state file, control tower, and the release-contract truth spec so the next builder sees the correct queue order and the correct remaining release-integrity gap instead of the older "build unresolved" claim.
+
+## 2026-04-03 ~17:45 EDT
+
+- Agent: Builder (Claude Opus 4.6)
+- Task: P1 Performance Optimization build - all 5 phases
+- Status: completed
+- Files touched: app/(public)/page.tsx (LCP priority), app/layout.tsx (preconnect/dns-prefetch), next.config.js (optimizePackageImports), app/(client)/my-events/[id]/pay/payment-section.tsx (dynamic Stripe), lib/chef/layout-data-cache.ts (cache tag docs), scripts/check-bundle-budget.mjs (tightened budgets), docs/specs/p1-performance-optimization.md (status update), public/images/remy/ (deleted ~52MB unused sprites), docs/session-log.md
+- Build state on departure: green (tsc clean, build exit 0, BUILD_ID cd293d526)
+- Notes: Phase 1: Added priority to first 2 homepage chef images, preconnect to Cloudinary. Phase 2: Added lucide-react + date-fns to optimizePackageImports, dynamic-imported Stripe PaymentForm. Deps (tesseract/xlsx/mammoth) NOT removed (all have active dynamic imports). Phase 3: All cache tags already have matching revalidateTag calls (archetype, profile, deletion). Added documentation map. Phase 4: Budgets tightened from 2200/1100/700 to 1700/625/475 (current P95: 565.9KB). Phase 5: Removed ~52MB unused Remy sprites (71MB -> 19MB). Bundle metrics: 863 routes, max route 1540KB (chef layout), P95 565.9KB, max chunk 428.8KB. Top optimization targets for next pass: chef layout (1540KB, 28 JS files) and admin layout (1483KB, 26 JS files).

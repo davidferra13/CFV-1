@@ -3,10 +3,22 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { createPaymentIntent } from '@/lib/stripe/actions'
-import { PaymentForm } from '@/components/stripe/payment-form'
 import { Alert } from '@/components/ui/alert'
+
+const PaymentForm = dynamic(
+  () => import('@/components/stripe/payment-form').then((m) => m.PaymentForm),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-stone-400 text-sm">Loading payment form...</p>
+      </div>
+    ),
+  }
+)
 
 export default function PaymentSection({ eventId, amount }: { eventId: string; amount: number }) {
   const router = useRouter()

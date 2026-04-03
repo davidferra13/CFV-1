@@ -5,10 +5,13 @@ import path from 'node:path'
 
 const buildDir = path.resolve(process.cwd(), process.env.BUNDLE_BUILD_DIR || '.next')
 
+// Budget targets (tightened 2026-04-03 from 2200/1100/700).
+// Set to ~10% above current measurements so the check catches regressions
+// without failing every build. Reduce further as optimization continues.
 const budgets = {
-  maxRouteKb: readNumberEnv('BUNDLE_BUDGET_MAX_ROUTE_KB', 2200),
-  p95RouteKb: readNumberEnv('BUNDLE_BUDGET_P95_ROUTE_KB', 1100),
-  maxChunkKb: readNumberEnv('BUNDLE_BUDGET_MAX_CHUNK_KB', 700),
+  maxRouteKb: readNumberEnv('BUNDLE_BUDGET_MAX_ROUTE_KB', 1700),
+  p95RouteKb: readNumberEnv('BUNDLE_BUDGET_P95_ROUTE_KB', 625),
+  maxChunkKb: readNumberEnv('BUNDLE_BUDGET_MAX_CHUNK_KB', 475),
 }
 
 function readNumberEnv(name, fallback) {

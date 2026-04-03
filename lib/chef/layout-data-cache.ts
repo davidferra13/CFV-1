@@ -4,6 +4,13 @@
 //
 // Uses the admin client because unstable_cache runs outside the request context
 // and cannot access per-request cookies.
+//
+// Cache tag -> revalidation map (verified 2026-04-03):
+//   cannabis-access-{authUserId} -> no server action; TTL-only (admin manual changes)
+//   chef-archetype-{chefId}      -> lib/archetypes/actions.ts:selectArchetype()
+//   deletion-status-{chefId}     -> lib/compliance/account-deletion-actions.ts
+//   is-admin-{authUserId}        -> no server action; TTL-only (manual DB changes)
+//   chef-layout-{chefId}         -> lib/archetypes/actions.ts, lib/profile/actions.ts
 
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/db/admin'
