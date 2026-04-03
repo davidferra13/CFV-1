@@ -1,70 +1,71 @@
 # Website Build Research and Spec Cross-Reference
 
 Date: 2026-04-02
-Status: foundational, builder-facing reference
-Purpose: give future builder work one canonical website-build context document that synthesizes the most relevant research, current ChefFlow website reality, and active specs into a dependency-ordered execution map
+Status: foundational, canonical builder-facing synthesis
+Purpose: synthesize the current research library and active specs into one cross-reference document for any work that changes ChefFlow's website, chef-facing product surfaces, or website-fed data experiences
 
-Tags: `#website` `#research` `#spec-cross-reference` `#builder-handoff` `#competitive-intelligence` `#trust` `#conversion`
+Tags: `#website` `#research` `#spec-cross-reference` `#builder-handoff` `#competitive-intelligence` `#platform-intelligence` `#openclaw` `#trust` `#conversion`
 
 ---
 
 ## Why This Exists
 
-ChefFlow now has enough website-facing research and enough active public/product specs that a future builder could easily make one of three mistakes:
+ChefFlow now has enough research, enough active specs, and enough parallel product lanes that a future builder can easily make the wrong move even while reading the right files.
 
-1. start from the wrong document and build the wrong thing
-2. restart already-verified work instead of composing with it
-3. treat research conclusions as if they are already implementation specs
+The most common failure modes now are:
+
+1. starting from one narrow doc and missing the rest of the system context
+2. treating research conclusions like implementation instructions
+3. improving a website surface while ignoring the runtime, trust, or boundary rules that make that surface truthful
+4. adding OpenClaw-powered UX without keeping the OpenClaw and ChefFlow ownership split clean
+5. building the wrong lane first because the repo-wide next task and the website-wide next task are not always the same thing
 
 This file fixes that.
 
-It is the canonical cross-reference for website-build work only.
+It is the canonical cross-reference for website-build work and website-adjacent product-surface work.
 
-It does **not** replace:
-
-- narrow implementation specs
-- the survey-specific builder handoff
-- the competitor baseline report
-- the ChefFlow implication memo
-
-Instead, it tells the builder:
+It tells the next builder:
 
 - what is already true in the repo
-- which research conclusions matter most for the website
-- which specs already govern those areas
+- which research streams materially change website decisions
+- which specs already govern those streams
 - which gaps are still only research-backed and need a narrow spec before code
-- what order the work should happen in
+- what order implementation should happen in
+- what must not be broken, restarted, exposed, or fabricated
 
 ---
 
 ## Scope Boundary
 
-This document covers website-build-relevant work only:
+This document covers website-build-relevant work only.
 
-- homepage and top-level public conversion paths
-- public chef profiles, proof, and public credibility
-- public inquiry and booking trust
-- public trust, FAQ, contact, and support visibility
-- public discovery and search-intent expansion
-- dietary trust where it changes the website experience
-- post-event trust only where it feeds public proof and repeat trust
+That includes:
 
-This document does **not** try to absorb every research stream in `docs/research/`.
+- public conversion, discovery, trust, and booking surfaces
+- chef-facing product surfaces when better UX or better data changes real usefulness
+- founder or admin surfaces when they control the truth later consumed elsewhere
+- the OpenClaw and ChefFlow handshake when website behavior depends on data quality, coverage, freshness, or compliance posture
+- platform-intelligence surfaces when they change the operator workflow inside the product
+- operator-facing costing or pricing surfaces when they change the website or product experience directly
 
-Out of scope here unless the assigned task explicitly requires it:
+This document does not replace:
 
-- survey launch operations
-- OpenClaw internals not tied to website UX
-- internal infrastructure/runtime studies
-- authenticated competitor-product interiors
-- exact competitor APIs, schemas, or private operations
-- broad platform-intelligence work outside website and public-trust decisions
+- narrow implementation specs
+- runtime-only implementation docs that do not materially change website behavior
+- survey launch operations as the immediate repo-wide next task
+- scratch notes or one-off investigative memos
+
+### What "all research" means here
+
+It does not mean every file in `docs/research/`.
+
+It means every research stream that materially changes website implementation decisions, user experience, trust posture, or builder sequencing.
 
 ---
 
 ## Current Repo Posture
 
-These truths matter before any builder starts website work.
+These truths matter before any builder starts.
 
 ### 1. The recorded baseline is green, but the checkout is intentionally dirty
 
@@ -80,340 +81,293 @@ Primary references:
 - `docs/build-state.md`
 - `docs/research/current-builder-start-handoff-2026-04-02.md`
 
-### 2. The current builder-start handoff is not the canonical website entrypoint
+### 2. The repo-wide next task is not the same thing as the website-wide cross-reference
 
-`docs/research/current-builder-start-handoff-2026-04-02.md` remains useful, but it is not the canonical read-start for this website synthesis thread.
+The current builder-start handoff is still steering the repo-wide execution lane around survey deploy verification.
 
-Use this cross-reference when the work is about:
+That is still true.
 
-- public conversion
-- public trust
-- discovery
-- chef profile quality
-- public booking or inquiry continuity
+This document does not replace that handoff. It is the canonical entrypoint when the assigned task is website build, product-surface build, or website-adjacent system work.
+
+Use the current builder-start handoff to understand repo posture.
+Use this document to understand website and product-surface sequencing.
 
 ### 3. ChefFlow is not a thin marketing site
 
-The current-state baseline is explicit: ChefFlow is a broad operator platform with attached public surfaces, not a standalone brochure site.
+ChefFlow is a broad operator platform with attached public surfaces, not a standalone brochure site.
 
-That means website work must compose with existing chef/operator systems instead of pretending the public site is a separate product.
+That means website work must compose with:
+
+- public conversion
+- chef workflows
+- trust and safety behavior
+- platform intelligence
+- pricing and catalog intelligence
+- admin and founder truth surfaces
 
 Primary references:
 
 - `docs/research/foundations/2026-04-02-chefflow-current-state-baseline.md`
 - `docs/research/foundations/2026-04-02-repo-structure-and-navigation-map.md`
 
+### 4. OpenClaw is internal infrastructure, not a public product lane
+
+OpenClaw may increasingly power price, catalog, metadata, and completeness improvements that show up in the product.
+
+But it must remain:
+
+- internal
+- debranded externally
+- consumed through ChefFlow-owned presentation rules
+
+Primary references:
+
+- `docs/specs/openclaw-internal-only-boundary-and-debranding.md`
+- `docs/specs/openclaw-ideal-runtime-and-national-intelligence.md`
+- `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md`
+
+### 5. The website already has meaningful foundations
+
+The current website is not empty. It already has:
+
+- public chef profiles
+- public proof surfaces
+- structured inquiry and booking
+- trust, FAQ, contact, and gift paths
+- public discovery
+- a chef-facing pricing and catalog layer
+- a founder-only OpenClaw admin route
+
+The problem is not "build a website from zero."
+The problem is "use the existing research and specs to build the next layers in the correct order."
+
 ---
 
 ## Canonical Read Order
 
-Read these in this exact order for website-build work.
+Read these in this exact order for website-build or website-adjacent product work.
 
 ### Layer 0: Repo and system constraints
 
 1. `docs/build-state.md`
-2. `docs/research/foundations/2026-04-02-chefflow-current-state-baseline.md`
-3. `docs/research/foundations/2026-04-02-repo-structure-and-navigation-map.md`
-4. this file
+2. `docs/research/current-builder-start-handoff-2026-04-02.md`
+3. `docs/research/foundations/2026-04-02-chefflow-current-state-baseline.md`
+4. `docs/research/foundations/2026-04-02-repo-structure-and-navigation-map.md`
+5. this file
 
-### Layer 1: Current website research truths
+### Layer 1: Current research truths that change build decisions
 
-5. `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md`
-6. `docs/research/competitive-intelligence-takeachef-privatechefmanager-2026-04-02.md`
-7. `docs/research/multi-persona-workflows-for-food-discovery-private-chef-booking-and-planning-2026-04-02.md`
+6. `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md`
+7. `docs/research/competitive-intelligence-takeachef-privatechefmanager-2026-04-02.md`
 8. `docs/research/cross-persona-workflow-patterns-and-breakpoints-2026-04-02.md`
+9. `docs/research/multi-persona-workflows-for-food-discovery-private-chef-booking-and-planning-2026-04-02.md`
+10. `docs/research/platform-intelligence-cross-persona-ground-truth-2026-04-02.md`
+11. `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md`
+12. `docs/research/restaurant-costing-platform-landscape-2026-04-02.md`
 
-### Layer 2: Existing website implementation specs
+### Layer 2: Governing specs and build lanes
 
-9. `docs/specs/featured-chef-public-proof-and-booking.md`
-10. `docs/specs/public-chef-credentials-showcase.md`
-11. `docs/specs/smart-input-autocomplete.md`
-12. `docs/specs/discover-state-normalization-hardening.md`
-13. `docs/specs/p1-allergy-and-dietary-trust-alignment.md`
-14. `docs/specs/directory-post-claim-enhancement-flow.md`
-15. `docs/specs/post-event-trust-loop-consolidation.md`
-16. `docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md`
+13. `docs/specs/featured-chef-public-proof-and-booking.md`
+14. `docs/specs/public-chef-credentials-showcase.md`
+15. `docs/specs/smart-input-autocomplete.md`
+16. `docs/specs/p1-allergy-and-dietary-trust-alignment.md`
+17. `docs/specs/platform-intelligence-hub.md`
+18. `docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md`
+19. `docs/specs/catalog-store-selection-and-image-delivery-contract.md`
+20. `docs/specs/openclaw-internal-only-boundary-and-debranding.md`
+21. `docs/specs/openclaw-canonical-scope-and-sequence.md`
+22. `docs/specs/openclaw-ideal-runtime-and-national-intelligence.md`
 
-### Layer 3: Use only if the assigned task requires deeper competitor work
+### Layer 3: Use only if the assigned task needs deeper follow-through
 
-17. `docs/research/competitive-intelligence-gap-closure-builder-handoff-2026-04-02.md`
-
-Read this only if the assigned task resumes:
-
-- authenticated competitor testing
-- support-response validation
-- longitudinal competitor monitoring
-- competitor parity work beyond the current website thread
-
----
-
-## Verified Current Website State
-
-The builder should treat these as already true in the repo today.
-
-### 1. The homepage already sells a clear direct-booking promise
-
-Verified in `app/(public)/page.tsx`:
-
-- public search/discovery promise exists
-- direct inquiry/no-middleman/no-commission positioning exists
-- featured-chef trust surfaces already exist
-
-This means the problem is not "the homepage says nothing." The problem is continuity, depth, and downstream reinforcement.
-
-### 2. Public proof already exists as real product infrastructure
-
-Verified in:
-
-- `app/(public)/chef/[slug]/page.tsx`
-- `components/public/chef-proof-summary.tsx`
-- `components/public/review-showcase.tsx`
-- `docs/specs/featured-chef-public-proof-and-booking.md`
-- `docs/specs/public-chef-credentials-showcase.md`
-
-The public-proof stack is not backlog vapor. It already exists and already has verified spec coverage.
-
-### 3. The public inquiry and booking surfaces already carry trust signals
-
-Verified in:
-
-- `app/(public)/book/page.tsx`
-- `app/(public)/book/_components/book-dinner-form.tsx`
-- `components/public/public-inquiry-form.tsx`
-- `docs/specs/smart-input-autocomplete.md`
-
-ChefFlow already says useful buyer-facing things such as:
-
-- free to browse
-- no obligation
-- chefs contact directly
-- reply expectations
-- data-sharing boundaries
-
-The gap is not total absence. The gap is stronger structure, reassurance, and pre-decision explanation.
-
-### 4. Trust, contact, and gift routes exist, but they are quieter than the main booking flow
-
-Verified in:
-
-- `app/(public)/trust/page.tsx`
-- `app/(public)/contact/layout.tsx`
-- `app/(public)/contact/page.tsx`
-- `app/(public)/chef/[slug]/gift-cards/page.tsx`
-- `app/(public)/chef/[slug]/page.tsx`
-
-These routes already exist. The remaining issue is visibility and integration into the buyer journey.
-
-### 5. Navigation and FAQ still skew mixed-audience
-
-Verified in:
-
-- `components/navigation/public-header.tsx`
-- `components/navigation/public-footer.tsx`
-- `app/(public)/faq/page.tsx`
-- `app/(public)/compare/page.tsx`
-- `app/(public)/compare/[slug]/page.tsx`
-
-ChefFlow currently mixes:
-
-- buyer booking/discovery
-- operator adoption
-- partner paths
-- comparison content
-
-That is workable, but it weakens a single clean buyer journey.
-
-### 6. The site already has a hard anti-fabrication guardrail
-
-Verified in `app/(public)/customers/page.tsx`.
-
-ChefFlow intentionally refuses to invent customer stories, fabricated outcomes, or synthetic testimonials.
-
-That is a hard guardrail. Future proof-density work must expand only with real approved proof.
-
-### 7. Discover integrity already has a verified hardening baseline
-
-Verified in:
-
-- `docs/specs/discover-state-normalization-hardening.md`
-
-If a builder touches `/discover`, they should preserve that hardening and not reopen solved normalization issues.
+23. `docs/research/competitive-intelligence-gap-closure-builder-handoff-2026-04-02.md`
+24. `docs/research/openclaw-open-questions-decision-log-2026-04-02.md`
+25. `docs/research/restaurant-costing-platform-parity-handoff-2026-04-02.md`
 
 ---
 
-## What The Research Actually Means For The Website
+## Stable System-Level Conclusions
 
-The public research is no longer just "interesting competitor notes." It points to a stable set of website conclusions.
+These are the main research conclusions that should now be treated as stable.
 
-### Stable research conclusions
-
-1. ChefFlow should win by reducing friction and increasing clarity, not by copying marketplace opacity.
-2. Public proof, public profile quality, and structured inquiry context are part of the product, not just marketing polish.
-3. Take a Chef is strongest on conversion architecture: trust framing, segmented landing routes, FAQ/process clarity, and repeated CTA continuity.
-4. ChefFlow already has stronger anti-commission and direct-booking positioning than the competitor, but it does not yet reinforce that advantage at every layer.
-5. The next high-value website gains are not "another homepage redesign." They are:
-   - better search-intent landing architecture
-   - stronger buyer education content
-   - stronger operational reassurance and expectation-setting
-   - tighter navigation and CTA continuity
-   - broader site-level proof density once real approved proof exists
-   - stronger visibility for alternate entry points such as contact, support, and gift
-
-Primary supporting references:
-
-- `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md`
-- `docs/research/competitive-intelligence-takeachef-privatechefmanager-2026-04-02.md`
+1. ChefFlow's public website is part of the product, not a wrapper around it.
+2. Public proof, public profile quality, and structured inquiry context are product infrastructure, not optional polish.
+3. The next public-site gains come from continuity, reassurance, education, and stronger intent architecture, not another generic homepage redesign.
+4. Response speed, source attribution, message-state trust, and proposal velocity are central operator workflow problems and belong in the product lane.
+5. OpenClaw should enrich price, product, and metadata truth, but it should stay internal and debranded externally.
+6. Website presentation risk and runtime acquisition logic are not the same thing. Both matter, and both must be kept in the right owner lane.
+7. Better data does not justify worse boundaries. Direct observations, inferred values, dietary signals, images, and stock assertions must be surfaced carefully.
+8. Catalog and pricing work is now a real website lane, not a side utility, because chefs already consume it through the product.
+9. Existing restaurant costing platforms already solve meaningful workflow problems. ChefFlow should not assume it already exceeds them.
+10. Research-backed themes that still do not have narrow specs should be specced before code instead of improvised in implementation.
 
 ---
 
-## Spec Coverage Map
+## Cross-Reference Matrix
 
-This is the most important section for builder sequencing.
-
-| Theme                                                 | Current reality in ChefFlow                                                                  | Research driver                                                                                     | Governing spec or source                                                                                                     | Builder instruction                                                                   | Status                                            |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Public proof and reviews                              | Real profile proof, review summary, and inquiry-context proof already exist                  | competitors convert with dense public proof                                                         | `docs/specs/featured-chef-public-proof-and-booking.md`                                                                       | treat as baseline; do not rebuild from scratch                                        | verified                                          |
-| Public chef credibility and career story              | Credentials, achievements, portfolio, and cause-driven story have a real implementation path | premium clients need more than ratings alone                                                        | `docs/specs/public-chef-credentials-showcase.md`                                                                             | preserve and extend only through the existing spec path                               | verified                                          |
-| Structured public intake and autocomplete             | Booking/inquiry surfaces already exist; structured-input upgrade path already exists         | lower friction and cleaner data improve conversion                                                  | `docs/specs/smart-input-autocomplete.md`                                                                                     | reuse this whenever touching public search, booking, or inquiry input quality         | verified                                          |
-| Discover integrity and state handling                 | `/discover` state behavior already has a verified fix                                        | trust collapses if directory data looks broken                                                      | `docs/specs/discover-state-normalization-hardening.md`                                                                       | preserve the hardening baseline if touching discover                                  | verified                                          |
-| Dietary trust and allergy reassurance                 | internal safety backbone exists; public alignment is not done yet                            | research shows buyers want quiet but credible dietary trust                                         | `docs/specs/p1-allergy-and-dietary-trust-alignment.md`                                                                       | next cross-cutting trust spec to build before broader public expansion                | ready                                             |
-| Post-claim listing enhancement                        | discover claim route exists but is underpowered                                              | operators care about correcting high-value public listing fields fast                               | `docs/specs/directory-post-claim-enhancement-flow.md`                                                                        | build only if assigned to discover claim/correction work                              | ready                                             |
-| Post-event trust loop                                 | review/follow-up systems are fragmented                                                      | repeat trust and public proof are a loop, not isolated features                                     | `docs/specs/post-event-trust-loop-consolidation.md`                                                                          | build after the public proof baseline is preserved and if lifecycle trust is in scope | ready                                             |
-| Larger consumer-first discovery and planning          | strategic direction exists but is broader than narrow website fixes                          | public site should support deciding, comparing, and planning, not only booking                      | `docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md`                                                       | use as the larger public-expansion map, not as a substitute for narrow fixes          | ready                                             |
-| Search-intent landing architecture                    | public site is still comparatively flat by city/service/occasion                             | Take a Chef wins with segmented intent pages and internal linking                                   | `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md`                                    | write a narrow spec before code                                                       | research-backed, unspecced                        |
-| Buyer education content                               | FAQ and compare content skew operator-heavy                                                  | buyers need help understanding service formats, process, and expectations                           | `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md`                                    | write a narrow spec before code                                                       | research-backed, unspecced                        |
-| Operational reassurance and “what happens next” layer | useful trust copy exists, but reassurance is still thin and scattered                        | competitor trust is strongest when booking, payment, cancellation, and fallback are explained early | `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md`                                    | write a narrow spec before code                                                       | research-backed, unspecced                        |
-| Navigation and CTA continuity                         | homepage is strong, but header/footer still split attention across multiple audiences        | repeated CTA continuity is part of conversion architecture                                          | `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md`                                    | write a narrow spec before code                                                       | research-backed, unspecced                        |
-| Site-level proof freshness                            | profile proof exists, but broader site-level freshness proof is intentionally limited today  | Take a Chef spreads proof across more surfaces                                                      | `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md`, `app/(public)/customers/page.tsx` | do not fake this; expand only once real approved proof exists                         | research-backed, blocked by evidence availability |
-| Alternate entry points and support visibility         | contact, trust, and gift routes exist but are under-promoted                                 | edge-intent paths improve trust and completeness                                                    | `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md`                                    | can be paired with CTA continuity/reassurance work after a narrow spec                | research-backed, unspecced                        |
+| Theme                                                     | What research proves                                                                                                                                | Current reality in ChefFlow                                                                                            | Governing specs and docs                                                                                                                                          | Builder instruction                                                                                                                                      | Status                      |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| Public proof and chef credibility                         | Buyers need dense proof, credentials, menus, and confidence before inquiry                                                                          | Public profiles, review surfaces, and inquiry trust context already exist                                              | `docs/specs/featured-chef-public-proof-and-booking.md`, `docs/specs/public-chef-credentials-showcase.md`                                                          | Treat these as baseline. Extend, do not restart.                                                                                                         | verified                    |
+| Structured intake and conversion trust                    | Structured intake, fast context capture, and clear next steps increase conversion                                                                   | Public booking and inquiry flows already capture meaningful structure                                                  | `docs/specs/smart-input-autocomplete.md`, `docs/specs/featured-chef-public-proof-and-booking.md`                                                                  | Reuse the existing intake path whenever touching public booking or inquiry quality.                                                                      | verified                    |
+| Buyer education, landing architecture, and CTA continuity | The biggest website gaps are intent pages, pre-decision education, operational reassurance, and cleaner CTA continuity                              | Public routes exist, but the public system is still flatter and more mixed-audience than it should be                  | `docs/research/competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md`, `docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md` | Use the strategic consumer-first spec where it fits. Write narrow follow-up specs before code for landing architecture, buyer education, or nav cleanup. | partly specced              |
+| Dietary trust and safety reassurance                      | Calm, visible allergy and dietary trust should exist across discovery, inquiry, and execution                                                       | Internal safety backbone exists, but public reassurance still lags                                                     | `docs/specs/p1-allergy-and-dietary-trust-alignment.md`                                                                                                            | This is the next cross-cutting trust slice when the task is trust and discovery quality.                                                                 | ready                       |
+| Platform intelligence and operator response control       | Email-first capture, source tracking, response speed, and reconciliation are the real workflow foundation                                           | Platform-intelligence lane exists and Phase 1 is already built                                                         | `docs/specs/platform-intelligence-hub.md`, `docs/research/platform-intelligence-cross-persona-ground-truth-2026-04-02.md`                                         | Build this as the operator workflow lane, not as website copy work. Keep it honest about hybrid capture and advisory sync.                               | in progress                 |
+| OpenClaw-powered pricing, metadata, and completeness      | Better pricing usefulness requires stronger coverage, inference, enrichment, and quality loops, but the runtime must stay internal                  | Chef-facing price and catalog surfaces already exist, and app-side enrichment is still partly bridging the runtime gap | `docs/specs/openclaw-ideal-runtime-and-national-intelligence.md`, `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md`                                  | Build the runtime control plane first, then expand website usefulness through the handshake. Do not expose OpenClaw directly.                            | ready for builder execution |
+| Catalog store selection and image delivery                | Catalog UX depends on truthful store selection and reliable image delivery, not guessed pipeline rewrites                                           | The image path is proven; store selection truthfulness is the remaining contract bug                                   | `docs/specs/catalog-store-selection-and-image-delivery-contract.md`                                                                                               | Treat this as a narrow blocking contract, not a product-expansion brainstorm.                                                                            | ready                       |
+| Website presentation boundary and debranding              | Public or chef-facing presentation can create risk even when the runtime is technically correct                                                     | OpenClaw must remain internal and debranded; presentation review belongs on the ChefFlow side                          | `docs/specs/openclaw-internal-only-boundary-and-debranding.md`                                                                                                    | Keep external surfaces outcome-focused and neutral. Flag rights, compliance, and substantiation issues early.                                            | verified                    |
+| Operator costing parity and recipe operations             | Existing products already do strong invoice, recipe, menu, and back-office workflows                                                                | ChefFlow's differentiator is not "recipe costing exists," but how pricing intelligence and workflows are combined      | `docs/research/restaurant-costing-platform-landscape-2026-04-02.md`, `docs/research/restaurant-costing-platform-parity-handoff-2026-04-02.md`                     | Treat this as a separate ChefFlow product lane from OpenClaw runtime work.                                                                               | research-backed             |
+| Open questions and future spec writing                    | Some important build decisions are still open: frontier scoring, inference thresholds, freshness SLAs, handshake rules, public-readiness thresholds | The questions are now captured instead of floating in chat                                                             | `docs/research/openclaw-open-questions-decision-log-2026-04-02.md`                                                                                                | Use the decision log to drive the next narrow specs instead of making hidden assumptions.                                                                | open                        |
 
 ---
 
-## Recommended Builder Sequence
+## Current Surface Anchors
 
-This is the correct dependency-aware order for website-build work.
+Use this map when a builder needs to translate the synthesis into actual files.
+
+| Website or product theme                                 | Current local surface anchors                                                                                                                                                                                        |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Homepage promise and top-level CTA                       | `app/(public)/page.tsx`, `components/navigation/public-header.tsx`, `components/navigation/public-footer.tsx`                                                                                                        |
+| Public chef trust, proof, and booking confidence         | `app/(public)/chef/[slug]/page.tsx`, `components/public/chef-proof-summary.tsx`, `components/public/review-showcase.tsx`, `app/(public)/book/page.tsx`, `components/public/public-inquiry-form.tsx`                  |
+| Trust, contact, FAQ, compare, and alternate public entry | `app/(public)/trust/page.tsx`, `app/(public)/contact/page.tsx`, `app/(public)/faq/page.tsx`, `app/(public)/compare/page.tsx`, `app/(public)/compare/[slug]/page.tsx`, `app/(public)/chef/[slug]/gift-cards/page.tsx` |
+| Public discovery and consumer-first expansion            | `app/(public)/discover/**`, `app/(public)/chefs/**`, `app/sitemap.ts`                                                                                                                                                |
+| Chef-facing pricing and catalog surfaces                 | `app/(chef)/prices/page.tsx`, `app/(chef)/prices/prices-client.tsx`, `app/(chef)/culinary/price-catalog/**`, `lib/openclaw/store-catalog-actions.ts`, `lib/openclaw/catalog-actions.ts`                              |
+| Catalog imagery and store-selection truth                | `components/pricing/image-with-fallback.tsx`, `lib/openclaw/image-proxy.ts`, `app/api/openclaw/image/route.ts`, `components/pricing/catalog-store-picker.tsx`                                                        |
+| Founder-only runtime visibility                          | `app/(admin)/admin/openclaw/page.tsx`, `components/admin/openclaw-usage-page.tsx`                                                                                                                                    |
+| Platform-intelligence build lane                         | use `docs/specs/platform-intelligence-hub.md` first, then inspect the files it names for the assigned phase                                                                                                          |
+
+This is not a full repo inventory. It is the fastest correct local map for the work covered by this synthesis.
+
+---
+
+## Dependency-Ordered Builder Sequence
+
+This is the correct build order across the current website and website-adjacent lanes.
 
 ### Phase 0: Pre-flight and boundary check
 
 Do first:
 
 1. read `docs/build-state.md`
-2. confirm the worktree is dirty and do **not** normalize it by force
-3. confirm the assigned task is actually website/public-surface work
-4. read the verified/ready specs that intersect the requested surface before opening runtime files
+2. confirm the worktree is dirty and do not normalize it by force
+3. confirm whether the assignment is website build, platform workflow build, OpenClaw handshake work, or a different lane entirely
+4. read the relevant verified and ready specs before opening implementation files
 
 ### Phase 1: Preserve the verified public baseline
 
-Treat these as existing foundations, not open design debates:
+Treat these as already-built foundations:
 
 1. `docs/specs/featured-chef-public-proof-and-booking.md`
 2. `docs/specs/public-chef-credentials-showcase.md`
 3. `docs/specs/smart-input-autocomplete.md`
-4. `docs/specs/discover-state-normalization-hardening.md`
 
 Why first:
 
-- this avoids rebuilding solved layers
-- it protects existing trust and data-quality infrastructure
-- later work should compose with these surfaces, not restart them
+- this protects existing trust and proof infrastructure
+- it prevents rebuilding already-verified public layers
+- later website work should compose with these surfaces, not replace them
 
-### Phase 2: Build the next ready cross-cutting trust slice
+### Phase 2: Close the next ready trust gap
 
-Next priority when the task is website trust and conversion:
+Next priority when the task is trust and public usefulness:
 
 1. `docs/specs/p1-allergy-and-dietary-trust-alignment.md`
 
 Why next:
 
-- it closes a real public trust gap
-- it aligns the website with the already-existing internal safety model
-- larger public expansion should inherit the right dietary/safety posture
+- it is cross-cutting
+- it tightens trust without requiring a full public rewrite
+- it aligns the website with the stronger internal safety model that already exists
 
-### Phase 3: Use the larger public-expansion spec when the task truly broadens
+### Phase 3: Strengthen the public decision system
 
-Then use:
+Use this phase when the task is broader public acquisition, discovery, or planning:
 
 1. `docs/specs/consumer-first-discovery-and-dinner-planning-expansion.md`
+2. competitor and cross-persona research docs from Layer 1
+
+This phase covers:
+
+- intent architecture
+- buyer education
+- operational reassurance
+- CTA continuity
+- alternate entry-point visibility
+- planning-friendly public flows
+
+Important rule:
+
+- if the assigned task is narrower than the full strategic consumer-first spec, write or use a narrower spec before code
+
+### Phase 4: Build operator response and workflow surfaces in the right lane
+
+Use:
+
+1. `docs/specs/platform-intelligence-hub.md`
+2. `docs/research/platform-intelligence-cross-persona-ground-truth-2026-04-02.md`
 
 Why here:
 
-- it is strategic and broader than the narrow trust fixes
-- it should build on preserved proof/credentials and clearer trust inputs
+- this is the operator workflow lane
+- it improves response speed, capture reliability, source attribution, and reconciliation
+- it should not be confused with public-site copy work even though it materially changes the product experience
 
-### Phase 4: If the task touches discover claim/correction flows, use the dedicated ready spec
+### Phase 5: Improve price, catalog, and product completeness through the OpenClaw handshake
 
-Use only when assigned:
+Use:
 
-1. `docs/specs/directory-post-claim-enhancement-flow.md`
+1. `docs/specs/openclaw-internal-only-boundary-and-debranding.md`
+2. `docs/specs/openclaw-canonical-scope-and-sequence.md`
+3. `docs/specs/openclaw-ideal-runtime-and-national-intelligence.md`
+4. `docs/research/openclaw-runtime-builder-handoff-2026-04-02.md`
+5. `docs/specs/catalog-store-selection-and-image-delivery-contract.md`
+
+Why this comes after the public and workflow baselines:
+
+- data quality improvements are most useful when the presentation and trust boundaries are already understood
+- the runtime must improve first, then website value expands through the handshake
+- narrow contract bugs such as catalog store selection should still be fixed directly when assigned
+
+### Phase 6: Treat operator costing parity as its own ChefFlow lane
+
+Use:
+
+1. `docs/research/restaurant-costing-platform-landscape-2026-04-02.md`
+2. `docs/research/restaurant-costing-platform-parity-handoff-2026-04-02.md`
 
 Why separate:
 
-- it is public/discover-adjacent, but not part of the main buyer acquisition path
-- it should not distract from the higher-value consumer trust work unless specifically scoped
+- this is not the same thing as OpenClaw runtime work
+- it is about operator workflows, recipe systems, inventory, purchasing, and costing parity
+- it should be planned deliberately rather than leaking into the runtime or public-site lanes by accident
 
-### Phase 5: If the task extends beyond acquisition into repeat trust, use the lifecycle spec
+### Phase 7: Convert remaining research-backed themes into narrow specs before code
 
-Use only when assigned:
+Use the decision log and the research-backed unspecced themes when:
 
-1. `docs/specs/post-event-trust-loop-consolidation.md`
+- the task touches frontier scoring
+- the task needs handshake rules
+- the task needs public-readiness thresholds
+- the task needs a new landing architecture or buyer education system not yet fully specced
 
-Why after the public baseline:
+Use:
 
-- it depends on the public proof stack staying canonical
-- it closes the loop after booking and service, not before
-
-### Phase 6: For the remaining research-backed website gaps, spec before code
-
-These are real conclusions, but they are not yet implementation-ready specs.
-
-Draft narrow specs in this order before runtime changes:
-
-1. search-intent landing architecture by city, service type, and occasion
-2. buyer education content and pre-decision guidance
-3. operational reassurance and “what happens next” content architecture
-4. navigation and CTA continuity
-5. alternate entry points and support visibility
-6. site-level proof freshness once real approved proof exists
-
-Why this order:
-
-- acquisition architecture comes before copy polish
-- buyer education and reassurance reduce friction before major nav changes
-- CTA continuity should be shaped after the primary path is clear
-- site-level proof expansion should wait for real evidence instead of forcing synthetic content
-
----
-
-## Research-To-Code Mapping
-
-Use this section when a builder needs to understand which local files are likely to move.
-
-| Website theme                            | Current local surface anchors                                                                                                   |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Homepage promise and top-level CTA       | `app/(public)/page.tsx`, `components/navigation/public-header.tsx`, `components/navigation/public-footer.tsx`                   |
-| Public chef trust and profile proof      | `app/(public)/chef/[slug]/page.tsx`, `components/public/chef-proof-summary.tsx`, `components/public/review-showcase.tsx`        |
-| Public inquiry and booking trust         | `app/(public)/book/page.tsx`, `app/(public)/book/_components/book-dinner-form.tsx`, `components/public/public-inquiry-form.tsx` |
-| Trust, contact, and support visibility   | `app/(public)/trust/page.tsx`, `app/(public)/contact/layout.tsx`, `app/(public)/contact/page.tsx`                               |
-| Gift-card edge entry point               | `app/(public)/chef/[slug]/gift-cards/page.tsx`, `app/(public)/chef/[slug]/page.tsx`                                             |
-| Buyer FAQ and comparison education       | `app/(public)/faq/page.tsx`, `app/(public)/compare/page.tsx`, `app/(public)/compare/[slug]/page.tsx`                            |
-| Discover and segmented landing expansion | `app/(public)/discover/**`, `app/(public)/chefs/**`, `app/sitemap.ts`                                                           |
-| Site-level proof and customer stories    | `app/(public)/customers/page.tsx`, homepage proof modules, public chef proof components                                         |
-
-This is not an exhaustive file inventory. It is the fastest correct map for public website work in this thread.
+- `docs/research/openclaw-open-questions-decision-log-2026-04-02.md`
 
 ---
 
 ## What The Builder Must Not Change By Accident
 
-- Do not reset or clean the worktree just to satisfy a pre-flight heuristic.
+- Do not reset or clean the worktree just to satisfy pre-flight.
 - Do not restart the public-proof stack from scratch.
-- Do not create a second public review or testimonial source of truth.
-- Do not fabricate customer stories, outcomes, or freshness signals to make the site look more mature.
-- Do not weaken the anti-fabrication guardrail in `app/(public)/customers/page.tsx`.
-- Do not create a new public-only allergy model when the product already has a structured safety backbone.
-- Do not let buyer-path improvements accidentally bury or break operator/partner entry points unless the task explicitly includes navigation restructuring.
-- Do not treat competitor public research as permission to copy marketplace opacity, artificial urgency, or commission-heavy positioning.
-- Do not broaden a narrow website task into platform-intelligence or survey work unless the assignment explicitly shifts scope.
+- Do not treat platform-intelligence research as permission to overpromise impossible integrations.
+- Do not expose OpenClaw branding, runtime internals, or raw scraper identity on chef-facing or public-facing surfaces.
+- Do not make website presentation decisions as if runtime ownership and presentation ownership were the same thing.
+- Do not fabricate reviews, customer stories, freshness signals, allergy trust signals, or metadata completeness.
+- Do not let inferred pricing quietly replace direct observed pricing.
+- Do not let ChefFlow become the hidden owner of runtime acquisition or inference logic.
+- Do not let OpenClaw become the hidden owner of recipe scaling, chef workflow UX, or public presentation.
+- Do not pull the restaurant-costing parity lane into OpenClaw runtime architecture by default.
+- Do not broaden a narrow website task into survey operations or unrelated infrastructure unless the assignment explicitly shifts scope.
 
 ---
 
@@ -421,33 +375,33 @@ This is not an exhaustive file inventory. It is the fastest correct map for publ
 
 ### Verified
 
-- ChefFlow already has a meaningful public trust baseline in code.
-- Verified public-proof and credentials specs already exist.
-- Verified discover-state hardening already exists.
-- Verified smart-input/autocomplete spec already exists for structured public intake.
-- Ready allergy/dietary, directory post-claim, post-event trust-loop, and consumer-first expansion specs already exist.
-- The competitor research is strong on public-surface behavior, conversion structure, content architecture, and positioning.
+- The repo-wide baseline is currently green on a dirty checkout.
+- ChefFlow already has meaningful public trust and proof infrastructure in code.
+- Verified or ready specs already exist for public proof, credentials, structured intake, dietary trust, consumer-first expansion, platform intelligence, OpenClaw boundary, OpenClaw runtime, and catalog store-selection truth.
+- The OpenClaw handshake is now explicitly a website-build concern when data quality affects chef-facing usefulness.
+- Existing operator costing products already solve many workflow problems ChefFlow should learn from.
 
 ### Unverified or intentionally not assumed
 
-- competitor authenticated interiors
-- competitor internal metrics, CAC, LTV, churn, or staffing counts
-- competitor private APIs, schemas, or exact cloud topology
-- whether ChefFlow already has enough approved customer proof to power site-level freshness expansion
-- which unspecced website theme the product team wants first if only one additional spec is authorized
+- Which single research-backed unspecced website theme should be built first if only one more spec is authorized
+- The exact public-readiness threshold for broader OpenClaw-fed product exposure
+- The final frontier-scoring weights, inference thresholds, and metadata freshness SLAs
+- Whether ChefFlow should enter the full recipe-costing parity lane immediately or after the current pricing and workflow foundations are stronger
 
 Those are not reasons to block work that is already covered by verified or ready specs.
+They are reasons to write the next narrow spec instead of guessing.
 
 ---
 
 ## Completion Condition
 
-This cross-reference is doing its job when a future builder can answer these questions without rereading the entire research library:
+This cross-reference is doing its job when a future builder can answer these questions without rereading the whole research library:
 
 1. What is already true in the repo today?
-2. Which website-facing areas are already covered by verified or ready specs?
-3. Which competitor-driven conclusions are only research-backed and still need a narrow spec?
-4. What order should website work happen in?
-5. What must not be broken, restarted, fabricated, or unnecessarily expanded?
+2. Which research streams materially change website and product-surface decisions?
+3. Which themes are already covered by verified or ready specs?
+4. Which themes still need a narrow spec before code?
+5. What order should the website and adjacent product lanes happen in?
+6. What boundaries must not be broken while implementing them?
 
-If those answers are clear, the builder has enough context to execute cleanly and in order.
+If those answers are clear, the builder has enough context to execute cleanly, in order, and without creating architecture drift.
