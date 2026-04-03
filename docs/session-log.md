@@ -1265,6 +1265,14 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only research extension pass; no new build or typecheck actions)
 - Notes: Verified that ChefFlow already has consumer-adjacent public routes such as contact, trust, and chef-level gift-card flows, but they are quieter and less integrated into the main public booking journey than on Take a Chef. Added a new section recommending stronger promotion of gift-card entry points, clearer support visibility near booking surfaces, and tighter linkage between trust, FAQ, contact, and booking pages so the site feels more complete and reachable before account creation.
 
+## 2026-04-02 23:00 EDT
+
+- Agent: Planner (Codex)
+- Task: Plan the full competitor-parity research and spec sequence for Take a Chef and Private Chef Manager so ChefFlow can clone and surpass the public website, marketplace, and operator-tool patterns without guessing
+- Status: started
+- Build state on arrival: green on verified dirty checkout per `docs/build-state.md` (`npm run typecheck:app` and `npm run build -- --no-lint` last verified 2026-04-02 on dirty worktree from `f45fec2c`)
+- Notes: Loaded planner context from `CLAUDE.md`, `docs/specs/_TEMPLATE.md`, `docs/session-log.md`, `docs/build-state.md`, and `docs/app-complete-audit.md`. Next step is deep inspection of the existing competitor research packet, current public marketplace surfaces, booking and inquiry flows, chef profile/public-proof controls, and the schema/actions those routes depend on before drafting any new spec.
+
 ## 2026-04-02 22:36 EDT
 
 - Agent: Planner (Codex)
@@ -1301,12 +1309,42 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on arrival: green on verified dirty checkout per `docs/build-state.md` (`npm run build -- --no-lint` last verified 2026-04-02 on dirty worktree from `f45fec2c`; strict builder pre-flight would still stop on current `git status`)
 - Notes: Proceeding with the narrow website-build scope rather than every research stream in `docs/research/`. The goal is one high-signal synthesis that cross-references verified findings, active specs, no-touch boundaries, and builder order for the public website experience.
 
+## 2026-04-02 23:12 EDT
+
+- Agent: Research / Website Build Cross-Reference (Codex)
+- Task: Finalize the canonical website-build cross-reference so a future builder can move from research and existing specs into implementation without rereading the entire research library or restarting verified work
+- Status: completed
+- Files touched: docs/research/foundations/2026-04-02-website-build-research-and-spec-cross-reference.md, docs/research/website-build-cross-reference-and-builder-handoff-2026-04-02.md, docs/research/README.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only synthesis and indexing pass; no new build or typecheck actions)
+- Notes: Upgraded the website cross-reference into the canonical builder-facing entrypoint, added explicit current-state truths from the public codebase, mapped research conclusions to verified or ready specs, separated research-backed but unspecced themes from implementation-ready work, added the foundation document to the research index, and converted the older top-level website handoff into a redirect so builders only have one canonical website-build start point.
+
 ## 2026-04-02 23:10 EDT
 
 - Agent: Research / Website Build Cross-Reference (Codex)
 - Task: Synthesize the website-build research and active specs into one cross-reference document so a builder can execute public discovery, chef-profile, trust, booking, and planning work in dependency order without re-reading the entire research library
 - Status: completed
 - Files touched: docs/research/website-build-cross-reference-and-builder-handoff-2026-04-02.md, docs/research/README.md, docs/session-log.md
-- Commits: 87ef05ae (`docs(research): add website build cross-reference handoff`)
+- Commits: pending
 - Build state on departure: unchanged from `docs/build-state.md` (docs-only synthesis pass; no new build or typecheck actions)
 - Notes: Created a narrow website-build cross-reference handoff that maps current public surfaces, competitive and cross-persona findings, active upstream specs, current dirty-worktree constraints, recommended builder read order, recommended implementation order, and explicit no-touch boundaries so future builder work can proceed without re-synthesizing the research library.
+
+## 2026-04-02 23:11 EDT
+
+- Agent: Research / Website Build Cross-Reference Foundation (Codex)
+- Task: Add a canonical foundational cross-reference that points builders to the right website-build research and specs in dependency order without replacing the existing detailed handoff
+- Status: completed
+- Files touched: docs/research/foundations/2026-04-02-website-build-research-and-spec-cross-reference.md, docs/research/README.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only synthesis pass; no new build or typecheck actions)
+- Notes: Added a new foundational website-build entrypoint under `docs/research/foundations/`, linked it from the research index as the canonical website-build retrieval path, preserved the existing detailed handoff as a companion document, and kept the scope strictly on website-build-relevant research/specs so future builder work can start from one high-signal source without expanding into unrelated streams.
+
+## 2026-04-02 23:16 EDT
+
+- Agent: Planner (Codex)
+- Task: Turn the Take a Chef / Private Chef Manager parity request into a builder-safe docs-first program that maps verified competitor surfaces to existing ChefFlow code before any broad parity build begins
+- Status: completed
+- Files touched: docs/specs/takeachef-privatechefmanager-parity-doc-program.md, docs/session-log.md
+- Commits: pending
+- Build state on departure: unchanged from `docs/build-state.md` (docs-only planning pass; no new build or typecheck actions)
+- Notes: Wrote a new parity-doc-program spec instead of a fake one-pass "clone the competitors" build spec. The spec explicitly treats current ChefFlow marketplace/inquiry infrastructure as baseline, defines the required parity document pack, fences authenticated/private competitor workflows as research-first rather than assumed fact, and points future builders back to the existing competitor baseline, gap-closure handoff, and platform-intelligence spec before runtime implementation.
