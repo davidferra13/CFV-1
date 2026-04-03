@@ -18,7 +18,7 @@ Last known state of the app. Updated after every successful type check and build
 | `npm run build -- --no-lint` | green  | 2026-04-03    | b86f656b8 | Claude Opus 4.6 |
 
 **Last green build:** b86f656b8 (2026-04-03) - full environment sync (interface philosophy spec + uptime history)
-**Last commit on main:** b86f656b8 - chore: update uptime history
+**Last commit on main:** 9b8ca7f29 - chore: update uptime history
 
 **Current blocker:** none. All environments verified in sync as of 2026-04-03 ~16:00 EDT. Cloudflare Tunnel was down (service misconfigured, no `tunnel run` argument); reconnected manually via `cloudflared tunnel run chefflow-beta-pc`. The Windows service (`Cloudflared`) starts the binary without tunnel arguments; it needs to be reinstalled with `cloudflared service install` to persist across reboots. Current workaround: manual tunnel process running in background.
 
