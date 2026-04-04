@@ -1901,3 +1901,31 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: d607fbe55
 - Build state on departure: unchanged (research-only session, no code changes)
 - Notes: 10+ web searches across workflow sources, industry forums, and specialist platforms (Epicurate/chef.tech, Personal Chef Office/APPCA, Private Chef Manager, ModernMeal, Traqly, ChefShelley blog, CIA/Culinary/Ducasse). Key findings: (1) Private chef is a strong ChefFlow fit - solo operator managing 3-8 clients, event-based lifecycle, menu repetition tracking, dietary restriction management, grocery-to-invoice gap. (2) Executive chef = wrong target: they live in POS/KDS/labor-scheduling ecosystem with 15-40 staff, no individual client CRM. (3) Sous chef = employee, not a software buyer. (4) ChefFlow already has served_dish_history, menu_service_history, dietary/allergy fields, shopping list generation, and 8-state FSM matching real workflows. (5) Three unverified gaps: allergy warnings propagation into event/menu context, client-facing menu approval flow, and grocery receipt-to-event billing linkage.
+
+## 2026-04-04 ~10:00 EST
+
+- Agent: Research (Claude Opus 4.6)
+- Task: UI/UX audit of top 10 ChefFlow surfaces against Interface Philosophy
+- Status: completed
+- Files touched: docs/research/2026-04-04-ui-ux-audit-top-10-surfaces.md (new)
+- Build state on arrival: green (dirty from 17aa640d5)
+- Notes: 7 high, 9 medium, 8 low findings. Critical: event detail tab nav invisible on desktop. Quotes page broken (FK hint bug). Settings is the model surface. Full report with before/after recommendations.
+
+## 2026-04-04 ~12:00 EST
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Knowledge Confidence Audit + Research Gap Analysis (full 4-phase strategic audit)
+- Status: completed
+- Files touched: prompts/knowledge-confidence-audit.md (new reusable prompt), docs/research/2026-04-04-knowledge-confidence-audit.md (new)
+- Build state on arrival: green (dirty from 17aa640d5)
+- Build state on departure: unchanged (research-only session, no code changes)
+- Notes: 5-tier confidence audit across 7 axes (30+ personas). Results: 58 verified, 16 partial, 14 assumptions, 13 blind spots, 9 contradictions. Top 3 gaps: user acquisition channels (zero data), monetization model (unvalidated), tax export path disagreements (code bug). Single most dangerous assumption: voluntary $12/month model. Highest-ROI next action: execute Wave-1 operator survey (already designed). Core finding: build is far ahead of validation. The project knows what to build but not whether anyone will use it.
+
+## 2026-04-04 ~13:00 EST
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Deep Sync pass on Knowledge Confidence Audit (explore every unexplored data asset, unread report, spec, memory file)
+- Status: completed
+- Files touched: docs/research/2026-04-04-knowledge-confidence-audit.md (addendum added)
+- Build state on departure: unchanged (research-only)
+- Notes: Deep sync found 6 major categories the original audit missed: (1) Security debt - SSE zero auth, Ollama exposed, credentials in repo (CRITICAL launch blockers). (2) Remy parsing regression - inquiry_parse and client_parse at 0% since 2026-03-30. (3) 43-archetype research system designed but never executed (80-120 hrs of planned work). (4) 179/184 forms lack auto-save. (5) 62K+ scraped prices unsynthesized. (6) Privacy promise contradicts cloud runtime direction. Revised totals: 122 knowledge claims (58 verified, 18 partial, 16 assumptions, 17 blind spots, 13 contradictions). SSE zero-auth entered Top 10 gaps at #2 (score 100). Remy regression at #5 (score 75).
