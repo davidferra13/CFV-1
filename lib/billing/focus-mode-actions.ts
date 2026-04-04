@@ -12,7 +12,7 @@ import { CORE_MODULES } from '@/lib/billing/focus-mode'
 
 /**
  * Check if Focus Mode is enabled for the current chef.
- * Defaults to false (OFF) - focus mode is optional simplification, not the default state.
+ * Defaults to true (ON) to match the schema default for new chefs.
  */
 export async function isFocusModeEnabled(): Promise<boolean> {
   const user = await requireChef()
@@ -24,7 +24,7 @@ export async function isFocusModeEnabled(): Promise<boolean> {
     .eq('chef_id', user.entityId)
     .single()
 
-  return (data as any)?.focus_mode ?? false
+  return (data as any)?.focus_mode ?? true
 }
 
 /**

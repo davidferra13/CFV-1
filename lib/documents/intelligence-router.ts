@@ -16,6 +16,7 @@ import { revalidatePath } from 'next/cache'
 export type RouteResult = {
   success: boolean
   destination?: string
+  recordType?: string
   entityId?: string
   error?: string
 }
@@ -27,13 +28,14 @@ export type RouteResult = {
 export async function routeIntelligenceItem(itemId: string): Promise<RouteResult> {
   const user = await requireChef()
   const db: any = createServerClient()
+  const now = new Date().toISOString()
 
   // Fetch the item
   const { data: item, error: fetchError } = await (db
     .from('document_intelligence_items' as any)
     .select('*')
     .eq('id', itemId)
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .single() as any)
 
   if (fetchError || !item) {
@@ -44,7 +46,8 @@ export async function routeIntelligenceItem(itemId: string): Promise<RouteResult
     return {
       success: true,
       destination: item.suggested_destination,
-      entityId: item.routed_entity_id,
+      recordType: item.routed_record_type,
+      entityId: item.routed_record_id,
     }
   }
 
@@ -56,7 +59,7 @@ export async function routeIntelligenceItem(itemId: string): Promise<RouteResult
   // Mark as routing
   await (db
     .from('document_intelligence_items' as any)
-    .update({ status: 'routing' })
+    .update({ status: 'routing', updated_at: now })
     .eq('id', itemId) as any)
 
   try {
@@ -90,13 +93,21 @@ export async function routeIntelligenceItem(itemId: string): Promise<RouteResult
         .update({
           status: 'completed',
           suggested_destination: result.destination,
-          routed_entity_id: result.entityId,
+          routed_record_type: result.recordType ?? null,
+          routed_record_id: result.entityId ?? null,
+          processed_at: now,
+          updated_at: now,
         })
         .eq('id', itemId) as any)
     } else {
       await (db
         .from('document_intelligence_items' as any)
-        .update({ status: 'failed', error_message: result.error })
+        .update({
+          status: 'failed',
+          error_message: result.error,
+          processed_at: now,
+          updated_at: now,
+        })
         .eq('id', itemId) as any)
     }
 
@@ -107,7 +118,7 @@ export async function routeIntelligenceItem(itemId: string): Promise<RouteResult
     const msg = err instanceof Error ? err.message : 'Routing failed'
     await (db
       .from('document_intelligence_items' as any)
-      .update({ status: 'failed', error_message: msg })
+      .update({ status: 'failed', error_message: msg, processed_at: now, updated_at: now })
       .eq('id', itemId) as any)
     return { success: false, error: msg }
   }
@@ -115,18 +126,75 @@ export async function routeIntelligenceItem(itemId: string): Promise<RouteResult
 
 // ─── Route handlers ────────────────────────────────────────────────────────────
 
+const RECEIPTS_BUCKET = 'receipts'
+const RECEIPT_URL_EXPIRY_SECONDS = 86400
+
+function mapChefDocumentType(
+  value: string
+): 'contract' | 'policy' | 'checklist' | 'note' | 'general' {
+  switch (value) {
+    case 'contract':
+      return 'contract'
+    case 'policy':
+      return 'policy'
+    case 'checklist':
+      return 'checklist'
+    case 'note':
+      return 'note'
+    default:
+      return 'general'
+  }
+}
+
 async function routeToReceipt(
   db: any,
   user: { id: string; tenantId: string | null },
   item: any
 ): Promise<RouteResult> {
-  // Create receipt_photo record from the intelligence item's stored file
+  if (!item.file_storage_path) {
+    return { success: false, error: 'Receipt item is missing a storage path' }
+  }
+
+  const sourceBucket = item.file_storage_bucket || RECEIPTS_BUCKET
+  const { data: sourceFile, error: downloadError } = await db.storage
+    .from(sourceBucket)
+    .download(item.file_storage_path)
+
+  if (downloadError || !sourceFile) {
+    return { success: false, error: 'Failed to read receipt file from storage' }
+  }
+
+  const extension =
+    typeof item.source_filename === 'string' && item.source_filename.includes('.')
+      ? item.source_filename.split('.').pop()?.toLowerCase()
+      : null
+  const receiptStoragePath = `${user.tenantId}/general/${crypto.randomUUID()}.${extension || 'jpg'}`
+
+  const { error: uploadError } = await db.storage
+    .from(RECEIPTS_BUCKET)
+    .upload(receiptStoragePath, sourceFile, {
+      contentType: item.file_mime_type || sourceFile.type || 'application/octet-stream',
+      upsert: false,
+    })
+
+  if (uploadError) {
+    return { success: false, error: 'Failed to copy receipt into receipt storage' }
+  }
+
+  const { data: signedData, error: signError } = await db.storage
+    .from(RECEIPTS_BUCKET)
+    .createSignedUrl(receiptStoragePath, RECEIPT_URL_EXPIRY_SECONDS)
+
+  if (signError || !signedData?.signedUrl) {
+    return { success: false, error: 'Failed to generate receipt access URL' }
+  }
+
   const { data: photo, error } = await db
     .from('receipt_photos')
     .insert({
       tenant_id: user.tenantId!,
-      photo_url: item.file_storage ?? '',
-      storage_path: item.file_storage,
+      photo_url: signedData.signedUrl,
+      storage_path: receiptStoragePath,
       upload_status: 'pending',
       notes: `Auto-routed from document upload: ${item.source_filename}`,
     })
@@ -137,7 +205,12 @@ async function routeToReceipt(
     return { success: false, error: 'Failed to create receipt record' }
   }
 
-  return { success: true, destination: 'receipt_photos', entityId: photo.id }
+  return {
+    success: true,
+    destination: 'receipt',
+    recordType: 'receipt_photo',
+    entityId: photo.id,
+  }
 }
 
 async function routeToDocument(
@@ -152,11 +225,20 @@ async function routeToDocument(
     .insert({
       tenant_id: user.tenantId!,
       title: extractedData?.title ?? item.source_filename ?? 'Untitled Document',
-      document_type: docType,
+      document_type: mapChefDocumentType(docType),
       content_text: item.extracted_text ?? null,
       summary: extractedData?.summary ?? null,
-      source_type: 'intelligence_router',
+      source_type: 'file_upload',
       source_filename: item.source_filename,
+      original_filename: item.source_filename ?? null,
+      storage_bucket: item.file_storage_bucket ?? null,
+      storage_path: item.file_storage_path ?? null,
+      mime_type: item.file_mime_type ?? null,
+      file_size_bytes: item.file_size_bytes ?? null,
+      file_hash: item.file_hash ?? null,
+      extraction_status: item.extracted_text ? 'completed' : 'not_requested',
+      created_by: user.id,
+      updated_by: user.id,
     } as any)
     .select('id')
     .single()
@@ -165,7 +247,12 @@ async function routeToDocument(
     return { success: false, error: 'Failed to create document record' }
   }
 
-  return { success: true, destination: 'chef_documents', entityId: doc.id }
+  return {
+    success: true,
+    destination: 'document',
+    recordType: 'chef_document',
+    entityId: doc.id,
+  }
 }
 
 async function routeToRecipe(
@@ -191,7 +278,7 @@ async function routeToRecipe(
     return { success: false, error: 'Failed to create recipe record' }
   }
 
-  return { success: true, destination: 'recipes', entityId: recipe.id }
+  return { success: true, destination: 'recipe', recordType: 'recipe', entityId: recipe.id }
 }
 
 async function routeToClient(
@@ -200,7 +287,9 @@ async function routeToClient(
   item: any
 ): Promise<RouteResult> {
   const extractedData = item.extracted_data as any
-  if (!extractedData?.name) {
+  const extractedName = typeof extractedData?.name === 'string' ? extractedData.name.trim() : ''
+
+  if (!extractedName) {
     return { success: false, error: 'No client name found in extracted data' }
   }
 
@@ -209,22 +298,27 @@ async function routeToClient(
     .from('clients')
     .select('id')
     .eq('tenant_id', user.tenantId!)
-    .ilike('name', extractedData.name)
+    .ilike('full_name', extractedName)
     .limit(1)
     .single()
 
   if (existing) {
-    return { success: true, destination: 'clients', entityId: existing.id }
+    return {
+      success: true,
+      destination: 'client',
+      recordType: 'client',
+      entityId: existing.id,
+    }
   }
 
   const { data: client, error } = await db
     .from('clients')
     .insert({
       tenant_id: user.tenantId!,
-      name: extractedData.name,
+      full_name: extractedName,
       email:
         extractedData.email ??
-        `${extractedData.name.toLowerCase().replace(/\s+/g, '.')}@placeholder.import`,
+        `${extractedName.toLowerCase().replace(/\s+/g, '.')}@placeholder.import`,
       phone: extractedData.phone ?? null,
       notes: extractedData.notes ?? `Imported from document: ${item.source_filename}`,
     })
@@ -235,5 +329,5 @@ async function routeToClient(
     return { success: false, error: 'Failed to create client record' }
   }
 
-  return { success: true, destination: 'clients', entityId: client.id }
+  return { success: true, destination: 'client', recordType: 'client', entityId: client.id }
 }

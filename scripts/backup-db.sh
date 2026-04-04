@@ -19,7 +19,7 @@
 #   Arguments: scripts/backup-db.sh --quiet
 #   Start in: C:\Users\david\Documents\CFv1
 # ============================================
-set -e
+set -eo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -51,10 +51,15 @@ log "  File: backups/$FILENAME"
 log "=========================================="
 log ""
 
-# Run the dump
+# Run the dump via Docker pg_dump (reliable in scheduled context)
 log "  Dumping database..."
 cd "$PROJECT_ROOT"
-npx database db dump --linked > "$BACKUP_DIR/$FILENAME" 2>/dev/null
+docker exec chefflow_postgres pg_dump -U postgres postgres > "$BACKUP_DIR/$FILENAME" 2>/dev/null || {
+  echo "  ERROR: pg_dump via Docker failed (exit code $?)"
+  echo "  Is chefflow_postgres container running?"
+  rm -f "$BACKUP_DIR/$FILENAME"
+  exit 1
+}
 
 # Verify the dump is not empty
 FILESIZE=$(wc -c < "$BACKUP_DIR/$FILENAME" 2>/dev/null | tr -d ' ')

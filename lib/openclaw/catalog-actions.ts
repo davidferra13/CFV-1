@@ -1,21 +1,72 @@
 'use server'
 
 /**
- * OpenClaw Catalog Actions - Server actions for browsing
- * the full 49,000+ ingredient catalog on the Pi.
+ * OpenClaw Catalog Actions
+ * Server actions for browsing the mirrored ingredient catalog stored in the
+ * local PostgreSQL `openclaw` schema.
  *
- * These call the Pi directly (not synced data) because most catalog
- * items are not synced to ChefFlow.
+ * ChefFlow request-time reads must stay on the local mirror. The Raspberry Pi
+ * remains the upstream collector, but the website reads the PC-resident copy.
  */
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
-import { db } from '@/lib/db'
+import { db, pgClient } from '@/lib/db'
 import { ingredients } from '@/lib/db/schema/schema'
-import { eq, and, sql } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { revalidatePath } from 'next/cache'
 
-const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+type CatalogSort = 'name' | 'price' | 'stores' | 'updated'
+
+type CatalogQueryParams = {
+  search?: string
+  category?: string
+  store?: string
+  pricedOnly?: boolean
+  inStockOnly?: boolean
+  tier?: string
+  sort?: string
+  limit?: number
+  offset?: number
+}
+
+type CatalogAggregateRow = {
+  id: string
+  name: string
+  category: string | null
+  standard_unit: string | null
+  image_url: string | null
+  brand: string | null
+  price_count: number | string
+  in_stock_count: number | string
+  out_of_stock_count: number | string
+  has_source_url: boolean | null
+  last_updated: string | Date | null
+  best_price_cents: number | string | null
+  best_price_store: string | null
+  best_price_unit: string | null
+}
+
+type CatalogPriceRow = {
+  store_name: string
+  store_city: string | null
+  store_state: string | null
+  store_website: string | null
+  price_cents: number | string
+  price_unit: string | null
+  price_type: string | null
+  source: string | null
+  in_stock: boolean | null
+  source_url: string | null
+  image_url: string | null
+  brand: string | null
+  aisle_cat: string | null
+  last_confirmed_at: string | Date | null
+  last_changed_at: string | Date | null
+  package_size: string | null
+}
 
 // --- Types ---
 
@@ -63,168 +114,6 @@ export type CatalogStore = {
   city: string | null
   state: string | null
 }
-
-// --- Actions ---
-
-export async function searchCatalog(params: {
-  search?: string
-  category?: string
-  store?: string
-  pricedOnly?: boolean
-  sort?: 'name' | 'price' | 'stores' | 'updated'
-  page?: number
-  limit?: number
-}): Promise<CatalogSearchResult> {
-  await requireChef()
-
-  const { search, category, store, pricedOnly, sort, page = 1, limit = 50 } = params
-
-  try {
-    const searchParams = new URLSearchParams()
-    if (search) searchParams.set('search', search)
-    if (category) searchParams.set('category', category)
-    if (store) searchParams.set('store', store)
-    if (pricedOnly) searchParams.set('priced_only', '1')
-    if (sort) searchParams.set('sort', sort)
-    searchParams.set('page', String(page))
-    searchParams.set('limit', String(limit))
-
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
-
-    const res = await fetch(`${OPENCLAW_API}/api/ingredients?${searchParams}`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-
-    if (!res.ok) {
-      console.warn(`[catalog] Search returned ${res.status}`)
-      return { items: [], total: 0, categories: [] }
-    }
-
-    const data = await res.json()
-
-    // Map Pi response to our types
-    const items: CatalogItem[] = (data.ingredients || data.items || []).map((item: any) => ({
-      id: String(item.ingredient_id || item.id),
-      name: item.name || '',
-      category: item.category || 'uncategorized',
-      bestPriceCents: item.best_price_cents ?? item.price_cents ?? null,
-      bestPriceStore: item.best_price_store ?? item.store ?? null,
-      bestPriceUnit: item.best_price_unit ?? item.unit ?? null,
-      priceCount: item.price_count ?? item.store_count ?? 0,
-      lastUpdated: item.last_updated ?? item.last_confirmed_at ?? null,
-      trendPct: item.recent_change_pct ?? null,
-    }))
-
-    return {
-      items,
-      total: data.total ?? data.count ?? items.length,
-      categories: data.categories || [],
-    }
-  } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      console.warn('[catalog] Search timed out')
-    } else {
-      console.warn(`[catalog] Search error: ${err instanceof Error ? err.message : 'unknown'}`)
-    }
-    return { items: [], total: 0, categories: [] }
-  }
-}
-
-export async function getCatalogStores(): Promise<CatalogStore[]> {
-  await requireChef()
-
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 10000)
-
-    const res = await fetch(`${OPENCLAW_API}/api/sources`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-
-    if (!res.ok) return []
-
-    const data = await res.json()
-    return (data.sources || []).map((s: any) => ({
-      id: s.source_id,
-      name: s.name,
-      tier: s.pricing_tier || 'retail',
-      status: s.status || 'active',
-      logoUrl: s.logo_url ?? null,
-      storeColor: s.store_color ?? null,
-      region: s.region ?? null,
-      city: s.city ?? null,
-      state: s.state ?? null,
-    }))
-  } catch {
-    return []
-  }
-}
-
-export async function getCatalogStats(): Promise<CatalogStats> {
-  await requireChef()
-
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 10000)
-
-    const res = await fetch(`${OPENCLAW_API}/api/stats`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-
-    if (!res.ok) {
-      return { total: 0, priced: 0, categories: [] }
-    }
-
-    const data = await res.json()
-
-    return {
-      total: data.canonicalIngredients ?? 0,
-      priced: data.currentPrices ?? 0,
-      categories: data.categories || [],
-    }
-  } catch {
-    return { total: 0, priced: 0, categories: [] }
-  }
-}
-
-export async function getCatalogItemPrices(ingredientId: string): Promise<CatalogItemDetail[]> {
-  await requireChef()
-
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 10000)
-
-    const res = await fetch(`${OPENCLAW_API}/api/prices/ingredient/${ingredientId}`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-
-    if (!res.ok) return []
-
-    const data = await res.json()
-
-    return (data.prices || []).map((p: any) => ({
-      store: p.source_name ?? p.store ?? 'Unknown',
-      priceCents: p.price_cents,
-      unit: p.price_unit ?? p.unit ?? 'lb',
-      tier: p.pricing_tier ?? p.tier ?? 'unknown',
-      confidence: p.confidence ?? 'medium',
-      lastConfirmedAt: p.last_confirmed_at ?? '',
-    }))
-  } catch {
-    return []
-  }
-}
-
-// --- Chef-facing catalog types ---
 
 export type CatalogItemV2 = {
   id: string
@@ -304,7 +193,609 @@ export type ShoppingOptResult = {
   }[]
 }
 
-// --- Chef-facing catalog actions (requireChef, not requireAdmin) ---
+// --- Helpers ---
+
+function toNumber(value: unknown): number {
+  if (typeof value === 'number') return value
+  if (typeof value === 'string') return Number(value)
+  return 0
+}
+
+function toIso(value: unknown): string | null {
+  if (!value) return null
+  if (value instanceof Date) return value.toISOString()
+  return String(value)
+}
+
+function normalizeCategory(value: string | null | undefined): string {
+  const trimmed = value?.trim()
+  return trimmed && trimmed.length > 0 ? trimmed : 'uncategorized'
+}
+
+function normalizeUnit(value: string | null | undefined): string {
+  const trimmed = value?.trim()
+  return trimmed && trimmed.length > 0 ? trimmed : 'each'
+}
+
+function normalizeImage(value: string | null | undefined): string | null {
+  if (!value) return null
+  const trimmed = value.trim()
+  if (!trimmed || trimmed.toLowerCase() === 'none') return null
+  return trimmed
+}
+
+function normalizeStoreRegion(city: string | null, state: string | null): string | null {
+  const normalizedCity = city?.trim().toLowerCase() ?? ''
+  const normalizedState = state?.trim().toLowerCase() ?? ''
+
+  if (normalizedState === 'me' || normalizedCity.includes('portland')) {
+    return 'portland-me'
+  }
+
+  if (normalizedState === 'ma' || normalizedState === 'nh') {
+    return 'haverhill-ma'
+  }
+
+  return null
+}
+
+function confidenceFromSource(source: string | null): string {
+  const normalized = source?.toLowerCase() ?? ''
+
+  if (normalized.includes('receipt')) return 'exact_receipt'
+  if (normalized.includes('instacart')) return 'instacart_adjusted'
+  if (normalized.includes('flipp') || normalized.includes('flyer')) return 'flyer_scrape'
+  if (
+    normalized.includes('government') ||
+    normalized.includes('usda') ||
+    normalized.includes('bls')
+  ) {
+    return 'government_baseline'
+  }
+
+  return 'direct_scrape'
+}
+
+function resolveCatalogSort(sort?: string): CatalogSort {
+  switch (sort) {
+    case 'price':
+    case 'stores':
+    case 'updated':
+      return sort
+    default:
+      return 'name'
+  }
+}
+
+function orderBySql(sort?: string): string {
+  switch (resolveCatalogSort(sort)) {
+    case 'price':
+      return 'best_price_cents ASC NULLS LAST, name ASC, id ASC'
+    case 'stores':
+      return 'price_count DESC, name ASC, id ASC'
+    case 'updated':
+      return 'last_updated DESC NULLS LAST, name ASC, id ASC'
+    case 'name':
+    default:
+      return 'name ASC, id ASC'
+  }
+}
+
+function buildCatalogAggregateContext(params: CatalogQueryParams) {
+  const values: unknown[] = []
+  const bind = (value: unknown) => {
+    values.push(value)
+    return `$${values.length}`
+  }
+
+  const where: string[] = ['1=1']
+  const storeJoinConditions: string[] = ['s.id = sp.store_id', 's.is_active = true']
+  const priceJoinConditions: string[] = ['sp.product_id = p.id', 'sp.price_cents > 0']
+
+  const normalizedSearch = params.search?.trim()
+  if (normalizedSearch) {
+    const searchPatternRef = bind(`%${normalizedSearch.toLowerCase()}%`)
+    where.push(
+      `(
+        LOWER(ci.name) LIKE ${searchPatternRef}
+        OR LOWER(COALESCE(nm.raw_name, '')) LIKE ${searchPatternRef}
+        OR LOWER(COALESCE(p.name, '')) LIKE ${searchPatternRef}
+      )`
+    )
+  }
+
+  const normalizedCategory = params.category?.trim()
+  if (normalizedCategory) {
+    where.push(
+      `LOWER(COALESCE(NULLIF(ci.category, ''), 'uncategorized')) = ${bind(
+        normalizedCategory.toLowerCase()
+      )}`
+    )
+  }
+
+  const normalizedStore = params.store?.trim()
+  if (normalizedStore) {
+    if (UUID_PATTERN.test(normalizedStore)) {
+      storeJoinConditions.push(`s.id = ${bind(normalizedStore)}`)
+    } else {
+      storeJoinConditions.push(`LOWER(s.name) = ${bind(normalizedStore.toLowerCase())}`)
+    }
+  }
+
+  const normalizedTier = params.tier?.trim()
+  if (normalizedTier) {
+    priceJoinConditions.push(`sp.price_type = ${bind(normalizedTier)}`)
+  }
+
+  const aggregateSql = `
+    SELECT
+      ci.ingredient_id AS id,
+      ci.name,
+      COALESCE(NULLIF(ci.category, ''), 'uncategorized') AS category,
+      COALESCE(NULLIF(ci.standard_unit, ''), 'each') AS standard_unit,
+      COALESCE(
+        MAX(NULLIF(p.image_url, '')),
+        MAX(NULLIF(ci.off_image_url, 'none')),
+        MAX(NULLIF(ci.off_image_url, ''))
+      ) AS image_url,
+      CASE
+        WHEN COUNT(DISTINCT NULLIF(p.brand, '')) = 1 THEN MAX(NULLIF(p.brand, ''))
+        ELSE NULL
+      END AS brand,
+      COUNT(DISTINCT s.id) FILTER (WHERE sp.id IS NOT NULL) AS price_count,
+      COUNT(DISTINCT s.id) FILTER (
+        WHERE sp.id IS NOT NULL AND COALESCE(sp.in_stock, true)
+      ) AS in_stock_count,
+      COUNT(DISTINCT s.id) FILTER (
+        WHERE sp.id IS NOT NULL AND NOT COALESCE(sp.in_stock, true)
+      ) AS out_of_stock_count,
+      BOOL_OR(COALESCE(c.website_url, c.store_locator_url) IS NOT NULL) AS has_source_url,
+      MAX(sp.last_seen_at) AS last_updated,
+      MIN(COALESCE(sp.sale_price_cents, sp.price_cents)) FILTER (
+        WHERE sp.id IS NOT NULL
+      ) AS best_price_cents,
+      (
+        ARRAY_AGG(
+          s.name
+          ORDER BY COALESCE(sp.sale_price_cents, sp.price_cents) ASC NULLS LAST,
+                   sp.last_seen_at DESC NULLS LAST
+        ) FILTER (WHERE sp.id IS NOT NULL)
+      )[1] AS best_price_store,
+      COALESCE(NULLIF(ci.standard_unit, ''), 'each') AS best_price_unit
+    FROM openclaw.canonical_ingredients ci
+    LEFT JOIN openclaw.normalization_map nm
+      ON nm.canonical_ingredient_id = ci.ingredient_id
+    LEFT JOIN openclaw.products p
+      ON LOWER(TRIM(p.name)) = LOWER(TRIM(nm.raw_name))
+     AND p.is_food = true
+    LEFT JOIN openclaw.store_products sp
+      ON ${priceJoinConditions.join(' AND ')}
+    LEFT JOIN openclaw.stores s
+      ON ${storeJoinConditions.join(' AND ')}
+    LEFT JOIN openclaw.chains c
+      ON c.id = s.chain_id
+    WHERE ${where.join(' AND ')}
+    GROUP BY
+      ci.ingredient_id,
+      ci.name,
+      ci.category,
+      ci.standard_unit,
+      ci.off_image_url
+  `
+
+  const outerFilters: string[] = []
+  if (params.pricedOnly) outerFilters.push('price_count > 0')
+  if (params.inStockOnly) outerFilters.push('in_stock_count > 0')
+
+  return {
+    aggregateSql,
+    values,
+    outerWhereSql: outerFilters.length > 0 ? `WHERE ${outerFilters.join(' AND ')}` : '',
+  }
+}
+
+async function queryCatalogRows(params: CatalogQueryParams): Promise<{
+  rows: CatalogAggregateRow[]
+  total: number
+  hasMore: boolean
+  nextCursor?: string
+}> {
+  const context = buildCatalogAggregateContext(params)
+  const limit = Math.min(Math.max(params.limit ?? 50, 1), 10000)
+  const offset = Math.max(params.offset ?? 0, 0)
+
+  const dataValues = [...context.values]
+  const bindData = (value: unknown) => {
+    dataValues.push(value)
+    return `$${dataValues.length}`
+  }
+
+  const dataSql = `
+    WITH catalog AS (
+      ${context.aggregateSql}
+    )
+    SELECT *
+    FROM catalog
+    ${context.outerWhereSql}
+    ORDER BY ${orderBySql(params.sort)}
+    LIMIT ${bindData(limit)}
+    OFFSET ${bindData(offset)}
+  `
+
+  const countSql = `
+    WITH catalog AS (
+      ${context.aggregateSql}
+    )
+    SELECT COUNT(*)::int AS cnt
+    FROM catalog
+    ${context.outerWhereSql}
+  `
+
+  const [rows, countRows] = await Promise.all([
+    pgClient.unsafe(dataSql, dataValues as any[]),
+    pgClient.unsafe(countSql, context.values as any[]),
+  ])
+
+  const total = toNumber((countRows as any[])[0]?.cnt)
+
+  return {
+    rows: rows as unknown as CatalogAggregateRow[],
+    total,
+    hasMore: offset + (rows as any[]).length < total,
+    nextCursor: offset + (rows as any[]).length < total ? String(offset + limit) : undefined,
+  }
+}
+
+function mapCatalogItem(row: CatalogAggregateRow): CatalogItem {
+  return {
+    id: String(row.id),
+    name: row.name ?? '',
+    category: normalizeCategory(row.category),
+    bestPriceCents: row.best_price_cents != null ? toNumber(row.best_price_cents) : null,
+    bestPriceStore: row.best_price_store ?? null,
+    bestPriceUnit: normalizeUnit(row.best_price_unit),
+    priceCount: toNumber(row.price_count),
+    lastUpdated: toIso(row.last_updated),
+    trendPct: null,
+  }
+}
+
+function mapCatalogItemV2(row: CatalogAggregateRow): CatalogItemV2 {
+  return {
+    id: String(row.id),
+    name: row.name ?? '',
+    category: normalizeCategory(row.category),
+    standardUnit: normalizeUnit(row.standard_unit),
+    bestPriceCents: row.best_price_cents != null ? toNumber(row.best_price_cents) : null,
+    bestPriceStore: row.best_price_store ?? null,
+    bestPriceUnit: normalizeUnit(row.best_price_unit),
+    imageUrl: normalizeImage(row.image_url),
+    brand: row.brand ?? null,
+    priceCount: toNumber(row.price_count),
+    inStockCount: toNumber(row.in_stock_count),
+    outOfStockCount: toNumber(row.out_of_stock_count),
+    hasSourceUrl: Boolean(row.has_source_url),
+    lastUpdated: toIso(row.last_updated),
+  }
+}
+
+async function getCatalogDetailInternal(ingredientId: string): Promise<CatalogDetailResult | null> {
+  const ingredientRows = await pgClient`
+    SELECT
+      ingredient_id,
+      name,
+      COALESCE(NULLIF(category, ''), 'uncategorized') AS category,
+      COALESCE(NULLIF(standard_unit, ''), 'each') AS standard_unit
+    FROM openclaw.canonical_ingredients
+    WHERE ingredient_id = ${ingredientId}
+    LIMIT 1
+  `
+
+  if (ingredientRows.length === 0) return null
+
+  const rows = (await pgClient`
+    WITH matched AS (
+      SELECT
+        s.id AS store_id,
+        s.name AS store_name,
+        s.city AS store_city,
+        s.state AS store_state,
+        COALESCE(c.website_url, c.store_locator_url) AS store_website,
+        COALESCE(sp.sale_price_cents, sp.price_cents) AS price_cents,
+        COALESCE(NULLIF(ci.standard_unit, ''), NULLIF(p.size_unit, ''), 'each') AS price_unit,
+        sp.price_type,
+        sp.source,
+        COALESCE(sp.in_stock, true) AS in_stock,
+        NULL::text AS source_url,
+        COALESCE(
+          NULLIF(p.image_url, ''),
+          NULLIF(ci.off_image_url, 'none'),
+          ci.off_image_url
+        ) AS image_url,
+        p.brand,
+        COALESCE(pc.department, pc.name) AS aisle_cat,
+        sp.last_seen_at AS last_confirmed_at,
+        sp.last_seen_at AS last_changed_at,
+        p.size AS package_size,
+        ROW_NUMBER() OVER (
+          PARTITION BY s.id
+          ORDER BY COALESCE(sp.sale_price_cents, sp.price_cents) ASC NULLS LAST,
+                   sp.last_seen_at DESC NULLS LAST
+        ) AS store_rank
+      FROM openclaw.canonical_ingredients ci
+      LEFT JOIN openclaw.normalization_map nm
+        ON nm.canonical_ingredient_id = ci.ingredient_id
+      LEFT JOIN openclaw.products p
+        ON LOWER(TRIM(p.name)) = LOWER(TRIM(nm.raw_name))
+       AND p.is_food = true
+      LEFT JOIN openclaw.store_products sp
+        ON sp.product_id = p.id
+       AND sp.price_cents > 0
+      LEFT JOIN openclaw.stores s
+        ON s.id = sp.store_id
+       AND s.is_active = true
+      LEFT JOIN openclaw.chains c
+        ON c.id = s.chain_id
+      LEFT JOIN openclaw.product_categories pc
+        ON pc.id = p.category_id
+      WHERE ci.ingredient_id = ${ingredientId}
+    )
+    SELECT
+      store_name,
+      store_city,
+      store_state,
+      store_website,
+      price_cents,
+      price_unit,
+      price_type,
+      source,
+      in_stock,
+      source_url,
+      image_url,
+      brand,
+      aisle_cat,
+      last_confirmed_at,
+      last_changed_at,
+      package_size
+    FROM matched
+    WHERE store_rank = 1
+      AND store_id IS NOT NULL
+    ORDER BY price_cents ASC NULLS LAST, store_name ASC
+  `) as CatalogPriceRow[]
+
+  const prices: CatalogDetailPrice[] = rows.map((row) => ({
+    store: row.store_name,
+    storeCity: row.store_city ?? null,
+    storeState: row.store_state ?? null,
+    storeWebsite: row.store_website ?? null,
+    priceCents: toNumber(row.price_cents),
+    priceUnit: normalizeUnit(row.price_unit),
+    priceType: row.price_type ?? 'retail',
+    pricingTier: row.price_type ?? 'retail',
+    confidence: confidenceFromSource(row.source),
+    inStock: Boolean(row.in_stock),
+    sourceUrl: row.source_url ?? null,
+    imageUrl: normalizeImage(row.image_url),
+    brand: row.brand ?? null,
+    aisleCat: row.aisle_cat ?? null,
+    lastConfirmedAt: toIso(row.last_confirmed_at) ?? new Date(0).toISOString(),
+    lastChangedAt:
+      toIso(row.last_changed_at) ?? toIso(row.last_confirmed_at) ?? new Date(0).toISOString(),
+    packageSize: row.package_size ?? null,
+  }))
+
+  const summary = {
+    storeCount: prices.length,
+    inStockCount: prices.filter((price) => price.inStock).length,
+    outOfStockCount: prices.filter((price) => !price.inStock).length,
+    cheapestCents: prices.length > 0 ? Math.min(...prices.map((price) => price.priceCents)) : null,
+    cheapestStore:
+      prices.length > 0
+        ? prices.reduce((best, current) => (current.priceCents < best.priceCents ? current : best))
+            .store
+        : null,
+    avgCents:
+      prices.length > 0
+        ? Math.round(
+            prices.reduce((sum, price) => sum + price.priceCents, 0) / Math.max(prices.length, 1)
+          )
+        : null,
+    hasSourceUrls: prices.some((price) => Boolean(price.sourceUrl || price.storeWebsite)),
+  }
+
+  const ingredient = ingredientRows[0]
+
+  return {
+    ingredient: {
+      id: ingredient.ingredient_id as string,
+      name: ingredient.name as string,
+      category: normalizeCategory(ingredient.category as string | null),
+      standardUnit: normalizeUnit(ingredient.standard_unit as string | null),
+    },
+    prices,
+    summary,
+  }
+}
+
+async function getCategoryCoverageInternal(): Promise<CategoryCoverage[]> {
+  const rows = await pgClient`
+    WITH priced AS (
+      SELECT DISTINCT ci.ingredient_id
+      FROM openclaw.canonical_ingredients ci
+      JOIN openclaw.normalization_map nm
+        ON nm.canonical_ingredient_id = ci.ingredient_id
+      JOIN openclaw.products p
+        ON LOWER(TRIM(p.name)) = LOWER(TRIM(nm.raw_name))
+       AND p.is_food = true
+      JOIN openclaw.store_products sp
+        ON sp.product_id = p.id
+       AND sp.price_cents > 0
+      JOIN openclaw.stores s
+        ON s.id = sp.store_id
+       AND s.is_active = true
+    )
+    SELECT
+      COALESCE(NULLIF(ci.category, ''), 'uncategorized') AS category,
+      COUNT(*)::int AS total,
+      COUNT(*) FILTER (WHERE ci.ingredient_id IN (SELECT ingredient_id FROM priced))::int AS priced
+    FROM openclaw.canonical_ingredients ci
+    GROUP BY 1
+    ORDER BY total DESC, category ASC
+  `
+
+  return (rows as any[]).map((row) => {
+    const total = toNumber(row.total)
+    const priced = toNumber(row.priced)
+    return {
+      category: normalizeCategory(row.category as string | null),
+      total,
+      priced,
+      coveragePct: total > 0 ? Math.round((priced / total) * 100) : 0,
+    }
+  })
+}
+
+async function getCatalogStoresInternal(): Promise<CatalogStore[]> {
+  const rows = await pgClient`
+    SELECT
+      s.id,
+      s.name,
+      s.city,
+      s.state,
+      s.store_type,
+      c.logo_url,
+      CASE
+        WHEN s.last_cataloged_at IS NULL THEN 'pending'
+        WHEN s.last_cataloged_at < now() - interval '14 days' THEN 'stale'
+        ELSE 'active'
+      END AS status
+    FROM openclaw.stores s
+    JOIN openclaw.chains c
+      ON c.id = s.chain_id
+    WHERE s.is_active = true
+    ORDER BY c.name ASC, s.name ASC
+  `
+
+  return (rows as any[]).map((row) => ({
+    id: row.id as string,
+    name: row.name as string,
+    tier: (row.store_type as string | null) ?? 'retail',
+    status: row.status as string,
+    logoUrl: row.logo_url ?? null,
+    storeColor: null,
+    region: normalizeStoreRegion(row.city as string | null, row.state as string | null),
+    city: row.city ?? null,
+    state: row.state ?? null,
+  }))
+}
+
+function pickBestSearchMatch(searchTerm: string, items: CatalogItemV2[]): CatalogItemV2 | null {
+  if (items.length === 0) return null
+  const normalizedSearch = searchTerm.trim().toLowerCase()
+  return (
+    items.find((item) => item.name.trim().toLowerCase() === normalizedSearch) ??
+    items.find((item) => item.name.trim().toLowerCase().startsWith(normalizedSearch)) ??
+    items[0]
+  )
+}
+
+// --- Actions ---
+
+export async function searchCatalog(params: {
+  search?: string
+  category?: string
+  store?: string
+  pricedOnly?: boolean
+  sort?: 'name' | 'price' | 'stores' | 'updated'
+  page?: number
+  limit?: number
+}): Promise<CatalogSearchResult> {
+  await requireChef()
+
+  const page = Math.max(params.page ?? 1, 1)
+  const limit = Math.min(Math.max(params.limit ?? 50, 1), 500)
+
+  const result = await queryCatalogRows({
+    search: params.search,
+    category: params.category,
+    store: params.store,
+    pricedOnly: params.pricedOnly,
+    sort: params.sort,
+    limit,
+    offset: (page - 1) * limit,
+  })
+
+  return {
+    items: result.rows.map(mapCatalogItem),
+    total: result.total,
+    categories: [],
+  }
+}
+
+export async function getCatalogStores(): Promise<CatalogStore[]> {
+  await requireChef()
+  return getCatalogStoresInternal()
+}
+
+export async function getCatalogStats(): Promise<CatalogStats> {
+  await requireChef()
+
+  const [totals, categories] = await Promise.all([
+    pgClient`
+      WITH priced AS (
+        SELECT DISTINCT ci.ingredient_id
+        FROM openclaw.canonical_ingredients ci
+        JOIN openclaw.normalization_map nm
+          ON nm.canonical_ingredient_id = ci.ingredient_id
+        JOIN openclaw.products p
+          ON LOWER(TRIM(p.name)) = LOWER(TRIM(nm.raw_name))
+         AND p.is_food = true
+        JOIN openclaw.store_products sp
+          ON sp.product_id = p.id
+         AND sp.price_cents > 0
+        JOIN openclaw.stores s
+          ON s.id = sp.store_id
+         AND s.is_active = true
+      )
+      SELECT
+        (SELECT COUNT(*)::int FROM openclaw.canonical_ingredients) AS total,
+        (SELECT COUNT(*)::int FROM priced) AS priced
+    `,
+    pgClient`
+      SELECT
+        COALESCE(NULLIF(category, ''), 'uncategorized') AS name,
+        COUNT(*)::int AS count
+      FROM openclaw.canonical_ingredients
+      GROUP BY 1
+      ORDER BY count DESC, name ASC
+    `,
+  ])
+
+  return {
+    total: toNumber((totals as any[])[0]?.total),
+    priced: toNumber((totals as any[])[0]?.priced),
+    categories: (categories as any[]).map((row) => ({
+      name: normalizeCategory(row.name as string | null),
+      count: toNumber(row.count),
+    })),
+  }
+}
+
+export async function getCatalogItemPrices(ingredientId: string): Promise<CatalogItemDetail[]> {
+  await requireChef()
+
+  const detail = await getCatalogDetailInternal(ingredientId)
+  if (!detail) return []
+
+  return detail.prices.map((price) => ({
+    store: price.store,
+    priceCents: price.priceCents,
+    unit: price.priceUnit,
+    tier: price.pricingTier,
+    confidence: price.confidence,
+    lastConfirmedAt: price.lastConfirmedAt,
+  }))
+}
 
 export async function searchCatalogV2(params: {
   search?: string
@@ -319,129 +810,44 @@ export async function searchCatalogV2(params: {
 }): Promise<{ items: CatalogItemV2[]; total: number; hasMore: boolean; nextCursor?: string }> {
   await requireChef()
 
-  const { search, category, store, pricedOnly, inStockOnly, tier, sort, limit = 50, after } = params
+  const offset = params.after ? Math.max(parseInt(params.after, 10) || 0, 0) : 0
+  const result = await queryCatalogRows({
+    search: params.search,
+    category: params.category,
+    store: params.store,
+    pricedOnly: params.pricedOnly,
+    inStockOnly: params.inStockOnly,
+    tier: params.tier,
+    sort: params.sort,
+    limit: params.limit,
+    offset,
+  })
 
-  try {
-    const searchParams = new URLSearchParams()
-    if (search) searchParams.set('search', search)
-    if (category) searchParams.set('category', category)
-    if (store) searchParams.set('store', store)
-    if (pricedOnly) searchParams.set('priced_only', '1')
-    if (inStockOnly) searchParams.set('in_stock_only', '1')
-    if (tier) searchParams.set('tier', tier)
-    if (sort) searchParams.set('sort', sort)
-    searchParams.set('limit', String(limit))
-    if (after) searchParams.set('after', after)
-
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
-
-    const res = await fetch(`${OPENCLAW_API}/api/ingredients?${searchParams}`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-
-    if (!res.ok) {
-      console.warn(`[catalog-v2] Search returned ${res.status}`)
-      return { items: [], total: 0, hasMore: false }
-    }
-
-    const data = await res.json()
-
-    const items: CatalogItemV2[] = (data.ingredients || data.items || []).map((item: any) => ({
-      id: String(item.ingredient_id || item.id),
-      name: item.name || '',
-      category: item.category || 'uncategorized',
-      standardUnit: item.standard_unit || item.unit || '',
-      bestPriceCents: item.best_price_cents ?? item.price_cents ?? null,
-      bestPriceStore: item.best_price_store ?? item.store ?? null,
-      bestPriceUnit: item.best_price_unit ?? item.unit ?? null,
-      imageUrl: item.image_url ?? null,
-      brand: item.brand ?? null,
-      priceCount: item.price_count ?? item.store_count ?? 0,
-      inStockCount: item.in_stock_count ?? 0,
-      outOfStockCount: item.out_of_stock_count ?? 0,
-      hasSourceUrl: item.has_source_url ?? false,
-      lastUpdated: item.last_updated ?? item.last_confirmed_at ?? null,
-    }))
-
-    return {
-      items,
-      total: data.total ?? data.count ?? items.length,
-      hasMore: data.has_more ?? data.hasMore ?? false,
-      nextCursor: data.next_cursor ?? data.nextCursor ?? undefined,
-    }
-  } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      console.warn('[catalog-v2] Search timed out')
-    } else {
-      console.warn(`[catalog-v2] Search error: ${err instanceof Error ? err.message : 'unknown'}`)
-    }
-    return { items: [], total: 0, hasMore: false }
+  return {
+    items: result.rows.map(mapCatalogItemV2),
+    total: result.total,
+    hasMore: result.hasMore,
+    nextCursor: result.nextCursor,
   }
 }
 
 export async function getCatalogDetail(ingredientId: string): Promise<CatalogDetailResult | null> {
   await requireChef()
-
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
-
-    const res = await fetch(`${OPENCLAW_API}/api/ingredients/detail/${ingredientId}`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-
-    if (!res.ok) {
-      console.warn(`[catalog-v2] Detail returned ${res.status}`)
-      return null
-    }
-
-    const data = await res.json()
-    return data as CatalogDetailResult
-  } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      console.warn('[catalog-v2] Detail timed out')
-    } else {
-      console.warn(`[catalog-v2] Detail error: ${err instanceof Error ? err.message : 'unknown'}`)
-    }
-    return null
-  }
+  return getCatalogDetailInternal(ingredientId)
 }
 
 export async function getCatalogCategories(): Promise<string[]> {
   await requireChef()
 
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
+  const rows = await pgClient`
+    SELECT DISTINCT COALESCE(NULLIF(category, ''), 'uncategorized') AS category
+    FROM openclaw.canonical_ingredients
+    ORDER BY category ASC
+  `
 
-    const res = await fetch(`${OPENCLAW_API}/api/categories`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-
-    if (!res.ok) {
-      console.warn(`[catalog-v2] Categories returned ${res.status}`)
-      return []
-    }
-
-    const data = await res.json()
-    return (data.categories || data || []) as string[]
-  } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      console.warn('[catalog-v2] Categories timed out')
-    } else {
-      console.warn(
-        `[catalog-v2] Categories error: ${err instanceof Error ? err.message : 'unknown'}`
-      )
-    }
-    return []
-  }
+  return (rows as any[])
+    .map((row) => normalizeCategory(row.category as string | null))
+    .filter((category, index, all) => all.indexOf(category) === index)
 }
 
 export async function addCatalogIngredientToLibrary(input: {
@@ -455,7 +861,6 @@ export async function addCatalogIngredientToLibrary(input: {
   const tenantId = user.tenantId!
 
   try {
-    // Check for existing ingredient by case-insensitive name match
     const existing = await db
       .select({ id: ingredients.id })
       .from(ingredients)
@@ -502,90 +907,22 @@ export async function searchCatalogForExport(params: {
 }): Promise<CatalogItem[]> {
   await requireChef()
 
-  const { search, category, store, pricedOnly, sort } = params
+  const result = await queryCatalogRows({
+    search: params.search,
+    category: params.category,
+    store: params.store,
+    pricedOnly: params.pricedOnly,
+    sort: params.sort,
+    limit: 10000,
+    offset: 0,
+  })
 
-  try {
-    const searchParams = new URLSearchParams()
-    if (search) searchParams.set('search', search)
-    if (category) searchParams.set('category', category)
-    if (store) searchParams.set('store', store)
-    if (pricedOnly) searchParams.set('priced_only', '1')
-    if (sort) searchParams.set('sort', sort)
-    searchParams.set('limit', '10000')
-
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
-
-    const res = await fetch(`${OPENCLAW_API}/api/ingredients?${searchParams}`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-
-    if (!res.ok) {
-      console.warn(`[catalog-export] Search returned ${res.status}`)
-      return []
-    }
-
-    const data = await res.json()
-
-    return (data.ingredients || data.items || []).map((item: any) => ({
-      id: String(item.ingredient_id || item.id),
-      name: item.name || '',
-      category: item.category || 'uncategorized',
-      bestPriceCents: item.best_price_cents ?? item.price_cents ?? null,
-      bestPriceStore: item.best_price_store ?? item.store ?? null,
-      bestPriceUnit: item.best_price_unit ?? item.unit ?? null,
-      priceCount: item.price_count ?? item.store_count ?? 0,
-      lastUpdated: item.last_updated ?? item.last_confirmed_at ?? null,
-      trendPct: item.recent_change_pct ?? null,
-    }))
-  } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      console.warn('[catalog-export] Search timed out')
-    } else {
-      console.warn(
-        `[catalog-export] Search error: ${err instanceof Error ? err.message : 'unknown'}`
-      )
-    }
-    return []
-  }
+  return result.rows.map(mapCatalogItem)
 }
 
 export async function getCategoryCoverage(): Promise<CategoryCoverage[]> {
   await requireChef()
-
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
-
-    const res = await fetch(`${OPENCLAW_API}/api/stats/category-coverage`, {
-      signal: controller.signal,
-      cache: 'no-store',
-    })
-    clearTimeout(timeout)
-
-    if (!res.ok) {
-      console.warn(`[catalog-coverage] Returned ${res.status}`)
-      return []
-    }
-
-    const data = await res.json()
-
-    return (data.categories || data || []).map((c: any) => ({
-      category: c.category || 'unknown',
-      total: c.total ?? 0,
-      priced: c.priced ?? 0,
-      coveragePct: c.total > 0 ? Math.round((c.priced / c.total) * 100) : 0,
-    }))
-  } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      console.warn('[catalog-coverage] Timed out')
-    } else {
-      console.warn(`[catalog-coverage] Error: ${err instanceof Error ? err.message : 'unknown'}`)
-    }
-    return []
-  }
+  return getCategoryCoverageInternal()
 }
 
 export async function getShoppingOptimizationAdmin(
@@ -593,32 +930,102 @@ export async function getShoppingOptimizationAdmin(
 ): Promise<ShoppingOptResult | null> {
   await requireAdmin()
 
-  try {
-    const controller = new AbortController()
-    const timeout = setTimeout(() => controller.abort(), 30000)
+  const trimmedItems = items
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 200)
+  if (trimmedItems.length === 0) return null
 
-    const res = await fetch(`${OPENCLAW_API}/api/optimize/shopping-list`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ items }),
-      signal: controller.signal,
-      cache: 'no-store',
+  const optimalItems: { name: string; priceCents: number; store: string }[] = []
+  let found = 0
+  let notFound = 0
+  let processed = 0
+
+  const singleStoreMap = new Map<
+    string,
+    { totalCents: number; available: number; missing: number }
+  >()
+
+  for (const itemName of trimmedItems) {
+    processed += 1
+
+    const searchResult = await queryCatalogRows({
+      search: itemName,
+      pricedOnly: true,
+      sort: 'price',
+      limit: 5,
+      offset: 0,
     })
-    clearTimeout(timeout)
+    const match = pickBestSearchMatch(itemName, searchResult.rows.map(mapCatalogItemV2))
 
-    if (!res.ok) {
-      console.warn(`[shopping-opt] Returned ${res.status}`)
-      return null
+    if (!match || match.bestPriceCents == null) {
+      notFound += 1
+      for (const entry of singleStoreMap.values()) {
+        entry.missing += 1
+      }
+      continue
     }
 
-    const data = await res.json()
-    return data as ShoppingOptResult
-  } catch (err) {
-    if (err instanceof DOMException && err.name === 'AbortError') {
-      console.warn('[shopping-opt] Timed out')
-    } else {
-      console.warn(`[shopping-opt] Error: ${err instanceof Error ? err.message : 'unknown'}`)
+    found += 1
+    optimalItems.push({
+      name: itemName,
+      priceCents: match.bestPriceCents,
+      store: match.bestPriceStore ?? 'Unknown',
+    })
+
+    const detail = await getCatalogDetailInternal(match.id)
+    const prices = detail?.prices ?? []
+    const presentStores = new Set(prices.map((price) => price.store))
+
+    for (const [store, entry] of singleStoreMap.entries()) {
+      if (!presentStores.has(store)) {
+        entry.missing += 1
+      }
     }
-    return null
+
+    for (const price of prices) {
+      let entry = singleStoreMap.get(price.store)
+      if (!entry) {
+        entry = { totalCents: 0, available: 0, missing: processed - 1 }
+        singleStoreMap.set(price.store, entry)
+      }
+
+      if (price.inStock) {
+        entry.totalCents += price.priceCents
+        entry.available += 1
+      } else {
+        entry.missing += 1
+      }
+    }
+  }
+
+  const optimalTotalCents = optimalItems.reduce((sum, item) => sum + item.priceCents, 0)
+  const singleStoreRanking = [...singleStoreMap.entries()]
+    .map(([store, value]) => ({
+      store,
+      totalCents: value.totalCents,
+      totalDisplay: `$${(value.totalCents / 100).toFixed(2)}`,
+      available: value.available,
+      missing: value.missing,
+    }))
+    .sort((a, b) => {
+      if (a.missing !== b.missing) return a.missing - b.missing
+      return a.totalCents - b.totalCents
+    })
+
+  const bestSingleStore = singleStoreRanking[0]?.totalCents ?? optimalTotalCents
+
+  return {
+    itemCount: trimmedItems.length,
+    found,
+    notFound,
+    optimal: {
+      totalCents: optimalTotalCents,
+      totalDisplay: `$${(optimalTotalCents / 100).toFixed(2)}`,
+      missing: notFound,
+      items: optimalItems,
+      savings: Math.max(0, bestSingleStore - optimalTotalCents),
+    },
+    singleStoreRanking,
   }
 }

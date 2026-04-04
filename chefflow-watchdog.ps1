@@ -160,6 +160,60 @@ function Test-PortInUse {
     return ($null -ne $listener)
 }
 
+function Get-PortOwners {
+    param($p)
+
+    $pids = @(Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue |
+        Select-Object -ExpandProperty OwningProcess -Unique)
+
+    if ($pids.Count -eq 0) {
+        return @()
+    }
+
+    return @(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object { $pids -contains $_.ProcessId } |
+        Select-Object ProcessId, Name, CommandLine)
+}
+
+function Test-PortOwnedByProject {
+    param($p)
+
+    $owners = Get-PortOwners $p
+    if ($owners.Count -eq 0) {
+        return $false
+    }
+
+    $projectMarker = $projectDir.ToLower()
+
+    foreach ($owner in $owners) {
+        $commandLine = [string]$owner.CommandLine
+        if ([string]::IsNullOrWhiteSpace($commandLine) -or -not $commandLine.ToLower().Contains($projectMarker)) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function Stop-NonProjectPortOwners {
+    param($p)
+
+    $projectMarker = $projectDir.ToLower()
+    $owners = Get-PortOwners $p
+
+    foreach ($owner in $owners) {
+        $commandLine = [string]$owner.CommandLine
+        $displayCommand = if ([string]::IsNullOrWhiteSpace($commandLine)) { '<unknown>' } else { $commandLine }
+
+        if ([string]::IsNullOrWhiteSpace($commandLine) -or -not $commandLine.ToLower().Contains($projectMarker)) {
+            Write-Log "Port $p occupied by foreign process PID $($owner.ProcessId) [$($owner.Name)] $displayCommand -- terminating."
+            Stop-Process -Id $owner.ProcessId -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    Start-Sleep -Seconds 2
+}
+
 function Test-ServerHealthy {
     try {
         $response = Invoke-WebRequest -Uri "http://localhost:$port/" `
@@ -191,13 +245,24 @@ while ($true) {
         Ensure-MissionControlRunning
     }
 
-    # If port 3100 is already listening, don't spawn a duplicate -- just wait
+    # If port 3100 is already listening, verify ChefFlow owns it before yielding.
     if (Test-PortInUse $port) {
-        if ($loopCount -eq 1) {
-            Write-Log "Port $port already in use -- server is running externally. Watching."
+        if (Test-PortOwnedByProject $port) {
+            if ($loopCount -eq 1) {
+                Write-Log "Port $port already in use by ChefFlow -- watching."
+            }
+            Start-Sleep -Seconds 30
+            continue
         }
-        Start-Sleep -Seconds 30
-        continue
+
+        Write-Log "Port $port occupied by non-ChefFlow process. Reclaiming before launch."
+        Stop-NonProjectPortOwners $port
+
+        if (Test-PortInUse $port) {
+            Write-Log "Port $port is still occupied after reclamation attempt. Waiting."
+            Start-Sleep -Seconds 30
+            continue
+        }
     }
 
     Write-Log "Launching dev server on port $port..."

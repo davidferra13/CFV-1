@@ -15,5 +15,11 @@ export default {
       'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
   },
   tempDir: 'C:/Users/david/Documents/CFv1/.openclaw-temp',
+  backupDir: 'C:/Users/david/Documents/CFv1/data/openclaw-backups',
+  backups: {
+    latestFile: 'openclaw-latest.db',
+    snapshotPrefix: 'openclaw-',
+    maxSnapshots: 168,
+  },
   logFile: 'C:/Users/david/Documents/CFv1/logs/openclaw-pull.log',
 }

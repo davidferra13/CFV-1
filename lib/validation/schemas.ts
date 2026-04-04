@@ -51,12 +51,31 @@ export type EventStatus = z.infer<typeof EventStatusSchema>
 export const TransitionActorSchema = z.enum(['chef', 'client', 'system'])
 export type TransitionActor = z.infer<typeof TransitionActorSchema>
 
+export const TransitionActorContextSchema = z
+  .object({
+    id: UuidSchema.nullable().optional(),
+    role: TransitionActorSchema,
+    entityId: UuidSchema.nullable().optional(),
+    tenantId: UuidSchema.nullable().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if ((value.role === 'chef' || value.role === 'client') && !value.entityId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${value.role} actor context requires an entityId`,
+        path: ['entityId'],
+      })
+    }
+  })
+export type TransitionActorContext = z.infer<typeof TransitionActorContextSchema>
+
 /** Input schema for transitionEvent() */
 export const TransitionEventInputSchema = z.object({
   eventId: UuidSchema,
   toStatus: EventStatusSchema,
   metadata: z.record(z.string(), z.unknown()).optional().default({}),
   systemTransition: z.boolean().optional().default(false),
+  actorContext: TransitionActorContextSchema.optional(),
 })
 export type TransitionEventInput = z.infer<typeof TransitionEventInputSchema>
 

@@ -670,6 +670,7 @@ export async function rescheduleEvent(
     console.error('[rescheduleEvent] Prep block cleanup failed (non-blocking):', prepErr)
   }
 
+  revalidatePath('/calendar')
   revalidatePath('/schedule')
   revalidatePath('/events')
   revalidatePath(`/events/${eventId}`)

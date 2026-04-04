@@ -13,7 +13,7 @@
  * Or via Windows Scheduled Task (hourly).
  */
 
-import { writeFileSync, mkdirSync, statSync } from 'fs'
+import { mkdirSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'fs'
 import config from './config.mjs'
 
 let Database
@@ -31,6 +31,41 @@ import postgres from 'postgres'
 const BATCH_SIZE = 500
 
 const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`)
+
+function timestampForFilename(date) {
+  return date.toISOString().replace(/[:.]/g, '-')
+}
+
+function persistLocalMirror(buffer, startedAt) {
+  mkdirSync(config.backupDir, { recursive: true })
+
+  const latestPath = `${config.backupDir}/${config.backups.latestFile}`
+  const snapshotPath = `${config.backupDir}/${config.backups.snapshotPrefix}${timestampForFilename(startedAt)}.db`
+
+  writeFileSync(latestPath, buffer)
+  writeFileSync(snapshotPath, buffer)
+
+  const snapshotFiles = readdirSync(config.backupDir)
+    .filter(
+      (name) =>
+        name.startsWith(config.backups.snapshotPrefix) &&
+        name.endsWith('.db') &&
+        name !== config.backups.latestFile
+    )
+    .sort()
+
+  const overflow = snapshotFiles.length - config.backups.maxSnapshots
+  let pruned = 0
+
+  if (overflow > 0) {
+    for (const name of snapshotFiles.slice(0, overflow)) {
+      unlinkSync(`${config.backupDir}/${name}`)
+      pruned++
+    }
+  }
+
+  return { latestPath, snapshotPath, pruned }
+}
 
 // Maps current_prices.source_id prefixes/patterns to chain slugs.
 // Order matters: first match wins.
@@ -713,6 +748,25 @@ async function main() {
   if (errorDetails.length > 0) {
     log(`  First errors:`)
     errorDetails.slice(0, 5).forEach((e) => log(`    ${e}`))
+  }
+
+  // Post-sync validation: compare source vs destination counts
+  log(`\n  Post-sync validation:`)
+  const srcStores = sqlite.prepare('SELECT COUNT(*) as cnt FROM catalog_stores').get().cnt
+  const srcProducts = sqlite.prepare('SELECT COUNT(*) as cnt FROM catalog_products').get().cnt
+  const [dstStores] = await sql`SELECT COUNT(*) as cnt FROM openclaw.stores`
+  const [dstProducts] = await sql`SELECT COUNT(*) as cnt FROM openclaw.products`
+
+  const storeDelta = Math.abs(srcStores - Number(dstStores.cnt))
+  const productDelta = Math.abs(srcProducts - Number(dstProducts.cnt))
+
+  log(`    Stores:   SQLite=${srcStores} PG=${dstStores.cnt} delta=${storeDelta}`)
+  log(`    Products: SQLite=${srcProducts} PG=${dstProducts.cnt} delta=${productDelta}`)
+
+  if (storeDelta > 10 || productDelta > 1000) {
+    log(`    WARNING: Large count divergence detected. Investigate sync integrity.`)
+  } else {
+    log(`    OK: Counts within expected tolerance.`)
   }
 
   await sql.end()

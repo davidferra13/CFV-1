@@ -1,5 +1,5 @@
-// Hero Metrics Row - 4 always-visible stats at the top of the dashboard
-// These are the numbers a chef checks 10x/day. Never collapsible.
+// Hero Metrics Row - 2 primary metrics plus 2 supporting stats
+// Keep the hero tier decision-focused while preserving useful context below it.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
@@ -11,6 +11,7 @@ type HeroMetric = {
   href: string
   trend?: string
   trendUp?: boolean
+  tier: 'hero' | 'supporting'
 }
 
 async function getHeroMetrics(): Promise<HeroMetric[]> {
@@ -19,7 +20,6 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
   const tenantId = user.tenantId!
 
   const now = new Date()
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
   const today = now.toISOString().split('T')[0]
   const weekEnd = new Date(now.getTime() + 7 * 86400000).toISOString().split('T')[0]
 
@@ -89,14 +89,10 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
 
   return [
     {
-      label: 'Revenue (all time)',
-      value: `$${(revenueCents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-      href: '/financials',
-    },
-    {
       label: 'Events this week',
       value: String(eventsCount),
       href: '/schedule',
+      tier: 'hero',
     },
     {
       label: isSurge ? 'Open inquiries (surge)' : 'Open inquiries',
@@ -104,6 +100,13 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
       href: '/inquiries',
       trend: inquiryTrend,
       trendUp: newThisWeek >= 5,
+      tier: 'hero',
+    },
+    {
+      label: 'Revenue (all time)',
+      value: `$${(revenueCents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+      href: '/financials',
+      tier: 'supporting',
     },
     {
       label: 'Outstanding',
@@ -112,6 +115,7 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
           ? `$${(outstandingCents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
           : '$0',
       href: '/finance/payments',
+      tier: 'supporting',
     },
   ]
 }
