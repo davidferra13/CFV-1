@@ -1,237 +1,244 @@
-# Research: Employees / Contractors / Admin / Manager Workflow Reality
+# Research: Back Office / Scheduling / Procurement / Supplier Workflow Reality
 
 > **Date:** 2026-04-04
-> **Question:** How do the non-chef people in a catering operation actually work, and what does ChefFlow need to support them?
+> **Question:** How do the operational back-office functions of a catering business actually work?
 > **Status:** complete
 
 ---
 
 ## Origin Context
 
-ChefFlow currently treats "staff" as a roster attached to events. This research examines the full reality of how contracted kitchen staff, admins, and catering managers operate day-to-day, to identify where ChefFlow's staff module matches real workflows and where it falls short.
+This report covers the back-office operational layer of catering and private chef businesses: scheduling, procurement, and supplier relationships. In a small operation (1-3 person team, which describes most ChefFlow users), these roles collapse into the same person as the chef. This is a deeper-focus follow-up to the April 3 multi-persona workflows report, with primary emphasis on the scheduling and sourcing workflows rather than the HR/compliance layer.
 
 ---
 
 ## Summary
 
-A private chef business typically runs with two to eight people in rotation: the lead chef, one to three kitchen or service staff hired per event (almost always 1099 contractors), and, in larger operations, a booking admin who handles calendar, invoices, and communications. Full-time W-2 staff are rare below the $500K/year revenue mark. The operational pain is concentrated at three moments: before the event (getting the right people confirmed and briefed), during the event (role clarity and real-time adjustments), and after (logging hours and calculating pay for taxes).
+Scheduling and procurement in small catering operations are almost entirely manual and relationship-driven. Event calendars live in Google Calendar or a whiteboard. Staff scheduling is done by text message. Grocery orders are placed the day before an event or the morning of. Vendor relationships are personal, not transactional. Purchase orders do not exist for most operators at this scale. The back-office system is the chef phone contacts and muscle memory. Breakpoints are predictable: last-minute cancellations, substitution decisions under time pressure, and the gap between what a recipe requires and what was actually available at the store.
 
 ---
 
-## Employee / Contractor Reality
+## Scheduling Reality
 
-### How Contracted Staff Receive Work Assignments
+### How the event calendar is built
 
-In the private chef and boutique catering world, most staff coordination still happens through:
+Small caterers and private chefs do not use dedicated scheduling software. The workflow is:
 
-1. **Text message or group chat (iMessage, WhatsApp)** for small operations. A chef texts "Are you available Saturday the 12th? Dinner for 8, 6 PM. $X." The reply is a thumbs-up or a conflict explanation.
-2. **Shift-invitation apps (Workstaff, Quickstaff, When I Work)** for medium operations. Staff get email or push notifications, accept/decline in-app, and manager sees real-time roster fill.
-3. **Verbal + printed run sheet** for day-of coordination.
+1. Inquiry comes in via text, phone, or DM.
+2. Chef checks their personal Google Calendar or a hand-written wall calendar to see if the date is free.
+3. Date is blocked once a deposit clears or a verbal commitment is made.
+4. Events are typically booked 2-8 weeks in advance for private chef work; larger catering jobs book 3-6 months out.
 
-The transition from group text to a platform tool typically happens when a chef has six or more recurring contractors and starts losing track of who confirmed what. Below that threshold, the overhead of a platform often outweighs the benefit.
+Dedicated catering platforms (BetterCater, Caterease, Total Party Planner, Planning Pod) exist and cover scheduling, but adoption among independent operators is low. These tools are aimed at catering departments within venues or mid-size companies with dedicated coordinators. A solo private chef does not use them.
 
-### What Staff Actually Need Before an Event
+### Staff scheduling process
 
-Industry standard event briefings cover seven categories:
+Staff is scheduled 1-3 weeks in advance for known events:
 
-| Category      | Contents                                                                                                      |
-| ------------- | ------------------------------------------------------------------------------------------------------------- |
-| Call time     | Specific arrival time, not serve time. Industry practice: staff arrive 90-120 minutes before first course     |
-| Location      | Full address, parking instructions, staff entrance (separate from client entrance in many residential events) |
-| Dress code    | Color, style (black and white is most common), shoe type (non-slip), hair requirements                        |
-| Menu          | Full dish list with course order, plating description, key dietary flags                                      |
-| Guest notes   | Guest count, VIPs, known allergies, client preferences (e.g., "client prefers quiet service, no small talk")  |
-| Role clarity  | Who does what (server vs. runner vs. bartender), who is point of contact, escalation path                     |
-| Kitchen notes | Oven access, refrigerator space, plating surfaces, parking for a van if shopping                              |
+1. Chef reviews upcoming events and estimates staffing needs (1-4 people for a private dinner; roughly 1 server per 10-15 guests).
+2. Chef texts or calls their regular pool of freelance helpers (servers, sous chefs, assistants).
+3. Availability is confirmed verbally or by text. No formal scheduling system.
+4. Role assignments are informal.
 
-The briefing does not need to be long. Industry practitioners note that a 10-minute pre-event rundown prevents hours of confusion. The document form of this is the "event run sheet" or "call sheet."
+Shift management apps (When I Work, Agendrix, Quickstaff) are adopted at the 5+ employee level, not the solo-operator level. The marketing claim of reducing scheduling time from 15-20 hours to 20 minutes reflects a restaurant or catering company problem, not a private chef problem.
 
-### W-2 vs. 1099: What Actually Happens
+### When a staff member cancels 24 hours out
 
-**Private chef operations almost universally use 1099 contractors** for kitchen and service staff. The practical reasons:
+This is one of the most acute pain points in the persona. The real workflow:
 
-- Work is episodic (one to four events per month per person), not continuous
-- Staff often work for multiple chefs simultaneously
-- Chefs cannot afford payroll taxes on staff who work four Saturdays a year
+1. Chef finds out by text, usually the night before or morning of.
+2. Chef burns through their personal contacts list in priority order.
+3. If the regular pool is exhausted, chef calls on-demand staffing apps (Instawork, Upshift, Bacon Work) which maintain pools of vetted event workers. Upshift maintains a sub-2% no-show rate; Bacon Work sends a pre-briefed backup for every shift.
+4. Industry standard: plan for 10-15% no-shows and keep 1-2 backup staff on standby call for larger events. For small private dinners (6-12 guests), the chef typically absorbs the missing person and adjusts service style (plated becomes family-style, for example).
+5. Client is rarely told unless it affects the experience. The chef solves it silently.
 
-**The legal reality creates significant risk.** The IRS and DOL use a behavioral control test: if you dictate when, how, and where a worker performs tasks, they are likely an employee regardless of how you label them. For catering:
+### Run-of-show / event timeline documents
 
-- Telling a server exactly how to plate each dish = behavioral control = W-2 territory
-- Hiring a server to "provide silver service for a 3-hour dinner" = contractor
-- The distinction is blurry and often violated unknowingly
+The Banquet Event Order (BEO) is the formal industry document. A complete BEO includes:
 
-**The $600 threshold for 1099-NEC filing** is well-known in the industry. Contractors paid less than $600/year in total across all events do not require a 1099 form, but many chefs still collect W-9s from everyone as a best practice.
+- Event date, time, venue, client contact
+- Guest count (guaranteed vs. estimated)
+- Menu in service order with dietary callouts
+- Timeline (arrival, setup, first course, breaks, dessert, cleanup)
+- Room setup diagram
+- Staffing requirements and assignments
+- Vendor delivery schedule
+- Terms and signatures
 
-**W-9 collection and file management is a consistent pain point.** Chefs collect paper W-9s, lose them, re-request them, or forget entirely until January when 1099s are due.
+For private chefs working alone or with 1-2 assistants, the BEO equivalent is an informal Day-of-Plan document or a printed list. It often exists primarily in their head. Distribution is informal: briefed verbally, texted to staff, or shared as a PDF via WhatsApp.
 
-### Hour Logging and Availability
-
-- Most contracted staff do not have a formal way to log hours. Hours are typically agreed in advance ("You're scheduled for 6 hours") and paid flat unless overtime is verbally negotiated.
-- Clock-in/clock-out is unusual for independent contractors in private chef work. It is more common in catering companies that process payroll.
-- **Availability submission** is the biggest coordination friction. Chefs have to manually check who is available for each date. Tools that let contractors mark their own availability grids dramatically reduce this back-and-forth.
-
----
-
-## Admin Reality
-
-### What "Admin" Means in a Small Operation
-
-In a solo or small private chef business, the lead chef is also the admin. In a two-to-three person operation, one person (often a partner, part-time assistant, or VA) takes on:
-
-- **Inquiry triage:** reading new inquiries, logging details, sending initial responses
-- **Quote and invoice management:** creating and sending quotes, following up on unpaid invoices, logging payments received
-- **Calendar coordination:** blocking dates, confirming staff, avoiding double-booking
-- **Procurement admin:** sending vendor orders, logging receipts, reconciling food cost invoices
-- **Client record maintenance:** updating allergy notes, past event history, preference files
-
-Industry data suggests small catering operations spend up to 15 hours per week on admin tasks that could be partially automated. The highest-cost admin errors are:
-
-| Error                       | Real-world consequence                                                             |
-| --------------------------- | ---------------------------------------------------------------------------------- |
-| Double-booking a date       | Chef commits to two events, must cancel one, risks reputation and may owe a refund |
-| Wrong address sent to staff | Staff arrives at wrong location, event starts late or fails                        |
-| Missed invoice follow-up    | Client pays 60+ days late or disputes amount                                       |
-| Unpaid invoice not flagged  | Chef discovers $2,000 outstanding three months later at tax time                   |
-| Lost W-9                    | Cannot file 1099 in January, may face IRS penalty                                  |
-
-### Time Distribution Weekly (estimated, solo operator)
-
-Based on catering coordinator job descriptions and industry sources:
-
-- Inquiry response and client communication: 3-5 hours
-- Quote and contract work: 2-3 hours
-- Scheduling and staff coordination: 2-3 hours
-- Financial admin (invoices, expenses, reconciliation): 3-4 hours
-- Vendor ordering and receipt logging: 1-2 hours
-- Miscellaneous (travel planning, supply orders, misc client requests): 1-2 hours
-
-Total: 12-19 hours per week on admin for a chef doing 6-10 events per month.
+Catering software platforms auto-generate BEO documents. ChefFlow generates an equivalent via the Day-of-Plan (DOP) at `/events/[id]/schedule`.
 
 ---
 
-## Manager Reality
+## Procurement Reality
 
-### Catering Manager Coordination (Multi-Event / Larger Operations)
+### How a private chef actually sources ingredients
 
-In operations running multiple simultaneous events (rare for a solo private chef, but common as the business scales to a team), a catering manager:
+The procurement cycle for a private event runs roughly like this:
 
-- Builds and owns the event run sheet (timeline with 15-minute buffer blocks between major transitions)
-- Runs the pre-event staff briefing (verbal, 10-15 minutes before arrival)
-- Manages real-time staffing adjustments during the event (pulling a server from setup to cocktail if guest flow exceeds forecast)
-- Is the single point of contact for the venue, the client, and the kitchen
-- Handles visible problems immediately (spilled drinks, line too long, food quality issue) because speed of response signals operational competence to the client
+1. Menu is finalized (1-3 days before the event for private work; 1-2 weeks for larger catering jobs).
+2. Shopping list is built from the menu, grouped by store or source.
+3. Specialty items are ordered first. Anything requiring lead time (specialty cuts, imported ingredients, specific fish) is ordered 48-72 hours ahead. Trusted butchers, fishmongers, and specialty importers are called directly.
+4. Commodity items are purchased 1-2 days before or the morning of. Pantry staples (oils, vinegars, spices) are assumed on hand.
+5. Day-of shopping is common for proteins and fresh produce when the chef wants peak freshness.
 
-**The escalation structure** that works in catering operations:
+### Do small caterers use purchase orders?
 
-- Front-line staff solve simple issues independently
-- Mid-level issues go to the service captain or lead server
-- Critical issues reach the chef/manager
+No. POs are a practice for institutions, corporate catering departments, and venues with formal procurement policies. A solo private chef or small caterer buys on a personal credit card, a business card, or cash. The purchase order is a mental note. Receipts are uploaded to an expense tracker after the fact.
 
-### Real-Time Communication During Events
+Credit terms (Net 30, Net 21) are available from broadline distributors like Sysco and US Foods, but require a commercial account and minimum order volumes. Established restaurants get these terms after 3-5 years. A private chef typically does not qualify or does not bother.
 
-This is a persistent industry problem. Tools used in the field:
+### Ordering lead time by source type
 
-- **Walkie-talkies / radio earpieces** in high-end or large events
-- **Group text threads** for smaller operations
-- **WhatsApp during event** (common in boutique catering)
-- No formalized in-platform solution is dominant at the small/medium level
+| Source                                     | Lead Time          | Notes                                                |
+| ------------------------------------------ | ------------------ | ---------------------------------------------------- |
+| Restaurant Depot / cash-and-carry          | Same day (walk in) | Free membership for food businesses                  |
+| Broadline distributor (Sysco, US Foods)    | 1-2 business days  | Delivery on scheduled route days; minimums apply     |
+| Specialty butcher / fishmonger             | 24-72 hours        | Phone order, pickup or delivery                      |
+| Local farm / CSA                           | 1-7 days           | Seasonal, limited selection                          |
+| Specialty importer                         | 3-14 days          | Rare items: saffron, aged cheeses, specific proteins |
+| Grocery store (Whole Foods, Stop and Shop) | Same day           | Walk-in or Instacart delivery (2-hour window)        |
+| Instacart / grocery delivery               | 1-2 hours          | Used for fill-ins; markup vs. in-store               |
 
-The biggest real-time failures: kitchen not knowing that the program is running 20 minutes long, which delays course pacing; server not knowing about a late-arriving VIP; staff unaware of a last-minute allergy disclosure.
+### Handling substitutions
+
+When an ingredient is unavailable, the decision tree is:
+
+1. Chef decides. Not the client. The menu is the chef professional judgment. They do not ask permission to substitute chicken stock for veal stock.
+2. Same-category sub preferred. A ribeye becomes a NY strip. Wild salmon becomes farmed. The quality adjustment (up or down) is noted internally.
+3. Client is told only when it matters. If the menu said dry-aged prime beef and the store was out, the client gets a note at service. For generic substitutions, silence is standard.
+4. Price adjustment is logged. If the sub cost more, the chef absorbs it or logs it as an expense variance. If it cost less, it improves margin.
+
+---
+
+## Supplier Relationship Reality
+
+### Who the actual suppliers are
+
+Private chefs and small caterers source from a layered stack:
+
+#### Tier 1: Everyday commodity sourcing (most purchases)
+
+- Restaurant Depot (cash-and-carry warehouse, free membership for food businesses, competitive pricing, bulk format)
+- Costco / BJ's Wholesale (staples, dairy, proteins in bulk)
+- Standard grocery chains (Whole Foods, Stop and Shop, Trader Joe's, Market Basket for New England)
+
+#### Tier 2: Quality-differentiated sourcing
+
+- Local specialty butchers and fishmongers (personal accounts, phone ordering)
+- Farmers markets (seasonal, relationship-based, no formal ordering)
+- Local farm CSA or direct farm relationships (vegetables, eggs, dairy)
+- Regional specialty distributors (artisan cheeses, charcuterie, specialty oils)
+
+#### Tier 3: Specialty and imported items
+
+- Specialty importers for global cuisine ingredients
+- Online specialty retailers (D'Artagnan for game meats, Regalis for truffles, etc.)
+
+#### Tier 4: Broadline distribution (if volume warrants)
+
+- Sysco, US Foods: primarily relevant for caterers doing 20+ events/month or volume catering
+
+Restaurant Depot vs. Sysco for small operators: Restaurant Depot beats Sysco on price for most commodity items and has no minimums. Sysco wins on product breadth (400K+ SKUs), delivery convenience, and account management for established operators. Common pattern: Restaurant Depot for bulk staples, specialty shops for differentiated items.
+
+### How supplier relationships actually work
+
+- They are personal. A trusted butcher picks up the phone. A trusted fish supplier will call when something exceptional arrives. The relationship is a competitive advantage.
+- Discovery happens via word of mouth: farmers markets, chef-to-chef referrals, Instagram, and food industry events.
+- Suppliers call chefs when interesting product arrives. A specialty importer will text a chef when hand-dived scallops come in. This is not a transaction; it is a curated relationship.
+- Reliability over price. Chefs consistently report that a supplier who answers the phone at 8am and solves problems is more valuable than one who is 10% cheaper but unreachable.
+- Credit terms. Small operators typically pay on delivery or on personal/business card. Net 30 terms from broadline distributors are available after establishing a 3-5 year track record. Most private chefs never reach this threshold.
+
+### How chefs discover new suppliers
+
+1. Other chefs (the primary vector)
+2. Farmers markets (direct relationship with growers)
+3. Purveyors who cold-call or approach at food events
+4. Food-industry social media (Instagram, LinkedIn for B2B)
+5. Distributor sales reps (Sysco/US Foods reps actively prospect restaurants and caterers)
 
 ---
 
 ## Breakpoints
 
-These are the moments where the current system breaks down for operators in this persona group:
+These are the places where the manual, relationship-based system breaks down:
 
-1. **Staff availability confirmation loop.** Chef texts five people, gets three yeses, two no responses, one maybe. No record anywhere.
-2. **Pre-event briefing delivery.** Briefing is in the chef's head or a notes doc. Staff might get a text the night before. Nothing is standardized or tracked.
-3. **No formal acknowledgment of briefing.** Staff receive info but there is no confirmation that they read it. Day-of surprises (wrong dress, didn't know about the nut allergy) trace back to this.
-4. **Hours-to-pay calculation is manual.** Chef knows the hours from memory or a text thread, then calculates pay manually, then Venmos or writes a check.
-5. **W-9 and 1099 workflow is almost entirely unmanaged.** Most small operators fall behind until January and scramble.
-6. **No "event packet" for staff.** Each event requires the chef to re-communicate the same categories of information in an ad-hoc way. There is no standard structure staff can expect.
-7. **No real-time coordination channel within the platform.** During an event, nothing connects the chef and staff digitally in a work context.
+| Breakpoint                            | What fails                                                      | Consequence                                                  |
+| ------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------ |
+| Staff cancels day-of                  | No backup system; personal contact list exhausted               | Chef works solo or simplifies service style                  |
+| Specialty ingredient unavailable      | No documented substitution policy; decision made under pressure | Quality variance, potential client disappointment            |
+| Ordering from memory                  | No consolidated shopping list across multiple upcoming events   | Duplicate purchases, missed items, wasted trips              |
+| Credit card as PO                     | Receipts lost or mixed with personal expenses                   | Food cost tracking inaccurate; tax prep is chaotic           |
+| Staff schedule in text messages       | No record, no accountability, no visibility                     | Double-bookings, miscommunication on arrival time and role   |
+| Vendor relationship in phone contacts | No notes on pricing history, preferences, or reliability        | Institutional knowledge lives in the chef head; not portable |
+| DOP exists only in the chef head      | No distribution to staff; no written timeline                   | Staff executing from verbal briefing; errors under pressure  |
 
 ---
 
 ## ChefFlow Match Analysis
 
-### What ChefFlow Already Has (Strong)
+### Strong coverage
 
-| Real-world need                         | ChefFlow coverage                                                                                                                                           |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Staff roster with roles and rates       | `/staff` with role labels, hourly rate, status (active/inactive)                                                                                            |
-| Per-staff portal login                  | "Create Login" flow on `/staff/[id]`, separate `(staff)` route group                                                                                        |
-| Staff can see their schedule            | `/staff-schedule` (read-only, upcoming and past)                                                                                                            |
-| Staff can see their tasks               | `/staff-tasks` with completion checkboxes and accountability logging                                                                                        |
-| Staff can see station recipes           | `/staff-recipes` (read-only)                                                                                                                                |
-| Availability grid (chef view)           | `/staff/availability` - 7-day grid, click to toggle                                                                                                         |
-| Staff scheduling (assignment to events) | `/staff/schedule` with StaffScheduler component                                                                                                             |
-| Clock in/out (chef-managed)             | `/staff/clock` with real-time elapsed time                                                                                                                  |
-| Time tracking (staff self-service)      | `/staff-time` in staff portal                                                                                                                               |
-| Performance tracking                    | `/staff/performance` with on-time rate, cancellations, avg rating                                                                                           |
-| Labor cost analytics                    | `/staff/labor` with revenue vs. labor cost chart                                                                                                            |
-| Onboarding checklist                    | W-9 collected, background check, food handler cert, NDA, COC - tracked per staff member                                                                     |
-| Contractor service agreements           | `contractor_service_agreements` table, tracked in staff detail                                                                                              |
-| 1099 tax report generation              | `generate1099Report()` in `lib/staff/tax-report-actions.ts`, respects $600 threshold                                                                        |
-| Staff briefing document                 | `generateStaffBriefing()` in `lib/staff/briefing-actions.ts` - compiles event date, arrival time, address, menu, dietary flags, kitchen notes, staff roster |
-| AI staff briefing (event detail)        | AI-generated briefing document accessible from event ops panel                                                                                              |
+| Real-world need                       | ChefFlow feature                                                                                           |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Event calendar with status visibility | `/calendar` (monthly, weekly, year views) + week strip dashboard widget                                    |
+| Day-of timeline / run-of-show         | DOP at `/events/[id]/schedule` with toggleable completions                                                 |
+| Staff roster and clock-in             | `/staff`, `/staff/schedule`, `/staff/clock`                                                                |
+| Shopping list from upcoming events    | Event Shopping Planner at `/culinary/costing` (aggregates ingredients from next N days, runs Pi optimizer) |
+| Multi-vendor price comparison         | `/events/[id]/grocery-quote` (USDA/Spoonacular/Kroger/MealMe + Instacart link)                             |
+| Ingredient substitution suggestions   | `lib/openclaw/substitute-mapper.ts` (same-category substitutes by price proximity, deterministic, no AI)   |
+| Vendor directory                      | `/culinary/vendors` and `/vendors` with invoice history                                                    |
+| Price intelligence                    | `/culinary/price-catalog` (32K+ ingredients, 27+ sources, price history)                                   |
+| Food cost tracking                    | `/food-cost` with invoice upload; `/inventory/food-cost` for theoretical vs. actual variance               |
+| Prep component management             | `/culinary/prep/shopping` (consolidated ingredient list by category), `/culinary/prep/timeline`            |
+| Kitchen Clipboard / station ops       | `/stations/clipboard`, `/stations/orders` (unified print-ready order sheet across all stations)            |
+| Packing checklist                     | `/events/[id]/pack` (5-section, printable PDF)                                                             |
+| Expense capture with receipt OCR      | `/events/[id]/receipts`, `/expenses` with receipt upload                                                   |
 
-### What ChefFlow Is Missing or Underdeveloped (Gaps)
+### Partial coverage
 
-| Real-world need                                   | ChefFlow gap                                                                                                                                                                                                  |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Staff shift invitation with accept/decline**    | Staff are assigned by the chef. There is no invite-and-confirm flow where the staff member accepts or declines a shift. Chef has no confirmation record.                                                      |
-| **Staff-side availability self-reporting**        | Staff portal (`/staff-dashboard`, `/staff-tasks`, `/staff-schedule`) has no availability submission. Only the chef can toggle availability on the `/staff/availability` grid.                                 |
-| **Briefing delivery and read acknowledgment**     | The briefing is generated but there is no send-to-staff mechanism, no delivery record, and no read confirmation.                                                                                              |
-| **Pre-event event packet / call sheet for staff** | Staff portal does not show an event briefing document or event-specific notes. Staff see assignments on `/staff-schedule` but only date, time, and hours - no address, dress code, menu, allergy notes.       |
-| **Real-time in-event communication**              | No in-platform messaging or broadcast channel between chef and staff during an event.                                                                                                                         |
-| **Staff-submitted hour logs**                     | Staff can clock in/out via `/staff-time` but the clock interface is tied to the `TimeTracker` component. It is unclear whether staff can log hours for events that have already passed (retroactive logging). |
-| **Pay stub / earnings view for staff**            | Staff portal has no earnings history or payment confirmation page. Staff cannot see what they were paid per event.                                                                                            |
-| **Staff-side W-9 submission**                     | W-9 status is tracked in the onboarding checklist, but there is no mechanism for staff to upload their own W-9 through the portal. Chef must mark it manually.                                                |
-| **Admin role / delegated access**                 | ChefFlow is chef-only or staff-only. There is no "admin" or "booking coordinator" account type that can manage inquiries, send quotes, and view financials without being the lead chef.                       |
-| **Contractor invoice submission**                 | No mechanism for contractors to submit their own invoices for shifts worked. This is a standard feature of platforms like Workstaff and Armada.                                                               |
-| **Multi-event manager view**                      | No "cross-event staff command" view showing which staff are assigned to which events across the week, with gaps visible at a glance for a manager overseeing multiple events.                                 |
+| Real-world need                      | Gap                                                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Staff availability tracking          | `/staff/availability` exists (7-day grid) but has no advance booking conflict detection          |
+| Staff cancellation / backup workflow | No backup pool, no on-call status, no replacement action                                         |
+| Vendor credit terms tracking         | `/vendors/[id]` has invoice log but no payment terms field (net-30 status, credit limit)         |
+| BEO distribution to staff            | DOP exists but no direct push to staff; staff portal exists at `/staff/[id]`                     |
+| Substitution notification to client  | Substitutions are logged in Event Ops tab but no client notification flow                        |
+| Consolidated ordering across events  | Event Shopping Planner aggregates ingredients; no send-to-vendor or formal order creation action |
+
+### Genuine gaps (not in the app)
+
+| Real-world need                              | Status                                                                                       |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| On-call backup staff pool                    | Not present. No way to flag a staff member as available on standby for a specific date.      |
+| Vendor ordering integration                  | No way to generate a vendor-specific order from ChefFlow and send it directly to a supplier. |
+| Purchase order / order confirmation workflow | No formal PO creation; relies on external channels (phone, email).                           |
+| Delivery window tracking                     | Vendor invoices are captured but not expected delivery windows.                              |
+| Staff briefing broadcast                     | Staff portal exists but no broadcast DOP to all assigned staff action.                       |
+| Substitution price variance auto-logging     | Substitutions are noted but price delta is not auto-captured as an expense variance.         |
 
 ---
 
 ## Gaps and Unknowns
 
-1. **How many ChefFlow users have more than three staff members?** The staff portal is relatively feature-complete, but if most solo chefs have zero or one assistant, the portal may be solving a problem that does not yet exist for most users.
-2. **Is staff portal actually used?** The portal requires creating a login per staff member and distributing credentials. Adoption friction at this step likely means most staff features are invisible to staff.
-3. **Does the briefing ever reach staff?** The `generateStaffBriefing()` action produces structured data. How does the chef actually get it to staff? There is no send button, no email, no share link. It may exist only as a printable document or on-screen view.
-4. **W-2 compliance risk:** ChefFlow's framing treats all staff as contractors (W-9 collection, 1099 report). This is probably accurate for the target user base, but ChefFlow does not surface any guidance around misclassification risk, which is a real legal exposure for catering businesses.
+- No primary-source data from ChefFlow actual users on their specific procurement workflows. Elena (grazebyElena) grazing board model likely differs meaningfully from private dinner chef patterns.
+- Sysco/US Foods adoption among the target user base is unknown. If users are doing volume (20+ events/month), broadline distributor workflows become relevant.
+- Whether ChefFlow users want a digital BEO distribution tool or prefer the current informal model is unvalidated.
+- Staff backup pool demand is unvalidated. Most private chefs at the solo or 2-3 person scale absorb cancellations rather than systematize against them.
 
 ---
 
 ## Recommendations
 
-These are ranked by leverage against the breakpoints identified above.
+These are observations for product consideration, not implementation directives. All require validation before building.
 
-**Priority 1 - Staff event packet in portal** (highest leverage, low complexity)
+1. **Staff on-call status flag.** A simple toggle on `/staff/availability` to mark a person as available on call for a specific date would address the backup staff gap without building a full agency integration. Minimal surface change; the availability grid already exists.
 
-Staff currently see an assignment on `/staff-schedule` with a date, time, and hour count. They need: address, call time (arrival time, not serve time), dress code, their specific role, menu summary, and any allergy flags. The data already exists in `generateStaffBriefing()`. The gap is surfacing it in the staff portal, per-event.
+2. **Vendor order sheet email action.** The unified order sheet at `/stations/orders` already exists and is print-ready. Adding an email-to-vendor action (pre-filled with the order items) would close the biggest procurement gap with minimal engineering. Vendor contact info is already in the vendor record.
 
-**Priority 2 - Shift invite and confirm flow** (medium complexity, high operational value)
+3. **Substitution price delta logging.** When a chef logs a substitution in the Event Ops tab, prompt for the price difference and auto-create an expense variance entry. This would improve food cost accuracy without any new UI surface.
 
-Replace or supplement chef-side assignment with an invite step. Staff member receives an assignment notification through the portal or by email. They confirm or decline. Chef sees confirmation status on the schedule view. This closes the "did they actually see it and agree?" loop that currently lives in text threads.
+4. **DOP staff briefing share.** The DOP at `/events/[id]/schedule` already generates a printable document. A share-with-assigned-staff button that pushes a read-only link to each assigned staff member portal notification would close the BEO distribution gap.
 
-**Priority 3 - Staff-side availability submission**
-
-Staff can currently be marked available by the chef. They cannot submit their own availability from the portal. Adding a self-serve availability calendar to the staff portal would reduce the scheduling coordination back-and-forth that currently happens via text. This is a standard feature of every staffing platform reviewed.
-
-**Priority 4 - Briefing delivery mechanism**
-
-`generateStaffBriefing()` needs a delivery path. Minimum viable: a share link that generates a read-only page with the briefing (no auth required, token-gated). Better: a "Send to all staff" button that emails the briefing to each assigned staff member.
-
-**Priority 5 - Staff earnings view in portal**
-
-Staff should be able to see their pay history per event. This is particularly important for 1099 contractors who need this data for their own tax filing. It also builds trust.
-
-**Lower priority - Admin role type**
-
-A delegated admin account (same access as chef minus financial write operations, or fully scoped by the chef) would require a meaningful auth change. The use case is real but it may only apply to operations above a certain scale. Defer until there is evidence from real users.
-
-**Do not build - Real-time in-event communication**
-
-In-platform messaging during an event is a product direction decision, not a feature gap. The operational reality is that chefs use their phones (text/call) during events and are unlikely to switch to an in-app channel for real-time coordination. The engineering cost is high, adoption is uncertain. The better investment is ensuring the pre-event briefing is complete so real-time coordination needs are minimized.
+5. **Vendor credit terms field.** A simple payment terms field on the vendor record (None, Net 7, Net 14, Net 30, Net 60, COD) would let chefs track which vendors extend credit. No behavioral change required; purely a record-keeping aid.
