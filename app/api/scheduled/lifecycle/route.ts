@@ -53,6 +53,8 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       quotesSkipped: 0,
       eventReminders: 0,
       remindersSkipped: 0,
+      midpointCheckins: 0,
+      midpointSkipped: 0,
       quoteExpiryWarnings: 0,
       quotesNotified: 0,
       errors: [] as string[],
@@ -793,6 +795,123 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       }
     } catch (err) {
       results.errors.push(`Pre-event reminders: ${(err as Error).message}`)
+    }
+
+    // ── 5b. Midpoint check-in emails ───────────────────────────────────────
+    // Sends a single "everything is on track" email at the midpoint between
+    // when the event was confirmed (or created) and the event date.
+    // Purpose: reduce post-booking silence anxiety (research-validated #1 client concern).
+    // Deduped via events.midpoint_checkin_sent_at column.
+
+    try {
+      const todayMid = new Date()
+      const todayDateMid = todayMid.toISOString().split('T')[0]
+
+      // Find confirmed/paid events in the future that haven't had a midpoint email yet
+      const { data: midpointCandidates, error: midpointError } = await db
+        .from('events')
+        .select(
+          `
+        id, tenant_id, occasion, event_date, guest_count,
+        location_address, location_city, location_state,
+        created_at, midpoint_checkin_sent_at,
+        client:clients(id, email, full_name, automated_emails_enabled)
+      `
+        )
+        .in('status', ['paid', 'confirmed'])
+        .gt('event_date', todayDateMid)
+        .is('midpoint_checkin_sent_at', null)
+
+      await throwLifecycleFailure({
+        operation: 'query_midpoint_checkins',
+        error: midpointError,
+        severity: 'high',
+        messagePrefix: 'Failed to query midpoint check-in candidates',
+      })
+
+      if (midpointCandidates && midpointCandidates.length > 0) {
+        const { sendEventMidpointCheckinEmail, buildLocation } =
+          await import('@/lib/email/notifications')
+
+        for (const event of midpointCandidates) {
+          try {
+            const client = event.client as unknown as {
+              id: string
+              email: string
+              full_name: string
+              automated_emails_enabled: boolean
+            } | null
+
+            if (!client?.email) continue
+
+            // Chef-level opt-out
+            const tenantSettings = await getAutomationSettingsForTenant(event.tenant_id)
+            if (!tenantSettings.client_event_reminders_enabled) {
+              results.midpointSkipped++
+              continue
+            }
+
+            // Client-level opt-out
+            if (client.automated_emails_enabled === false) {
+              results.midpointSkipped++
+              continue
+            }
+
+            // Calculate midpoint: halfway between created_at and event_date
+            const createdMs = new Date(event.created_at).getTime()
+            const eventMs = new Date(event.event_date).getTime()
+            const midpointMs = createdMs + (eventMs - createdMs) / 2
+            const midpointDate = new Date(midpointMs).toISOString().split('T')[0]
+
+            // Only send if today is the midpoint day (or past it, for catch-up)
+            // and the event is at least 4 days away (skip very short-notice bookings)
+            const daysUntilEvent = Math.round((eventMs - todayMid.getTime()) / 86_400_000)
+            if (todayDateMid < midpointDate || daysUntilEvent < 4) continue
+
+            const { data: chef } = await db
+              .from('chefs')
+              .select('business_name')
+              .eq('id', event.tenant_id)
+              .single()
+
+            await sendEventMidpointCheckinEmail({
+              clientEmail: client.email,
+              clientName: client.full_name,
+              chefName: chef?.business_name || 'Your Chef',
+              occasion: event.occasion || 'your event',
+              eventDate: event.event_date,
+              guestCount: event.guest_count ?? null,
+              location: buildLocation(event),
+              eventId: event.id,
+            })
+
+            // Mark as sent
+            const { error: midpointMarkerError } = await db
+              .from('events')
+              .update({ midpoint_checkin_sent_at: new Date().toISOString() })
+              .eq('id', event.id)
+              .eq('tenant_id', event.tenant_id)
+
+            await throwLifecycleFailure({
+              operation: 'mark_midpoint_checkin_sent',
+              error: midpointMarkerError,
+              tenantId: event.tenant_id,
+              entityType: 'event',
+              entityId: event.id,
+              severity: 'high',
+              messagePrefix: 'Failed to mark midpoint check-in sent',
+            })
+
+            results.midpointCheckins++
+          } catch (err) {
+            results.errors.push(
+              `Midpoint check-in for event ${event.id}: ${(err as Error).message}`
+            )
+          }
+        }
+      }
+    } catch (err) {
+      results.errors.push(`Midpoint check-ins: ${(err as Error).message}`)
     }
 
     // ── 6. Send quote expiry warning emails (48-hour window) ─────────────────

@@ -1847,3 +1847,30 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/2026-04-03-multi-persona-workflow-research.md (new), docs/session-log.md
 - Build state on departure: unchanged (research-only session, no code changes)
 - Notes: Comprehensive 29-persona analysis covering chefs (private/exec/sous), clients (host/organizer/customer/guest), user types (first-time/power/solo/small-biz/catering-team), staff (employees/contractors/admin/manager), back office (scheduling/procurement/suppliers), finance (accounting/health/tax/legal/insurance/cannabis), integrations (payments/email/calendar/files/inventory), and verticals (private dining/catering/farm-to-table/luxury). Each persona includes real workflows, breakpoints, workarounds, and missing pieces. Key insights: (1) text message is the universal CRM, (2) solo chefs do admin at 11pm from their car, (3) 60-70% churn at the data-entry wall, (4) per-event P&L is never calculated, (5) receipt-to-event linkage is the #1 accounting gap, (6) ChefFlow's strongest fit is solo-to-small-business segment underserved by enterprise catering tools.
+
+## 2026-04-03 ~20:00 EDT
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Chef persona workflow research - transparency, progress tracking, momentum, and engagement across 6 personas
+- Status: completed
+- Files touched: docs/research/2026-04-03-chef-persona-workflow-transparency-momentum-research.md (new), docs/session-log.md
+- Build state on departure: unchanged (research-only session, no code changes)
+- Notes: Deep research across 6 chef personas (private chef, executive chef, sous chef, solo chef, small business chef, catering team) covering real workflows, breakpoints, workarounds, missing pieces, and momentum handling. Key findings: (1) Momentum awareness maps directly to financial obligation - chefs without employees don't think about it at all, chefs with payroll check tools when anxious about making payroll, only catering teams (10+) track pipeline explicitly. (2) The 2-minute rule: private/solo chefs abandon any tool that takes >2 minutes to update. (3) Tool engagement is anxiety-driven not habit-driven across all personas below catering teams. (4) WhatsApp is universally hated but irreplaceable because nothing matches its speed. (5) Post-event debrief is the single lowest-resistance moment for business tool engagement across all personas. (6) Speed beats features: the bar is "faster than my current workaround on first use." 10 industry statistics with citations included.
+
+## 2026-04-03 ~20:00 EDT
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Operational and financial persona workflows research (employees, contractors, admin/manager, back office, scheduling, procurement, finance/accounting)
+- Status: completed
+- Files touched: docs/research/2026-04-03-operational-financial-persona-workflows-research.md (updated with deeper findings)
+- Build state on departure: unchanged (research-only session, no code changes)
+- Notes: Deep research across 7 operational/financial personas with 15+ web searches and 40+ cited sources. Each persona documented with real workflows, breakpoints, workarounds, missing pieces, and transparency needs. Added deeper detail sections for all 7 personas covering: prep list tracking maturity curve, tip transparency as retention lever, self-service scheduling demand (7shifts/Homebase), contractor portal models (Workstaff/StaffConnect/Nowsta), event-day communication failures, AP/AR workflow specifics for food service, actual vs. theoretical food cost variance tracking, vendor ordering channel evolution (fax to apps), CPA data collection workflows, and catering revenue recognition complexity. Added 3 cross-persona analysis sections: (1) information flow matrix showing who needs what from whom, (2) tool landscape with cost ranges ($210-1,450/mo across 5-8 tools per operation), (3) quantified pain points summary with 10 documented impacts. Key finding: the Admin/Manager persona is the information routing bottleneck across all other personas - eliminating manager-as-router is the single highest-leverage platform opportunity.
+
+## 2026-04-03 ~21:30 EDT
+
+- Agent: General (Claude Opus 4.6)
+- Task: Transparency/momentum/engagement research synthesis + implementation of evidence-backed actions
+- Status: completed
+- Files touched: lib/email/templates/event-midpoint-checkin.tsx (new), lib/email/notifications.ts, app/api/scheduled/lifecycle/route.ts, database/migrations/20260403000004_midpoint_checkin_sent_at.sql (new), docs/research/2026-04-03-multi-persona-transparency-master-synthesis.md (new), docs/research/2026-04-03-transparency-momentum-implementation-summary.md (new), app/(chef)/clients/[id]/page.tsx, app/(chef)/events/[id]/page.tsx, docs/app-complete-audit.md
+- Build state on departure: green (tsc passes)
+- Notes: Synthesized 4 research agents' findings into master report. 3 actions survived evidence filter: (1) midpoint check-in email - BUILT (new cron section, email template, dedup column), (2) post-event follow-up auto-trigger - ALREADY WIRED (Inngest chain complete from event-progression cron through transitionEvent to post-event jobs), (3) rebooking nudge - DEFERRED (needs user validation). Also wired engagement badge to client detail and lifecycle progress panel to event detail. Eliminated gamification, complex dashboards, and public leaderboards based on evidence.

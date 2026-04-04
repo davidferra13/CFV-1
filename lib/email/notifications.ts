@@ -42,6 +42,7 @@ import { QuoteRejectedChefEmail } from './templates/quote-rejected-chef'
 import { QuoteExpiredChefEmail } from './templates/quote-expired-chef'
 import { QuoteExpiredClientEmail } from './templates/quote-expired-client'
 import { EventStartingEmail } from './templates/event-starting'
+import { EventMidpointCheckinEmail } from './templates/event-midpoint-checkin'
 import { InstantBookingClientEmail } from './templates/instant-booking-client'
 import { ReviewSubmittedChefEmail } from './templates/review-submitted-chef'
 import { PostEventThankYouEmail } from './templates/post-event-thank-you'
@@ -1095,6 +1096,34 @@ export async function sendEventStartingEmail(params: {
       arrivalTime: params.arrivalTime,
       serveTime: params.serveTime,
       location: params.location,
+    }),
+  })
+}
+
+// ─── Midpoint Check-in ──────────────────────────────────────────────────────
+
+export async function sendEventMidpointCheckinEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  eventDate: string
+  guestCount: number | null
+  location: string | null
+  eventId: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Your ${params.occasion} on ${formatDate(params.eventDate)} is confirmed`,
+    react: createElement(EventMidpointCheckinEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: formatDate(params.eventDate),
+      guestCount: params.guestCount,
+      location: params.location,
+      eventId: params.eventId,
+      appUrl: APP_URL,
     }),
   })
 }
