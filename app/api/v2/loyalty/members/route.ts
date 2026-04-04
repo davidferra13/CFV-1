@@ -98,7 +98,7 @@ export const POST = withApiAuth(
         type: 'bonus',
         points: welcomePoints,
         description: input.description ?? 'Welcome bonus (API enrollment)',
-        created_by: ctx.keyId,
+        created_by: null,
       } as any)
 
       if (txError) {

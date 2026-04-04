@@ -51,8 +51,9 @@ export const POST = withApiAuth(
         entry_type: input.entry_type ?? 'payment',
         payment_method: input.payment_method,
         description: input.description ?? `Manual ${input.payment_method} payment via API`,
+        internal_notes: `Recorded via API key ${ctx.keyId}`,
         transaction_reference: input.reference ?? `api_${Date.now()}`,
-        created_by: ctx.keyId,
+        created_by: null,
       } as any)
       .select()
       .single()

@@ -114,10 +114,31 @@ export const DELETE = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Event')
 
-    // Soft delete
+    const { data: existing } = await ctx.db
+      .from('events')
+      .select('id, status')
+      .eq('id', id)
+      .eq('tenant_id', ctx.tenantId)
+      .is('deleted_at', null)
+      .single()
+
+    if (!existing) return apiNotFound('Event')
+
+    if ((existing as any).status !== 'draft') {
+      return apiError(
+        'invalid_status',
+        'Only draft events can be deleted. Use the archive endpoint for active or historical events.',
+        422
+      )
+    }
+
     const { error } = await ctx.db
       .from('events')
-      .update({ deleted_at: new Date().toISOString() } as any)
+      .update({
+        deleted_at: new Date().toISOString(),
+        deleted_by: null,
+        updated_at: new Date().toISOString(),
+      } as any)
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
       .is('deleted_at', null)

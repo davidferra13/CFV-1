@@ -5,6 +5,7 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { withApiAuth, apiSuccess, apiNotFound, apiValidationError, apiError } from '@/lib/api/v2'
+import { transitionEvent } from '@/lib/events/transitions'
 
 const VALID_STATUSES = [
   'draft',
@@ -73,31 +74,49 @@ export const POST = withApiAuth(
       )
     }
 
-    // Perform transition
-    const { data: updated, error: updateErr } = await ctx.db
-      .from('events')
-      .update({ status: to_status, updated_at: new Date().toISOString() } as any)
-      .eq('id', id)
-      .eq('tenant_id', ctx.tenantId)
-      .select()
-      .single()
-
-    if (updateErr) {
-      console.error('[api/v2/events/transition] Error:', updateErr)
-      return apiError('transition_failed', 'Failed to transition event', 500)
+    try {
+      await transitionEvent({
+        eventId: id,
+        toStatus: to_status,
+        metadata: {
+          ...(metadata ?? {}),
+          source: 'api_v2',
+          api_key_id: ctx.keyId,
+        },
+        actorContext: {
+          id: null,
+          role: 'chef',
+          entityId: ctx.tenantId,
+          tenantId: ctx.tenantId,
+        },
+      })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to transition event'
+      if (message === 'Event not found') return apiNotFound('Event')
+      if (message.startsWith('Invalid transition') || message.startsWith('Cannot proceed:')) {
+        return apiError('invalid_transition', message, 422)
+      }
+      if (
+        message.includes('permission required') ||
+        message.includes('only be triggered by system')
+      ) {
+        return apiError('forbidden_transition', message, 403)
+      }
+      console.error('[api/v2/events/transition] Error:', err)
+      return apiError('transition_failed', message, 500)
     }
 
-    // Log transition (non-blocking)
-    try {
-      await ctx.db.from('event_state_transitions').insert({
-        tenant_id: ctx.tenantId,
-        event_id: id,
-        from_status: currentStatus,
-        to_status,
-        transitioned_by: ctx.keyId,
-        metadata: { ...(metadata ?? {}), source: 'api_v2' },
-      } as any)
-    } catch {}
+    const { data: updated, error: refetchErr } = await ctx.db
+      .from('events')
+      .select('*')
+      .eq('id', id)
+      .eq('tenant_id', ctx.tenantId)
+      .single()
+
+    if (refetchErr || !updated) {
+      console.error('[api/v2/events/transition] Refetch error:', refetchErr)
+      return apiError('transition_failed', 'Event transitioned but could not be reloaded', 500)
+    }
 
     return apiSuccess({
       event: updated,

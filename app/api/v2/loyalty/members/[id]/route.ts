@@ -87,7 +87,7 @@ export const PATCH = withApiAuth(
         description:
           input.adjustment_description ??
           `Manual adjustment via API (${input.adjust_points > 0 ? '+' : ''}${input.adjust_points} pts)`,
-        created_by: ctx.keyId,
+        created_by: null,
       } as any)
 
       if (txError) {

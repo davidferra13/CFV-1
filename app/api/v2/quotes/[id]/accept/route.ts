@@ -50,8 +50,8 @@ export const POST = withApiAuth(
         quote_id: id,
         from_status: 'sent',
         to_status: 'accepted',
-        transitioned_by: ctx.keyId,
-        metadata: { source: 'api_v2' },
+        transitioned_by: null,
+        metadata: { source: 'api_v2', api_key_id: ctx.keyId },
       })
     } catch {}
 

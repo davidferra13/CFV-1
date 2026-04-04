@@ -7,7 +7,7 @@ import { requireChef, requireClient, getCurrentUser } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger'
 import { revalidatePath } from 'next/cache'
-import { TransitionEventInputSchema } from '@/lib/validation/schemas'
+import { TransitionEventInputSchema, type TransitionActorContext } from '@/lib/validation/schemas'
 
 export type EventStatus =
   | 'draft'
@@ -47,6 +47,31 @@ const TRANSITION_PERMISSIONS: Record<string, TransitionPermission | TransitionPe
   '*->cancelled': 'chef', // Chef can cancel anytime
 }
 
+async function runCompletedEventPostProcessing(eventId: string, tenantId: string) {
+  try {
+    const { getLoyaltyConfigByTenant, awardEventPoints, awardLiteVisit } =
+      await import('@/lib/loyalty/actions')
+    const config = await getLoyaltyConfigByTenant(tenantId)
+
+    if (config && config.is_active && config.program_mode !== 'off') {
+      if (config.program_mode === 'lite') {
+        await awardLiteVisit(eventId)
+      } else {
+        await awardEventPoints(eventId)
+      }
+    }
+  } catch (err) {
+    log.events.warn('Loyalty award failed (non-blocking)', { error: err })
+  }
+
+  try {
+    const { snapshotEventToHub } = await import('@/lib/hub/integration-actions')
+    await snapshotEventToHub({ eventId, tenantId })
+  } catch (err) {
+    log.events.warn('Hub event snapshot failed (non-blocking)', { error: err })
+  }
+}
+
 /**
  * Core state transition function
  * Validates transition rules and permissions
@@ -57,15 +82,24 @@ export async function transitionEvent({
   toStatus,
   metadata = {},
   systemTransition = false,
+  actorContext,
 }: {
   eventId: string
   toStatus: EventStatus
   metadata?: Record<string, unknown>
   systemTransition?: boolean // True if called from webhook
+  actorContext?: TransitionActorContext
 }) {
   // Validate inputs before any DB access
-  const parsed = TransitionEventInputSchema.parse({ eventId, toStatus, metadata, systemTransition })
-  const db = createServerClient({ admin: parsed.systemTransition })
+  const parsed = TransitionEventInputSchema.parse({
+    eventId,
+    toStatus,
+    metadata,
+    systemTransition,
+    actorContext,
+  })
+  const isSystemTransition = parsed.systemTransition || parsed.actorContext?.role === 'system'
+  const db = createServerClient({ admin: isSystemTransition })
 
   // Fetch current event
   const { data: event, error: fetchError } = await db
@@ -80,6 +114,22 @@ export async function transitionEvent({
 
   const fromStatus = event.status as EventStatus
 
+  let actor: TransitionActorContext | null = parsed.actorContext ?? null
+
+  if (!actor && !isSystemTransition) {
+    const currentUser = await getCurrentUser()
+    if (!currentUser) {
+      throw new Error('Authentication required')
+    }
+
+    actor = {
+      id: currentUser.id,
+      role: currentUser.role as TransitionPermission,
+      entityId: currentUser.entityId,
+      tenantId: currentUser.tenantId ?? null,
+    }
+  }
+
   // Validate transition is allowed
   const allowedTransitions = TRANSITION_RULES[fromStatus]
   if (!allowedTransitions.includes(toStatus)) {
@@ -89,9 +139,8 @@ export async function transitionEvent({
   }
 
   // Check permissions (unless system transition)
-  if (!systemTransition) {
-    const user = await getCurrentUser()
-    if (!user) {
+  if (!isSystemTransition) {
+    if (!actor) {
       throw new Error('Authentication required')
     }
 
@@ -106,7 +155,7 @@ export async function transitionEvent({
 
     const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
 
-    if (!allowedRoles.includes(user.role as TransitionPermission)) {
+    if (!allowedRoles.includes(actor.role as TransitionPermission)) {
       if (allowedRoles.includes('system')) {
         throw new Error('This transition can only be triggered by system (webhook)')
       }
@@ -116,25 +165,23 @@ export async function transitionEvent({
     }
 
     // Verify tenant/client ownership
-    if (user.role === 'chef' && user.tenantId !== event.tenant_id) {
+    if (actor.role === 'chef' && actor.tenantId !== event.tenant_id) {
       throw new Error('Event does not belong to your tenant')
     }
 
-    if (user.role === 'client' && user.entityId !== event.client_id) {
+    if (actor.role === 'client' && actor.entityId !== event.client_id) {
       throw new Error('Event does not belong to you')
     }
   }
 
-  // Get current user ID (null if system)
-  const user = systemTransition ? null : await getCurrentUser()
-  const transitionedBy = user?.id || null
+  const transitionedBy = actor?.id || null
 
   // ── Readiness Gate Check (pre-transition) ────────────────────────────────
   // Evaluate gates for this transition. Hard blocks (e.g., unconfirmed anaphylaxis)
   // throw and abort. Soft warnings are logged in metadata but do not block.
   // System transitions (Stripe webhooks) skip readiness checks.
   let readinessWarnings: string[] = []
-  if (!systemTransition) {
+  if (!isSystemTransition) {
     try {
       const { evaluateReadinessForTransition } = await import('@/lib/events/readiness')
       const readiness = await evaluateReadinessForTransition(eventId, fromStatus, toStatus)
@@ -163,10 +210,13 @@ export async function transitionEvent({
   //   - events.status, events.updated_by, events.cancelled_at, events.cancellation_reason,
   //     events.cancellation_initiated_by (for cancellations)
   //   - event_state_transitions INSERT (both writes are atomic - one commit or both roll back)
+  const sourceOverride =
+    typeof parsed.metadata.source === 'string' ? parsed.metadata.source.trim() : ''
   const transitionMetadata = {
     ...parsed.metadata,
-    source: parsed.systemTransition ? 'system' : 'user',
-    actor_role: user?.role ?? null,
+    source:
+      sourceOverride || (isSystemTransition ? 'system' : parsed.actorContext ? 'api' : 'user'),
+    actor_role: actor?.role ?? null,
     ...(readinessWarnings.length > 0 && { readiness_warnings: readinessWarnings }),
   }
 
@@ -203,7 +253,7 @@ export async function transitionEvent({
     const notifyChef =
       (toStatus === 'accepted' && fromStatus === 'proposed') ||
       (toStatus === 'paid' && (fromStatus === 'accepted' || fromStatus === 'draft')) ||
-      (toStatus === 'cancelled' && !systemTransition && user?.role === 'client')
+      (toStatus === 'cancelled' && !isSystemTransition && actor?.role === 'client')
 
     if (notifyChef) {
       const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
@@ -257,7 +307,7 @@ export async function transitionEvent({
       toStatus === 'paid' ||
       (toStatus === 'in_progress' && fromStatus === 'confirmed') ||
       (toStatus === 'completed' && fromStatus === 'in_progress') ||
-      (toStatus === 'cancelled' && user?.role !== 'client')
+      (toStatus === 'cancelled' && actor?.role !== 'client')
 
     if (notifyClient && event.client_id) {
       const { createClientNotification } = await import('@/lib/notifications/client-actions')
@@ -601,13 +651,13 @@ export async function transitionEvent({
           recipientName: client.full_name,
           occasion,
           eventDate: event.event_date,
-          cancelledBy: user?.role === 'chef' ? chefName : 'the client',
+          cancelledBy: actor?.role === 'chef' ? chefName : 'the client',
           reason: (metadata.reason as string) || null,
         })
       }
 
       // Also email the chef when a client cancels
-      if (toStatus === 'cancelled' && user?.role === 'client' && chef.email) {
+      if (toStatus === 'cancelled' && actor?.role === 'client' && chef.email) {
         await sendEventCancelledEmail({
           recipientEmail: chef.email,
           recipientName: chef.business_name || 'Chef',
@@ -649,6 +699,8 @@ export async function transitionEvent({
     } catch (deductErr) {
       log.events.warn('Inventory auto-deduction failed (non-blocking)', { error: deductErr })
     }
+
+    await runCompletedEventPostProcessing(eventId, event.tenant_id)
   }
 
   // Log chef activity (non-blocking)
@@ -888,44 +940,11 @@ export async function startEvent(eventId: string) {
 export async function completeEvent(eventId: string) {
   const user = await requireChef()
 
-  const result = await transitionEvent({
+  return transitionEvent({
     eventId,
     toStatus: 'completed',
     metadata: { action: 'chef_completed', chefId: user.entityId },
   })
-
-  // Auto-award loyalty (Tier 1 autonomous - no chef approval needed)
-  // Branches on program_mode: full → points, lite → visit/tier only, off → skip
-  try {
-    const { getLoyaltyConfigByTenant, awardEventPoints, awardLiteVisit } =
-      await import('@/lib/loyalty/actions')
-    const config = await getLoyaltyConfigByTenant(user.tenantId!)
-
-    if (!config || config.program_mode === 'off' || !config.is_active) {
-      return { ...result, loyalty: null }
-    }
-
-    if (config.program_mode === 'lite') {
-      const loyaltyResult = await awardLiteVisit(eventId)
-      return { ...result, loyalty: loyaltyResult }
-    }
-
-    // Full mode - award points
-    const loyaltyResult = await awardEventPoints(eventId)
-    return { ...result, loyalty: loyaltyResult }
-  } catch (err) {
-    // Loyalty award failure should not block event completion
-    log.events.warn('Loyalty award failed (non-blocking)', { error: err })
-    return { ...result, loyalty: null }
-  } finally {
-    // Non-blocking: snapshot menu to hub event history
-    try {
-      const { snapshotEventToHub } = await import('@/lib/hub/integration-actions')
-      await snapshotEventToHub({ eventId, tenantId: user.tenantId! })
-    } catch (err) {
-      console.error('[non-blocking] Hub event snapshot failed:', err)
-    }
-  }
 }
 
 /**

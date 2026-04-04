@@ -124,8 +124,13 @@ export const POST = withApiAuth(
         event_id: newEventId,
         from_status: null,
         to_status: 'draft',
-        transitioned_by: ctx.keyId,
-        metadata: { action: 'event_cloned', source_event_id: id, source: 'api_v2' },
+        transitioned_by: null,
+        metadata: {
+          action: 'event_cloned',
+          source_event_id: id,
+          source: 'api_v2',
+          api_key_id: ctx.keyId,
+        },
       })
     } catch {}
 

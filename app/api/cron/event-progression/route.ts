@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
+import { transitionEvent } from '@/lib/events/transitions'
 
 // Event Time-Progression Cron
 // Advances events through the FSM based on wall-clock time:
@@ -34,15 +35,20 @@ export async function GET(request: Request) {
 
       let started = 0
       for (const event of toStart ?? []) {
-        const { error } = await db
-          .from('events')
-          .update({ status: 'in_progress' })
-          .eq('id', event.id)
-          .eq('tenant_id', event.tenant_id)
-          .eq('status', 'confirmed')
-        if (!error) {
+        try {
+          await transitionEvent({
+            eventId: event.id,
+            toStatus: 'in_progress',
+            systemTransition: true,
+            metadata: {
+              action: 'cron_started',
+              source: 'event_progression_cron',
+            },
+          })
           started += 1
           console.log(`[event-progression] ${event.id} confirmed -> in_progress`)
+        } catch (error) {
+          console.error(`[event-progression] Failed to start event ${event.id}:`, error)
         }
       }
 
@@ -64,15 +70,20 @@ export async function GET(request: Request) {
 
         if (!isOver) continue
 
-        const { error } = await db
-          .from('events')
-          .update({ status: 'completed' })
-          .eq('id', event.id)
-          .eq('tenant_id', event.tenant_id)
-          .eq('status', 'in_progress')
-        if (!error) {
+        try {
+          await transitionEvent({
+            eventId: event.id,
+            toStatus: 'completed',
+            systemTransition: true,
+            metadata: {
+              action: 'cron_completed',
+              source: 'event_progression_cron',
+            },
+          })
           completed += 1
           console.log(`[event-progression] ${event.id} in_progress -> completed`)
+        } catch (error) {
+          console.error(`[event-progression] Failed to complete event ${event.id}:`, error)
         }
       }
 

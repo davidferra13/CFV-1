@@ -1,6 +1,6 @@
 // API v2: Archive Event
 // POST /api/v2/events/:id/archive
-// Soft-archives an event by setting deleted_at timestamp.
+// Marks an event as archived without deleting it.
 
 import { withApiAuth, apiSuccess, apiNotFound, apiError } from '@/lib/api/v2'
 
@@ -9,10 +9,9 @@ export const POST = withApiAuth(
     const id = params?.id
     if (!id) return apiNotFound('Event')
 
-    // Verify event exists and belongs to tenant
     const { data: existing } = await ctx.db
       .from('events')
-      .select('id, status')
+      .select('id, archived')
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
       .is('deleted_at', null)
@@ -20,13 +19,18 @@ export const POST = withApiAuth(
 
     if (!existing) return apiNotFound('Event')
 
+    if ((existing as any).archived) {
+      return apiSuccess({ event: existing, archived: true })
+    }
+
     const now = new Date().toISOString()
 
     const { data, error } = await ctx.db
       .from('events')
-      .update({ deleted_at: now, updated_at: now } as any)
+      .update({ archived: true, updated_at: now } as any)
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
+      .is('deleted_at', null)
       .select()
       .single()
 
@@ -34,18 +38,6 @@ export const POST = withApiAuth(
       console.error('[api/v2/events/archive] Error:', error)
       return apiError('archive_failed', 'Failed to archive event', 500)
     }
-
-    // Log transition (non-blocking)
-    try {
-      await ctx.db.from('event_state_transitions').insert({
-        tenant_id: ctx.tenantId,
-        event_id: id,
-        from_status: (existing as any).status,
-        to_status: 'archived',
-        transitioned_by: ctx.keyId,
-        metadata: { action: 'event_archived', source: 'api_v2' },
-      } as any)
-    } catch {}
 
     return apiSuccess({ event: data, archived: true })
   },

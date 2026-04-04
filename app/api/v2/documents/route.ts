@@ -1,6 +1,7 @@
-// API v2: Documents - List
-// GET /api/v2/documents?event_id=...&type=invoice&page=1&per_page=50
+// API v2: Event Document Snapshots - List
+// GET /api/v2/documents?event_id=...&type=summary&page=1&per_page=50
 
+import { isSnapshotDocumentType } from '@/lib/documents/document-definitions'
 import { withApiAuth, apiSuccess, apiError, parsePagination, paginationMeta } from '@/lib/api/v2'
 
 export const GET = withApiAuth(
@@ -8,13 +9,21 @@ export const GET = withApiAuth(
     const url = new URL(req.url)
     const pagination = parsePagination(url)
     const eventId = url.searchParams.get('event_id')
-    const type = url.searchParams.get('type')
+    const type = url.searchParams.get('type')?.trim().toLowerCase() ?? null
+
+    if (type && !isSnapshotDocumentType(type)) {
+      return apiError(
+        'unsupported_type',
+        'Supported document types are summary, grocery, foh, prep, execution, checklist, packing, reset, travel, shots, and all.',
+        422
+      )
+    }
 
     let query = ctx.db
-      .from('document_snapshots' as any)
+      .from('event_document_snapshots' as any)
       .select('*', { count: 'exact' })
       .eq('tenant_id', ctx.tenantId)
-      .order('created_at', { ascending: false })
+      .order('generated_at', { ascending: false })
 
     if (eventId) query = query.eq('event_id', eventId)
     if (type) query = query.eq('document_type', type)
