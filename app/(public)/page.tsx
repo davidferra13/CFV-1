@@ -3,7 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getDiscoverableChefs, type DirectoryChef } from '@/lib/directory/actions'
 import { getDiscoveryServiceTypeLabel } from '@/lib/discovery/constants'
-import { getDiscoveryAvailabilityLabel, getDiscoveryLocationLabel } from '@/lib/discovery/profile'
+import { getDiscoveryAvailabilityLabel } from '@/lib/discovery/profile'
 import { getChefCoverage, sortDirectoryChefs } from '@/lib/directory/utils'
 import { getOptimizedImageUrl } from '@/lib/images/cloudinary'
 import {
@@ -49,63 +49,6 @@ export const metadata: Metadata = {
     canonical: BASE_URL,
   },
 }
-
-const SERVICE_CATEGORIES = [
-  {
-    label: 'Private Dinners',
-    value: 'private_dinner',
-    description: 'Intimate meals crafted in your home',
-    icon: '🍽',
-  },
-  {
-    label: 'Catering',
-    value: 'catering',
-    description: 'Events of any size, handled start to finish',
-    icon: '🎉',
-  },
-  {
-    label: 'Meal Prep',
-    value: 'meal_prep',
-    description: 'Weekly meals tailored to your household',
-    icon: '🥗',
-  },
-  {
-    label: 'Weddings',
-    value: 'wedding',
-    description: 'Your day, your menu, your chef',
-    icon: '💒',
-  },
-  {
-    label: 'Corporate Dining',
-    value: 'corporate',
-    description: 'Team lunches, retreats, and client events',
-    icon: '🏢',
-  },
-  {
-    label: 'Cooking Classes',
-    value: 'cooking_class',
-    description: 'Hands-on sessions with a professional',
-    icon: '👨‍🍳',
-  },
-]
-
-const HOW_IT_WORKS = [
-  {
-    step: '01',
-    title: 'Search',
-    description: 'Browse chefs by location, cuisine, or service type. Every chef is vetted.',
-  },
-  {
-    step: '02',
-    title: 'Connect',
-    description: 'Send an inquiry directly. No middleman, no commission, no hidden fees.',
-  },
-  {
-    step: '03',
-    title: 'Enjoy',
-    description: 'Your chef handles the details. You enjoy the experience.',
-  },
-]
 
 // Inline SVG social icons for Featured Chef cards (no icon library dependency)
 const SOCIAL_ICONS: Record<string, { label: string; icon: React.ReactNode }> = {
@@ -423,30 +366,6 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Service Categories */}
-      <section className="mx-auto w-full max-w-5xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
-        <h2 className="text-center font-display text-2xl font-bold text-stone-100 md:text-3xl tracking-tight">
-          What are you looking for?
-        </h2>
-        <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {SERVICE_CATEGORIES.map((cat) => (
-            <Link
-              key={cat.value}
-              href={`/chefs?serviceType=${cat.value}`}
-              className="group flex flex-col items-center rounded-2xl border border-stone-700/60 bg-stone-900/50 px-4 py-6 text-center transition-all hover:border-brand-600/50 hover:bg-stone-800/60 hover:-translate-y-0.5 hover:shadow-lg"
-            >
-              <span className="text-3xl" role="img" aria-label={cat.label}>
-                {cat.icon}
-              </span>
-              <span className="mt-3 text-sm font-semibold text-stone-200 group-hover:text-stone-50">
-                {cat.label}
-              </span>
-              <span className="mt-1 text-xs text-stone-500 leading-snug">{cat.description}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
       {/* Featured Chefs */}
       {featuredChefs.length > 0 && (
         <section className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
@@ -497,56 +416,6 @@ export default async function Home() {
           </div>
         </section>
       )}
-
-      {/* How It Works */}
-      <section className="border-t border-stone-800/40">
-        <div className="mx-auto w-full max-w-4xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
-          <h2 className="text-center font-display text-2xl font-bold text-stone-100 md:text-3xl tracking-tight">
-            How it works
-          </h2>
-          <div className="mt-12 grid gap-8 sm:grid-cols-3">
-            {HOW_IT_WORKS.map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-600/15 border border-brand-600/30">
-                  <span className="text-lg font-display font-bold text-brand-400">{item.step}</span>
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-stone-100">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-stone-400">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* For Operators CTA */}
-      <section className="border-t border-stone-800/40">
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-16 text-center sm:px-6 md:py-20 lg:px-8">
-          <p className="mb-4 rounded-full border border-brand-700/30 bg-brand-950/40 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-brand-300">
-            For Chefs and Operators
-          </p>
-          <h2 className="font-display text-2xl font-bold text-stone-100 md:text-3xl tracking-tight">
-            Run your entire business on ChefFlow.
-          </h2>
-          <p className="mt-4 max-w-xl text-base text-stone-400 leading-relaxed">
-            Clients, events, menus, recipes, finances, and staff. One platform that respects your
-            craft and your privacy. Free forever, zero commission.
-          </p>
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-            <Link
-              href="/for-operators"
-              className="inline-flex h-12 items-center justify-center rounded-xl border border-stone-700 bg-stone-900/60 px-6 text-sm font-medium text-stone-300 transition-all hover:bg-stone-800 hover:border-stone-600 hover:text-stone-100"
-            >
-              Learn more
-            </Link>
-            <Link
-              href="/auth/signup"
-              className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white glow-hover shadow-lg"
-            >
-              Get Started Free
-            </Link>
-          </div>
-        </div>
-      </section>
     </main>
   )
 }

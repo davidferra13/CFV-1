@@ -22,6 +22,7 @@ import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { usePermissions } from '@/lib/context/permission-context'
 import {
   getStrictFocusGroupRank,
   isStrictFocusGroupVisible,
@@ -495,10 +496,18 @@ export function ChefMobileNav({
       resolveStandaloneTop(focusMode ? [...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS] : primaryNavHrefs),
     [focusMode, primaryNavHrefs]
   )
+  const { has: hasPermission } = usePermissions()
   const visiblePrimaryItems = useMemo(() => {
     const items = isAdmin ? primaryItems : primaryItems.filter((item) => !item.adminOnly)
-    return items.filter((item) => !item.hidden)
-  }, [isAdmin, primaryItems])
+    return items.filter((item) => {
+      if (item.hidden) return false
+      if (item.requiredPermission) {
+        const [domain, action] = item.requiredPermission.split(':')
+        if (!hasPermission(domain, action as any)) return false
+      }
+      return true
+    })
+  }, [isAdmin, primaryItems, hasPermission])
   const tabItems = useMemo(
     () =>
       focusMode
@@ -522,6 +531,13 @@ export function ChefMobileNav({
         ...group,
         items: (isAdmin ? group.items : group.items.filter((item) => !item.adminOnly))
           .filter((item) => !item.hidden)
+          .filter((item) => {
+            if (item.requiredPermission) {
+              const [domain, action] = item.requiredPermission.split(':')
+              return hasPermission(domain, action as any)
+            }
+            return true
+          })
           .map((item) =>
             item.children
               ? { ...item, children: item.children.filter((child) => !child.hidden) }

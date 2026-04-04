@@ -101,6 +101,8 @@ type NavItem = {
   hidden?: boolean
   tier?: 'primary' | 'secondary'
   subMenu?: Array<{ href: string; label: string }>
+  /** RBAC permission required to see this nav item. Format: 'domain:action' */
+  requiredPermission?: `${string}:${string}`
 }
 type NavSubItem = {
   href: string
@@ -818,8 +820,8 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/schedule',
-        label: 'Schedule',
+        href: '/calendar',
+        label: 'Calendar',
         icon: CalendarCheck,
       },
     ],
@@ -1156,6 +1158,7 @@ export const navGroups: NavGroup[] = [
           { href: '/staff/labor', label: 'Labor Dashboard' },
           { href: '/staff/live', label: 'Live Activity' },
           { href: '/staff/performance', label: 'Performance' },
+          { href: '/staff/permissions', label: 'Permissions' },
           { href: '/staff/schedule', label: 'Schedule' },
         ],
       },
@@ -1557,7 +1560,7 @@ export const MOBILE_TAB_OPTIONS: NavItem[] = [
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/events', label: 'Events', icon: CalendarDays },
   { href: '/clients', label: 'Clients', icon: Users },
-  { href: '/schedule', label: 'Calendar', icon: CalendarDays },
+  { href: '/calendar', label: 'Calendar', icon: CalendarDays },
   { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
   { href: '/recipes', label: 'Recipes', icon: BookOpen },
@@ -1921,12 +1924,12 @@ export function getPrimaryShortcutOptions() {
   return PRIMARY_SHORTCUT_OPTIONS.map(({ href, label, context }) => ({ href, label, context }))
 }
 
-// ─── Action Bar: 8 daily-driver shortcuts ───
-// Notifications, Inquiries, Recipes, Tasks, Food Catalog, Store Prices, Rewards
-// remain reachable via Browse Everything, direct routes, and command palette.
+// ─── Action Bar: 7 daily-driver shortcuts ───
+// Calendar remains reachable under Events, while Notifications, Inquiries, Recipes,
+// Tasks, Food Catalog, Store Prices, and Rewards remain reachable via Browse
+// Everything, direct routes, and command palette.
 export const actionBarItems: NavItem[] = [
   { href: '/inbox', label: 'Inbox', icon: Inbox },
-  { href: '/calendar', label: 'Calendar', icon: Calendar },
   { href: '/events', label: 'Events', icon: CalendarDays },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed },

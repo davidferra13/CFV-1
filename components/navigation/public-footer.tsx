@@ -7,6 +7,7 @@ import {
   PLATFORM_SHORT_DESCRIPTION,
 } from '@/lib/marketing/platform-positioning'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
+import { FOOTER_SECTIONS } from './public-nav-config'
 
 const NewsletterSignup = dynamic(
   () => import('@/components/marketing/newsletter-signup').then((m) => m.NewsletterSignup),
@@ -16,37 +17,15 @@ const NewsletterSignup = dynamic(
   }
 )
 
-const FOOTER_LINKS = {
-  discover: [
-    { href: '/book', label: 'Book a Chef' },
-    { href: '/chefs', label: 'Browse Chefs' },
-    { href: '/discover', label: 'Food Directory' },
-    // Gift cards page planned but not yet built - omitted to avoid dead link
-    { href: '/contact', label: 'Contact' },
-  ],
-  forOperators: [
-    { href: '/for-operators', label: 'Why ChefFlow' },
-    { href: '/marketplace-chefs', label: 'Marketplace Chefs' },
-    { href: '/partner-signup', label: 'Become a Partner' },
-  ],
-  resources: [
-    { href: '/faq', label: 'FAQ' },
-    { href: '/trust', label: 'Trust Center' },
-  ],
-  legal: [
-    { href: '/privacy', label: 'Privacy Policy' },
-    { href: '/terms', label: 'Terms of Service' },
-  ],
-}
-
 export function PublicFooter() {
   const year = new Date().getFullYear()
   const isBeta = LAUNCH_MODE === 'beta'
 
   return (
     <footer className="border-t border-stone-700/50 bg-stone-950/60 backdrop-blur-sm">
-      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-12 sm:px-6 lg:grid-cols-4 lg:px-8">
-        <div className="lg:col-span-1">
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-12 sm:px-6 sm:grid-cols-2 lg:grid-cols-5 lg:px-8">
+        {/* Brand */}
+        <div className="sm:col-span-2 lg:col-span-1">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <AppLogo />
             <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
@@ -58,10 +37,11 @@ export function PublicFooter() {
           </p>
         </div>
 
+        {/* Discover */}
         <div>
-          <p className="text-sm font-semibold text-stone-100">Discover</p>
+          <p className="text-sm font-semibold text-stone-100">{FOOTER_SECTIONS.discover.heading}</p>
           <ul className="mt-4 space-y-2">
-            {FOOTER_LINKS.discover.map((link) => (
+            {FOOTER_SECTIONS.discover.links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
@@ -74,10 +54,13 @@ export function PublicFooter() {
           </ul>
         </div>
 
+        {/* For Operators */}
         <div>
-          <p className="text-sm font-semibold text-stone-100">For operators</p>
+          <p className="text-sm font-semibold text-stone-100">
+            {FOOTER_SECTIONS.forOperators.heading}
+          </p>
           <ul className="mt-4 space-y-2">
-            {FOOTER_LINKS.forOperators.map((link) => (
+            {FOOTER_SECTIONS.forOperators.links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
@@ -99,10 +82,29 @@ export function PublicFooter() {
               </Link>
             </li>
           </ul>
+        </div>
 
-          <p className="mt-6 text-sm font-semibold text-stone-100">Resources</p>
+        {/* Company */}
+        <div>
+          <p className="text-sm font-semibold text-stone-100">{FOOTER_SECTIONS.company.heading}</p>
+          <ul className="mt-4 space-y-2">
+            {FOOTER_SECTIONS.company.links.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="text-sm text-stone-400 transition-colors hover:text-stone-100"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <p className="mt-6 text-sm font-semibold text-stone-100">
+            {FOOTER_SECTIONS.legal.heading}
+          </p>
           <ul className="mt-3 space-y-2">
-            {FOOTER_LINKS.resources.map((link) => (
+            {FOOTER_SECTIONS.legal.links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}
@@ -115,26 +117,13 @@ export function PublicFooter() {
           </ul>
         </div>
 
-        <div>
+        {/* Newsletter */}
+        <div className="sm:col-span-2 lg:col-span-1">
           <p className="text-sm font-semibold text-stone-100">Stay Updated</p>
           <p className="mb-3 mt-4 text-sm text-stone-400">
             Short guides for modern food-business operations.
           </p>
           <NewsletterSignup />
-
-          <p className="mt-6 text-sm font-semibold text-stone-100">Legal</p>
-          <ul className="mt-3 space-y-2">
-            {FOOTER_LINKS.legal.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="text-sm text-stone-400 transition-colors hover:text-stone-100"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
       </div>
       <div className="border-t border-stone-600/50 px-4 py-4 sm:px-6 lg:px-8">
