@@ -18,6 +18,8 @@ export type ChefLayoutData = {
   tagline: string | null
   business_name: string | null
   created_at: string | null
+  logo_url: string | null
+  profile_image_url: string | null
   portal_primary_color: string | null
   portal_background_color: string | null
   portal_background_image_url: string | null
@@ -38,7 +40,7 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
         db
           .from('chefs')
           .select(
-            'slug, tagline, business_name, created_at, portal_primary_color, portal_background_color, portal_background_image_url, subscription_status, timezone'
+            'slug, tagline, business_name, created_at, logo_url, profile_image_url, portal_primary_color, portal_background_color, portal_background_image_url, subscription_status, timezone'
           )
           .eq('id', chefId)
           .single(),
@@ -54,6 +56,8 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
         tagline: chefResult.data?.tagline ?? null,
         business_name: (chefResult.data as any)?.business_name ?? null,
         created_at: (chefResult.data as any)?.created_at ?? null,
+        logo_url: (chefResult.data as any)?.logo_url ?? null,
+        profile_image_url: (chefResult.data as any)?.profile_image_url ?? null,
         portal_primary_color: chefResult.data?.portal_primary_color ?? null,
         portal_background_color: chefResult.data?.portal_background_color ?? null,
         portal_background_image_url: chefResult.data?.portal_background_image_url ?? null,

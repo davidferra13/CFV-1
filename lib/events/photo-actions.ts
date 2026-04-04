@@ -7,7 +7,7 @@
 import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
-import { compressImageBuffer } from '@/lib/images/resmush'
+import { optimizePhoto } from '@/lib/images/optimize'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -152,37 +152,17 @@ export async function uploadEventPhoto(
 
   // Generate IDs and derive storage path
   const photoId = crypto.randomUUID()
-  const ext = MIME_TO_EXT[file.type]
-  const storagePath = `${user.tenantId}/${eventId}/${photoId}.${ext}`
 
-  // Attempt image compression via reSmush.it (non-blocking - fallback to original)
-  let uploadBody: File | Blob = file
-  let uploadContentType = file.type
-  let uploadSize = file.size
-  try {
-    const fileBuffer = Buffer.from(await file.arrayBuffer())
-    const compressed = await compressImageBuffer(fileBuffer, file.name)
-    if (compressed.success && compressed.compressedUrl) {
-      const compressedRes = await fetch(compressed.compressedUrl)
-      if (compressedRes.ok) {
-        const compressedBuf = await compressedRes.arrayBuffer()
-        uploadBody = new Blob([compressedBuf], { type: file.type })
-        uploadSize = compressedBuf.byteLength
-        console.log(
-          `[uploadEventPhoto] Compressed ${file.name}: ${compressed.originalSize} → ${compressed.compressedSize} (${compressed.savedPercent}% saved)`
-        )
-      }
-    }
-  } catch (compressionErr) {
-    console.warn(
-      '[uploadEventPhoto] Compression failed (non-blocking), using original:',
-      compressionErr
-    )
-  }
+  // Optimize: resize to max 1024px wide, convert to WebP (same infra as logo/profile photo)
+  const rawBuffer = Buffer.from(await file.arrayBuffer())
+  const optimized = await optimizePhoto(rawBuffer, file.type)
+
+  const storagePath = `${user.tenantId}/${eventId}/${photoId}.${optimized.ext}`
+  const uploadSize = optimized.data.length
 
   // Upload to local storage
-  const { error: uploadError } = await db.storage.from(BUCKET).upload(storagePath, uploadBody, {
-    contentType: uploadContentType,
+  const { error: uploadError } = await db.storage.from(BUCKET).upload(storagePath, optimized.data, {
+    contentType: optimized.mimeType,
     upsert: false,
   })
 
@@ -213,7 +193,7 @@ export async function uploadEventPhoto(
       event_id: eventId,
       storage_path: storagePath,
       filename_original: file.name,
-      content_type: uploadContentType,
+      content_type: optimized.mimeType,
       size_bytes: uploadSize,
       caption,
       display_order: displayOrder,

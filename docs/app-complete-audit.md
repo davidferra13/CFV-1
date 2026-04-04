@@ -1286,14 +1286,14 @@ Each category has a unique lucide-react icon and animated chevron expand/collaps
 
 **Group: System & Account** — Developer tools, legal, and account management
 
-| #   | Category           | Icon          | Sub-pages                                                                                          |
-| --- | ------------------ | ------------- | -------------------------------------------------------------------------------------------------- |
-| 15  | Legal & Protection | ShieldCheck   | Protection hub, contract templates, food safety & compliance, HACCP plan, GDPR, emergency contacts |
-| 16  | Sample Data        | Database      | Demo data manager (load/remove)                                                                    |
-| 17  | API & Developer    | Code          | API keys, webhooks                                                                                 |
-| 18  | Desktop App        | Monitor       | System tray, auto-start, native notifications                                                      |
-| 19  | Share Feedback     | MessageCircle | In-app feedback form                                                                               |
-| 20  | Account & Security | Lock          | System health, system incidents (admin), change password, delete account                           |
+| #   | Category           | Icon          | Sub-pages                                                                                                                          |
+| --- | ------------------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 15  | Legal & Protection | ShieldCheck   | Protection hub, contract templates, food safety & compliance, HACCP plan, GDPR, emergency contacts                                 |
+| 16  | Sample Data        | Database      | Demo data manager (load/remove)                                                                                                    |
+| 17  | API & Developer    | Code          | API keys, webhooks                                                                                                                 |
+| 18  | Desktop App        | Monitor       | System tray, auto-start, native notifications                                                                                      |
+| 19  | Share Feedback     | MessageCircle | In-app feedback form                                                                                                               |
+| 20  | Account & Security | Lock          | Unified account page (`/settings/account`): email change, password, devices, delete. Also: system health, system incidents (admin) |
 
 ### 15.1 HACCP Plan (`/settings/compliance/haccp`)
 

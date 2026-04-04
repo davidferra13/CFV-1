@@ -39,6 +39,7 @@ import { isAdmin } from '@/lib/auth/admin'
 import { SettingsCategory } from '@/components/settings/settings-category'
 import { SettingsGuidedOverview } from '@/components/settings/settings-guided-overview'
 import { SettingsAdvancedDirectory } from '@/components/settings/settings-advanced-directory'
+import { BrandingCard } from '@/components/settings/branding-card'
 
 function SettingsGroupHeader({
   label,
@@ -217,11 +218,16 @@ export default async function SettingsPage() {
           {/* ── 2. Profile & Branding ────────────────────────────── */}
           <SettingsCategory
             title="Profile & Branding"
-            description="Manage your core business profile, public profile presentation, and portal background."
+            description="Manage your core business profile, brand logo, public profile presentation, and portal background."
             icon="Palette"
             primary
           >
             <div className="space-y-4">
+              <BrandingCard
+                logoUrl={profile.logo_url}
+                businessName={profile.business_name}
+                primaryColor={profile.portal_primary_color}
+              />
               <Link
                 href="/settings/my-profile"
                 className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
@@ -891,10 +897,19 @@ export default async function SettingsPage() {
           {/* ── 20. Account & Security ───────────────────────────── */}
           <SettingsCategory
             title="Account & Security"
-            description="Password, account-level management, and system status."
+            description="Email, password, devices, and account management."
             icon="Lock"
           >
             <div className="space-y-3">
+              <Link
+                href="/settings/account"
+                className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
+              >
+                <p className="font-semibold text-brand-200">Account Settings</p>
+                <p className="text-sm text-brand-400 mt-1">
+                  Manage your email, password, devices, and account-level controls.
+                </p>
+              </Link>
               <Link
                 href="/settings/health"
                 className="block border border-emerald-200 rounded-lg p-4 hover:bg-emerald-950/50 transition-colors"
@@ -915,22 +930,6 @@ export default async function SettingsPage() {
                   </p>
                 </Link>
               )}
-              <Link
-                href="/settings/change-password"
-                className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-              >
-                <p className="font-medium text-stone-100">Change Password</p>
-                <p className="text-sm text-stone-500 mt-1">Update your account password.</p>
-              </Link>
-              <Link
-                href="/settings/delete-account"
-                className="block border border-red-200 rounded-lg p-4 hover:bg-red-950 transition-colors"
-              >
-                <p className="font-medium text-red-700">Delete Account</p>
-                <p className="text-sm text-red-500 mt-1">
-                  Permanently delete your account and all associated data.
-                </p>
-              </Link>
             </div>
           </SettingsCategory>
         </div>

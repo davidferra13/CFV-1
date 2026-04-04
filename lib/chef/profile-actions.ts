@@ -4,6 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
+import { optimizeLogo } from '@/lib/images/optimize'
 
 const CHEF_LOGOS_BUCKET = 'chef-logos'
 const MAX_LOGO_SIZE = 5 * 1024 * 1024 // 5MB
@@ -251,13 +252,17 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
     .maybeSingle()
 
   const previousPath = extractChefLogoPath((currentChef as any)?.logo_url ?? null)
-  const ext = LOGO_MIME_TO_EXT[file.type] || 'png'
-  const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
+
+  // Optimize: resize to max 400px wide, convert to WebP (SVGs pass through)
+  const rawBuffer = Buffer.from(await file.arrayBuffer())
+  const optimized = await optimizeLogo(rawBuffer, file.type)
+
+  const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${optimized.ext}`
 
   const uploadFile = async () =>
     db.storage
       .from(CHEF_LOGOS_BUCKET)
-      .upload(storagePath, file, { contentType: file.type, upsert: false })
+      .upload(storagePath, optimized.data, { contentType: optimized.mimeType, upsert: false })
 
   let { error: uploadError } = await uploadFile()
 
@@ -298,8 +303,47 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
 
   revalidatePath('/settings')
   revalidatePath('/settings/my-profile')
+  revalidatePath('/settings/account')
+  revalidateTag(`chef-layout-${user.entityId}`)
 
   return { success: true, url: publicUrl }
+}
+
+/**
+ * Remove the chef's business logo, clearing the logo_url column.
+ */
+export async function removeChefLogo(): Promise<{ success: true }> {
+  const user = await requireChef()
+  const db = createServerClient({ admin: true })
+
+  const { data: currentChef } = await db
+    .from('chefs')
+    .select('logo_url')
+    .eq('id', user.entityId)
+    .maybeSingle()
+
+  const previousPath = extractChefLogoPath((currentChef as any)?.logo_url ?? null)
+
+  const { error } = await db.from('chefs').update({ logo_url: null }).eq('id', user.entityId)
+
+  if (error) {
+    throw new Error('Failed to remove logo')
+  }
+
+  if (previousPath) {
+    try {
+      await db.storage.from(CHEF_LOGOS_BUCKET).remove([previousPath])
+    } catch (err) {
+      console.warn('[removeChefLogo] failed to delete file:', err)
+    }
+  }
+
+  revalidatePath('/settings')
+  revalidatePath('/settings/my-profile')
+  revalidatePath('/settings/account')
+  revalidateTag(`chef-layout-${user.entityId}`)
+
+  return { success: true }
 }
 
 export async function markOnboardingComplete() {

@@ -500,7 +500,7 @@ export async function getChefSlug() {
   const { data } = await db
     .from('chefs')
     .select(
-      'slug, tagline, portal_primary_color, portal_background_color, portal_background_image_url'
+      'slug, tagline, portal_primary_color, portal_background_color, portal_background_image_url, logo_url, business_name'
     )
     .eq('id', user.entityId)
     .single()
@@ -511,5 +511,7 @@ export async function getChefSlug() {
     portal_primary_color: data?.portal_primary_color || null,
     portal_background_color: data?.portal_background_color || null,
     portal_background_image_url: data?.portal_background_image_url || null,
+    logo_url: data?.logo_url || null,
+    business_name: data?.business_name || '',
   }
 }

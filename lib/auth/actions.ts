@@ -628,6 +628,148 @@ export async function changePassword(currentPassword: string, newPassword: strin
   return { success: true }
 }
 
+// ─── Email change ──────────────────────────────────────────────────────
+
+const EmailChangeSchema = z.object({
+  email: z.string().email('Valid email required'),
+})
+
+/**
+ * Request an email address change. Sends a verification email to the NEW address.
+ * The change is not applied until the user clicks the verification link.
+ * Uses the existing auth.users email_change columns from the Supabase auth schema.
+ */
+export async function requestEmailChange(newEmail: string) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error('Not authenticated')
+
+  const validated = EmailChangeSchema.parse({ email: newEmail })
+  const normalizedNew = normalizeEmail(validated.email)
+
+  // Rate limit: 3 requests per hour
+  await checkRateLimit(`email-change:${session.user.id}`, 3, 60 * 60 * 1000)
+
+  // Check current email isn't the same
+  const [currentUser] = await db
+    .select({ email: authUsers.email })
+    .from(authUsers)
+    .where(eq(authUsers.id, session.user.id))
+    .limit(1)
+
+  if (currentUser?.email === normalizedNew) {
+    throw new Error('This is already your current email address')
+  }
+
+  // Check uniqueness (don't reveal which account owns it)
+  const [existing] = await db
+    .select({ id: authUsers.id })
+    .from(authUsers)
+    .where(eq(authUsers.email, normalizedNew))
+    .limit(1)
+
+  if (existing) {
+    throw new Error('This email is already associated with another account')
+  }
+
+  // Generate token, store hash
+  const token = crypto.randomBytes(32).toString('hex')
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+
+  await db
+    .update(authUsers)
+    .set({
+      emailChange: normalizedNew,
+      emailChangeTokenNew: tokenHash,
+      emailChangeSentAt: new Date(),
+    })
+    .where(eq(authUsers.id, session.user.id))
+
+  // Send verification to the NEW email
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app.cheflowhq.com'
+  const confirmUrl = `${siteUrl}/auth/confirm-email-change?token=${token}`
+
+  const { EmailChangeVerificationEmail } =
+    await import('@/lib/email/templates/email-change-verification')
+
+  try {
+    await sendEmail({
+      to: normalizedNew,
+      subject: 'Confirm your new ChefFlow email',
+      react: EmailChangeVerificationEmail({ confirmUrl }),
+    })
+  } catch (err) {
+    log.auth.warn('Email change verification send failed', { error: err })
+  }
+
+  return { success: true }
+}
+
+/**
+ * Confirm an email change using the token from the verification email.
+ * Updates both auth.users.email and chefs.email atomically.
+ */
+export async function confirmEmailChange(token: string) {
+  const session = await auth()
+  if (!session?.user?.id) throw new Error('Not authenticated')
+
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+
+  const [user] = await db
+    .select({
+      id: authUsers.id,
+      emailChange: authUsers.emailChange,
+      emailChangeTokenNew: authUsers.emailChangeTokenNew,
+      emailChangeSentAt: authUsers.emailChangeSentAt,
+    })
+    .from(authUsers)
+    .where(eq(authUsers.id, session.user.id))
+    .limit(1)
+
+  if (!user || user.emailChangeTokenNew !== tokenHash || !user.emailChange) {
+    throw new Error('Invalid or expired email change link. Please request a new one.')
+  }
+
+  // Check expiry (1 hour)
+  if (!user.emailChangeSentAt) {
+    throw new Error('Invalid or expired email change link. Please request a new one.')
+  }
+  const age = Date.now() - user.emailChangeSentAt.getTime()
+  if (age > 60 * 60 * 1000) {
+    throw new Error('This link has expired. Please request a new email change.')
+  }
+
+  const newEmail = user.emailChange
+
+  // Re-check uniqueness at confirmation time
+  const [existing] = await db
+    .select({ id: authUsers.id })
+    .from(authUsers)
+    .where(eq(authUsers.email, newEmail))
+    .limit(1)
+
+  if (existing) {
+    throw new Error('This email is already associated with another account')
+  }
+
+  // Update auth.users email
+  await db
+    .update(authUsers)
+    .set({
+      email: newEmail,
+      emailChange: null,
+      emailChangeTokenNew: null,
+      emailChangeSentAt: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(authUsers.id, session.user.id))
+
+  // Update chefs.email
+  await db.update(chefs).set({ email: newEmail }).where(eq(chefs.authUserId, session.user.id))
+
+  revalidatePath('/', 'layout')
+  return { success: true, email: newEmail }
+}
+
 /**
  * Delete account - Soft-delete with 30-day grace period.
  * Delegates to requestAccountDeletion() in account-deletion-actions.ts.

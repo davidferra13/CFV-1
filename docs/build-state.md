@@ -12,15 +12,15 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                        | Status | Last Verified | Commit               | Agent           |
-| ---------------------------- | ------ | ------------- | -------------------- | --------------- |
-| `npm run typecheck:app`      | green  | 2026-04-03    | dirty from 17aa640d5 | Claude Opus 4.6 |
-| `npm run build -- --no-lint` | green  | 2026-04-03    | dirty from 17aa640d5 | Claude Opus 4.6 |
+| Check                                 | Status | Last Verified | Commit               | Agent           |
+| ------------------------------------- | ------ | ------------- | -------------------- | --------------- |
+| `npx tsc --noEmit --skipLibCheck`     | green  | 2026-04-04    | dirty from 5e5d54406 | Claude Opus 4.6 |
+| `npx next build --no-lint` (8GB heap) | green  | 2026-04-04    | dirty from 5e5d54406 | Claude Opus 4.6 |
 
-**Last green build:** dirty checkout from 17aa640d5 (2026-04-03) - engagement badge on client detail + lifecycle progress on event detail
-**Last commit on main:** cd293d526
+**Last green build:** dirty checkout from 5e5d54406 (2026-04-04) - settings branding/account/security feature + security audit waves 1-2
+**Last commit on main:** 5e5d54406
 
-**Current blocker:** none for the last known green baseline. However, the live dirty checkout is ahead of this baseline. A later 2026-04-03 Codex pass re-confirmed `npm.cmd run typecheck:app`, `node --test --import tsx tests/unit/focus-mode.test.ts tests/unit/focus-mode-strict-nav.test.ts`, and `npm.cmd run build -- --no-lint` exiting `0` with the normal route manifest. The remaining gap is post-build artifact integrity on the dirty checkout: `.next/BUILD_ID` and other expected top-level production artifacts were absent immediately after the successful build command. Do not promote the current dirty checkout to green until that artifact persistence is explained or re-verified.
+**Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. OOM fix: build requires `NODE_OPTIONS="--max-old-space-size=8192"` (default 4GB heap is insufficient for this codebase size).
 
 **Known non-blocking build noise:** `npm run build -- --no-lint` still emits existing `DYNAMIC_SERVER_USAGE` warnings from unrelated routes during static generation, and Next 14.2.35 still warns that `serverActions` is an unrecognized key in `next.config.js`. The build exits `0`. Treat those warnings as follow-up runtime/config cleanup, not as a blocker for the current baseline.
 

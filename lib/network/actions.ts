@@ -8,14 +8,14 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import {
   NETWORK_FEATURE_DEFINITIONS,
   NETWORK_FEATURE_KEYS,
   type NetworkFeatureKey,
 } from '@/lib/network/features'
-import { compressImageBuffer } from '@/lib/images/resmush'
+import { optimizeProfilePhoto } from '@/lib/images/optimize'
 
 const CHEF_PROFILE_IMAGES_BUCKET = 'chef-profile-images'
 const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -1119,34 +1119,16 @@ export async function uploadChefProfileImage(
     .maybeSingle()
 
   const previousPath = extractChefProfileImagePath((currentChef as any)?.profile_image_url ?? null)
-  const ext = PROFILE_IMAGE_MIME_TO_EXT[file.type] || 'jpg'
-  const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
 
-  // Attempt image compression via reSmush.it (non-blocking - fallback to original)
-  let uploadBody: File | Blob = file
-  try {
-    const fileBuffer = Buffer.from(await file.arrayBuffer())
-    const compressed = await compressImageBuffer(fileBuffer, file.name)
-    if (compressed.success && compressed.compressedUrl) {
-      const compressedRes = await fetch(compressed.compressedUrl)
-      if (compressedRes.ok) {
-        const compressedBuf = await compressedRes.arrayBuffer()
-        uploadBody = new Blob([compressedBuf], { type: file.type })
-        console.log(
-          `[uploadChefProfileImage] Compressed ${file.name}: ${compressed.originalSize} → ${compressed.compressedSize} (${compressed.savedPercent}% saved)`
-        )
-      }
-    }
-  } catch (compressionErr) {
-    console.warn(
-      '[uploadChefProfileImage] Compression failed (non-blocking), using original:',
-      compressionErr
-    )
-  }
+  // Optimize: resize to max 512px wide, convert to WebP (same infra as logo upload)
+  const rawBuffer = Buffer.from(await file.arrayBuffer())
+  const optimized = await optimizeProfilePhoto(rawBuffer, file.type)
+
+  const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${optimized.ext}`
 
   const uploadFile = async () =>
-    db.storage.from(CHEF_PROFILE_IMAGES_BUCKET).upload(storagePath, uploadBody, {
-      contentType: file.type,
+    db.storage.from(CHEF_PROFILE_IMAGES_BUCKET).upload(storagePath, optimized.data, {
+      contentType: optimized.mimeType,
       upsert: false,
     })
 
@@ -1192,6 +1174,8 @@ export async function uploadChefProfileImage(
   revalidatePath('/settings')
   revalidatePath('/settings/profile')
   revalidatePath('/settings/my-profile')
+  revalidatePath('/settings/account')
+  revalidateTag(`chef-layout-${user.entityId}`)
 
   return { success: true, url: publicUrl }
 }
