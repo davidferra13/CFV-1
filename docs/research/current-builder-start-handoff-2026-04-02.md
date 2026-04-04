@@ -3,33 +3,43 @@
 > **Date:** 2026-04-02
 > **Revised:** 2026-04-03
 > **Status:** active builder-start context
-> **Purpose:** give the next builder one canonical starting document that explains the current repo posture, the system-level planning parent, the default next execution step, and the branching rules when a narrower slice is explicitly assigned.
+> **Purpose:** give the next builder one canonical starting document that explains the current repo posture, the system-level planning parent, the default queue order, and the branching rules when a narrower slice is explicitly assigned.
 
 ---
 
 ## Executive Summary
 
-The repo-wide baseline is green again, but the current verified state still lives on a dirty working tree.
+The repo-wide baseline is green again, but the verified state still lives on a preserved dirty checkout.
 
 That means all of these are true at the same time:
 
-- `npm run typecheck:app` passes
-- `npm run build -- --no-lint` passes
+- `docs/build-state.md` still records the last known green baseline
+- this pass re-confirmed `npm.cmd run typecheck:app`, the focused focus-mode/nav tests, and `npm.cmd run build -- --no-lint` exiting `0`
+- the same pass still found post-build artifact drift because `.next/BUILD_ID` was absent immediately afterward
 - a strict builder must still treat the checkout as intentionally dirty, not accidentally dirty
 
 This is not a contradiction. It is the current execution posture.
 
-The canonical system-level planning parent is now:
+The canonical system-level planning parent is:
 
 - `docs/research/foundations/2026-04-03-system-improvement-control-tower.md`
 
-That control tower is the repo-wide sequencing parent.
+The canonical missing-surface and false-completion companion is:
 
-The default concrete execution lane is still:
+- `docs/research/foundations/2026-04-03-system-completeness-gap-map.md`
 
-- `docs/specs/p0-survey-passive-voluntary-deploy-verification.md`
+That control tower is now the queue-order authority for default ChefFlow work.
 
-but only as the default next step when the developer has not explicitly reassigned the builder into another ready-spec slice.
+The default queue is no longer survey-first.
+
+Absent explicit reassignment, the next builder should move in this order:
+
+1. burn down active built-but-unverified debt
+2. build the narrow production-hardening foundations
+3. restore release-contract truth
+4. return to the ready trust / continuity / consolidation queue in control-tower order
+
+The survey lane remains real, but as an explicit validation branch, not as the universal owner of the current builder queue.
 
 Use preserved-dirty-checkout mode only when both `docs/build-state.md` and this handoff authorize it.
 
@@ -41,6 +51,7 @@ Read these in this exact order before this document branches you into the defaul
 
 1. `docs/build-state.md`
 2. `docs/research/foundations/2026-04-03-system-improvement-control-tower.md`
+3. `docs/research/foundations/2026-04-03-system-completeness-gap-map.md`
 
 If the assignment question is not "what exact spec do I run next?" but instead "what belongs in the current builder-admissible docket at all?", read:
 
@@ -51,6 +62,21 @@ and use its `Simple Admission Rollup` before branching.
 Then branch by assignment:
 
 ### Default path when no narrower assignment is given
+
+4. `docs/research/built-specs-verification-queue.md`
+5. If verification debt is explicitly blocked or already cleared, read these next in order:
+   - `docs/specs/p1-automated-database-backup-system.md`
+   - `docs/specs/p1-request-correlation-and-observability-wiring.md`
+   - `docs/specs/p1-build-and-release-contract-truth.md`
+   - `docs/specs/p1-allergy-and-dietary-trust-alignment.md`
+   - `docs/specs/cost-propagation-wiring.md`
+   - `docs/specs/vendor-personalization-layer.md`
+   - `docs/specs/p1-dead-zone-gating-and-surface-honesty.md`
+   - `docs/specs/p1-task-and-todo-contract-truth.md`
+   - `docs/specs/p1-analytics-surface-ownership-and-route-truth.md`
+   - `docs/specs/p1-pipeline-analytics-truth-and-honesty.md`
+
+### If the developer explicitly assigns survey validation work
 
 3. `docs/specs/survey-wave-1-internal-launch-builder-handoff-2026-04-02.md`
 4. `docs/specs/p0-survey-passive-voluntary-deploy-verification.md`
@@ -81,16 +107,16 @@ Only read `docs/research/current-build-recovery-handoff-2026-04-02.md` if the ba
 
 ### Baseline
 
-- `npm run typecheck:app`
+- `docs/build-state.md`
+  - remains the last known green baseline
+- `npm.cmd run typecheck:app`
   - passes
-- `npm run build -- --no-lint`
+- `node --test --import tsx tests/unit/focus-mode.test.ts tests/unit/focus-mode-strict-nav.test.ts`
   - passes
-- `node --test --import tsx "tests/unit/beta-survey-utils.test.ts"`
-  - passes
-- localhost browser verification
-  - public discovery card renders with both tracked CTAs
-  - chef portal renders the operator survey banner
-  - client portal renders the client survey banner
+- `npm.cmd run build -- --no-lint`
+  - exits `0` and emits the normal route manifest for this pass
+- `.next/BUILD_ID`
+  - is still absent immediately after that successful build command, so post-build artifact integrity remains a real follow-up instead of a closed concern
 
 ### System-Level Planning Parent
 
@@ -98,64 +124,162 @@ The active repo-wide sequencing parent is:
 
 - `docs/research/foundations/2026-04-03-system-improvement-control-tower.md`
 
-Use it whenever the task is broader than the default survey verification lane or when the developer explicitly assigns another ready-spec slice.
+The active completeness companion for missing/incomplete systems is:
+
+- `docs/research/foundations/2026-04-03-system-completeness-gap-map.md`
+
+Use it whenever the task is broader than a narrow explicitly assigned slice.
 
 ### Default Concrete Execution Lane
 
-The default open execution obligation is still the internal wave-1 market-research survey path:
+The default open execution obligation is now the control-tower queue itself:
 
-- public survey routes exist
-- passive voluntary surfacing exists locally across public, chef, and client surfaces
-- same-browser completion suppression exists
-- build-safe caching for survey-definition reads exists
-- deployed verification of that slice is still open
-- the latest deploy-verification attempt was blocked before app-level checks because at 2026-04-03 04:39 EDT both `beta.cheflowhq.com` and `app.cheflowhq.com` returned Cloudflare `530` / `1033` from `/api/health/readiness?strict=1`
+- active built-but-unverified work should be verified before it is treated as settled
+- two narrow production-hardening specs are now ready:
+  - `docs/specs/p1-automated-database-backup-system.md`
+  - `docs/specs/p1-request-correlation-and-observability-wiring.md`
+- the next contract-truth slice after those is now explicit:
+  - `docs/specs/p1-build-and-release-contract-truth.md`
+- the next ready user-facing slice after that remains:
+  - `docs/specs/p1-allergy-and-dietary-trust-alignment.md`
+- the continuity queue then continues through:
+  - `docs/specs/cost-propagation-wiring.md`
+  - `docs/specs/vendor-personalization-layer.md`
+  - `docs/specs/p1-dead-zone-gating-and-surface-honesty.md`
+  - `docs/specs/p1-task-and-todo-contract-truth.md`
+  - `docs/specs/p1-analytics-surface-ownership-and-route-truth.md`
+  - `docs/specs/p1-pipeline-analytics-truth-and-honesty.md`
 
-### Parallel Ready Work That Already Exists
+The survey validation lane is still available, but it is no longer the default owner of generic builder selection.
 
-Other real builder-ready slices now exist, but they are not the default next execution step unless the developer explicitly redirects the builder or the survey verification lane is closed.
+### Other Current Truths
 
-Examples already indexed in the control tower:
+- the three measured interface-philosophy violations are now corrected on the preserved dirty checkout
+- the active built-verification queue still exists and remains real product debt
+- targeted release-contract tests are currently stale and failing on the live checkout:
+  - `tests/unit/api.health-route.test.ts`
+  - `tests/unit/launch-surface-guards.test.ts`
+  - `tests/unit/web-beta-build-surface.test.ts`
+- the canonical build command now exits `0` again on the dirty checkout, but build-artifact truth is still incomplete because `.next/BUILD_ID` is missing after the run
+- OpenClaw runtime, Raspberry Pi host work, and bridge work still require runtime-ownership classification before selection
 
-- `docs/specs/p1-allergy-and-dietary-trust-alignment.md`
-- `docs/specs/cost-propagation-wiring.md`
-- `docs/specs/vendor-personalization-layer.md`
-- `docs/specs/p1-dead-zone-gating-and-surface-honesty.md`
-- `docs/specs/p1-demo-continuity-and-portal-proof.md`
-- `docs/specs/p1-chef-getting-started-surface-consolidation.md`
-- `docs/specs/p1-finance-root-canonicalization.md`
-- `docs/specs/p1-analytics-surface-ownership-and-route-truth.md`
-- `docs/specs/p1-recipe-root-canonicalization-and-route-truth.md`
-- `docs/specs/p1-event-scheduling-surface-ownership-and-route-truth.md`
+### Preserved Dirty Baseline
 
-Do not read that list as permission to ignore the control tower or to pick a random `ready` file.
+The current dirty snapshot at handoff time includes these files:
+
+- `app/(chef)/culinary/price-catalog/page.tsx`
+- `app/(chef)/dashboard/_sections/hero-metrics-client.tsx`
+- `app/(chef)/dashboard/_sections/hero-metrics.tsx`
+- `app/(client)/my-events/[id]/pay/payment-section.tsx`
+- `app/(public)/page.tsx`
+- `app/api/cron/event-progression/route.ts`
+- `app/api/v2/documents/generate/route.ts`
+- `app/api/v2/documents/route.ts`
+- `app/api/v2/events/[id]/archive/route.ts`
+- `app/api/v2/events/[id]/clone/route.ts`
+- `app/api/v2/events/[id]/route.ts`
+- `app/api/v2/events/[id]/transition/route.ts`
+- `app/api/v2/events/route.ts`
+- `app/api/v2/loyalty/members/[id]/route.ts`
+- `app/api/v2/loyalty/members/route.ts`
+- `app/api/v2/payments/route.ts`
+- `app/api/v2/quotes/[id]/accept/route.ts`
+- `app/api/v2/quotes/[id]/send/route.ts`
+- `app/layout.tsx`
+- `chefflow-watchdog.ps1`
+- `components/navigation/nav-config.tsx`
+- `docs/build-state.md`
+- `docs/interface-philosophy-gap-analysis.md`
+- `docs/research/README.md`
+- `docs/research/builder-docket-runtime-ownership-map-2026-04-03.md`
+- `docs/research/current-builder-start-handoff-2026-04-02.md`
+- `docs/research/foundations/2026-04-03-builder-gap-closure-handoff.md` (untracked)
+- `docs/research/foundations/2026-04-03-system-completeness-gap-map.md` (untracked)
+- `docs/research/foundations/2026-04-03-system-improvement-control-tower.md`
+- `docs/session-log.md`
+- `docs/uptime-history.json`
+- `lib/billing/focus-mode-actions.ts`
+- `lib/chef/layout-data-cache.ts`
+- `lib/documents/intelligence-router.ts`
+- `lib/events/transitions.ts`
+- `lib/openclaw/catalog-actions.ts`
+- `lib/validation/schemas.ts`
+- `next.config.js`
+- `package.json`
+- `public/images/remy/Gustav/Gustav Full body..png` (deleted)
+- `public/images/remy/Gustav/gustav-full-body.png` (deleted)
+- `public/images/remy/Gustav/gustav-mascot-b64.txt` (deleted)
+- `public/images/remy/_watermark_check.png` (deleted)
+- `public/images/remy/remy-animation-pack.png` (deleted)
+- `public/images/remy/remy-eye-states.png` (deleted)
+- `public/images/remy/remy-eyes-closed.png` (deleted)
+- `public/images/remy/remy-flag-1.png` (deleted)
+- `public/images/remy/remy-flag-2.png` (deleted)
+- `public/images/remy/remy-flag-3.png` (deleted)
+- `public/images/remy/remy-flag-4.png` (deleted)
+- `public/images/remy/remy-flag-5.png` (deleted)
+- `public/images/remy/remy-flag-6.png` (deleted)
+- `public/images/remy/remy-giddy-surprise.png` (deleted)
+- `public/images/remy/remy-happy-eyes-closed.png` (deleted)
+- `public/images/remy/remy-happy-sleeping.png` (deleted)
+- `public/images/remy/remy-mascot.png` (deleted)
+- `public/images/remy/remy-walk-1.png` (deleted)
+- `public/images/remy/remy-walk-2.png` (deleted)
+- `public/images/remy/remy-walk-3.png` (deleted)
+- `public/images/remy/remy-walk-4.png` (deleted)
+- `public/images/remy/remy-walk-5.png` (deleted)
+- `public/images/remy/remy-waving-6frames.png` (deleted)
+- `public/images/remy/remy-whisk-1.png` (deleted)
+- `public/images/remy/remy-whisk-2.png` (deleted)
+- `public/images/remy/remy-whisk-3.png` (deleted)
+- `public/images/remy/remy-whisk-4.png` (deleted)
+- `public/images/remy/sprites/remy-base.png` (deleted)
+- `public/images/remy/sprites/remy-body-celebrate.png` (deleted)
+- `public/images/remy/sprites/remy-body-spicy.png` (deleted)
+- `public/images/remy/sprites/remy-body-walk.png` (deleted)
+- `public/images/remy/sprites/remy-body-whisk.png` (deleted)
+- `scripts/check-bundle-budget.mjs`
+- `scripts/openclaw-pull/config.mjs`
+- `scripts/openclaw-pull/pull.mjs`
+- `docs/specs/p1-automated-database-backup-system.md` (untracked)
+- `docs/specs/p1-build-and-release-contract-truth.md` (untracked)
+- `docs/specs/p1-pipeline-analytics-truth-and-honesty.md` (untracked)
+- `docs/specs/p1-request-correlation-and-observability-wiring.md` (untracked)
+- `docs/specs/p1-task-and-todo-contract-truth.md` (untracked)
+- `scripts/daily-sync-check.ps1` (untracked)
+- `scripts/list-tasks.ps1` (untracked)
+- `scripts/run-next-prod.mjs` (untracked)
+
+Treat the files outside the builder's explicitly assigned narrow lane as preserved in-flight work unless the developer explicitly assigns them. Do not clean them up or absorb them casually.
 
 ### What Is Not Yet Complete
 
-- deployed verification of the passive survey surfacing slice
-- restoration of deployed host reachability so that verification can actually run
-- deployed proof that tracked survey metadata lands correctly in admin
-- phase-3 public hardening and admin-scale work for the survey path
 - active built-but-unverified items in `docs/research/built-specs-verification-queue.md`
-- multiple ready system-improvement slices that are still planning-ready but not yet implemented
+- implementation of the two new production-hardening specs
+- implementation of the release-contract truth spec
+- ready trust / continuity / dead-zone / closure slices beyond the hardening phase
+- survey validation work, which remains available but is no longer the default general queue owner
+- Cloudflare Tunnel service reinstall with proper args so the tunnel survives reboot
 
 ---
 
 ## Immediate Next Task
 
-If the developer does **not** explicitly assign a different slice, the next builder should execute:
+If the developer does **not** explicitly assign a different slice, the next builder should start with:
 
-- `docs/specs/p0-survey-passive-voluntary-deploy-verification.md`
+- `docs/research/built-specs-verification-queue.md`
 
-But first, if either hosted health endpoint still returns Cloudflare `530` / `1033`, treat deployment reachability as the active blocker and restore that before attempting survey-route checks.
+and burn down the active built-but-unverified queue in that document's order.
 
-Do not start:
+If the developer wants the next coding slice instead of verification work, start with:
 
-- `docs/specs/p1-survey-public-hardening-and-results-scale.md`
+1. `docs/specs/p1-automated-database-backup-system.md`
+2. `docs/specs/p1-request-correlation-and-observability-wiring.md`
+3. `docs/specs/p1-build-and-release-contract-truth.md`
 
-until deploy verification is actually complete.
+Then return to the control tower for the next ready trust / continuity slice.
 
-If the developer **does** explicitly assign a different ready-spec slice, still start with this handoff and the control tower first, then move to the assigned spec instead of pretending the survey lane owns the whole repo.
+If the developer explicitly assigns survey validation work, branch into the survey handoff stack and treat hosted reachability as the gating concern before attempting survey-route checks.
 
 If the developer explicitly assigns `runtime-owned` OpenClaw work, branch to:
 
@@ -167,7 +291,7 @@ If the developer explicitly assigns website-performance work, branch to:
 
 - `docs/research/website-performance-hardening-handoff-2026-04-03.md`
 
-and treat that handoff plus the website cross-reference as the governing context for render-path and loading work instead of trying to infer a performance queue from the broader survey-first default.
+and treat that handoff plus the website cross-reference as the governing context for render-path and loading work instead of trying to infer a performance queue from the broader default lane.
 
 ---
 
@@ -201,42 +325,46 @@ Common start for every builder:
 1. read `docs/build-state.md`
 2. read this handoff
 3. read `docs/research/foundations/2026-04-03-system-improvement-control-tower.md`
-4. confirm whether the task is:
-   - the default survey verification lane
+4. if the task is about missing systems, false-complete surfaces, or closure work, read `docs/research/foundations/2026-04-03-system-completeness-gap-map.md`
+5. confirm whether the task is:
+   - the default verification / hardening lane
+   - explicitly assigned survey validation work
    - an explicitly assigned narrow implementation slice
    - verification-only work
    - recovery work because the baseline regressed
 
 ### Phase 1
 
-If no narrower assignment was given, deploy and verify the current passive voluntary survey slice.
+If no narrower assignment was given, verify active built work first.
 
 Source of truth:
 
-- `docs/specs/p0-survey-passive-voluntary-deploy-verification.md`
+- `docs/research/built-specs-verification-queue.md`
 
 If phase 1 fails:
 
-- fix only the blockers required for deploy verification
+- fix or document only the blockers required for truthful verification
 - rerun phase 1
-
-If phase 1 cannot even start because hosted health still fails at the edge, log that as deployment-reachability debt instead of pretending the survey verification spec has been exercised.
 
 ### Phase 2
 
-Only after phase 1 passes:
+If the developer wants the next coding slice after verification debt, or if the verification lane is explicitly blocked:
 
-- execute `docs/specs/p1-survey-public-hardening-and-results-scale.md`
+- execute `docs/specs/p1-automated-database-backup-system.md`
+- then execute `docs/specs/p1-request-correlation-and-observability-wiring.md`
+- then execute `docs/specs/p1-build-and-release-contract-truth.md`
 
 ### Phase 3
 
-If the developer explicitly redirects the builder into another ready-spec slice, or once the survey verification and hardening obligations are cleared, return to the control tower and follow its phase order for the next assigned domain.
+Return to the control tower and follow its phase order for the next assigned domain.
 
 That is where the builder should choose between:
 
 - trust and dietary continuity
 - costing and vendor propagation
 - dead-zone honesty
+- task/todo contract closure
+- analytics route ownership and pipeline truth
 - demo continuity
 - already-specced consolidation lanes
 - later validation, reachability, website, or platform-intelligence work
@@ -249,9 +377,10 @@ Do not invent a new top-level order outside this handoff plus the control tower.
 
 - do not restart survey planning from older Google Forms docs
 - do not treat `docs/specs/p0-survey-passive-voluntary-surfacing.md` as the next build step; it is implementation reference now
-- do not start survey hardening before deploy verification
-- do not treat the survey lane as proof that no other builder-ready work exists
-- do not skip the control tower when the task is broader than the default survey lane
+- do not treat the survey lane as the default owner of the whole repo
+- do not skip the active built-verification queue and jump straight into new build work without an explicit reason
+- do not trust the current targeted release tests until the release-contract truth slice lands
+- do not skip the control tower when the task is broader than the default lane
 - do not use this website-first handoff as the queue-order authority once the developer has explicitly redirected the builder into the OpenClaw runtime lane
 - do not pick a random `ready` spec by filename sorting alone
 - do not treat the dirty worktree as permission to clean the tree destructively
@@ -266,8 +395,8 @@ The current builder-start context is complete when the next builder can answer t
 1. Is the repo-wide baseline green or red?
 2. Is the current verified state on a clean commit or a dirty checkout?
 3. What is the system-level parent doc for sequencing?
-4. What exact spec should be executed next if no narrower assignment is given?
-5. What must happen before survey hardening can begin?
+4. What exact queue should be executed next if no narrower assignment is given?
+5. What coding slice comes immediately after verification debt?
 6. How should a builder branch if the developer explicitly assigns a different ready-spec slice?
 7. How should a builder behave if `git status` is dirty for this active context?
 

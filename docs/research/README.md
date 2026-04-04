@@ -51,6 +51,7 @@ Examples:
 - [Source-to-Close Funnel Truth Map - 2026-04-03](./foundations/2026-04-03-source-to-close-funnel-truth-map.md)
 - [Chef Activation Signal Inventory and Execution Order - 2026-04-03](./foundations/2026-04-03-chef-activation-signal-inventory-and-execution-order.md)
 - [Platform Intelligence Evidence Gaps and Spec Corrections - 2026-04-03](./foundations/2026-04-03-platform-intelligence-evidence-gaps-and-spec-corrections.md)
+- [System Completeness Gap Map - 2026-04-03](./foundations/2026-04-03-system-completeness-gap-map.md)
 - [System Improvement Control Tower - 2026-04-03](./foundations/2026-04-03-system-improvement-control-tower.md)
 
 ### Core supporting docs outside this folder
@@ -76,6 +77,7 @@ These are the most relevant recent supporting documents for current-state unders
 - [Website Performance Hardening Handoff - 2026-04-03](./website-performance-hardening-handoff-2026-04-03.md)
 - [Source-to-Close Funnel Truth Map - 2026-04-03](./foundations/2026-04-03-source-to-close-funnel-truth-map.md)
 - [Chef Activation Signal Inventory and Execution Order - 2026-04-03](./foundations/2026-04-03-chef-activation-signal-inventory-and-execution-order.md)
+- [System Completeness Gap Map - 2026-04-03](./foundations/2026-04-03-system-completeness-gap-map.md)
 - [Competitive Intelligence: Take a Chef and Private Chef Manager - 2026-04-02](./competitive-intelligence-takeachef-privatechefmanager-2026-04-02.md)
 - [Competitive Intelligence: ChefFlow Improvement Opportunities - 2026-04-02](./competitive-intelligence-chefflow-improvement-opportunities-2026-04-02.md)
 - [Competitive Intelligence Gap-Closure Builder Handoff - 2026-04-02](./competitive-intelligence-gap-closure-builder-handoff-2026-04-02.md)
@@ -163,6 +165,12 @@ If someone asks about demo readiness, public-to-portal proof, or what should mak
 
 If someone asks what to improve next across the system, or how to prioritize builder work, start with:
 
+- [System Improvement Control Tower - 2026-04-03](./foundations/2026-04-03-system-improvement-control-tower.md)
+- [System Completeness Gap Map - 2026-04-03](./foundations/2026-04-03-system-completeness-gap-map.md)
+
+If someone asks what is still missing, incomplete, or false-complete across ChefFlow, start with:
+
+- [System Completeness Gap Map - 2026-04-03](./foundations/2026-04-03-system-completeness-gap-map.md)
 - [System Improvement Control Tower - 2026-04-03](./foundations/2026-04-03-system-improvement-control-tower.md)
 
 If someone asks where a builder should start right now, or what the current execution chain is, start with:

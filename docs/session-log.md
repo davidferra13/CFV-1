@@ -1921,6 +1921,23 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: unchanged (research-only session, no code changes)
 - Notes: 5-tier confidence audit across 7 axes (30+ personas). Results: 58 verified, 16 partial, 14 assumptions, 13 blind spots, 9 contradictions. Top 3 gaps: user acquisition channels (zero data), monetization model (unvalidated), tax export path disagreements (code bug). Single most dangerous assumption: voluntary $12/month model. Highest-ROI next action: execute Wave-1 operator survey (already designed). Core finding: build is far ahead of validation. The project knows what to build but not whether anyone will use it.
 
+## 2026-04-04 00:15 EST
+
+- Agent: General
+- Task: Env template truth alignment after root .env creation
+- Status: started
+- Build state on arrival: unchanged from docs/build-state.md (green baseline with dirty checkout caveat)
+- Notes: Root .env was fixed first. This follow-up pass is to align .env.example and .env.local.example with the actual current env contract and remove stale legacy DB placeholders.
+
+## 2026-04-04 00:28 EST
+
+- Agent: General
+- Task: Env template truth alignment after root .env creation
+- Status: completed
+- Files touched: .env.example, .env.local.example, docs/session-log.md
+- Build state on departure: unchanged from docs/build-state.md (no build or typecheck run)
+- Notes: Both example env templates now document the current DATABASE_URL-style runtime contract first and explicitly fence the older DB alias keys as compatibility-only for legacy scripts/tests. Repo memory note added for the env contract split.
+
 ## 2026-04-04 ~13:00 EST
 
 - Agent: Research (Claude Opus 4.6)

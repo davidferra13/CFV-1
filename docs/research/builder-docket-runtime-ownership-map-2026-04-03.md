@@ -120,19 +120,20 @@ This is the active lane today.
 Current repo truth:
 
 - the active builder-start handoff now routes builders through the build-state -> builder-start -> control-tower chain
-- absent explicit reassignment, the default concrete execution lane is still survey deploy verification
+- absent explicit reassignment, the default current execution chain is now built-verification debt first, then the narrow production-hardening specs, then the control-tower continuity queue
 - the recorded repo-wide baseline is green, but tied to a dirty checkout
 - the website/public-product side already has a canonical execution map
 
 Current work in this lane:
 
-- survey deploy verification
-- survey hardening after deploy verification
+- built-but-unverified verification queue work
+- automated database backup hardening
+- request correlation and observability wiring
 - public trust and continuity work
-- demo continuity and portal proof
 - dietary trust alignment
 - cost propagation and vendor-facing continuity on ChefFlow surfaces
 - dead-zone gating, surface honesty, and route consolidation
+- demo continuity and portal proof when explicitly prioritized
 
 Primary documents:
 
@@ -275,21 +276,22 @@ Use this as an admission filter, not as a replacement for sequencing.
 
 - `gets in now` means the item belongs in the current builder-admissible execution set
 - `does not get in now` means the item should not be pulled into the default active queue without prerequisite closure or explicit reassignment
-- this does **not** change the default next step; `survey deploy verification` remains first unless the developer explicitly redirects the builder
+- this does **not** replace queue sequencing from the current builder-start handoff; verification debt still comes first unless the developer explicitly redirects the builder elsewhere
 
-### Gets In Now (9)
+### Gets In Now (10)
 
-1. `Survey deploy verification` - `default next step`; verify the deployed passive voluntary survey slice and fix only blockers required for that verification.
-2. `Public website trust and discovery baseline` - `verified-foundation`; current website work may compose with this baseline now, but should not restart it.
-3. `Public intake and source-to-close routing truth` - `verified-foundation`; intake, booking, inquiry, and trust-loop work belongs in the active queue only if it preserves the real funnel map.
-4. `Demo continuity and public-to-portal proof` - `ready-spec`; this is a legitimate current builder slice when survey verification closes or the developer explicitly redirects into it.
-5. `Built-but-unverified implementation debt` - `built-unverified`; verification work belongs in the current docket because already-built code is still active product risk until checked.
-6. `Inquiry safety and dietary continuity` - `ready-spec`; this is a current trust-and-safety build lane with a clear narrow spec.
-7. `Costing truth, vendor propagation, and profitability loop` - `ready-spec`; this is a current continuity lane with real implementation packets already written.
-8. `Dead zones and non-functional surfaces` - `ready-spec`; deceptive or degraded routes belong in the current cleanup docket because they distort product truth now.
-9. `Redundant entry points and system sprawl` - `redundant-needs-consolidation`; already-specced consolidation slices may enter the queue now when the assigned problem matches them.
+1. `Built-but-unverified implementation debt` - `default next step`; verification work belongs in the current docket because already-built code is still active product risk until checked.
+2. `Production resilience and observability hardening` - `ready-spec`; the database-backup and request-correlation specs are current builder-ready work that improve the whole system without widening product surface area.
+3. `Public website trust and discovery baseline` - `verified-foundation`; current website work may compose with this baseline now, but should not restart it.
+4. `Public intake and source-to-close routing truth` - `verified-foundation`; intake, booking, inquiry, and trust-loop work belongs in the active queue only if it preserves the real funnel map.
+5. `Inquiry safety and dietary continuity` - `ready-spec`; this is a current trust-and-safety build lane with a clear narrow spec.
+6. `Costing truth, vendor propagation, and profitability loop` - `ready-spec`; this is a current continuity lane with real implementation packets already written.
+7. `Dead zones and non-functional surfaces` - `ready-spec`; deceptive or degraded routes belong in the current cleanup docket because they distort product truth now.
+8. `Redundant entry points and system sprawl` - `redundant-needs-consolidation`; already-specced consolidation slices may enter the queue now when the assigned problem matches them.
+9. `Demo continuity and public-to-portal proof` - `ready-spec`; this is a legitimate current builder slice when the control tower reaches the proof/showcase phase or the developer explicitly redirects into it.
+10. `Survey deploy verification` - `validation lane`; still admissible when explicitly assigned, but no longer the universal default queue owner.
 
-### Does Not Get In Now (10)
+### Does Not Get In Now (9)
 
 1. `Survey public hardening and results scale` - blocked until deploy verification passes; it is next-after, not now.
 2. `Build posture and builder-start constraints` - `verified-foundation`; this governs work selection, but is not itself an implementation target.
@@ -304,8 +306,8 @@ Use this as an admission filter, not as a replacement for sequencing.
 
 The count is intentional:
 
-- `gets in now`: 9
-- `does not get in now`: 10
+- `gets in now`: 10
+- `does not get in now`: 9
 - `total`: 19
 
 ---

@@ -1,86 +1,62 @@
 # Interface Philosophy - Compliance Gap Analysis
 
-> **Purpose:** Bridge document between the Universal Interface Philosophy (governance) and the current ChefFlow implementation. Tells builders exactly what violates the rules, what's already compliant, and what to fix first.
+> **Purpose:** Bridge document between the Universal Interface Philosophy (governance) and the current ChefFlow implementation. Tells builders what is compliant now, what was just corrected, and what still needs monitoring.
 >
 > **Source of truth:** `docs/specs/universal-interface-philosophy.md`
 >
 > **Generated:** 2026-04-03
+> **Updated:** 2026-04-03
 
 ---
 
 ## Current Compliance Summary
 
-| Area                             | Status        | Detail                                                                                    |
-| -------------------------------- | ------------- | ----------------------------------------------------------------------------------------- |
-| Primary button discipline        | Compliant     | 1 `gradient-accent` primary per screen on dashboard                                       |
-| Dashboard progressive disclosure | Compliant     | `DashboardSecondaryInsights` collapsed by default                                         |
-| Command Center card count        | Compliant     | 6 cards (under 7 limit)                                                                   |
-| Five mandatory states            | Partial       | Suspense + ErrorBoundary covers Loading/Error, but Empty/Partial handling is inconsistent |
-| Hero metrics                     | **Violation** | 4 displayed, max 2 allowed (Section 6)                                                    |
-| Sidebar standaloneTop items      | **Violation** | 9 non-admin items, max 7 allowed (Section 2)                                              |
-| Action Bar shortcuts             | **Violation** | 8 items, max 7 allowed (Section 6)                                                        |
-| Dashboard visible sections       | Borderline    | ~7 sections before scroll (at the limit)                                                  |
-| Nav groups in All Features       | Acceptable    | 15 groups, but behind Level 2 disclosure (All Features drawer)                            |
-| MetricsStrip                     | Compliant     | 4-6 contextual metrics, conditional rendering, returns null when empty                    |
+| Area                             | Status     | Detail                                                                                          |
+| -------------------------------- | ---------- | ----------------------------------------------------------------------------------------------- |
+| Primary button discipline        | Compliant  | 1 `gradient-accent` primary per screen on dashboard                                             |
+| Dashboard progressive disclosure | Compliant  | `DashboardSecondaryInsights` collapsed by default                                               |
+| Command Center card count        | Compliant  | 6 cards (under 7 limit)                                                                         |
+| Five mandatory states            | Partial    | Suspense + ErrorBoundary covers Loading/Error, but Empty/Partial handling is still inconsistent |
+| Hero metrics                     | Compliant  | 2 hero metrics only; Revenue and Outstanding demoted into supporting tier                       |
+| Sidebar standaloneTop items      | Compliant  | Focus Mode default now matches schema default, restoring the intended low-clutter entry posture |
+| Action Bar shortcuts             | Compliant  | 7 items; Calendar remains reachable via Events instead of duplicating the shortcut              |
+| Dashboard visible sections       | Borderline | ~7 sections before scroll (at the limit)                                                        |
+| Nav groups in All Features       | Acceptable | 15 groups, but behind Level 2 disclosure (All Features drawer)                                  |
+| MetricsStrip                     | Compliant  | 4-6 contextual metrics, conditional rendering, returns null when empty                          |
 
 ---
 
-## Violations (ordered by severity)
+## Resolved Violations (historical context)
 
-### V1. Hero Metrics: 4 displayed, max 2 hero allowed
+These three measured violations were corrected on the 2026-04-03 preserved dirty checkout and should no longer be treated as active queue items.
+
+### V1. Hero Metrics: resolved
 
 **Rule:** Section 6, Cognitive Load Constraints: "Dashboard hero metrics: maximum 2. When exceeded, demote to supporting tier."
 
-**Current state:** `app/(chef)/dashboard/_sections/hero-metrics.tsx` returns 4 metrics:
+**Current state:** `app/(chef)/dashboard/_sections/hero-metrics.tsx` now promotes only two decision-driving hero metrics: Events this week and Open inquiries. Revenue and Outstanding still exist, but as smaller supporting metrics below the hero tier in `hero-metrics-client.tsx`.
 
-1. Revenue (all time)
-2. Events this week
-3. Open inquiries
-4. Outstanding balance
-
-**Fix:** Pick the 2 most decision-driving metrics as hero. Demote the other 2 to a supporting row (smaller text, below the hero pair, or inside the Command Center cards as contextual counts). Apply the vanity metric test to each: "What decision would I make differently based on this number?"
-
-**Recommendation:** "Events this week" and "Open inquiries" are actionable (they drive "what do I do today"). "Revenue (all time)" is a vanity metric (cumulative, never decreases, no comparison context). "Outstanding" is actionable but lower urgency. Promote Events + Inquiries to hero. Demote Revenue and Outstanding to supporting.
+**Disposition:** closed. Builders should preserve the 2-hero / supporting-tier split unless a future UI audit replaces it with a different compliant structure.
 
 ---
 
-### V2. Sidebar standaloneTop: 9 items, max 7 allowed
+### V2. Sidebar standaloneTop: resolved
 
 **Rule:** Section 2, Visibility Rules: "Navigation to the user's most-used areas (max 7 top-level items)." Section 6: "Top-level nav items: maximum 7."
 
-**Current state:** `components/navigation/nav-config.tsx` lines 131-238. The 9 non-admin items:
+**Current state:** `lib/billing/focus-mode-actions.ts` now defaults `isFocusModeEnabled()` to `true` when no `chef_preferences` row exists, which matches the schema default and restores the intended clean first-run sidebar.
 
-1. Dashboard (primary)
-2. Inbox (primary)
-3. Events (primary)
-4. Clients (primary)
-5. Dinner Circles (primary)
-6. Culinary (secondary)
-7. Finance (secondary)
-8. Operations (secondary)
-9. Growth (secondary)
-
-**Fix: Make Focus Mode default to ON.** Focus Mode already exists and solves this completely. When active, the sidebar shows 5 primary shortcuts (Dashboard, Inbox, Inquiries, Events, Clients) + 4 nav groups. Both under the 7-item limit. Power users toggle it off in Settings > Modules.
-
-**Implementation (1-line fix):** In `lib/billing/focus-mode-actions.ts` line 27, change `return (data as any)?.focus_mode ?? false` to `return (data as any)?.focus_mode ?? true`. This aligns the runtime default with the schema default (`focus_mode` column in `chef_preferences` already defaults to `true` per `lib/db/schema/schema.ts` line 24154).
-
-**Bug found:** The schema sets `focus_mode` default to `true` but `isFocusModeEnabled()` returns `false` on null. This means new users (no preferences row yet) see the full 9-item sidebar instead of the intended clean default. Fixing this one line resolves both the bug and the violation.
-
-**Philosophy alignment:** Section 1.5: "Opinionated by default, flexible on demand." Focus Mode ON = opinionated clean sidebar. Toggle OFF = flexible expansion.
+**Disposition:** closed. This remains a behavioral invariant: schema default and runtime default must stay aligned.
 
 ---
 
-### V3. Action Bar: 8 shortcuts, max 7 allowed
+### V3. Action Bar: resolved
 
 **Rule:** Section 6: "Top-level nav items: maximum 7. Overflow into 'More' or grouped submenu."
 
-**Current state:** `nav-config.tsx` lines 1927-1936 define 8 action bar items: Inbox, Calendar, Events, Clients, Menus, Money, Prep, Circles.
+**Current state:** `components/navigation/nav-config.tsx` now exposes 7 action-bar items. Calendar remains reachable through Events, which removes the redundant top-level shortcut without losing access.
 
-**Fix: Remove Calendar from Action Bar.** Calendar is already in Events' submenu (`nav-config.tsx` line 148: `{ href: '/calendar', label: 'Calendar' }`). Having it as both a standalone Action Bar item and an Events sub-item is a redundant control (anti-pattern, Section 11). Removing it drops the Action Bar to 7 items and eliminates the redundancy.
-
-**Implementation:** Remove the Calendar entry from the `actionBarItems` array in `nav-config.tsx` (line ~1929). No other files affected.
-
-**Impact:** Minor. Over by 1, and the removed item is already accessible via Events.
+**Disposition:** closed. If future builders add a shortcut back into the action bar, they must remove or regroup something else to stay under the cap.
 
 ---
 
@@ -108,41 +84,40 @@ These are behind Level 2 disclosure (the "All Features" drawer), so the philosop
 
 ## Already Compliant (No Action Needed)
 
-| Area                          | Why It's Compliant                                                                                    |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Primary button per screen     | Only 1 `gradient-accent` CTA on dashboard header; other buttons use secondary styling                 |
-| Secondary insights            | `DashboardSecondaryInsights` is collapsed by default (`useState(true)`) with localStorage persistence |
-| Command Center                | 6 cards in responsive grid (under 7 limit)                                                            |
-| MetricsStrip                  | Conditional rendering; returns null when empty; 4-6 items only when data exists                       |
-| Destructive action separation | Delete/remove actions use `danger` variant, separated from primary CTAs                               |
-| Module toggle system          | Inactive modules are invisible; `lib/billing/modules.ts` controls surface visibility                  |
+| Area                          | Why It's Compliant                                                                                             |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Primary button per screen     | Only 1 `gradient-accent` CTA on dashboard header; other buttons use secondary styling                          |
+| Secondary insights            | `DashboardSecondaryInsights` is collapsed by default (`useState(true)`) with localStorage persistence          |
+| Command Center                | 6 cards in responsive grid (under 7 limit)                                                                     |
+| Hero metrics                  | Dashboard hero tier is capped at 2, with lower-urgency metrics demoted into a smaller supporting row           |
+| Sidebar entry posture         | Focus Mode default now aligns with the DB default, restoring the intended opinionated low-clutter sidebar path |
+| Action Bar                    | Reduced to 7 shortcuts with no redundant Calendar entry                                                        |
+| MetricsStrip                  | Conditional rendering; returns null when empty; 4-6 items only when data exists                                |
+| Destructive action separation | Delete/remove actions use `danger` variant, separated from primary CTAs                                        |
+| Module toggle system          | Inactive modules are invisible; `lib/billing/modules.ts` controls surface visibility                           |
 
 ---
 
 ## Research Findings Not Yet Applied
 
-The 4 research reports in `docs/research/` contain findings that inform the fix priority but are not yet synthesized into actionable rules:
+The 4 research reports in `docs/research/` still contain findings that inform follow-up work:
 
-1. **chef-software-ux-patterns.md**: "4-7 item working memory limit under pressure." Reinforces the 7-item maximum. Also: "glanceable in under 2 seconds" applies to hero metrics (fewer = faster scan).
-
-2. **consumer-platform-interaction-patterns.md**: "10x conversion when options reduced from 24 to 6." Directly supports reducing nav items. "Skeleton screens feel 20-30% faster than spinners" (already implemented via Suspense fallbacks).
-
-3. **interface-philosophy-enforceable-rules.md**: Hick's Law (decision time increases logarithmically with options). Supports demoting hero metrics from 4 to 2. Fitts's Law (larger targets, closer to cursor = faster). Primary action placement already follows this.
-
-4. **operator-interface-philosophy-research.md**: "91% drop off within 14 days." First-impression clutter drives abandonment. "1,100 context switches/day" means every unnecessary element competes for scarce attention. Reinforces aggressive defaults.
+1. **chef-software-ux-patterns.md**: "4-7 item working memory limit under pressure." Reinforces the 7-item maximum. Also: "glanceable in under 2 seconds" applies to hero metrics.
+2. **consumer-platform-interaction-patterns.md**: "10x conversion when options reduced from 24 to 6." Directly supports reduced top-level choice density.
+3. **interface-philosophy-enforceable-rules.md**: Hick's Law and Fitts's Law still matter for remaining dashboard and nav grouping work.
+4. **operator-interface-philosophy-research.md**: "91% drop off within 14 days" and "1,100 context switches/day" reinforce aggressive clean defaults.
 
 ---
 
-## Fix Priority for Builder Agent
+## Remaining Builder Priority
 
-| Priority | Violation                         | Effort                            | Impact                       | Decision                                               |
-| -------- | --------------------------------- | --------------------------------- | ---------------------------- | ------------------------------------------------------ |
-| 1        | V1: Hero metrics 4 -> 2           | Small (1 file, hero-metrics.tsx)  | High (first thing users see) | Events + Inquiries hero; Revenue + Outstanding demoted |
-| 2        | V2: Sidebar 9 -> 7 items          | Tiny (1 line, focus-mode-actions) | High (every page load)       | Fix runtime default to `true` (match schema)           |
-| 3        | V3: Action Bar 8 -> 7             | Tiny (1 line, nav-config)         | Low (over by 1)              | Remove Calendar (already in Events submenu)            |
-| 4        | B2: Large nav groups sub-grouping | Medium (nav-config structure)     | Low (behind All Features)    | Sub-group items in groups exceeding 7                  |
+| Priority | Remaining item                    | Effort        | Impact                    | Decision                                                            |
+| -------- | --------------------------------- | ------------- | ------------------------- | ------------------------------------------------------------------- |
+| 1        | Five mandatory state consistency  | Medium        | Medium                    | Normalize Empty / Partial state handling before adding dashboard UI |
+| 2        | B2: Large nav groups sub-grouping | Medium        | Low (behind All Features) | Sub-group items in groups exceeding 7                               |
+| 3        | B1: Dashboard section count drift | Ongoing watch | Medium                    | Do not add a default-visible dashboard section without removing one |
 
-**All 3 violations have unambiguous fixes. No decisions needed from the developer.** A builder can execute V1 through V3 sequentially without pausing for input. V2 also fixes a bug (schema/runtime default mismatch).
+**No active release-blocking violations remain in this measured slice.** Future UI work should treat the three resolved items above as preserved baseline, not as open queue work.
 
 ---
 
