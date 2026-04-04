@@ -1874,3 +1874,30 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: lib/email/templates/event-midpoint-checkin.tsx (new), lib/email/notifications.ts, app/api/scheduled/lifecycle/route.ts, database/migrations/20260403000004_midpoint_checkin_sent_at.sql (new), docs/research/2026-04-03-multi-persona-transparency-master-synthesis.md (new), docs/research/2026-04-03-transparency-momentum-implementation-summary.md (new), app/(chef)/clients/[id]/page.tsx, app/(chef)/events/[id]/page.tsx, docs/app-complete-audit.md
 - Build state on departure: green (tsc passes)
 - Notes: Synthesized 4 research agents' findings into master report. 3 actions survived evidence filter: (1) midpoint check-in email - BUILT (new cron section, email template, dedup column), (2) post-event follow-up auto-trigger - ALREADY WIRED (Inngest chain complete from event-progression cron through transitionEvent to post-event jobs), (3) rebooking nudge - DEFERRED (needs user validation). Also wired engagement badge to client detail and lifecycle progress panel to event detail. Eliminated gamification, complex dashboards, and public leaderboards based on evidence.
+
+## 2026-04-04 00:00 EST
+
+- Agent: General
+- Task: Root .env inspection and creation if missing
+- Status: started
+- Build state on arrival: green baseline with dirty checkout caveat (dirty from 17aa640d5)
+
+## 2026-04-04 00:05 EST
+
+- Agent: General
+- Task: Root .env inspection and creation if missing
+- Status: completed
+- Files touched: .env, docs/session-log.md
+- Commits: none
+- Build state on departure: unchanged from docs/build-state.md (no build or typecheck run)
+- Notes: Root .env was missing. Created a safe minimal baseline .env without touching the existing .env.local secrets file.
+
+## 2026-04-04 ~09:00 EST
+
+- Agent: Research (Claude Sonnet 4.6)
+- Task: Private chef / executive chef / sous chef workflow reality research
+- Status: completed
+- Files touched: docs/research/2026-04-04-chef-persona-workflow-research.md (new)
+- Commits: d607fbe55
+- Build state on departure: unchanged (research-only session, no code changes)
+- Notes: 10+ web searches across workflow sources, industry forums, and specialist platforms (Epicurate/chef.tech, Personal Chef Office/APPCA, Private Chef Manager, ModernMeal, Traqly, ChefShelley blog, CIA/Culinary/Ducasse). Key findings: (1) Private chef is a strong ChefFlow fit - solo operator managing 3-8 clients, event-based lifecycle, menu repetition tracking, dietary restriction management, grocery-to-invoice gap. (2) Executive chef = wrong target: they live in POS/KDS/labor-scheduling ecosystem with 15-40 staff, no individual client CRM. (3) Sous chef = employee, not a software buyer. (4) ChefFlow already has served_dish_history, menu_service_history, dietary/allergy fields, shopping list generation, and 8-state FSM matching real workflows. (5) Three unverified gaps: allergy warnings propagation into event/menu context, client-facing menu approval flow, and grocery receipt-to-event billing linkage.
