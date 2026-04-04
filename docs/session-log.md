@@ -1838,3 +1838,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/2026-04-03-employer-employee-food-service-infrastructure-research.md (new), docs/session-log.md
 - Build state on departure: unchanged (research-only session, no code changes)
 - Notes: 20-topic deep research (10 employer, 10 employee) with real industry data, citations, and ChefFlow gap analysis. Key findings: (1) 72% of restaurants have fragmented systems, only 13% satisfied with tools, (2) typical caterer pays $500-1,500/mo across 5-8 tools, (3) 75%+ annual turnover means every additional app login hurts retention, (4) 52% of employees want single app for schedule/pay/comms, (5) consolidation saves 16+ hrs/week on data reconciliation, (6) ChefFlow's 15 infrastructure libraries map 1:1 to separate paid subscriptions operators currently juggle. Full infrastructure-to-tool mapping table with costs included.
+
+## 2026-04-03 ~20:00 EDT
+
+- Agent: Research (Claude Opus 4.6)
+- Task: Multi-persona workflow research across all 29 ChefFlow stakeholder groups
+- Status: completed
+- Files touched: docs/research/2026-04-03-multi-persona-workflow-research.md (new), docs/session-log.md
+- Build state on departure: unchanged (research-only session, no code changes)
+- Notes: Comprehensive 29-persona analysis covering chefs (private/exec/sous), clients (host/organizer/customer/guest), user types (first-time/power/solo/small-biz/catering-team), staff (employees/contractors/admin/manager), back office (scheduling/procurement/suppliers), finance (accounting/health/tax/legal/insurance/cannabis), integrations (payments/email/calendar/files/inventory), and verticals (private dining/catering/farm-to-table/luxury). Each persona includes real workflows, breakpoints, workarounds, and missing pieces. Key insights: (1) text message is the universal CRM, (2) solo chefs do admin at 11pm from their car, (3) 60-70% churn at the data-entry wall, (4) per-event P&L is never calculated, (5) receipt-to-event linkage is the #1 accounting gap, (6) ChefFlow's strongest fit is solo-to-small-business segment underserved by enterprise catering tools.
