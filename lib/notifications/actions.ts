@@ -415,6 +415,11 @@ export async function getChefProfile(
  * Used when creating notifications from webhooks where we only have tenant_id.
  */
 export async function getChefAuthUserId(tenantId: string): Promise<string | null> {
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db = createServerClient({ admin: true })
 
   const { data, error } = await db

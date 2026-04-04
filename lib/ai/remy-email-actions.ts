@@ -274,6 +274,12 @@ ${clientContext ? `\n${clientContext}` : ''}`,
 // Used by remy-context.ts to build the email awareness tier.
 
 export async function loadEmailDigest(tenantId: string) {
+  // Tenant isolation: verify tenantId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db: any = createServerClient()
   const now = new Date()
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString()

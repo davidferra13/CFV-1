@@ -157,7 +157,30 @@
 | `app/api/sentinel/auth/route.ts`      | Replaced string comparison with `timingSafeEqual()` + added IP rate limiting (5/15min) | Prevents timing side-channel on SENTINEL_SECRET + brute-force                   |
 | `app/auth/forgot-password/page.tsx`   | Removed email echo from success message                                                | Reduces user enumeration signal                                                 |
 
-**Verification:** `npm run typecheck:app` exits 0 after all changes.
+### Wave 2 Fixes (additional sweep)
+
+| File                                           | What Changed                                                                                                                                  | Why                                             |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `lib/compliance/account-deletion-actions.ts`   | Added `getCurrentUser()` tenant check to `executeFinalPurge()`                                                                                | Prevents cross-tenant account deletion          |
+| `lib/compliance/pre-deletion-checks.ts`        | Added `getCurrentUser()` tenant check to `runPreDeletionChecks()`                                                                             | Prevents cross-tenant pre-deletion checks       |
+| `lib/compliance/storage-cleanup.ts`            | Added `getCurrentUser()` tenant check to `cleanupStorageBuckets()`                                                                            | Prevents cross-tenant storage deletion          |
+| `lib/stripe/subscription.ts`                   | Added `getCurrentUser()` tenant check to `startTrial()`, `getSubscriptionStatus()`, `createCheckoutSession()`, `createBillingPortalSession()` | Prevents cross-tenant billing access            |
+| `lib/google/auth.ts`                           | Added `getCurrentUser()` tenant check to `getGoogleAccessToken()`                                                                             | Prevents cross-tenant Google token theft        |
+| `lib/ai/remy-email-actions.ts`                 | Added `getCurrentUser()` tenant check to `loadEmailDigest()`                                                                                  | Prevents cross-tenant email access              |
+| `lib/events/invoice-actions.ts`                | Added `getCurrentUser()` tenant check to `generateInvoiceNumber()`                                                                            | Prevents cross-tenant invoice generation        |
+| `lib/availability/actions.ts`                  | Added `getCurrentUser()` tenant check to `autoBlockEventDate()`                                                                               | Prevents cross-tenant availability manipulation |
+| `lib/integrations/docusign/docusign-client.ts` | Added `getCurrentUser()` tenant check to `exchangeDocuSignCode()`, `getEnvelopeStatus()`                                                      | Prevents cross-tenant integration access        |
+| `lib/integrations/square/square-client.ts`     | Added `getCurrentUser()` tenant check to `exchangeSquareCode()`                                                                               | Prevents cross-tenant integration access        |
+| `lib/notifications/triggers.ts`                | Added `getCurrentUser()` tenant check to `notifyOrderReady()`                                                                                 | Prevents cross-tenant notification injection    |
+| `lib/notifications/actions.ts`                 | Added `getCurrentUser()` tenant check to `getChefAuthUserId()`                                                                                | Prevents cross-tenant auth ID lookup            |
+| `lib/ai/reactive/hooks.ts`                     | Added `getCurrentUser()` tenant check to `onGuestListUpdated()`                                                                               | Prevents cross-tenant reactive task injection   |
+| `lib/ai/scheduled/scheduler.ts`                | Added `getCurrentUser()` tenant check to `rescheduleTask()`                                                                                   | Prevents cross-tenant task rescheduling         |
+| `lib/documents/auto-organize.ts`               | Added `getCurrentUser()` tenant check to `ensureReceiptFolder()`                                                                              | Prevents cross-tenant folder creation           |
+| `lib/ai/chef-profile-actions.ts`               | Added `getCurrentUser()` tenant check to `getCulinaryProfileForPrompt()`                                                                      | Prevents cross-tenant profile access            |
+
+**Verification:** `npm run typecheck:app` exits 0 after all wave 1 + wave 2 changes.
+
+**Total functions hardened:** 38 (20 wave 1 + 18 wave 2)
 
 ---
 

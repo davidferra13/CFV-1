@@ -103,6 +103,12 @@ export type InvoiceData = {
  * Counts existing invoices for the tenant in the current year.
  */
 export async function generateInvoiceNumber(tenantId: string): Promise<string> {
+  // Tenant isolation: verify tenantId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db: any = createServerClient()
   const year = new Date().getFullYear()
 

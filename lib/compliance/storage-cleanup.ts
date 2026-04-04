@@ -29,6 +29,12 @@ export async function cleanupStorageBuckets(chefId: string): Promise<{
   filesRemoved: number
   errors: string[]
 }> {
+  // Tenant isolation: verify chefId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && chefId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const adminClient: any = createServerClient({ admin: true })
   let filesRemoved = 0
   let bucketsProcessed = 0

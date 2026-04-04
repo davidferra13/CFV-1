@@ -166,6 +166,12 @@ export async function notifyScheduleChange(
  * and the unified order sheet is ready for review.
  */
 export async function notifyOrderReady(tenantId: string, stationCount: number): Promise<void> {
+  // Tenant isolation: verify tenantId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   try {
     const recipientId = await getChefAuthUserId(tenantId)
     if (!recipientId) return

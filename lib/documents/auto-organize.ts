@@ -28,6 +28,12 @@ const MONTH_NAMES = [
  * Idempotent: reuses existing auto-folders.
  */
 export async function ensureReceiptFolder(tenantId: string, date: string | Date): Promise<string> {
+  // Tenant isolation: verify tenantId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db: any = createServerClient()
   const d = typeof date === 'string' ? new Date(date) : date
   const year = d.getFullYear().toString()

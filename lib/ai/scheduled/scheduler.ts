@@ -105,6 +105,12 @@ export async function seedScheduledTasks(): Promise<{ seeded: number; skipped: n
  * Called by the worker after a scheduled task completes.
  */
 export async function rescheduleTask(taskType: string, tenantId: string): Promise<void> {
+  // Tenant isolation: verify tenantId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const job = SCHEDULED_JOBS.find((j) => j.taskType === taskType)
   if (!job) return // Not a recurring task
 

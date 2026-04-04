@@ -322,6 +322,12 @@ export async function executeFinalPurge(chefId: string): Promise<{
   success: boolean
   error?: string
 }> {
+  // Tenant isolation: verify chefId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && chefId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const adminClient: any = createServerClient({ admin: true })
 
   // 1. Verify the chef exists and grace period has passed

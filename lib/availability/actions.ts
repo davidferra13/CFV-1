@@ -89,6 +89,12 @@ export async function unblockDate(blockId: string) {
  * Called from the event transition logic.
  */
 export async function autoBlockEventDate(eventId: string, chefId: string, eventDate: string) {
+  // Tenant isolation: verify chefId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && chefId !== sessionUser.tenantId && chefId !== sessionUser.entityId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db: any = createServerClient()
 
   // Idempotent: skip if already blocked for this event

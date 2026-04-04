@@ -13,6 +13,7 @@
 // Existing chefs: subscription_status = 'grandfathered' → no banner ever.
 
 import { createServerClient } from '@/lib/db/server'
+import { getCurrentUser } from '@/lib/auth/get-user'
 import type Stripe from 'stripe'
 
 const SITE_URL =
@@ -74,6 +75,11 @@ export async function createStripeCustomer(
  * Called non-blocking from signUpChef().
  */
 export async function startTrial(chefId: string, days = 14): Promise<void> {
+  // Tenant isolation: verify chefId matches session when called from user context
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && chefId !== sessionUser.tenantId && chefId !== sessionUser.entityId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const trialDays = Number.isFinite(days) ? Math.max(1, Math.floor(days)) : 14
   const trialEndsAt = new Date()
   trialEndsAt.setDate(trialEndsAt.getDate() + trialDays)
@@ -97,6 +103,10 @@ export async function startTrial(chefId: string, days = 14): Promise<void> {
  * Pass chefId explicitly (preferred) or omit to use the current session.
  */
 export async function getSubscriptionStatus(chefId: string): Promise<SubscriptionStatus> {
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && chefId !== sessionUser.tenantId && chefId !== sessionUser.entityId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db = createServerClient({ admin: true })
 
   const { data: rawChef } = await db
@@ -219,6 +229,10 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
  * Returns the Checkout session URL to redirect to.
  */
 export async function createCheckoutSession(chefId: string): Promise<string> {
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && chefId !== sessionUser.tenantId && chefId !== sessionUser.entityId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const priceId = process.env.STRIPE_SUBSCRIPTION_PRICE_ID
   if (!priceId) throw new Error('STRIPE_SUBSCRIPTION_PRICE_ID is not configured')
 
@@ -250,6 +264,10 @@ export async function createCheckoutSession(chefId: string): Promise<string> {
  * Returns the portal session URL to redirect to.
  */
 export async function createBillingPortalSession(chefId: string): Promise<string> {
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && chefId !== sessionUser.tenantId && chefId !== sessionUser.entityId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const stripe = getStripe()
   const db = createServerClient({ admin: true })
 

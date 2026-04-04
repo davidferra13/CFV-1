@@ -76,6 +76,11 @@ export async function initiateSquareConnect(): Promise<{ redirectUrl: string }> 
 }
 
 export async function exchangeSquareCode(code: string, tenantId: string): Promise<void> {
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const response = await fetch(getTokenUrl(), {
     method: 'POST',
     headers: {

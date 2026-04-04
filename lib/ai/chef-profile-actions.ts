@@ -121,6 +121,11 @@ export async function saveCulinaryProfileBulk(
  * Returns null if no answers exist yet.
  */
 export async function getCulinaryProfileForPrompt(chefId: string): Promise<string | null> {
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && chefId !== sessionUser.tenantId && chefId !== sessionUser.entityId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db: any = createServerClient()
 
   const { data } = await (db

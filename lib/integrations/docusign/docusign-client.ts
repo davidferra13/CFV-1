@@ -62,6 +62,11 @@ export async function initiateDocuSignConnect(): Promise<{ redirectUrl: string }
 }
 
 export async function exchangeDocuSignCode(code: string, tenantId: string): Promise<void> {
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const basicAuth = Buffer.from(`${getClientId()}:${getClientSecret()}`).toString('base64')
 
   const response = await fetch(DS_TOKEN_URL, {
@@ -303,6 +308,11 @@ export async function sendContractForSignature(
 }
 
 export async function getEnvelopeStatus(tenantId: string, envelopeId: string) {
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db: any = createServerClient({ admin: true })
 
   const { data: conn } = await db

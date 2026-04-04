@@ -91,6 +91,12 @@ export async function initiateGoogleConnect(
 // ─── Get Valid Access Token (refresh if needed) ─────────────────────────────
 
 export async function getGoogleAccessToken(chefId: string): Promise<string> {
+  // Tenant isolation: verify chefId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && chefId !== sessionUser.tenantId && chefId !== sessionUser.entityId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db = createServerClient({ admin: true })
 
   const { data: conn, error } = await db

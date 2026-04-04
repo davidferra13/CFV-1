@@ -217,6 +217,12 @@ export async function onMenuApproved(
  * Enqueues: re-run allergen check with new guest dietary info.
  */
 export async function onGuestListUpdated(tenantId: string, eventId: string): Promise<void> {
+  // Tenant isolation: verify tenantId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   await enqueueReactiveTask({
     scopeTenantId: tenantId,
     taskType: 'reactive.guest_list_updated',

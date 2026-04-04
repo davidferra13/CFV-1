@@ -13,6 +13,12 @@ export type DeletionBlocker = {
  * before account deletion can proceed.
  */
 export async function runPreDeletionChecks(chefId: string): Promise<DeletionBlocker[]> {
+  // Tenant isolation: verify chefId matches session when called from user context
+  const { getCurrentUser } = await import('@/lib/auth/get-user')
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && chefId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db: any = createServerClient({ admin: true })
   const blockers: DeletionBlocker[] = []
 
