@@ -6,6 +6,8 @@
 // PRIVACY: Only sends location text to Open-Meteo geocoding → coordinates to OSRM.
 // No client names, event details, or business data leaves the server.
 
+import { getCurrentUser } from '@/lib/auth/get-user'
+
 interface GeoResult {
   latitude: number
   longitude: number
@@ -95,6 +97,11 @@ export type TravelEstimateResult = {
 }
 
 export async function getTravelEstimates(tenantId: string): Promise<TravelEstimateResult> {
+  // Tenant isolation: verify tenantId matches session when called from user context
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const { createAdminClient } = await import('@/lib/db/admin')
   const db = createAdminClient()
 

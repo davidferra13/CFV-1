@@ -8,6 +8,8 @@
 //   Returns: Set-Cookie with Auth.js session token
 
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
+import { checkRateLimit } from '@/lib/rateLimit'
 import { db } from '@/lib/db'
 import { authUsers } from '@/lib/db/schema/auth'
 import { userRoles, clients } from '@/lib/db/schema/schema'
@@ -23,8 +25,20 @@ export async function POST(req: NextRequest) {
   }
 
   const provided = req.headers.get('x-sentinel-secret')
-  if (!provided || provided !== secret) {
+  if (
+    !provided ||
+    provided.length !== secret.length ||
+    !timingSafeEqual(Buffer.from(provided), Buffer.from(secret))
+  ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+  }
+
+  // Rate limit: 5 attempts per 15 minutes per IP
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  try {
+    await checkRateLimit(`sentinel-auth:${ip}`, 5, 15 * 60 * 1000)
+  } catch {
+    return NextResponse.json({ error: 'Too many attempts' }, { status: 429 })
   }
 
   let email: string, password: string

@@ -6,6 +6,8 @@
 // PRIVACY: Only sends location text (city/address) to Open-Meteo for geocoding.
 // No client names, event details, or business data leaves the server.
 
+import { getCurrentUser } from '@/lib/auth/get-user'
+
 interface GeoResult {
   latitude: number
   longitude: number
@@ -205,6 +207,11 @@ export type WeatherAlertResult = {
 }
 
 export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertResult> {
+  // Tenant isolation: verify tenantId matches session when called from user context
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   // Import dynamically to avoid circular deps in server actions
   const { createAdminClient } = await import('@/lib/db/admin')
   const db = createAdminClient()

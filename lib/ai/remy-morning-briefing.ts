@@ -5,6 +5,7 @@
 // Designed to run at a configurable time (default 7 AM) via cron.
 
 import { createServerClient } from '@/lib/db/server'
+import { getCurrentUser } from '@/lib/auth/get-user'
 
 interface BriefingSection {
   heading: string
@@ -13,6 +14,11 @@ interface BriefingSection {
 }
 
 export async function generateMorningBriefing(tenantId: string): Promise<string> {
+  // Tenant isolation: verify tenantId matches session when called from user context
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db: any = createServerClient()
   const now = new Date()
   const today = now.toISOString().split('T')[0]

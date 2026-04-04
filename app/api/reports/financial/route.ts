@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireChef } from '@/lib/auth/get-user'
 import { getFinancialAnalytics } from '@/lib/reports/analytics-service'
 
 export async function GET(request: NextRequest) {
+  await requireChef()
   const searchParams = request.nextUrl.searchParams
   const start = searchParams.get('start')
   const end = searchParams.get('end')

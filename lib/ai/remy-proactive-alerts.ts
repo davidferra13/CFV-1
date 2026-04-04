@@ -6,6 +6,7 @@
 // Runs on a scheduled cron (every hour) or on-demand.
 
 import { createServerClient } from '@/lib/db/server'
+import { getCurrentUser } from '@/lib/auth/get-user'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 
 interface AlertCandidate {
@@ -316,6 +317,11 @@ async function runRuleSafely(
 }
 
 export async function runAlertRules(tenantId: string): Promise<number> {
+  // Tenant isolation: verify tenantId matches session when called from user context
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db: any = createServerClient()
 
   // Run all rules in parallel

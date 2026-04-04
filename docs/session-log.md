@@ -1946,3 +1946,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Files touched: docs/research/2026-04-04-knowledge-confidence-audit.md (addendum added)
 - Build state on departure: unchanged (research-only)
 - Notes: Deep sync found 6 major categories the original audit missed: (1) Security debt - SSE zero auth, Ollama exposed, credentials in repo (CRITICAL launch blockers). (2) Remy parsing regression - inquiry_parse and client_parse at 0% since 2026-03-30. (3) 43-archetype research system designed but never executed (80-120 hrs of planned work). (4) 179/184 forms lack auto-save. (5) 62K+ scraped prices unsynthesized. (6) Privacy promise contradicts cloud runtime direction. Revised totals: 122 knowledge claims (58 verified, 18 partial, 16 assumptions, 17 blind spots, 13 contradictions). SSE zero-auth entered Top 10 gaps at #2 (score 100). Remy regression at #5 (score 75).
+
+## 2026-04-04 ~15:00 EST
+
+- Agent: General (Claude Opus 4.6)
+- Task: Comprehensive security audit per prompts/security-audit.md
+- Status: completed
+- Files touched: lib/ai/remy-intelligence-actions.ts (13 functions hardened), lib/ai/queue/actions.ts (2 functions hardened), lib/ai/remy-morning-briefing.ts, lib/ai/remy-weather.ts, lib/ai/remy-travel-time.ts, lib/ai/remy-proactive-alerts.ts (4 functions hardened), app/api/reports/financial/route.ts (auth added), app/api/sentinel/auth/route.ts (timing-safe fix), app/auth/forgot-password/page.tsx (email echo removed), docs/security-audit-2026-04-04.md (new)
+- Build state on departure: green (typecheck:app passes)
+- Notes: Found and fixed 3 CRITICAL cross-tenant data leakage vulnerabilities in Remy intelligence/queue/support actions (20 functions total accepted tenantId from client without validation). Fixed 1 missing route-level auth, 1 timing-unsafe secret comparison, 1 user enumeration signal. 2 remaining risks need design decisions (share token PII scope, sentinel rate limiting). Full report: docs/security-audit-2026-04-04.md

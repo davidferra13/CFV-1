@@ -105,6 +105,8 @@ export async function executeGroceryConsolidation(inputs: Record<string, unknown
 // ─── Phase 2: Financial Intelligence (all deterministic) ──────────────────────
 
 export async function executeRevenueForecast(tenantId: string) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
   const now = new Date()
 
@@ -180,6 +182,8 @@ export async function executeRevenueForecast(tenantId: string) {
 }
 
 export async function executePnLReport(tenantId: string, inputs: Record<string, unknown>) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
   const now = new Date()
 
@@ -254,6 +258,8 @@ export async function executePnLReport(tenantId: string, inputs: Record<string, 
 }
 
 export async function executeTaxSummary(tenantId: string, inputs: Record<string, unknown>) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
   const now = new Date()
   const year = inputs.year ? Number(inputs.year) : now.getFullYear()
@@ -311,6 +317,8 @@ export async function executeTaxSummary(tenantId: string, inputs: Record<string,
 }
 
 export async function executePricingAnalysis(tenantId: string) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
 
   // Get all completed events with quotes and guests
@@ -406,6 +414,8 @@ export async function executeUtilizationAnalysis(
   tenantId: string,
   inputs: Record<string, unknown>
 ) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
   const days = Number(inputs.days ?? 14)
   const now = new Date()
@@ -490,6 +500,8 @@ export async function executeUtilizationAnalysis(
 // ─── Phase 4: Relationship Intelligence ───────────────────────────────────────
 
 export async function executeClientMilestones(tenantId: string) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
   const now = new Date()
   const twoWeeksOut = new Date(now)
@@ -587,6 +599,8 @@ export async function executeClientMilestones(tenantId: string) {
 }
 
 export async function executeReEngagementScoring(tenantId: string) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
   const now = new Date()
   const ninetyDaysAgo = new Date(now)
@@ -680,6 +694,8 @@ export async function executeReEngagementScoring(tenantId: string) {
 }
 
 export async function executeAcquisitionFunnel(tenantId: string) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
 
   // All inquiries
@@ -744,6 +760,8 @@ export async function executeMultiEventComparison(
   inputs: Record<string, unknown>,
   tenantId: string
 ) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
 
   // Get event names to compare
@@ -848,6 +866,8 @@ export async function executeEquipmentMaintenance() {
 }
 
 export async function executeVendorsList(tenantId: string) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
   const { data: vendors } = await db
     .from('vendors')
@@ -871,6 +891,8 @@ export async function executeVendorsList(tenantId: string) {
 // ─── Phase 7: Day-of Support ─────────────────────────────────────────────────
 
 export async function executeMorningBriefing(tenantId: string) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
   const today = new Date().toISOString().split('T')[0]
 
@@ -980,6 +1002,8 @@ function getTimeOfDayGreeting(): string {
 // ─── Phase 6: Workflow Chains ─────────────────────────────────────────────────
 
 export async function executeCancellationImpact(inputs: Record<string, unknown>, tenantId: string) {
+  const user = await requireChef()
+  if (tenantId !== user.tenantId) throw new Error('Unauthorized: tenant mismatch')
   const db: any = createServerClient()
   const eventName = String(inputs.eventName ?? '')
   const eventId = await resolveEventId(eventName)

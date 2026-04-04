@@ -7,7 +7,7 @@
 
 import { createAdminClient } from '@/lib/db/admin'
 import { createServerClient } from '@/lib/db/server'
-import { requireChef } from '@/lib/auth/get-user'
+import { requireChef, getCurrentUser } from '@/lib/auth/get-user'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import type { Json } from '@/types/database'
 import type { AiQueueItem, AiTaskStatus, ApprovalTier, EnqueueInput, LlmEndpoint } from './types'
@@ -84,6 +84,12 @@ async function releaseClaimAfterIncrementFailure(input: {
 export async function enqueueTask(
   input: EnqueueInput
 ): Promise<{ id: string } | { error: string }> {
+  // Tenant isolation: if called from a user session, verify tenantId matches
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && input.tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
+
   const definition = getTaskDefinition(input.taskType)
   if (!definition) {
     return { error: `Unknown task type: ${input.taskType}` }
@@ -604,6 +610,11 @@ export async function getQueueStats(tenantId: string): Promise<{
   failed: number
   completedToday: number
 }> {
+  // Tenant isolation: if called from a user session, verify tenantId matches
+  const sessionUser = await getCurrentUser()
+  if (sessionUser && tenantId !== sessionUser.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
+  }
   const db: any = createAdminClient()
   const today = new Date()
   today.setHours(0, 0, 0, 0)

@@ -44,8 +44,7 @@ export default function ForgotPasswordPage() {
           <Card>
             <CardContent className="space-y-4 py-6">
               <Alert variant="success">
-                If an account exists for <strong>{email}</strong>, you will receive a password reset
-                link shortly.
+                If an account exists for that email, you will receive a password reset link shortly.
               </Alert>
 
               <p className="text-sm text-stone-600 text-center">
