@@ -78,18 +78,41 @@ Key design decisions: confidence tiers A through F, hard floor at 70% (below = "
 
 This completes the spec: Categories 1-12 are collection (go get the real number), Category 13 is derivation (calculate the best number from facts you already have).
 
+## David's Docket Cartridge (continued session, 2026-04-05)
+
+New OpenClaw cartridge designed to replace the developer's 10-hour manual research/spec-writing sessions. Developer identified that 80% of development time is spent on research and planning that could run autonomously on the Pi.
+
+**What it does:** Developer writes tasks on Pi dashboard form (10.0.0.177:8090/docket), Pi processes them using local Ollama, produces finished planning documents (specs, research, bug reports, refinements), PC pulls them into the repo for Claude Code to build from.
+
+**Key design decisions:**
+
+- 3 required form fields + 4 optional with smart defaults
+- Complexity gating: simple/medium auto-processed, complex flagged for human session
+- Confidence rating on every output (high/medium/low)
+- Codebase context via read-only git mirror on Pi (80KB context budget)
+- Piggybacks on existing sync-all.mjs for PC pull
+- $0 cost (all local Ollama, no API fees)
+
+Full spec: `docs/specs/davids-docket-openclaw-cartridge.md`
+
 ## Unresolved / Next Steps
 
+- **Blocker:** Fix SSH access to Pi (permission denied). Required for ALL Pi-side work.
 - **Developer action:** Collect raw business artifacts into dump folder (Archive Digester)
 - **Developer action:** Purchase residential proxy ($25/month) to unlock Instacart geographic expansion
-- **Next Pi session:** Update `run-full-catalog.sh` load gate thresholds from 70/75% to 85/85%
-- **Next OpenClaw session:** Begin Phase 1 (store mapping via OpenStreetMap bulk download) and Phase 2 (free government data ingest)
+- **Next Pi session:** Build David's Docket, update load gate thresholds, set up codebase mirror
+- **Next OpenClaw session:** Begin Phase 1 (store mapping) and Phase 2 (government data ingest)
 - **Research:** Apply for Kroger production API access
 - **Research:** Test scrapability of WebstaurantStore, Restaurant Depot, Produce Market Guide, CME delayed quotes
 
 ## Context for Next Agent
 
-This was a strategic planning session, not a code session. No code was written. No builds were run. All output is documentation and memory updates. The full pricing strategy spec at `docs/specs/openclaw-nationwide-pricing-strategy.md` is the canonical reference for all future OpenClaw pricing work. Read it before starting any price-intel development.
+This was a strategic planning session spanning 2026-04-04 to 2026-04-05. No code was written. No builds were run. All output is documentation and memory updates.
+
+Three major specs were produced:
+
+1. `docs/specs/openclaw-nationwide-pricing-strategy.md` - 13 categories (12 collection + 1 derivation engine). Canonical reference for all pricing work.
+2. `docs/specs/davids-docket-openclaw-cartridge.md` - Autonomous planning document generator. Replaces developer's manual research/spec workflow.
 
 The developer feels strongly about:
 
@@ -97,3 +120,5 @@ The developer feels strongly about:
 - OpenClaw doing the work (not users)
 - The Pi earning its keep (85% utilization, not 10%)
 - No named individuals in agent memory
+- Reducing subscription costs ($400/month currently)
+- Not being chained to the desk all day
