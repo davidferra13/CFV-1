@@ -93,7 +93,11 @@ function SignUpForm() {
     try {
       await signUpClient(clientFormData)
       // Auto-login: sign in immediately with the same credentials
-      await signIn({ email: clientFormData.email, password: clientFormData.password, rememberMe: true })
+      await signIn({
+        email: clientFormData.email,
+        password: clientFormData.password,
+        rememberMe: true,
+      })
       window.location.href = '/my-events'
     } catch (err) {
       const error = err as Error
