@@ -1777,12 +1777,14 @@ Pricing page (`/pricing`) feature checklist now includes "Remy AI concierge — 
 
 ### Admin Sidebar
 
-| Nav item      | Icon        | Route                  |
-| ------------- | ----------- | ---------------------- |
-| Pulse         | ShieldAlert | `/admin/pulse`         |
-| All Inquiries | ShieldAlert | `/admin/inquiries`     |
-| Beta Signups  | Rocket      | `/admin/beta`          |
-| Price Catalog | Tags        | `/admin/price-catalog` |
+| Nav item           | Icon        | Route                    |
+| ------------------ | ----------- | ------------------------ |
+| Pulse              | ShieldAlert | `/admin/pulse`           |
+| All Inquiries      | ShieldAlert | `/admin/inquiries`       |
+| Beta Signups       | Rocket      | `/admin/beta`            |
+| Price Catalog      | Tags        | `/admin/price-catalog`   |
+| Analytics          | BarChart3   | `/admin/analytics`       |
+| Data Engine Health | Activity    | `/admin/openclaw/health` |
 
 ### Admin: Price Catalog (`/admin/price-catalog`)
 
@@ -1797,6 +1799,29 @@ OpenClaw Price Intelligence dashboard. Admin-only. Connects to Raspberry Pi (10.
 | Sync tab          | Action panel | Tier selector, "Dry Run" button (preview), "Sync Now" button (push prices to ChefFlow ingredients). Shows results: matched, updated, unchanged, not found                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | Vendor Import tab | Action panel | Upload vendor PDF price lists. Form: vendor name, vendor type dropdown (farm/fish market/butcher/specialty/wholesale), pricing tier dropdown (retail/wholesale/farm direct), PDF upload (max 10MB). "Parse" button sends to Pi. Results table: raw name, canonical match, price, unit, match status. Admin can review matches then "Confirm Import" to write prices to Pi. States: idle, parsing, results, confirming, done.                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Catalog tab       | Data table   | Browse Pi's full 9,000+ ingredient catalog. **Power Tools (9 features):** (1) Price comparison bars in expanded rows (horizontal bars, cheapest highlighted green), (2) CSV export button (filtered download), (3) Bulk price checker panel (paste ingredient list, get best prices), (4) Freshness dots on Last Updated column (green/amber/red), (5) Click-to-filter on category badges and store names, (6) Category coverage breakdown chart (toggle from stats card), (7) Price trend arrows (up red/down green with %), (8) Full keyboard navigation (arrow keys, Enter, Escape, Home, End), (9) URL-synced filters (bookmarkable/shareable filtered views). Also: store dropdown outside-click close fix. Stats bar (total/priced/coverage with breakdown toggle), category chips, store dropdown, sort, priced-only toggle, debounced search, filter pills, pagination. |
+
+### Admin: Analytics (`/admin/analytics`)
+
+Platform-wide growth and revenue trends. Admin-only.
+
+| Element              | Type      | Description                                                                                                  |
+| -------------------- | --------- | ------------------------------------------------------------------------------------------------------------ |
+| Summary KPIs         | Card grid | 4 cards: Total Chefs, Active Rate, Platform GMV, Avg GMV/Chef                                                |
+| Revenue by Month     | Bar chart | Horizontal bars showing GMV per month (last 12 months), orange bars                                          |
+| New Signups by Month | Bar chart | Dual bars (Chefs green, Clients brand) per month (last 12 months)                                            |
+| Data Engine Health   | Card      | Last Sync timestamp, Acceptance Rate %, Quarantined count, Price Coverage %. Links to full health dashboard. |
+
+### Admin: Data Engine Health (`/admin/openclaw/health`)
+
+Quarantine review, sync history, and pricing coverage. Admin-only.
+
+| Element              | Type           | Description                                                                                         |
+| -------------------- | -------------- | --------------------------------------------------------------------------------------------------- |
+| KPI strip            | Card grid (5)  | Quarantined (unreviewed), Acceptance Rate (30d), Last Sync (time ago), Price Coverage %, Fresh 7d   |
+| Quarantine by Reason | Breakdown card | Count per quarantine reason (spike, crash, cap, placeholder, etc.)                                  |
+| Quarantine by Source | Breakdown card | Count per data source                                                                               |
+| Quarantine Queue tab | Interactive    | Table: ingredient, price, old price, source, reason, date. Accept/Reject per row. Bulk Reject All   |
+| Sync History tab     | Table          | Sync type, started, processed, accepted, quarantined, skipped, acceptance rate %, status (OK/Error) |
 
 #### Shared Pricing Components
 

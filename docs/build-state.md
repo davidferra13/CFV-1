@@ -14,11 +14,11 @@ Last known state of the app. Updated after every successful type check and build
 
 | Check                                  | Status | Last Verified | Commit    | Agent           |
 | -------------------------------------- | ------ | ------------- | --------- | --------------- |
-| `npx tsc --noEmit --skipLibCheck`      | green  | 2026-04-05    | f90796b5e | Claude Opus 4.6 |
-| `npx next build --no-lint` (16GB heap) | green  | 2026-04-05    | f90796b5e | Claude Opus 4.6 |
+| `npx tsc --noEmit --skipLibCheck`      | green  | 2026-04-05    | 6633c8266 | Claude Opus 4.6 |
+| `npx next build --no-lint` (16GB heap) | green  | 2026-04-05    | 6633c8266 | Claude Opus 4.6 |
 
-**Last green build:** f90796b5e (2026-04-05) - OpenClaw price validation tightening + name normalizer bracket fix
-**Last commit on main:** f90796b5e
+**Last green build:** 6633c8266 (2026-04-05) - OpenClaw visibility gap closure + admin health dashboard
+**Last commit on main:** 6633c8266
 
 **Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. OOM fix: build requires `NODE_OPTIONS="--max-old-space-size=16384"` (8GB heap now insufficient; 16GB needed as codebase grew).
 
@@ -40,6 +40,7 @@ _Newest first. Keep the last 10 entries._
 
 | Date       | tsc    | build | Commit                         | Agent           | Notes                                                                                                                                                                                                                                                                                                                                                                                      |
 | ---------- | ------ | ----- | ------------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-04-05 | green  | green | 6633c8266                      | Claude Opus 4.6 | OpenClaw visibility gap closure: admin health dashboard, analytics integration, isFounder gate fix. Playwright-verified both pages.                                                                                                                                                                                                                                                        |
 | 2026-04-05 | green  | green | f90796b5e                      | Claude Opus 4.6 | OpenClaw price validator cap $1000->$500, name normalizer bracket stripping, 24 outliers purged, sync verified (118 matched, 0 outliers). Build requires 16GB heap now.                                                                                                                                                                                                                    |
 | 2026-04-03 | green  | green | dirty worktree from `f45fec2c` | Codex           | Landed the website performance hardening pass and build-tooling resilience fixes. Re-ran `npm run typecheck:app`, `npm run typecheck:next`, `node --test --import tsx tests/unit/typecheck-config.test.ts`, and `npm run build -- --no-lint`; all pass on the default `.next` path. Build still emits existing `DYNAMIC_SERVER_USAGE` warnings plus Next's `serverActions` config warning. |
 | 2026-04-03 | green  | green | dirty worktree from `f45fec2c` | Codex           | Re-ran `npm run typecheck:app` and `npm run build -- --no-lint` before the active survey deploy-verification lane. Local pre-flight passed again, but deployed verification was blocked externally because both beta and production readiness endpoints returned Cloudflare `530` / `1033` before app-level checks.                                                                        |
