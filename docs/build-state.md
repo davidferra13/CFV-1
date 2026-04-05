@@ -14,11 +14,11 @@ Last known state of the app. Updated after every successful type check and build
 
 | Check                                  | Status | Last Verified | Commit    | Agent           |
 | -------------------------------------- | ------ | ------------- | --------- | --------------- |
-| `npx tsc --noEmit --skipLibCheck`      | green  | 2026-04-05    | 9a13220e7 | Claude Opus 4.6 |
+| `npx tsc --noEmit --skipLibCheck`      | green  | 2026-04-05    | 8f4230db9 | Claude Opus 4.6 |
 | `npx next build --no-lint` (16GB heap) | green  | 2026-04-05    | 3fea99c9d | Claude Opus 4.6 |
 
 **Last green build:** 3fea99c9d (2026-04-05) - Normalized cents fix verified; sync quarantine 22->4
-**Last commit on main:** 9a13220e7
+**Last commit on main:** 8f4230db9
 
 **Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. OOM fix: build requires `NODE_OPTIONS="--max-old-space-size=16384"` (8GB heap now insufficient; 16GB needed as codebase grew).
 
