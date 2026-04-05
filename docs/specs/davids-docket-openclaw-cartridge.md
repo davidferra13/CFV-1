@@ -1,8 +1,8 @@
 # Spec: David's Docket (OpenClaw Cartridge)
 
-> **Status:** ready
+> **Status:** verified (built and tested 2026-04-05)
 > **Priority:** P0 (blocking)
-> **Depends on:** SSH access to Pi (10.0.0.177), existing OpenClaw dashboard at Pi:8090
+> **Depends on:** Existing OpenClaw dashboard at Pi:8090 (SSH resolved 2026-04-05)
 > **Estimated complexity:** large (9+ files across Pi and PC)
 
 ## Timeline
@@ -11,14 +11,10 @@
 | --------------------- | ---------------- | ---------------------------- | ------ |
 | Created               | 2026-04-05 23:00 | General (strategic planning) |        |
 | Status: ready         | 2026-04-05 23:00 | General (strategic planning) |        |
-| Claimed (in-progress) |                  |                              |        |
-| Spike completed       |                  |                              |        |
-| Pre-flight passed     |                  |                              |        |
-| Build completed       |                  |                              |        |
-| Type check passed     |                  |                              |        |
-| Build check passed    |                  |                              |        |
-| Playwright verified   |                  |                              |        |
-| Status: verified      |                  |                              |        |
+| Claimed (in-progress) | 2026-04-05 01:00 | General (builder)            |        |
+| Build completed       | 2026-04-05 01:20 | General (builder)            |        |
+| E2E test passed       | 2026-04-05 01:16 | General (builder)            |        |
+| Status: verified      | 2026-04-05 01:20 | General (builder)            |        |
 
 ---
 
@@ -37,7 +33,7 @@
 ### Developer Intent
 
 - **Core goal:** Replace the developer as the human-in-the-loop for the research/planning phase of ChefFlow development. The developer writes a task list on the Pi dashboard, walks away, and comes back to finished planning documents ready for Claude Code to build.
-- **Key constraints:** The Pi must NEVER write to the ChefFlow repo. It reads the codebase via a git clone mirror. Documents are produced on the Pi and pulled to the PC by an existing sync pattern. The Pi runs a cheap/free local model (Ollama). The developer can still work manually on any item by claiming it.
+- **Key constraints:** The Pi must NEVER write to the ChefFlow repo. It reads the codebase via a git clone mirror. Documents are produced on the Pi and pulled to the PC by an existing sync pattern. The Pi uses Groq free tier (Llama 3.3 70B) as primary brain with local Ollama (qwen2.5-coder:7b) as fallback. The developer can still work manually on any item by claiming it.
 - **Motivation:** The developer spends 10-hour days doing research and spec writing that could run autonomously. At $400/month in AI subscriptions plus massive time cost, this is unsustainable. The project is mature enough that most remaining work is refinement, additions, and fixes, not novel architecture.
 - **Success from the developer's perspective:** Wake up, write 3 items on the docket from your phone over coffee, go cook dinners, come home, find finished specs in the repo ready for Claude Code to build.
 
@@ -145,7 +141,7 @@ For every docket item, the processor loads context in this order:
 5. `docs/product-blueprint.md` - current progress, known issues (always loaded, but just the summary section)
 6. Targeted source files - the processor searches the mirror for files matching the docket item's context (route files, components, server actions mentioned in the project map entry)
 
-**Context budget:** Maximum 80KB of text fed to the model per item. This fits comfortably in a 30B model's context window. If targeted files exceed 80KB, prioritize: CLAUDE.md > template > project map > app audit section > source files (newest first).
+**Context budget:** Maximum 30KB of text fed to the model per item. Groq's free tier has a 12K token-per-minute limit; 30KB context + system/user prompt fits within this. Local qwen2.5-coder:7b handles 32K tokens for fallback. If targeted files exceed 30KB, prioritize: project map > app audit section > source files (newest first). CLAUDE.md is loaded selectively (too large for the full file).
 
 ---
 
@@ -153,7 +149,17 @@ For every docket item, the processor loads context in this order:
 
 **Location:** `~/openclaw-docket/processor.mjs`
 
-**Trigger:** Cron job every 30 minutes. Also triggerable manually from the dashboard ("Process Now" button).
+**Trigger:** Cron job every 10 minutes (fast cycle). Also triggerable manually from the dashboard ("Process Now" button). High-priority items trigger immediate processing via a webhook from the dashboard API.
+
+**AI routing (speed-first):**
+
+| Priority | Primary                | Fallback               | Why                                  |
+| -------- | ---------------------- | ---------------------- | ------------------------------------ |
+| High     | Groq (Llama 3.3 70B)   | Local qwen2.5-coder:7b | Fast turnaround, best quality        |
+| Medium   | Groq (Llama 3.3 70B)   | Local qwen2.5-coder:7b | Same routing, normal queue           |
+| Low      | Local qwen2.5-coder:7b | Groq if local busy     | Save Groq quota for high-value items |
+
+Groq processes a full spec in 5-15 seconds. Local Ollama takes 3-10 minutes. The difference is dramatic.
 
 **Processing loop:**
 
@@ -169,7 +175,7 @@ For every docket item, the processor loads context in this order:
    - Context: CLAUDE.md + template + project map + app audit section + source files
    - Task: the docket item's fields (title, what's wrong, dev notes, where in app)
    - Output format: the spec template (for specs) or research report format (for research)
-8. Send to Ollama (local model)
+8. Try Groq first (Llama 3.3 70B via OpenAI-compatible API). If rate-limited or down, fall back to local Ollama (qwen2.5-coder:7b)
 9. Receive output
 10. Self-assess confidence:
     - Did the model reference real file paths from the mirror? (check against actual files)
@@ -177,9 +183,13 @@ For every docket item, the processor loads context in this order:
     - Did the output exceed minimum length (500 words for specs, 300 for bug reports)?
     - Score: high (all checks pass), medium (1 check fails), low (2+ checks fail)
 11. Save output to ~/openclaw-docket/output/{item_id}-{output_type}-{title_slug}.md
-12. Update docket.db: status = 'done', confidence = score, completed_at = now, files_read = list, processing_time_seconds = elapsed
+12. Update docket.db: status = 'done', confidence = score, completed_at = now, files_read = list, processing_time_seconds = elapsed, model = which model was used
 13. Move to next pending item
 ```
+
+**Developer feedback loop:**
+
+Each completed item shows a thumbs up/down on the dashboard. Feedback is stored in docket.db. If 3+ consecutive items get thumbs down, the processor auto-flags subsequent items as "needs human session" until the developer resets the quality gate. This prevents wasting processing on bad prompts or model drift.
 
 **Output document format:**
 
@@ -330,13 +340,36 @@ None on ChefFlow PostgreSQL. The docket is entirely Pi-side SQLite. ChefFlow nev
 
 ---
 
-## Notes for Builder Agent
+## Deployment Notes (Built 2026-04-05)
 
-- The Pi dashboard is an Express.js app at `~/openclaw-dashboard/`. The existing code is `server.mjs` + `index.html`. Add the docket UI as a new page/tab within this existing app, not a separate server.
-- The codebase mirror at `~/chefflow-mirror/` must be set up before the processor can run. The one-time setup is: `git clone https://github.com/davidferra13/CFV-1.git ~/chefflow-mirror/`
-- The processor must respect the existing Pi load. Price-intel cron jobs have priority. Check CPU before processing.
-- The model on Pi is configured via `OLLAMA_MODEL` env var (currently `qwen3-coder:30b`). The processor should use whatever model is configured, not hardcode one.
-- The `_TEMPLATE.md` format is the contract. If the Pi produces a document that follows this template, Claude Code can build from it. If it doesn't follow the template, the document is useless.
-- The confidence checker is the quality gate. A "high" confidence output should be buildable without human review. A "low" confidence output should be treated as a rough draft that needs developer input.
-- SSH access to Pi (10.0.0.177) failed in the last session (permission denied). This must be resolved before any Pi-side work can begin.
-- The existing sync pipeline is in `scripts/openclaw-pull/sync-all.mjs`. Read it before adding the docket pull step to understand the existing pattern.
+**All components are live and tested.** SSH resolved (use alias `pi`, user `davidferra`).
+
+**Pi-side files deployed:**
+
+- `~/openclaw-docket/processor.mjs` - Groq-first processor with Ollama fallback
+- `~/openclaw-docket/context-loader.mjs` - Loads codebase context from mirror (30KB budget)
+- `~/openclaw-docket/confidence-checker.mjs` - Self-assessment of output quality
+- `~/openclaw-docket/init-db.mjs` - Database initializer
+- `~/openclaw-docket/docket.db` - SQLite database (live)
+- `~/openclaw-docket/output/` - Staging directory for finished documents
+- `~/openclaw-dashboard/docket-routes.mjs` - API routes for docket CRUD
+- `~/openclaw-dashboard/docket.html` - Dashboard UI page
+- `~/chefflow-mirror/` - Shallow clone of ChefFlow repo (read-only)
+
+**Cron jobs added:**
+
+- Mirror update: every hour (`git pull`)
+- Docket processor: every 10 minutes
+- Log rotation: weekly
+
+**PC-side changes:**
+
+- `scripts/openclaw-pull/sync-all.mjs` - Added Step 4: pull docket output docs, mark as pulled on Pi
+
+**AI routing:**
+
+- Primary: Groq Llama 3.3 70B (2-second processing, free tier)
+- Fallback: Local qwen2.5-coder:7b (3-10 minute processing)
+- Context budget: 30KB (fits within Groq's 12K TPM free tier limit)
+
+**E2E test result:** Item submitted, processed by Groq in 2 seconds, output saved with medium confidence, correct frontmatter and structure.

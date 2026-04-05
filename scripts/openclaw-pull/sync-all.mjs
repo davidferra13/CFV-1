@@ -11,9 +11,10 @@
  * Usage: node scripts/openclaw-pull/sync-all.mjs
  */
 
-import { execFileSync } from 'child_process'
+import { execFileSync, execSync } from 'child_process'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import postgres from 'postgres'
 import config from './config.mjs'
 
@@ -93,6 +94,76 @@ async function printSummary() {
   }
 }
 
+function pullDocketDocs() {
+  log(`\n${'='.repeat(60)}`)
+  log('STEP: Pull docket output documents')
+  log('='.repeat(60))
+
+  const piOutputDir = '/home/davidferra/openclaw-docket/output'
+  const piDbPath = '/home/davidferra/openclaw-docket/docket.db'
+
+  try {
+    // List done (not yet pulled) files on Pi
+    const fileList = execSync(
+      `ssh pi "ls ${piOutputDir}/ 2>/dev/null"`,
+      { encoding: 'utf8', timeout: 15000 }
+    ).trim()
+
+    if (!fileList) {
+      log('  No docket output files to pull.')
+      return
+    }
+
+    const files = fileList.split('\n').filter(f => f.endsWith('.md'))
+    if (files.length === 0) {
+      log('  No .md files in docket output.')
+      return
+    }
+
+    log(`  Found ${files.length} output file(s)`)
+
+    for (const file of files) {
+      // Read the file to determine output type from frontmatter
+      const content = execSync(
+        `ssh pi "cat ${piOutputDir}/${file}"`,
+        { encoding: 'utf8', timeout: 15000 }
+      )
+
+      // Determine destination based on output_type in frontmatter
+      let destDir = resolve(rootDir, 'docs/specs')
+      if (content.includes('output_type: research')) {
+        destDir = resolve(rootDir, 'docs/research')
+      }
+
+      if (!existsSync(destDir)) mkdirSync(destDir, { recursive: true })
+
+      const destPath = resolve(destDir, file)
+      writeFileSync(destPath, content)
+      log(`  Pulled: ${file} -> ${destDir}/`)
+
+      // Extract docket item ID and mark as pulled on Pi
+      const idMatch = content.match(/docket_item_id:\s*(\d+)/)
+      if (idMatch) {
+        try {
+          execSync(
+            `ssh pi "sqlite3 ${piDbPath} \\"UPDATE docket_items SET status='pulled', pulled_at=datetime('now') WHERE id=${idMatch[1]} AND status='done'\\""`,
+            { timeout: 10000 }
+          )
+        } catch {}
+      }
+
+      // Remove from Pi output dir (already pulled)
+      try {
+        execSync(`ssh pi "rm ${piOutputDir}/${file}"`, { timeout: 5000 })
+      } catch {}
+    }
+
+    log(`  Docket pull: ${files.length} document(s) synced`)
+  } catch (err) {
+    log(`  Docket pull failed: ${err.message}`)
+  }
+}
+
 async function main() {
   const start = Date.now()
   log('Starting full OpenClaw sync pipeline')
@@ -115,7 +186,10 @@ async function main() {
     log('Price sync failed.')
   }
 
-  // Step 4: Refresh materialized views
+  // Step 4: Pull docket output documents from Pi
+  pullDocketDocs()
+
+  // Step 5: Refresh materialized views
   await refreshViews()
 
   // Summary
