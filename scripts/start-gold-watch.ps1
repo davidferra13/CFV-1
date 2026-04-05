@@ -22,6 +22,15 @@ $logsDir = Join-Path $runDir "logs"
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 New-Item -ItemType Directory -Force -Path $logsDir | Out-Null
 
+# Load window placement utility (moves spawned windows to secondary monitor)
+$windowPlacementPath = Join-Path $PSScriptRoot "lib\window-placement.ps1"
+if (Test-Path $windowPlacementPath) {
+  . $windowPlacementPath
+  $useWindowPlacement = $true
+} else {
+  $useWindowPlacement = $false
+}
+
 $endAt = [DateTimeOffset]::Now.AddHours($Hours)
 $endIso = $endAt.ToString("o")
 
@@ -96,11 +105,19 @@ function Start-GoldWindow {
   )
 
   $cmd = "`$Host.UI.RawUI.WindowTitle = '$Title'; $CommandText"
-  Start-Process -FilePath "powershell.exe" -ArgumentList @(
+  $args_ = @(
     "-NoExit",
     "-ExecutionPolicy", "Bypass",
     "-Command", $cmd
-  ) -WorkingDirectory $root -PassThru
+  )
+
+  if ($useWindowPlacement) {
+    $proc = Start-ProcessOnSecondaryMonitor -FilePath "powershell.exe" -ArgumentList $args_ -WorkingDirectory $root -PreserveSize
+  } else {
+    $proc = Start-Process -FilePath "powershell.exe" -ArgumentList $args_ -WorkingDirectory $root -PassThru
+  }
+
+  return $proc
 }
 
 $serverLog = Join-Path $logsDir "lane-server.log"

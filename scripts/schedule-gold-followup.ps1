@@ -48,14 +48,29 @@ if (-not (Test-Path $manifestPath)) {
   throw "Not a gold-watch run dir (manifest missing): $targetRunDir"
 }
 
+# Load window placement utility (moves spawned windows to secondary monitor)
+$windowPlacementPath = Join-Path $root "scripts\lib\window-placement.ps1"
+if (Test-Path $windowPlacementPath) {
+  . $windowPlacementPath
+  $useWindowPlacement = $true
+} else {
+  $useWindowPlacement = $false
+}
+
 $managerScript = Join-Path $root "scripts\gold-followup-manager.ps1"
 $cmd = "& '$managerScript' -RunDir '$targetRunDir' -QueueHours $QueueHours -Headed '$Headed'"
 
-$proc = Start-Process -FilePath "powershell.exe" -ArgumentList @(
+$spawnArgs = @(
   "-NoExit",
   "-ExecutionPolicy", "Bypass",
   "-Command", "`$Host.UI.RawUI.WindowTitle = 'GOLD FOLLOWUP MANAGER'; $cmd"
-) -WorkingDirectory $root -PassThru
+)
+
+if ($useWindowPlacement) {
+  $proc = Start-ProcessOnSecondaryMonitor -FilePath "powershell.exe" -ArgumentList $spawnArgs -WorkingDirectory $root -PreserveSize
+} else {
+  $proc = Start-Process -FilePath "powershell.exe" -ArgumentList $spawnArgs -WorkingDirectory $root -PassThru
+}
 
 Write-Host ""
 Write-Host "Follow-up queue manager scheduled."

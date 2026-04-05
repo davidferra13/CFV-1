@@ -81,6 +81,15 @@ public static class WindowPin {
   Write-Warning "Window opened, but could not pin it top-most within timeout."
 }
 
+# Load window placement utility (moves spawned windows to secondary monitor)
+$windowPlacementPath = Join-Path $PSScriptRoot "lib\window-placement.ps1"
+if (Test-Path $windowPlacementPath) {
+  . $windowPlacementPath
+  $useWindowPlacement = $true
+} else {
+  $useWindowPlacement = $false
+}
+
 $browserPath = Resolve-BrowserPath -BrowserChoice $Browser
 
 if (-not $browserPath -or $Browser -eq "default") {
@@ -90,10 +99,23 @@ if (-not $browserPath -or $Browser -eq "default") {
 }
 
 $browserName = [System.IO.Path]::GetFileNameWithoutExtension($browserPath)
-$arguments = @("--new-window", "--app=$Url")
+
+# If we have window placement, use --window-position to open on secondary monitor directly
+if ($useWindowPlacement) {
+  $monPos = Get-SecondaryMonitorPosition -OffsetX 100 -OffsetY 100
+  $arguments = @("--new-window", "--app=$Url", "--window-position=$($monPos.X),$($monPos.Y)")
+} else {
+  $arguments = @("--new-window", "--app=$Url")
+}
+
 $process = Start-Process -FilePath $browserPath -ArgumentList $arguments -PassThru
 
 Write-Host "Opened Codex usage app window with $browserName."
+
+# Move to secondary monitor (backup in case --window-position didn't stick)
+if ($useWindowPlacement) {
+  Move-ToSecondaryMonitor -ProcessId $process.Id -PreserveSize -TimeoutSeconds 10
+}
 
 if ($AlwaysOnTop) {
   Set-WindowTopMost -ProcessId $process.Id -ProcessName $browserName -TimeoutSeconds $RetrySeconds

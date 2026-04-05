@@ -42,9 +42,22 @@ $quotedArgs = $runnerArgs | ForEach-Object {
   if ($_ -match "\s") { '"' + $_ + '"' } else { $_ }
 }
 
+# Load window placement utility (moves spawned windows to secondary monitor)
+$windowPlacementPath = Join-Path $root "scripts\lib\window-placement.ps1"
+if (Test-Path $windowPlacementPath) {
+  . $windowPlacementPath
+  $useWindowPlacement = $true
+} else {
+  $useWindowPlacement = $false
+}
+
 $command = "node " + ($quotedArgs -join " ") + " >> `"$launcherLog`" 2>&1"
 
-$proc = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", $command -WorkingDirectory $root -PassThru
+if ($useWindowPlacement) {
+  $proc = Start-ProcessOnSecondaryMonitor -FilePath "cmd.exe" -ArgumentList @("/c", $command) -WorkingDirectory $root -PreserveSize
+} else {
+  $proc = Start-Process -FilePath "cmd.exe" -ArgumentList "/c", $command -WorkingDirectory $root -PassThru
+}
 
 Write-Host "Started overnight coverage runner."
 Write-Host "PID: $($proc.Id)"

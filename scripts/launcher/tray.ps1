@@ -16,6 +16,15 @@ $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInv
 $serverPort = 41937
 $devPort = 3100
 
+# Load window placement utility (moves spawned windows to secondary monitor)
+$windowPlacementPath = Join-Path $projectRoot "scripts\lib\window-placement.ps1"
+if (Test-Path $windowPlacementPath) {
+  . $windowPlacementPath
+  $script:useWindowPlacement = $true
+} else {
+  $script:useWindowPlacement = $false
+}
+
 # ── Create tray icon ────────────────────────────────────────────
 
 $notifyIcon = New-Object System.Windows.Forms.NotifyIcon
@@ -68,10 +77,17 @@ function Open-Dashboard {
     Start-DashboardServer
     Start-Sleep -Seconds 1
 
+    # Determine position on secondary monitor
+    $posFlag = "--window-position=2560,100"
+    if ($script:useWindowPlacement) {
+        $monPos = Get-SecondaryMonitorPosition -OffsetX 100 -OffsetY 50
+        $posFlag = "--window-position=$($monPos.X),$($monPos.Y)"
+    }
+
     # Try Chrome app mode first
     $chrome = Get-Command chrome -ErrorAction SilentlyContinue
     if ($chrome) {
-        Start-Process chrome "--app=http://localhost:$serverPort --window-size=1100,750 --window-position=2560,100"
+        Start-Process chrome "--app=http://localhost:$serverPort --window-size=1100,750 $posFlag"
     } else {
         Start-Process "http://localhost:$serverPort"
     }

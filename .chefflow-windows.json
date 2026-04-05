@@ -1,0 +1,4 @@
+{
+  "targetMonitor": 1,
+  "_comment": "0 = primary monitor, 1 = first secondary, 2 = second secondary. All spawned tool windows default to this monitor."
+}

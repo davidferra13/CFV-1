@@ -37,18 +37,43 @@ On Error Resume Next
 chromePath = objShell.RegRead("HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe\")
 On Error GoTo 0
 
+' Get secondary monitor position from PowerShell helper
+Dim monX, monY
+monX = 2560 : monY = 100  ' fallback defaults
+On Error Resume Next
+Dim psCmd
+psCmd = "powershell -NoProfile -ExecutionPolicy Bypass -Command ""Add-Type -AssemblyName System.Windows.Forms; $s = [System.Windows.Forms.Screen]::AllScreens | Where-Object { -not $_.Primary } | Sort-Object { $_.Bounds.X } | Select-Object -First 1; if ($s) { Write-Output ('' + ($s.WorkingArea.X + 100) + ',' + ($s.WorkingArea.Y + 50)) } else { Write-Output '2560,100' }"""
+Dim exec
+Set exec = objShell.Exec(psCmd)
+If Not exec Is Nothing Then
+    Dim posResult
+    posResult = Trim(exec.StdOut.ReadLine())
+    If posResult <> "" Then
+        Dim parts
+        parts = Split(posResult, ",")
+        If UBound(parts) = 1 Then
+            monX = CInt(parts(0))
+            monY = CInt(parts(1))
+        End If
+    End If
+End If
+On Error GoTo 0
+
+Dim posFlag
+posFlag = "--window-position=" & monX & "," & monY
+
 If chromePath <> "" Then
-    objShell.Run """" & chromePath & """ --app=http://localhost:41937 --window-size=1100,750", 0, False
+    objShell.Run """" & chromePath & """ --app=http://localhost:41937 --window-size=1100,750 " & posFlag, 0, False
 Else
     ' Try finding chrome on PATH
     exitCode = objShell.Run("cmd /c where chrome >nul 2>&1", 0, True)
     If exitCode = 0 Then
-        objShell.Run "cmd /c start """" chrome --app=http://localhost:41937 --window-size=1100,750", 0, False
+        objShell.Run "cmd /c start """" chrome --app=http://localhost:41937 --window-size=1100,750 " & posFlag, 0, False
     Else
         ' Try Edge as fallback
         exitCode = objShell.Run("cmd /c where msedge >nul 2>&1", 0, True)
         If exitCode = 0 Then
-            objShell.Run "cmd /c start """" msedge --app=http://localhost:41937 --window-size=1100,750", 0, False
+            objShell.Run "cmd /c start """" msedge --app=http://localhost:41937 --window-size=1100,750 " & posFlag, 0, False
         Else
             ' Final fallback: default browser
             objShell.Run "http://localhost:41937", 1, False

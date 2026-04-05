@@ -12,6 +12,15 @@ if ($QueueHours -lt 1 -or $QueueHours -gt 48) {
 }
 
 $root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+
+# Load window placement utility (moves spawned windows to secondary monitor)
+$windowPlacementPath = Join-Path $root "scripts\lib\window-placement.ps1"
+if (Test-Path $windowPlacementPath) {
+  . $windowPlacementPath
+  $useWindowPlacement = $true
+} else {
+  $useWindowPlacement = $false
+}
 $runDirResolved = if ([System.IO.Path]::IsPathRooted($RunDir)) { $RunDir } else { (Resolve-Path (Join-Path $root $RunDir)).Path }
 
 $manifestPath = Join-Path $runDirResolved "manifest.json"
@@ -140,11 +149,16 @@ $queueContext | ConvertTo-Json -Depth 6 | Set-Content -Encoding UTF8 (Join-Path 
 if (-not (Test-TcpPort -Port 3100)) {
   $serverLog = Join-Path $followupLogs "server.log"
   $serverCommand = "Set-Location '$root'; npm run dev 2>&1 | Tee-Object -FilePath '$serverLog' -Append"
-  $proc = Start-Process -FilePath "powershell.exe" -ArgumentList @(
+  $spawnArgs = @(
     "-NoExit",
     "-ExecutionPolicy", "Bypass",
     "-Command", "`$Host.UI.RawUI.WindowTitle = 'GOLD FOLLOWUP SERVER'; $serverCommand"
-  ) -WorkingDirectory $root -PassThru
+  )
+  if ($useWindowPlacement) {
+    $proc = Start-ProcessOnSecondaryMonitor -FilePath "powershell.exe" -ArgumentList $spawnArgs -WorkingDirectory $root -PreserveSize
+  } else {
+    $proc = Start-Process -FilePath "powershell.exe" -ArgumentList $spawnArgs -WorkingDirectory $root -PassThru
+  }
   Write-ManagerLog "Started follow-up server window PID $($proc.Id)"
   Start-Sleep -Seconds 10
 } else {
