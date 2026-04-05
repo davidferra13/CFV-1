@@ -417,14 +417,14 @@ async function syncCore(
           // 5a. Upsert ALL store prices to ingredient_price_history
           // Validate each price before insert; quarantine rejects
           for (const storePrice of result.all_prices) {
-            const priceCheck = validatePrice(storePrice.normalized_cents, name)
+            const priceCheck = validatePrice(storePrice.cents, name)
             if (!priceCheck.valid) {
               try {
                 await db.execute(sql`
                   INSERT INTO openclaw.quarantined_prices
                     (source, ingredient_name, price_cents, rejection_reason, raw_data)
                   VALUES (
-                    ${storePrice.store}, ${name}, ${storePrice.normalized_cents},
+                    ${storePrice.store}, ${name}, ${storePrice.cents},
                     ${priceCheck.reason}, ${JSON.stringify(storePrice)}::jsonb
                   )
                 `)
@@ -439,18 +439,14 @@ async function syncCore(
             // This prevents cross-product false positives (bulb vs jar under same name).
             const storeKey = `${ing.id}::${storePrice.store}`
             const baselinePrice = perStoreBaselines.get(storeKey) ?? null
-            const changeCheck = validatePriceChange(
-              baselinePrice,
-              storePrice.normalized_cents,
-              name
-            )
+            const changeCheck = validatePriceChange(baselinePrice, storePrice.cents, name)
             if (!changeCheck.valid) {
               try {
                 await db.execute(sql`
                   INSERT INTO openclaw.quarantined_prices
                     (source, ingredient_name, price_cents, old_price_cents, rejection_reason, raw_data)
                   VALUES (
-                    ${storePrice.store}, ${name}, ${storePrice.normalized_cents},
+                    ${storePrice.store}, ${name}, ${storePrice.cents},
                     ${baselinePrice}, ${changeCheck.reason}, ${JSON.stringify(storePrice)}::jsonb
                   )
                 `)
@@ -469,7 +465,7 @@ async function syncCore(
                    quantity, unit, purchase_date, store_name, source, notes)
                 VALUES (
                   gen_random_uuid(), ${ing.id}, ${ing.tenantId},
-                  ${storePrice.normalized_cents}, ${storePrice.normalized_cents},
+                  ${storePrice.cents}, ${storePrice.normalized_cents},
                   1, ${storePrice.normalized_unit}, ${today},
                   ${storePrice.store}, ${granularSource},
                   ${`Automated price sync - ${storePrice.store}`}
@@ -491,7 +487,7 @@ async function syncCore(
 
           // 5b. Update the ingredient row with BEST price only
           // Dedup: skip if already synced today with same best price
-          if (ing.lastPriceCents === bestPrice.normalized_cents) {
+          if (ing.lastPriceCents === bestPrice.cents) {
             skipped++
             continue
           }
@@ -502,7 +498,7 @@ async function syncCore(
           try {
             await db.execute(sql`
               UPDATE ingredients SET
-                last_price_cents = ${bestPrice.normalized_cents},
+                last_price_cents = ${bestPrice.cents},
                 last_price_date = ${today},
                 price_unit = ${bestPrice.normalized_unit},
                 last_price_source = ${granularSource},
@@ -517,7 +513,7 @@ async function syncCore(
             await db
               .update(ingredients)
               .set({
-                lastPriceCents: bestPrice.normalized_cents,
+                lastPriceCents: bestPrice.cents,
                 lastPriceDate: today,
                 priceUnit: bestPrice.normalized_unit,
               })

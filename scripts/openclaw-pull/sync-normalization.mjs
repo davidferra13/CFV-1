@@ -227,7 +227,7 @@ async function main() {
             match_method, similarity_score, confirmed_at, created_at
           ) VALUES (
             gen_random_uuid(), ${ing.tenant_id}, ${ing.id}, ${match[0].id},
-            ${method}, ${Math.round(match[0].sim * 100) / 100}, now(), now()
+            ${method}, ${Math.round(match[0].sim * 100) / 100}, NULL, now()
           )
           ON CONFLICT (tenant_id, ingredient_id) DO NOTHING
         `
@@ -245,7 +245,7 @@ async function main() {
               match_method, similarity_score, confirmed_at, created_at
             ) VALUES (
               gen_random_uuid(), ${ing.tenant_id}, ${ing.id}, ${semanticMatch.id},
-              'semantic', ${semanticMatch.score}, now(), now()
+              'semantic', ${semanticMatch.score}, NULL, now()
             )
             ON CONFLICT (tenant_id, ingredient_id) DO NOTHING
           `

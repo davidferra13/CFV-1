@@ -20,6 +20,15 @@
 - 10-tier price resolution chain (`lib/pricing/resolve-price.ts`)
 - Auto-costing engine for menus
 - Cost forecasting
+- Trend arrows on price badges (7-day direction + percentage)
+
+## ChefFlow Admin Visibility (NEW 2026-04-05)
+
+- **Data Engine Health page:** `/admin/openclaw/health` (quarantine queue, sync history, pricing coverage KPIs)
+- **Analytics card:** `/admin/analytics` shows data engine health summary (last sync, acceptance rate, quarantine count, price coverage)
+- **Server actions:** `lib/admin/openclaw-health-actions.ts` (6 actions: quarantine CRUD, sync audit, coverage)
+- **Quarantine review:** Approve/reject individual prices or bulk-reject. Previously invisible.
+- **Sync audit log:** Every sync run visible with acceptance rate, quarantine count, errors.
 
 ## Relationship Rules
 
@@ -31,7 +40,9 @@
 
 ## Open Items
 
-- Developer feels disconnected from OpenClaw (can't "talk to it" easily)
-- Scraper may be running old assignments that have been overwritten
-- PC local mirror/backup contract spec exists but not built
-- Archive Digester cartridge approved but not started
+- Pi:8090/game pixel-art HQ dashboard (spec ready, not built)
+- 48K canonical ingredients with nutrition data sitting unused
+- Store location data unused in price resolution (no geographic filtering)
+- Runtime operations guide for OpenClaw agents not yet created
+- Archive Digester cartridge approved but waiting on developer file collection
+- Nationwide expansion: Phase 1 (store directory) not started
