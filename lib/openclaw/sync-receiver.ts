@@ -39,8 +39,9 @@ registerCartridge({
       matched: result.matched,
       updated: result.updated,
       skipped: result.skipped,
-      errors: result.notFound,
-      errorDetails: result.notFoundNames,
+      errors: 0,
+      notFound: result.notFound,
+      quarantined: result.quarantined ?? 0,
     }
   },
 })

@@ -38,6 +38,14 @@ export function OpenClawLiveAlerts() {
         duration: 12000,
       })
     }
+
+    if (msg.event === 'sync_stale') {
+      const d = msg.data
+      toast.error('Price sync pipeline stale', {
+        description: d.reason || 'No successful sync in 24+ hours. Check prod server.',
+        duration: 15000,
+      })
+    }
   }, [])
 
   useSSE('openclaw:alerts', { onMessage: handleMessage })

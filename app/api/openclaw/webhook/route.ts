@@ -87,6 +87,18 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      case 'sync_stale': {
+        // Sync health watchdog detected that ChefFlow is unreachable or sync pipeline is broken
+        broadcast('openclaw:alerts', 'sync_stale', {
+          reason: data.reason,
+          chefflowUrl: data.chefflow_url,
+          actionRequired: data.action_required,
+          detectedAt: data.detected_at,
+        })
+        console.warn(`[openclaw-webhook] sync_stale: ${data.reason}`)
+        break
+      }
+
       default:
         return NextResponse.json({ error: `Unknown type: ${type}` }, { status: 400 })
     }

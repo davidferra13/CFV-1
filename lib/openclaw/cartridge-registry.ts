@@ -14,6 +14,8 @@ export interface CartridgeSyncResult {
   updated: number
   skipped: number
   errors: number
+  notFound?: number
+  quarantined?: number
   errorDetails?: string[]
 }
 
