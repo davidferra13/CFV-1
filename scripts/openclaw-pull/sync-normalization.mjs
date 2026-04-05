@@ -115,7 +115,9 @@ async function main() {
   let aliasesCreated = 0
 
   for (const ing of chefIngredients) {
-    const cleanName = ing.name.trim().toLowerCase()
+    // Strip recipe context in brackets, e.g. "Honey [Pistachio Baklava...]" -> "Honey"
+    const stripped = ing.name.replace(/\s*\[.*?\]\s*$/, '')
+    const cleanName = stripped.trim().toLowerCase()
 
     try {
       // Trigram similarity match against system_ingredients

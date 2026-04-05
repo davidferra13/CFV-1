@@ -102,6 +102,12 @@ const SOURCE_TO_CHAIN = [
   [/^walmart-flipp$/,             'walmart'],
   [/^walmart-/,                   'walmart'],
   [/^walgreens-flipp$/,           'walgreens'],
+  [/^ic-big-y$/,                  'big_y'],
+  [/^ic-eataly$/,                 'eataly'],
+  [/^ic-price-rite$/,             'price_rite'],
+  [/^ic-publix$/,                 'publix'],
+  [/^ic-the-fresh-market$/,       'the_fresh_market'],
+  [/^ic-seven-eleven$/,           'seven_eleven'],
 ]
 
 function sourceIdToChainSlug(sourceId) {
@@ -459,37 +465,42 @@ async function main() {
         continue
       }
 
+      // Collect valid rows for bulk upsert
+      const batch = []
       for (const sp of rows) {
         if (!sp.price_cents || sp.price_cents <= 0) {
           skippedZero++
           continue
         }
-
         const pgStoreId = storeIdMap.get(sp.store_id)
         const pgProductId = productIdMap.get(sp.product_id)
-
         if (!pgStoreId || !pgProductId) {
           skippedNoMap++
           continue
         }
+        batch.push({
+          store_id: pgStoreId,
+          product_id: pgProductId,
+          price_cents: sp.price_cents,
+          sale_price_cents: sp.sale_price_cents || null,
+          sale_ends_at: sp.sale_ends_at ? new Date(sp.sale_ends_at) : null,
+          in_stock: sp.in_stock === 1,
+          aisle: sp.aisle,
+          source: sp.source || 'pull',
+          last_seen_at: sp.last_seen_at ? new Date(sp.last_seen_at) : new Date(),
+          price_type: getPriceType(sp.chain_slug || null),
+        })
+      }
 
+      // Bulk upsert: one query per batch instead of one per row
+      for (let i = 0; i < batch.length; i += 50) {
+        const chunk = batch.slice(i, i + 50)
         try {
-          // Determine price_type from chain slug (resolved earlier in storeIdMap step)
-          const chainSlug = sp.chain_slug || null
-          const priceTypeVal = getPriceType(chainSlug)
-
           await sql`
-            INSERT INTO openclaw.store_products (
-              store_id, product_id, price_cents, sale_price_cents, sale_ends_at,
-              in_stock, aisle, source, last_seen_at, price_type
-            ) VALUES (
-              ${pgStoreId}, ${pgProductId}, ${sp.price_cents},
-              ${sp.sale_price_cents || null},
-              ${sp.sale_ends_at ? new Date(sp.sale_ends_at) : null},
-              ${sp.in_stock === 1}, ${sp.aisle}, ${sp.source || 'pull'},
-              ${sp.last_seen_at ? new Date(sp.last_seen_at) : new Date()},
-              ${priceTypeVal}
-            )
+            INSERT INTO openclaw.store_products ${sql(chunk,
+              'store_id', 'product_id', 'price_cents', 'sale_price_cents', 'sale_ends_at',
+              'in_stock', 'aisle', 'source', 'last_seen_at', 'price_type'
+            )}
             ON CONFLICT (store_id, product_id) DO UPDATE SET
               price_cents = EXCLUDED.price_cents,
               sale_price_cents = EXCLUDED.sale_price_cents,
@@ -500,10 +511,36 @@ async function main() {
               last_seen_at = EXCLUDED.last_seen_at,
               price_type = EXCLUDED.price_type
           `
-          pricesSynced++
+          pricesSynced += chunk.length
         } catch (err) {
-          errors++
-          if (errorDetails.length < 20) errorDetails.push(`Price store=${sp.store_id} prod=${sp.product_id}: ${err.message}`)
+          // Fallback: insert one-by-one on chunk failure
+          for (const r of chunk) {
+            try {
+              await sql`
+                INSERT INTO openclaw.store_products (
+                  store_id, product_id, price_cents, sale_price_cents, sale_ends_at,
+                  in_stock, aisle, source, last_seen_at, price_type
+                ) VALUES (
+                  ${r.store_id}, ${r.product_id}, ${r.price_cents}, ${r.sale_price_cents},
+                  ${r.sale_ends_at}, ${r.in_stock}, ${r.aisle}, ${r.source},
+                  ${r.last_seen_at}, ${r.price_type}
+                )
+                ON CONFLICT (store_id, product_id) DO UPDATE SET
+                  price_cents = EXCLUDED.price_cents,
+                  sale_price_cents = EXCLUDED.sale_price_cents,
+                  sale_ends_at = EXCLUDED.sale_ends_at,
+                  in_stock = EXCLUDED.in_stock,
+                  aisle = EXCLUDED.aisle,
+                  source = EXCLUDED.source,
+                  last_seen_at = EXCLUDED.last_seen_at,
+                  price_type = EXCLUDED.price_type
+              `
+              pricesSynced++
+            } catch (rowErr) {
+              errors++
+              if (errorDetails.length < 20) errorDetails.push(`Price store=${r.store_id} prod=${r.product_id}: ${rowErr.message}`)
+            }
+          }
         }
       }
 

@@ -31,7 +31,7 @@ function runScript(name, path) {
     execFileSync('node', [path], {
       cwd: rootDir,
       stdio: 'inherit',
-      timeout: 600000, // 10 min max per step
+      timeout: 1800000, // 30 min max per step
       env: { ...process.env, DATABASE_URL: config.pg.connectionString },
     })
     log(`${name}: DONE`)
