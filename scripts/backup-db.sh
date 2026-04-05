@@ -1,6 +1,9 @@
 #!/bin/bash
 # ============================================
-# ChefFlow Database Backup
+# ChefFlow Database Backup (MANUAL)
+# ============================================
+# NOTE: For automated daily backups with encryption, alerting, and
+# verification, use: scripts/backup-db-automated.sh
 # ============================================
 # Creates a timestamped PostgreSQL database backup.
 # Keeps the last 7 backups (configurable via RETENTION).

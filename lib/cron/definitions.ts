@@ -148,6 +148,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Purge deleted accounts after the grace period expires',
   },
   {
+    cronName: 'db-backup',
+    routePath: '/api/cron/backup-heartbeat',
+    maxExpectedMinutes: 1440,
+    cadence: 'daily',
+    description: 'Automated database backup (dump, encrypt, verify, prune)',
+  },
+  {
     cronName: 'activity-cleanup',
     routePath: '/api/scheduled/activity-cleanup',
     maxExpectedMinutes: 2880,

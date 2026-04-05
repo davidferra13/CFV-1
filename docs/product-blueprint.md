@@ -161,7 +161,7 @@ The systems that power everything.
 - [x] Admin tools (platform pulse, beta signups, price catalog)
 - [x] Mission Control (developer ops dashboard, Gustav AI, 90+ API endpoints)
 - [ ] **SSE authentication** - SECURITY GAP (zero-auth on real-time bus)
-- [ ] **Automated database backups** - spec ready, not built
+- [x] **Automated database backups** - built April 4, encrypted, 14-day retention
 - [ ] **Request correlation and observability** - spec ready, not built
 
 ---
@@ -178,7 +178,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 - [ ] Public booking page tested end-to-end by a non-developer
 - [ ] All 6 pillars pass a Playwright walkthrough (happy path)
 - [ ] No critical security gaps (tenant isolation, auth on all endpoints)
-- [ ] Database backup automation running
+- [x] Database backup automation running (built April 4: encrypted, 14-day retention, alerting)
 
 ### Should-Have (Ship Without, Fix Fast)
 
@@ -215,7 +215,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 | -------- | ------------------------------------------ | ---------------------------------------------------- |
 | ~~P0~~   | ~~Fix Remy parsing regression~~            | **DONE** (April 4)                                   |
 | ~~P0~~   | ~~SSE authentication~~                     | **DONE** (already implemented, minor gaps remain)    |
-| P0       | Database backup automation                 | `p1-automated-database-backup-system.md`             |
+| ~~P0~~   | ~~Database backup automation~~             | **DONE** (April 4)                                   |
 | P1       | 9 built specs need Playwright verification | Various                                              |
 | P1       | Interface philosophy violations (3 found)  | Gap analysis doc                                     |
 | P1       | CPA-ready tax export verification          | `p0-chef-cpa-ready-tax-export-and-reconciliation.md` |

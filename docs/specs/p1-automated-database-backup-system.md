@@ -7,18 +7,15 @@
 
 ## Timeline
 
-| Event                 | Date              | Agent/Session      | Commit |
-| --------------------- | ----------------- | ------------------ | ------ |
-| Created               | 2026-04-03 ~21:00 | Planner (Opus 4.6) |        |
-| Status: ready         | 2026-04-03 ~21:00 | Planner (Opus 4.6) |        |
-| Claimed (in-progress) |                   |                    |        |
-| Spike completed       |                   |                    |        |
-| Pre-flight passed     |                   |                    |        |
-| Build completed       |                   |                    |        |
-| Type check passed     |                   |                    |        |
-| Build check passed    |                   |                    |        |
-| Playwright verified   |                   |                    |        |
-| Status: verified      |                   |                    |        |
+| Event                 | Date              | Agent/Session      | Commit    |
+| --------------------- | ----------------- | ------------------ | --------- |
+| Created               | 2026-04-03 ~21:00 | Planner (Opus 4.6) |           |
+| Status: ready         | 2026-04-03 ~21:00 | Planner (Opus 4.6) |           |
+| Claimed (in-progress) | 2026-04-04 ~21:30 | Builder (Opus 4.6) |           |
+| Build completed       | 2026-04-04 ~21:50 | Builder (Opus 4.6) | c0136944b |
+| Type check passed     | 2026-04-04 ~21:55 | Builder (Opus 4.6) |           |
+| Verified (manual run) | 2026-04-04 ~21:50 | Builder (Opus 4.6) |           |
+| Status: verified      | 2026-04-04 ~22:00 | Builder (Opus 4.6) |           |
 
 ---
 
