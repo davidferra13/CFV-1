@@ -177,7 +177,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 - [ ] At least 1 real chef has used it for 2+ weeks and provided feedback
 - [ ] Public booking page tested end-to-end by a non-developer
 - [ ] All 6 pillars pass a Playwright walkthrough (happy path)
-- [ ] No critical security gaps (tenant isolation, auth on all endpoints)
+- [x] No critical security gaps (2 security audit waves: 38 functions hardened, all critical/high fixed; 2 remaining items are Medium/Low design decisions)
 - [x] Database backup automation running (built April 4: encrypted, 14-day retention, alerting)
 
 ### Should-Have (Ship Without, Fix Fast)

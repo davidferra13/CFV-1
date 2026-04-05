@@ -1985,3 +1985,12 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: cefb6292f, 05c15c48e, c0136944b
 - Build state on departure: green (MC server starts, APIs respond, dashboard renders)
 - Notes: Remy parsing was broken because Ollama was stuck (30b model too large for RTX 3050 6GB VRAM). Restarted Ollama and switched all tiers to qwen3:4b. SSE auth was already implemented (reclassified from Critical to Low). Fixed presence/typing endpoint from substring to structured validation. Built MC passive Live dashboard with progress bars from Product Blueprint, activity feed, commit history, system status. 2/7 P0 exit criteria now done.
+
+## 2026-04-04 ~23:30 EST
+
+- Agent: Builder (Claude Opus 4.6)
+- Task: V1 exit criteria continuation: security verification, 6-pillar Playwright test creation
+- Status: partial (test infra written, execution blocked by hung dev server)
+- Files touched: docs/product-blueprint.md (security criterion marked done), tests/six-pillars-walkthrough.spec.ts (new), playwright.six-pillars.config.ts (new)
+- Build state on departure: green (typecheck passes)
+- Notes: Verified security audit completeness: all Critical/High findings fixed across 2 waves (38 functions), 2 remaining items are Medium/Low design decisions. Marked "No critical security gaps" exit criterion done (4/7 must-haves now complete). Wrote comprehensive 28-test 6-pillar Playwright walkthrough covering SELL, PLAN, COOK, STOCK, MONEY, GROW + Dashboard. Execution blocked: dev server on port 3100 is hung (7GB RAM, not responding to any requests). Tests ready to run once server is restarted. Run: `npx playwright test --config=playwright.six-pillars.config.ts`
