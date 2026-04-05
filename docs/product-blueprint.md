@@ -172,7 +172,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 
 ### Must-Have (Blocks Launch)
 
-- [ ] Remy inquiry parsing works (currently broken since March 30)
+- [x] Remy inquiry parsing works (fixed April 4: Ollama stuck on 30b model, switched to 4b)
 - [ ] SSE authentication implemented (security requirement)
 - [ ] At least 1 real chef has used it for 2+ weeks and provided feedback
 - [ ] Public booking page tested end-to-end by a non-developer
@@ -213,7 +213,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 
 | Priority | Item                                       | Spec                                                 |
 | -------- | ------------------------------------------ | ---------------------------------------------------- |
-| P0       | Fix Remy parsing regression                | Debug needed                                         |
+| ~~P0~~   | ~~Fix Remy parsing regression~~            | **DONE** (April 4)                                   |
 | P0       | SSE authentication                         | No spec yet                                          |
 | P0       | Database backup automation                 | `p1-automated-database-backup-system.md`             |
 | P1       | 9 built specs need Playwright verification | Various                                              |
@@ -244,14 +244,14 @@ These are explicitly out of scope for V1. Do not build, spec, or plan these:
 
 ## Known Issues (Current Bugs and Regressions)
 
-| Issue                                     | Severity | Since         | Impact                                |
-| ----------------------------------------- | -------- | ------------- | ------------------------------------- |
-| Remy inquiry/client parsing returns empty | Critical | March 30      | Core inquiry flow broken              |
-| SSE has zero authentication               | Critical | Always        | Any client can connect to any channel |
-| Ollama exposed on localhost:11434         | Medium   | Always        | No auth on AI endpoint (local only)   |
-| 3 interface philosophy violations         | Medium   | Found April 4 | Event detail tabs, quotes page        |
-| 179/184 forms lack auto-save              | Low      | Always        | UX debt, not blocking                 |
-| Share token PII scope undefined           | Low      | Always        | Security design decision needed       |
+| Issue                             | Severity | Since         | Impact                                |
+| --------------------------------- | -------- | ------------- | ------------------------------------- |
+| Remy parsing (FIXED)              | Fixed    | March 30      | Fixed Apr 4: 30b hung, switched 4b    |
+| SSE has zero authentication       | Critical | Always        | Any client can connect to any channel |
+| Ollama exposed on localhost:11434 | Medium   | Always        | No auth on AI endpoint (local only)   |
+| 3 interface philosophy violations | Medium   | Found April 4 | Event detail tabs, quotes page        |
+| 179/184 forms lack auto-save      | Low      | Always        | UX debt, not blocking                 |
+| Share token PII scope undefined   | Low      | Always        | Security design decision needed       |
 
 ---
 
