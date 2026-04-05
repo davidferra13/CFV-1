@@ -54,7 +54,7 @@ TRACKED_TABLES = [
     "normalization_map",
     "catalog_stores",
     "catalog_store_products",
-    "scrape_sessions",
+    "catalog_scrape_runs",
 ]
 
 # Rough bytes-per-row estimates for each table (used for size tracking)
@@ -67,7 +67,7 @@ BYTES_PER_ROW_ESTIMATE = {
     "normalization_map": 192,
     "catalog_stores": 256,
     "catalog_store_products": 384,
-    "scrape_sessions": 256,
+    "catalog_scrape_runs": 256,
 }
 
 DEFAULT_BYTES_PER_ROW = 300

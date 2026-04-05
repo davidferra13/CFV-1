@@ -28,7 +28,7 @@ PROTECTED_TABLES = [
     "price_monthly_summary",
     "normalization_map",
     "ingredient_variants",
-    "scrape_sessions",
+    "catalog_scrape_runs",
 ]
 
 

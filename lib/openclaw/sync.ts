@@ -22,6 +22,7 @@ import { eq, sql } from 'drizzle-orm'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { normalizeIngredientName } from '@/lib/pricing/name-normalizer'
 import { refreshPriceViews } from '@/lib/pricing/cross-store-average'
+import { validatePrice, validatePriceChange } from '@/lib/openclaw/price-validator'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
 
@@ -56,6 +57,7 @@ export interface SyncResult {
   updated: number
   skipped: number
   notFound: number
+  quarantined?: number
   notFoundNames?: string[]
 }
 
@@ -356,6 +358,7 @@ async function syncCore(
     let updated = 0
     let skipped = 0
     let notFound = 0
+    let quarantined = 0
     const notFoundNames: string[] = []
 
     for (const [name, result] of Object.entries(enrichedResults)) {
@@ -388,8 +391,47 @@ async function syncCore(
       for (const ing of tenantIngredients) {
         if (!dryRun) {
           // 5a. Upsert ALL store prices to ingredient_price_history
-          // Each store price gets its own row, deduped by the partial unique index
+          // Validate each price before insert; quarantine rejects
           for (const storePrice of result.all_prices) {
+            const priceCheck = validatePrice(storePrice.normalized_cents, name)
+            if (!priceCheck.valid) {
+              try {
+                await db.execute(sql`
+                  INSERT INTO openclaw.quarantined_prices
+                    (source, ingredient_name, price_cents, rejection_reason, raw_data)
+                  VALUES (
+                    ${storePrice.store}, ${name}, ${storePrice.normalized_cents},
+                    ${priceCheck.reason}, ${JSON.stringify(storePrice)}::jsonb
+                  )
+                `)
+              } catch {
+                /* quarantine is best-effort */
+              }
+              quarantined++
+              continue
+            }
+            const changeCheck = validatePriceChange(
+              ing.lastPriceCents,
+              storePrice.normalized_cents,
+              name
+            )
+            if (!changeCheck.valid) {
+              try {
+                await db.execute(sql`
+                  INSERT INTO openclaw.quarantined_prices
+                    (source, ingredient_name, price_cents, old_price_cents, rejection_reason, raw_data)
+                  VALUES (
+                    ${storePrice.store}, ${name}, ${storePrice.normalized_cents},
+                    ${ing.lastPriceCents}, ${changeCheck.reason}, ${JSON.stringify(storePrice)}::jsonb
+                  )
+                `)
+              } catch {
+                /* quarantine is best-effort */
+              }
+              quarantined++
+              continue
+            }
+
             const granularSource = tierToSource(storePrice.tier)
             try {
               await db.execute(sql`
@@ -510,12 +552,30 @@ async function syncCore(
       }
     }
 
+    // Step 10: Write sync audit log (non-blocking)
+    if (!dryRun) {
+      try {
+        await db.execute(sql`
+          INSERT INTO openclaw.sync_audit_log
+            (sync_type, started_at, completed_at, records_processed, records_accepted, records_quarantined, records_skipped, metadata)
+          VALUES (
+            'price_sync', ${new Date().toISOString()}, ${new Date().toISOString()},
+            ${matched + notFound}, ${updated}, ${quarantined}, ${skipped},
+            ${JSON.stringify({ notFoundCount: notFound, tier })}::jsonb
+          )
+        `)
+      } catch (err) {
+        console.error('[syncPrices] Audit log write failed (non-blocking):', err)
+      }
+    }
+
     return {
       success: true,
       matched,
       updated,
       skipped,
       notFound,
+      quarantined,
       notFoundNames: dryRun ? notFoundNames : undefined,
     }
   } catch (err) {
