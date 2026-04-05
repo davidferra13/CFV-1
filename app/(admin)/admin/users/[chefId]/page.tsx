@@ -94,6 +94,9 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
   const events = eventsResult.data ?? []
   const clients = clientsResult.data ?? []
   const ledger = ledgerResult.data ?? []
+  const eventsFailed = eventsResult.data === null
+  const clientsFailed = clientsResult.data === null
+  const ledgerFailed = ledgerResult.data === null
 
   const totalGMV = ledger
     .filter((l: any) => l.entry_type === 'payment')
@@ -166,27 +169,57 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       </div>
 
       {/* Financial Summary */}
+      {(eventsFailed || clientsFailed || ledgerFailed) && (
+        <div
+          className="bg-amber-950/50 border border-amber-800 rounded-lg px-4 py-3 text-sm text-amber-200"
+          role="alert"
+        >
+          Some data could not be loaded (
+          {[eventsFailed && 'events', clientsFailed && 'clients', ledgerFailed && 'ledger']
+            .filter(Boolean)
+            .join(', ')}
+          ). Values below may be incomplete.
+        </div>
+      )}
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <DollarSign size={14} className="text-green-500" />
             <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">GMV</p>
           </div>
-          <p className="text-xl font-bold text-slate-900">{formatCents(totalGMV)}</p>
+          <p className="text-xl font-bold text-slate-900">
+            {ledgerFailed ? (
+              <span className="text-red-400 text-sm">Failed to load</span>
+            ) : (
+              formatCents(totalGMV)
+            )}
+          </p>
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <CalendarRange size={14} className="text-brand-500" />
             <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">Events</p>
           </div>
-          <p className="text-xl font-bold text-slate-900">{events.length}</p>
+          <p className="text-xl font-bold text-slate-900">
+            {eventsFailed ? (
+              <span className="text-red-400 text-sm">Failed to load</span>
+            ) : (
+              events.length
+            )}
+          </p>
         </div>
         <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <Users size={14} className="text-purple-500" />
             <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">Clients</p>
           </div>
-          <p className="text-xl font-bold text-slate-900">{clients.length}</p>
+          <p className="text-xl font-bold text-slate-900">
+            {clientsFailed ? (
+              <span className="text-red-400 text-sm">Failed to load</span>
+            ) : (
+              clients.length
+            )}
+          </p>
         </div>
       </div>
 

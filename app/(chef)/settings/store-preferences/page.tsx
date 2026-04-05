@@ -9,8 +9,12 @@ export const metadata: Metadata = { title: 'Store Preferences' }
 export default async function StorePreferencesPage() {
   await requireChef()
 
+  let storesFetchFailed = false
   const [openclawStores, preferredStores] = await Promise.all([
-    getAvailableOpenClawStores().catch(() => [] as string[]),
+    getAvailableOpenClawStores().catch(() => {
+      storesFetchFailed = true
+      return [] as string[]
+    }),
     getPreferredStores().catch(() => []),
   ])
 
@@ -27,6 +31,15 @@ export default async function StorePreferencesPage() {
           store&apos;s prices will be shown first when available.
         </p>
       </div>
+
+      {storesFetchFailed && (
+        <div
+          className="mb-4 rounded-lg border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm text-amber-200"
+          role="alert"
+        >
+          Store suggestions could not be loaded. You can still manage your saved preferences below.
+        </div>
+      )}
 
       <StorePreferencesClient suggestions={suggestions} initialStores={preferredStores} />
     </div>
