@@ -146,7 +146,7 @@ function pullDocketDocs() {
       if (idMatch) {
         try {
           execSync(
-            `ssh pi "sqlite3 ${piDbPath} \\"UPDATE docket_items SET status='pulled', pulled_at=datetime('now') WHERE id=${idMatch[1]} AND status='done'\\""`,
+            `ssh pi "cd ~/openclaw-docket && node -e \\"const db=require('better-sqlite3')('docket.db'); db.prepare(\\\\\\"UPDATE docket_items SET status='pulled', pulled_at=datetime('now') WHERE id=${idMatch[1]} AND status='done'\\\\\\").run()\\""`,
             { timeout: 10000 }
           )
         } catch {}
