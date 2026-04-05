@@ -1,7 +1,6 @@
 // Admin Analytics - Platform-wide growth and revenue trends
 
 import { requireAdmin } from '@/lib/auth/admin'
-import { isFounderEmail } from '@/lib/platform/owner-account'
 import {
   getPlatformGrowthStats,
   getPlatformRevenueByMonth,
@@ -22,22 +21,19 @@ function formatCents(cents: number): string {
 }
 
 export default async function AdminAnalyticsPage() {
-  let admin
   try {
-    admin = await requireAdmin()
+    await requireAdmin()
   } catch {
     redirect('/unauthorized')
   }
-
-  const isFounder = isFounderEmail(admin.email)
 
   const [growth, revenue, overview, syncHealth, quarantine, pricing] = await Promise.allSettled([
     getPlatformGrowthStats(),
     getPlatformRevenueByMonth(),
     getPlatformOverviewStats(),
-    isFounder ? getSyncHealthSummary() : Promise.resolve({ data: null, error: null }),
-    isFounder ? getQuarantineStats() : Promise.resolve({ data: null, error: null }),
-    isFounder ? getPricingCoverage() : Promise.resolve({ data: null, error: null }),
+    getSyncHealthSummary(),
+    getQuarantineStats(),
+    getPricingCoverage(),
   ])
 
   const growthData = growth.status === 'fulfilled' ? growth.value : null
