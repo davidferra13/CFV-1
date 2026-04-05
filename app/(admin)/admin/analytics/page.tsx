@@ -1,37 +1,57 @@
 // Admin Analytics - Platform-wide growth and revenue trends
 
 import { requireAdmin } from '@/lib/auth/admin'
+import { isFounderEmail } from '@/lib/platform/owner-account'
 import {
   getPlatformGrowthStats,
   getPlatformRevenueByMonth,
   getPlatformOverviewStats,
 } from '@/lib/admin/platform-stats'
+import {
+  getSyncHealthSummary,
+  getQuarantineStats,
+  getPricingCoverage,
+} from '@/lib/admin/openclaw-health-actions'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { BarChart3 } from '@/components/ui/icons'
+import { ErrorState } from '@/components/ui/error-state'
 
 function formatCents(cents: number): string {
   return '$' + (cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })
 }
 
 export default async function AdminAnalyticsPage() {
+  let admin
   try {
-    await requireAdmin()
+    admin = await requireAdmin()
   } catch {
     redirect('/unauthorized')
   }
 
-  const [growth, revenue, overview] = await Promise.allSettled([
+  const isFounder = isFounderEmail(admin.email)
+
+  const [growth, revenue, overview, syncHealth, quarantine, pricing] = await Promise.allSettled([
     getPlatformGrowthStats(),
     getPlatformRevenueByMonth(),
     getPlatformOverviewStats(),
+    isFounder ? getSyncHealthSummary() : Promise.resolve({ data: null, error: null }),
+    isFounder ? getQuarantineStats() : Promise.resolve({ data: null, error: null }),
+    isFounder ? getPricingCoverage() : Promise.resolve({ data: null, error: null }),
   ])
 
-  const growthData = growth.status === 'fulfilled' ? growth.value : []
-  const revenueData = revenue.status === 'fulfilled' ? revenue.value : []
+  const growthData = growth.status === 'fulfilled' ? growth.value : null
+  const revenueData = revenue.status === 'fulfilled' ? revenue.value : null
   const overviewData = overview.status === 'fulfilled' ? overview.value : null
 
-  const maxRevenue = Math.max(...revenueData.map((d) => d.gmvCents), 1)
-  const maxGrowth = Math.max(...growthData.map((d) => Math.max(d.newChefs, d.newClients)), 1)
+  const syncData = syncHealth.status === 'fulfilled' ? syncHealth.value.data : null
+  const quarantineData = quarantine.status === 'fulfilled' ? quarantine.value.data : null
+  const pricingData = pricing.status === 'fulfilled' ? pricing.value.data : null
+
+  const maxRevenue = revenueData ? Math.max(...revenueData.map((d) => d.gmvCents), 1) : 1
+  const maxGrowth = growthData
+    ? Math.max(...growthData.map((d) => Math.max(d.newChefs, d.newClients)), 1)
+    : 1
 
   return (
     <div className="space-y-6">
@@ -48,6 +68,13 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       {/* Summary KPIs */}
+      {overview.status === 'rejected' && (
+        <ErrorState
+          title="Could not load overview"
+          description="Platform stats query failed. Try refreshing."
+          size="sm"
+        />
+      )}
       {overviewData && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
@@ -97,7 +124,13 @@ export default async function AdminAnalyticsPage() {
         <h2 className="text-sm font-semibold text-stone-300 mb-4">
           Platform GMV by Month (last 12 months)
         </h2>
-        {revenueData.length === 0 ? (
+        {revenueData === null ? (
+          <ErrorState
+            title="Could not load revenue data"
+            description="The platform revenue query failed. Try refreshing."
+            size="sm"
+          />
+        ) : revenueData.length === 0 ? (
           <p className="text-sm text-slate-400">No revenue data yet.</p>
         ) : (
           <div className="space-y-2">
@@ -124,7 +157,13 @@ export default async function AdminAnalyticsPage() {
         <h2 className="text-sm font-semibold text-stone-300 mb-4">
           New Signups by Month (last 12 months)
         </h2>
-        {growthData.length === 0 ? (
+        {growthData === null ? (
+          <ErrorState
+            title="Could not load growth data"
+            description="The signup growth query failed. Try refreshing."
+            size="sm"
+          />
+        ) : growthData.length === 0 ? (
           <p className="text-sm text-slate-400">No signup data yet.</p>
         ) : (
           <div className="space-y-3">
@@ -160,6 +199,84 @@ export default async function AdminAnalyticsPage() {
           </div>
         )}
       </div>
+
+      {/* Data Engine Health (founder only) */}
+      {isFounder && (syncData || quarantineData || pricingData) && (
+        <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-stone-300">Data Engine Health</h2>
+            <Link
+              href="/admin/openclaw/health"
+              className="text-xs text-brand-400 hover:text-brand-300 transition"
+            >
+              Full dashboard &rarr;
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {syncData && (
+              <div className="space-y-1">
+                <p className="text-xs text-stone-500">Last Sync</p>
+                <p
+                  className={`text-sm font-medium ${
+                    syncData.lastSyncAt &&
+                    Date.now() - new Date(syncData.lastSyncAt).getTime() < 24 * 60 * 60 * 1000
+                      ? 'text-emerald-400'
+                      : 'text-red-400'
+                  }`}
+                >
+                  {syncData.lastSyncAt
+                    ? new Date(syncData.lastSyncAt).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })
+                    : 'Never'}
+                </p>
+              </div>
+            )}
+            {syncData && (
+              <div className="space-y-1">
+                <p className="text-xs text-stone-500">Acceptance Rate</p>
+                <p
+                  className={`text-sm font-medium ${
+                    syncData.avgAcceptanceRate >= 90 ? 'text-emerald-400' : 'text-amber-400'
+                  }`}
+                >
+                  {syncData.avgAcceptanceRate}%
+                </p>
+              </div>
+            )}
+            {quarantineData && (
+              <div className="space-y-1">
+                <p className="text-xs text-stone-500">Quarantined</p>
+                <p
+                  className={`text-sm font-medium ${
+                    quarantineData.unreviewed > 0 ? 'text-amber-400' : 'text-emerald-400'
+                  }`}
+                >
+                  {quarantineData.unreviewed} unreviewed
+                </p>
+              </div>
+            )}
+            {pricingData && (
+              <div className="space-y-1">
+                <p className="text-xs text-stone-500">Price Coverage</p>
+                <p className="text-sm font-medium text-emerald-400">
+                  {Math.round(
+                    (pricingData.ingredientsWithPrice / Math.max(pricingData.totalIngredients, 1)) *
+                      100
+                  )}
+                  %
+                  <span className="text-stone-500 font-normal ml-1">
+                    ({pricingData.ingredientsWithPrice}/{pricingData.totalIngredients})
+                  </span>
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -3,7 +3,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { pgClient } from '@/lib/db'
-import Link from 'next/link'
+import { MetricsStripClient } from './metrics-strip-client'
 
 interface StripMetrics {
   recipes: number
@@ -92,20 +92,5 @@ export async function MetricsStrip() {
     })
   }
 
-  return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 px-1">
-      {items.map((item) => (
-        <Link
-          key={item.label}
-          href={item.href}
-          className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-300 transition-colors group"
-        >
-          <span className="font-semibold text-stone-300 group-hover:text-stone-100 tabular-nums">
-            {item.value}
-          </span>
-          <span>{item.label}</span>
-        </Link>
-      ))}
-    </div>
-  )
+  return <MetricsStripClient items={items} />
 }

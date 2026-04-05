@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { AnimatedCounter } from '@/components/ui/animated-counter'
+import { Sparkline } from '@/components/ui/sparkline'
 
 type HeroMetric = {
   label: string
@@ -10,6 +11,7 @@ type HeroMetric = {
   trend?: string
   trendUp?: boolean
   tier: 'hero' | 'supporting'
+  sparkData?: number[]
 }
 
 export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
@@ -29,9 +31,20 @@ export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
             <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider">
               {metric.label}
             </p>
-            <p className="metric-display mt-1 group-hover:text-brand-400 transition-colors">
-              <AnimatedCounter value={metric.value} />
-            </p>
+            <div className="flex items-end gap-3 mt-1">
+              <p className="metric-display group-hover:text-brand-400 transition-colors">
+                <AnimatedCounter value={metric.value} />
+              </p>
+              {metric.sparkData && metric.sparkData.some((v) => v > 0) && (
+                <Sparkline
+                  data={metric.sparkData}
+                  width={72}
+                  height={28}
+                  color="brand"
+                  className="opacity-60 group-hover:opacity-100 transition-opacity mb-1"
+                />
+              )}
+            </div>
             {metric.trend && (
               <p
                 className={`text-xxs mt-0.5 font-medium ${

@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformFinancialOverview, getPlatformLedgerEntries } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
 import { DollarSign } from '@/components/ui/icons'
+import { ErrorState } from '@/components/ui/error-state'
 import { ProfitAndLossReport } from '@/components/finance/ProfitAndLossReport'
 import {
   getDefaultProfitLossWindow,
@@ -40,31 +41,17 @@ export default async function AdminFinancialsPage() {
   ])
 
   const fin = overview.status === 'fulfilled' ? overview.value : null
-  const entries = ledger.status === 'fulfilled' ? ledger.value : []
-  const pnlData =
-    pnl.status === 'fulfilled'
-      ? pnl.value
-      : {
-          startDate: window.startDate,
-          endDate: window.endDate,
-          revenue: {
-            billingRevenueCents: 0,
-            commerceRevenueCents: 0,
-            salesRevenueCents: 0,
-            totalRevenueCents: 0,
-          },
-          cogs: { purchaseOrdersCents: 0 },
-          operatingExpenses: {
-            expenseTableCents: 0,
-            laborFromPayrollCents: 0,
-            totalOperatingExpensesCents: 0,
-          },
-          totals: {
-            grossProfitCents: 0,
-            netProfitLossCents: 0,
-            profitMarginPercent: 0,
-          },
-        }
+  const finFailed = overview.status === 'rejected'
+  const entries = ledger.status === 'fulfilled' ? ledger.value : null
+  const entriesFailed = ledger.status === 'rejected'
+  const pnlData = pnl.status === 'fulfilled' ? pnl.value : null
+  const pnlFailed = pnl.status === 'rejected'
+
+  if (overview.status === 'rejected')
+    console.error('[admin-financials] Overview failed:', overview.reason)
+  if (ledger.status === 'rejected')
+    console.error('[admin-financials] Ledger failed:', ledger.reason)
+  if (pnl.status === 'rejected') console.error('[admin-financials] P&L failed:', pnl.reason)
 
   return (
     <div className="space-y-6">
@@ -78,7 +65,13 @@ export default async function AdminFinancialsPage() {
         </div>
       </div>
 
-      {fin && (
+      {finFailed ? (
+        <ErrorState
+          title="Could not load financial overview"
+          description="The platform GMV query failed. Try refreshing."
+          size="sm"
+        />
+      ) : fin ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
             <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
@@ -109,16 +102,30 @@ export default async function AdminFinancialsPage() {
             </p>
           </div>
         </div>
-      )}
+      ) : null}
 
-      <ProfitAndLossReport initialData={pnlData} />
+      {pnlFailed ? (
+        <ErrorState
+          title="Could not load profit and loss report"
+          description="The P&L query failed. Try refreshing."
+          size="sm"
+        />
+      ) : pnlData ? (
+        <ProfitAndLossReport initialData={pnlData} />
+      ) : null}
 
       {/* Ledger entries */}
       <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
           <h2 className="text-sm font-semibold text-stone-300">Ledger Entries (last 200)</h2>
         </div>
-        {entries.length === 0 ? (
+        {entriesFailed ? (
+          <ErrorState
+            title="Could not load ledger entries"
+            description="The ledger query failed. Try refreshing."
+            size="sm"
+          />
+        ) : entries === null || entries.length === 0 ? (
           <p className="px-4 py-8 text-center text-sm text-slate-400">No ledger entries found.</p>
         ) : (
           <div className="overflow-x-auto">

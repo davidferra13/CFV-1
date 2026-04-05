@@ -363,8 +363,10 @@ html {
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--text-muted-soft);
+    color: var(--text-muted);
     padding-bottom: 0.5rem;
+    padding-left: 0.5rem;
+    border-left: 2px solid rgb(var(--brand-600) / 0.5);
   }
   .section-label::after {
     content: '';
@@ -1403,7 +1405,14 @@ html {
   transform: translateY(-3px);
   box-shadow:
     0 12px 32px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgb(var(--brand-500) / 0.08);
+    0 0 0 1px rgb(var(--brand-500) / 0.08),
+    0 0 24px rgb(var(--brand-500) / 0.06);
+}
+.card-lift:focus-within {
+  border-color: rgb(var(--brand-500) / 0.3);
+  box-shadow:
+    0 0 0 2px rgb(var(--brand-500) / 0.12),
+    var(--shadow-card);
 }
 
 /* ── Form micro-interactions ── */

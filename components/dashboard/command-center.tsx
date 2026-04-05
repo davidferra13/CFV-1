@@ -10,6 +10,7 @@ import {
   UtensilsCrossed,
   Users,
 } from '@/components/ui/icons'
+import { AnimatedCounter } from '@/components/ui/animated-counter'
 
 // ─── Types ─────────────────────────────────────────────────
 type CoreArea = {
@@ -134,7 +135,7 @@ function getCoreAreas(counts: CommandCenterProps['counts']): CoreArea[] {
 // ─── Core Area Card ─────────────────────────────────────────
 function CoreAreaCard({ area }: { area: CoreArea }) {
   return (
-    <div className="rounded-xl border border-stone-800 bg-stone-900/50 hover:bg-stone-800/40 hover:border-stone-600 transition-all overflow-hidden">
+    <div className="rounded-xl border border-stone-800 bg-stone-900/50 hover:bg-stone-800/40 hover:border-stone-600 transition-all duration-200 overflow-hidden hover:shadow-[0_4px_20px_rgba(0,0,0,0.3)] hover:translate-y-[-1px]">
       <Link href={area.href} className="block p-4">
         <div className="flex items-start justify-between mb-2.5">
           <div
@@ -149,7 +150,7 @@ function CoreAreaCard({ area }: { area: CoreArea }) {
           {area.count !== undefined && (
             <div className="text-right">
               <span className="text-lg font-semibold leading-none" style={{ color: area.color }}>
-                {area.count}
+                <AnimatedCounter value={String(area.count)} />
               </span>
               {area.countLabel && (
                 <p className="text-xxs text-stone-500 mt-0.5">{area.countLabel}</p>

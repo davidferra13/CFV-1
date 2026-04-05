@@ -12,10 +12,10 @@ interface StatusDotProps {
 }
 
 const colors = {
-  active: 'bg-emerald-500',
+  active: 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]',
   idle: 'bg-stone-500',
-  warning: 'bg-amber-500',
-  error: 'bg-red-500',
+  warning: 'bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.4)]',
+  error: 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]',
   offline: 'bg-stone-600',
 } as const
 

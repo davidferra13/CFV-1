@@ -211,10 +211,12 @@ export default async function AnalyticsHubPage() {
     getMenuApprovalStats(),
   ])
 
-  function val<T>(result: PromiseSettledResult<T>, fallback: T): T {
+  const loadErrors: string[] = []
+
+  function val<T>(result: PromiseSettledResult<T>, fallback: T, label: string): T {
     if (result.status === 'fulfilled') return result.value
-    // Log the failure - don't silently swallow it
-    console.error('[AnalyticsHub] Fetch failed:', result.reason)
+    console.error(`[AnalyticsHub] ${label} failed:`, result.reason)
+    loadErrors.push(label)
     return fallback
   }
 
@@ -228,222 +230,327 @@ export default async function AnalyticsHubPage() {
       </div>
 
       <AnalyticsHub
-        monthRevenue={val(monthRevenue, null)}
-        eventCounts={val(eventCounts, null)}
-        sourceDistribution={val(sourceDistribution, [])}
-        sourceConversions={val(sourceConversions, [])}
-        sourceRevenue={val(sourceRevenue, [])}
-        clientRetention={val(clientRetention, {
-          activeClients: 0,
-          repeatClients: 0,
-          repeatBookingRate: 0,
-          retentionRate: 0,
-        })}
-        clientChurn={val(clientChurn, {
-          totalAtRisk: 0,
-          dormantCount: 0,
-          churnRate: 0,
-          avgDaysSinceLastEvent: 0,
-        })}
-        revenueConcentration={val(revenueConcentration, {
-          top5Clients: [],
-          top5SharePercent: 0,
-          herfindahlIndex: 0,
-        })}
-        clientAcquisition={val(clientAcquisition, {
-          newClientsThisPeriod: 0,
-          totalMarketingSpendCents: 0,
-          cacCents: 0,
-          cacRatio: 0,
-        })}
-        referralConversion={val(referralConversion, {
-          referredInquiries: 0,
-          referredConversions: 0,
-          referralConversionRate: 0,
-          referralRevenueCents: 0,
-        })}
-        npsStats={val(npsStats, {
-          npsScore: 0,
-          promoters: 0,
-          passives: 0,
-          detractors: 0,
-          totalResponses: 0,
-          avgOverallRating: 0,
-          avgFoodQualityRating: 0,
-          avgServiceRating: 0,
-          avgValueRating: 0,
-          avgPresentationRating: 0,
-          wouldRebookPercent: 0,
-          responseRate: 0,
-        })}
-        inquiryFunnel={val(inquiryFunnel, {
-          totalInquiries: 0,
-          quotedCount: 0,
-          confirmedCount: 0,
-          completedCount: 0,
-          declinedCount: 0,
-          expiredCount: 0,
-          quoteRate: 0,
-          confirmRate: 0,
-          completionRate: 0,
-          overallConversionRate: 0,
-        })}
-        quoteAcceptance={val(quoteAcceptance, {
-          totalSent: 0,
-          accepted: 0,
-          rejected: 0,
-          expired: 0,
-          acceptanceRate: 0,
-          rejectionRate: 0,
-          expiryRate: 0,
-          avgValueCents: 0,
-        })}
-        ghostRate={val(ghostRate, {
-          totalInquiries: 0,
-          ghosted: 0,
-          ghostRate: 0,
-          avgDaysToGhost: 0,
-        })}
-        leadTime={val(leadTime, {
-          avgLeadTimeDays: 0,
-          avgSalesCycleDays: 0,
-          buckets: { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 },
-          bucketPercents: { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 },
-        })}
-        declineReasons={val(declineReasons, { reasons: [], totalDeclined: 0 })}
-        negotiation={val(negotiation, {
-          totalQuotes: 0,
-          negotiatedCount: 0,
-          negotiationRate: 0,
-          avgOriginalCents: 0,
-          avgFinalCents: 0,
-          avgDiscountPercent: 0,
-          avgDiscountCents: 0,
-        })}
-        responseTime={val(responseTime, {
-          avgHoursToFirstResponse: 0,
-          under1hour: 0,
-          under4hours: 0,
-          under24hours: 0,
-          over24hours: 0,
-          under1hourPercent: 0,
-          under4hoursPercent: 0,
-        })}
-        revenuePerUnit={val(revenuePerUnit, {
-          revenuePerGuestCents: 0,
-          revenuePerHourCents: 0,
-          revenuePerMileCents: 0,
-          totalGuestsServed: 0,
-          totalHoursWorked: 0,
-          totalMilesDriven: 0,
-          netRevenueCents: 0,
-        })}
-        revenueByDayOfWeek={val(revenueByDayOfWeek, [])}
-        revenueByEventType={val(revenueByEventType, [])}
-        revenueBySeason={val(revenueBySeason, [])}
-        trueLaborCost={val(trueLaborCost, {
-          ownerHoursCents: 0,
-          staffCostCents: 0,
-          totalLaborCents: 0,
-          laborAsPercentOfRevenue: 0,
-          trueNetProfitCents: 0,
-          trueNetMarginPercent: 0,
-        })}
-        capacity={val(capacity, {
-          maxEventsPerMonth: null,
-          bookedThisMonth: 0,
-          utilization: 0,
-          demandOverflow: 0,
-        })}
-        carryForward={val(carryForward, {
-          totalSavingsCents: 0,
-          avgSavingsPerEvent: 0,
-          eventsWithCarryForward: 0,
-          savingsAsPercentOfFoodCost: 0,
-        })}
-        breakEven={val(breakEven, {
-          estimatedFixedMonthlyCents: 0,
-          avgEventsPerMonth: 0,
-          breakEvenEventsPerMonth: 0,
-          breakEvenRevenuePerEventCents: 0,
-        })}
-        compliance={val(compliance, {
-          onTimeStartRate: 0,
-          receiptSubmissionRate: 0,
-          kitchenComplianceRate: 0,
-          menuDeviationRate: 0,
-          tempLogComplianceRate: 0,
-          dietaryAccommodationRate: 0,
-        })}
-        timePhases={val(timePhases, [])}
-        waste={val(waste, {
-          totalFoodSpendCents: 0,
-          leftoverCarriedForwardCents: 0,
-          netFoodCostCents: 0,
-          wastePercent: 0,
-          eventsWithLeftovers: 0,
-        })}
-        culinaryOps={val(culinaryOps, {
-          avgCoursesPerEvent: 0,
-          avgGuestsPerEvent: 0,
-          mostCommonOccasion: 'N/A',
-          dietaryRestrictionFrequency: [],
-        })}
-        emailStats={val(emailStats, {
-          totalCampaigns: 0,
-          totalRecipients: 0,
-          totalSent: 0,
-          openRate: 0,
-          clickRate: 0,
-          bounceRate: 0,
-          spamRate: 0,
-          unsubscribeRate: 0,
-          bestCampaign: null,
-        })}
-        marketingSpend={val(marketingSpend, [])}
-        reviewStats={val(reviewStats, {
-          totalReviews: 0,
-          avgRating: 0,
-          reviewRate: 0,
-          ratingDistribution: [],
-          recentReviews: [],
-        })}
-        websiteStats={val(websiteStats, {
-          snapshotMonth: '',
-          uniqueVisitors: null,
-          pageviews: null,
-          bounceRatePercent: null,
-          avgSessionSeconds: null,
-          topSource: null,
-          inquiryConversionRatePercent: null,
-          previousMonth: null,
-        })}
-        socialConnections={val(socialConnections, [])}
-        instagramTrend={val(instagramTrend, [])}
-        googleReviews={val(googleReviews, null)}
-        recipeUsage={val(recipeUsage, {
-          totalRecipes: 0,
-          recipesUsedInEvents: 0,
-          recipeReuseRate: 0,
-          avgTimesCooked: 0,
-          neverCookedCount: 0,
-          topRecipes: [],
-        })}
-        dishPerformance={val(dishPerformance, {
-          newDishesThisMonth: 0,
-          newDishesThisYear: 0,
-          menuModificationRate: 0,
-          avgDishesSentPerMenu: 0,
-        })}
-        menuApproval={val(menuApproval, {
-          totalSent: 0,
-          approved: 0,
-          revisionRequested: 0,
-          pending: 0,
-          approvalRate: 0,
-          revisionRate: 0,
-          avgResponseHours: 0,
-        })}
+        loadErrors={loadErrors}
+        monthRevenue={val(monthRevenue, null, 'overview')}
+        eventCounts={val(eventCounts, null, 'overview')}
+        sourceDistribution={val(sourceDistribution, [], 'overview')}
+        sourceConversions={val(sourceConversions, [], 'overview')}
+        sourceRevenue={val(sourceRevenue, [], 'overview')}
+        clientRetention={val(
+          clientRetention,
+          {
+            activeClients: 0,
+            repeatClients: 0,
+            repeatBookingRate: 0,
+            retentionRate: 0,
+          },
+          'clients'
+        )}
+        clientChurn={val(
+          clientChurn,
+          {
+            totalAtRisk: 0,
+            dormantCount: 0,
+            churnRate: 0,
+            avgDaysSinceLastEvent: 0,
+          },
+          'clients'
+        )}
+        revenueConcentration={val(
+          revenueConcentration,
+          {
+            top5Clients: [],
+            top5SharePercent: 0,
+            herfindahlIndex: 0,
+          },
+          'clients'
+        )}
+        clientAcquisition={val(
+          clientAcquisition,
+          {
+            newClientsThisPeriod: 0,
+            totalMarketingSpendCents: 0,
+            cacCents: 0,
+            cacRatio: 0,
+          },
+          'clients'
+        )}
+        referralConversion={val(
+          referralConversion,
+          {
+            referredInquiries: 0,
+            referredConversions: 0,
+            referralConversionRate: 0,
+            referralRevenueCents: 0,
+          },
+          'clients'
+        )}
+        npsStats={val(
+          npsStats,
+          {
+            npsScore: 0,
+            promoters: 0,
+            passives: 0,
+            detractors: 0,
+            totalResponses: 0,
+            avgOverallRating: 0,
+            avgFoodQualityRating: 0,
+            avgServiceRating: 0,
+            avgValueRating: 0,
+            avgPresentationRating: 0,
+            wouldRebookPercent: 0,
+            responseRate: 0,
+          },
+          'clients'
+        )}
+        inquiryFunnel={val(
+          inquiryFunnel,
+          {
+            totalInquiries: 0,
+            quotedCount: 0,
+            confirmedCount: 0,
+            completedCount: 0,
+            declinedCount: 0,
+            expiredCount: 0,
+            quoteRate: 0,
+            confirmRate: 0,
+            completionRate: 0,
+            overallConversionRate: 0,
+          },
+          'pipeline'
+        )}
+        quoteAcceptance={val(
+          quoteAcceptance,
+          {
+            totalSent: 0,
+            accepted: 0,
+            rejected: 0,
+            expired: 0,
+            acceptanceRate: 0,
+            rejectionRate: 0,
+            expiryRate: 0,
+            avgValueCents: 0,
+          },
+          'pipeline'
+        )}
+        ghostRate={val(
+          ghostRate,
+          {
+            totalInquiries: 0,
+            ghosted: 0,
+            ghostRate: 0,
+            avgDaysToGhost: 0,
+          },
+          'pipeline'
+        )}
+        leadTime={val(
+          leadTime,
+          {
+            avgLeadTimeDays: 0,
+            avgSalesCycleDays: 0,
+            buckets: { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 },
+            bucketPercents: { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 },
+          },
+          'pipeline'
+        )}
+        declineReasons={val(declineReasons, { reasons: [], totalDeclined: 0 }, 'pipeline')}
+        negotiation={val(
+          negotiation,
+          {
+            totalQuotes: 0,
+            negotiatedCount: 0,
+            negotiationRate: 0,
+            avgOriginalCents: 0,
+            avgFinalCents: 0,
+            avgDiscountPercent: 0,
+            avgDiscountCents: 0,
+          },
+          'pipeline'
+        )}
+        responseTime={val(
+          responseTime,
+          {
+            avgHoursToFirstResponse: 0,
+            under1hour: 0,
+            under4hours: 0,
+            under24hours: 0,
+            over24hours: 0,
+            under1hourPercent: 0,
+            under4hoursPercent: 0,
+          },
+          'pipeline'
+        )}
+        revenuePerUnit={val(
+          revenuePerUnit,
+          {
+            revenuePerGuestCents: 0,
+            revenuePerHourCents: 0,
+            revenuePerMileCents: 0,
+            totalGuestsServed: 0,
+            totalHoursWorked: 0,
+            totalMilesDriven: 0,
+            netRevenueCents: 0,
+          },
+          'revenue'
+        )}
+        revenueByDayOfWeek={val(revenueByDayOfWeek, [], 'revenue')}
+        revenueByEventType={val(revenueByEventType, [], 'revenue')}
+        revenueBySeason={val(revenueBySeason, [], 'revenue')}
+        trueLaborCost={val(
+          trueLaborCost,
+          {
+            ownerHoursCents: 0,
+            staffCostCents: 0,
+            totalLaborCents: 0,
+            laborAsPercentOfRevenue: 0,
+            trueNetProfitCents: 0,
+            trueNetMarginPercent: 0,
+          },
+          'revenue'
+        )}
+        capacity={val(
+          capacity,
+          {
+            maxEventsPerMonth: null,
+            bookedThisMonth: 0,
+            utilization: 0,
+            demandOverflow: 0,
+          },
+          'revenue'
+        )}
+        carryForward={val(
+          carryForward,
+          {
+            totalSavingsCents: 0,
+            avgSavingsPerEvent: 0,
+            eventsWithCarryForward: 0,
+            savingsAsPercentOfFoodCost: 0,
+          },
+          'revenue'
+        )}
+        breakEven={val(
+          breakEven,
+          {
+            estimatedFixedMonthlyCents: 0,
+            avgEventsPerMonth: 0,
+            breakEvenEventsPerMonth: 0,
+            breakEvenRevenuePerEventCents: 0,
+          },
+          'revenue'
+        )}
+        compliance={val(
+          compliance,
+          {
+            onTimeStartRate: 0,
+            receiptSubmissionRate: 0,
+            kitchenComplianceRate: 0,
+            menuDeviationRate: 0,
+            tempLogComplianceRate: 0,
+            dietaryAccommodationRate: 0,
+          },
+          'operations'
+        )}
+        timePhases={val(timePhases, [], 'operations')}
+        waste={val(
+          waste,
+          {
+            totalFoodSpendCents: 0,
+            leftoverCarriedForwardCents: 0,
+            netFoodCostCents: 0,
+            wastePercent: 0,
+            eventsWithLeftovers: 0,
+          },
+          'operations'
+        )}
+        culinaryOps={val(
+          culinaryOps,
+          {
+            avgCoursesPerEvent: 0,
+            avgGuestsPerEvent: 0,
+            mostCommonOccasion: 'N/A',
+            dietaryRestrictionFrequency: [],
+          },
+          'operations'
+        )}
+        emailStats={val(
+          emailStats,
+          {
+            totalCampaigns: 0,
+            totalRecipients: 0,
+            totalSent: 0,
+            openRate: 0,
+            clickRate: 0,
+            bounceRate: 0,
+            spamRate: 0,
+            unsubscribeRate: 0,
+            bestCampaign: null,
+          },
+          'marketing'
+        )}
+        marketingSpend={val(marketingSpend, [], 'marketing')}
+        reviewStats={val(
+          reviewStats,
+          {
+            totalReviews: 0,
+            avgRating: 0,
+            reviewRate: 0,
+            ratingDistribution: [],
+            recentReviews: [],
+          },
+          'marketing'
+        )}
+        websiteStats={val(
+          websiteStats,
+          {
+            snapshotMonth: '',
+            uniqueVisitors: null,
+            pageviews: null,
+            bounceRatePercent: null,
+            avgSessionSeconds: null,
+            topSource: null,
+            inquiryConversionRatePercent: null,
+            previousMonth: null,
+          },
+          'marketing'
+        )}
+        socialConnections={val(socialConnections, [], 'social')}
+        instagramTrend={val(instagramTrend, [], 'social')}
+        googleReviews={val(googleReviews, null, 'social')}
+        recipeUsage={val(
+          recipeUsage,
+          {
+            totalRecipes: 0,
+            recipesUsedInEvents: 0,
+            recipeReuseRate: 0,
+            avgTimesCooked: 0,
+            neverCookedCount: 0,
+            topRecipes: [],
+          },
+          'culinary'
+        )}
+        dishPerformance={val(
+          dishPerformance,
+          {
+            newDishesThisMonth: 0,
+            newDishesThisYear: 0,
+            menuModificationRate: 0,
+            avgDishesSentPerMenu: 0,
+          },
+          'culinary'
+        )}
+        menuApproval={val(
+          menuApproval,
+          {
+            totalSent: 0,
+            approved: 0,
+            revisionRequested: 0,
+            pending: 0,
+            approvalRate: 0,
+            revisionRate: 0,
+            avgResponseHours: 0,
+          },
+          'culinary'
+        )}
       />
     </div>
   )

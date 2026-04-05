@@ -5,6 +5,7 @@ import { getQolMetricsSummary, getSystemHealthStats } from '@/lib/admin/platform
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Activity, AlertTriangle, CheckCircle, ExternalLink } from '@/components/ui/icons'
+import { ErrorState } from '@/components/ui/error-state'
 
 export default async function AdminSystemPage() {
   try {
@@ -16,14 +17,17 @@ export default async function AdminSystemPage() {
   let health = null
   let qol = null
   let error = null
+  let qolFailed = false
   try {
     const results = await Promise.allSettled([getSystemHealthStats(), getQolMetricsSummary(30)])
     health = results[0].status === 'fulfilled' ? results[0].value : null
     qol = results[1].status === 'fulfilled' ? results[1].value : null
     if (results[0].status === 'rejected')
       console.error('[admin-system] Health stats failed:', results[0].reason)
-    if (results[1].status === 'rejected')
+    if (results[1].status === 'rejected') {
       console.error('[admin-system] QoL metrics failed:', results[1].reason)
+      qolFailed = true
+    }
     if (!health && !qol) error = 'Failed to load system stats'
   } catch (err) {
     error = 'Failed to load system stats'
@@ -81,46 +85,54 @@ export default async function AdminSystemPage() {
             <h2 className="text-sm font-semibold text-slate-700 mb-4">
               QOL Metrics (last 30 days)
             </h2>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-              <div className="bg-slate-50 rounded-lg px-4 py-3">
-                <p className="text-xs text-slate-500">Drafts restored</p>
-                <p className="text-xl font-bold text-slate-900 mt-1">
-                  {qol?.draftRestoreCount ?? 0}
-                </p>
+            {qolFailed ? (
+              <ErrorState
+                title="Could not load QoL metrics"
+                description="The QoL metrics query failed. Try refreshing."
+                size="sm"
+              />
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                  <p className="text-xs text-slate-500">Drafts restored</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">
+                    {qol?.draftRestoreCount ?? 0}
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                  <p className="text-xs text-slate-500">Save failures</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">
+                    {qol?.saveFailureCount ?? 0}
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                  <p className="text-xs text-slate-500">Conflicts detected</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">{qol?.conflictCount ?? 0}</p>
+                </div>
+                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                  <p className="text-xs text-slate-500">Offline replay success</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">
+                    {qol?.offlineReplaySuccessCount ?? 0}
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                  <p className="text-xs text-slate-500">Offline replay failure</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">
+                    {qol?.offlineReplayFailureCount ?? 0}
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                  <p className="text-xs text-slate-500">Duplicate creates prevented</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">
+                    {qol?.duplicateCreatePreventedCount ?? 0}
+                  </p>
+                  <p className="text-xs-tight text-slate-500 mt-1">
+                    Replay success rate:{' '}
+                    {qol ? `${Math.round((qol.offlineReplaySuccessRate ?? 0) * 100)}%` : '0%'}
+                  </p>
+                </div>
               </div>
-              <div className="bg-slate-50 rounded-lg px-4 py-3">
-                <p className="text-xs text-slate-500">Save failures</p>
-                <p className="text-xl font-bold text-slate-900 mt-1">
-                  {qol?.saveFailureCount ?? 0}
-                </p>
-              </div>
-              <div className="bg-slate-50 rounded-lg px-4 py-3">
-                <p className="text-xs text-slate-500">Conflicts detected</p>
-                <p className="text-xl font-bold text-slate-900 mt-1">{qol?.conflictCount ?? 0}</p>
-              </div>
-              <div className="bg-slate-50 rounded-lg px-4 py-3">
-                <p className="text-xs text-slate-500">Offline replay success</p>
-                <p className="text-xl font-bold text-slate-900 mt-1">
-                  {qol?.offlineReplaySuccessCount ?? 0}
-                </p>
-              </div>
-              <div className="bg-slate-50 rounded-lg px-4 py-3">
-                <p className="text-xs text-slate-500">Offline replay failure</p>
-                <p className="text-xl font-bold text-slate-900 mt-1">
-                  {qol?.offlineReplayFailureCount ?? 0}
-                </p>
-              </div>
-              <div className="bg-slate-50 rounded-lg px-4 py-3">
-                <p className="text-xs text-slate-500">Duplicate creates prevented</p>
-                <p className="text-xl font-bold text-slate-900 mt-1">
-                  {qol?.duplicateCreatePreventedCount ?? 0}
-                </p>
-                <p className="text-xs-tight text-slate-500 mt-1">
-                  Replay success rate:{' '}
-                  {qol ? `${Math.round((qol.offlineReplaySuccessRate ?? 0) * 100)}%` : '0%'}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Table Row Counts */}

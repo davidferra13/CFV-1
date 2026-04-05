@@ -72,6 +72,9 @@ import type { SourceDataPoint, ConversionData, RevenueData } from '@/lib/partner
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface AnalyticsHubProps {
+  /** Labels of sections that failed to load (e.g. 'overview', 'revenue') */
+  loadErrors?: string[]
+
   // Overview
   monthRevenue: {
     currentMonthRevenueCents: number
@@ -1124,33 +1127,59 @@ function BenchmarksTab() {
   )
 }
 
+// ─── Load Error Banner (Zero Hallucination Law) ─────────────────────────────
+
+function LoadErrorBanner({ errors, section }: { errors: string[]; section: string }) {
+  if (!errors.includes(section)) return null
+  return (
+    <div
+      className="mb-4 rounded-lg border border-red-500/30 bg-red-950/40 px-4 py-3 text-sm text-red-300"
+      role="alert"
+    >
+      Some data in this section could not be loaded. Numbers shown as zero may not reflect actual
+      values.
+    </div>
+  )
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function AnalyticsHub(props: AnalyticsHubProps) {
   const [activeTab, setActiveTab] = useState<TabId>('overview')
+  const errors = props.loadErrors ?? []
 
   return (
     <div>
       {/* Tab Bar */}
       <div className="border-b border-stone-700 mb-6 overflow-x-auto">
         <div className="flex gap-0 min-w-max">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'border-amber-500 text-amber-700'
-                  : 'border-transparent text-stone-500 hover:text-stone-300 hover:border-stone-600'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {TABS.map((tab) => {
+            const hasError = errors.includes(tab.id)
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-amber-500 text-amber-700'
+                    : 'border-transparent text-stone-500 hover:text-stone-300 hover:border-stone-600'
+                }`}
+              >
+                {tab.label}
+                {hasError && (
+                  <span
+                    className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full bg-red-400 align-middle"
+                    title="Some data failed to load"
+                  />
+                )}
+              </button>
+            )
+          })}
         </div>
       </div>
 
       {/* Tab Content */}
+      <LoadErrorBanner errors={errors} section={activeTab} />
       {activeTab === 'overview' && <OverviewTab p={props} />}
       {activeTab === 'revenue' && <RevenueTab p={props} />}
       {activeTab === 'operations' && <OperationsTab p={props} />}

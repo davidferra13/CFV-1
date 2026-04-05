@@ -15,6 +15,8 @@ interface PriceBadgeProps {
   price: ResolvedPrice
   compact?: boolean
   className?: string
+  trendDirection?: 'up' | 'down' | 'flat' | null
+  trendPct?: number | null
 }
 
 function formatCents(cents: number): string {
@@ -82,7 +84,37 @@ function sourceLabel(source: PriceSource): string {
   }
 }
 
-export function PriceBadge({ price, compact = false, className = '' }: PriceBadgeProps) {
+function TrendIndicator({
+  direction,
+  pct,
+}: {
+  direction?: 'up' | 'down' | 'flat' | null
+  pct?: number | null
+}) {
+  if (!direction || direction === 'flat' || pct == null) return null
+  const isUp = direction === 'up'
+  const color = isUp ? 'text-red-400' : 'text-emerald-400'
+  const arrow = isUp ? '\u2191' : '\u2193'
+  const absPct = Math.abs(pct)
+  if (absPct < 1) return null // ignore negligible changes
+  return (
+    <span
+      className={`text-xs ${color}`}
+      title={`${isUp ? '+' : '-'}${absPct.toFixed(1)}% over 7 days`}
+    >
+      {arrow}
+      {absPct.toFixed(0)}%
+    </span>
+  )
+}
+
+export function PriceBadge({
+  price,
+  compact = false,
+  className = '',
+  trendDirection,
+  trendPct,
+}: PriceBadgeProps) {
   // No price state
   if (price.cents === null) {
     return (
@@ -115,6 +147,7 @@ export function PriceBadge({ price, compact = false, className = '' }: PriceBadg
         <span className="font-medium text-stone-200">
           {formatCents(price.cents)}/{price.unit}
         </span>
+        <TrendIndicator direction={trendDirection} pct={trendPct} />
         <span className={`ml-1.5 text-xs ${freshColor}`}>{fresh}</span>
         <span
           className="ml-1 text-xs text-stone-500"
@@ -134,6 +167,7 @@ export function PriceBadge({ price, compact = false, className = '' }: PriceBadg
       <span className="text-stone-600">&middot;</span>
       <span className="text-xs text-stone-400">{price.store}</span>
       <span className="text-stone-600">&middot;</span>
+      <TrendIndicator direction={trendDirection} pct={trendPct} />
       <span className={`text-xs ${freshColor}`}>{fresh}</span>
       <span
         className="text-xs text-stone-500 tracking-tight"
