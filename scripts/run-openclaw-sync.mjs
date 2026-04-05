@@ -1,6 +1,10 @@
 /**
  * Manual OpenClaw sync script.
  * Pulls prices from Pi and writes to local PostgreSQL.
+ *
+ * Now includes a validation gate: every price is checked before insertion.
+ * Rejected prices go to openclaw.quarantined_prices instead of
+ * ingredient_price_history. Each run is logged to openclaw.sync_audit_log.
  */
 import postgres from 'postgres'
 
@@ -8,6 +12,59 @@ const PI_URL = 'http://10.0.0.177:8081'
 const DB_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
 
 const sql = postgres(DB_URL)
+
+// --- Inline validators (mirrors lib/openclaw/price-validator.ts) ---
+// The .ts module can't be imported directly from .mjs, so we inline the
+// validation logic here. Keep these in sync with the canonical TypeScript file.
+
+function validatePrice(priceCents, ingredientName) {
+  if (priceCents == null || !Number.isFinite(priceCents)) {
+    return { valid: false, reason: `Invalid price value (${priceCents}) for "${ingredientName}"` }
+  }
+  if (priceCents <= 0) {
+    return { valid: false, reason: `Price must be > 0, got ${priceCents} cents for "${ingredientName}"` }
+  }
+  if (priceCents === 1) {
+    return { valid: false, reason: `Price is exactly 1 cent for "${ingredientName}" (likely scraper placeholder)` }
+  }
+  if (priceCents >= 100_000) {
+    return { valid: false, reason: `Price ${priceCents} cents ($${(priceCents / 100).toFixed(2)}) exceeds $1000 limit for "${ingredientName}"` }
+  }
+  return { valid: true }
+}
+
+function validatePriceChange(oldPriceCents, newPriceCents, ingredientName) {
+  if (oldPriceCents == null || oldPriceCents <= 0) {
+    return { valid: true }
+  }
+  const ratio = newPriceCents / oldPriceCents
+  if (ratio > 10) {
+    return { valid: false, reason: `Price spike: ${oldPriceCents}c -> ${newPriceCents}c (${ratio.toFixed(1)}x) for "${ingredientName}"` }
+  }
+  if (ratio < 0.1) {
+    return { valid: false, reason: `Price crash: ${oldPriceCents}c -> ${newPriceCents}c (${ratio.toFixed(2)}x) for "${ingredientName}"` }
+  }
+  return { valid: true }
+}
+
+// --- Quarantine helper ---
+
+async function quarantine(source, ingredientName, priceCents, oldPriceCents, reason, rawData) {
+  try {
+    await sql`
+      INSERT INTO openclaw.quarantined_prices
+        (source, ingredient_name, price_cents, old_price_cents, rejection_reason, raw_data)
+      VALUES (
+        ${source}, ${ingredientName}, ${priceCents}, ${oldPriceCents},
+        ${reason}, ${rawData ? JSON.stringify(rawData) : null}
+      )
+    `
+  } catch (err) {
+    console.warn(`  [quarantine] Failed to log rejected price: ${err.message?.substring(0, 80)}`)
+  }
+}
+
+// --- Original helpers ---
 
 function tierToSource(tier) {
   if (tier === 'flyer_scrape') return 'openclaw_flyer'
@@ -27,9 +84,15 @@ function tierToConfidence(tier) {
 }
 
 async function main() {
+  const syncStartedAt = new Date()
+  let totalProcessed = 0
+  let totalAccepted = 0
+  let totalQuarantined = 0
+  let totalSkipped = 0
+
   // 1. Load all ingredients
   const rows = await sql`
-    SELECT id, name, tenant_id
+    SELECT id, name, tenant_id, last_price_cents
     FROM ingredients
     WHERE tenant_id = '44f7d10c-a683-4a26-94c4-def97758a502'
   `
@@ -59,15 +122,40 @@ async function main() {
 
     if (!result || !result.best_price) {
       notFound += tenantIngs.length
+      totalSkipped += tenantIngs.length
       notFoundNames.push(name)
       continue
     }
     matched += tenantIngs.length
 
     for (const ing of tenantIngs) {
-      // 4a. Write ALL store prices to ingredient_price_history
+      // 4a. Write ALL store prices to ingredient_price_history (with validation)
       for (const sp of result.all_prices) {
+        totalProcessed++
         const source = tierToSource(sp.tier)
+        const priceCents = sp.normalized_cents
+
+        // --- Validation gate ---
+        const priceCheck = validatePrice(priceCents, ing.name)
+        if (!priceCheck.valid) {
+          totalQuarantined++
+          await quarantine(source, ing.name, priceCents, ing.last_price_cents, priceCheck.reason, {
+            store: sp.store, tier: sp.tier, unit: sp.normalized_unit,
+          })
+          continue
+        }
+
+        // Check for suspicious price swings against existing price
+        const changeCheck = validatePriceChange(ing.last_price_cents, priceCents, ing.name)
+        if (!changeCheck.valid) {
+          totalQuarantined++
+          await quarantine(source, ing.name, priceCents, ing.last_price_cents, changeCheck.reason, {
+            store: sp.store, tier: sp.tier, unit: sp.normalized_unit,
+          })
+          continue
+        }
+
+        // --- Passed validation, insert ---
         try {
           await sql`
             INSERT INTO ingredient_price_history
@@ -75,7 +163,7 @@ async function main() {
                quantity, unit, purchase_date, store_name, source, notes)
             VALUES (
               gen_random_uuid(), ${ing.id}, ${ing.tenant_id},
-              ${sp.normalized_cents}, ${sp.normalized_cents},
+              ${priceCents}, ${priceCents},
               1, ${sp.normalized_unit}, ${today},
               ${sp.store}, ${source},
               ${'Synced from OpenClaw - ' + sp.store}
@@ -89,13 +177,26 @@ async function main() {
               notes = EXCLUDED.notes
           `
           priceRows++
+          totalAccepted++
         } catch (err) {
+          totalSkipped++
           console.warn(`  Skip: ${ing.name} @ ${sp.store}: ${err.message?.substring(0, 80)}`)
         }
       }
 
-      // 4b. Update ingredient row with best price
+      // 4b. Update ingredient row with best price (also validated)
       const bp = result.best_price
+      const bpCheck = validatePrice(bp.normalized_cents, ing.name)
+      if (!bpCheck.valid) {
+        // Don't update the ingredient row with a bad best price
+        continue
+      }
+      const bpChangeCheck = validatePriceChange(ing.last_price_cents, bp.normalized_cents, ing.name)
+      if (!bpChangeCheck.valid) {
+        // Don't update the ingredient row with a suspicious price swing
+        continue
+      }
+
       const conf = tierToConfidence(bp.tier)
       const src = tierToSource(bp.tier)
 
@@ -125,6 +226,7 @@ async function main() {
     }
   }
 
+  // --- Sync Results ---
   console.log('\n--- Sync Results ---')
   console.log(`Matched:       ${matched}`)
   console.log(`Not found:     ${notFound}`)
@@ -133,6 +235,10 @@ async function main() {
     console.log(`Not found:     ${notFoundNames.join(', ')}`)
   }
 
+  // --- Validation Summary ---
+  console.log('\n--- Validation Summary ---')
+  console.log(`${totalAccepted} accepted, ${totalQuarantined} quarantined, ${totalSkipped} skipped (${totalProcessed} processed)`)
+
   // 5. Quick verification
   const priceCount = await sql`SELECT COUNT(*) as cnt FROM ingredient_price_history`
   const pricedIngs = await sql`
@@ -140,9 +246,36 @@ async function main() {
     WHERE last_price_cents IS NOT NULL
     AND tenant_id = '44f7d10c-a683-4a26-94c4-def97758a502'
   `
+  const quarantineCount = await sql`
+    SELECT COUNT(*) as cnt FROM openclaw.quarantined_prices WHERE NOT reviewed
+  `
   console.log(`\n--- Verification ---`)
   console.log(`ingredient_price_history rows: ${priceCount[0].cnt}`)
   console.log(`Ingredients with prices:       ${pricedIngs[0].cnt} / ${rows.length}`)
+  console.log(`Quarantined (unreviewed):      ${quarantineCount[0].cnt}`)
+
+  // 6. Log to sync_audit_log
+  const syncCompletedAt = new Date()
+  try {
+    await sql`
+      INSERT INTO openclaw.sync_audit_log
+        (sync_type, started_at, completed_at, records_processed,
+         records_accepted, records_quarantined, records_skipped, metadata)
+      VALUES (
+        'price_sync', ${syncStartedAt}, ${syncCompletedAt},
+        ${totalProcessed}, ${totalAccepted}, ${totalQuarantined}, ${totalSkipped},
+        ${JSON.stringify({
+          ingredients_count: rows.length,
+          unique_names: names.length,
+          matched,
+          not_found: notFound,
+          not_found_names: notFoundNames.slice(0, 50),
+        })}
+      )
+    `
+  } catch (err) {
+    console.warn(`  [audit] Failed to log sync run: ${err.message?.substring(0, 80)}`)
+  }
 
   await sql.end()
 }

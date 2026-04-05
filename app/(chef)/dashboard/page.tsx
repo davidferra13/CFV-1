@@ -35,6 +35,8 @@ import { DinnerCirclesSection } from './_sections/dinner-circles-cards'
 import { DashboardSecondaryInsights } from '@/components/dashboard/dashboard-secondary-insights'
 import { SmartSuggestions, SmartSuggestionsSkeleton } from './_sections/smart-suggestions'
 import { MetricsStrip } from './_sections/metrics-strip'
+import { OpenClawLiveAlerts } from '@/components/pricing/openclaw-live-alerts'
+import { PipelineStatusBadge } from '@/components/pricing/pipeline-status-badge'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -286,6 +288,20 @@ async function CoverageHealthSection() {
   )
 }
 
+/** SSE subscriber for OpenClaw alerts (admin-only, renders nothing visible). */
+async function OpenClawLiveAlertsSection() {
+  const admin = await safe('isAdmin', isAdmin, false)
+  if (!admin) return null
+  return <OpenClawLiveAlerts />
+}
+
+/** Pipeline status badge (admin-only). */
+async function PipelineStatusSection() {
+  const admin = await safe('isAdmin', isAdmin, false)
+  if (!admin) return null
+  return <PipelineStatusBadge />
+}
+
 export default async function ChefDashboard() {
   const user = await requireChef()
 
@@ -309,6 +325,11 @@ export default async function ChefDashboard() {
 
   return (
     <div className="space-y-8">
+      {/* OpenClaw SSE listeners (admin-only, no visible UI, just toast alerts) */}
+      <Suspense fallback={null}>
+        <OpenClawLiveAlertsSection />
+      </Suspense>
+
       {/* ============================================ */}
       {/* GREETING + ACTIONS                          */}
       {/* ============================================ */}
@@ -450,11 +471,16 @@ export default async function ChefDashboard() {
           </WidgetErrorBoundary>
         </section>
 
-        {/* PRICE COVERAGE HEALTH (admin only) */}
+        {/* PRICE COVERAGE HEALTH + PIPELINE STATUS (admin only) */}
         <section className="px-4">
           <Suspense fallback={null}>
             <CoverageHealthSection />
           </Suspense>
+          <div className="mt-2">
+            <Suspense fallback={null}>
+              <PipelineStatusSection />
+            </Suspense>
+          </div>
         </section>
 
         {/* ALERTS + INTELLIGENCE */}
