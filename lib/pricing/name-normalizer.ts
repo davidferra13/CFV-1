@@ -32,6 +32,9 @@ export function normalizeIngredientName(name: string): string {
   // Strip parenthetical qualifiers: "cilantro (fresh)" -> "cilantro"
   n = n.replace(/\s*\([^)]*\)\s*/g, ' ')
 
+  // Strip bracket recipe suffixes: "Lemons [Lemon Olive Oil Cake]" -> "lemons"
+  n = n.replace(/\s*\[[^\]]*\]\s*/g, ' ')
+
   // Normalize whitespace
   n = n.replace(/\s+/g, ' ').trim()
 

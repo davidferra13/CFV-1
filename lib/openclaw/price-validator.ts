@@ -51,10 +51,10 @@ export function validatePrice(
     }
   }
 
-  if (priceCents >= 100_000) {
+  if (priceCents >= 50_000) {
     return {
       valid: false,
-      reason: `Price ${priceCents} cents ($${(priceCents / 100).toFixed(2)}) exceeds $1000 limit for "${ingredientName}" (likely cent/dollar confusion)`,
+      reason: `Price ${priceCents} cents ($${(priceCents / 100).toFixed(2)}) exceeds $500 limit for "${ingredientName}" (likely normalization inflation)`,
     }
   }
 
