@@ -24,12 +24,14 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ## Quick Reference
 
+- **Product Blueprint:** `docs/product-blueprint.md` is THE finish line. V1 scope, progress bar, exit criteria. Read it. Update it when you complete features.
+- **Project Map:** `project-map/` is the browsable product mirror. 20 files in 4 folders (chef-os, consumer-os, public, infrastructure). Update the relevant file when you build or change features.
 - **Definition of done:** a feature is only done when it is verified in the real UI, honest about failure, and protected against drift. See `docs/definition-of-done.md`
 - **Interface philosophy:** all UI work must comply with `docs/specs/universal-interface-philosophy.md`. Mandatory read for all builder agents before any UI implementation.
 
 - **Stack:** Next.js · PostgreSQL (Drizzle ORM via postgres.js) · Auth.js v5 · Stripe · Local FS storage · SSE realtime
 - **Data safety first:** all migrations are additive, all destructive ops require explicit approval
-- **End every session:** commit everything → push the feature branch → update this file if new rules were found
+- **End every session:** commit everything → push the feature branch → write a session digest → update this file if new rules were found
 - **Cloud AI:** production AI routes through a cloud Ollama-compatible endpoint (OLLAMA_BASE_URL). Gemini is used only for non-PII tasks. Conversation content is never stored server-side.
 - **Never:** run `drizzle-kit push` without explicit user approval
 
@@ -403,16 +405,15 @@ These workflows are now available as `/slash-commands`. Type the command name to
 
 ## FEATURE LOOKUP (How to Find What You're Looking For)
 
-When the developer describes a feature, page, or UI element by what it does (not by file path), your FIRST step is to look it up in `docs/app-complete-audit.md`. This is the master registry of every page, route, button, tab, form, modal, and component in the app. It maps plain-English descriptions to exact routes, components, and file paths.
+**Three-tier lookup, in order:**
 
-**Do not guess file paths. Do not search the codebase blindly. Read the audit first.**
+1. **`project-map/`** - Quick orientation. Browse the folder like Google Drive. Each file is a short card describing one product area (routes, files, status, open items). Start here for "what does this area do?"
+2. **`docs/product-blueprint.md`** - V1 scope, progress, exit criteria, queue, known issues. Start here for "is this done?" or "what's next?"
+3. **`docs/app-complete-audit.md`** - Deep dive. 265 pages mapped with every button, tab, form, modal, and component. Start here for "what exact component renders this?"
 
-1. Open `docs/app-complete-audit.md` and search for keywords from the developer's description
-2. Find the matching section (it's organized by feature area: Dashboard, Events, Clients, etc.)
-3. Get the route, component name, and related files from that section
-4. Now you know exactly what you're working with
+When the developer describes a feature by what it does (not by file path), check the project map first, then the audit if you need implementation details.
 
-If the audit doesn't cover it, then search the codebase. But the audit covers ~265 pages and should be your first stop.
+**Do not guess file paths. Do not search the codebase blindly. Read the docs first.**
 
 **Developer:** you don't need to know file names. Describe what you want in plain English. The agent will look it up. Examples of valid prompts:
 
@@ -431,10 +432,11 @@ This exists because agents operate blind. Without session awareness, an agent ha
 
 ### On Session Start (Before Doing Anything Else)
 
-1. **Read `docs/session-log.md`** - read the last 5 entries. Know what just happened.
-2. **Read `docs/build-state.md`** - know whether the app is green or broken right now.
-3. **If build state is broken:** STOP. Do not start new work on a broken foundation. Report what's broken and fix it first, or ask the developer for direction.
-4. **Log your arrival** - append an entry to `docs/session-log.md`:
+1. **Read `docs/product-blueprint.md`** - know the V1 scope, progress, exit criteria, and known issues.
+2. **Read the last 3 files in `docs/session-digests/`** - know what previous agents discussed and decided.
+3. **Read `docs/build-state.md`** - know whether the app is green or broken right now.
+4. **If build state is broken:** STOP. Do not start new work on a broken foundation. Report what's broken and fix it first, or ask the developer for direction.
+5. **Log your arrival** - append an entry to `docs/session-log.md`:
    ```
    ## YYYY-MM-DD HH:MM EST
    - Agent: [Planner | Builder | Research | General]
@@ -456,8 +458,11 @@ This exists because agents operate blind. Without session awareness, an agent ha
    - Build state on departure: [green | broken]
    - Notes: [anything the next agent needs to know]
    ```
-2. **Update `docs/build-state.md`** if you ran a build or type check.
-3. **Commit the session log update** with your other commits.
+2. **Write a session digest** to `docs/session-digests/` (see format in `docs/session-digests/README.md`). Capture: what was discussed, what changed, decisions made, unresolved items, context for next agent.
+3. **Update `docs/build-state.md`** if you ran a build or type check.
+4. **Update `docs/product-blueprint.md`** if you completed work that affects any feature checkbox or progress percentage.
+5. **Update the relevant `project-map/` file** if you built, changed, or broke something in that area.
+6. **Commit the session log, digest, and doc updates** with your other commits.
 
 ---
 

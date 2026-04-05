@@ -47,6 +47,9 @@
 | AI model governance    | `docs/ai-model-governance.md` **(canonical routing policy)**                       |
 | AI routing audit       | `scripts/audit-model-routing.ts` (detects direct provider imports)                 |
 | App audit (living)     | `docs/app-complete-audit.md` **(update when UI changes)**                          |
+| Product blueprint      | `docs/product-blueprint.md` **(V1 scope, progress bar, exit criteria, queue)**     |
+| Project map            | `project-map/` **(browsable product mirror, read on startup)**                     |
+| Session digests        | `docs/session-digests/` **(conversation summaries, read last 3 on startup)**       |
 | Remy reference         | `docs/remy-complete-reference.md` **(read this instead of re-scanning Remy)**      |
 | Persistent memory      | `MEMORY.md` **(canonical durable product and developer context)**                  |
 | Project memory folder  | `memory/` (project-scoped memory docs, runtime notes, and agent artifacts)         |
