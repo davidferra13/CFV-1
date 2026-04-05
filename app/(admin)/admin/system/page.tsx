@@ -43,7 +43,7 @@ export default async function AdminSystemPage() {
           <Activity size={18} className={hasIssues ? 'text-red-600' : 'text-green-600'} />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">System Health</h1>
+          <h1 className="text-xl font-bold text-stone-100">System Health</h1>
           <p className="text-sm text-slate-500">Database row counts and data integrity signals</p>
         </div>
         {!error && health && (
@@ -64,16 +64,16 @@ export default async function AdminSystemPage() {
       </div>
 
       {error && (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+        <div className="bg-red-950 border border-red-800 rounded-lg px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
-      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
-        <h2 className="text-sm font-semibold text-slate-700 mb-3">Operational Checks</h2>
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+        <h2 className="text-sm font-semibold text-stone-300 mb-3">Operational Checks</h2>
         <Link
           href="/admin/system/payments"
-          className="inline-flex items-center rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all"
+          className="inline-flex items-center rounded-lg border border-stone-600 px-3 py-2 text-sm font-medium text-stone-300 hover:bg-stone-800 transition-all"
         >
           Open Payments Health
         </Link>
@@ -81,8 +81,8 @@ export default async function AdminSystemPage() {
 
       {health && (
         <>
-          <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">
+          <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+            <h2 className="text-sm font-semibold text-stone-300 mb-4">
               QOL Metrics (last 30 days)
             </h2>
             {qolFailed ? (
@@ -93,37 +93,37 @@ export default async function AdminSystemPage() {
               />
             ) : (
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                <div className="bg-stone-800 rounded-lg px-4 py-3">
                   <p className="text-xs text-slate-500">Drafts restored</p>
-                  <p className="text-xl font-bold text-slate-900 mt-1">
+                  <p className="text-xl font-bold text-stone-100 mt-1">
                     {qol?.draftRestoreCount ?? 0}
                   </p>
                 </div>
-                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                <div className="bg-stone-800 rounded-lg px-4 py-3">
                   <p className="text-xs text-slate-500">Save failures</p>
-                  <p className="text-xl font-bold text-slate-900 mt-1">
+                  <p className="text-xl font-bold text-stone-100 mt-1">
                     {qol?.saveFailureCount ?? 0}
                   </p>
                 </div>
-                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                <div className="bg-stone-800 rounded-lg px-4 py-3">
                   <p className="text-xs text-slate-500">Conflicts detected</p>
-                  <p className="text-xl font-bold text-slate-900 mt-1">{qol?.conflictCount ?? 0}</p>
+                  <p className="text-xl font-bold text-stone-100 mt-1">{qol?.conflictCount ?? 0}</p>
                 </div>
-                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                <div className="bg-stone-800 rounded-lg px-4 py-3">
                   <p className="text-xs text-slate-500">Offline replay success</p>
-                  <p className="text-xl font-bold text-slate-900 mt-1">
+                  <p className="text-xl font-bold text-stone-100 mt-1">
                     {qol?.offlineReplaySuccessCount ?? 0}
                   </p>
                 </div>
-                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                <div className="bg-stone-800 rounded-lg px-4 py-3">
                   <p className="text-xs text-slate-500">Offline replay failure</p>
-                  <p className="text-xl font-bold text-slate-900 mt-1">
+                  <p className="text-xl font-bold text-stone-100 mt-1">
                     {qol?.offlineReplayFailureCount ?? 0}
                   </p>
                 </div>
-                <div className="bg-slate-50 rounded-lg px-4 py-3">
+                <div className="bg-stone-800 rounded-lg px-4 py-3">
                   <p className="text-xs text-slate-500">Duplicate creates prevented</p>
-                  <p className="text-xl font-bold text-slate-900 mt-1">
+                  <p className="text-xl font-bold text-stone-100 mt-1">
                     {qol?.duplicateCreatePreventedCount ?? 0}
                   </p>
                   <p className="text-xs-tight text-slate-500 mt-1">
@@ -136,21 +136,21 @@ export default async function AdminSystemPage() {
           </div>
 
           {/* Table Row Counts */}
-          <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">Database Row Counts</h2>
+          <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+            <h2 className="text-sm font-semibold text-stone-300 mb-4">Database Row Counts</h2>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
               {Object.entries(health.tableRowCounts).map(([table, count]) => (
-                <div key={table} className="bg-slate-50 rounded-lg px-4 py-3">
+                <div key={table} className="bg-stone-800 rounded-lg px-4 py-3">
                   <p className="text-xs text-slate-500 font-mono">{table}</p>
-                  <p className="text-xl font-bold text-slate-900 mt-1">{count.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-stone-100 mt-1">{count.toLocaleString()}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Signal Panel */}
-          <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">Integrity Signals</h2>
+          <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+            <h2 className="text-sm font-semibold text-stone-300 mb-4">Integrity Signals</h2>
             <div className="space-y-3">
               <div
                 className={`flex items-center justify-between p-3 rounded-lg ${health.zombieEventCount > 0 ? 'bg-red-950' : 'bg-green-950'}`}
@@ -161,7 +161,7 @@ export default async function AdminSystemPage() {
                   ) : (
                     <CheckCircle size={14} className="text-green-500" />
                   )}
-                  <span className="text-sm text-slate-700">
+                  <span className="text-sm text-stone-300">
                     Zombie events (non-terminal &gt; 30 days)
                   </span>
                 </div>
@@ -181,7 +181,7 @@ export default async function AdminSystemPage() {
                   ) : (
                     <CheckCircle size={14} className="text-green-500" />
                   )}
-                  <span className="text-sm text-slate-700">Orphaned clients (no tenant)</span>
+                  <span className="text-sm text-stone-300">Orphaned clients (no tenant)</span>
                 </div>
                 <span
                   className={`text-sm font-bold ${health.orphanedClientCount > 0 ? 'text-red-600' : 'text-green-600'}`}
@@ -190,10 +190,10 @@ export default async function AdminSystemPage() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-stone-800">
                 <div className="flex items-center gap-2">
                   <CheckCircle size={14} className="text-slate-400" />
-                  <span className="text-sm text-slate-700">Oldest unread message</span>
+                  <span className="text-sm text-stone-300">Oldest unread message</span>
                 </div>
                 <span className="text-sm text-slate-600">
                   {health.oldestUnreadMessage
@@ -204,8 +204,8 @@ export default async function AdminSystemPage() {
             </div>
           </div>
 
-          <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
-            <h2 className="text-sm font-semibold text-slate-700 mb-4">Owner Identity Warnings</h2>
+          <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+            <h2 className="text-sm font-semibold text-stone-300 mb-4">Owner Identity Warnings</h2>
             {health.warnings.length > 0 ? (
               <ul className="space-y-2">
                 {health.warnings.map((warning) => (
@@ -225,16 +225,16 @@ export default async function AdminSystemPage() {
       )}
 
       {/* External Links */}
-      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
-        <h2 className="text-sm font-semibold text-slate-700 mb-4">External Dashboards</h2>
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
+        <h2 className="text-sm font-semibold text-stone-300 mb-4">External Dashboards</h2>
         <div className="space-y-2">
           <a
             href="https://dashboard.stripe.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all group"
+            className="flex items-center justify-between p-3 rounded-lg border border-stone-700 hover:border-stone-600 hover:bg-stone-800 transition-all group"
           >
-            <span className="text-sm font-medium text-slate-700">Stripe Dashboard</span>
+            <span className="text-sm font-medium text-stone-300">Stripe Dashboard</span>
             <ExternalLink size={14} className="text-slate-400 group-hover:text-slate-600" />
           </a>
         </div>

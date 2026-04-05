@@ -37,9 +37,9 @@ function StatCard({
   trend?: 'up' | 'down' | 'neutral'
 }) {
   return (
-    <div className="bg-stone-900 rounded-xl border border-slate-200 px-5 py-4">
+    <div className="bg-stone-900 rounded-xl border border-stone-700 px-5 py-4">
       <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">{label}</p>
-      <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
+      <p className="text-2xl font-bold text-stone-100 mt-1">{value}</p>
       {sub !== undefined && (
         <div className="flex items-center gap-1 mt-1">
           {trend === 'up' && <TrendingUp size={12} className="text-green-500" />}
@@ -67,7 +67,7 @@ function QuickTile({
   return (
     <Link
       href={href}
-      className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4 hover:border-slate-300 hover:shadow-sm transition-all group"
+      className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4 hover:border-slate-300 hover:shadow-sm transition-all group"
     >
       <div className="flex items-center gap-3 mb-2">
         <div className="p-2 bg-stone-800 rounded-lg group-hover:bg-orange-950 transition-colors">
@@ -76,7 +76,7 @@ function QuickTile({
             className="text-stone-400 group-hover:text-orange-500 transition-colors"
           />
         </div>
-        <span className="font-medium text-sm text-slate-900">{label}</span>
+        <span className="font-medium text-sm text-stone-100">{label}</span>
       </div>
       <p className="text-xs text-slate-400">{description}</p>
     </Link>
@@ -107,7 +107,7 @@ export default async function AdminOverviewPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Platform Overview</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Platform Overview</h1>
         <p className="text-sm text-stone-500 mt-1">
           Signed in as <span className="font-medium">{admin.email}</span>
         </p>
@@ -150,7 +150,7 @@ export default async function AdminOverviewPage() {
           <StatCard label="New Clients (Month)" value={stats.clientsThisMonth} />
         </div>
       ) : (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+        <div className="bg-red-950 border border-red-800 rounded-lg px-4 py-3 text-sm text-red-700">
           Could not load platform statistics. Check server logs.
         </div>
       )}
@@ -282,7 +282,7 @@ export default async function AdminOverviewPage() {
           Admin Debug State
         </h2>
         {debugState ? (
-          <div className="rounded-xl border border-slate-200 bg-stone-900 p-4 space-y-2 text-xs">
+          <div className="rounded-xl border border-stone-700 bg-stone-900 p-4 space-y-2 text-xs">
             <div className="grid gap-2 md:grid-cols-3">
               <p className="text-stone-400">
                 isAdmin: <span className="text-stone-200">{String(debugState.isAdmin)}</span>
@@ -324,7 +324,7 @@ export default async function AdminOverviewPage() {
             </p>
           </div>
         ) : (
-          <div className="rounded-xl border border-red-200 bg-red-950 p-4 text-xs text-red-700">
+          <div className="rounded-xl border border-red-800 bg-red-950 p-4 text-xs text-red-700">
             Debug state unavailable.
           </div>
         )}

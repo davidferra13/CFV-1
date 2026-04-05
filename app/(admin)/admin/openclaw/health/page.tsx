@@ -60,7 +60,7 @@ export default async function OpenClawHealthPage() {
           </svg>
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Data Engine Health</h1>
+          <h1 className="text-xl font-bold text-stone-100">Data Engine Health</h1>
           <p className="text-sm text-stone-500">
             Quarantine review, sync history, and pricing coverage
           </p>
@@ -119,7 +119,7 @@ export default async function OpenClawHealthPage() {
       {stats && (stats.byReason.length > 0 || stats.bySource.length > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {stats.byReason.length > 0 && (
-            <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
+            <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
               <h2 className="text-sm font-semibold text-stone-300 mb-3">Quarantine by Reason</h2>
               <div className="space-y-2">
                 {stats.byReason.map((r) => (
@@ -132,7 +132,7 @@ export default async function OpenClawHealthPage() {
             </div>
           )}
           {stats.bySource.length > 0 && (
-            <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
+            <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
               <h2 className="text-sm font-semibold text-stone-300 mb-3">Quarantine by Source</h2>
               <div className="space-y-2">
                 {stats.bySource.map((s) => (
@@ -173,7 +173,7 @@ function KPICard({
     blue: 'text-blue-400',
   }
   return (
-    <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
+    <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-3">
       <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">{label}</p>
       <p className={`text-xl font-bold mt-1 ${colorMap[color]}`}>{value}</p>
       {sub && <p className="text-xs text-stone-500 mt-0.5">{sub}</p>}

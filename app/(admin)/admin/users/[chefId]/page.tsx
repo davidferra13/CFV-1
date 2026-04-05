@@ -137,7 +137,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold text-slate-900">
+              <h1 className="text-2xl font-bold text-stone-100">
                 {chef.business_name ?? 'Unnamed Chef'}
               </h1>
               <ChefHealthBadge
@@ -150,7 +150,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 showScore
               />
               {accountStatus === 'suspended' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-900 text-red-700 border border-red-200">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-900 text-red-700 border border-red-800">
                   Suspended
                 </span>
               )}
@@ -182,12 +182,12 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
         </div>
       )}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <DollarSign size={14} className="text-green-500" />
             <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">GMV</p>
           </div>
-          <p className="text-xl font-bold text-slate-900">
+          <p className="text-xl font-bold text-stone-100">
             {ledgerFailed ? (
               <span className="text-red-400 text-sm">Failed to load</span>
             ) : (
@@ -195,12 +195,12 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
             )}
           </p>
         </div>
-        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <CalendarRange size={14} className="text-brand-500" />
             <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">Events</p>
           </div>
-          <p className="text-xl font-bold text-slate-900">
+          <p className="text-xl font-bold text-stone-100">
             {eventsFailed ? (
               <span className="text-red-400 text-sm">Failed to load</span>
             ) : (
@@ -208,12 +208,12 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
             )}
           </p>
         </div>
-        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <Users size={14} className="text-purple-500" />
             <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">Clients</p>
           </div>
-          <p className="text-xl font-bold text-slate-900">
+          <p className="text-xl font-bold text-stone-100">
             {clientsFailed ? (
               <span className="text-red-400 text-sm">Failed to load</span>
             ) : (
@@ -224,8 +224,8 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       </div>
 
       {/* Health Score Breakdown */}
-      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
+        <div className="px-4 py-3 border-b border-stone-800 bg-stone-800 flex items-center gap-2">
           <Activity size={14} className="text-stone-500" />
           <h2 className="text-sm font-semibold text-stone-300">
             Chef Health Score - {healthScore.score}/100 ({CHEF_TIER_LABELS[healthScore.tier]})
@@ -257,7 +257,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
               <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">{label}</p>
               <p className="text-xs text-slate-400 mt-0.5 mb-2">{desc}</p>
               <div className="flex items-end gap-2">
-                <p className="text-lg font-bold text-slate-900">{score}</p>
+                <p className="text-lg font-bold text-stone-100">{score}</p>
                 <p className="text-xs text-slate-400 pb-0.5">/ {max}</p>
               </div>
             </div>
@@ -266,8 +266,8 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       </div>
 
       {/* Events */}
-      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
+        <div className="px-4 py-3 border-b border-stone-800 bg-stone-800">
           <h2 className="text-sm font-semibold text-stone-300">Recent Events</h2>
         </div>
         {events.length === 0 ? (
@@ -276,7 +276,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100">
+                <tr className="border-b border-stone-800">
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Name</th>
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Status
@@ -289,8 +289,8 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {events.map((event: any) => (
-                  <tr key={event.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-2.5 text-slate-900 font-medium">
+                  <tr key={event.id} className="hover:bg-stone-800">
+                    <td className="px-4 py-2.5 text-stone-100 font-medium">
                       {event.occasion ?? '-'}
                     </td>
                     <td className="px-4 py-2.5">
@@ -315,8 +315,8 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       </div>
 
       {/* Clients */}
-      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
+        <div className="px-4 py-3 border-b border-stone-800 bg-stone-800">
           <h2 className="text-sm font-semibold text-stone-300">Clients ({clients.length})</h2>
         </div>
         {clients.length === 0 ? (
@@ -326,7 +326,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
             {clients.map((client: any) => (
               <div key={client.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-900">
+                  <p className="text-sm font-medium text-stone-100">
                     {(client as { full_name?: string | null }).full_name ?? 'Unnamed'}
                   </p>
                   <p className="text-xs text-slate-400">{client.email ?? '-'}</p>
@@ -341,8 +341,8 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       </div>
 
       {/* Ledger (last 50) */}
-      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
+        <div className="px-4 py-3 border-b border-stone-800 bg-stone-800 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-stone-300">Ledger (last 50 entries)</h2>
           <span className="text-xs text-slate-400">Expenses: {formatCents(totalExpenses)}</span>
         </div>
@@ -352,7 +352,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100">
+                <tr className="border-b border-stone-800">
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">Type</th>
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Description
@@ -365,7 +365,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {ledger.map((entry: any) => (
-                  <tr key={entry.id} className="hover:bg-slate-50">
+                  <tr key={entry.id} className="hover:bg-stone-800">
                     <td className="px-4 py-2.5">
                       <span className="text-xs font-medium text-stone-400 uppercase">
                         {entry.entry_type}
@@ -375,7 +375,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                       {entry.description ?? '-'}
                     </td>
                     <td
-                      className={`px-4 py-2.5 text-right font-medium ${(entry.amount_cents ?? 0) < 0 ? 'text-red-600' : 'text-slate-900'}`}
+                      className={`px-4 py-2.5 text-right font-medium ${(entry.amount_cents ?? 0) < 0 ? 'text-red-600' : 'text-stone-100'}`}
                     >
                       {formatCents(entry.amount_cents ?? 0)}
                     </td>

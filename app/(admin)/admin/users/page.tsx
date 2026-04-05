@@ -62,7 +62,7 @@ export default async function AdminChefListPage() {
           <Users size={18} className="text-brand-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Chefs</h1>
+          <h1 className="text-xl font-bold text-stone-100">Chefs</h1>
           <p className="text-sm text-stone-500">
             {chefs.length} chef account{chefs.length !== 1 ? 's' : ''} · {formatCents(totalGMV)}{' '}
             total GMV
@@ -71,20 +71,20 @@ export default async function AdminChefListPage() {
       </div>
 
       {error && (
-        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+        <div className="bg-red-950 border border-red-800 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
           <AlertCircle size={14} />
           {error}
         </div>
       )}
 
-      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
         {chefs.length === 0 && !error ? (
           <div className="py-12 text-center text-slate-400 text-sm">No chefs found.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50">
+                <tr className="border-b border-stone-800 bg-stone-800">
                   <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Chef
                   </th>
@@ -114,14 +114,14 @@ export default async function AdminChefListPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {chefs.map((chef) => (
-                  <tr key={chef.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-900">
+                  <tr key={chef.id} className="hover:bg-stone-800 transition-colors">
+                    <td className="px-4 py-3 font-medium text-stone-100">
                       {chef.business_name ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-stone-500 text-xs">{chef.email ?? '-'}</td>
                     <td className="px-4 py-3 text-right text-stone-300">{chef.eventCount}</td>
                     <td className="px-4 py-3 text-right text-stone-300">{chef.clientCount}</td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-900">
+                    <td className="px-4 py-3 text-right font-medium text-stone-100">
                       {formatCents(chef.gmvCents)}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-400">

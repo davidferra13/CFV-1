@@ -56,7 +56,7 @@ export default async function AdminAnalyticsPage() {
           <BarChart3 size={18} className="text-brand-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Platform Analytics</h1>
+          <h1 className="text-xl font-bold text-stone-100">Platform Analytics</h1>
           <p className="text-sm text-stone-500">
             Growth, revenue, and engagement across all tenants
           </p>
@@ -73,18 +73,18 @@ export default async function AdminAnalyticsPage() {
       )}
       {overviewData && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
             <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               Total Chefs
             </p>
-            <p className="text-2xl font-bold text-slate-900 mt-1">{overviewData.totalChefs}</p>
+            <p className="text-2xl font-bold text-stone-100 mt-1">{overviewData.totalChefs}</p>
             <p className="text-xs text-slate-400 mt-1">+{overviewData.chefsThisMonth} this month</p>
           </div>
-          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
             <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               Active Rate
             </p>
-            <p className="text-2xl font-bold text-slate-900 mt-1">
+            <p className="text-2xl font-bold text-stone-100 mt-1">
               {overviewData.totalChefs > 0
                 ? Math.round((overviewData.eventsThisMonth / overviewData.totalChefs) * 100)
                 : 0}
@@ -92,22 +92,22 @@ export default async function AdminAnalyticsPage() {
             </p>
             <p className="text-xs text-slate-400 mt-1">chefs w/ events this month</p>
           </div>
-          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
             <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               Platform GMV
             </p>
-            <p className="text-2xl font-bold text-slate-900 mt-1">
+            <p className="text-2xl font-bold text-stone-100 mt-1">
               {formatCents(overviewData.totalGMV)}
             </p>
             <p className="text-xs text-slate-400 mt-1">
               {formatCents(overviewData.gmvThisMonth)} this month
             </p>
           </div>
-          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
             <p className="text-xs text-stone-500 uppercase tracking-wide font-medium">
               Avg GMV / Chef
             </p>
-            <p className="text-2xl font-bold text-slate-900 mt-1">
+            <p className="text-2xl font-bold text-stone-100 mt-1">
               {formatCents(overviewData.avgGMVPerChef)}
             </p>
             <p className="text-xs text-slate-400 mt-1">all-time average</p>
@@ -116,7 +116,7 @@ export default async function AdminAnalyticsPage() {
       )}
 
       {/* Revenue by Month */}
-      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
         <h2 className="text-sm font-semibold text-stone-300 mb-4">
           Platform GMV by Month (last 12 months)
         </h2>
@@ -149,7 +149,7 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       {/* Chef + Client Growth */}
-      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
         <h2 className="text-sm font-semibold text-stone-300 mb-4">
           New Signups by Month (last 12 months)
         </h2>
@@ -198,7 +198,7 @@ export default async function AdminAnalyticsPage() {
 
       {/* Data Engine Health */}
       {(syncData || quarantineData || pricingData) && (
-        <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-stone-300">Data Engine Health</h2>
             <Link
