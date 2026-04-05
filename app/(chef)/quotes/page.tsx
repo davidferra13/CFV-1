@@ -137,22 +137,39 @@ export default async function QuotesPage({
         </Link>
       </div>
 
-      {/* Quote Intelligence */}
-      <WidgetErrorBoundary name="Quote Intelligence" compact>
-        <Suspense fallback={null}>
-          <QuoteIntelligenceBar />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* Pricing Intelligence */}
-      <WidgetErrorBoundary name="Pricing Intelligence" compact>
-        <Suspense fallback={null}>
-          <PricingIntelligenceBar />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* Quote Acceptance Insights */}
-      {insights && <QuoteAcceptanceInsightsPanel data={insights} />}
+      {/* Intelligence panels (collapsed by default to reduce cognitive load) */}
+      <details className="group">
+        <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-stone-400 hover:text-stone-200 transition-colors select-none list-none [&::-webkit-details-marker]:hidden">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="transition-transform group-open:rotate-90"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+          Quote Insights
+        </summary>
+        <div className="mt-3 space-y-4">
+          <WidgetErrorBoundary name="Quote Intelligence" compact>
+            <Suspense fallback={null}>
+              <QuoteIntelligenceBar />
+            </Suspense>
+          </WidgetErrorBoundary>
+          <WidgetErrorBoundary name="Pricing Intelligence" compact>
+            <Suspense fallback={null}>
+              <PricingIntelligenceBar />
+            </Suspense>
+          </WidgetErrorBoundary>
+          {insights && <QuoteAcceptanceInsightsPanel data={insights} />}
+        </div>
+      </details>
 
       {/* Status Tabs */}
       <Card className="p-4">

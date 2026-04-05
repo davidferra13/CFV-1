@@ -117,7 +117,43 @@ The 4 research reports in `docs/research/` still contain findings that inform fo
 | 2        | B2: Large nav groups sub-grouping | Medium        | Low (behind All Features) | Sub-group items in groups exceeding 7                               |
 | 3        | B1: Dashboard section count drift | Ongoing watch | Medium                    | Do not add a default-visible dashboard section without removing one |
 
-**No active release-blocking violations remain in this measured slice.** Future UI work should treat the three resolved items above as preserved baseline, not as open queue work.
+**No active release-blocking violations remain in this measured slice.** Future UI work should treat the resolved items above as preserved baseline, not as open queue work.
+
+---
+
+## April 5 Violations (Resolved)
+
+Three additional violations found April 5 and fixed in the same session:
+
+### V4. Inquiries Filter Tabs: resolved
+
+**Rule:** Section 6: "Tabs on a single page: maximum 6. Use dropdown for overflow."
+
+**Was:** 7 status tabs + up to 4 platform buttons + 5 budget mode buttons = 12-16 visible controls.
+
+**Fix:** Replaced 5 budget mode buttons with a `<select>` dropdown, matching the existing pattern for platform overflow. Now: 7 status tabs + platform buttons + 1 budget dropdown.
+
+**File:** `components/inquiries/inquiries-filter-tabs.tsx`
+
+### V5. Event Detail Header: resolved
+
+**Rule:** Section 5: "Every screen has exactly one primary action." Section 11 anti-pattern: "Competing UI elements."
+
+**Was:** 8-10 equally-weighted secondary buttons in the header (Edit Event, Schedule, Documents, Packing List, Grocery Quote, Travel Plan, Create Story, Back to Events).
+
+**Fix:** Kept 3 primary actions visible (Edit Event, Schedule, Documents). Moved context-dependent actions (Packing List, Grocery Quote, Travel Plan, Create Story) into a "More" dropdown menu.
+
+**Files:** `app/(chef)/events/[id]/page.tsx`, `components/events/event-actions-overflow.tsx` (new)
+
+### V6. Quotes Intelligence Panels: resolved
+
+**Rule:** Section 6 cognitive load. Section 11 anti-pattern: "Unnecessary metrics - the vanity metric test."
+
+**Was:** 3 intelligence panels (Quote Intelligence Bar, Pricing Intelligence Bar, Quote Acceptance Insights) all expanded by default above the filter tabs and quote list.
+
+**Fix:** Wrapped all 3 panels in a collapsed `<details>` disclosure ("Quote Insights"), hidden by default. Chef can expand when needed. Primary focus goes to the filter tabs and quote list.
+
+**File:** `app/(chef)/quotes/page.tsx`
 
 ---
 

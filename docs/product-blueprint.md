@@ -211,18 +211,18 @@ _Last cleared: 2026-04-04. Completed items moved to queue or exit criteria._
 
 ## What's Queued (Next Up After V1 Exit Criteria)
 
-| Priority | Item                                       | Spec                                                 |
-| -------- | ------------------------------------------ | ---------------------------------------------------- |
-| ~~P0~~   | ~~Fix Remy parsing regression~~            | **DONE** (April 4)                                   |
-| ~~P0~~   | ~~SSE authentication~~                     | **DONE** (already implemented, minor gaps remain)    |
-| ~~P0~~   | ~~Database backup automation~~             | **DONE** (April 4)                                   |
-| P1       | 9 built specs need Playwright verification | Various                                              |
-| P1       | Interface philosophy violations (3 found)  | Gap analysis doc                                     |
-| P1       | CPA-ready tax export verification          | `p0-chef-cpa-ready-tax-export-and-reconciliation.md` |
-| P1       | Bulk menu import                           | Spec ready                                           |
-| P2       | Wave-1 operator survey launch              | Surveys designed                                     |
-| P2       | Dead-zone gating and surface honesty       | `p1-dead-zone-gating-and-surface-honesty.md`         |
-| P2       | Form auto-save on critical paths           | No spec yet                                          |
+| Priority | Item                                          | Spec                                                 |
+| -------- | --------------------------------------------- | ---------------------------------------------------- |
+| ~~P0~~   | ~~Fix Remy parsing regression~~               | **DONE** (April 4)                                   |
+| ~~P0~~   | ~~SSE authentication~~                        | **DONE** (already implemented, minor gaps remain)    |
+| ~~P0~~   | ~~Database backup automation~~                | **DONE** (April 4)                                   |
+| P1       | 9 built specs need Playwright verification    | Various                                              |
+| ~~P1~~   | ~~Interface philosophy violations (3 found)~~ | **DONE** (April 5)                                   |
+| P1       | CPA-ready tax export verification             | `p0-chef-cpa-ready-tax-export-and-reconciliation.md` |
+| P1       | Bulk menu import                              | Spec ready                                           |
+| P2       | Wave-1 operator survey launch                 | Surveys designed                                     |
+| P2       | Dead-zone gating and surface honesty          | `p1-dead-zone-gating-and-surface-honesty.md`         |
+| P2       | Form auto-save on critical paths              | No spec yet                                          |
 
 ---
 
@@ -244,14 +244,14 @@ These are explicitly out of scope for V1. Do not build, spec, or plan these:
 
 ## Known Issues (Current Bugs and Regressions)
 
-| Issue                             | Severity | Since         | Impact                                |
-| --------------------------------- | -------- | ------------- | ------------------------------------- |
-| Remy parsing (FIXED)              | Fixed    | March 30      | Fixed Apr 4: 30b hung, switched 4b    |
-| SSE presence/typing validation    | Low      | Always        | Substring match instead of structured |
-| Ollama exposed on localhost:11434 | Medium   | Always        | No auth on AI endpoint (local only)   |
-| 3 interface philosophy violations | Medium   | Found April 4 | Event detail tabs, quotes page        |
-| 179/184 forms lack auto-save      | Low      | Always        | UX debt, not blocking                 |
-| Share token PII scope undefined   | Low      | Always        | Security design decision needed       |
+| Issue                             | Severity | Since         | Impact                                                     |
+| --------------------------------- | -------- | ------------- | ---------------------------------------------------------- |
+| Remy parsing (FIXED)              | Fixed    | March 30      | Fixed Apr 4: 30b hung, switched 4b                         |
+| SSE presence/typing validation    | Low      | Always        | Substring match instead of structured                      |
+| Ollama exposed on localhost:11434 | Medium   | Always        | No auth on AI endpoint (local only)                        |
+| 3 interface philosophy violations | Fixed    | Found April 4 | Fixed Apr 5: inquiries filter, event header, quotes panels |
+| 179/184 forms lack auto-save      | Low      | Always        | UX debt, not blocking                                      |
+| Share token PII scope undefined   | Low      | Always        | Security design decision needed                            |
 
 ---
 

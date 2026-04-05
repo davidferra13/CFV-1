@@ -108,51 +108,18 @@ export function InquiriesFilterTabs({
         </select>
       )}
       <span className="mx-1 h-6 w-px shrink-0 bg-stone-300" />
-      <Button
-        type="button"
-        size="sm"
-        variant={budgetMode === 'all' ? 'primary' : 'secondary'}
-        className="shrink-0 whitespace-nowrap"
-        onClick={() => setState({ budget_mode: 'all' })}
+      <select
+        value={budgetMode}
+        onChange={(e) => setState({ budget_mode: e.target.value as BudgetModeFilter })}
+        aria-label="Filter by budget type"
+        className="h-8 shrink-0 rounded-md border border-stone-700 bg-stone-900 px-2 text-xs text-stone-300 focus:outline-none focus:ring-1 focus:ring-brand-500"
       >
-        Budget: All
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant={budgetMode === 'exact' ? 'primary' : 'secondary'}
-        className="shrink-0 whitespace-nowrap"
-        onClick={() => setState({ budget_mode: budgetMode === 'exact' ? 'all' : 'exact' })}
-      >
-        Exact
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant={budgetMode === 'range' ? 'primary' : 'secondary'}
-        className="shrink-0 whitespace-nowrap"
-        onClick={() => setState({ budget_mode: budgetMode === 'range' ? 'all' : 'range' })}
-      >
-        Range
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant={budgetMode === 'not_sure' ? 'primary' : 'secondary'}
-        className="shrink-0 whitespace-nowrap"
-        onClick={() => setState({ budget_mode: budgetMode === 'not_sure' ? 'all' : 'not_sure' })}
-      >
-        Not Sure
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        variant={budgetMode === 'unset' ? 'primary' : 'secondary'}
-        className="shrink-0 whitespace-nowrap"
-        onClick={() => setState({ budget_mode: budgetMode === 'unset' ? 'all' : 'unset' })}
-      >
-        Unset
-      </Button>
+        <option value="all">Budget: All</option>
+        <option value="exact">Exact</option>
+        <option value="range">Range</option>
+        <option value="not_sure">Not Sure</option>
+        <option value="unset">Unset</option>
+      </select>
     </div>
   )
 }

@@ -42,6 +42,7 @@ import { MessageLogForm } from '@/components/messages/message-log-form'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { EventExportButton } from '@/components/exports/event-export-button'
+import { EventActionsOverflow } from '@/components/events/event-actions-overflow'
 import { ChefGuestPanel } from '@/components/sharing/chef-guest-panel'
 import { EventStatusRealtimeSync } from '@/components/events/event-status-realtime-sync'
 import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
@@ -535,7 +536,7 @@ export default async function EventDetailPage({
             )}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {event.status === 'draft' && (
             <Link href={`/events/${event.id}/edit`}>
               <Button variant="secondary">Edit Event</Button>
@@ -547,24 +548,20 @@ export default async function EventDetailPage({
           <Link href={`/events/${event.id}/documents`}>
             <Button variant="secondary">Documents</Button>
           </Link>
-          {!['draft', 'cancelled'].includes(event.status) && (
-            <Link href={`/events/${event.id}/pack`}>
-              <Button variant="secondary">Packing List</Button>
-            </Link>
-          )}
-          {eventMenus && !['cancelled'].includes(event.status) && (
-            <Link href={`/events/${event.id}/grocery-quote`}>
-              <Button variant="secondary">Grocery Quote</Button>
-            </Link>
-          )}
-          <Link href={`/events/${event.id}/travel`}>
-            <Button variant="secondary">Travel Plan</Button>
-          </Link>
-          {event.status === 'completed' && (
-            <Link href={`/events/${event.id}/story`}>
-              <Button variant="secondary">Create Story</Button>
-            </Link>
-          )}
+          <EventActionsOverflow
+            actions={[
+              ...(!['draft', 'cancelled'].includes(event.status)
+                ? [{ label: 'Packing List', href: `/events/${event.id}/pack` }]
+                : []),
+              ...(eventMenus && !['cancelled'].includes(event.status)
+                ? [{ label: 'Grocery Quote', href: `/events/${event.id}/grocery-quote` }]
+                : []),
+              { label: 'Travel Plan', href: `/events/${event.id}/travel` },
+              ...(event.status === 'completed'
+                ? [{ label: 'Create Story', href: `/events/${event.id}/story` }]
+                : []),
+            ]}
+          />
           <Link href="/events">
             <Button variant="ghost">Back to Events</Button>
           </Link>
