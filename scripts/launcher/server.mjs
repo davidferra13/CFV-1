@@ -496,6 +496,126 @@ async function getAllStatus() {
   }
 }
 
+// ── Passive Dashboard Data Functions ──────────────────────────────
+
+async function getBlueprintProgress() {
+  try {
+    const content = await readFile(join(PROJECT_ROOT, 'docs', 'product-blueprint.md'), 'utf-8')
+
+    // Parse progress bars: "LABEL    [===---] XX%"
+    const progressRegex = /^([A-Z][A-Z0-9 &]+?)\s+\[([=\-]+)\]\s+(\d+)%/gm
+    const bars = {}
+    let match
+    while ((match = progressRegex.exec(content)) !== null) {
+      const label = match[1].trim().toLowerCase().replace(/\s+/g, '_')
+      bars[label] = parseInt(match[3], 10)
+    }
+
+    // Parse exit criteria checkboxes
+    const mustHave = { total: 0, done: 0 }
+    const shouldHave = { total: 0, done: 0 }
+    const niceToHave = { total: 0, done: 0 }
+    let currentSection = null
+    for (const line of content.split('\n')) {
+      if (line.includes('Must-Have')) currentSection = mustHave
+      else if (line.includes('Should-Have')) currentSection = shouldHave
+      else if (line.includes('Nice-to-Have')) currentSection = niceToHave
+      else if (line.startsWith('---')) currentSection = null
+      if (currentSection && line.match(/^- \[[ x]\]/)) {
+        currentSection.total++
+        if (line.startsWith('- [x]')) currentSection.done++
+      }
+    }
+
+    // Parse queue table
+    const queue = []
+    const queueRegex = /^\|\s*(~~)?P(\d)(~~)?\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|$/gm
+    while ((match = queueRegex.exec(content)) !== null) {
+      const struck = !!match[1]
+      queue.push({
+        priority: `P${match[2]}`,
+        item: match[4].replace(/~~|[*]/g, '').trim(),
+        done: struck || match[4].includes('DONE') || match[5].includes('DONE'),
+      })
+    }
+
+    // Parse known issues
+    const issues = []
+    const issueSection = content.split('Known Issues')[1]?.split('---')[0] || ''
+    const issueRegex = /^\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(.*?)\s*\|$/gm
+    while ((match = issueRegex.exec(issueSection)) !== null) {
+      if (match[1].includes('Issue') || match[1].includes('---')) continue
+      issues.push({
+        issue: match[1].trim(),
+        severity: match[2].trim(),
+        since: match[3].trim(),
+        impact: match[4].trim(),
+      })
+    }
+
+    return {
+      overall: bars.overall_v1_progress || bars.overall || 0,
+      build_completeness: bars.build_completeness || 0,
+      security: bars.security_hardening || 0,
+      polish: bars.polish_ux || bars['polish_&_ux'] || 0,
+      validation: bars.validation || 0,
+      launch: bars.launch_readiness || 0,
+      exitCriteria: { mustHave, shouldHave, niceToHave },
+      queue: queue.filter(q => !q.done),
+      issues: issues.filter(i => !i.severity.includes('Fixed')),
+    }
+  } catch (err) {
+    return { error: 'Blueprint not found', message: err.message }
+  }
+}
+
+async function getRecentSessionDigests() {
+  try {
+    const digestDir = join(PROJECT_ROOT, 'docs', 'session-digests')
+    const files = await readdir(digestDir)
+    const mdFiles = files.filter(f => f.endsWith('.md') && f !== 'README.md').sort().reverse().slice(0, 5)
+
+    const digests = []
+    for (const file of mdFiles) {
+      try {
+        const content = await readFile(join(digestDir, file), 'utf-8')
+        const titleMatch = content.match(/^#\s+Session Digest:\s*(.+)/m)
+        const dateMatch = content.match(/\*\*Date:\*\*\s*(.+)/m)
+        const agentMatch = content.match(/\*\*Agent type:\*\*\s*(.+)/m)
+        const summaryMatch = content.match(/## What Was Discussed\s*\n([\s\S]*?)(?=\n##|\n---|\Z)/)
+        digests.push({
+          filename: file,
+          date: dateMatch?.[1]?.trim() || file.slice(0, 10),
+          topic: titleMatch?.[1]?.trim() || file.replace(/\.md$/, ''),
+          agentType: agentMatch?.[1]?.trim() || 'Unknown',
+          summary: summaryMatch?.[1]?.trim()?.slice(0, 200) || '',
+        })
+      } catch { /* skip unreadable files */ }
+    }
+    return digests
+  } catch {
+    return []
+  }
+}
+
+async function getRecentCommits() {
+  try {
+    const { stdout } = await execAsync(
+      'git log --oneline --no-decorate -15',
+      { cwd: PROJECT_ROOT }
+    )
+    return stdout.trim().split('\n').map(line => {
+      const spaceIdx = line.indexOf(' ')
+      return {
+        hash: line.slice(0, spaceIdx),
+        message: line.slice(spaceIdx + 1),
+      }
+    })
+  } catch {
+    return []
+  }
+}
+
 async function readPersistentLog(lines = 100) {
   try {
     const content = await readFile(CONFIG.logFile, 'utf-8')
@@ -7190,6 +7310,20 @@ async function handleRequest(req, res) {
   if (path === '/api/status' && method === 'GET') {
     const status = await getAllStatus()
     return json(res, status)
+  }
+
+  // ── Passive Dashboard APIs ──────────────────────────────────────
+
+  if (path === '/api/blueprint/progress' && method === 'GET') {
+    return json(res, await getBlueprintProgress())
+  }
+
+  if (path === '/api/session-digests/recent' && method === 'GET') {
+    return json(res, await getRecentSessionDigests())
+  }
+
+  if (path === '/api/git/recent-commits' && method === 'GET') {
+    return json(res, await getRecentCommits())
   }
 
   if (path === '/api/dev/start' && method === 'POST') {

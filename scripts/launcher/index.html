@@ -1912,7 +1912,12 @@ body {
   <div class="layout">
     <!-- Sidebar -->
     <nav class="sidebar">
-      <a class="nav-item active" data-section="home" title="Home — Quick Actions">
+      <a class="nav-item active" data-section="live" title="Live Dashboard (passive)">
+        <span class="nav-dot online" id="nd-live"></span>
+        <span class="nav-icon">&#x1F4FA;</span>
+        <span class="nav-label">Live</span>
+      </a>
+      <a class="nav-item" data-section="home" title="Home — Quick Actions">
         <span class="nav-dot online" id="nd-home"></span>
         <span class="nav-icon">&#x1F3E0;</span>
         <span class="nav-label">Home</span>
@@ -2016,8 +2021,59 @@ body {
 
     <!-- Content -->
     <div class="content">
+      <!-- ─── Live Passive Dashboard ─── -->
+      <div class="panel active" id="panel-live" style="padding:20px 24px;overflow:hidden;">
+        <!-- Header Bar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;gap:16px;">
+            <span style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--text-primary);">ChefFlow Mission Control</span>
+            <div id="live-health-dots" style="display:flex;gap:12px;align-items:center;"></div>
+          </div>
+          <div id="live-clock" style="font-size:16px;color:var(--text-muted);font-variant-numeric:tabular-nums;"></div>
+        </div>
+
+        <!-- V1 Progress Bar -->
+        <div id="live-progress" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:14px;font-weight:700;color:var(--text-primary);text-transform:uppercase;letter-spacing:1px;">V1 Progress</span>
+            <span id="live-overall-pct" style="font-size:28px;font-weight:700;color:var(--brand);font-family:'DM Serif Display',serif;">--%</span>
+          </div>
+          <div style="height:12px;background:var(--bg-secondary);border-radius:6px;overflow:hidden;margin-bottom:12px;">
+            <div id="live-overall-bar" style="height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-bright));border-radius:6px;transition:width 0.5s ease;width:0%;"></div>
+          </div>
+          <div id="live-sub-bars" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;"></div>
+        </div>
+
+        <!-- Main Grid: 2x2 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:12px;flex:1;min-height:0;height:calc(100vh - 260px);">
+          <!-- Recently Completed -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Recently Completed</div>
+            <div id="live-completed" style="flex:1;overflow-y:auto;font-size:14px;"></div>
+          </div>
+
+          <!-- Activity Feed -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Activity Feed</div>
+            <div id="live-feed" style="flex:1;overflow-y:auto;font-size:13px;"></div>
+          </div>
+
+          <!-- Active Now + Next Up -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Queue</div>
+            <div id="live-queue" style="flex:1;overflow-y:auto;font-size:14px;"></div>
+          </div>
+
+          <!-- System Status -->
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;overflow:hidden;display:flex;flex-direction:column;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">System Status</div>
+            <div id="live-system" style="flex:1;overflow-y:auto;font-size:14px;"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- ─── Home Panel (Quick Actions) ─── -->
-      <div class="panel active" id="panel-home">
+      <div class="panel" id="panel-home">
         <div class="panel-header">
           <h2 class="panel-title">Quick Actions</h2>
           <span class="status-badge online" id="badge-home">
@@ -9016,6 +9072,7 @@ document.addEventListener('keydown', (e) => {
       activeEl === document.getElementById('observe-search') ||
       timelineFormIds.has(activeEl?.id) ||
       activeEl?.classList.contains('chat-inline-edit')) return
+  if (e.key === 'l') switchSection('live')
   if (e.key === '1') switchSection('home')
   if (e.key === '2') switchSection('dev')
   if (e.key === '3') switchSection('beta')
@@ -9043,6 +9100,7 @@ function switchSection(section) {
   const item = document.querySelector(`.nav-item[data-section="${section}"]`)
   if (item) item.click()
   // Lazy-load data for heavy panels
+  if (section === 'live') initLiveDashboard()
   if (section === 'home') loadPromptQueue()
   if (section === 'log') loadHistory()
   if (section === 'timeline') { loadProjectTimeline(); startTimelineAutoRefresh() }
@@ -11069,6 +11127,229 @@ function renderRetroAgents(el) {
 
   el.innerHTML = html
 }
+
+// ══════════════════════════════════════════════════════════════════
+// LIVE PASSIVE DASHBOARD
+// ══════════════════════════════════════════════════════════════════
+
+let liveInitialized = false
+let liveIntervals = []
+let liveFeedSSE = null
+
+function initLiveDashboard() {
+  if (liveInitialized) return
+  liveInitialized = true
+
+  // Clock
+  function updateClock() {
+    const el = document.getElementById('live-clock')
+    if (!el) return
+    const now = new Date()
+    el.textContent = now.toLocaleDateString('en-US', {
+      weekday: 'short', month: 'short', day: 'numeric'
+    }) + '  ' + now.toLocaleTimeString('en-US', { hour12: true })
+  }
+  updateClock()
+  liveIntervals.push(setInterval(updateClock, 1000))
+
+  // Load all data
+  loadLiveProgress()
+  loadLiveStatus()
+  loadLiveCompleted()
+  loadLiveQueue()
+  connectLiveFeed()
+
+  // Auto-refresh intervals
+  liveIntervals.push(setInterval(loadLiveProgress, 60000))   // progress: 60s
+  liveIntervals.push(setInterval(loadLiveStatus, 30000))     // status: 30s
+  liveIntervals.push(setInterval(loadLiveCompleted, 60000))  // commits: 60s
+  liveIntervals.push(setInterval(loadLiveQueue, 60000))      // queue: 60s
+}
+
+async function loadLiveProgress() {
+  try {
+    const res = await fetch('/api/blueprint/progress')
+    const data = await res.json()
+    if (data.error) {
+      document.getElementById('live-overall-pct').textContent = 'N/A'
+      return
+    }
+
+    document.getElementById('live-overall-pct').textContent = data.overall + '%'
+    document.getElementById('live-overall-bar').style.width = data.overall + '%'
+
+    const subBars = document.getElementById('live-sub-bars')
+    const items = [
+      { label: 'Features', value: data.build_completeness, color: 'var(--success)' },
+      { label: 'Security', value: data.security, color: 'var(--info)' },
+      { label: 'Polish', value: data.polish, color: 'var(--brand)' },
+      { label: 'Validation', value: data.validation, color: 'var(--warning)' },
+      { label: 'Launch', value: data.launch, color: '#a855f7' },
+    ]
+    subBars.innerHTML = items.map(i => `
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">${i.label}</div>
+        <div style="height:6px;background:var(--bg-secondary);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${i.value}%;background:${i.color};border-radius:3px;transition:width 0.5s;"></div>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:${i.color};margin-top:4px;">${i.value}%</div>
+      </div>
+    `).join('')
+
+    // Update queue from blueprint data
+    if (data.queue && data.queue.length > 0) {
+      const queueEl = document.getElementById('live-queue')
+      let html = ''
+      for (const item of data.queue.slice(0, 7)) {
+        const color = item.priority === 'P0' ? 'var(--error)' : item.priority === 'P1' ? 'var(--warning)' : 'var(--text-muted)'
+        html += `<div style="padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start;">
+          <span style="font-size:11px;font-weight:700;color:${color};flex-shrink:0;min-width:28px;">${item.priority}</span>
+          <span style="color:var(--text-secondary);line-height:1.4;">${item.item}</span>
+        </div>`
+      }
+
+      // Add known issues below queue
+      if (data.issues && data.issues.length > 0) {
+        html += '<div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Known Issues</div>'
+        for (const issue of data.issues) {
+          const sevColor = issue.severity === 'Critical' ? 'var(--error)' : issue.severity === 'Medium' ? 'var(--warning)' : 'var(--text-muted)'
+          html += `<div style="padding:4px 0;font-size:13px;display:flex;gap:8px;">
+            <span style="color:${sevColor};flex-shrink:0;font-size:11px;font-weight:600;">${issue.severity}</span>
+            <span style="color:var(--text-secondary);">${issue.issue}</span>
+          </div>`
+        }
+      }
+
+      queueEl.innerHTML = html
+    }
+  } catch (err) {
+    document.getElementById('live-overall-pct').textContent = 'ERR'
+  }
+}
+
+async function loadLiveStatus() {
+  try {
+    const res = await fetch('/api/status')
+    const data = await res.json()
+
+    // Health dots in header
+    const dotsEl = document.getElementById('live-health-dots')
+    const services = [
+      { key: 'dev', label: 'Dev', online: data.dev?.online },
+      { key: 'prod', label: 'Prod', online: data.prod?.online },
+      { key: 'ollamaPc', label: 'Ollama', online: data.ollamaPc?.online },
+    ]
+    dotsEl.innerHTML = services.map(s => `
+      <span style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-muted);">
+        <span class="dot ${s.online ? 'online' : 'offline'}" style="width:8px;height:8px;border-radius:50%;display:inline-block;"></span>
+        ${s.label}
+      </span>
+    `).join('')
+
+    // System status panel
+    const sysEl = document.getElementById('live-system')
+    const gitInfo = data.git || {}
+    let html = ''
+    for (const s of services) {
+      const statusColor = s.online ? 'var(--success)' : 'var(--error)'
+      const statusText = s.online ? 'Online' : 'Offline'
+      html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span style="color:var(--text-primary);font-weight:500;">${s.label}</span>
+        <span style="color:${statusColor};font-weight:600;font-size:13px;">${statusText}</span>
+      </div>`
+    }
+    // Git status
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="color:var(--text-primary);font-weight:500;">Git</span>
+      <span style="color:var(--text-secondary);font-size:13px;">${gitInfo.branch || 'unknown'}${gitInfo.dirty ? ' (dirty)' : ''}</span>
+    </div>`
+    // Database
+    html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="color:var(--text-primary);font-weight:500;">Database</span>
+      <span style="color:var(--success);font-weight:600;font-size:13px;">Local</span>
+    </div>`
+
+    // Session digests
+    try {
+      const digestRes = await fetch('/api/session-digests/recent')
+      const digests = await digestRes.json()
+      if (digests.length > 0) {
+        html += '<div style="margin-top:16px;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Recent Sessions</div>'
+        for (const d of digests.slice(0, 3)) {
+          html += `<div style="padding:6px 0;border-bottom:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--text-muted);">${d.date} - ${d.agentType}</div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-top:2px;">${d.topic}</div>
+          </div>`
+        }
+      }
+    } catch { /* digests optional */ }
+
+    sysEl.innerHTML = html
+  } catch {
+    document.getElementById('live-system').innerHTML = '<div style="color:var(--error);">Failed to load status</div>'
+  }
+}
+
+async function loadLiveCompleted() {
+  try {
+    const res = await fetch('/api/git/recent-commits')
+    const commits = await res.json()
+    const el = document.getElementById('live-completed')
+    el.innerHTML = commits.map(c => {
+      const msg = c.message.replace(/^(feat|fix|docs|chore|refactor|test|style)\(.*?\):\s*/, '')
+      return `<div style="padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start;">
+        <span style="color:var(--success);flex-shrink:0;">&#10003;</span>
+        <span style="color:var(--text-secondary);line-height:1.4;">${msg}</span>
+      </div>`
+    }).join('')
+  } catch {
+    document.getElementById('live-completed').innerHTML = '<div style="color:var(--text-muted);">No commits loaded</div>'
+  }
+}
+
+function loadLiveQueue() {
+  // Queue is loaded by loadLiveProgress - this is just a placeholder for the interval
+  // The queue section gets populated from blueprint data
+}
+
+function connectLiveFeed() {
+  if (liveFeedSSE) { try { liveFeedSSE.close() } catch {} }
+  const feedEl = document.getElementById('live-feed')
+  if (!feedEl) return
+
+  liveFeedSSE = new EventSource('/api/livefeed')
+
+  const sourceColors = {
+    dev: 'var(--info)', git: 'var(--success)', ollama: '#a855f7',
+    vscode: 'var(--brand)', system: 'var(--text-muted)', beta: 'var(--warning)',
+    watcher: 'var(--text-muted)', build: 'var(--info)',
+  }
+
+  liveFeedSSE.addEventListener('log', (e) => {
+    try {
+      const data = JSON.parse(e.data)
+      const time = new Date(data.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
+      const color = sourceColors[data.source] || 'var(--text-muted)'
+      const row = document.createElement('div')
+      row.style.cssText = 'padding:3px 0;display:flex;gap:8px;border-bottom:1px solid rgba(30,41,59,0.5);'
+      row.innerHTML = `<span style="color:var(--text-muted);flex-shrink:0;font-variant-numeric:tabular-nums;">${time}</span>
+        <span style="color:${color};font-weight:600;flex-shrink:0;min-width:50px;font-size:11px;text-transform:uppercase;">${data.source}</span>
+        <span style="color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${data.message}</span>`
+      feedEl.insertBefore(row, feedEl.firstChild)
+      // Keep max 100 entries
+      while (feedEl.children.length > 100) feedEl.removeChild(feedEl.lastChild)
+    } catch {}
+  })
+
+  liveFeedSSE.onerror = () => {
+    feedEl.insertAdjacentHTML('afterbegin',
+      '<div style="color:var(--warning);padding:4px 0;">Connection lost - reconnecting...</div>')
+    setTimeout(connectLiveFeed, 5000)
+  }
+}
+
+// Auto-init on page load (Live is the default panel)
+initLiveDashboard()
 
 </script>
 </body>
