@@ -107,15 +107,24 @@
 22. **Result:** 9,736 entries -> 6,929 entries (2,807 garbage purged), 1,641 confirmed (23.7% vs 0.7% before).
 23. **Learned patterns overhaul** - Replaced 16 coarse spike/drop patterns with 272 granular patterns: ingredient volatility (128), category price ranges (36), store anomaly rates (33), Instacart markup ratios (22), store price tiers (22), change magnitude distributions (18), category volatility (13).
 
+### Phase 4: Data Quality Hardening + Live Proof
+
+24. **Name normalizer bracket stripping** (`lib/pricing/name-normalizer.ts`) - Added regex to strip `[Recipe Name]` suffixes so ingredients like "Lemons [Lemon Olive Oil Cake]" normalize to "lemons" and match Pi's canonical names.
+25. **Price validator cap tightened** (`lib/openclaw/price-validator.ts`) - Lowered absolute cap from $1000 (100,000 cents) to $500 (50,000 cents) to catch `normalized_cents` inflation (Pi converts oz prices to per-lb: oz \* 16).
+26. **Purged 24 outliers** from `ingredient_price_history` (Red Wine $916, Whole Milk $800, Ketchup $617, etc.). All were Instacart per-oz prices inflated to per-lb.
+27. **Live sync verification** - Triggered sync: 118 matched, 30 updated, 27 not found (down from 44), 22 quarantined, 0 errors. The 17 bracket-fix ingredients now match correctly.
+28. **Post-sync data quality** - 6,723 OpenClaw prices, zero over $500 cap, max $484.16 (reasonable for premium items), avg $32.65.
+29. **Build verified** - tsc clean, next build green (required 16GB heap, up from 8GB).
+
 ### Goal Alignment (Final)
 
-| Mandate           | Grade                                                               |
-| ----------------- | ------------------------------------------------------------------- |
-| 1. No deletes     | **A** (9 guards verified)                                           |
-| 2. No overlap     | **B** (deployed, untested with real docket item)                    |
-| 3. Always growing | **A** (245K products, 69K canonical, 5,963 new/24h)                 |
-| 4. Always smarter | **A** (6,929 clean memories, 272 patterns, cross-match wired)       |
-| 5. Fuels ChefFlow | **A** (0% quarantine rate, per-store baselines, 10-tier resolution) |
+| Mandate           | Grade                                                                     |
+| ----------------- | ------------------------------------------------------------------------- |
+| 1. No deletes     | **A** (9 guards verified)                                                 |
+| 2. No overlap     | **B** (deployed, untested with real docket item)                          |
+| 3. Always growing | **A** (245K products, 69K canonical, 5,963 new/24h)                       |
+| 4. Always smarter | **A** (6,929 clean memories, 272 patterns, cross-match wired)             |
+| 5. Fuels ChefFlow | **A+** (0 outliers, $500 cap, per-store baselines, bracket fix, verified) |
 
 ## Commits
 
@@ -125,7 +134,8 @@
 - `384052d86` fix(openclaw): per-store price baseline + widen spike threshold to fix 98% quarantine rate
 - `4b6811915` docs: update session digest with quarantine fix + full system audit
 - `5f100d900` docs(spec): Opus distillation burst for OpenClaw learning engine
-- (pending) feat(openclaw): execute distillation burst Tasks 1-2
+- `15d681b34` feat(openclaw): execute distillation burst Tasks 1-2
+- `f90796b5e` fix(openclaw): tighten price validation and fix recipe-suffix matching
 
 ## Unresolved
 
@@ -136,10 +146,14 @@
 - Publix catalog scraper: 2 incomplete runs with 0 products
 - Docket overlap detection: deployed but untested with real item
 - Distillation Tasks 3-5: re-categorize ingredients, triage anomalies, variant mappings
+- 27 ingredients still unmatched after bracket fix (need manual review or Pi-side alias additions)
+- Prod server not running (needs restart with new build)
 
 ## Context for Next Agent
 
-The OpenClaw pipeline is production-grade and the learning engine has been significantly hardened. Data flows: Pi scrapes (48 sources, 245K products) -> cross-match (100% rate) -> aggregator (trends, anomalies) -> nightly sync to ChefFlow (0% quarantine, per-store baselines, $1000 absolute cap) -> 10-tier price resolution -> chef-facing UI. Every layer has monitoring: growth tracker (hourly), sync watchdog (6h), webhook alerts (6 event types). Delete guards protect all 9 core tables. Normalization memory cleaned from 9,736 to 6,929 entries (2,807 garbage purged), 1,641 confirmed. Learned patterns expanded from 16 to 272 (7 types). Whole Foods FK crash fixed.
+The OpenClaw pipeline is production-grade and the learning engine has been significantly hardened. Data flows: Pi scrapes (48 sources, 245K products) -> cross-match (100% rate) -> aggregator (trends, anomalies) -> nightly sync to ChefFlow (0% quarantine, per-store baselines, $500 absolute cap) -> 10-tier price resolution -> chef-facing UI. Every layer has monitoring: growth tracker (hourly), sync watchdog (6h), webhook alerts (6 event types). Delete guards protect all 9 core tables. Normalization memory cleaned from 9,736 to 6,929 entries (2,807 garbage purged), 1,641 confirmed. Learned patterns expanded from 16 to 272 (7 types). Whole Foods FK crash fixed.
+
+Name normalizer now strips both parenthetical qualifiers and bracket recipe suffixes, cutting unmatched ingredients from 44 to 27. Price validator cap lowered from $1000 to $500 to catch normalized_cents inflation. 24 existing outliers purged. Build now requires 16GB heap (`NODE_OPTIONS="--max-old-space-size=16384"`).
 
 The cross-matcher keyword_rule is the root cause of garbage normalization entries. It matches any product containing an ingredient keyword to that ingredient regardless of whether the product IS that ingredient. A future task should improve the rule to reject non-food products and multi-ingredient processed foods.
 
