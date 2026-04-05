@@ -202,34 +202,41 @@ export default async function InquiriesPage({
 
   const filter = (searchParams.status || 'all') as InquiryFilter
 
-  const tabs: { value: InquiryFilter; label: string }[] = [
+  // Primary tabs (max 6 visible per interface philosophy Section 6)
+  const primaryTabs: { value: InquiryFilter; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'respond_next', label: 'Respond Next' },
     { value: 'new', label: 'New' },
-    { value: 'awaiting_client', label: 'Client Reply' },
     { value: 'awaiting_chef', label: 'Your Reply' },
     { value: 'quoted', label: 'Quoted' },
+  ]
+
+  // Overflow statuses (waiting/terminal states)
+  const overflowTabs: { value: InquiryFilter; label: string }[] = [
+    { value: 'awaiting_client', label: 'Client Reply' },
     { value: 'confirmed', label: 'Confirmed' },
     { value: 'closed', label: 'Closed' },
   ]
+
+  const isOverflowActive = overflowTabs.some((t) => t.value === filter)
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Inquiry Pipeline</h1>
-          <p className="text-stone-600 mt-1">Track every lead from first contact to booked event</p>
+          <h1 className="text-3xl font-bold text-stone-100">Inquiry Pipeline</h1>
+          <p className="text-stone-400 mt-1">Track every lead from first contact to booked event</p>
         </div>
         <Link href="/inquiries/new">
           <Button>New Inquiry</Button>
         </Link>
       </div>
 
-      {/* Status Tabs */}
+      {/* Status Tabs (5 primary + 1 overflow select = 6 controls) */}
       <Card className="p-4">
-        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
-          {tabs.map((tab) => (
+        <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4 pb-1 scrollbar-none sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
+          {primaryTabs.map((tab) => (
             <Link key={tab.value} href={`/inquiries?status=${tab.value}`}>
               <Button
                 size="sm"
@@ -240,6 +247,25 @@ export default async function InquiriesPage({
               </Button>
             </Link>
           ))}
+          <select
+            value={isOverflowActive ? filter : ''}
+            onChange={(e) => {
+              if (e.target.value) window.location.href = `/inquiries?status=${e.target.value}`
+            }}
+            aria-label="More status filters"
+            className={`h-8 shrink-0 rounded-md border px-2 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500 ${
+              isOverflowActive
+                ? 'border-brand-500 bg-brand-950 text-brand-300'
+                : 'border-stone-700 bg-stone-900 text-stone-300'
+            }`}
+          >
+            <option value="">More...</option>
+            {overflowTabs.map((tab) => (
+              <option key={tab.value} value={tab.value}>
+                {tab.label}
+              </option>
+            ))}
+          </select>
         </div>
       </Card>
 
