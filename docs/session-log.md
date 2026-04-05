@@ -1975,3 +1975,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 2eff13ea9
 - Build state on departure: green (typecheck + build both pass, BUILD_ID confirmed, OOM fix documented)
 - Notes: Full audit of project state against documented work. Settings branding/account/security feature was built but uncommitted - validated all files, ran typecheck (clean), ran build (green with 8GB heap), Playwright-verified 5 key flows (settings, account, dashboard, calendar, email confirm). Also audited 4 recent committed features: RBAC (fully scaffolded, permission filtering wired into nav, gradual annotation rollout), Navigation restructure (complete), Calendar consolidation (complete), Event transitions v2 (core FSM + loyalty + hub hooks working, other hooks deferred). Committed and pushed to main.
+
+## 2026-04-04 ~22:00 EST
+
+- Agent: Builder (Claude Opus 4.6)
+- Task: Fix Remy parsing regression (P0), fix SSE auth gaps, build MC passive dashboard
+- Status: completed
+- Files touched: .env.local, app/api/realtime/presence/route.ts, app/api/realtime/typing/route.ts, scripts/launcher/server.mjs, scripts/launcher/index.html, docs/product-blueprint.md, docs/remy-parsing-fix-2026-04-04.md, docs/session-digests/2026-04-04-220000-remy-fix-mc-dashboard.md
+- Commits: cefb6292f, 05c15c48e, c0136944b
+- Build state on departure: green (MC server starts, APIs respond, dashboard renders)
+- Notes: Remy parsing was broken because Ollama was stuck (30b model too large for RTX 3050 6GB VRAM). Restarted Ollama and switched all tiers to qwen3:4b. SSE auth was already implemented (reclassified from Critical to Low). Fixed presence/typing endpoint from substring to structured validation. Built MC passive Live dashboard with progress bars from Product Blueprint, activity feed, commit history, system status. 2/7 P0 exit criteria now done.
