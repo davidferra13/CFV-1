@@ -20,6 +20,8 @@ import config from './config.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const rootDir = resolve(__dirname, '../..')
+const DELTA_FLAG = process.argv.includes('--delta')
+const LAST_SYNC_FILE = resolve(__dirname, '.last-sync-time')
 
 const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`)
 
@@ -164,9 +166,94 @@ function pullDocketDocs() {
   }
 }
 
+async function deltaSync() {
+  log(`\n${'='.repeat(60)}`)
+  log('STEP: Delta sync (incremental)')
+  log('='.repeat(60))
+
+  // Read last sync time
+  let since = '1970-01-01T00:00:00Z'
+  if (existsSync(LAST_SYNC_FILE)) {
+    since = readFileSync(LAST_SYNC_FILE, 'utf8').trim()
+  }
+  log(`  Last sync: ${since}`)
+
+  try {
+    const res = await fetch(
+      `http://${config.pi.host}:${config.pi.port}/api/sync/delta?since=${encodeURIComponent(since)}`,
+      { signal: AbortSignal.timeout(30000) }
+    )
+    if (!res.ok) throw new Error(`Delta API returned ${res.status}`)
+
+    const data = await res.json()
+    log(`  Price changes: ${data.price_changes.count}`)
+    log(`  Updated prices: ${data.updated_prices.count}`)
+    log(`  New anomalies: ${data.new_anomalies.count}`)
+
+    if (data.price_changes.count === 0 && data.updated_prices.count === 0) {
+      log('  No changes since last sync.')
+      writeFileSync(LAST_SYNC_FILE, data.server_time)
+      return true
+    }
+
+    // Apply price changes to ingredient_price_history
+    const sql = postgres(config.pg.connectionString)
+    try {
+      let applied = 0
+      for (const change of data.price_changes.data) {
+        try {
+          await sql`
+            INSERT INTO ingredient_price_history (
+              id, ingredient_id, price_cents, unit, source, store_name,
+              confirmed_at, created_at
+            )
+            SELECT gen_random_uuid(), i.id, ${change.new_price_cents},
+              ${change.price_unit || 'each'}, ${'openclaw_' + (change.pricing_tier || 'retail')},
+              ${change.source_name}, ${change.observed_at}::timestamptz, now()
+            FROM ingredients i
+            JOIN ingredient_aliases ia ON ia.ingredient_id = i.id
+            JOIN system_ingredients si ON si.id = ia.system_ingredient_id
+            WHERE LOWER(si.name) = LOWER(${change.ingredient_name})
+            LIMIT 1
+          `
+          applied++
+        } catch {}
+      }
+      log(`  Applied ${applied}/${data.price_changes.count} price changes to history`)
+    } finally {
+      await sql.end()
+    }
+
+    // Save sync timestamp
+    writeFileSync(LAST_SYNC_FILE, data.server_time)
+    log(`  Sync timestamp saved: ${data.server_time}`)
+    return true
+  } catch (err) {
+    log(`  Delta sync failed: ${err.message}`)
+    return false
+  }
+}
+
 async function main() {
   const start = Date.now()
-  log('Starting full OpenClaw sync pipeline')
+  log('Starting ' + (DELTA_FLAG ? 'DELTA (incremental)' : 'full') + ' OpenClaw sync pipeline')
+
+  if (DELTA_FLAG) {
+    // Fast path: only sync changes since last run
+    const deltaOk = await deltaSync()
+    if (!deltaOk) {
+      log('Delta sync failed. Run without --delta for full sync.')
+    }
+
+    // Still pull docket docs and refresh views
+    pullDocketDocs()
+    await refreshViews()
+    await printSummary()
+
+    const elapsed = Math.round((Date.now() - start) / 1000)
+    log(`\nTotal time: ${elapsed}s (delta)`)
+    return
+  }
 
   // Step 1: Pull SQLite and populate openclaw.* tables
   const pullOk = runScript('Pull catalog from Pi', resolve(__dirname, 'pull.mjs'))
@@ -194,6 +281,9 @@ async function main() {
 
   // Summary
   await printSummary()
+
+  // Save sync timestamp for future delta syncs
+  writeFileSync(LAST_SYNC_FILE, new Date().toISOString())
 
   const elapsed = Math.round((Date.now() - start) / 1000)
   log(`\nTotal time: ${elapsed}s`)

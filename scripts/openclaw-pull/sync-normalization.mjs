@@ -25,6 +25,95 @@ try {
 const BATCH_SIZE = 500
 const log = (msg) => console.log(`[${new Date().toISOString()}] ${msg}`)
 
+// Pi's Ollama endpoint for embeddings
+const OLLAMA_URL = `http://${config.pi.host}:11434`
+
+/**
+ * Get embedding vector from Pi's Ollama (nomic-embed-text model)
+ */
+async function getEmbedding(text) {
+  try {
+    const res = await fetch(`${OLLAMA_URL}/api/embeddings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'nomic-embed-text', prompt: text }),
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.embedding
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Cosine similarity between two vectors
+ */
+function cosineSim(a, b) {
+  if (!a || !b || a.length !== b.length) return 0
+  let dot = 0, magA = 0, magB = 0
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i]
+    magA += a[i] * a[i]
+    magB += b[i] * b[i]
+  }
+  return dot / (Math.sqrt(magA) * Math.sqrt(magB))
+}
+
+// Cache of system ingredient embeddings (built lazily)
+let _systemEmbeddingsCache = null
+
+/**
+ * Semantic search: find best system_ingredient match using embeddings.
+ * Falls back gracefully if Ollama is unavailable.
+ */
+async function semanticSearch(sql, ingredientName) {
+  // Get embedding for the query ingredient
+  const queryEmb = await getEmbedding(ingredientName)
+  if (!queryEmb) return null
+
+  // Build cache of system ingredient embeddings (first call only)
+  if (!_systemEmbeddingsCache) {
+    log('  Building semantic embedding cache (first use)...')
+    const sysIngredients = await sql`
+      SELECT id, name FROM system_ingredients
+      ORDER BY name LIMIT 2000
+    `
+    _systemEmbeddingsCache = []
+    // Batch embed in groups of 10 to avoid overwhelming Ollama
+    for (let i = 0; i < sysIngredients.length; i += 10) {
+      const batch = sysIngredients.slice(i, i + 10)
+      const results = await Promise.all(
+        batch.map(async (si) => {
+          const emb = await getEmbedding(si.name)
+          return emb ? { id: si.id, name: si.name, embedding: emb } : null
+        })
+      )
+      _systemEmbeddingsCache.push(...results.filter(Boolean))
+    }
+    log(`  Cached ${_systemEmbeddingsCache.length} system ingredient embeddings`)
+  }
+
+  // Find best cosine similarity match
+  let bestMatch = null
+  let bestScore = 0
+  for (const si of _systemEmbeddingsCache) {
+    const score = cosineSim(queryEmb, si.embedding)
+    if (score > bestScore) {
+      bestScore = score
+      bestMatch = si
+    }
+  }
+
+  // Only accept matches above 0.75 cosine similarity
+  if (bestMatch && bestScore >= 0.75) {
+    return { id: bestMatch.id, name: bestMatch.name, score: Math.round(bestScore * 100) / 100 }
+  }
+
+  return null
+}
+
 async function main() {
   const sql = postgres(config.pg.connectionString)
   const dbPath = `${config.tempDir}/openclaw-latest.db`
@@ -147,7 +236,24 @@ async function main() {
           log(`  "${ing.name}" -> "${match[0].name}" (${(match[0].sim * 100).toFixed(0)}%)`)
         }
       } else {
-        log(`  No match for "${ing.name}"`)
+        // Semantic fallback: use embedding similarity via Pi's Ollama
+        const semanticMatch = await semanticSearch(sql, cleanName)
+        if (semanticMatch) {
+          await sql`
+            INSERT INTO ingredient_aliases (
+              id, tenant_id, ingredient_id, system_ingredient_id,
+              match_method, similarity_score, confirmed_at, created_at
+            ) VALUES (
+              gen_random_uuid(), ${ing.tenant_id}, ${ing.id}, ${semanticMatch.id},
+              'semantic', ${semanticMatch.score}, now(), now()
+            )
+            ON CONFLICT (tenant_id, ingredient_id) DO NOTHING
+          `
+          aliasesCreated++
+          log(`  "${ing.name}" -> "${semanticMatch.name}" (semantic, ${(semanticMatch.score * 100).toFixed(0)}%)`)
+        } else {
+          log(`  No match for "${ing.name}"`)
+        }
       }
     } catch (err) {
       log(`  Error matching "${ing.name}": ${err.message.substring(0, 80)}`)
