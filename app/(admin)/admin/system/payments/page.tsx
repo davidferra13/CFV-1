@@ -25,15 +25,15 @@ export default async function AdminPaymentsHealthPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide text-slate-500">Admin System</p>
-          <h1 className="text-xl font-bold text-slate-900">Payments Health</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="text-xs uppercase tracking-wide text-stone-500">Admin System</p>
+          <h1 className="text-xl font-bold text-stone-100">Payments Health</h1>
+          <p className="mt-1 text-sm text-stone-500">
             Stripe webhook, key mode, and payout onboarding status (last {health.timeframeHours}h)
           </p>
         </div>
         <Link
           href="/admin/system"
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+          className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-stone-400 hover:bg-stone-800"
         >
           Back to System
         </Link>
@@ -58,37 +58,37 @@ export default async function AdminPaymentsHealthPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
-          <p className="text-xs text-slate-500">Stripe webhooks</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{health.webhookEventCount}</p>
-          <p className="mt-1 text-xs text-slate-500">last {health.timeframeHours}h</p>
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
+          <p className="text-xs text-stone-500">Stripe webhooks</p>
+          <p className="mt-1 text-2xl font-bold text-stone-100">{health.webhookEventCount}</p>
+          <p className="mt-1 text-xs text-stone-500">last {health.timeframeHours}h</p>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
-          <p className="text-xs text-slate-500">Webhook failures</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
+          <p className="text-xs text-stone-500">Webhook failures</p>
+          <p className="mt-1 text-2xl font-bold text-stone-100">
             {health.webhookStatusCounts.failed}
           </p>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-stone-500">
             processed: {health.webhookStatusCounts.processed}
           </p>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
-          <p className="text-xs text-slate-500">Ledger Stripe entries</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900">{health.stripeLedgerEntries24h}</p>
-          <p className="mt-1 text-xs text-slate-500">transaction_reference=evt_*</p>
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
+          <p className="text-xs text-stone-500">Ledger Stripe entries</p>
+          <p className="mt-1 text-2xl font-bold text-stone-100">{health.stripeLedgerEntries24h}</p>
+          <p className="mt-1 text-xs text-stone-500">transaction_reference=evt_*</p>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
-          <p className="text-xs text-slate-500">Stripe key mode</p>
-          <p className="mt-1 text-sm font-semibold text-slate-900">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
+          <p className="text-xs text-stone-500">Stripe key mode</p>
+          <p className="mt-1 text-sm font-semibold text-stone-100">
             secret: {health.stripeSecretKeyMode}
           </p>
-          <p className="text-xs text-slate-500">publishable: {health.stripePublishableKeyMode}</p>
+          <p className="text-xs text-stone-500">publishable: {health.stripePublishableKeyMode}</p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
-          <h2 className="text-sm font-semibold text-slate-700">Blockers</h2>
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
+          <h2 className="text-sm font-semibold text-stone-300">Blockers</h2>
           {health.blockers.length === 0 ? (
             <p className="mt-3 text-sm text-green-700">None</p>
           ) : (
@@ -99,10 +99,10 @@ export default async function AdminPaymentsHealthPage() {
             </ul>
           )}
         </div>
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
-          <h2 className="text-sm font-semibold text-slate-700">Warnings</h2>
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
+          <h2 className="text-sm font-semibold text-stone-300">Warnings</h2>
           {health.warnings.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-500">None</p>
+            <p className="mt-3 text-sm text-stone-500">None</p>
           ) : (
             <ul className="mt-3 space-y-2 text-sm text-amber-700">
               {health.warnings.map((item) => (
@@ -114,9 +114,9 @@ export default async function AdminPaymentsHealthPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
-          <h2 className="text-sm font-semibold text-slate-700">Recent webhook timestamps</h2>
-          <dl className="mt-3 space-y-2 text-sm text-slate-700">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
+          <h2 className="text-sm font-semibold text-stone-300">Recent webhook timestamps</h2>
+          <dl className="mt-3 space-y-2 text-sm text-stone-300">
             <div className="flex justify-between gap-3">
               <dt>Last received</dt>
               <dd>{formatDateTime(health.lastWebhookReceivedAt)}</dd>
@@ -132,12 +132,12 @@ export default async function AdminPaymentsHealthPage() {
           </dl>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
-          <h2 className="text-sm font-semibold text-slate-700">Platform chef Connect</h2>
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
+          <h2 className="text-sm font-semibold text-stone-300">Platform chef Connect</h2>
           {!health.platformChefConnect ? (
-            <p className="mt-3 text-sm text-slate-500">Not configured</p>
+            <p className="mt-3 text-sm text-stone-500">Not configured</p>
           ) : (
-            <dl className="mt-3 space-y-2 text-sm text-slate-700">
+            <dl className="mt-3 space-y-2 text-sm text-stone-300">
               <div className="flex justify-between gap-3">
                 <dt>Chef</dt>
                 <dd>{health.platformChefConnect.businessName ?? health.platformChefConnect.id}</dd>
@@ -156,11 +156,11 @@ export default async function AdminPaymentsHealthPage() {
       </div>
 
       {health.recentWebhookFailures.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
-          <h2 className="text-sm font-semibold text-slate-700">Recent webhook failures</h2>
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
+          <h2 className="text-sm font-semibold text-stone-300">Recent webhook failures</h2>
           <div className="mt-3 overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="text-left text-slate-500">
+              <thead className="text-left text-stone-500">
                 <tr>
                   <th className="pb-2 pr-4">Time</th>
                   <th className="pb-2 pr-4">Event</th>
@@ -168,15 +168,15 @@ export default async function AdminPaymentsHealthPage() {
                   <th className="pb-2">Error</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-200">
+              <tbody className="divide-y divide-stone-700">
                 {health.recentWebhookFailures.map((row) => (
                   <tr key={`${row.receivedAt}-${row.providerEventId ?? row.eventType}`}>
-                    <td className="py-2 pr-4 text-slate-600">{formatDateTime(row.receivedAt)}</td>
-                    <td className="py-2 pr-4 font-mono text-xs text-slate-700">{row.eventType}</td>
-                    <td className="py-2 pr-4 font-mono text-xs text-slate-600">
+                    <td className="py-2 pr-4 text-stone-400">{formatDateTime(row.receivedAt)}</td>
+                    <td className="py-2 pr-4 font-mono text-xs text-stone-300">{row.eventType}</td>
+                    <td className="py-2 pr-4 font-mono text-xs text-stone-400">
                       {row.providerEventId ?? 'N/A'}
                     </td>
-                    <td className="py-2 text-slate-600">{row.errorText ?? 'N/A'}</td>
+                    <td className="py-2 text-stone-400">{row.errorText ?? 'N/A'}</td>
                   </tr>
                 ))}
               </tbody>

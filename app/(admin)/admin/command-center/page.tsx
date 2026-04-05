@@ -32,7 +32,7 @@ export default async function AdminCommandCenterPage() {
   if (result.error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-slate-900">Owner Command Center</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Owner Command Center</h1>
         <ErrorState title="Could not load command center data" description={result.error} />
       </div>
     )
@@ -43,7 +43,7 @@ export default async function AdminCommandCenterPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Owner Command Center</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Owner Command Center</h1>
         <p className="text-sm text-stone-500 mt-1">
           Cross-tenant visibility across chat, social, hub groups, and notification traffic.
         </p>
@@ -52,7 +52,7 @@ export default async function AdminCommandCenterPage() {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Link
           href="/admin/conversations"
-          className="rounded-xl border border-slate-200 bg-stone-900 p-4 hover:border-slate-300"
+          className="rounded-xl border border-stone-700 bg-stone-900 p-4 hover:border-slate-300"
         >
           <p className="text-xs uppercase tracking-wide text-stone-500">Conversations</p>
           <p className="text-2xl font-bold text-stone-200 mt-1">{conversations.items.length}</p>
@@ -60,7 +60,7 @@ export default async function AdminCommandCenterPage() {
         </Link>
         <Link
           href="/admin/social"
-          className="rounded-xl border border-slate-200 bg-stone-900 p-4 hover:border-slate-300"
+          className="rounded-xl border border-stone-700 bg-stone-900 p-4 hover:border-slate-300"
         >
           <p className="text-xs uppercase tracking-wide text-stone-500">Social Posts</p>
           <p className="text-2xl font-bold text-stone-200 mt-1">{social.items.length}</p>
@@ -68,7 +68,7 @@ export default async function AdminCommandCenterPage() {
         </Link>
         <Link
           href="/admin/hub"
-          className="rounded-xl border border-slate-200 bg-stone-900 p-4 hover:border-slate-300"
+          className="rounded-xl border border-stone-700 bg-stone-900 p-4 hover:border-slate-300"
         >
           <p className="text-xs uppercase tracking-wide text-stone-500">Hub Groups</p>
           <p className="text-2xl font-bold text-stone-200 mt-1">{hubGroups.items.length}</p>
@@ -76,7 +76,7 @@ export default async function AdminCommandCenterPage() {
         </Link>
         <Link
           href="/admin/notifications"
-          className="rounded-xl border border-slate-200 bg-stone-900 p-4 hover:border-slate-300"
+          className="rounded-xl border border-stone-700 bg-stone-900 p-4 hover:border-slate-300"
         >
           <p className="text-xs uppercase tracking-wide text-stone-500">Notifications</p>
           <p className="text-2xl font-bold text-stone-200 mt-1">{notifications.items.length}</p>
@@ -85,7 +85,7 @@ export default async function AdminCommandCenterPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-stone-200">Recent Conversations</h2>
             <Link href="/admin/conversations" className="text-xs text-brand-600">
@@ -114,7 +114,7 @@ export default async function AdminCommandCenterPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-stone-900 p-4">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-stone-200">Recent Notifications</h2>
             <Link href="/admin/notifications" className="text-xs text-brand-600">

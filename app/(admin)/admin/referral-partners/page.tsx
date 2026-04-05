@@ -65,7 +65,7 @@ export default async function AdminReferralPartnersPage() {
           <Handshake size={18} className="text-teal-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Referral Partners</h1>
+          <h1 className="text-xl font-bold text-stone-100">Referral Partners</h1>
           <p className="text-sm text-stone-500">All partners across every chef tenant</p>
         </div>
       </div>
@@ -78,33 +78,33 @@ export default async function AdminReferralPartnersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-3">
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">
             Total Partners
           </p>
-          <p className="text-2xl font-bold text-slate-900">{partners.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{partners.length}</p>
         </div>
-        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-3">
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">Active</p>
           <p className="text-2xl font-bold text-green-700">{activeCount}</p>
         </div>
-        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-3">
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">
             In Showcase
           </p>
           <p className="text-2xl font-bold text-brand-700">{showcaseCount}</p>
         </div>
-        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-3">
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-1">
             Chef Tenants
           </p>
-          <p className="text-2xl font-bold text-slate-900">{tenantIds.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{tenantIds.length}</p>
         </div>
       </div>
 
       {/* Type breakdown */}
       {Object.keys(typeBreakdown).length > 0 && (
-        <div className="bg-stone-900 rounded-xl border border-slate-200 p-4">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 p-4">
           <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">
             By Type
           </h2>
@@ -127,8 +127,8 @@ export default async function AdminReferralPartnersPage() {
       )}
 
       {/* Partners Table */}
-      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
+        <div className="px-4 py-3 border-b border-stone-800 bg-stone-800">
           <h2 className="text-sm font-semibold text-stone-300">
             All Referral Partners ({partners.length})
           </h2>
@@ -141,7 +141,7 @@ export default async function AdminReferralPartnersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100">
+                <tr className="border-b border-stone-800">
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-stone-500">
                     Partner Name
                   </th>
@@ -161,10 +161,10 @@ export default async function AdminReferralPartnersPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-stone-800">
                 {partners.map((partner) => (
-                  <tr key={partner.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-2.5 font-medium text-slate-900">
+                  <tr key={partner.id} className="hover:bg-stone-800">
+                    <td className="px-4 py-2.5 font-medium text-stone-100">
                       <div className="flex items-center gap-1.5">
                         {partner.name}
                         {partner.website && (

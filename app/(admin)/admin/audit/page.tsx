@@ -28,7 +28,7 @@ export default async function AdminAuditPage() {
           <ScrollText size={18} className="text-stone-400" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Audit Log</h1>
+          <h1 className="text-xl font-bold text-stone-100">Audit Log</h1>
           <p className="text-sm text-stone-500">
             Immutable record of every sensitive platform action
           </p>
@@ -41,14 +41,14 @@ export default async function AdminAuditPage() {
         </div>
       )}
 
-      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
         {entries.length === 0 && !note ? (
           <div className="py-12 text-center text-slate-400 text-sm">No audit log entries yet.</div>
         ) : entries.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50">
+                <tr className="border-b border-stone-800 bg-stone-800">
                   <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Time
                   </th>
@@ -66,9 +66,9 @@ export default async function AdminAuditPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-stone-800">
                 {entries.map((entry) => (
-                  <tr key={String(entry.id)} className="hover:bg-slate-50">
+                  <tr key={String(entry.id)} className="hover:bg-stone-800">
                     <td className="px-4 py-2.5 text-xs text-slate-400 whitespace-nowrap">
                       {entry.ts ? new Date(String(entry.ts)).toLocaleString() : '-'}
                     </td>

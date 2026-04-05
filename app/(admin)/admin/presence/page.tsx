@@ -20,8 +20,8 @@ export default async function AdminPresencePage() {
           <Radio size={18} className="text-green-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Live Presence</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-xl font-bold text-stone-100">Live Presence</h1>
+          <p className="text-sm text-stone-500">
             Everyone on the site right now - anonymous visitors, logged-in chefs and clients
           </p>
         </div>

@@ -470,7 +470,7 @@ function ConfidenceBadge({ confidence }: { confidence: string }) {
     direct_scrape: 'bg-blue-500/10 text-blue-600',
     instacart_adjusted: 'bg-yellow-500/10 text-yellow-600',
     flyer_scrape: 'bg-purple-500/10 text-purple-600',
-    government_baseline: 'bg-gray-500/10 text-gray-600',
+    government_baseline: 'bg-gray-500/10 text-stone-400',
   }
   const labels: Record<string, string> = {
     exact_receipt: 'Receipt',

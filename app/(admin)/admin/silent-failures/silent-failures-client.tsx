@@ -9,7 +9,7 @@ const severityColors: Record<string, string> = {
   critical: 'bg-red-100 text-red-700',
   high: 'bg-orange-100 text-orange-700',
   medium: 'bg-yellow-100 text-yellow-700',
-  low: 'bg-slate-100 text-slate-600',
+  low: 'bg-slate-100 text-stone-400',
 }
 
 function timeAgo(dateStr: string): string {
@@ -43,7 +43,7 @@ function FailureRow({ failure }: { failure: SideEffectFailure }) {
   }
 
   return (
-    <tr className="border-b border-slate-100 hover:bg-slate-50 text-xs">
+    <tr className="border-b border-stone-800 hover:bg-stone-800 text-xs">
       <td className="px-3 py-2 whitespace-nowrap text-slate-400">{timeAgo(failure.created_at)}</td>
       <td className="px-3 py-2">
         <span
@@ -54,10 +54,10 @@ function FailureRow({ failure }: { failure: SideEffectFailure }) {
           {failure.severity}
         </span>
       </td>
-      <td className="px-3 py-2 font-medium text-slate-700">{failure.source}</td>
-      <td className="px-3 py-2 text-slate-600">{failure.operation}</td>
+      <td className="px-3 py-2 font-medium text-stone-300">{failure.source}</td>
+      <td className="px-3 py-2 text-stone-400">{failure.operation}</td>
       <td
-        className="px-3 py-2 text-slate-500 max-w-xs truncate"
+        className="px-3 py-2 text-stone-500 max-w-xs truncate"
         title={failure.error_message ?? ''}
       >
         {failure.error_message ?? '-'}
@@ -71,7 +71,7 @@ function FailureRow({ failure }: { failure: SideEffectFailure }) {
         <button
           onClick={handleDismiss}
           disabled={isPending}
-          className="text-slate-400 hover:text-slate-700 text-xxs underline disabled:opacity-50"
+          className="text-slate-400 hover:text-stone-300 text-xxs underline disabled:opacity-50"
         >
           dismiss
         </button>
@@ -87,18 +87,18 @@ export function SilentFailuresClient({
 }) {
   if (initialFailures.length === 0) {
     return (
-      <div className="bg-white border border-slate-200 rounded-lg py-12 text-center text-slate-400 text-sm">
+      <div className="bg-stone-900 border border-stone-700 rounded-lg py-12 text-center text-slate-400 text-sm">
         No silent failures recorded. This is good.
       </div>
     )
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+    <div className="bg-stone-900 border border-stone-700 rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500">
+            <tr className="bg-stone-800 border-b border-stone-700 text-xs text-stone-500">
               <th className="px-3 py-2 text-left font-medium">When</th>
               <th className="px-3 py-2 text-left font-medium">Severity</th>
               <th className="px-3 py-2 text-left font-medium">Source</th>

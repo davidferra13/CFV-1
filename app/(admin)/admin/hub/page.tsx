@@ -62,13 +62,13 @@ export default async function AdminHubPage({ searchParams = {} }: { searchParams
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Global Hub Groups</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Global Hub Groups</h1>
         <p className="text-sm text-stone-500 mt-1">
           Cross-tenant group visibility and transcript drill-down.
         </p>
       </div>
 
-      <form className="rounded-xl border border-slate-200 bg-stone-900 p-4 grid gap-3 md:grid-cols-5">
+      <form className="rounded-xl border border-stone-700 bg-stone-900 p-4 grid gap-3 md:grid-cols-5">
         <input
           name="q"
           defaultValue={q}

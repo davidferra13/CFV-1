@@ -62,7 +62,7 @@ export default async function AdminFlagsPage() {
           <ToggleLeft size={18} className="text-violet-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Feature Flags</h1>
+          <h1 className="text-xl font-bold text-stone-100">Feature Flags</h1>
           <p className="text-sm text-stone-500">Control which features are enabled per chef</p>
         </div>
       </div>
@@ -74,7 +74,7 @@ export default async function AdminFlagsPage() {
       )}
 
       {/* Flag Legend */}
-      <div className="bg-stone-900 rounded-xl border border-slate-200 p-4">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-4">
         <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">
           Flag Reference
         </h2>

@@ -66,13 +66,13 @@ export default async function AdminConversationsPage({
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Global Conversations</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Global Conversations</h1>
         <p className="text-sm text-stone-500 mt-1">
           Cross-tenant conversation list with transcript drill-down.
         </p>
       </div>
 
-      <form className="rounded-xl border border-slate-200 bg-stone-900 p-4 grid gap-3 md:grid-cols-5">
+      <form className="rounded-xl border border-stone-700 bg-stone-900 p-4 grid gap-3 md:grid-cols-5">
         <input
           name="q"
           defaultValue={q}
@@ -105,7 +105,7 @@ export default async function AdminConversationsPage({
         </button>
       </form>
 
-      <div className="rounded-xl border border-slate-200 bg-stone-900 overflow-x-auto">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-stone-800">

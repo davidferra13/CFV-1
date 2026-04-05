@@ -50,7 +50,7 @@ export default async function AdminEventsPage() {
           <CalendarRange size={18} className="text-orange-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">All Events</h1>
+          <h1 className="text-xl font-bold text-stone-100">All Events</h1>
           <p className="text-sm text-stone-500">
             {events.length} event{events.length !== 1 ? 's' : ''} · {formatCents(totalValue)} total
             value
@@ -60,7 +60,7 @@ export default async function AdminEventsPage() {
 
       {/* Status distribution */}
       {Object.keys(statusCounts).length > 0 && (
-        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 px-4 py-4">
           <p className="text-xs text-stone-500 uppercase tracking-wide font-medium mb-3">
             Status Distribution
           </p>
@@ -80,14 +80,14 @@ export default async function AdminEventsPage() {
       )}
 
       {/* Events table */}
-      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
         {events.length === 0 ? (
           <div className="py-12 text-center text-slate-400 text-sm">No events found.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50">
+                <tr className="border-b border-stone-800 bg-stone-800">
                   <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Event
                   </th>
@@ -108,10 +108,10 @@ export default async function AdminEventsPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-stone-800">
                 {events.map((event) => (
-                  <tr key={event.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-900 max-w-[200px] truncate">
+                  <tr key={event.id} className="hover:bg-stone-800 transition-colors">
+                    <td className="px-4 py-3 font-medium text-stone-100 max-w-[200px] truncate">
                       {event.occasion ?? '-'}
                     </td>
                     <td className="px-4 py-3 text-stone-500 text-xs">
@@ -130,7 +130,7 @@ export default async function AdminEventsPage() {
                     <td className="px-4 py-3 text-right text-stone-300">
                       {event.guest_count ?? '-'}
                     </td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-900">
+                    <td className="px-4 py-3 text-right font-medium text-stone-100">
                       {formatCents(event.quoted_price_cents)}
                     </td>
                   </tr>

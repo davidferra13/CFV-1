@@ -35,8 +35,8 @@ export default async function AdminClientListPage() {
           <UserCheck size={18} className="text-purple-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Clients</h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="text-xl font-bold text-stone-100">Clients</h1>
+          <p className="text-sm text-stone-500">
             {clients.length} client{clients.length !== 1 ? 's' : ''} across all tenants ·{' '}
             {formatCents(totalLTV)} total LTV
           </p>
@@ -50,44 +50,44 @@ export default async function AdminClientListPage() {
         </div>
       )}
 
-      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
         {clients.length === 0 && !error ? (
           <div className="py-12 text-center text-slate-400 text-sm">No clients found.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                <tr className="border-b border-stone-800 bg-stone-800">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Name
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Email
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Chef / Tenant
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-right px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Events
                   </th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-right px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     LTV
                   </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                  <th className="text-left px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Joined
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-stone-800">
                 {clients.map((client) => (
-                  <tr key={client.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-slate-900">{client.name ?? '-'}</td>
-                    <td className="px-4 py-3 text-slate-500 text-xs">{client.email ?? '-'}</td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                  <tr key={client.id} className="hover:bg-stone-800 transition-colors">
+                    <td className="px-4 py-3 font-medium text-stone-100">{client.name ?? '-'}</td>
+                    <td className="px-4 py-3 text-stone-500 text-xs">{client.email ?? '-'}</td>
+                    <td className="px-4 py-3 text-xs text-stone-500">
                       {client.chefBusinessName ?? '-'}
                     </td>
-                    <td className="px-4 py-3 text-right text-slate-700">{client.eventCount}</td>
-                    <td className="px-4 py-3 text-right font-medium text-slate-900">
+                    <td className="px-4 py-3 text-right text-stone-300">{client.eventCount}</td>
+                    <td className="px-4 py-3 text-right font-medium text-stone-100">
                       {formatCents(client.ltvCents)}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-400">

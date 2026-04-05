@@ -92,14 +92,14 @@ function QuarantineTable({ items }: { items: QuarantinedPrice[] }) {
 
   if (unreviewed.length === 0 && rows.length === 0) {
     return (
-      <div className="bg-stone-900 rounded-xl border border-slate-200 p-8 text-center">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-8 text-center">
         <p className="text-stone-400">No quarantined prices. Validation gate is clean.</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
+    <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
       {unreviewed.length > 0 && (
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-800">
           <span className="text-sm text-stone-400">{unreviewed.length} unreviewed</span>
@@ -192,14 +192,14 @@ function QuarantineTable({ items }: { items: QuarantinedPrice[] }) {
 function SyncLogTable({ entries }: { entries: SyncAuditEntry[] }) {
   if (entries.length === 0) {
     return (
-      <div className="bg-stone-900 rounded-xl border border-slate-200 p-8 text-center">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-8 text-center">
         <p className="text-stone-400">No sync history recorded yet.</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden overflow-x-auto">
+    <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left text-xs text-stone-500 uppercase tracking-wide border-b border-stone-800">
