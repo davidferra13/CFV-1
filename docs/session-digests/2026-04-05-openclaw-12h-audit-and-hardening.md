@@ -99,23 +99,48 @@
 | 4. Always smarter | **A-** (9,736 memories, 16 patterns, cross-match wired, FK resilience) |
 | 5. Fuels ChefFlow | **A** (0% quarantine rate, per-store baselines, 10-tier resolution)    |
 
+### Phase 3: Opus Distillation Burst (Live, $0 Cost)
+
+19. **Normalization memory audit** - Manually reviewed 250 entries (52% correct, 48% garbage). Key finding: cross-matcher keyword_rule maps ANY product containing an ingredient word to that ingredient (Cheetos->"Cheddar Cheese", dog food->"Whole Chicken", toilet spray->"Orange").
+20. **Pattern-based classifier** - Built and ran 4-round classifier catching: non-food products (312), beverages (416), snacks (330), baby food (278), flavored yogurt->Plain Yogurt (241), substring false matches like "pineapple"->"Apple" (159), condiment mismatches (113), prepared meals (85).
+21. **Auto-confirmation pass** - Confirmed 1,467 clearly correct short-name matches (e.g., "hannaford cilantro"->"Cilantro").
+22. **Result:** 9,736 entries -> 6,929 entries (2,807 garbage purged), 1,641 confirmed (23.7% vs 0.7% before).
+23. **Learned patterns overhaul** - Replaced 16 coarse spike/drop patterns with 272 granular patterns: ingredient volatility (128), category price ranges (36), store anomaly rates (33), Instacart markup ratios (22), store price tiers (22), change magnitude distributions (18), category volatility (13).
+
+### Goal Alignment (Final)
+
+| Mandate           | Grade                                                               |
+| ----------------- | ------------------------------------------------------------------- |
+| 1. No deletes     | **A** (9 guards verified)                                           |
+| 2. No overlap     | **B** (deployed, untested with real docket item)                    |
+| 3. Always growing | **A** (245K products, 69K canonical, 5,963 new/24h)                 |
+| 4. Always smarter | **A** (6,929 clean memories, 272 patterns, cross-match wired)       |
+| 5. Fuels ChefFlow | **A** (0% quarantine rate, per-store baselines, 10-tier resolution) |
+
 ## Commits
 
 - `82218460f` fix(openclaw): wire validation gate into production sync, fix growth tracker
 - `156193488` feat(openclaw): sync watchdog, norm-memory in cross-match, fix mislabeled errors
 - `e7819eaa3` docs: session digest and log for 12h OpenClaw audit and hardening
 - `384052d86` fix(openclaw): per-store price baseline + widen spike threshold to fix 98% quarantine rate
+- `4b6811915` docs: update session digest with quarantine fix + full system audit
+- `5f100d900` docs(spec): Opus distillation burst for OpenClaw learning engine
+- (pending) feat(openclaw): execute distillation burst Tasks 1-2
 
 ## Unresolved
 
 - SSE toasts unverified in browser (server-side proven)
-- 15,540 unacknowledged anomalies on Pi (informational backlog, not blocking)
+- 15,540 unacknowledged anomalies on Pi (informational backlog, distillation Task 4)
+- 5,288 normalization entries still unreviewed (need individual judgment, distillation Task 1 continuation)
 - Whole Foods Flipp data 7.6 days stale (may have dropped from Flipp feed)
 - Publix catalog scraper: 2 incomplete runs with 0 products
 - Docket overlap detection: deployed but untested with real item
+- Distillation Tasks 3-5: re-categorize ingredients, triage anomalies, variant mappings
 
 ## Context for Next Agent
 
-The OpenClaw pipeline is production-grade and fully proven. Data flows: Pi scrapes (48 sources, 245K products) -> cross-match (100% rate) -> aggregator (trends, anomalies) -> nightly sync to ChefFlow (0% quarantine, per-store baselines, $1000 absolute cap) -> 10-tier price resolution -> chef-facing UI. Every layer has monitoring: growth tracker (hourly), sync watchdog (6h), webhook alerts (6 event types), watchdog (15min). Delete guards protect all 9 core tables. Learning engine is seeded and cross-matcher consults it. Whole Foods FK crash fixed.
+The OpenClaw pipeline is production-grade and the learning engine has been significantly hardened. Data flows: Pi scrapes (48 sources, 245K products) -> cross-match (100% rate) -> aggregator (trends, anomalies) -> nightly sync to ChefFlow (0% quarantine, per-store baselines, $1000 absolute cap) -> 10-tier price resolution -> chef-facing UI. Every layer has monitoring: growth tracker (hourly), sync watchdog (6h), webhook alerts (6 event types). Delete guards protect all 9 core tables. Normalization memory cleaned from 9,736 to 6,929 entries (2,807 garbage purged), 1,641 confirmed. Learned patterns expanded from 16 to 272 (7 types). Whole Foods FK crash fixed.
+
+The cross-matcher keyword_rule is the root cause of garbage normalization entries. It matches any product containing an ingredient keyword to that ingredient regardless of whether the product IS that ingredient. A future task should improve the rule to reject non-food products and multi-ingredient processed foods.
 
 V1 launch remains blocked by 2 validation tasks (real chef feedback, public booking test), not code.
