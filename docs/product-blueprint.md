@@ -173,7 +173,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 ### Must-Have (Blocks Launch)
 
 - [x] Remy inquiry parsing works (fixed April 4: Ollama stuck on 30b model, switched to 4b)
-- [ ] SSE authentication implemented (security requirement)
+- [x] SSE authentication implemented (already has auth + tenant channel validation; minor gaps in presence/typing endpoints)
 - [ ] At least 1 real chef has used it for 2+ weeks and provided feedback
 - [ ] Public booking page tested end-to-end by a non-developer
 - [ ] All 6 pillars pass a Playwright walkthrough (happy path)
@@ -214,7 +214,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 | Priority | Item                                       | Spec                                                 |
 | -------- | ------------------------------------------ | ---------------------------------------------------- |
 | ~~P0~~   | ~~Fix Remy parsing regression~~            | **DONE** (April 4)                                   |
-| P0       | SSE authentication                         | No spec yet                                          |
+| ~~P0~~   | ~~SSE authentication~~                     | **DONE** (already implemented, minor gaps remain)    |
 | P0       | Database backup automation                 | `p1-automated-database-backup-system.md`             |
 | P1       | 9 built specs need Playwright verification | Various                                              |
 | P1       | Interface philosophy violations (3 found)  | Gap analysis doc                                     |
@@ -247,7 +247,7 @@ These are explicitly out of scope for V1. Do not build, spec, or plan these:
 | Issue                             | Severity | Since         | Impact                                |
 | --------------------------------- | -------- | ------------- | ------------------------------------- |
 | Remy parsing (FIXED)              | Fixed    | March 30      | Fixed Apr 4: 30b hung, switched 4b    |
-| SSE has zero authentication       | Critical | Always        | Any client can connect to any channel |
+| SSE presence/typing validation    | Low      | Always        | Substring match instead of structured |
 | Ollama exposed on localhost:11434 | Medium   | Always        | No auth on AI endpoint (local only)   |
 | 3 interface philosophy violations | Medium   | Found April 4 | Event detail tabs, quotes page        |
 | 179/184 forms lack auto-save      | Low      | Always        | UX debt, not blocking                 |

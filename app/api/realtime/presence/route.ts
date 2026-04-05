@@ -16,9 +16,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing channel or sessionId' }, { status: 400 })
     }
 
-    // Verify the channel contains the user's tenant ID (presence channels are tenant-scoped)
+    // Verify the channel is tenant-scoped using structured parsing (not substring match)
     const tenantId = session.user.tenantId
-    if (!tenantId || !channel.includes(tenantId)) {
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    const colonIdx = channel.indexOf(':')
+    const channelTenantId = colonIdx !== -1 ? channel.substring(colonIdx + 1) : null
+    if (channelTenantId !== tenantId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
