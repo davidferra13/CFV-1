@@ -35,7 +35,7 @@ Developer asked 8 comprehensive questions about OpenClaw's status, performance, 
 
 ### 3. Admin Analytics Integration
 
-- **Modified:** `app/(admin)/admin/analytics/page.tsx` - Added "Data Engine Health" card (founder-only) showing last sync, acceptance rate, quarantine count, price coverage with link to full dashboard
+- **Modified:** `app/(admin)/admin/analytics/page.tsx` - Added "Data Engine Health" card showing last sync, acceptance rate, quarantine count, price coverage with link to full dashboard. Removed stale `isFounder` gate so card is visible to all admins.
 
 ### 4. Trend Arrows in PriceBadge
 
@@ -52,6 +52,10 @@ Developer asked 8 comprehensive questions about OpenClaw's status, performance, 
 ## Verification
 
 - `npx tsc --noEmit --skipLibCheck` passes clean (zero errors)
+- Playwright browser verification: signed in as agent, navigated to both pages, confirmed rendering
+  - `/admin/openclaw/health` - KPI strip, quarantine queue, sync history all render correctly
+  - `/admin/analytics` - Data Engine Health card visible at bottom with Last Sync + Acceptance Rate
+- Screenshots saved: `screenshots/openclaw-health-page.png`, `screenshots/analytics-with-health-card.png`
 
 ## Files Changed
 
@@ -65,7 +69,7 @@ Developer asked 8 comprehensive questions about OpenClaw's status, performance, 
 
 ## Unresolved
 
-- Build not run (only type check). Developer should run full build before deploying.
+- Full `next build` not run (type check + Playwright verification done). Developer should run full build before deploying.
 - Pi:8090/game still unbuilt (spec ready, needs a builder to claim)
 - 48K canonical ingredients still dark (nutrition, barcodes unused)
 - Store location data unused in price resolution (no geographic filtering)

@@ -196,8 +196,8 @@ export default async function AdminAnalyticsPage() {
         )}
       </div>
 
-      {/* Data Engine Health (founder only) */}
-      {isFounder && (syncData || quarantineData || pricingData) && (
+      {/* Data Engine Health */}
+      {(syncData || quarantineData || pricingData) && (
         <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-stone-300">Data Engine Health</h2>
