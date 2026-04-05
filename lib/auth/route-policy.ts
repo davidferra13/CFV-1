@@ -191,6 +191,7 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/book',
   '/api/cron',
   '/api/sentinel',
+  '/api/openclaw/webhook',
 ] as const
 
 function matchesPathOrChild(pathname: string, basePath: string): boolean {
