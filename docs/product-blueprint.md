@@ -200,12 +200,12 @@ V1 is "done" and ready to ship when ALL of the following are true:
 
 ## What's Actively Being Worked On
 
-| Item                                  | Status           | Owner          |
-| ------------------------------------- | ---------------- | -------------- |
-| Settings: Branding, Account, Security | Built, verifying | Builder agent  |
-| Security audit wave 2 (18 functions)  | Complete         | Merged to main |
-| Product Blueprint + Project Map       | In progress      | This session   |
-| Session digest infrastructure         | In progress      | This session   |
+| Item                             | Status   | Owner                                      |
+| -------------------------------- | -------- | ------------------------------------------ |
+| 6-pillar Playwright walkthrough  | Written  | Tests ready, blocked on dev server restart |
+| Infrastructure system completion | Complete | Merged to main                             |
+
+_Last cleared: 2026-04-04. Completed items moved to queue or exit criteria._
 
 ---
 

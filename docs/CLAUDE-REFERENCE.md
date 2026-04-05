@@ -47,6 +47,7 @@
 | AI model governance    | `docs/ai-model-governance.md` **(canonical routing policy)**                       |
 | AI routing audit       | `scripts/audit-model-routing.ts` (detects direct provider imports)                 |
 | App audit (living)     | `docs/app-complete-audit.md` **(update when UI changes)**                          |
+| User manual (living)   | `docs/USER_MANUAL.md` **(update when user-facing behavior changes)**               |
 | Product blueprint      | `docs/product-blueprint.md` **(V1 scope, progress bar, exit criteria, queue)**     |
 | Project map            | `project-map/` **(browsable product mirror, read on startup)**                     |
 | Session digests        | `docs/session-digests/` **(conversation summaries, read last 3 on startup)**       |

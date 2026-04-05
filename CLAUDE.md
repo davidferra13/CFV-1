@@ -489,6 +489,34 @@ Full gate procedures are available as skills. They load automatically when relev
 
 - **Always create a follow-up `.md` document for every code change.** Every implementation should have a reflecting document that explains what changed, why, and how it connects to the system. No code-only changes.
 
+### User Manual - Living Document (MANDATORY)
+
+**`docs/USER_MANUAL.md` is a required, living part of the product.** It is written for real users (chefs and clients), not developers. No change is complete unless the user manual is updated.
+
+**When to update:**
+
+- New feature added
+- UI changed (labels, buttons, navigation, workflows)
+- Workflow behavior changed
+- Role or permission changes
+- Bug fix that alters user-visible behavior
+
+**How to update:**
+
+1. Find the relevant section in `docs/USER_MANUAL.md`
+2. Edit in-place (not append-only). Integrate changes into the correct section.
+3. If adding a new feature, add a new section where it logically belongs
+4. If removing a feature, remove or rewrite the section
+5. Keep language user-facing: describe what users see and do, not internal code
+
+**Quality bar:**
+
+- A new user could follow the manual without confusion
+- No outdated instructions remain
+- The manual matches actual system behavior exactly
+
+**This is not optional.** If code ships without a manual update, that is incomplete work.
+
 ### Commit Message Convention
 
 All commits tied to a spec must reference the spec name in the commit message:

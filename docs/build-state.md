@@ -12,13 +12,13 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                                 | Status | Last Verified | Commit               | Agent           |
-| ------------------------------------- | ------ | ------------- | -------------------- | --------------- |
-| `npx tsc --noEmit --skipLibCheck`     | green  | 2026-04-04    | dirty from 5e5d54406 | Claude Opus 4.6 |
-| `npx next build --no-lint` (8GB heap) | green  | 2026-04-04    | dirty from 5e5d54406 | Claude Opus 4.6 |
+| Check                                 | Status | Last Verified | Commit    | Agent           |
+| ------------------------------------- | ------ | ------------- | --------- | --------------- |
+| `npx tsc --noEmit --skipLibCheck`     | green  | 2026-04-04    | 815f7a69f | Claude Opus 4.6 |
+| `npx next build --no-lint` (8GB heap) | green  | 2026-04-04    | 815f7a69f | Claude Opus 4.6 |
 
-**Last green build:** dirty checkout from 5e5d54406 (2026-04-04) - settings branding/account/security feature + security audit waves 1-2
-**Last commit on main:** 5e5d54406
+**Last green build:** 815f7a69f (2026-04-04) - 6-pillar Playwright walkthrough + security exit criterion done
+**Last commit on main:** 815f7a69f
 
 **Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. OOM fix: build requires `NODE_OPTIONS="--max-old-space-size=8192"` (default 4GB heap is insufficient for this codebase size).
 
