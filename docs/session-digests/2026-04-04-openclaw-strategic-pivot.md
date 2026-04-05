@@ -63,6 +63,21 @@ Also identified: Kroger has a real developer API program (production, not the br
 
 Research targets documented in spec for investigation before building.
 
+## Scope Expansion (continued session)
+
+**Category 13: Derived Pricing Engine** added. This is the gap-filling logic for when collection comes up empty. 14 derivation methods across 6 groups:
+
+- **Geographic (G1-G3):** Chain proximity transfer (95-99%), store-type benchmark (80-88%), regional CPI scaling (75-85%)
+- **Store-Level (S1-S3):** Store price index (85-92%), wholesale + markup (80-90%), promotional cycle (75-85%)
+- **Temporal (T1-T2):** Last known + inflation (90-95% within 30 days), seasonal pattern replay (80-90%)
+- **Product Math (P1-P3):** Unit size conversion (85-92%), brand substitution (80-88%), weight/volume normalization (98-100%)
+- **Supply Chain (C1-C2):** Commodity futures + margin stack (70-85%), MSRP ceiling (bound only)
+- **Composite (F1-F2):** Weighted multi-method ensemble, circular confirmation (99%+)
+
+Key design decisions: confidence tiers A through F, hard floor at 70% (below = "No data"), priority waterfall (14-step method order), every derived price labeled as derived with method and confidence visible to chef. No AI in any method. All formulas.
+
+This completes the spec: Categories 1-12 are collection (go get the real number), Category 13 is derivation (calculate the best number from facts you already have).
+
 ## Unresolved / Next Steps
 
 - **Developer action:** Collect raw business artifacts into dump folder (Archive Digester)
