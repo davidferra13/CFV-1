@@ -58,6 +58,35 @@ export async function POST(req: NextRequest) {
         break
       }
 
+      case 'sync_ready': {
+        // Aggregator finished a scrape cycle and new data is available for pull
+        broadcast('openclaw:status', 'sync_ready', {
+          newPrices: data.new_prices,
+          priceChanges: data.price_changes,
+          newAnomalies: data.new_anomalies,
+          chainsUpdated: data.chains_updated,
+          suggestedAction: data.suggested_action,
+          receivedAt: new Date().toISOString(),
+        })
+        console.log(
+          `[openclaw-webhook] sync_ready: ${data.new_prices} new, ` +
+            `${data.price_changes} changes, ${data.new_anomalies} anomalies`
+        )
+        break
+      }
+
+      case 'growth_regression': {
+        // Database growth regression detected by Pi-side growth tracker.
+        // Any core table losing rows is a data integrity concern.
+        broadcast('openclaw:alerts', 'growth_regression', {
+          regressions: data.regressions,
+          totalTablesRegressed: data.total_tables_regressed,
+          totalRowsLost: data.total_rows_lost,
+          detectedAt: data.detected_at,
+        })
+        break
+      }
+
       default:
         return NextResponse.json({ error: `Unknown type: ${type}` }, { status: 400 })
     }
