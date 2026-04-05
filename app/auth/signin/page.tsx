@@ -171,18 +171,7 @@ function SignInForm() {
                   aria-disabled={isWorking}
                   tabIndex={isWorking ? -1 : undefined}
                 >
-                  Chef sign up
-                </Link>{' '}
-                or{' '}
-                <Link
-                  href="/auth/client-signup"
-                  className={`font-medium text-brand-400 hover:text-brand-300 ${
-                    isWorking ? 'pointer-events-none opacity-60' : ''
-                  }`}
-                  aria-disabled={isWorking}
-                  tabIndex={isWorking ? -1 : undefined}
-                >
-                  Client sign up
+                  Sign up
                 </Link>
               </div>
             </CardFooter>

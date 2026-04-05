@@ -2,11 +2,12 @@
 'use client'
 
 import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   signUpChef,
   signUpClient,
+  signIn,
   type ChefSignupInput,
   type ClientSignupInput,
 } from '@/lib/auth/actions'
@@ -19,7 +20,6 @@ import { Alert } from '@/components/ui/alert'
 import { CenteredLoadingState } from '@/components/ui/loading-state'
 
 function SignUpForm() {
-  const router = useRouter()
   const searchParams = useSearchParams() ?? new URLSearchParams()
   const token = searchParams.get('token')
 
@@ -27,8 +27,6 @@ function SignUpForm() {
 
   const [error, setError] = useState<string | null>(null)
   const [invitationLoading, setInvitationLoading] = useState(!!token)
-  const [invitationEmail, setInvitationEmail] = useState<string | null>(null)
-  const [invitationName, setInvitationName] = useState<string | null>(null)
 
   const [chefFormData, setChefFormData] = useState<ChefSignupInput>({
     email: '',
@@ -51,8 +49,6 @@ function SignUpForm() {
       getInvitationByToken(token)
         .then((invitation) => {
           if (invitation) {
-            setInvitationEmail(invitation.email)
-            setInvitationName(invitation.full_name || '')
             setClientFormData((prev) => ({
               ...prev,
               email: invitation.email,
@@ -79,11 +75,12 @@ function SignUpForm() {
 
     try {
       await signUpChef(chefFormData)
-      router.push('/auth/signin')
+      // Auto-login: sign in immediately with the same credentials
+      await signIn({ email: chefFormData.email, password: chefFormData.password, rememberMe: true })
+      window.location.href = '/dashboard'
     } catch (err) {
       const error = err as Error
       setError(error.message)
-    } finally {
       setLoading(false)
     }
   }
@@ -95,11 +92,12 @@ function SignUpForm() {
 
     try {
       await signUpClient(clientFormData)
-      router.push('/auth/signin')
+      // Auto-login: sign in immediately with the same credentials
+      await signIn({ email: clientFormData.email, password: clientFormData.password, rememberMe: true })
+      window.location.href = '/my-events'
     } catch (err) {
       const error = err as Error
       setError(error.message)
-    } finally {
       setLoading(false)
     }
   }
@@ -257,13 +255,6 @@ function SignUpForm() {
                   className="text-brand-700 hover:text-brand-700 font-medium"
                 >
                   Sign in
-                </Link>
-                <span className="mx-1">·</span>
-                <Link
-                  href="/auth/client-signup"
-                  className="text-brand-700 hover:text-brand-700 font-medium"
-                >
-                  Client sign up
                 </Link>
               </div>
             </CardFooter>

@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { signUpClient, type ClientSignupInput } from '@/lib/auth/actions'
+import { signUpClient, signIn, type ClientSignupInput } from '@/lib/auth/actions'
 import { getInvitationByToken } from '@/lib/auth/invitations'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -12,7 +12,6 @@ import { Alert } from '@/components/ui/alert'
 import { CenteredLoadingState } from '@/components/ui/loading-state'
 
 function ClientSignUpForm() {
-  const router = useRouter()
   const searchParams = useSearchParams() ?? new URLSearchParams()
   const token = searchParams.get('token')
 
@@ -59,11 +58,12 @@ function ClientSignUpForm() {
 
     try {
       await signUpClient(formData)
-      router.push('/auth/signin')
+      // Auto-login: sign in immediately with the same credentials
+      await signIn({ email: formData.email, password: formData.password, rememberMe: true })
+      window.location.href = '/my-events'
     } catch (err) {
       const error = err as Error
       setError(error.message)
-    } finally {
       setLoading(false)
     }
   }
@@ -76,6 +76,47 @@ function ClientSignUpForm() {
         minHeightClassName="min-h-screen"
         className="bg-surface-muted"
       />
+    )
+  }
+
+  // No invitation token: client signup requires an invitation from a chef
+  if (!token) {
+    return (
+      <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
+        <div className="max-w-md w-full">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
+            <p className="text-stone-600 mt-2">Client accounts are created by invitation</p>
+          </div>
+
+          <Card>
+            <CardContent className="py-8 space-y-4">
+              <p className="text-stone-600 text-center">
+                To create a client account, your chef will send you an invitation link via email.
+              </p>
+              <p className="text-stone-500 text-sm text-center">
+                Already have an account?
+              </p>
+            </CardContent>
+            <CardFooter className="flex flex-col gap-3">
+              <Link href="/auth/signin" className="w-full">
+                <Button variant="primary" className="w-full">
+                  Sign In
+                </Button>
+              </Link>
+              <div className="text-sm text-center text-stone-600">
+                Are you a chef?{' '}
+                <Link
+                  href="/auth/signup"
+                  className="text-brand-700 hover:text-brand-700 font-medium"
+                >
+                  Create a chef account
+                </Link>
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
+      </div>
     )
   }
 
@@ -96,6 +137,8 @@ function ClientSignUpForm() {
             <CardContent className="space-y-4">
               {error && <Alert variant="error">{error}</Alert>}
 
+              <Alert variant="info">You&apos;ve been invited to join as a client.</Alert>
+
               <Input
                 type="text"
                 label="Full Name"
@@ -109,9 +152,8 @@ function ClientSignUpForm() {
                 type="email"
                 label="Email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                disabled={!!token}
-                helperText={token ? 'This email is from your invitation' : undefined}
+                disabled
+                helperText="This email is from your invitation"
                 required
               />
 
