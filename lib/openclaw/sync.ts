@@ -352,7 +352,31 @@ async function syncCore(
       byName.get(key)!.push(ing)
     }
 
-    // Step 5: For each enriched result, update ALL tenant-specific ingredients
+    // Step 5: Pre-load per-store last prices for change validation
+    // Compares each store's price against its OWN previous price for that ingredient,
+    // not a single global baseline. This prevents cross-product false positives
+    // (e.g., a garlic bulb vs a jar of minced garlic under the same ingredient name).
+    const ingredientIds = cfIngredients.map((i) => i.id)
+    const perStoreBaselines = new Map<string, number>()
+    if (ingredientIds.length > 0) {
+      try {
+        const rows = await db.execute(sql`
+          SELECT DISTINCT ON (ingredient_id, store_name)
+            ingredient_id, store_name, price_cents
+          FROM ingredient_price_history
+          WHERE source LIKE 'openclaw_%'
+            AND ingredient_id = ANY(${ingredientIds})
+            AND purchase_date >= (CURRENT_DATE - INTERVAL '7 days')
+          ORDER BY ingredient_id, store_name, purchase_date DESC
+        `)
+        for (const row of rows as any[]) {
+          perStoreBaselines.set(`${row.ingredient_id}::${row.store_name}`, row.price_cents)
+        }
+      } catch (err) {
+        console.warn('[sync] Could not pre-load per-store baselines, falling back to global:', err)
+      }
+    }
+
     const today = new Date().toISOString().split('T')[0]
     let matched = 0
     let updated = 0
@@ -410,8 +434,13 @@ async function syncCore(
               quarantined++
               continue
             }
+            // Use per-store baseline (same store's last price for this ingredient).
+            // If no store-specific history exists, treat as first observation (null).
+            // This prevents cross-product false positives (bulb vs jar under same name).
+            const storeKey = `${ing.id}::${storePrice.store}`
+            const baselinePrice = perStoreBaselines.get(storeKey) ?? null
             const changeCheck = validatePriceChange(
-              ing.lastPriceCents,
+              baselinePrice,
               storePrice.normalized_cents,
               name
             )
@@ -422,7 +451,7 @@ async function syncCore(
                     (source, ingredient_name, price_cents, old_price_cents, rejection_reason, raw_data)
                   VALUES (
                     ${storePrice.store}, ${name}, ${storePrice.normalized_cents},
-                    ${ing.lastPriceCents}, ${changeCheck.reason}, ${JSON.stringify(storePrice)}::jsonb
+                    ${baselinePrice}, ${changeCheck.reason}, ${JSON.stringify(storePrice)}::jsonb
                   )
                 `)
               } catch {

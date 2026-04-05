@@ -66,9 +66,14 @@ export function validatePrice(
 /**
  * Validates a price change between two observations.
  *
- * Rejects changes exceeding 10x in either direction (scraper error, not
- * a real market movement). If the old price was 0 or null, any new price
- * is accepted (first observation).
+ * Spike threshold is 200x (generous) because the same ingredient name can map
+ * to very different products at the same store across runs (a single lemon vs
+ * a bag of lemons). The $1000 absolute cap in validatePrice() is the real
+ * safety net for scraper errors. The 0.1x crash threshold stays tight because
+ * suspiciously low prices (likely scraper bugs) are more dangerous than high
+ * ones (best-price selection picks the cheapest anyway).
+ *
+ * If the old price was 0 or null, any new price is accepted (first observation).
  */
 export function validatePriceChange(
   oldPriceCents: number | null | undefined,
@@ -82,10 +87,10 @@ export function validatePriceChange(
 
   const ratio = newPriceCents / oldPriceCents
 
-  if (ratio > 10) {
+  if (ratio > 200) {
     return {
       valid: false,
-      reason: `Price spike: ${oldPriceCents}c -> ${newPriceCents}c (${ratio.toFixed(1)}x) for "${ingredientName}" exceeds 10x threshold`,
+      reason: `Price spike: ${oldPriceCents}c -> ${newPriceCents}c (${ratio.toFixed(1)}x) for "${ingredientName}" exceeds 200x threshold`,
     }
   }
 
