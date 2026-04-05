@@ -825,11 +825,6 @@ export const navGroups: NavGroup[] = [
           { href: '/events/board', label: 'Kanban Board' },
         ],
       },
-      {
-        href: '/calendar',
-        label: 'Calendar',
-        icon: CalendarCheck,
-      },
     ],
   },
   {
