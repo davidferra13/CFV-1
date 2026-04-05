@@ -18,10 +18,11 @@ ChefFlow is an all-in-one platform for food service professionals. It replaces s
 
 ### Signing Up
 
-1. Visit **app.cheflowhq.com**
-2. Click **Sign Up**
-3. Enter your name, email, and password (or sign in with Google)
-4. You'll land on your **Dashboard**, the command center for your business
+1. Visit **app.cheflowhq.com** and click **Sign Up**
+2. Enter your email, password, and business name
+3. Click **Create Account** and you'll land directly on your **Dashboard**
+
+No separate sign-in step is needed. Your account is created and you're signed in automatically.
 
 ### First Steps After Sign-Up
 
