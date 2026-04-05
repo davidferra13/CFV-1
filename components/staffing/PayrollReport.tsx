@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { getPayrollReportForPeriod, type PayrollReportData } from '@/lib/staffing/actions'
+import { getPayrollReportForPeriod, type PayrollReportData } from '@/lib/staff/staffing-actions'
 
 function formatCurrency(cents: number) {
   return `$${(cents / 100).toFixed(2)}`

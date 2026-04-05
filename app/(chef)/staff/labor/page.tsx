@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { PayrollReport } from '@/components/staffing/PayrollReport'
-import { getPayrollReportForPeriod } from '@/lib/staffing/actions'
+import { getPayrollReportForPeriod } from '@/lib/staff/staffing-actions'
 
 export const metadata: Metadata = { title: 'Labor Dashboard' }
 

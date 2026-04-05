@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
 import { requireStaff } from '@/lib/auth/get-user'
 import { TimeTracker } from '@/components/staffing/TimeTracker'
-import { getDefaultStaffingWindow, getStaffPortalTimeTrackerData } from '@/lib/staffing/actions'
+import {
+  getDefaultStaffingWindow,
+  getStaffPortalTimeTrackerData,
+} from '@/lib/staff/staffing-actions'
 
 export const metadata: Metadata = { title: 'Time Tracking' }
 

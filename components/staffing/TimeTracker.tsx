@@ -7,7 +7,7 @@ import {
   clockInFromTimeTracker,
   clockOutFromTimeTracker,
   type TimeTrackerData,
-} from '@/lib/staffing/actions'
+} from '@/lib/staff/staffing-actions'
 
 function formatMinutes(minutes: number | null) {
   if (minutes == null) return '--'

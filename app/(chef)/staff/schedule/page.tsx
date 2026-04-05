@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { StaffScheduler } from '@/components/staffing/StaffScheduler'
-import { getDefaultStaffingWindow, getStaffSchedulerData } from '@/lib/staffing/actions'
+import { getDefaultStaffingWindow, getStaffSchedulerData } from '@/lib/staff/staffing-actions'
 
 export const metadata: Metadata = { title: 'Staff Schedule' }
 

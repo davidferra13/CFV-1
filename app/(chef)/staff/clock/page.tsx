@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { TimeTracker } from '@/components/staffing/TimeTracker'
-import { getDefaultStaffingWindow, getTimeTrackerData } from '@/lib/staffing/actions'
+import { getDefaultStaffingWindow, getTimeTrackerData } from '@/lib/staff/staffing-actions'
 
 export const metadata: Metadata = { title: 'Clock In/Out' }
 

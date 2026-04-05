@@ -251,6 +251,12 @@ export const navGroups: NavGroup[] = [
       { href: '/admin/events', label: 'All Events', icon: CalendarDays, adminOnly: true },
       { href: '/admin/analytics', label: 'Analytics', icon: BarChart3, adminOnly: true },
       { href: '/admin/audit', label: 'Audit Log', icon: NotebookIcon, adminOnly: true },
+      {
+        href: '/admin/openclaw/health',
+        label: 'Data Engine Health',
+        icon: Activity,
+        adminOnly: true,
+      },
       // Hidden: { href: '/admin/cannabis', label: 'Cannabis Tier', icon: SealCheck, adminOnly: true },
       {
         href: '/admin/cannabis',
@@ -1052,7 +1058,7 @@ export const navGroups: NavGroup[] = [
         icon: MessagesSquare,
         children: [
           { href: '/social/hub-overview', label: 'Dinner Circle Overview' },
-          { href: '/social/posts', label: 'Posts' },
+          { href: '/social/planner', label: 'Post Planner' },
         ],
       },
     ],
@@ -1152,7 +1158,6 @@ export const navGroups: NavGroup[] = [
         label: 'Staff',
         icon: IdentificationBadge,
         children: [
-          { href: '/staff/new', label: 'Add Staff' },
           { href: '/staff/availability', label: 'Availability' },
           { href: '/staff/clock', label: 'Clock In/Out' },
           { href: '/staff/labor', label: 'Labor Dashboard' },

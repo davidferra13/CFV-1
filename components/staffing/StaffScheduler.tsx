@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   scheduleStaffMemberWithConflictCheck,
   type StaffSchedulerData,
-} from '@/lib/staffing/actions'
+} from '@/lib/staff/staffing-actions'
 
 function formatCurrency(cents: number) {
   return `$${(cents / 100).toFixed(2)}`

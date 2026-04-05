@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import { getPayrollReportForPeriod } from '@/lib/staffing/actions'
+import { getPayrollReportForPeriod } from '@/lib/staff/staffing-actions'
 
 const DateRangeSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
