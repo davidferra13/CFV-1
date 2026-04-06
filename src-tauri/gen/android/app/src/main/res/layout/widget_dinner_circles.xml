@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@android:color/white"
+    android:id="@+id/widget_circles_root">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dinner Circles"
+        android:textSize="13sp"
+        android:textColor="#333333"
+        android:textStyle="bold" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#eeeeee"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp" />
+
+    <LinearLayout android:id="@+id/widget_circles_row1" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:visibility="gone">
+        <TextView android:id="@+id/widget_circles_name1" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="#333333" android:textStyle="bold" android:maxLines="1" android:ellipsize="end" />
+        <ProgressBar android:id="@+id/widget_circles_progress1" android:layout_width="match_parent" android:layout_height="4dp" android:layout_marginTop="2dp" style="@android:style/Widget.ProgressBar.Horizontal" android:max="100" android:progress="0" />
+        <TextView android:id="@+id/widget_circles_detail1" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="11sp" android:textColor="#999999" android:layout_marginTop="1dp" android:maxLines="1" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/widget_circles_row2" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginTop="6dp" android:visibility="gone">
+        <TextView android:id="@+id/widget_circles_name2" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="#333333" android:textStyle="bold" android:maxLines="1" android:ellipsize="end" />
+        <ProgressBar android:id="@+id/widget_circles_progress2" android:layout_width="match_parent" android:layout_height="4dp" android:layout_marginTop="2dp" style="@android:style/Widget.ProgressBar.Horizontal" android:max="100" android:progress="0" />
+        <TextView android:id="@+id/widget_circles_detail2" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="11sp" android:textColor="#999999" android:layout_marginTop="1dp" android:maxLines="1" />
+    </LinearLayout>
+
+    <LinearLayout android:id="@+id/widget_circles_row3" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginTop="6dp" android:visibility="gone">
+        <TextView android:id="@+id/widget_circles_name3" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="13sp" android:textColor="#333333" android:textStyle="bold" android:maxLines="1" android:ellipsize="end" />
+        <ProgressBar android:id="@+id/widget_circles_progress3" android:layout_width="match_parent" android:layout_height="4dp" android:layout_marginTop="2dp" style="@android:style/Widget.ProgressBar.Horizontal" android:max="100" android:progress="0" />
+        <TextView android:id="@+id/widget_circles_detail3" android:layout_width="match_parent" android:layout_height="wrap_content" android:textSize="11sp" android:textColor="#999999" android:layout_marginTop="1dp" android:maxLines="1" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/widget_circles_empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No active events"
+        android:textSize="13sp"
+        android:textColor="#999999"
+        android:gravity="center"
+        android:layout_marginTop="12dp" />
+</LinearLayout>

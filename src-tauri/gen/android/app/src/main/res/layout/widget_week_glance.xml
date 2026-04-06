@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@android:color/white"
+    android:id="@+id/widget_week_root">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="This Week"
+            android:textSize="13sp"
+            android:textColor="#333333"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/widget_week_summary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="11sp"
+            android:textColor="#999999" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp"
+        android:gravity="center">
+
+        <TextView android:id="@+id/widget_week_d0_label" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="10sp" android:textColor="#999999" />
+        <TextView android:id="@+id/widget_week_d1_label" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="10sp" android:textColor="#999999" />
+        <TextView android:id="@+id/widget_week_d2_label" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="10sp" android:textColor="#999999" />
+        <TextView android:id="@+id/widget_week_d3_label" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="10sp" android:textColor="#999999" />
+        <TextView android:id="@+id/widget_week_d4_label" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="10sp" android:textColor="#999999" />
+        <TextView android:id="@+id/widget_week_d5_label" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="10sp" android:textColor="#999999" />
+        <TextView android:id="@+id/widget_week_d6_label" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="10sp" android:textColor="#999999" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="2dp"
+        android:gravity="center">
+
+        <TextView android:id="@+id/widget_week_d0_count" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="16sp" android:textColor="#333333" android:textStyle="bold" />
+        <TextView android:id="@+id/widget_week_d1_count" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="16sp" android:textColor="#333333" android:textStyle="bold" />
+        <TextView android:id="@+id/widget_week_d2_count" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="16sp" android:textColor="#333333" android:textStyle="bold" />
+        <TextView android:id="@+id/widget_week_d3_count" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="16sp" android:textColor="#333333" android:textStyle="bold" />
+        <TextView android:id="@+id/widget_week_d4_count" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="16sp" android:textColor="#333333" android:textStyle="bold" />
+        <TextView android:id="@+id/widget_week_d5_count" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="16sp" android:textColor="#333333" android:textStyle="bold" />
+        <TextView android:id="@+id/widget_week_d6_count" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:textSize="16sp" android:textColor="#333333" android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>

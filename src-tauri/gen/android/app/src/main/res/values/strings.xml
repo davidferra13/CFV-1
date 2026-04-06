@@ -5,4 +5,8 @@
     <string name="widget_notes_description">Quick capture notepad</string>
     <string name="widget_actions_description">Quick actions: Note, New Event, Inbox</string>
     <string name="widget_revenue_description">Monthly revenue at a glance</string>
+    <string name="widget_week_description">7-day event overview</string>
+    <string name="widget_feed_description">Live activity ticker</string>
+    <string name="widget_inbox_description">Recent inquiries and messages</string>
+    <string name="widget_circles_description">Active events with progress</string>
 </resources>
