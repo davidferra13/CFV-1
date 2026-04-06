@@ -34,6 +34,8 @@ export interface GhostRateStats {
   ghosted: number // status = expired
   ghostRate: number
   avgDaysToGhost: number
+  /** If set, avgDaysToGhost is unavailable and this explains why */
+  _deferred?: string
 }
 
 export interface LeadTimeStats {
@@ -51,6 +53,8 @@ export interface LeadTimeStats {
     oneToThreeMonths: number
     over3months: number
   }
+  /** If set, lead time buckets and avgLeadTimeDays are unavailable */
+  _deferred?: string
 }
 
 export interface DeclineReasonStats {
@@ -60,6 +64,8 @@ export interface DeclineReasonStats {
     percent: number
   }>
   totalDeclined: number
+  /** If set, decline reason breakdown is unavailable */
+  _deferred?: string
 }
 
 export interface NegotiationStats {
@@ -70,6 +76,8 @@ export interface NegotiationStats {
   avgFinalCents: number
   avgDiscountPercent: number
   avgDiscountCents: number
+  /** If set, negotiation tracking is unavailable */
+  _deferred?: string
 }
 
 export interface ResponseTimeStats {
@@ -189,7 +197,8 @@ export async function getGhostRateStats(): Promise<GhostRateStats> {
     totalInquiries: all.length,
     ghosted: ghosted.length,
     ghostRate: pct(ghosted.length, all.length),
-    avgDaysToGhost: 0, // DEFERRED: needs inquiries.ghost_at column
+    avgDaysToGhost: 0,
+    _deferred: 'Average days to ghost requires the ghost_at column (planned migration)',
   }
 }
 
@@ -219,10 +228,11 @@ export async function getLeadTimeStats(): Promise<LeadTimeStats> {
       : 0
 
   return {
-    avgLeadTimeDays: 0, // DEFERRED: needs events.inquiry_received_at column
+    avgLeadTimeDays: 0,
     avgSalesCycleDays: avgCycle,
     buckets: emptyBuckets,
     bucketPercents: emptyBuckets,
+    _deferred: 'Lead time buckets require the inquiry_received_at column (planned migration)',
   }
 }
 
@@ -230,7 +240,11 @@ export async function getLeadTimeStats(): Promise<LeadTimeStats> {
 // Returns empty data until the column migration is applied.
 export async function getDeclineReasonStats(): Promise<DeclineReasonStats> {
   await requireChef() // still enforce auth
-  return { reasons: [], totalDeclined: 0 }
+  return {
+    reasons: [],
+    totalDeclined: 0,
+    _deferred: 'Decline reason tracking requires the decline_reason column (planned migration)',
+  }
 }
 
 // DEFERRED: getNegotiationStats requires quotes.negotiation_occurred and quotes.original_quoted_cents
@@ -245,6 +259,8 @@ export async function getNegotiationStats(): Promise<NegotiationStats> {
     avgFinalCents: 0,
     avgDiscountPercent: 0,
     avgDiscountCents: 0,
+    _deferred:
+      'Negotiation tracking requires negotiation_occurred and original_quoted_cents columns (planned migration)',
   }
 }
 

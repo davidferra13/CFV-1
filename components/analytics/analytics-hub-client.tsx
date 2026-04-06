@@ -493,8 +493,8 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
         />
         <StatCard
           label="Avg Lead Time"
-          value={`${p.leadTime.avgLeadTimeDays}d`}
-          sub="inquiry to event date"
+          value={p.leadTime._deferred ? 'N/A' : `${p.leadTime.avgLeadTimeDays}d`}
+          sub={p.leadTime._deferred ? 'Not yet available' : 'inquiry to event date'}
         />
         <StatCard
           label="Avg Sales Cycle"
@@ -517,50 +517,59 @@ function PipelineTab({ p }: { p: AnalyticsHubProps }) {
         </Card>
         <Card className="p-6">
           <h3 className="font-semibold text-stone-200 mb-4">Booking Lead Time Distribution</h3>
-          <div className="space-y-3 mt-2">
-            {[
-              {
-                label: '< 2 weeks',
-                count: p.leadTime.buckets.under2weeks,
-                pct: p.leadTime.bucketPercents.under2weeks,
-              },
-              {
-                label: '2–4 weeks',
-                count: p.leadTime.buckets.twoTo4weeks,
-                pct: p.leadTime.bucketPercents.twoTo4weeks,
-              },
-              {
-                label: '1–3 months',
-                count: p.leadTime.buckets.oneToThreeMonths,
-                pct: p.leadTime.bucketPercents.oneToThreeMonths,
-              },
-              {
-                label: '3+ months',
-                count: p.leadTime.buckets.over3months,
-                pct: p.leadTime.bucketPercents.over3months,
-              },
-            ].map((row) => (
-              <div key={row.label} className="flex items-center gap-3">
-                <span className="text-sm text-stone-300 w-24">{row.label}</span>
-                <div className="flex-1 bg-stone-800 rounded-full h-2">
-                  <div className="bg-amber-500 h-2 rounded-full" style={{ width: `${row.pct}%` }} />
+          {p.leadTime._deferred ? (
+            <p className="text-sm text-stone-500 py-4">
+              Not yet available. Lead time tracking requires additional data collection.
+            </p>
+          ) : (
+            <div className="space-y-3 mt-2">
+              {[
+                {
+                  label: '< 2 weeks',
+                  count: p.leadTime.buckets.under2weeks,
+                  pct: p.leadTime.bucketPercents.under2weeks,
+                },
+                {
+                  label: '2-4 weeks',
+                  count: p.leadTime.buckets.twoTo4weeks,
+                  pct: p.leadTime.bucketPercents.twoTo4weeks,
+                },
+                {
+                  label: '1-3 months',
+                  count: p.leadTime.buckets.oneToThreeMonths,
+                  pct: p.leadTime.bucketPercents.oneToThreeMonths,
+                },
+                {
+                  label: '3+ months',
+                  count: p.leadTime.buckets.over3months,
+                  pct: p.leadTime.bucketPercents.over3months,
+                },
+              ].map((row) => (
+                <div key={row.label} className="flex items-center gap-3">
+                  <span className="text-sm text-stone-300 w-24">{row.label}</span>
+                  <div className="flex-1 bg-stone-800 rounded-full h-2">
+                    <div
+                      className="bg-amber-500 h-2 rounded-full"
+                      style={{ width: `${row.pct}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-medium w-12 text-right">{row.pct}%</span>
                 </div>
-                <span className="text-sm font-medium w-12 text-right">{row.pct}%</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           label="Negotiation Rate"
-          value={`${p.negotiation.negotiationRate}%`}
-          sub="quotes with price adjustment"
+          value={p.negotiation._deferred ? 'N/A' : `${p.negotiation.negotiationRate}%`}
+          sub={p.negotiation._deferred ? 'Not yet available' : 'quotes with price adjustment'}
         />
         <StatCard
           label="Avg Discount"
-          value={`${p.negotiation.avgDiscountPercent}%`}
-          sub={fmt$(p.negotiation.avgDiscountCents)}
+          value={p.negotiation._deferred ? 'N/A' : `${p.negotiation.avgDiscountPercent}%`}
+          sub={p.negotiation._deferred ? 'Not yet available' : fmt$(p.negotiation.avgDiscountCents)}
         />
         <StatCard
           label="Avg Response Time"

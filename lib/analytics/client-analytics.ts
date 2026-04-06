@@ -46,7 +46,7 @@ export interface WinbackStats {
 }
 
 export interface NpsStats {
-  npsScore: number // % promoters − % detractors (−100 to 100)
+  npsScore: number // % promoters - % detractors (-100 to 100)
   promoters: number
   passives: number
   detractors: number
@@ -58,6 +58,8 @@ export interface NpsStats {
   avgPresentationRating: number
   wouldRebookPercent: number
   responseRate: number // responded / sent
+  /** If set, NPS data is unavailable and this explains why */
+  _deferred?: string
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -330,7 +332,7 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
 }
 
 // DEFERRED: getNpsStats requires client_satisfaction_surveys table (not yet created).
-// Returns empty data until the table migration is applied.
+// Returns empty data with _deferred flag so UI shows honest "not available" state.
 export async function getNpsStats(): Promise<NpsStats> {
   await requireChef() // still enforce auth
   return {
@@ -346,5 +348,6 @@ export async function getNpsStats(): Promise<NpsStats> {
     avgPresentationRating: 0,
     wouldRebookPercent: 0,
     responseRate: 0,
+    _deferred: 'Client satisfaction surveys are not yet available',
   }
 }
