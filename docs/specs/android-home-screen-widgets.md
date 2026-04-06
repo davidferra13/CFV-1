@@ -3,13 +3,14 @@
 > **Status:** ready
 > **Priority:** P1 (next up)
 > **Depends on:** `cloud-mobile-unified-migration.md` (Phase 3 - Android APK, complete)
-> **Estimated complexity:** medium (3-8 files, all in src-tauri/gen/android/)
+> **Estimated complexity:** large (9+ files, native Kotlin + 1 new backend feature)
 
 ## Timeline
 
-| Event   | Date       | Agent/Session      | Commit |
-| ------- | ---------- | ------------------ | ------ |
-| Created | 2026-04-06 | Planner (Opus 4.6) |        |
+| Event   | Date       | Agent/Session      | Commit                                 |
+| ------- | ---------- | ------------------ | -------------------------------------- |
+| Created | 2026-04-06 | Planner (Opus 4.6) |                                        |
+| Revised | 2026-04-06 | Planner (Opus 4.6) | Developer input on real workflow needs |
 
 ---
 
@@ -17,270 +18,412 @@
 
 ### Raw Signal
 
-"Can I make widgets for ChefFlow for my Android now?"
+"I need you to help me refine the top 10 things I would need right now."
+
+"I need like almost like a raw dictation notepad that I can add to that just creates a bulleted list that gets carried over onto my dashboard. And the website can even probably help read that list and understand what needs to get done."
+
+"I can never see the end goal. I have a hard time tracking progress. I don't know what my milestones are. It'd be cool if there was something that showed what needs to get done and had a visual representation of that."
+
+"If I'm trying to finalize a dinner with somebody, it'll be like, oh, you're at 50% finished. This is where you're at. And then there could even be a quick button on the widget that brings me straight to that inquiry."
+
+"I could literally have a widget that's called Dinner Circles that lets me handle all of my dinner circles. My prep list stuff would be in there, my grocery list would be in there, but obviously those would be different widgets that know how to parse and deliver me just the prep list."
+
+"The Shazam widget is one of my favorites. It doesn't feel like a widget. It almost feels like an app altogether. It goes straight to the app and does macros as if you're using the app."
 
 ### Developer Intent
 
-- **Core goal:** Glanceable ChefFlow data on the Android home screen without opening the app
-- **Key constraints:** Must use existing API infrastructure (v2 token-based auth already exists). No new backend work. Self-hosted, $0 cost
-- **Motivation:** Chefs live on their phones. The most valuable data (next event, overdue items, revenue) should be visible at a glance
-- **Success from the developer's perspective:** A chef adds a ChefFlow widget to their Android home screen and sees live data from their account
+- **Core goal:** Widgets that solve real daily friction, not decorative dashboards. Each widget replaces a specific "open the app, navigate, find the thing" workflow with one glance or one tap
+- **Key constraints:** Must feel like natural extensions of the phone (like Shazam, like a bank balance). Not gimmicky app-promotion surfaces. ADHD-friendly: visual progress, not walls of text
+- **Motivation:** A chef's hands are dirty, their phone is on the counter, they have 10 people to get back to and 3 things on the stove. Every tap saved is real
+- **Success from the developer's perspective:** "I didn't open ChefFlow once today but I stayed on top of everything"
 
 ---
 
 ## What This Does (Plain English)
 
-After this is built, a chef using the ChefFlow Android app can long-press their home screen, select "Widgets", find ChefFlow, and add widgets that show live data: today's events, tasks due, revenue, open inquiries, and the next thing that needs their attention. The widgets update automatically and tap through to the relevant screen in the app.
+10 Android home screen widgets that give a chef full situational awareness and quick capture without opening the app. They range from passive glanceable displays (what's happening) to active tools (capture a note, check off a prep item, see a dinner circle's progress). Every widget taps through to the exact right screen in ChefFlow.
 
 ---
 
 ## Why It Matters
 
-The whole point of a mobile app is reducing friction. Opening an app to check "do I have an event today?" is friction. A widget that shows it on the home screen is zero friction. This is the difference between a tool you check and a system that keeps you informed.
+ChefFlow has 265+ pages. A chef doesn't need 265 pages while they're cooking. They need 10 surfaces that show exactly the right thing at the right moment. Widgets are those surfaces.
 
 ---
 
-## Existing Infrastructure (No New Backend Needed)
+## The 10 Widgets
 
-### API v2 (Already Built)
+### 1. Brain Dump (2x2) - NEW FEATURE REQUIRED
 
-ChefFlow already has token-based API routes at `/api/v2/` with Bearer auth (`cf_live_*` tokens), granular scopes, rate limiting (100 req/min), and pagination. These are the data source for widgets.
+The raw dictation notepad. This is the #1 widget because it solves the #1 real problem: thoughts happen faster than you can organize them.
 
-| Endpoint                                              | Scope          | Widget Data                                            |
-| ----------------------------------------------------- | -------------- | ------------------------------------------------------ |
-| `GET /api/v2/events?date_from=today&date_to=today`    | `events:read`  | Today's events (occasion, time, guest count, location) |
-| `GET /api/v2/events?status=confirmed&date_from=today` | `events:read`  | Upcoming confirmed events                              |
-| `GET /api/v2/financials/summary`                      | `finance:read` | Revenue, outstanding balance                           |
-| `GET /api/v2/goals/dashboard`                         | `goals:read`   | Revenue goal progress                                  |
-| `GET /api/v2/calls?status=scheduled`                  | `calls:read`   | Upcoming calls                                         |
-| `GET /api/feeds/calendar/[token]`                     | (token in URL) | iCal feed (already external-ready)                     |
+```
+┌──────────────────────┐
+│ + Quick note...      │
+│                      │
+│ - Email Johnson back │
+│ - Pick basil 4pm     │
+│ - Check lamb price   │
+│ - Menu needs dessert │
+│ - Reschedule Friday  │
+└──────────────────────┘
+```
 
-### Widget Auth Strategy
+**How it works:**
 
-Widgets can't use browser cookies. They use the existing v2 API key system:
+- Tap the `+` input field. Keyboard opens. Type or dictate. Hit enter. Note appears in the list
+- Notes are raw, unstructured, timestamped bullets
+- List syncs to a new "Brain Dump" section on the ChefFlow dashboard
+- Remy can read the brain dump and suggest actions ("You mentioned 'email Johnson back' - want me to draft that?")
+- Tap any note to open ChefFlow to the Brain Dump view (where notes can be triaged into tasks, calendar items, reminders)
 
-1. Chef generates an API key in Settings > API (already built)
-2. Key is stored in Android SharedPreferences (encrypted)
-3. Widget sends `Authorization: Bearer cf_live_xxx` header with each request
-4. Scoped to read-only: `events:read,finance:read,goals:read,calls:read,inquiries:read`
+**Backend needed:** New `chef_brain_dump` table (id, chef_id, text, created_at, status: raw|triaged|dismissed). New server action `addBrainDumpNote()`. New API endpoint `POST /api/v2/brain-dump`. Dashboard section to display and triage notes.
 
-If no API key is configured, widget shows "Open ChefFlow to set up widgets" with a tap-through.
+**Why this is #1:** The developer said "I'm constantly taking notes down all day. Literally all day." This is the capture mechanism. Everything else in ChefFlow organizes and acts on information. This is how it gets in.
 
 ---
 
-## Widget Designs
+### 2. Inbox (4x2) - EXISTING INFRASTRUCTURE
 
-### Widget 1: "Today" (2x2)
-
-The daily command card. What a chef checks first thing in the morning.
+Unified communications. Every inbound signal in one stream.
 
 ```
-┌─────────────────────┐
-│ ChefFlow        TODAY│
-│                      │
-│ 🗓 2 events          │
-│ ✅ 5 tasks due       │
-│ ⚠ 1 overdue inquiry  │
-│                      │
-│ Next: Smith Dinner 6p│
-└─────────────────────┘
-```
-
-**Data source:** `/api/v2/events` (today) + dashboard task/inquiry counts
-**Update frequency:** Every 30 minutes
-**Tap action:** Opens app to dashboard
-**Size:** 2x2 (default), resizable to 3x2
-
-### Widget 2: "Revenue" (2x1)
-
-Financial pulse. How's the month going?
-
-```
-┌─────────────────────┐
-│ $4,250  ▲12%  78/mo │
-└─────────────────────┘
-```
-
-- `$4,250` = revenue this month
-- `▲12%` = vs last month
-- `78/mo` = goal progress (78% of monthly target)
-
-**Data source:** `/api/v2/financials/summary` + `/api/v2/goals/dashboard`
-**Update frequency:** Every 60 minutes
-**Tap action:** Opens app to financial reports
-**Size:** 2x1 (compact strip)
-
-### Widget 3: "Next Up" (2x1)
-
-The single most important thing right now.
-
-```
-┌─────────────────────┐
-│ ⏰ Reply to Johnson  │
-│   Wedding · 3 days   │
-└─────────────────────┘
-```
-
-Shows the #1 priority item from the priority queue: inquiry needing response, overdue task, upcoming event, or expiring quote.
-
-**Data source:** Priority queue logic (needs a lightweight API endpoint, see below)
-**Update frequency:** Every 15 minutes
-**Tap action:** Opens app to the relevant item
-**Size:** 2x1
-
-### Widget 4: "Week Glance" (4x2)
-
-The weekly runway. What's the shape of the week?
-
-```
-┌─────────────────────────────────────┐
-│ ChefFlow                    This Week│
+┌──────────────────────────────────────┐
+│ ChefFlow Inbox                    12 │
 │                                      │
-│ Mon  Tue  Wed  Thu  Fri  Sat  Sun   │
-│  ·    2    ·    1    ·    3    1    │
+│ 🔴 Johnson Wedding inquiry    2h ago │
+│    "Hi, we'd love to book you fo..." │
+│                                      │
+│ 💬 Maria (client)             4h ago │
+│    "Can we add a vegan option t..."  │
+│                                      │
+│ 📧 Whole Foods receipt        today  │
+│    "Your order #4521 is ready f..."  │
+└──────────────────────────────────────┘
+```
+
+**Data:** Inquiries, client messages (conversations), Gmail threads, Remy conversations. Merged and sorted by recency.
+**Tap:** Opens specific conversation/inquiry in ChefFlow.
+**Badge:** Unread count in top right.
+**API:** `/api/v2/events` + conversations query + Gmail sync status. May need a new unified inbox endpoint.
+
+---
+
+### 3. Dinner Circles (4x2) - EXISTING INFRASTRUCTURE
+
+The active event command center. Each circle is an event with everything attached.
+
+```
+┌──────────────────────────────────────┐
+│ Dinner Circles                       │
+│                                      │
+│ Johnson Wedding  Sat Apr 12  ███░ 72%│
+│  25 guests · menu set · deposit paid │
+│                                      │
+│ Chen Birthday    Thu Apr 10  ██░░ 45%│
+│  8 guests · menu draft · no deposit  │
+│                                      │
+│ Garcia Weekly    Every Tue   ████ 90%│
+│  4 guests · recurring · all set      │
+└──────────────────────────────────────┘
+```
+
+**The progress bar is the key feature.** Each event has a completeness score based on: client confirmed, menu assigned, deposit paid, guest count set, dietary info collected, prep timeline created, grocery list generated. The bar shows how "done" this dinner is.
+
+**Tap:** Opens that event's dinner circle in ChefFlow (unified view with everything attached).
+**API:** `/api/v2/events` with a new `completeness_score` computed field.
+
+---
+
+### 4. Prep List (2x2) - EXISTING INFRASTRUCTURE
+
+The kitchen counter widget. What to do right now, checkable without opening the app.
+
+```
+┌──────────────────────┐
+│ Prep - Johnson Wed   │
+│                      │
+│ ☑ Brine chicken      │
+│ ☑ Make vinaigrette   │
+│ ☐ Prep mise en place │
+│ ☐ Plate garnishes    │
+│ ☐ Final tasting      │
+│              3/5 done│
+└──────────────────────┘
+```
+
+**Checkboxes work directly from the widget.** Tap a checkbox, it checks off, syncs to ChefFlow. No app opening required.
+**Shows:** The next upcoming event's prep list (or the currently active one if an event is in_progress).
+**API:** Prep timeline actions already exist. Need a lightweight endpoint to list + toggle items.
+
+---
+
+### 5. Today (2x2) - DESIGNED IN V1 OF THIS SPEC
+
+The daily command card.
+
+```
+┌──────────────────────┐
+│ TODAY          Apr 6  │
+│                      │
+│ 2 events             │
+│ 5 tasks due          │
+│ 1 overdue response   │
+│                      │
+│ Next: Smith 6pm      │
+│       12 guests      │
+└──────────────────────┘
+```
+
+**API:** `/api/v2/events` (today) + task counts + inquiry response times.
+**Tap:** Opens dashboard.
+
+---
+
+### 6. Quick Actions (2x1) - SHAZAM-STYLE
+
+Not a display widget. A row of buttons that launch straight into specific app functions.
+
+```
+┌──────────────────────────────┐
+│  📝 Note  📅 Event  📸 Snap │
+└──────────────────────────────┘
+```
+
+- **Note:** Opens Brain Dump capture (keyboard ready, type and save)
+- **Event:** Opens new event form
+- **Snap:** Opens camera, photo saves to ChefFlow storage (receipt, plating, ingredient)
+
+These are the Shazam-style widgets. They don't display data. They're single-tap launchers into the most common actions. Each one deep-links to the exact screen with the exact state (keyboard open, camera ready, form loaded).
+
+---
+
+### 7. Grocery Run (2x2) - EXISTING INFRASTRUCTURE
+
+The parking lot widget. What do I need to buy?
+
+```
+┌──────────────────────┐
+│ Grocery - 3 events   │
+│                      │
+│ Whole Foods:         │
+│ ☐ Salmon 4lb        │
+│ ☐ Heavy cream 2qt   │
+│ ☐ Microgreens       │
+│                      │
+│ 12 items · ~$186     │
+└──────────────────────┘
+```
+
+**Checkboxes work from widget.** Check items off as you shop.
+**Grouped by store** (from vendor/price data).
+**Consolidated** across upcoming events.
+**API:** Grocery list generation already exists. Need lightweight endpoint for list + toggle.
+
+---
+
+### 8. Live Feed (4x1) - EXISTING INFRASTRUCTURE
+
+The status bar. A scrolling ticker of what's happening right now.
+
+```
+┌──────────────────────────────────────┐
+│ 🟢 Johnson deposit received · Chen inquiry 2h waiting · Lamb price ↓12% · Menu approved by Garcia │
+└──────────────────────────────────────┘
+```
+
+A single-line horizontal scroll of recent activity. Newest events, payments, inquiries, price alerts, client actions. The passive surveillance feed.
+
+**API:** Activity log / event stream. Already tracked internally. Need a lightweight recent-activity endpoint.
+**Tap:** Opens activity feed / dashboard.
+**Update:** Every 15 minutes.
+
+---
+
+### 9. Revenue (2x1) - DESIGNED IN V1 OF THIS SPEC
+
+Financial pulse at a glance.
+
+```
+┌──────────────────────┐
+│ $4,250 ▲12%  78% 🎯 │
+└──────────────────────┘
+```
+
+Revenue this month, vs last month, goal progress.
+**API:** `/api/v2/financials/summary` + `/api/v2/goals/dashboard`.
+**Tap:** Opens financial reports.
+
+---
+
+### 10. Week Glance (4x2) - DESIGNED IN V1 OF THIS SPEC
+
+The weekly runway.
+
+```
+┌──────────────────────────────────────┐
+│ This Week                            │
+│                                      │
+│ Mon  Tue  Wed  Thu  Fri  Sat  Sun    │
+│  ·    2    ·    1    ·    3    1     │
 │                                      │
 │ 7 events · $8,200 booked            │
-└─────────────────────────────────────┘
+└──────────────────────────────────────┘
 ```
 
-- Dots for zero-event days, numbers for event counts
-- Today highlighted
-- Bottom: total events + total booked revenue
-
-**Data source:** `/api/v2/events?date_from=monday&date_to=sunday`
-**Update frequency:** Every 60 minutes
-**Tap action:** Opens app to calendar
-**Size:** 4x2
+**API:** `/api/v2/events` with date range.
+**Tap:** Opens calendar.
 
 ---
 
-## New API Endpoint Needed
+## New Backend Features Required
 
-One lightweight endpoint for the "Next Up" widget:
+### 1. Brain Dump (new feature)
 
-### `GET /api/v2/widgets/priority`
+This is the only widget that requires a genuinely new feature in ChefFlow.
 
-Returns the single highest-priority action item.
+**Database:**
 
-```json
-{
-  "type": "inquiry_response",
-  "title": "Reply to Johnson",
-  "subtitle": "Wedding - 3 days waiting",
-  "urgency": "high",
-  "deep_link": "/inquiries/abc123",
-  "timestamp": "2026-04-06T14:00:00Z"
-}
+```sql
+CREATE TABLE chef_brain_dump (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  chef_id UUID NOT NULL REFERENCES chefs(id),
+  text TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'raw'
+    CHECK (status IN ('raw', 'triaged', 'dismissed')),
+  triaged_to TEXT,         -- 'task', 'event', 'calendar', 'inquiry', etc.
+  triaged_ref_id UUID,     -- FK to the created task/event/etc.
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_brain_dump_chef ON chef_brain_dump(chef_id, status, created_at DESC);
 ```
 
-**Auth:** Bearer token, scope `events:read,inquiries:read`
-**Logic:** Reuses `getPriorityQueue()` from the dashboard, returns only the top item.
+**Server actions:**
+
+| Action                            | Auth            | Input                                          | Output            |
+| --------------------------------- | --------------- | ---------------------------------------------- | ----------------- |
+| `addBrainDumpNote(text)`          | `requireChef()` | `{ text: string }`                             | `{ success, id }` |
+| `getBrainDumpNotes()`             | `requireChef()` | `{ status?: string, limit?: number }`          | `BrainDumpNote[]` |
+| `triageBrainDumpNote(id, action)` | `requireChef()` | `{ id, status, triaged_to?, triaged_ref_id? }` | `{ success }`     |
+
+**API endpoint:** `POST /api/v2/brain-dump` (for widget), `GET /api/v2/brain-dump` (list).
+
+**Dashboard section:** New "Brain Dump" card on the dashboard showing raw notes with triage buttons (Convert to Task, Add to Calendar, Link to Inquiry, Dismiss).
+
+**Remy integration:** Remy can read raw brain dump notes and suggest triage actions. "You wrote 'email Johnson back' 3 hours ago. Want me to draft a reply?" This uses existing Remy action patterns, not new AI features.
+
+### 2. Event Completeness Score (computed field)
+
+Add a `completeness_score` to event queries. Computed from:
+
+- Client confirmed (10%)
+- Guest count set (10%)
+- Menu assigned (15%)
+- Dietary info collected (10%)
+- Deposit/payment received (15%)
+- Prep timeline created (15%)
+- Grocery list generated (10%)
+- Pre-service checklist done (15%)
+
+This is a pure formula (not AI). Each field is a boolean check against existing data. Returns 0-100.
+
+### 3. Lightweight Widget Endpoints
+
+| Endpoint                                 | Purpose                        | Scope                        |
+| ---------------------------------------- | ------------------------------ | ---------------------------- |
+| `GET /api/v2/brain-dump`                 | Recent notes                   | `brain-dump:read`            |
+| `POST /api/v2/brain-dump`                | Add note                       | `brain-dump:write`           |
+| `GET /api/v2/widgets/inbox`              | Unified inbox (top N)          | `inquiries:read,events:read` |
+| `GET /api/v2/widgets/priority`           | Top priority action            | `events:read,inquiries:read` |
+| `GET /api/v2/widgets/prep`               | Active prep list               | `events:read`                |
+| `PATCH /api/v2/widgets/prep/[id]`        | Toggle prep item               | `events:read`                |
+| `GET /api/v2/widgets/grocery`            | Consolidated grocery list      | `events:read`                |
+| `PATCH /api/v2/widgets/grocery/[id]`     | Toggle grocery item            | `events:read`                |
+| `GET /api/v2/widgets/activity`           | Recent activity feed           | `events:read`                |
+| `GET /api/v2/events?fields=completeness` | Events with completeness score | `events:read`                |
 
 ---
 
-## Files to Create
+## Widget Auth Strategy (Unchanged)
 
-| File                                                                                         | Purpose                                          |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| `src-tauri/gen/android/app/src/main/java/com/cheflowhq/desktop/widgets/TodayWidget.kt`       | "Today" widget (2x2)                             |
-| `src-tauri/gen/android/app/src/main/java/com/cheflowhq/desktop/widgets/RevenueWidget.kt`     | "Revenue" widget (2x1)                           |
-| `src-tauri/gen/android/app/src/main/java/com/cheflowhq/desktop/widgets/NextUpWidget.kt`      | "Next Up" widget (2x1)                           |
-| `src-tauri/gen/android/app/src/main/java/com/cheflowhq/desktop/widgets/WeekGlanceWidget.kt`  | "Week Glance" widget (4x2)                       |
-| `src-tauri/gen/android/app/src/main/java/com/cheflowhq/desktop/widgets/WidgetDataFetcher.kt` | Shared HTTP client for API v2 calls              |
-| `src-tauri/gen/android/app/src/main/java/com/cheflowhq/desktop/widgets/WidgetPreferences.kt` | Encrypted SharedPreferences for API key storage  |
-| `src-tauri/gen/android/app/src/main/res/layout/widget_today.xml`                             | Layout for Today widget                          |
-| `src-tauri/gen/android/app/src/main/res/layout/widget_revenue.xml`                           | Layout for Revenue widget                        |
-| `src-tauri/gen/android/app/src/main/res/layout/widget_next_up.xml`                           | Layout for Next Up widget                        |
-| `src-tauri/gen/android/app/src/main/res/layout/widget_week_glance.xml`                       | Layout for Week Glance widget                    |
-| `src-tauri/gen/android/app/src/main/res/xml/widget_today_info.xml`                           | Widget metadata (size, update interval, preview) |
-| `src-tauri/gen/android/app/src/main/res/xml/widget_revenue_info.xml`                         | Widget metadata                                  |
-| `src-tauri/gen/android/app/src/main/res/xml/widget_next_up_info.xml`                         | Widget metadata                                  |
-| `src-tauri/gen/android/app/src/main/res/xml/widget_week_glance_info.xml`                     | Widget metadata                                  |
-
-## Files to Modify
-
-| File                                                     | What Changes                           |
-| -------------------------------------------------------- | -------------------------------------- |
-| `src-tauri/gen/android/app/src/main/AndroidManifest.xml` | Register 4 widget receivers + metadata |
-| `app/api/v2/widgets/priority/route.ts`                   | New API endpoint for priority item     |
+All widgets use existing v2 API Bearer token auth (`cf_live_*`). Chef generates key in Settings > API. Key stored in Android encrypted SharedPreferences.
 
 ---
 
-## Database Changes
+## Widget Sizing Summary
 
-None.
+| #   | Widget         | Size | Type             | Interaction               |
+| --- | -------------- | ---- | ---------------- | ------------------------- |
+| 1   | Brain Dump     | 2x2  | Input + list     | Type notes, tap to triage |
+| 2   | Inbox          | 4x2  | Display + tap    | Tap message to open       |
+| 3   | Dinner Circles | 4x2  | Display + tap    | Tap event to open circle  |
+| 4   | Prep List      | 2x2  | Checkable list   | Check items off           |
+| 5   | Today          | 2x2  | Display          | Tap to open dashboard     |
+| 6   | Quick Actions  | 2x1  | Buttons          | Tap to launch function    |
+| 7   | Grocery Run    | 2x2  | Checkable list   | Check items off           |
+| 8   | Live Feed      | 4x1  | Scrolling ticker | Tap to open activity      |
+| 9   | Revenue        | 2x1  | Display          | Tap to open financials    |
+| 10  | Week Glance    | 4x2  | Display          | Tap to open calendar      |
 
 ---
 
-## Implementation Pattern
+## Implementation Order
 
-Each widget follows the standard Android `AppWidgetProvider` pattern:
+**Phase A (backend, 1 session):**
 
-```kotlin
-class TodayWidget : AppWidgetProvider() {
-    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-        // 1. Read API key from encrypted SharedPreferences
-        // 2. Fetch data from app.cheflowhq.com/api/v2/...
-        // 3. Build RemoteViews with the data
-        // 4. Set click intents (open app to relevant screen)
-        // 5. manager.updateAppWidget(ids, views)
-    }
-}
-```
+1. Brain Dump table + server actions + dashboard section
+2. Event completeness score formula
+3. Widget API endpoints (lightweight wrappers around existing functions)
 
-Widgets use `WorkManager` for periodic background updates (Android's recommended approach, battery-friendly).
+**Phase B (Android native, 1-2 sessions):**
+
+1. WidgetDataFetcher (shared HTTP client) + WidgetPreferences (encrypted key storage)
+2. Display-only widgets first: Today, Revenue, Week Glance, Live Feed
+3. Interactive widgets: Prep List, Grocery Run (checkbox toggle)
+4. Tap-through widgets: Inbox, Dinner Circles (progress bars)
+5. Input widgets: Brain Dump (text input from widget), Quick Actions (deep-link launchers)
+
+Phase A can be built by any builder agent (it's Next.js/TypeScript). Phase B requires Kotlin in `src-tauri/gen/android/`.
 
 ---
 
 ## Edge Cases
 
-| Scenario                    | Behavior                                                                                     |
-| --------------------------- | -------------------------------------------------------------------------------------------- |
-| No API key configured       | Show "Open ChefFlow to set up" with tap-through to settings                                  |
-| Server unreachable (PC off) | Show last cached data with "Last updated: X ago" timestamp. Never show stale data as current |
-| API key revoked             | Show "Reconnect in ChefFlow" message                                                         |
-| No events today             | Show "No events today" (not blank, not zero)                                                 |
-| Rate limit hit              | Skip update, retry at next interval                                                          |
-| Phone offline               | Show cached data with offline indicator                                                      |
-
----
-
-## Verification Steps
-
-1. Build updated APK with widget support
-2. Install on Android device
-3. Long-press home screen > Widgets > find "ChefFlow"
-4. Add "Today" widget > verify it shows real data
-5. Add "Revenue" widget > verify financial data matches app
-6. Add "Next Up" widget > verify priority item matches dashboard
-7. Add "Week Glance" widget > verify event counts match calendar
-8. Turn off PC (kill tunnel) > verify widgets show cached data with timestamp
-9. Turn PC back on > verify widgets refresh within their update interval
-10. Tap each widget > verify it opens the correct screen in the app
+| Scenario                   | Behavior                                                     |
+| -------------------------- | ------------------------------------------------------------ |
+| No API key configured      | All widgets show "Tap to set up" with link to Settings > API |
+| Server unreachable         | Show cached data + "Last updated X ago". Never blank         |
+| No events this week        | Week Glance shows empty dots, "No events this week"          |
+| Empty brain dump           | Show just the input field, no list                           |
+| Prep list: no active event | Show "No active prep" with next upcoming event date          |
+| Grocery: nothing to buy    | Show "All stocked"                                           |
+| Checkbox sync fails        | Show retry indicator on the item, don't uncheck              |
 
 ---
 
 ## Out of Scope
 
 - iOS widgets (blocked on macOS hardware)
-- Interactive widgets (buttons that trigger actions directly from widget). Read-only for V1
-- Widget configuration screen (choosing which data to show). All widgets show fixed data for V1
-- Real-time push updates to widgets (polling is sufficient for V1)
+- Widget configuration/customization (fixed layouts for V1)
+- Real-time push updates to widgets (polling on intervals is sufficient)
+- Voice input on Brain Dump widget (uses keyboard/system dictation, not custom voice)
+- AI auto-triage of brain dump notes (Remy suggests, chef decides)
 
 ---
 
 ## Notes for Builder Agent
 
-1. **All widget code is native Kotlin in `src-tauri/gen/android/`.** This is Android-native development, not web/Tauri. The Tauri shell wraps the web app, but widgets are pure Android.
+1. **Brain Dump is the only new feature.** Everything else wraps existing data. Build Brain Dump first (Phase A) since multiple widgets benefit from it.
 
-2. **The v2 API already exists.** Don't rebuild auth or endpoints. Use Bearer token auth with existing scopes. The only new endpoint is `/api/v2/widgets/priority` (one server action call, return top item).
+2. **Completeness score is a formula, not AI.** 8 boolean checks, weighted sum. Put it in `lib/events/completeness.ts`. Expose via the events API.
 
-3. **Widgets use RemoteViews, not Jetpack Compose.** Android widgets have strict layout constraints (no custom views, limited set of layout types). Use `RemoteViews` with XML layouts.
+3. **Checkable widgets (Prep, Grocery) need optimistic updates.** Check the box immediately in the widget UI, fire the PATCH request in the background. If it fails, uncheck with a retry indicator.
 
-4. **Cache aggressively.** Widgets should store the last successful response in SharedPreferences. Never show blank/zero when the server is unreachable. Show stale data with a timestamp.
+4. **The Live Feed widget uses Android's `RemoteViews` with `ViewFlipper`** for horizontal scrolling text. This is a standard Android pattern for ticker-style widgets.
 
-5. **Brand colors:** Background `#faf9f7`, accent `#e88f47`, text `#333333`. Match the app's visual identity.
+5. **Quick Actions widget uses `PendingIntent` with deep-link URIs.** Each button launches `chefflow://events/new`, `chefflow://brain-dump`, etc. The Tauri app needs to register these URI schemes.
 
-6. **The `gen/android/` directory is regenerated by `tauri android init`.** Widget files in custom packages survive regeneration, but manifest changes may need re-application. Document which manifest entries are custom.
+6. **Brand colors:** Background `#faf9f7`, accent `#e88f47`, text `#333333`. Progress bars use `#e88f47` fill on `#e5e5e5` track.
 
-7. **Test with `adb install` on a physical device.** Emulator widgets work but touch targets and text rendering differ from real hardware.
+7. **The `gen/android/` directory is regenerated by `tauri android init`.** Custom widget files in the `widgets/` package survive, but `AndroidManifest.xml` changes need re-application after regeneration. Document all manifest additions in a comment block at the top of each widget class.
