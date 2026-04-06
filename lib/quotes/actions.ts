@@ -236,7 +236,7 @@ export async function getQuotes(filters?: {
       *,
       client:clients(id, full_name, email),
       inquiry:inquiries(id, confirmed_occasion, status),
-      event:events!quotes_event_id_fkey(id, occasion, event_date, status)
+      event:events(id, occasion, event_date, status)
     `
       )
       .eq('tenant_id', user.tenantId!)
@@ -299,7 +299,7 @@ export async function getQuoteById(id: string) {
       *,
       client:clients(id, full_name, email, phone),
       inquiry:inquiries(id, confirmed_occasion, status, channel),
-      event:events!quotes_event_id_fkey(id, occasion, event_date, status)
+      event:events(id, occasion, event_date, status)
     `
       )
       .eq('id', id)
@@ -772,7 +772,7 @@ export async function getClientPricingHistory(clientId: string) {
       pricing_model,
       accepted_at,
       quote_name,
-      event:events!quotes_event_id_fkey(id, occasion, event_date)
+      event:events(id, occasion, event_date)
     `
       )
       .eq('tenant_id', user.tenantId!)
