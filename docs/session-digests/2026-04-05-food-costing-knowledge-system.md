@@ -6,11 +6,11 @@
 
 ## What Happened
 
-Built the complete food costing knowledge system from spec. This is a read-only reference layer that makes the canonical food costing methodology accessible to users, developers, and Remy.
+Two-phase build. Phase 1: built the knowledge layer from spec (static content maps, UI components, help page, Remy instant answers). Phase 2: deep exploration revealed the knowledge layer was 40% wired (display only) and 60% dormant (86 files doing costing math without it). Wired the knowledge layer into 10 existing surfaces.
 
 ## What Changed
 
-### New Files (5)
+### Phase 1: Knowledge Layer (5 new files)
 
 - `lib/costing/knowledge.ts` - Static content map: 20 help topics, 13 warning explanations, 14 operator target profiles, unit conversions, validation ranges, variance thresholds, 50+ guide sections
 - `lib/costing/operator-cost-lines.ts` - 80+ operator-specific cost line templates for 10 operation types + universal lines
@@ -18,22 +18,32 @@ Built the complete food costing knowledge system from spec. This is a read-only 
 - `components/costing/costing-warning-detail.tsx` - Expandable warning explanation cards sorted by severity
 - `app/(chef)/help/food-costing/page.tsx` - Full knowledge base page at `/help/food-costing`
 
-### Modified Files (3)
+### Phase 2: Integration (10 surfaces wired)
+
+- Dashboard business cards: operator-specific food cost targets from chef's archetype (was hardcoded `private_chef`)
+- Recipe detail: CostingHelpPopover on Total Cost and Cost per Portion
+- Menu detail: CostingHelpPopover on Cost/Guest and Food Cost %
+- Recipe costing dashboard: CostingHelpPopover on KPI cards
+- Menu costing dashboard: CostingHelpPopover on table headers
+- Food cost dashboard: operator-aware color thresholds (replaces hardcoded 30/35%)
+- Menu engineering: operator-specific food cost target (replaces hardcoded 30%)
+- Remy context: costingContext with operator type, targets, Q-factor, recosting frequency
+- Archetype bridge: `archetypeToOperatorType()` and `getTargetsForArchetype()` (no migration needed)
+
+### Also modified
 
 - `components/navigation/nav-config.tsx` - Added "Food Costing Guide" as child of Help Center
-- `app/api/remy/stream/route-instant-answers.ts` - 6 deterministic instant-answer patterns (food cost %, Q-factor, yield factor, prime cost, cost-plus, contribution margin)
+- `app/api/remy/stream/route-instant-answers.ts` - 6 deterministic instant-answer patterns
 - `docs/app-complete-audit.md` - Added `/help/food-costing` entry
-
-### Documentation (1)
-
-- `docs/food-costing-knowledge-implementation.md` - Implementation doc with architecture, design decisions, usage examples
+- `docs/USER_MANUAL.md` - Added Costing Dashboard and Food Costing Guide sections
 
 ## Key Decisions
 
 1. **All content is static.** No server actions, no database queries, no AI generation for the knowledge layer itself.
 2. **Formula > AI.** Remy answers food costing questions deterministically from static content. Zero cost, zero latency, always correct.
-3. **Operator-aware.** All targets, cost lines, and guidance adjust based on chef's operation type (14 types).
-4. **Contextual guidance.** The `CostingHelpPopover` accepts current values and operator type to provide real-time contextual feedback.
+3. **Operator-aware.** All targets, cost lines, and guidance adjust based on chef's operation type (14 types mapped from 6 archetypes).
+4. **No migration needed.** Uses existing `chef_preferences.archetype` column via `getCachedChefArchetype()`.
+5. **Contextual guidance.** The `CostingHelpPopover` accepts current values and operator type to provide real-time contextual feedback.
 
 ## Verification
 

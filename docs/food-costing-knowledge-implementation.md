@@ -2,7 +2,7 @@
 
 > **Date:** 2026-04-05
 > **Spec:** `docs/specs/food-costing-knowledge-system.md`
-> **Status:** Built (knowledge layer + delivery surface)
+> **Status:** Built and wired (knowledge layer + 10 delivery surfaces)
 
 ## What Was Built
 
@@ -25,20 +25,57 @@ The food costing knowledge system is a **read-only reference layer** that makes 
 | `components/navigation/nav-config.tsx`         | Added "Food Costing Guide" as child of Help Center                                                                                                                                                     |
 | `app/api/remy/stream/route-instant-answers.ts` | Added 6 deterministic instant-answer patterns for food costing questions (food cost %, Q-factor, yield factor, prime cost, cost-plus, contribution margin). Formula > AI: these bypass Ollama entirely |
 
+### Phase 2: Integration (10 Surfaces Wired)
+
+| Surface                  | File                                                | What was wired                                                                                      |
+| ------------------------ | --------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Dashboard business cards | `app/(chef)/dashboard/_sections/business-cards.tsx` | Uses chef's actual archetype for operator-specific food cost targets (was hardcoded `private_chef`) |
+| Recipe detail            | `app/(chef)/recipes/[id]/recipe-detail-client.tsx`  | CostingHelpPopover on Total Cost and Cost per Portion                                               |
+| Menu detail              | `app/(chef)/menus/[id]/menu-detail-client.tsx`      | CostingHelpPopover on Cost/Guest and Food Cost %                                                    |
+| Recipe costing dashboard | `app/(chef)/culinary/costing/recipe/page.tsx`       | CostingHelpPopover on "Most expensive" and "Average cost" KPIs                                      |
+| Menu costing dashboard   | `app/(chef)/culinary/costing/menu/page.tsx`         | CostingHelpPopover on Estimated Cost and Cost/Guest headers                                         |
+| Food cost dashboard      | `components/vendors/food-cost-dashboard.tsx`        | Operator-aware color thresholds via props (replaces hardcoded 30/35%)                               |
+| Menu engineering         | `lib/analytics/menu-engineering.ts`                 | Operator-specific food cost target from archetype (replaces hardcoded 30%)                          |
+| Remy context             | `lib/ai/remy-context.ts`                            | `costingContext` with operator type, targets, Q-factor, recosting frequency                         |
+| Remy types               | `lib/ai/remy-types.ts`                              | `costingContext` interface added to RemyContext                                                     |
+| Knowledge bridge         | `lib/costing/knowledge.ts`                          | `archetypeToOperatorType()` and `getTargetsForArchetype()` functions                                |
+
+### Archetype-to-Operator Bridge
+
+The chef's archetype (stored in `chef_preferences.archetype`) maps to operator-specific costing targets. No migration needed.
+
+| Archetype (DB) | OperatorType   | Food Cost Target | Prime Cost | Q-Factor |
+| -------------- | -------------- | ---------------- | ---------- | -------- |
+| `private-chef` | `private_chef` | 25-35%           | 55%        | 7%       |
+| `caterer`      | `catering`     | 25-38%           | 60%        | 5%       |
+| `meal-prep`    | `meal_prep`    | 28-35%           | 60%        | 5%       |
+| `restaurant`   | `restaurant`   | 28-35%           | 65%        | 5%       |
+| `food-truck`   | `food_truck`   | 28-35%           | 60%        | 5%       |
+| `bakery`       | `bakery`       | 25-38%           | 60%        | 3%       |
+
 ## Architecture
 
 ```
 docs/food-costing-guide.md          (canonical user-facing content)
 docs/food-costing-reference-data.md (canonical lookup tables)
-        │
-        ▼
+        |
+        v
 lib/costing/knowledge.ts            (typed static maps, constants, helpers)
 lib/costing/operator-cost-lines.ts  (cost line templates by operator type)
-        │
-        ├──▶ components/costing/costing-help-popover.tsx  (UI: "?" icon popover)
-        ├──▶ components/costing/costing-warning-detail.tsx (UI: warning cards)
-        ├──▶ app/(chef)/help/food-costing/page.tsx         (UI: full guide page)
-        └──▶ route-instant-answers.ts                      (Remy: deterministic answers)
+        |
+        |--- components/costing/costing-help-popover.tsx   (UI: "?" icon popover)
+        |--- components/costing/costing-warning-detail.tsx  (UI: warning cards)
+        |--- app/(chef)/help/food-costing/page.tsx          (UI: full guide page)
+        |--- route-instant-answers.ts                       (Remy: deterministic answers)
+        |
+        |--- [WIRED] dashboard business cards               (operator-aware targets)
+        |--- [WIRED] recipe detail page                     (help popovers)
+        |--- [WIRED] menu detail page                       (help popovers)
+        |--- [WIRED] recipe costing dashboard               (help popovers)
+        |--- [WIRED] menu costing dashboard                 (help popovers)
+        |--- [WIRED] food cost dashboard                    (dynamic thresholds)
+        |--- [WIRED] menu engineering analytics             (dynamic target)
+        |--- [WIRED] Remy context                           (costingContext)
 ```
 
 ## Key Design Decisions
@@ -53,14 +90,16 @@ lib/costing/operator-cost-lines.ts  (cost line templates by operator type)
 
 5. **Warning system.** 13 warning types with severity levels, causes, actions, and links to the relevant guide section. The `CostingWarningList` component renders sorted by severity.
 
-## What's NOT Built Yet (From Spec - Future Work)
+## What's NOT Built Yet (Future Work)
 
-These items are defined conceptually in the knowledge layer but require additional infrastructure:
-
-- **Inline guidance on pricing settings page** (requires reading the settings form component)
-- **CostingHelpPopover integration** into existing recipe/menu/event views (requires identifying exact insertion points in each view)
-- **Remy context-aware costing answers** (requires loading chef's actual food cost data into RemyContext)
-- **`lib/costing/knowledge.ts` as import source for the auto-costing engine** (engine needs to import validation ranges and conversion constants)
+- ~~CostingHelpPopover integration into recipe/menu views~~ DONE (Phase 2)
+- ~~Remy context-aware costing answers~~ DONE (costingContext in RemyContext)
+- ~~Operator-specific targets replacing hardcoded 30%~~ DONE (dashboard, menu engineering, food cost dashboard)
+- **Inline guidance on pricing settings page** (rate fields need "?" popovers)
+- **CostingWarningList in recipe/menu views** (warnings when food cost exceeds operator targets)
+- **Cost-plus quote builder** pre-populated with `getCostLinesForOperator()` templates
+- **Event form cost sidebar** (food cost vs. price relationship during event creation)
+- **Auto-costing engine** importing validation ranges and conversion constants from knowledge.ts
 
 ## How to Use
 
@@ -68,7 +107,6 @@ These items are defined conceptually in the knowledge layer but require addition
 
 ```tsx
 import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
-
 ;<div className="flex items-center gap-1">
   <span>Food Cost: 32%</span>
   <CostingHelpPopover
@@ -84,8 +122,16 @@ import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
 
 ```tsx
 import { CostingWarningList } from '@/components/costing/costing-warning-detail'
-
 ;<CostingWarningList warnings={costingResult.warnings} />
+```
+
+### Getting operator targets from a chef's archetype:
+
+```tsx
+import { getTargetsForArchetype } from '@/lib/costing/knowledge'
+
+const targets = getTargetsForArchetype('private-chef')
+// targets.foodCostPctLow = 25, targets.foodCostPctHigh = 35, etc.
 ```
 
 ### Getting cost lines for an operator type:

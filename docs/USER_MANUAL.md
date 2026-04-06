@@ -229,6 +229,27 @@ Drag recipe cards between columns to track your creative pipeline.
 **Components** are pre-prepped ingredients with costs (e.g., "house vinaigrette" with unit cost).
 **Prep Timeline** shows today's prep tasks across all events, with active timers and station assignments.
 
+### Costing Dashboard
+
+Sidebar > Culinary > Costing shows two views:
+
+- **Recipe Cost:** All recipes sorted by total ingredient cost, with KPI cards (most expensive, average cost, missing pricing count). Each recipe shows ingredient count and pricing coverage.
+- **Menu Cost:** Estimated menu costs based on linked recipe pricing. Shows cost per guest when a target guest count is set.
+
+Look for the **?** icons next to cost metrics. Click them for explanations of food cost percentage, cost per person, Q-factor, yield factor, and other costing concepts with formulas and target ranges.
+
+### Food Costing Guide
+
+Sidebar > Help Center > **Food Costing Guide** (or go to `/help/food-costing`)
+
+A complete reference covering:
+
+- **Key concepts:** Food cost percentage, Q-factor, yield factor, prime cost, contribution margin, blended cost, and more (20 topics total)
+- **Operator targets:** Food cost and prime cost targets customized to your operation type (private chef, caterer, food truck, bakery, restaurant, meal prep)
+- **Variance thresholds:** Five escalation levels from "Normal" (under 2%) to "Critical" (over 10%) with recommended actions at each level
+
+Your operation type is set when you choose your archetype during onboarding. All costing targets, dashboard thresholds, and Remy's food cost answers adjust automatically.
+
 ---
 
 ## Calendar and Scheduling

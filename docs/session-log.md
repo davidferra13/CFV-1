@@ -249,3 +249,14 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on arrival: green (699fb96b7)
 - Build state on departure: tsc green (116881744), full build not re-run
 - Notes: Built complete food costing knowledge system: static content map (20 topics, 13 warnings, 14 operator profiles), 80+ cost line templates, help popover component, warning detail component, full guide page at /help/food-costing, nav integration, 6 Remy instant-answer patterns. All content static, Formula > AI. Spec marked as built. Future work: integrate popovers into existing costing views.
+
+## 2026-04-05 ~23:30 EST
+
+- Agent: General (Claude Opus 4.6)
+- Task: Wire food costing knowledge layer into existing surfaces
+- Status: completed
+- Files touched: lib/costing/knowledge.ts, app/(chef)/dashboard/\_sections/business-cards.tsx, app/(chef)/recipes/[id]/recipe-detail-client.tsx, app/(chef)/menus/[id]/menu-detail-client.tsx, app/(chef)/culinary/costing/recipe/page.tsx, app/(chef)/culinary/costing/menu/page.tsx, components/vendors/food-cost-dashboard.tsx, lib/analytics/menu-engineering.ts, lib/ai/remy-context.ts, lib/ai/remy-types.ts, docs/food-costing-knowledge-implementation.md, docs/USER_MANUAL.md, docs/session-digests/2026-04-05-food-costing-knowledge-system.md
+- Commits: 52446f740
+- Build state on arrival: tsc green (116881744)
+- Build state on departure: tsc green (52446f740)
+- Notes: Deep exploration revealed 86 files doing costing calculations without using the knowledge layer. Built archetype-to-operator bridge (no migration, uses existing chef_preferences.archetype). Wired CostingHelpPopover into recipe detail, menu detail, recipe costing, menu costing dashboards. Replaced hardcoded 30/35% thresholds in food cost dashboard and menu engineering with operator-specific targets. Added costingContext to Remy (operator type, targets, Q-factor, recosting frequency). Updated User Manual and implementation doc.
