@@ -317,6 +317,8 @@ interface ProductPriceRow {
   last_seen_at: string
   distance_miles: number | null
   price_type: 'retail' | 'wholesale' | 'commodity' | 'farm_direct' | null
+  reliability_weight: number | null
+  source_type: string | null
 }
 
 // Non-food keyword patterns for products that slip through category filters
@@ -376,10 +378,13 @@ async function searchProductPrices(
         p.size, p.size_value, p.size_unit,
         sp.last_seen_at,
         NULL::float as distance_miles,
-        sp.price_type
+        sp.price_type,
+        c.reliability_weight,
+        c.source_type
       FROM openclaw.products p
       JOIN openclaw.store_products sp ON sp.product_id = p.id
       JOIN openclaw.stores s ON s.id = sp.store_id
+      LEFT JOIN openclaw.chains c ON c.id = s.chain_id
       WHERE to_tsvector('english', p.name) @@ plainto_tsquery('english', ${text})
         AND sp.store_id = ANY(${storeIds})
         AND sp.price_cents > 0
@@ -408,10 +413,13 @@ async function searchProductPrices(
       p.size, p.size_value, p.size_unit,
       sp.last_seen_at,
       NULL::float as distance_miles,
-      sp.price_type
+      sp.price_type,
+      c.reliability_weight,
+      c.source_type
     FROM openclaw.products p
     JOIN openclaw.store_products sp ON sp.product_id = p.id
     JOIN openclaw.stores s ON s.id = sp.store_id
+    LEFT JOIN openclaw.chains c ON c.id = s.chain_id
     WHERE to_tsvector('english', p.name) @@ plainto_tsquery('english', ${text})
       AND sp.price_cents > 0
       AND sp.price_cents < 50000
@@ -583,11 +591,19 @@ interface AggregatedPrice {
   data_points: number
   unit: string
   sources: string[]
+  source_types: string[]
   last_updated: string | null
 }
 
 function aggregatePrices(
-  prices: Array<{ cents: number; unit: string; store: string; date: string }>
+  prices: Array<{
+    cents: number
+    unit: string
+    store: string
+    date: string
+    reliability_weight?: number
+    source_type?: string
+  }>
 ): AggregatedPrice | null {
   if (prices.length === 0) return null
 
@@ -613,17 +629,49 @@ function aggregatePrices(
   const upperBound = q3 + 1.5 * iqr
 
   const inliers = sorted.filter((p) => sorted.length <= 2 || (p >= lowerBound && p <= upperBound))
-  const finalPrices = inliers.length >= 2 ? inliers : sorted // Fall back to all if too few inliers
+  const finalPrices = inliers.length >= 2 ? inliers : sorted
 
-  // Median
-  const mid = Math.floor(finalPrices.length / 2)
-  const median =
-    finalPrices.length % 2 === 0
-      ? Math.round((finalPrices[mid - 1] + finalPrices[mid]) / 2)
-      : finalPrices[mid]
+  // Weighted median: if reliability weights are available, use them
+  const hasWeights = filtered.some(
+    (p) => p.reliability_weight !== undefined && p.reliability_weight !== 1.0
+  )
+  let median: number
 
-  // Unique sources
+  if (hasWeights && filtered.length >= 3) {
+    // Weighted median: sort by price, accumulate weights, pick the price
+    // where cumulative weight crosses 50%
+    const weightedEntries = filtered
+      .filter((p) => {
+        const inRange = sorted.length <= 2 || (p.cents >= lowerBound && p.cents <= upperBound)
+        return inRange
+      })
+      .sort((a, b) => a.cents - b.cents)
+      .map((p) => ({ cents: p.cents, weight: p.reliability_weight ?? 1.0 }))
+
+    const totalWeight = weightedEntries.reduce((s, e) => s + e.weight, 0)
+    let cumWeight = 0
+    median = weightedEntries[weightedEntries.length - 1].cents
+    for (const entry of weightedEntries) {
+      cumWeight += entry.weight
+      if (cumWeight >= totalWeight / 2) {
+        median = entry.cents
+        break
+      }
+    }
+  } else {
+    // Simple median
+    const mid = Math.floor(finalPrices.length / 2)
+    median =
+      finalPrices.length % 2 === 0
+        ? Math.round((finalPrices[mid - 1] + finalPrices[mid]) / 2)
+        : finalPrices[mid]
+  }
+
+  // Unique sources and source types
   const sources = Array.from(new Set(filtered.map((p) => p.store)))
+  const sourceTypes = Array.from(
+    new Set(filtered.map((p) => p.source_type).filter(Boolean))
+  ) as string[]
 
   // Most recent date
   const dates = filtered
@@ -639,6 +687,7 @@ function aggregatePrices(
     data_points: finalPrices.length,
     unit: primaryUnit,
     sources,
+    source_types: sourceTypes,
     last_updated: dates[0] || null,
   }
 }
