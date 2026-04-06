@@ -45,6 +45,8 @@ Your dashboard is the first screen you see after logging in. It shows a snapshot
 - **Response Time SLA:** How many inquiries are waiting for a response (and how long)
 - **Daily Ops:** Task counts across four categories (Admin, Prep, Creative, Relationship)
 - **Command Center Grid:** 24 cards representing every area of the app. Hover for live counts and quick links.
+- **Food Cost Card:** Shows your average food cost percentage with a spark line. The target range adjusts to your operator type (e.g., 25-35% for private chefs, 28-35% for food trucks). If your average is above or below the range, the card tells you.
+- **Business Stat Cards:** Revenue, revenue goal progress, lead funnel, invoice collection rate, and upcoming event count.
 
 ### Customizing Your Dashboard
 
@@ -434,7 +436,7 @@ Share your profile at **app.cheflowhq.com/chef/your-name**. It shows your avatar
 
 ### Your Booking Page
 
-Share **app.cheflowhq.com/book/your-name** with potential clients. They fill out a form (occasion, date, guest count, dietary needs, budget, contact info) and it becomes an inquiry in your pipeline.
+Share **app.cheflowhq.com/book/your-name** with potential clients. They fill out a form (occasion, date, guest count, dietary needs, budget, contact info, and referral source) and it becomes an inquiry in your pipeline. The "How did you hear about this chef?" field tracks which channels bring clients to you.
 
 ### Remy (AI Concierge)
 

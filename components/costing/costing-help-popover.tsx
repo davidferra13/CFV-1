@@ -93,11 +93,17 @@ export function CostingHelpPopover({
 
           <p className="text-xs text-stone-500">{content.guidance}</p>
 
+          {content.industryContext && (
+            <p className="text-xs text-stone-500/80 mt-2 border-t border-stone-700/50 pt-2 italic">
+              {content.industryContext}
+            </p>
+          )}
+
           <a
             href={`/help/food-costing#${content.guideSection}`}
             className="block mt-2 text-xs text-stone-400 hover:text-stone-200 transition-colors"
           >
-            Read full guide section →
+            Read full guide section &rarr;
           </a>
         </div>
       )}

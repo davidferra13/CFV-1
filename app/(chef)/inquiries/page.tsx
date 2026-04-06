@@ -29,6 +29,7 @@ import { formatDistanceToNow, format, differenceInHours } from 'date-fns'
 import type { BookingScore } from '@/lib/analytics/booking-score'
 import { isDemoInquiry } from '@/lib/onboarding/demo-data-utils'
 import { EmptyState } from '@/components/ui/empty-state'
+import { InquiriesOverflowSelect } from '@/components/inquiries/inquiries-overflow-select'
 
 const CHEF_ACTION_STATUSES = new Set(['new', 'awaiting_chef'])
 
@@ -247,25 +248,11 @@ export default async function InquiriesPage({
               </Button>
             </Link>
           ))}
-          <select
-            value={isOverflowActive ? filter : ''}
-            onChange={(e) => {
-              if (e.target.value) window.location.href = `/inquiries?status=${e.target.value}`
-            }}
-            aria-label="More status filters"
-            className={`h-8 shrink-0 rounded-md border px-2 text-xs focus:outline-none focus:ring-1 focus:ring-brand-500 ${
-              isOverflowActive
-                ? 'border-brand-500 bg-brand-950 text-brand-300'
-                : 'border-stone-700 bg-stone-900 text-stone-300'
-            }`}
-          >
-            <option value="">More...</option>
-            {overflowTabs.map((tab) => (
-              <option key={tab.value} value={tab.value}>
-                {tab.label}
-              </option>
-            ))}
-          </select>
+          <InquiriesOverflowSelect
+            isActive={isOverflowActive}
+            currentValue={filter}
+            options={overflowTabs}
+          />
         </div>
       </Card>
 

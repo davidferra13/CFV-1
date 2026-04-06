@@ -66,7 +66,7 @@
 ### For Operators `/for-operators`
 
 - **File:** `app/(public)/for-operators/page.tsx`
-- **Description:** B2B landing page. "The operating system for private chefs." 4 principles strip, 6-capability numbered grid (Clients, Events, Menus, Finances, Recipes, AI Assistant). Get Started Free CTA.
+- **Description:** Operator landing page. "The operating system for food operators." 4 principles strip (Free/Self-hosted/Zero commission/100% private), 4 research-backed pain point cards (invisible labor, food cost tracking, client LTV, seasonality) with ChefFlow solutions, 8-capability numbered grid (Clients, Events, Menus & Food Costing, Finances, Recipes, Inventory & Vendors, Staff, AI Assistant), origin story section, Get Started Free CTA.
 - **SEO:** Title, description, OG, canonical
 - **Theme:** Dark (hero-glow effect)
 - **Data:** Static
@@ -82,8 +82,8 @@
 ### FAQ `/faq`
 
 - **File:** `app/(public)/faq/page.tsx`
-- **Description:** 6 FAQs in expandable `<details>` elements. Covers target user, scaling, payments, implementation, migration, security.
-- **SEO:** Title, description, OG, canonical. JSON-LD: FAQPage schema.
+- **Description:** 24 FAQs organized into 3 categories (For Clients, Running a Food Business, Using ChefFlow) with jump links. Covers hiring a chef, pricing, food costing (yield factors, Q-factor, actual vs. theoretical), business growth, seasonality, client lifetime value, platform features, migration, and security.
+- **SEO:** Title, description, OG, canonical. JSON-LD: FAQPage schema with all 24 questions.
 - **Theme:** Dark
 - **Data:** Static
 

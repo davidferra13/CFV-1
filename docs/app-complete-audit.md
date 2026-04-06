@@ -1978,16 +1978,31 @@ Open booking form. Client describes event, gets matched to nearby chefs.
 
 **API:** `POST /api/book` - rate limited (5/10min per IP), Turnstile CAPTCHA, email validation, honeypot. Matches chefs via `matchChefsForBooking()` (Haversine distance, service type, guest count). Creates inquiry + draft event under each matched chef (up to 10). Sends chef notification emails + client confirmation.
 
+### FAQ (`/faq`)
+
+24 questions organized into 3 categories with schema.org FAQPage markup and jump links.
+
+| Element                 | Description                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Hero                    | "Questions from chefs, clients, and operators"                                                                            |
+| Jump links              | Category navigation (For Clients, Running a Food Business, Using ChefFlow)                                                |
+| For Clients             | 6 questions (pricing, inquiries, services, booking, payments, allergies)                                                  |
+| Running a Food Business | 9 questions (food cost %, pricing, yield, Q-factor, scope creep, scaling, seasonality, actual vs theoretical, client LTV) |
+| Using ChefFlow          | 9 questions (who it's for, cost, growth, migration, pipeline, costing, privacy, setup, trust)                             |
+| Bottom CTA              | Trust center link + signup CTA                                                                                            |
+
 ### For Operators (`/for-operators`)
 
-Original SaaS landing page (preserved from pre-marketplace pivot). Targets chef operators.
+Operator landing page with research-backed pain points and capability grid.
 
-| Element            | Description                                                       |
-| ------------------ | ----------------------------------------------------------------- |
-| Hero               | "Run your food business on ChefFlow" with signup CTA              |
-| Principles section | Core platform principles (privacy-first, financial clarity, etc.) |
-| Capabilities grid  | Feature cards organized by category                               |
-| Bottom CTA         | "Get started" linking to signup                                   |
+| Element             | Description                                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Hero                | "The operating system for food operators" with signup + sign in CTAs                                        |
+| Principles strip    | Free / Self-hosted / Zero commission / 100% private                                                         |
+| Pain points section | 4 cards: invisible labor, food cost tracking, client LTV, seasonality                                       |
+| Capabilities grid   | 8 cards: Clients, Events, Menus & Food Costing, Finances, Recipes, Inventory & Vendors, Staff, AI Assistant |
+| Origin story        | "Built by a chef who lived the problem" section                                                             |
+| Bottom CTA          | "Your craft deserves better tools" + signup                                                                 |
 
 ### Navigation (Public Header)
 

@@ -35,6 +35,7 @@ interface FormData {
   budget: string
   favorite_ingredients_dislikes: string
   additional_notes: string
+  referral_source: string
   website_url: string
 }
 
@@ -120,6 +121,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
     budget: '',
     favorite_ingredients_dislikes: '',
     additional_notes: '',
+    referral_source: '',
     website_url: '',
   })
 
@@ -270,6 +272,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         favorite_ingredients_dislikes: formData.favorite_ingredients_dislikes.trim(),
         allergies_food_restrictions: serializeDietaryIntake(dietaryIntake),
         additional_notes: formData.additional_notes.trim(),
+        referral_source: formData.referral_source.trim() || undefined,
         website_url: formData.website_url,
       })
 
@@ -297,6 +300,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         budget: '',
         favorite_ingredients_dislikes: '',
         additional_notes: '',
+        referral_source: '',
         website_url: '',
       })
     } catch (err) {
@@ -528,6 +532,24 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             </h3>
             <DietaryIntakeFields value={dietaryIntake} onChange={setDietaryIntake} compact />
           </div>
+
+          <Select
+            label="How did you hear about this chef?"
+            name="referral_source"
+            value={formData.referral_source}
+            onChange={handleChange}
+            options={[
+              { value: '', label: 'Select one (optional)' },
+              { value: 'friend_or_family', label: 'Friend or family referral' },
+              { value: 'google_search', label: 'Google search' },
+              { value: 'instagram', label: 'Instagram' },
+              { value: 'facebook', label: 'Facebook' },
+              { value: 'chefflow_directory', label: 'ChefFlow directory' },
+              { value: 'event_platform', label: 'Event planning platform' },
+              { value: 'repeat_client', label: "I've worked with this chef before" },
+              { value: 'other', label: 'Other' },
+            ]}
+          />
 
           <Input
             label="Additional Notes"
