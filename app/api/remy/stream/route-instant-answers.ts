@@ -1701,6 +1701,69 @@ const INSTANT_PATTERNS: AnswerPattern[] = [
       }
     },
   },
+
+  // ─── Food Costing Knowledge (deterministic, from canonical guide) ────────
+  // "What is food cost percentage?" / "How do I calculate food cost?"
+  {
+    pattern:
+      /^(?:what(?:'s|\s+is)\s+(?:a\s+)?food\s+cost\s*%?|how\s+(?:do\s+i|to)\s+calculate\s+food\s+cost|explain\s+food\s+cost)/i,
+    answer: () => ({
+      text: `**Food Cost Percentage** is the portion of your selling price consumed by ingredient costs.\n\n**Formula:** Food Cost % = (Total Ingredient Cost / Selling Price) x 100\n\n**Target range:** 25-35% for most operations. Above 45% is a warning; above 50% is critical.\n\nIf your food cost is above target, check yield factors, portion sizes, and ingredient prices first. Menu engineering (subsidizing high-cost items with low-cost ones) can bring the blend into range.`,
+      navSuggestions: [
+        { label: 'Food Costing Guide', href: '/help/food-costing' },
+        { label: 'Costing Dashboard', href: '/culinary/costing' },
+      ],
+    }),
+  },
+  // "What is Q-factor?" / "What's the Q factor?"
+  {
+    pattern: /^(?:what(?:'s|\s+is)\s+(?:the\s+)?q[\s-]?factor|explain\s+q[\s-]?factor)/i,
+    answer: () => ({
+      text: `**Q-Factor** is a percentage added to your recipe cost to cover small incidental ingredients you don't individually track: cooking oil, salt, pepper, butter for pans, garnish herbs, and so on.\n\n**Formula:** Adjusted Cost = Direct Ingredient Cost x (1 + Q-Factor %)\n\n**Default:** 7%. Recommended range: 5-8% for most kitchens.\n\nWithout Q-factor, your food cost is systematically undercounted. Set to 0% only if you track every single ingredient including oil and seasoning.`,
+      navSuggestions: [
+        { label: 'Food Costing Guide', href: '/help/food-costing' },
+        { label: 'Pricing Settings', href: '/settings/pricing' },
+      ],
+    }),
+  },
+  // "What is yield factor?" / "What's AP vs EP?" / "What's as purchased vs edible portion?"
+  {
+    pattern:
+      /^(?:what(?:'s|\s+is)\s+(?:a\s+)?(?:yield\s+factor|AP\s+vs\s+EP|as\s+purchased|edible\s+portion)|explain\s+yield)/i,
+    answer: () => ({
+      text: `**Yield Factor** is the ratio of usable product (Edible Portion) to purchased product (As Purchased).\n\n**Formula:** EP Cost = AP Cost / Yield Factor\n\nA yield of 0.65 means 35% waste. A $4/lb chicken breast with 0.72 yield actually costs $5.56/lb of usable meat.\n\n**Key rules:**\n- Trim yield is always <= 1.0\n- Cooking yield CAN exceed 1.0 (rice, pasta, beans absorb water)\n- Combined yield = trim yield x cooking yield\n\nAlways cost recipes using EP cost, not AP cost. Costing against AP weight systematically undercounts your true cost.`,
+      navSuggestions: [{ label: 'Food Costing Guide', href: '/help/food-costing' }],
+    }),
+  },
+  // "What is prime cost?" / "What's prime cost?"
+  {
+    pattern: /^(?:what(?:'s|\s+is)\s+(?:a\s+)?prime\s+cost|explain\s+prime\s+cost)/i,
+    answer: () => ({
+      text: `**Prime Cost** is food cost plus labor cost as a percentage of revenue. It's the single most important profitability metric in food service.\n\n**Formula:** Prime Cost % = (Food Cost + Labor Cost) / Revenue x 100\n\n**Target:** 55-65% of revenue. Above 65% means you're likely losing money. Above 75% is a red flag.\n\nPrime cost matters more than food cost alone because it captures your two biggest variable expenses together.`,
+      navSuggestions: [{ label: 'Food Costing Guide', href: '/help/food-costing' }],
+    }),
+  },
+  // "What is cost plus?" / "How does cost plus work?"
+  {
+    pattern:
+      /^(?:what(?:'s|\s+is)\s+(?:the\s+)?cost[\s-]?plus|how\s+does\s+cost[\s-]?plus\s+work|explain\s+cost[\s-]?plus)/i,
+    answer: () => ({
+      text: `**Cost-Plus Pricing** builds your price from the bottom up: food cost + labor + overhead + incidentals + profit margin.\n\n**Formula:** Price = (Food + Labor + Overhead + Incidentals) x (1 + Profit Margin %)\n\n**When to use it:** Catering, private chef events, and any job where labor and overhead vary significantly between jobs.\n\n**Typical profit margin:** 15-25% after all costs are covered.\n\nCost-plus ensures every cost is accounted for before adding profit. Food cost percentage (Method 1) works backward from a revenue target instead.`,
+      navSuggestions: [
+        { label: 'Food Costing Guide', href: '/help/food-costing' },
+        { label: 'Costing Dashboard', href: '/culinary/costing' },
+      ],
+    }),
+  },
+  // "What is contribution margin?" / "Explain contribution margin"
+  {
+    pattern:
+      /^(?:what(?:'s|\s+is)\s+(?:a\s+)?contribution\s+margin|explain\s+contribution\s+margin)/i,
+    answer: () => ({
+      text: `**Contribution Margin** is the dollar amount left after subtracting food cost from selling price.\n\n**Formula:** Contribution Margin = Selling Price - Food Cost\n\nA $50 steak at 40% food cost contributes **$30**. A $15 pasta at 25% food cost contributes **$11.25**.\n\nThe steak has worse food cost % but nearly 3x the contribution margin. That's why contribution margin and food cost % should always be viewed together.`,
+      navSuggestions: [{ label: 'Food Costing Guide', href: '/help/food-costing' }],
+    }),
+  },
 ]
 
 /**
@@ -1835,6 +1898,12 @@ function getAnswerTopic(pattern: RegExp): string {
   if (/lesson|AAR|after.*action|went.*wrong/.test(src)) return 'reviews'
   if (/business.*health|business.*summary|how.*business/.test(src)) return 'revenue'
   if (/recent.*activity|been.*happening/.test(src)) return 'general'
+  if (
+    /food\s+cost|q[\s-]?factor|yield\s+factor|prime\s+cost|cost[\s-]?plus|contribution\s+margin/.test(
+      src
+    )
+  )
+    return 'costing'
   return 'general'
 }
 

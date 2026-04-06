@@ -1564,6 +1564,7 @@ The Remy drawer (`components/ai/remy-drawer.tsx`) has 5 views accessible via ico
 
 **Route:** `/help` — Help article index with category cards, search input, and featured articles.
 **Route:** `/help/[slug]` — Individual help article pages with breadcrumb, rich content, and related articles sidebar.
+**Route:** `/help/food-costing` — Food Costing Knowledge Base. Full guide with quick reference card (Q-factor, target food cost, prime cost threshold, variance target), table of contents grouped by Part (1-6), key concept cards (20 topics with formulas, target ranges, and guidance), operator targets table (13 operation types with food cost %, prime cost, Q-factor, re-cost frequency), and variance response thresholds (5 severity levels with actions). Links back to Help Center and Costing Dashboard.
 
 ---
 

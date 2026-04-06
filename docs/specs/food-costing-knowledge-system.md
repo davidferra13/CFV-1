@@ -1,6 +1,6 @@
 # Spec: Food Costing Knowledge System
 
-> **Status:** ready
+> **Status:** built
 > **Priority:** P1 (next up)
 > **Depends on:** `auto-costing-engine.md` (verified), `chef-pricing-override-infrastructure.md` (built)
 > **Estimated complexity:** medium (3-8 files)
@@ -11,6 +11,7 @@
 | ------------- | ---------------- | --------------- | ------ |
 | Created       | 2026-04-05 21:00 | planner session |        |
 | Status: ready | 2026-04-05 21:00 | planner session |        |
+| Status: built | 2026-04-05       | builder session |        |
 
 ---
 
