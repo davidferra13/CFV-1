@@ -219,6 +219,16 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on departure: green (tsc clean, build 604e88183 verified)
 - Notes: Committed 43 uncommitted files across 6 logical commits. Fixed invisible text on all admin pages (text-slate-900 on bg-stone-900). Fixed 2 Zero Hallucination violations (admin chef detail silent zeros, store preferences silent failure). No em dash or OpenClaw branding violations found in user-visible surfaces.
 
+## 2026-04-05 ~20:00 EST
+
+- Agent: General (Claude Opus 4.6)
+- Task: Golden standard audit of all public-facing pages
+- Status: completed
+- Files touched: app/(public)/contact/\_components/contact-form.tsx, app/(public)/terms/\_components/terms-extended-sections.tsx, app/(public)/privacy/page.tsx, app/(public)/page.tsx, app/(public)/how-it-works/page.tsx, app/(public)/about/page.tsx, app/(public)/book/page.tsx, app/(public)/services/page.tsx, app/(public)/partner-signup/page.tsx, app/(public)/chefs/page.tsx, app/not-found.tsx, app/api/sentinel/health/route.ts, app/api/openclaw/webhook/route.ts, lib/auth/route-policy.ts, components/navigation/nav-config.tsx, docs/public-pages-inventory.md
+- Commits: 7f18f3336, 6ca0272f2, 699fb96b7
+- Build state on departure: green (tsc clean, build green)
+- Notes: Multi-stakeholder audit (chef, consumer, legal, operator, technical, regulatory). Fixed: contact form dark theme, MA governing law, Resend privacy link, "vetted"->reviewed" (7 pages), dynamic chef count on landing, better 404 nav, webhook fail-closed (removed hardcoded secret), sentinel stripped BUILD_ID, cannabis nav removed, dead /api/v1 skip-auth removed, duplicate /privacy-policy route removed. Documented 6 future legal items for attorney review.
+
 ## 2026-04-05 ~19:30 EST
 
 - Agent: General (Claude Opus 4.6)
