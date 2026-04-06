@@ -28,7 +28,7 @@ ChefFlow is an operating system for food service professionals. It replaces 10+ 
 ## V1 Progress
 
 ```
-BUILD COMPLETENESS    [===========================-] 91%
+BUILD COMPLETENESS    [============================-] 93%
 SECURITY HARDENING    [=====================-------] 80%
 POLISH & UX           [==================----------] 70%
 VALIDATION            [===-------------------------] 10%
@@ -37,7 +37,7 @@ LAUNCH READINESS      [=====-----------------------] 20%
 OVERALL V1 PROGRESS   [====================--------] 68%
 ```
 
-**What this means:** The software is 91% built. But shipping a product requires more than code. Validation (proving people want this) and launch readiness (marketing, onboarding, acquisition) are the remaining work.
+**What this means:** The software is 93% built. But shipping a product requires more than code. Validation (proving people want this) and launch readiness (marketing, onboarding, acquisition) are the remaining work.
 
 ---
 
@@ -94,7 +94,7 @@ Manage the craft. Recipes are the chef's IP.
 - [x] Seasonal Palettes (seasonal ingredient/dish curation)
 - [x] Recipe photo gallery
 
-### 4. STOCK (Inventory, Pricing, Vendors) - 90% Complete
+### 4. STOCK (Inventory, Pricing, Vendors) - 95% Complete
 
 Know what things cost, where to buy them, what's on hand.
 
@@ -102,11 +102,14 @@ Know what things cost, where to buy them, what's on hand.
 - [x] Vendor management (contact, pricing, order history)
 - [x] Inventory tracking (on-hand stock, reorder alerts, movement log)
 - [x] Price history visualization (line charts, source attribution)
-- [x] Auto-costing engine (8-tier price resolution chain)
+- [x] Auto-costing engine (10-tier price resolution chain, auto-price on ingredient add)
 - [x] Grocery list generation (from menus/events)
 - [x] Cost forecasting (linear interpolation from historical data)
 - [x] Universal price intelligence (cross-store averaging, safety net)
 - [x] Chef pricing overrides (manual per-ingredient override)
+- [x] Ingredient auto-matching (pg_trgm vs 5,435 canonical names, alias-aware pricing)
+- [x] Centralized unit conversions (single source of truth, zero duplicated constants)
+- [x] Operator-aware food cost targets (14 operation types, dynamic thresholds)
 - [ ] **Bulk menu import** - spec ready, not built
 
 ### 5. MONEY (Invoicing, Ledger, Tax, Reporting) - 92% Complete
@@ -131,7 +134,7 @@ Track every dollar in and out. Immutable, auditable, real.
 Build relationships, understand the business, get visible.
 
 - [x] Client CRM (30-panel relationship hub, unified timeline)
-- [x] Analytics hub (inquiry funnel, revenue trends, utilization, cost tracking)
+- [x] Analytics hub (inquiry funnel, revenue trends, utilization, cost tracking; 5 metrics deferred with honest "N/A" states)
 - [x] Public chef profile (avatar, bio, reviews, JSON-LD SEO)
 - [x] Reviews management (internal + external, approval workflow)
 - [x] Client segmentation (custom segments with filters)
@@ -200,12 +203,14 @@ V1 is "done" and ready to ship when ALL of the following are true:
 
 ## What's Actively Being Worked On
 
-| Item                             | Status   | Owner                                      |
-| -------------------------------- | -------- | ------------------------------------------ |
-| 6-pillar Playwright walkthrough  | Written  | Tests ready, blocked on dev server restart |
-| Infrastructure system completion | Complete | Merged to main                             |
+| Item                                   | Status   | Owner                                      |
+| -------------------------------------- | -------- | ------------------------------------------ |
+| 6-pillar Playwright walkthrough        | Written  | Tests ready, blocked on dev server restart |
+| Infrastructure system completion       | Complete | Merged to main                             |
+| Food costing pipeline (full E2E)       | Complete | Merged to main (Apr 6)                     |
+| Analytics honesty (zero-hallucination) | Complete | Merged to main (Apr 6)                     |
 
-_Last cleared: 2026-04-04. Completed items moved to queue or exit criteria._
+_Last cleared: 2026-04-06. Completed items moved to queue or exit criteria._
 
 ---
 
