@@ -295,11 +295,11 @@ export default async function Home() {
 
         <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-4 pb-8 pt-20 text-center sm:px-6 md:pb-14 md:pt-28 lg:px-8">
           <h1 className="max-w-4xl text-4xl font-display tracking-tight text-white md:text-5xl lg:text-6xl">
-            Find a private chef <span className="text-gradient">near you.</span>
+            Hire a chef who actually <span className="text-gradient">does this.</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-stone-300 md:text-xl">
-            Browse by cuisine, location, or occasion. Connect directly with reviewed chefs for
-            private dinners, catering, meal prep, and more.
+            Private dinners, catering, meal prep, cooking classes. Browse real profiles, see what
+            they specialize in, and reach out directly. No platform fee, no middleman.
           </p>
 
           {/* Dual CTAs */}
@@ -308,7 +308,7 @@ export default async function Home() {
               href="/book"
               className="flex h-14 w-full items-center justify-center rounded-2xl gradient-accent text-base font-semibold text-white glow-hover shadow-lg transition-transform active:scale-[0.97] touch-manipulation"
             >
-              Book a Private Chef
+              Describe Your Event
             </Link>
             <div className="relative flex items-center gap-4">
               <div className="flex-1 border-t border-stone-700/60" />
@@ -320,50 +320,39 @@ export default async function Home() {
             <HomepageSearch />
           </div>
 
-          {/* Trust signals */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-stone-400">
-            <span className="flex items-center gap-2">
-              <svg className="h-4 w-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Free to browse
-            </span>
-            <span className="flex items-center gap-2">
-              <svg className="h-4 w-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              No middleman
-            </span>
-            <span className="flex items-center gap-2">
-              <svg className="h-4 w-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              Zero commission
-            </span>
-            <span className="flex items-center gap-2">
-              <svg className="h-4 w-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              {allChefs.length > 0
-                ? `${allChefs.length} reviewed chef${allChefs.length !== 1 ? 's' : ''}`
-                : 'Every chef is reviewed'}
-            </span>
+          {/* Trust line */}
+          <p className="mt-8 text-sm text-stone-500">
+            {allChefs.length > 0
+              ? `${allChefs.length} chef${allChefs.length !== 1 ? 's' : ''} listed`
+              : 'Chefs listed'}
+            {' \u00B7 '}Free to browse{' \u00B7 '}You pay the chef directly
+          </p>
+        </div>
+      </section>
+
+      {/* What to expect */}
+      <section className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid gap-6 sm:grid-cols-3">
+          <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+            <p className="text-sm font-semibold text-stone-200">$50 - $150+ per person</p>
+            <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
+              For private dinners. Weekly meal prep runs $200 - $800. Every chef sets their own
+              pricing.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+            <p className="text-sm font-semibold text-stone-200">You deal with the chef</p>
+            <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
+              No call center, no algorithm matching. You pick who you want and message them
+              directly.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+            <p className="text-sm font-semibold text-stone-200">Menu to cleanup, handled</p>
+            <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
+              Most chefs handle planning, shopping, cooking, plating, and cleanup. You host, they
+              handle the rest.
+            </p>
           </div>
         </div>
       </section>
@@ -377,7 +366,7 @@ export default async function Home() {
                 Featured chefs
               </h2>
               <p className="mt-2 text-sm text-stone-400">
-                Reviewed professionals ready to create your next experience.
+                Browse profiles, see their work, reach out when you are ready.
               </p>
             </div>
             <Link

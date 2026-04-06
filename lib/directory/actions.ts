@@ -116,9 +116,16 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
   }
 
   // Filter: must be directory_approved=true OR be the founder
+  // Also exclude test/demo accounts from public listings
   const approved = (data || []).filter((c: any) => {
     const isFounder = isFounderEmail(c.email)
-    return c.directory_approved === true || isFounder
+    const isApproved = c.directory_approved === true || isFounder
+    if (!isApproved) return false
+    // Exclude test accounts (agent test, demo seeds) from public directory
+    const email = (c.email || '').toLowerCase()
+    if (email.endsWith('@local.chefflow')) return false
+    if (email.includes('demo@') || email.includes('test@')) return false
+    return true
   })
 
   const chefIds = approved.map((c: any) => c.id)

@@ -93,29 +93,18 @@ const CAPABILITIES = [
   },
 ]
 
-const PRINCIPLES = [
-  { stat: 'Free', label: 'forever' },
-  { stat: 'Self', label: 'hosted' },
-  { stat: 'Zero', label: 'commission' },
-  { stat: '100%', label: 'private' },
-]
-
 export default function ForOperatorsPage() {
   return (
     <main>
       {/* Hero */}
       <section className="relative overflow-hidden hero-glow">
         <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-4 pb-12 pt-24 text-center sm:px-6 md:pb-20 md:pt-32 lg:px-8">
-          <p className="mb-6 rounded-full border border-brand-700/30 bg-brand-950/40 px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-brand-300">
-            Ops for Artists
-          </p>
           <h1 className="max-w-4xl fluid-display-xl font-display tracking-tight text-gradient">
-            The operating system for food operators.
+            You are a great cook running on guesswork.
           </h1>
           <p className="mt-8 max-w-2xl text-lg leading-relaxed text-stone-300 md:text-xl">
-            Clients, events, menus, food costing, recipes, finances, and staff.
-            <br className="hidden sm:inline" />
-            One platform that respects your craft and your privacy.
+            ChefFlow is the back office you never had. Clients, events, menus, food costing with
+            real yield factors, finances, recipes, inventory, staff. One place, free, private.
           </p>
 
           <div className="mt-12 flex flex-col items-center gap-4 sm:flex-row">
@@ -132,20 +121,6 @@ export default function ForOperatorsPage() {
               Sign In
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Principles */}
-      <section className="border-t border-stone-800/40">
-        <div className="mx-auto grid w-full max-w-3xl grid-cols-2 gap-8 px-4 py-10 sm:grid-cols-4">
-          {PRINCIPLES.map((p) => (
-            <div key={p.stat} className="text-center">
-              <div className="text-2xl font-display font-bold text-stone-100">{p.stat}</div>
-              <div className="mt-1 text-xs font-medium uppercase tracking-wider text-stone-500">
-                {p.label}
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 
@@ -174,60 +149,37 @@ export default function ForOperatorsPage() {
         </div>
       </section>
 
-      {/* Capabilities */}
+      {/* What is in the box */}
       <section className="mx-auto w-full max-w-4xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
-        <h2 className="text-center font-display text-3xl font-bold tracking-tight text-stone-100 md:text-4xl">
-          Everything you need.
-          <br />
-          <span className="text-stone-500">Nothing you don&apos;t.</span>
+        <h2 className="font-display text-2xl font-bold tracking-tight text-stone-100 md:text-3xl">
+          What you get
         </h2>
-        <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-stone-800/60 sm:grid-cols-2">
-          {CAPABILITIES.map((cap, i) => (
+        <p className="mt-3 text-sm text-stone-400">
+          Everything below is free. No tiers, no paywalls, no feature gates.
+        </p>
+        <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-stone-800/60 sm:grid-cols-2">
+          {CAPABILITIES.map((cap) => (
             <div
               key={cap.title}
               className="bg-stone-900/40 px-6 py-6 transition-colors hover:bg-stone-900/70 sm:py-8"
             >
-              <div className="flex items-baseline gap-3">
-                <span className="text-lg font-display font-bold text-brand-500">
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <div>
-                  <h3 className="text-base font-semibold text-stone-100">{cap.title}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-stone-400">{cap.detail}</p>
-                </div>
-              </div>
+              <h3 className="text-base font-semibold text-stone-100">{cap.title}</h3>
+              <p className="mt-1 text-sm leading-relaxed text-stone-400">{cap.detail}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Social proof stat */}
-      <section className="border-t border-stone-800/40 bg-stone-950/40">
-        <div className="mx-auto w-full max-w-3xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-          <p className="text-sm font-medium uppercase tracking-wider text-stone-500">
-            Built by a chef who lived the problem
-          </p>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-300">
-            10+ years of private chef work. Recipes in my head, receipts in shoeboxes, client info
-            scattered across text threads and sticky notes. ChefFlow exists because I needed it
-            first.
-          </p>
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="border-t border-stone-800/40">
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-20 text-center sm:px-6 md:py-28 lg:px-8">
-          <h2 className="font-display text-3xl font-bold tracking-tight text-stone-100 md:text-4xl">
-            Your craft deserves better tools.
-          </h2>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-stone-400">
-            Stop juggling spreadsheets, texts, and sticky notes. ChefFlow brings your entire
-            operation into one place so you can focus on cooking.
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-16 text-center sm:px-6 md:py-20 lg:px-8">
+          <p className="max-w-xl text-base leading-relaxed text-stone-300">
+            If you are tired of running your business across 6 different apps, spreadsheets, and
+            text threads, this is the one place that replaces all of them.
           </p>
           <Link
             href="/auth/signup"
-            className="mt-10 inline-flex h-14 items-center justify-center rounded-2xl gradient-accent px-10 text-base font-semibold text-white glow-hover shadow-lg"
+            className="mt-8 inline-flex h-14 items-center justify-center rounded-2xl gradient-accent px-10 text-base font-semibold text-white glow-hover shadow-lg"
           >
             Start for Free
           </Link>

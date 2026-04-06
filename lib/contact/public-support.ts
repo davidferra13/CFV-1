@@ -102,10 +102,7 @@ export function buildContactSupportInfo(params: {
       isOpen: null,
       statusLabel: null,
       currentTimeLabel: null,
-      hoursSummary: [
-        { dayLabel: 'Monday - Friday', hoursLabel: '9:00 AM - 5:00 PM PST' },
-        { dayLabel: 'Saturday - Sunday', hoursLabel: 'Closed' },
-      ],
+      hoursSummary: [{ dayLabel: 'Monday - Sunday', hoursLabel: 'We respond within 24 hours' }],
     }
   }
 

@@ -3,17 +3,17 @@ export const PLATFORM_NAME = 'ChefFlow'
 export const PLATFORM_AUDIENCE_LABEL =
   'private chefs, caterers, meal prep operators, and chef-led hospitality teams'
 
-export const PLATFORM_TAGLINE = 'Find a private chef near you.'
+export const PLATFORM_TAGLINE = 'Ops for Artists.'
 
 export const PLATFORM_META_DESCRIPTION =
   'Discover private chefs for dinners, catering, meal prep, and chef-led experiences. Browse profiles, check availability, and send an inquiry in minutes. For operators: the workspace for client records, events, menus, and margins.'
 
 export const PLATFORM_SHORT_DESCRIPTION = 'Discover private chefs and chef-led dining experiences.'
 
-export const PLATFORM_HERO_HEADLINE = 'Find a private chef near you.'
+export const PLATFORM_HERO_HEADLINE = 'Hire a chef who actually does this.'
 
 export const PLATFORM_HERO_COPY =
-  'Browse vetted chefs by cuisine, location, or occasion. Connect directly for private dinners, catering, meal prep, and chef-led dining. No middleman, no commission.'
+  'Private dinners, catering, meal prep, cooking classes. Browse real profiles, see what they specialize in, and reach out directly. No platform fee, no middleman.'
 
 export const PLATFORM_KEYWORDS = [
   // Consumer-facing

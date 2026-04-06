@@ -4,13 +4,12 @@ import Link from 'next/link'
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 export const metadata: Metadata = {
-  title: 'How It Works - Book a Chef in 3 Steps',
+  title: 'How ChefFlow Works - For Clients and Chefs',
   description:
-    'Search reviewed chefs by location, cuisine, or service type. Connect directly with no middleman. Enjoy a chef-led experience.',
+    'How to find and book a private chef on ChefFlow. Browse profiles, send an inquiry, and connect directly. No platform fee, no middleman.',
   openGraph: {
-    title: 'How It Works - Book a Chef in 3 Steps',
-    description:
-      'Search reviewed chefs by location, cuisine, or service type. Connect directly with no middleman. Enjoy a chef-led experience.',
+    title: 'How ChefFlow Works',
+    description: 'Browse chef profiles, send an inquiry, connect directly. No fees on either side.',
     url: `${BASE_URL}/how-it-works`,
     siteName: 'ChefFlow',
     type: 'website',
@@ -20,136 +19,118 @@ export const metadata: Metadata = {
   },
 }
 
-const STEPS = [
-  {
-    step: '01',
-    title: 'Search',
-    description: 'Browse chefs by location, cuisine, or service type. Every profile is reviewed.',
-    detail:
-      'Use filters to narrow results by availability, pricing, dietary specialties, and more. View profiles, read reviews, and compare options before reaching out.',
-  },
-  {
-    step: '02',
-    title: 'Connect',
-    description: 'Send an inquiry directly. No middleman, no commission, no hidden fees.',
-    detail:
-      'Describe your event, guest count, dietary needs, and budget. The chef receives your inquiry instantly and responds on their schedule. You communicate directly, always.',
-  },
-  {
-    step: '03',
-    title: 'Enjoy',
-    description: 'Your chef handles the details. You enjoy the experience.',
-    detail:
-      'Menu planning, ingredient sourcing, on-site cooking, and cleanup. Your chef manages everything so you can focus on your guests.',
-  },
-]
-
-const TRUST_POINTS = [
-  {
-    label: 'Free to browse',
-    description: 'No account required to search and view chef profiles.',
-  },
-  {
-    label: 'No middleman',
-    description: 'You deal directly with the chef. We do not sit between you.',
-  },
-  {
-    label: 'Zero commission',
-    description: 'Chefs keep 100% of what they earn. No platform fees on either side.',
-  },
-  {
-    label: 'Every profile is reviewed',
-    description: 'Profiles are reviewed before going live. You see real experience and services.',
-  },
-]
-
 export default function HowItWorksPage() {
   return (
     <main>
-      <section className="mx-auto w-full max-w-5xl px-4 pt-20 pb-8 text-center sm:px-6 md:pt-28 md:pb-12 lg:px-8">
-        <h1 className="text-4xl font-display tracking-tight text-white md:text-5xl">
-          How it <span className="text-gradient">works.</span>
+      <section className="mx-auto w-full max-w-3xl px-4 pt-20 pb-8 sm:px-6 md:pt-28 md:pb-12 lg:px-8">
+        <h1 className="text-3xl font-display tracking-tight text-white md:text-4xl lg:text-5xl">
+          How it works
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-stone-300">
-          Three steps between you and a chef-led experience. No accounts, no fees, no complications.
+        <p className="mt-4 max-w-2xl text-base leading-relaxed text-stone-300">
+          ChefFlow connects you directly with food professionals. No algorithm matching, no call
+          center, no platform fee. Here is exactly what happens.
         </p>
       </section>
 
-      {/* Steps */}
-      <section className="mx-auto w-full max-w-4xl px-4 pb-16 sm:px-6 md:pb-24 lg:px-8">
-        <div className="space-y-12">
-          {STEPS.map((item, i) => (
-            <div
-              key={item.step}
-              className="flex flex-col items-start gap-6 sm:flex-row sm:items-start"
-            >
-              <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-brand-600/15 border border-brand-600/30">
-                <span className="text-xl font-display font-bold text-brand-400">{item.step}</span>
-              </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-semibold text-stone-100">{item.title}</h2>
-                <p className="mt-2 text-base text-stone-300">{item.description}</p>
-                <p className="mt-3 text-sm leading-relaxed text-stone-500">{item.detail}</p>
-              </div>
-              {i < STEPS.length - 1 && (
-                <div className="hidden sm:block absolute left-8 h-12 w-px bg-stone-800" />
-              )}
-            </div>
-          ))}
+      {/* For clients */}
+      <section className="mx-auto w-full max-w-3xl px-4 pb-14 sm:px-6 lg:px-8">
+        <h2 className="text-xl font-semibold text-stone-100">If you are looking for a chef</h2>
+        <div className="mt-8 space-y-6">
+          <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+            <h3 className="text-sm font-semibold text-stone-200">
+              1. Browse or describe what you need
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-stone-400">
+              You can browse the{' '}
+              <Link href="/chefs" className="text-brand-400 hover:underline">
+                chef directory
+              </Link>{' '}
+              and filter by location, cuisine, service type, and dietary specialties. Or skip
+              straight to the{' '}
+              <Link href="/book" className="text-brand-400 hover:underline">
+                booking form
+              </Link>{' '}
+              and describe your event (date, guest count, budget, dietary needs). No account
+              required for either.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+            <h3 className="text-sm font-semibold text-stone-200">
+              2. The chef gets your inquiry directly
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-stone-400">
+              Your message goes straight to the chef. They see your event details and respond on
+              their own schedule, usually within 24-48 hours. You communicate directly with the
+              person who will be cooking. There is no middleman translating your request.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+            <h3 className="text-sm font-semibold text-stone-200">
+              3. You agree on terms and they handle the rest
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-stone-400">
+              The chef sends you a proposal with menu, pricing, and what is included. Once you
+              agree, they handle menu planning, ingredient sourcing, cooking, plating, and cleanup.
+              Payment goes to the chef directly through Stripe. ChefFlow takes nothing.
+            </p>
+          </div>
         </div>
       </section>
 
-      {/* Trust signals */}
+      {/* For chefs */}
       <section className="border-t border-stone-800/40">
-        <div className="mx-auto w-full max-w-4xl px-4 py-16 sm:px-6 md:py-20 lg:px-8">
-          <h2 className="text-center font-display text-2xl font-bold text-stone-100 md:text-3xl tracking-tight">
-            Why people trust ChefFlow
-          </h2>
-          <div className="mt-12 grid gap-8 sm:grid-cols-2">
-            {TRUST_POINTS.map((point) => (
-              <div key={point.label} className="flex items-start gap-4">
-                <svg
-                  className="mt-0.5 h-5 w-5 flex-shrink-0 text-brand-400"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <div>
-                  <h3 className="text-sm font-semibold text-stone-100">{point.label}</h3>
-                  <p className="mt-1 text-sm text-stone-400">{point.description}</p>
-                </div>
-              </div>
-            ))}
+        <div className="mx-auto w-full max-w-3xl px-4 py-14 sm:px-6 lg:px-8">
+          <h2 className="text-xl font-semibold text-stone-100">If you are a chef</h2>
+          <div className="mt-8 space-y-6">
+            <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+              <h3 className="text-sm font-semibold text-stone-200">Create your profile</h3>
+              <p className="mt-2 text-sm leading-relaxed text-stone-400">
+                Sign up, fill in your services, cuisine types, coverage area, and pricing. Your
+                profile goes through a brief review before appearing in the public directory. This
+                is not a background check. We verify that your profile is complete, describes real
+                services, and has accurate contact information.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+              <h3 className="text-sm font-semibold text-stone-200">
+                Run your business from one place
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-stone-400">
+                Inquiries land in your inbox. Accept them, build a proposal, manage the event
+                lifecycle, track food costs, invoice the client, and follow up afterward. Everything
+                in one platform instead of scattered across email, spreadsheets, Venmo, and text
+                threads.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-stone-800/60 bg-stone-900/40 p-5">
+              <h3 className="text-sm font-semibold text-stone-200">
+                You keep 100% of what you earn
+              </h3>
+              <p className="mt-2 text-sm leading-relaxed text-stone-400">
+                No commission, no listing fee, no transaction percentage. Standard Stripe processing
+                fees apply (2.9% + 30c), which is the same rate you would pay with any other payment
+                processor. ChefFlow does not add anything on top.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA */}
       <section className="border-t border-stone-800/40">
-        <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-16 text-center sm:px-6 md:py-20 lg:px-8">
-          <h2 className="font-display text-2xl font-bold text-stone-100 md:text-3xl tracking-tight">
-            Ready to get started?
-          </h2>
-          <p className="mt-4 max-w-xl text-base text-stone-400 leading-relaxed">
-            Find a chef in your area and send an inquiry today.
-          </p>
-          <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center px-4 py-14 text-center sm:px-6 md:py-18 lg:px-8">
+          <div className="flex flex-col items-center gap-3 sm:flex-row">
             <Link
               href="/book"
               className="inline-flex h-12 items-center justify-center rounded-xl gradient-accent px-6 text-sm font-semibold text-white glow-hover shadow-lg"
             >
-              Book a Private Chef
+              Describe Your Event
             </Link>
             <Link
-              href="/chefs"
+              href="/for-operators"
               className="inline-flex h-12 items-center justify-center rounded-xl border border-stone-700 bg-stone-900/60 px-6 text-sm font-medium text-stone-300 transition-all hover:bg-stone-800 hover:border-stone-600 hover:text-stone-100"
             >
-              Browse Chefs
+              I Am a Chef
             </Link>
           </div>
         </div>

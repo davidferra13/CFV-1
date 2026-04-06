@@ -31,9 +31,8 @@ export function PublicFooter() {
             <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-400">
-            Built for {PLATFORM_AUDIENCE_LABEL}. Consumers can search chefs and chef-led dining
-            quickly, while operators run client memory, service ops, follow-up, and margins in one
-            workspace.
+            Find a private chef or run your food business from one place. Built by a chef, free to
+            use, no commission.
           </p>
         </div>
 
