@@ -14,6 +14,7 @@ import {
   type HistoricalEvent,
   type PricingIntelligenceResult,
 } from './pricing-intelligence'
+import { OPERATOR_TARGETS, type OperatorType } from '@/lib/costing/knowledge'
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -76,13 +77,15 @@ const MARGIN_TIERS = [
  * @param currentEvent - Event details for historical comparison
  * @param historicalEvents - Past events for percentile analysis
  * @param targetMargin - Desired profit margin (0.35 = 35%). Defaults to 0.35.
+ * @param operatorType - Operator type for benchmark thresholds. Defaults to private_chef.
  */
 export function calculatePricingRecommendation(
   costs: CostInputs,
   guestCount: number,
   currentEvent?: CurrentEvent | null,
   historicalEvents?: HistoricalEvent[] | null,
-  targetMargin: number = 0.35
+  targetMargin: number = 0.35,
+  operatorType: OperatorType = 'private_chef'
 ): PricingRecommendation {
   const warnings: string[] = []
 
@@ -200,10 +203,11 @@ export function calculatePricingRecommendation(
   }
 
   if (totalCostCents > 0 && costs.foodCostCents > 0) {
+    const targets = OPERATOR_TARGETS[operatorType] ?? OPERATOR_TARGETS.private_chef
     const foodPct = (costs.foodCostCents / totalCostCents) * 100
     if (foodPct > 50) {
       warnings.push(
-        `Food is ${Math.round(foodPct)}% of total cost. Industry benchmark is 25-35%. Consider menu adjustments.`
+        `Food is ${Math.round(foodPct)}% of total cost. Target for your operation type is ${targets.foodCostPctLow}-${targets.foodCostPctHigh}%. Consider menu adjustments.`
       )
     }
   }

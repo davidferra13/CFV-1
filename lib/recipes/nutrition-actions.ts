@@ -8,6 +8,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { searchFoods, getNutritionSummary } from '@/lib/nutrition/usda'
+import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
 import type { NutritionSummary } from '@/lib/nutrition/usda'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -55,50 +56,51 @@ export type IngredientNutrition = {
 // water-density approximation (1 mL ≈ 1 g). This is an estimate, not a lab
 // measurement - acceptable for a nutrition summary panel.
 
+// Derived from canonical constants in lib/costing/knowledge.ts
 const GRAMS_PER_UNIT: Record<string, number> = {
-  // Weight - exact
+  // Weight (from WEIGHT_CONVERSIONS)
   g: 1,
   gram: 1,
   grams: 1,
-  kg: 1000,
-  kilogram: 1000,
-  kilograms: 1000,
-  oz: 28.3495,
-  ounce: 28.3495,
-  ounces: 28.3495,
-  lb: 453.592,
-  lbs: 453.592,
-  pound: 453.592,
-  pounds: 453.592,
+  kg: WEIGHT_CONVERSIONS.KG_TO_G,
+  kilogram: WEIGHT_CONVERSIONS.KG_TO_G,
+  kilograms: WEIGHT_CONVERSIONS.KG_TO_G,
+  oz: WEIGHT_CONVERSIONS.OZ_TO_G,
+  ounce: WEIGHT_CONVERSIONS.OZ_TO_G,
+  ounces: WEIGHT_CONVERSIONS.OZ_TO_G,
+  lb: WEIGHT_CONVERSIONS.LB_TO_G,
+  lbs: WEIGHT_CONVERSIONS.LB_TO_G,
+  pound: WEIGHT_CONVERSIONS.LB_TO_G,
+  pounds: WEIGHT_CONVERSIONS.LB_TO_G,
 
-  // Volume - water-density approximation (1 mL ≈ 1 g)
+  // Volume - water-density approximation (1 mL ~ 1 g) (from VOLUME_CONVERSIONS)
   ml: 1,
   milliliter: 1,
   milliliters: 1,
-  l: 1000,
-  liter: 1000,
-  liters: 1000,
-  cup: 236.588,
-  cups: 236.588,
-  tbsp: 14.787,
-  tablespoon: 14.787,
-  tablespoons: 14.787,
-  tsp: 4.929,
-  teaspoon: 4.929,
-  teaspoons: 4.929,
-  floz: 29.574,
-  'fl oz': 29.574,
-  'fluid ounce': 29.574,
-  'fluid ounces': 29.574,
-  pint: 473.176,
-  pints: 473.176,
-  pt: 473.176,
-  quart: 946.353,
-  quarts: 946.353,
-  qt: 946.353,
-  gallon: 3785.41,
-  gallons: 3785.41,
-  gal: 3785.41,
+  l: VOLUME_CONVERSIONS.L_TO_ML,
+  liter: VOLUME_CONVERSIONS.L_TO_ML,
+  liters: VOLUME_CONVERSIONS.L_TO_ML,
+  cup: VOLUME_CONVERSIONS.CUP_TO_ML,
+  cups: VOLUME_CONVERSIONS.CUP_TO_ML,
+  tbsp: VOLUME_CONVERSIONS.TBSP_TO_ML,
+  tablespoon: VOLUME_CONVERSIONS.TBSP_TO_ML,
+  tablespoons: VOLUME_CONVERSIONS.TBSP_TO_ML,
+  tsp: VOLUME_CONVERSIONS.TSP_TO_ML,
+  teaspoon: VOLUME_CONVERSIONS.TSP_TO_ML,
+  teaspoons: VOLUME_CONVERSIONS.TSP_TO_ML,
+  floz: VOLUME_CONVERSIONS.FL_OZ_TO_ML,
+  'fl oz': VOLUME_CONVERSIONS.FL_OZ_TO_ML,
+  'fluid ounce': VOLUME_CONVERSIONS.FL_OZ_TO_ML,
+  'fluid ounces': VOLUME_CONVERSIONS.FL_OZ_TO_ML,
+  pint: VOLUME_CONVERSIONS.PINT_TO_ML,
+  pints: VOLUME_CONVERSIONS.PINT_TO_ML,
+  pt: VOLUME_CONVERSIONS.PINT_TO_ML,
+  quart: VOLUME_CONVERSIONS.QUART_TO_ML,
+  quarts: VOLUME_CONVERSIONS.QUART_TO_ML,
+  qt: VOLUME_CONVERSIONS.QUART_TO_ML,
+  gallon: VOLUME_CONVERSIONS.GALLON_TO_ML,
+  gallons: VOLUME_CONVERSIONS.GALLON_TO_ML,
+  gal: VOLUME_CONVERSIONS.GALLON_TO_ML,
 
   // Count-based - rough average for produce items (~100g each)
   each: 100,

@@ -15,6 +15,8 @@ interface Props {
   trendDirection: 'improving' | 'worsening' | 'stable' | 'insufficient_data'
   currentMonthAvg: number
   previousMonthAvg: number
+  /** Operator-specific food cost target range (low-high%). Defaults to 25-30%. */
+  targetRange?: { low: number; high: number }
 }
 
 export function FoodCostWidget({
@@ -24,6 +26,7 @@ export function FoodCostWidget({
   trendDirection,
   currentMonthAvg,
   previousMonthAvg,
+  targetRange,
 }: Props) {
   const badgeColor = getFoodCostBadgeColor(avgFoodCostPercent)
 
@@ -83,8 +86,10 @@ export function FoodCostWidget({
             )}
           </div>
 
-          {/* Benchmark line */}
-          <p className="text-xs text-stone-500 mt-2">Target: 25-30%</p>
+          {/* Benchmark line (operator-aware) */}
+          <p className="text-xs text-stone-500 mt-2">
+            Target: {targetRange?.low ?? 25}-{targetRange?.high ?? 30}%
+          </p>
         </>
       )}
     </div>

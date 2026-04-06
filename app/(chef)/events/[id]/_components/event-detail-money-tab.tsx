@@ -19,6 +19,10 @@ import { formatCurrency } from '@/lib/utils/currency'
 import type { CostForecast } from '@/lib/openclaw/cost-forecast-actions'
 import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
 import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
+import {
+  EventFoodCostInsight,
+  type MenuCostData,
+} from '@/components/costing/event-food-cost-insight'
 
 type EventDetailMoneyTabProps = {
   activeTab: EventDetailTab
@@ -39,6 +43,8 @@ type EventDetailMoneyTabProps = {
   eventLoyaltyPoints: number
   takeAChefFinance: any
   costForecast?: CostForecast | null
+  menuCostSummary?: MenuCostData | null
+  chefArchetype?: string | null
 }
 
 export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
@@ -61,6 +67,8 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
     eventLoyaltyPoints,
     takeAChefFinance,
     costForecast,
+    menuCostSummary,
+    chefArchetype,
   } = props
 
   return (
@@ -128,6 +136,16 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
             )}
           </div>
         </div>
+      )}
+
+      {/* Food Cost Analysis (operator-aware, from menu_cost_summary) */}
+      {menuCostSummary && (
+        <EventFoodCostInsight
+          menuCost={menuCostSummary}
+          quotedPriceCents={event.quoted_price_cents ?? null}
+          guestCount={event.guest_count ?? null}
+          archetype={chefArchetype}
+        />
       )}
 
       {/* Financial Summary */}

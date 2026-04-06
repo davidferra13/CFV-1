@@ -131,7 +131,28 @@ import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { EventIntelligencePanel } from '@/components/intelligence/event-intelligence-panel'
 import { getLifecycleProgress } from '@/lib/lifecycle/actions'
+import { getChefArchetype } from '@/lib/archetypes/actions'
 import { LifecycleProgressPanel } from '@/components/lifecycle/lifecycle-progress-panel'
+
+async function getEventMenuCostSummary(eventId: string) {
+  const db: any = createServerClient()
+  const { data } = await db
+    .from('menu_cost_summary')
+    .select(
+      'total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, total_component_count, has_all_recipe_costs'
+    )
+    .eq('event_id', eventId)
+    .single()
+
+  if (!data) return null
+  return {
+    totalRecipeCostCents: data.total_recipe_cost_cents as number | null,
+    costPerGuestCents: data.cost_per_guest_cents as number | null,
+    foodCostPercentage: data.food_cost_percentage as number | null,
+    totalComponentCount: data.total_component_count as number | null,
+    hasAllRecipeCosts: data.has_all_recipe_costs as boolean | null,
+  }
+}
 
 function isEventSoon(eventDate: string): boolean {
   const today = new Date()
@@ -257,6 +278,8 @@ export default async function EventDetailPage({
     eventReadiness,
     timelineEntries,
     lifecycleProgress,
+    menuCostSummary,
+    chefArchetype,
   ] = await Promise.all([
     getEventFinancialSummary(params.id),
     getEventTransitions(params.id),
@@ -298,6 +321,8 @@ export default async function EventDetailPage({
     getEventReadiness(params.id).catch(() => null),
     getEntityActivityTimeline('event', params.id),
     getLifecycleProgress(event.inquiry_id ?? undefined, params.id).catch(() => null),
+    getEventMenuCostSummary(params.id).catch(() => null),
+    getChefArchetype().catch(() => null),
   ])
 
   const eventLoyaltyPoints = (eventLoyaltyTxs as { points: number }[]).reduce(
@@ -775,6 +800,8 @@ export default async function EventDetailPage({
         eventLoyaltyPoints={eventLoyaltyPoints}
         takeAChefFinance={takeAChefFinance}
         costForecast={costForecast}
+        menuCostSummary={menuCostSummary}
+        chefArchetype={chefArchetype}
       />
 
       {/* ============================================ */}

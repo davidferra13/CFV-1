@@ -3,6 +3,11 @@
 // Handles same-type (volume-to-volume, weight-to-weight),
 // cross-type (volume-to-weight via ingredient density), and cost normalization.
 // Formula > AI. No LLM calls, ever.
+//
+// Conversion factors are sourced from the canonical knowledge layer
+// (lib/costing/knowledge.ts) to eliminate duplicated magic numbers.
+
+import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
 
 // ── Canonical Unit Aliases ──────────────────────────────────────────────────
 // Unifies aliases from grocery/unit-conversion.ts, formulas/unit-conversions.ts,
@@ -101,26 +106,28 @@ const UNIT_ALIASES: Record<string, string> = {
 }
 
 // ── Volume conversions (base unit: ml) ──────────────────────────────────────
+// Derived from canonical VOLUME_CONVERSIONS in lib/costing/knowledge.ts
 const VOLUME_TO_ML: Record<string, number> = {
-  tsp: 4.929,
-  tbsp: 14.787,
-  fl_oz: 29.574,
-  cup: 236.588,
-  pint: 473.176,
-  quart: 946.353,
-  gallon: 3785.41,
+  tsp: VOLUME_CONVERSIONS.TSP_TO_ML,
+  tbsp: VOLUME_CONVERSIONS.TBSP_TO_ML,
+  fl_oz: VOLUME_CONVERSIONS.FL_OZ_TO_ML,
+  cup: VOLUME_CONVERSIONS.CUP_TO_ML,
+  pint: VOLUME_CONVERSIONS.PINT_TO_ML,
+  quart: VOLUME_CONVERSIONS.QUART_TO_ML,
+  gallon: VOLUME_CONVERSIONS.GALLON_TO_ML,
   ml: 1,
-  dl: 100,
-  l: 1000,
+  dl: VOLUME_CONVERSIONS.DL_TO_ML,
+  l: VOLUME_CONVERSIONS.L_TO_ML,
 }
 
 // ── Weight conversions (base unit: grams) ───────────────────────────────────
+// Derived from canonical WEIGHT_CONVERSIONS in lib/costing/knowledge.ts
 const WEIGHT_TO_G: Record<string, number> = {
-  mg: 0.001,
+  mg: WEIGHT_CONVERSIONS.MG_TO_G,
   g: 1,
-  kg: 1000,
-  oz: 28.3495,
-  lb: 453.592,
+  kg: WEIGHT_CONVERSIONS.KG_TO_G,
+  oz: WEIGHT_CONVERSIONS.OZ_TO_G,
+  lb: WEIGHT_CONVERSIONS.LB_TO_G,
 }
 
 // ── Unit type detection ─────────────────────────────────────────────────────

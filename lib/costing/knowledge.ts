@@ -579,30 +579,44 @@ export const OPERATOR_TARGETS: Record<OperatorType, OperatorTargets> = {
 // Unit conversion constants (from reference data Section 1)
 // ---------------------------------------------------------------------------
 
+/**
+ * Canonical weight conversion factors (base unit: grams).
+ * These are the single source of truth - all conversion code should
+ * import from here rather than hardcoding magic numbers.
+ */
 export const WEIGHT_CONVERSIONS = {
-  OZ_TO_G: 28.35,
-  LB_TO_G: 453.59,
+  OZ_TO_G: 28.3495,
+  LB_TO_G: 453.592,
   LB_TO_OZ: 16,
-  KG_TO_LB: 2.205,
+  KG_TO_LB: 2.20462,
   KG_TO_G: 1000,
+  MG_TO_G: 0.001,
 } as const
 
+/**
+ * Canonical volume conversion factors (base unit: ml).
+ * These are the single source of truth - all conversion code should
+ * import from here rather than hardcoding magic numbers.
+ */
 export const VOLUME_CONVERSIONS = {
-  TSP_TO_ML: 4.93,
+  TSP_TO_ML: 4.929,
   TBSP_TO_TSP: 3,
-  TBSP_TO_ML: 14.79,
+  TBSP_TO_ML: 14.787,
   FL_OZ_TO_TBSP: 2,
-  FL_OZ_TO_ML: 29.57,
+  FL_OZ_TO_ML: 29.574,
   CUP_TO_FL_OZ: 8,
-  CUP_TO_ML: 236.59,
+  CUP_TO_ML: 236.588,
   PINT_TO_CUPS: 2,
-  PINT_TO_ML: 473.18,
+  PINT_TO_ML: 473.176,
   QUART_TO_PINTS: 2,
   QUART_TO_CUPS: 4,
-  QUART_TO_L: 0.946,
+  QUART_TO_ML: 946.353,
+  QUART_TO_L: 0.946353,
   GALLON_TO_QUARTS: 4,
-  GALLON_TO_L: 3.785,
+  GALLON_TO_ML: 3785.41,
+  GALLON_TO_L: 3.78541,
   L_TO_ML: 1000,
+  DL_TO_ML: 100,
 } as const
 
 // ---------------------------------------------------------------------------

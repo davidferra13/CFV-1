@@ -1,3 +1,5 @@
+import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
+
 export type ComparablePrice = {
   comparableCents: number
   displayUnit: string
@@ -7,40 +9,41 @@ export type ComparablePrice = {
   packCount: number
 }
 
+// Derived from canonical constants in lib/costing/knowledge.ts
 const WEIGHT_TO_GRAMS: Record<string, number> = {
   g: 1,
   gram: 1,
   grams: 1,
-  kg: 1000,
-  kilogram: 1000,
-  kilograms: 1000,
-  oz: 28.3495,
-  ounce: 28.3495,
-  ounces: 28.3495,
-  lb: 453.592,
-  lbs: 453.592,
-  pound: 453.592,
-  pounds: 453.592,
+  kg: WEIGHT_CONVERSIONS.KG_TO_G,
+  kilogram: WEIGHT_CONVERSIONS.KG_TO_G,
+  kilograms: WEIGHT_CONVERSIONS.KG_TO_G,
+  oz: WEIGHT_CONVERSIONS.OZ_TO_G,
+  ounce: WEIGHT_CONVERSIONS.OZ_TO_G,
+  ounces: WEIGHT_CONVERSIONS.OZ_TO_G,
+  lb: WEIGHT_CONVERSIONS.LB_TO_G,
+  lbs: WEIGHT_CONVERSIONS.LB_TO_G,
+  pound: WEIGHT_CONVERSIONS.LB_TO_G,
+  pounds: WEIGHT_CONVERSIONS.LB_TO_G,
 }
 
 const VOLUME_TO_ML: Record<string, number> = {
   ml: 1,
   milliliter: 1,
   milliliters: 1,
-  l: 1000,
-  liter: 1000,
-  liters: 1000,
-  'fl oz': 29.5735,
-  floz: 29.5735,
-  gallon: 3785.41,
-  gallons: 3785.41,
-  gal: 3785.41,
-  quart: 946.353,
-  quarts: 946.353,
-  qt: 946.353,
-  pint: 473.176,
-  pints: 473.176,
-  pt: 473.176,
+  l: VOLUME_CONVERSIONS.L_TO_ML,
+  liter: VOLUME_CONVERSIONS.L_TO_ML,
+  liters: VOLUME_CONVERSIONS.L_TO_ML,
+  'fl oz': VOLUME_CONVERSIONS.FL_OZ_TO_ML,
+  floz: VOLUME_CONVERSIONS.FL_OZ_TO_ML,
+  gallon: VOLUME_CONVERSIONS.GALLON_TO_ML,
+  gallons: VOLUME_CONVERSIONS.GALLON_TO_ML,
+  gal: VOLUME_CONVERSIONS.GALLON_TO_ML,
+  quart: VOLUME_CONVERSIONS.QUART_TO_ML,
+  quarts: VOLUME_CONVERSIONS.QUART_TO_ML,
+  qt: VOLUME_CONVERSIONS.QUART_TO_ML,
+  pint: VOLUME_CONVERSIONS.PINT_TO_ML,
+  pints: VOLUME_CONVERSIONS.PINT_TO_ML,
+  pt: VOLUME_CONVERSIONS.PINT_TO_ML,
 }
 
 const COUNT_UNITS = new Set([

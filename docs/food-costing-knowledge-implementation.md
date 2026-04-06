@@ -53,6 +53,71 @@ The chef's archetype (stored in `chef_preferences.archetype`) maps to operator-s
 | `food-truck`   | `food_truck`   | 28-35%           | 60%        | 5%       |
 | `bakery`       | `bakery`       | 25-38%           | 60%        | 3%       |
 
+### Phase 3: Full Pipeline Wiring (2026-04-05)
+
+Closed all gaps between the knowledge layer and the actual costing pipeline.
+
+**Centralized constants (zero duplicated magic numbers):**
+
+All unit conversion files now import `WEIGHT_CONVERSIONS` and `VOLUME_CONVERSIONS` from `knowledge.ts` instead of hardcoding values like `28.3495` or `236.588`. Files wired: `conversion-engine.ts`, `unit-conversions.ts`, `grocery/unit-conversion.ts`, `price-normalization.ts`, `universal-price-lookup.ts`, `nutrition-actions.ts`, `nutritional-calculator-actions.ts`, `grocery-consolidation.ts`.
+
+**Operator-aware thresholds (no hardcoded 25/30/35):**
+
+`getFoodCostRating()` and `getFoodCostBadgeColor()` now accept `operatorType` and use `OPERATOR_TARGETS` for threshold values. `calculatePricingRecommendation()` uses operator-specific benchmarks in warnings. `FoodCostWidget` displays operator-specific target ranges.
+
+**Cost line templates visible to users:**
+
+`CostLineReferencePanel` component renders operator-specific cost lines on the pricing settings page, grouped by category (food, labor, overhead, etc.). 80+ templates across 10 operation types.
+
+**Auto-price resolution on ingredient add:**
+
+`ensureIngredientHasPrice()` runs automatically when an ingredient is added to a recipe. If the ingredient has no price, it resolves the best price from the 10-tier chain (`resolve-price.ts`) and writes it to the ingredient row before cost computation. This closes the gap where new ingredients always had null cost.
+
+**End-to-end automatic costing pipeline (complete):**
+
+```
+Chef adds ingredient to recipe
+  |
+  v
+findOrCreateIngredient()          -> creates/finds ingredient row
+  |
+  v
+ensureIngredientHasPrice()        -> resolves price from 10-tier chain (if unpriced)
+  |                                   writes cost_per_unit_cents to ingredient row
+  v
+computeRecipeIngredientCost()     -> reads price, converts units via density
+  |                                   writes computed_cost_cents to recipe_ingredients
+  v
+refreshRecipeTotalCost()          -> sums all ingredient costs
+  |                                   writes total_cost_cents + cost_per_serving_cents
+  v
+menu_cost_summary (SQL VIEW)      -> computed live on read from recipe costs
+  |                                   total_recipe_cost_cents, cost_per_guest_cents,
+  |                                   food_cost_percentage
+  v
+generateRecipeWarnings()          -> operator-aware warnings (amber/red/critical)
+generateMenuWarnings()            -> food cost % vs operator target thresholds
+  |
+  v
+CostingWarningList                -> rendered in recipe-detail + menu-detail
+```
+
+Price cascade (when prices change externally):
+
+```
+OpenClaw nightly sync / manual "Refresh All Prices"
+  |
+  v
+refreshIngredientCostsAction()    -> batch resolve + write to ingredients table
+  |
+  v
+propagatePriceChange()            -> recompute all recipe_ingredients using those ingredients
+  |                                   refresh all affected recipe totals
+  |                                   flag affected events (cost_needs_refresh = true)
+  v
+UI caches invalidated             -> revalidatePath + revalidateTag
+```
+
 ## Architecture
 
 ```
@@ -76,6 +141,20 @@ lib/costing/operator-cost-lines.ts  (cost line templates by operator type)
         |--- [WIRED] food cost dashboard                    (dynamic thresholds)
         |--- [WIRED] menu engineering analytics             (dynamic target)
         |--- [WIRED] Remy context                           (costingContext)
+        |
+        |--- [PHASE 3] OPERATOR_TARGETS -> food-cost-calculator.ts  (rating/badge functions)
+        |--- [PHASE 3] OPERATOR_TARGETS -> food-cost-widget.tsx     (target range display)
+        |--- [PHASE 3] OPERATOR_TARGETS -> pricing-recommendation   (benchmark warnings)
+        |--- [PHASE 3] WEIGHT/VOLUME -> conversion-engine.ts        (canonical source)
+        |--- [PHASE 3] WEIGHT/VOLUME -> unit-conversions.ts         (formula functions)
+        |--- [PHASE 3] WEIGHT/VOLUME -> grocery/unit-conversion.ts  (consolidation)
+        |--- [PHASE 3] WEIGHT/VOLUME -> price-normalization.ts      (vendor prices)
+        |--- [PHASE 3] WEIGHT/VOLUME -> universal-price-lookup.ts   (price search)
+        |--- [PHASE 3] WEIGHT/VOLUME -> nutrition-actions.ts        (nutrition calc)
+        |--- [PHASE 3] WEIGHT/VOLUME -> nutritional-calculator.ts   (draft nutrition)
+        |--- [PHASE 3] WEIGHT/VOLUME -> grocery-consolidation.ts    (grocery lists)
+        |--- [PHASE 3] cost-line-reference-panel.tsx                (pricing settings UI)
+        |--- [PHASE 3] ensureIngredientHasPrice()                   (auto-price on add)
 ```
 
 ## Key Design Decisions
@@ -95,11 +174,12 @@ lib/costing/operator-cost-lines.ts  (cost line templates by operator type)
 - ~~CostingHelpPopover integration into recipe/menu views~~ DONE (Phase 2)
 - ~~Remy context-aware costing answers~~ DONE (costingContext in RemyContext)
 - ~~Operator-specific targets replacing hardcoded 30%~~ DONE (dashboard, menu engineering, food cost dashboard)
-- **Inline guidance on pricing settings page** (rate fields need "?" popovers)
-- **CostingWarningList in recipe/menu views** (warnings when food cost exceeds operator targets)
-- **Cost-plus quote builder** pre-populated with `getCostLinesForOperator()` templates
-- **Event form cost sidebar** (food cost vs. price relationship during event creation)
-- **Auto-costing engine** importing validation ranges and conversion constants from knowledge.ts
+- ~~Inline guidance on pricing settings page~~ DONE (Phase 3: all sections have CostingHelpPopovers)
+- ~~CostingWarningList in recipe/menu views~~ DONE (Phase 2: wired in recipe-detail + menu-detail)
+- ~~Cost line templates visible to users~~ DONE (Phase 3: CostLineReferencePanel on pricing settings)
+- ~~Auto-costing engine uses centralized constants~~ DONE (Phase 3: all 10 conversion files use knowledge.ts)
+- ~~Auto-price resolution on ingredient add~~ DONE (Phase 3: ensureIngredientHasPrice() in recipe actions)
+- ~~Event food cost insight~~ DONE (Phase 3: EventFoodCostInsight on event detail Money tab)
 
 ## How to Use
 

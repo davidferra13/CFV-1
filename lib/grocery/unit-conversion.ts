@@ -1,5 +1,8 @@
 // Unit normalization and quantity arithmetic for grocery list consolidation
 // Companion to lib/formulas/unit-conversions.ts (which handles weight/temp conversions)
+// Conversion factors sourced from canonical knowledge layer (lib/costing/knowledge.ts).
+
+import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
 
 const UNIT_ALIASES: Record<string, string> = {
   oz: 'oz',
@@ -49,17 +52,22 @@ const UNIT_ALIASES: Record<string, string> = {
   gallons: 'gallon',
 }
 
-// Conversion factors to a base unit within each family
-const WEIGHT_TO_G: Record<string, number> = { g: 1, oz: 28.3495, lb: 453.592, kg: 1000 }
+// Conversion factors to a base unit within each family (from canonical knowledge layer)
+const WEIGHT_TO_G: Record<string, number> = {
+  g: 1,
+  oz: WEIGHT_CONVERSIONS.OZ_TO_G,
+  lb: WEIGHT_CONVERSIONS.LB_TO_G,
+  kg: WEIGHT_CONVERSIONS.KG_TO_G,
+}
 const VOLUME_TO_ML: Record<string, number> = {
   ml: 1,
-  tsp: 4.929,
-  tbsp: 14.787,
-  cup: 236.588,
-  pint: 473.176,
-  quart: 946.353,
-  l: 1000,
-  gallon: 3785.41,
+  tsp: VOLUME_CONVERSIONS.TSP_TO_ML,
+  tbsp: VOLUME_CONVERSIONS.TBSP_TO_ML,
+  cup: VOLUME_CONVERSIONS.CUP_TO_ML,
+  pint: VOLUME_CONVERSIONS.PINT_TO_ML,
+  quart: VOLUME_CONVERSIONS.QUART_TO_ML,
+  l: VOLUME_CONVERSIONS.L_TO_ML,
+  gallon: VOLUME_CONVERSIONS.GALLON_TO_ML,
 }
 
 export function normalizeUnit(unit: string | null): string {
@@ -92,22 +100,38 @@ export function addQuantities(
   if (a in WEIGHT_TO_G && b in WEIGHT_TO_G) {
     const totalG = qtyA * WEIGHT_TO_G[a] + qtyB * WEIGHT_TO_G[b]
     // Return in the larger unit
-    if (totalG >= 1000) return { quantity: Math.round(totalG / 10) / 100, unit: 'kg' }
-    if (totalG >= 453) return { quantity: Math.round((totalG / 453.592) * 100) / 100, unit: 'lb' }
-    if (totalG >= 28) return { quantity: Math.round((totalG / 28.3495) * 100) / 100, unit: 'oz' }
+    if (totalG >= WEIGHT_CONVERSIONS.KG_TO_G)
+      return { quantity: Math.round(totalG / 10) / 100, unit: 'kg' }
+    if (totalG >= WEIGHT_CONVERSIONS.LB_TO_G)
+      return { quantity: Math.round((totalG / WEIGHT_CONVERSIONS.LB_TO_G) * 100) / 100, unit: 'lb' }
+    if (totalG >= WEIGHT_CONVERSIONS.OZ_TO_G)
+      return { quantity: Math.round((totalG / WEIGHT_CONVERSIONS.OZ_TO_G) * 100) / 100, unit: 'oz' }
     return { quantity: Math.round(totalG * 100) / 100, unit: 'g' }
   }
 
   // Volume family
   if (a in VOLUME_TO_ML && b in VOLUME_TO_ML) {
     const totalMl = qtyA * VOLUME_TO_ML[a] + qtyB * VOLUME_TO_ML[b]
-    if (totalMl >= 3785)
-      return { quantity: Math.round((totalMl / 3785.41) * 100) / 100, unit: 'gallon' }
-    if (totalMl >= 946)
-      return { quantity: Math.round((totalMl / 946.353) * 100) / 100, unit: 'quart' }
-    if (totalMl >= 236)
-      return { quantity: Math.round((totalMl / 236.588) * 100) / 100, unit: 'cup' }
-    if (totalMl >= 14) return { quantity: Math.round((totalMl / 14.787) * 100) / 100, unit: 'tbsp' }
+    if (totalMl >= VOLUME_CONVERSIONS.GALLON_TO_ML)
+      return {
+        quantity: Math.round((totalMl / VOLUME_CONVERSIONS.GALLON_TO_ML) * 100) / 100,
+        unit: 'gallon',
+      }
+    if (totalMl >= VOLUME_CONVERSIONS.QUART_TO_ML)
+      return {
+        quantity: Math.round((totalMl / VOLUME_CONVERSIONS.QUART_TO_ML) * 100) / 100,
+        unit: 'quart',
+      }
+    if (totalMl >= VOLUME_CONVERSIONS.CUP_TO_ML)
+      return {
+        quantity: Math.round((totalMl / VOLUME_CONVERSIONS.CUP_TO_ML) * 100) / 100,
+        unit: 'cup',
+      }
+    if (totalMl >= VOLUME_CONVERSIONS.TBSP_TO_ML)
+      return {
+        quantity: Math.round((totalMl / VOLUME_CONVERSIONS.TBSP_TO_ML) * 100) / 100,
+        unit: 'tbsp',
+      }
     return { quantity: Math.round(totalMl * 100) / 100, unit: 'ml' }
   }
 

@@ -746,6 +746,14 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
     validated.ingredient_default_unit
   )
 
+  // Auto-resolve price if ingredient has no price yet (non-blocking)
+  // This closes the gap where new or unpriced ingredients had null cost
+  try {
+    await ensureIngredientHasPrice(db, user.tenantId!, ingredientId)
+  } catch (err) {
+    console.error('[addIngredientToRecipe] Price resolution failed (non-blocking):', err)
+  }
+
   // Compute unit-aware cost before inserting
   const costResult = await computeRecipeIngredientCost(
     db,
@@ -1867,6 +1875,81 @@ export async function computeRecipeIngredientCost(
   const yieldAdjusted = yieldPct < 100 ? Math.round((rawCost * 100) / yieldPct) : rawCost
 
   return { costCents: yieldAdjusted, warning: null }
+}
+
+/**
+ * Ensure an ingredient has a price. If cost_per_unit_cents and last_price_cents
+ * are both null, resolve the best price from the 10-tier chain and write it.
+ * This runs automatically when an ingredient is added to a recipe, closing
+ * the gap where new/unpriced ingredients always showed null cost.
+ *
+ * Non-blocking: callers should wrap in try/catch.
+ */
+async function ensureIngredientHasPrice(
+  db: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  ingredientId: string
+): Promise<void> {
+  // Check if ingredient already has a price
+  const { data: ingredient } = await db
+    .from('ingredients')
+    .select('cost_per_unit_cents, last_price_cents')
+    .eq('id', ingredientId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!ingredient) return
+
+  // Already priced: nothing to do
+  if (ingredient.cost_per_unit_cents != null || ingredient.last_price_cents != null) return
+
+  // Resolve price from the 10-tier chain
+  const { resolvePrice } = await import('@/lib/pricing/resolve-price')
+  const resolved = await resolvePrice(ingredientId, tenantId)
+
+  if (resolved.cents == null || resolved.source === 'none') return
+
+  // Write the resolved price to the ingredient
+  const { convertCostToUnit, lookupDensity, normalizeUnit } =
+    await import('@/lib/units/conversion-engine')
+
+  // Get ingredient details for unit conversion
+  const { data: details } = await db
+    .from('ingredients')
+    .select('name, default_unit, weight_to_volume_ratio, price_unit')
+    .eq('id', ingredientId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  let costPerUnit = resolved.cents
+  const resolvedUnit = resolved.unit || 'each'
+  const defaultUnit = details?.default_unit || null
+
+  // Convert to ingredient's default unit if needed
+  if (details && defaultUnit && normalizeUnit(resolvedUnit) !== normalizeUnit(defaultUnit)) {
+    const density = details.weight_to_volume_ratio ?? lookupDensity(details.name)
+    if (density) {
+      const converted = convertCostToUnit(resolved.cents, resolvedUnit, defaultUnit, density)
+      if (converted !== null) {
+        costPerUnit = Math.round(converted)
+      }
+    }
+  }
+
+  await db
+    .from('ingredients')
+    .update({
+      cost_per_unit_cents: costPerUnit,
+      last_price_cents: resolved.cents,
+      last_price_date: resolved.confirmedAt
+        ? new Date(resolved.confirmedAt).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10),
+      last_price_source: resolved.source,
+      last_price_store: resolved.store || null,
+      last_price_confidence: resolved.confidence,
+    } as any)
+    .eq('id', ingredientId)
+    .eq('tenant_id', tenantId)
 }
 
 /**

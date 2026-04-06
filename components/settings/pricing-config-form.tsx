@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
+import { CostLineReferencePanel } from '@/components/costing/cost-line-reference-panel'
 
 // Policy defaults (deposit, hours, mileage) - reasonable starting points
 // Rate defaults are zero: chefs must set their own pricing
@@ -111,7 +112,13 @@ function NumberField({
   )
 }
 
-export function PricingConfigForm({ initialConfig }: { initialConfig: PricingConfig }) {
+export function PricingConfigForm({
+  initialConfig,
+  archetype,
+}: {
+  initialConfig: PricingConfig
+  archetype?: string | null
+}) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [config, setConfig] = useState<PricingConfig>({ ...initialConfig })
@@ -234,7 +241,10 @@ export function PricingConfigForm({ initialConfig }: { initialConfig: PricingCon
       {/* Specialty Rates */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-stone-100">Specialty Rates</h2>
+          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
+            Specialty Rates
+            <CostingHelpPopover topic="blended_cost" />
+          </h2>
           <p className="text-sm text-stone-400">Pizza experience and cook-and-leave sessions</p>
         </CardHeader>
         <CardContent className="p-6 grid gap-4 sm:grid-cols-2">
@@ -256,7 +266,10 @@ export function PricingConfigForm({ initialConfig }: { initialConfig: PricingCon
       {/* Weekly / Ongoing */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-stone-100">Weekly / Ongoing</h2>
+          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
+            Weekly / Ongoing
+            <CostingHelpPopover topic="contribution_margin" />
+          </h2>
           <p className="text-sm text-stone-400">Daily rate ranges for weekly cooking engagements</p>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
@@ -302,7 +315,10 @@ export function PricingConfigForm({ initialConfig }: { initialConfig: PricingCon
       {/* Policies */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-stone-100">Booking Policies</h2>
+          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
+            Booking Policies
+            <CostingHelpPopover topic="breakeven" />
+          </h2>
           <p className="text-sm text-stone-400">Deposit, minimum booking, and payment terms</p>
         </CardHeader>
         <CardContent className="p-6 grid gap-4 sm:grid-cols-3">
@@ -359,7 +375,10 @@ export function PricingConfigForm({ initialConfig }: { initialConfig: PricingCon
       {/* Premiums */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-stone-100">Premiums</h2>
+          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
+            Premiums
+            <CostingHelpPopover topic="q_factor" />
+          </h2>
           <p className="text-sm text-stone-400">Weekend and holiday surcharges</p>
         </CardHeader>
         <CardContent className="p-6 space-y-6">
@@ -439,7 +458,10 @@ export function PricingConfigForm({ initialConfig }: { initialConfig: PricingCon
       {/* Large Group Thresholds */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-stone-100">Guest Count Thresholds</h2>
+          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
+            Guest Count Thresholds
+            <CostingHelpPopover topic="batch_allocation" />
+          </h2>
           <p className="text-sm text-stone-400">
             Define where large group pricing and custom/buyout pricing kick in
           </p>
@@ -461,6 +483,9 @@ export function PricingConfigForm({ initialConfig }: { initialConfig: PricingCon
           />
         </CardContent>
       </Card>
+
+      {/* Operator-Specific Cost Lines Reference */}
+      <CostLineReferencePanel archetype={archetype} />
 
       {/* Status Messages */}
       {error && (

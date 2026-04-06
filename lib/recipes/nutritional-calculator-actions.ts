@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getNutritionSummary, searchFoods } from '@/lib/nutrition/usda'
+import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
 
 const DraftIngredientSchema = z.object({
   name: z.string().min(1),
@@ -54,22 +55,23 @@ export type NutritionalSnapshot = {
   }>
 }
 
+// Derived from canonical constants in lib/costing/knowledge.ts
 const GRAMS_PER_UNIT: Record<string, number> = {
   g: 1,
   gram: 1,
   grams: 1,
-  kg: 1000,
-  oz: 28.3495,
-  lb: 453.592,
-  lbs: 453.592,
-  ml: 1,
-  l: 1000,
-  cup: 236.588,
-  cups: 236.588,
-  tbsp: 14.787,
-  tablespoon: 14.787,
-  teaspoons: 4.929,
-  tsp: 4.929,
+  kg: WEIGHT_CONVERSIONS.KG_TO_G,
+  oz: WEIGHT_CONVERSIONS.OZ_TO_G,
+  lb: WEIGHT_CONVERSIONS.LB_TO_G,
+  lbs: WEIGHT_CONVERSIONS.LB_TO_G,
+  ml: 1, // water-density approximation
+  l: VOLUME_CONVERSIONS.L_TO_ML,
+  cup: VOLUME_CONVERSIONS.CUP_TO_ML,
+  cups: VOLUME_CONVERSIONS.CUP_TO_ML,
+  tbsp: VOLUME_CONVERSIONS.TBSP_TO_ML,
+  tablespoon: VOLUME_CONVERSIONS.TBSP_TO_ML,
+  teaspoons: VOLUME_CONVERSIONS.TSP_TO_ML,
+  tsp: VOLUME_CONVERSIONS.TSP_TO_ML,
   each: 100,
   piece: 100,
   pieces: 100,

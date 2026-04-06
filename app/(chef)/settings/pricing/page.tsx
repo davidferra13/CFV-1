@@ -78,7 +78,7 @@ export default async function PricingSettingsPage() {
         </Link>
       </div>
 
-      <PricingConfigForm initialConfig={config} />
+      <PricingConfigForm initialConfig={config} archetype={archetype} />
     </div>
   )
 }

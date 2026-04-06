@@ -17,6 +17,7 @@
 
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
+import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -446,22 +447,22 @@ function derivePriceType(
 // Step 5: Unit normalization
 // ---------------------------------------------------------------------------
 
-/** Standard weight units in grams for conversion */
+/** Standard weight units in grams for conversion (from canonical knowledge layer) */
 const UNIT_TO_GRAMS: Record<string, number> = {
-  oz: 28.3495,
-  lb: 453.592,
-  kg: 1000,
+  oz: WEIGHT_CONVERSIONS.OZ_TO_G,
+  lb: WEIGHT_CONVERSIONS.LB_TO_G,
+  kg: WEIGHT_CONVERSIONS.KG_TO_G,
   g: 1,
-  fl_oz: 29.5735, // approximate for water-density items
-  'fl oz': 29.5735,
-  pt: 473.176,
-  pint: 473.176,
-  qt: 946.353,
-  quart: 946.353,
-  gal: 3785.41,
-  gallon: 3785.41,
-  liter: 1000,
-  l: 1000,
+  fl_oz: VOLUME_CONVERSIONS.FL_OZ_TO_ML, // approximate for water-density items
+  'fl oz': VOLUME_CONVERSIONS.FL_OZ_TO_ML,
+  pt: VOLUME_CONVERSIONS.PINT_TO_ML,
+  pint: VOLUME_CONVERSIONS.PINT_TO_ML,
+  qt: VOLUME_CONVERSIONS.QUART_TO_ML,
+  quart: VOLUME_CONVERSIONS.QUART_TO_ML,
+  gal: VOLUME_CONVERSIONS.GALLON_TO_ML,
+  gallon: VOLUME_CONVERSIONS.GALLON_TO_ML,
+  liter: VOLUME_CONVERSIONS.L_TO_ML,
+  l: VOLUME_CONVERSIONS.L_TO_ML,
   ml: 1,
 }
 
@@ -548,7 +549,7 @@ function normalizeProductPrice(
   if (grams) {
     const totalGrams = sizeValue * grams
     const pricePerGram = priceCents / totalGrams
-    const pricePerLb = Math.round(pricePerGram * 453.592)
+    const pricePerLb = Math.round(pricePerGram * WEIGHT_CONVERSIONS.LB_TO_G)
     return { price_per_unit_cents: pricePerLb, unit: 'lb' }
   }
 

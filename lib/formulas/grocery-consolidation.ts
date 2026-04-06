@@ -6,7 +6,9 @@
 // This covers 90%+ of real private chef scenarios. If a chef needs something exotic,
 // they already know the swap (they're the expert, not AI).
 
-// ── Store Section Lookup ────────────────────────────────────────────────
+import { WEIGHT_CONVERSIONS, VOLUME_CONVERSIONS } from '@/lib/costing/knowledge'
+
+//── Store Section Lookup ────────────────────────────────────────────────
 // Maps ingredient names (lowercase) to store sections.
 // Falls back to heuristic keyword matching for unknown ingredients.
 
@@ -350,22 +352,22 @@ const UNIT_ALIASES: Record<string, string> = {
   '': 'piece',
 }
 
-// Conversion factors to a common unit within compatible groups
+// Conversion factors to a common unit within compatible groups (from canonical knowledge layer)
 // Volume: everything to tbsp
 const VOLUME_TO_TBSP: Record<string, number> = {
-  tsp: 1 / 3,
+  tsp: 1 / VOLUME_CONVERSIONS.TBSP_TO_TSP,
   tbsp: 1,
-  cup: 16,
-  ml: 1 / 14.787,
-  l: 67.628,
+  cup: VOLUME_CONVERSIONS.CUP_TO_ML / VOLUME_CONVERSIONS.TBSP_TO_ML,
+  ml: 1 / VOLUME_CONVERSIONS.TBSP_TO_ML,
+  l: VOLUME_CONVERSIONS.L_TO_ML / VOLUME_CONVERSIONS.TBSP_TO_ML,
 }
 
 // Weight: everything to oz
 const WEIGHT_TO_OZ: Record<string, number> = {
   oz: 1,
-  lb: 16,
-  g: 1 / 28.3495,
-  kg: 35.274,
+  lb: WEIGHT_CONVERSIONS.LB_TO_OZ,
+  g: 1 / WEIGHT_CONVERSIONS.OZ_TO_G,
+  kg: WEIGHT_CONVERSIONS.KG_TO_LB * WEIGHT_CONVERSIONS.LB_TO_OZ,
 }
 
 function normalizeUnit(unit: string): string {

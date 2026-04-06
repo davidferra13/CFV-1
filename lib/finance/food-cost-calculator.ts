@@ -1,7 +1,9 @@
 // Food Cost Calculator - pure deterministic functions (Formula > AI)
 // No server dependencies, no database calls. Pure math.
+// Uses OPERATOR_TARGETS from knowledge layer for operator-specific thresholds.
 
 import { computeIngredientCost, lookupDensity } from '@/lib/units/conversion-engine'
+import { OPERATOR_TARGETS, type OperatorType } from '@/lib/costing/knowledge'
 
 export type FoodCostRating = 'excellent' | 'good' | 'fair' | 'high'
 
@@ -80,20 +82,30 @@ export function calculateFoodCostPercentage(foodCostCents: number, revenueCents:
 }
 
 /**
- * Rate food cost percentage against industry benchmarks for private chefs.
- * < 25%: excellent (green)
- * 25-30%: good (emerald)
- * 30-35%: fair (amber)
- * > 35%: high (red)
+ * Rate food cost percentage against operator-specific benchmarks.
+ * Uses OPERATOR_TARGETS from the knowledge layer for threshold values.
+ * Falls back to private_chef targets if no operator type is provided.
+ *
+ * Rating logic (using operator targets):
+ *   < low target: excellent (well below target range)
+ *   low to midpoint: good (within healthy range)
+ *   midpoint to high target: fair (approaching upper limit)
+ *   > high target: high (above target range)
  */
-export function getFoodCostRating(percentage: number): FoodCostRatingResult {
-  if (percentage < 25) {
+export function getFoodCostRating(
+  percentage: number,
+  operatorType: OperatorType = 'private_chef'
+): FoodCostRatingResult {
+  const targets = OPERATOR_TARGETS[operatorType] ?? OPERATOR_TARGETS.private_chef
+  const midpoint = (targets.foodCostPctLow + targets.foodCostPctHigh) / 2
+
+  if (percentage < targets.foodCostPctLow) {
     return { rating: 'excellent', label: 'Excellent', color: 'text-green-500' }
   }
-  if (percentage <= 30) {
+  if (percentage <= midpoint) {
     return { rating: 'good', label: 'Good', color: 'text-emerald-500' }
   }
-  if (percentage <= 35) {
+  if (percentage <= targets.foodCostPctHigh) {
     return { rating: 'fair', label: 'Fair', color: 'text-amber-500' }
   }
   return { rating: 'high', label: 'High', color: 'text-red-500' }
@@ -101,10 +113,19 @@ export function getFoodCostRating(percentage: number): FoodCostRatingResult {
 
 /**
  * Badge color class for food cost percentage display.
+ * Operator-aware: uses OPERATOR_TARGETS for threshold values.
  */
-export function getFoodCostBadgeColor(percentage: number): string {
-  if (percentage < 25) return 'bg-green-500/10 text-green-500 border-green-500/20'
-  if (percentage <= 30) return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-  if (percentage <= 35) return 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+export function getFoodCostBadgeColor(
+  percentage: number,
+  operatorType: OperatorType = 'private_chef'
+): string {
+  const targets = OPERATOR_TARGETS[operatorType] ?? OPERATOR_TARGETS.private_chef
+  const midpoint = (targets.foodCostPctLow + targets.foodCostPctHigh) / 2
+
+  if (percentage < targets.foodCostPctLow)
+    return 'bg-green-500/10 text-green-500 border-green-500/20'
+  if (percentage <= midpoint) return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+  if (percentage <= targets.foodCostPctHigh)
+    return 'bg-amber-500/10 text-amber-500 border-amber-500/20'
   return 'bg-red-500/10 text-red-500 border-red-500/20'
 }
