@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:padding="12dp"
+    android:background="@android:color/white"
+    android:gravity="center_vertical"
+    android:id="@+id/widget_revenue_root">
+
+    <TextView
+        android:id="@+id/widget_revenue_amount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="$0"
+        android:textSize="22sp"
+        android:textColor="#333333"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/widget_revenue_change"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:textColor="#10b981"
+        android:layout_marginStart="8dp" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/widget_revenue_goal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="12sp"
+        android:textColor="#999999" />
+</LinearLayout>

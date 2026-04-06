@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:background="@android:color/white"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/widget_action_note"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Note"
+        android:textSize="12sp"
+        android:textColor="#333333"
+        android:background="#f5f5f5"
+        android:layout_marginEnd="4dp" />
+
+    <TextView
+        android:id="@+id/widget_action_event"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="New Event"
+        android:textSize="12sp"
+        android:textColor="#333333"
+        android:background="#f5f5f5"
+        android:layout_marginEnd="4dp" />
+
+    <TextView
+        android:id="@+id/widget_action_inbox"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="Inbox"
+        android:textSize="12sp"
+        android:textColor="#ffffff"
+        android:background="#e88f47" />
+</LinearLayout>

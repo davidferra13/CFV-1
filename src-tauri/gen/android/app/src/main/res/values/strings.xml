@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">ChefFlow</string>
+    <string name="main_activity_title">ChefFlow</string>
+    <string name="widget_today_description">Today\'s events, tasks, and next up</string>
+    <string name="widget_notes_description">Quick capture notepad</string>
+    <string name="widget_actions_description">Quick actions: Note, New Event, Inbox</string>
+    <string name="widget_revenue_description">Monthly revenue at a glance</string>
+</resources>

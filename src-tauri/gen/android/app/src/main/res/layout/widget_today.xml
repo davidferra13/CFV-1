@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@android:color/white"
+    android:id="@+id/widget_today_root">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ChefFlow"
+            android:textSize="12sp"
+            android:textColor="#999999"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_today_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TODAY"
+            android:textSize="11sp"
+            android:textColor="#e88f47"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#eeeeee"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/widget_today_events"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0 events"
+        android:textSize="14sp"
+        android:textColor="#333333"
+        android:drawablePadding="6dp" />
+
+    <TextView
+        android:id="@+id/widget_today_tasks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="0 tasks due"
+        android:textSize="14sp"
+        android:textColor="#333333"
+        android:layout_marginTop="2dp" />
+
+    <TextView
+        android:id="@+id/widget_today_alerts"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:textColor="#e88f47"
+        android:layout_marginTop="2dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <TextView
+        android:id="@+id/widget_today_next"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No events today"
+        android:textSize="13sp"
+        android:textColor="#666666"
+        android:textStyle="italic"
+        android:maxLines="2"
+        android:ellipsize="end" />
+
+    <TextView
+        android:id="@+id/widget_today_updated"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="9sp"
+        android:textColor="#cccccc"
+        android:layout_marginTop="4dp" />
+</LinearLayout>

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="@android:color/white"
+    android:id="@+id/widget_notes_root">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Quick Notes"
+            android:textSize="13sp"
+            android:textColor="#333333"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_notes_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="11sp"
+            android:textColor="#999999" />
+    </LinearLayout>
+
+    <!-- Tap to add note (opens app to dashboard Quick Notes) -->
+    <TextView
+        android:id="@+id/widget_notes_add"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="+ Type a quick note..."
+        android:textSize="13sp"
+        android:textColor="#999999"
+        android:background="#f5f5f5"
+        android:padding="8dp"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp" />
+
+    <TextView
+        android:id="@+id/widget_notes_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:textColor="#333333"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:drawableLeft="@android:drawable/presence_online"
+        android:drawablePadding="6dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_notes_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:textColor="#333333"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:drawableLeft="@android:drawable/presence_online"
+        android:drawablePadding="6dp"
+        android:layout_marginTop="2dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_notes_3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:textColor="#333333"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:drawableLeft="@android:drawable/presence_online"
+        android:drawablePadding="6dp"
+        android:layout_marginTop="2dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_notes_4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:textColor="#333333"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:drawableLeft="@android:drawable/presence_online"
+        android:drawablePadding="6dp"
+        android:layout_marginTop="2dp"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/widget_notes_5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="13sp"
+        android:textColor="#333333"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:drawableLeft="@android:drawable/presence_online"
+        android:drawablePadding="6dp"
+        android:layout_marginTop="2dp"
+        android:visibility="gone" />
+</LinearLayout>
