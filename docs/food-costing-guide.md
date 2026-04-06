@@ -7,6 +7,58 @@
 
 ---
 
+## Quick Start: Cost Your First Recipe in 5 Minutes
+
+If you have never formally costed a dish before, start here. This walkthrough takes one recipe from ingredients to food cost percentage.
+
+**Example: Pan-Seared Chicken Breast with Roasted Vegetables (serves 4)**
+
+Step 1: List every ingredient with exact quantities.
+
+| Ingredient                       | Quantity | Purchase Price | Purchase Unit |
+| -------------------------------- | -------- | -------------- | ------------- |
+| Boneless skinless chicken breast | 2 lbs    | $3.99          | per lb        |
+| Olive oil                        | 2 tbsp   | $8.99          | per 500 mL    |
+| Zucchini                         | 2 medium | $1.49          | each          |
+| Bell pepper (red)                | 1 large  | $1.99          | each          |
+| Garlic                           | 4 cloves | $0.50          | per head (10) |
+| Salt                             | to taste | (Q-factor)     |               |
+| Black pepper                     | to taste | (Q-factor)     |               |
+| Butter                           | 2 tbsp   | $4.99          | per lb        |
+| Lemon                            | 1        | $0.50          | each          |
+
+Step 2: Calculate the cost of each ingredient used.
+
+| Ingredient     | Calculation              | Cost       |
+| -------------- | ------------------------ | ---------- |
+| Chicken breast | 2 lbs x $3.99/lb         | $7.98      |
+| Olive oil      | 29.6 mL / 500 mL x $8.99 | $0.53      |
+| Zucchini       | 2 x $1.49                | $2.98      |
+| Bell pepper    | 1 x $1.99                | $1.99      |
+| Garlic         | 4/10 head x $0.50        | $0.20      |
+| Butter         | 1 oz / 16 oz x $4.99     | $0.62      |
+| Lemon          | 1 x $0.50                | $0.50      |
+| **Subtotal**   |                          | **$14.80** |
+
+**Step 3: Apply yield factor.** Chicken breast has ~10% trim loss (yield factor 0.90). True cost: $7.98 / 0.90 = $8.87. Adjusted subtotal: **$15.69**.
+
+**Step 4: Apply Q-factor (7%).** This covers the salt, pepper, oil for the pan, and other small items. $15.69 x 1.07 = **$16.79** total recipe cost.
+
+**Step 5: Calculate per-serving cost.** $16.79 / 4 servings = **$4.20 per plate**.
+
+**Step 6: Calculate food cost percentage.** If you charge $14.00 per plate: $4.20 / $14.00 = **30% food cost**. That is within the target range for most operations (25-35%).
+
+**What these numbers mean:**
+
+- Below 25%: strong margins, but verify you are not under-portioning
+- 25-35%: healthy range for most food operations
+- 35-45%: workable for high-volume or value-focused operations
+- Above 45%: review your pricing, portions, or ingredient sourcing
+
+That is the entire process. The rest of this guide explains every component in depth, but this is the core loop: list ingredients, calculate costs, apply yield, apply Q-factor, divide by portions, compare to your selling price.
+
+---
+
 ## Part 1: What You Need Before You Can Cost Anything
 
 Food costing is not a single formula. It's a chain. Every link has to be solid or the number at the end is wrong. This section covers every prerequisite, from the obvious to the overlooked.
@@ -47,6 +99,47 @@ For accurate costing, you need to know (or the system needs to know) these thing
 - **How long it lasts** (shelf life determines whether buying in bulk makes sense)
 - **What can replace it** (substitutions and their cost impact)
 - **When it's available** (seasonal items may be unavailable or 2-3x more expensive off-season)
+
+### Making Recipes Costable (Recipe Card Format)
+
+Most operators have recipes that cannot be costed as-is. "Season to taste," "a drizzle of oil," and "some bread for service" are fine for cooking but useless for costing. To cost a recipe, it must be in this format:
+
+A costing-ready recipe card has:
+
+- **Recipe name** (exactly as it appears on your menu)
+- **Yield** (total portions AND total weight or volume: "serves 8" AND "makes 3 lbs cooked")
+- **Every ingredient** with: name, exact quantity, specific unit, and whether it is AP or EP weight
+- **Sub-recipes** listed as ingredients with a quantity (e.g., "Beurre Blanc, 4 fl oz" rather than "sauce")
+- **No vague quantities.** Replace "to taste" items with either a measured estimate or move them to Q-factor coverage
+
+Common translations from vague to costable:
+
+- "Season to taste" -> covered by Q-factor (no line item needed)
+- "A drizzle of olive oil" -> "1 tbsp olive oil"
+- "Some herbs for garnish" -> "0.25 oz fresh parsley" or covered by garnish/presentation cost
+- "Bread for the table" -> "2 oz bread per person" (separate recipe or cost line)
+- "2 chicken breasts" -> "1.5 lbs boneless skinless chicken breast (AP weight)"
+
+If you are converting recipes from memory to paper for the first time: cook the recipe once while measuring everything. Write down actual quantities as you go. That single cook-through gives you a costable recipe card.
+
+### Substitution Economics
+
+When an ingredient is unavailable or poor quality, you substitute. Careless substitutions can double your cost on that ingredient without you noticing. Smart substitutions can cut cost while maintaining quality.
+
+Before substituting, check three things:
+
+1. **Same category?** Replacing butter with olive oil changes the dish. Replacing one olive oil brand with another does not.
+2. **Similar yield?** If the substitute has a worse yield factor, the per-serving cost changes even if the purchase price is identical.
+3. **Comparable cost per EP unit?** Compare the cost per usable ounce, not the price per package.
+
+Decision rules:
+
+- Cost difference under 10%, same yield, same category: substitute freely
+- Cost difference 10-20%: proceed but note the cost impact
+- Cost difference over 20% or different flavor profile: get the chef's approval before substituting
+- No acceptable substitute at any cost: remove the item from service (86 it)
+
+Emergency sourcing (running to the grocery store mid-shift) typically costs 20-50% more than wholesale. That premium is the real cost of poor inventory planning or missed order deadlines.
 
 ### Units and Conversions
 
@@ -418,7 +511,7 @@ Recipe costs drift. Ingredient prices change, suppliers adjust packaging, yield 
 
 Beyond ingredients and recipes, you need:
 
-- **Your hourly labor rate** (what you pay yourself and staff, including taxes and benefits)
+- **Your hourly labor rate** (what you pay yourself and staff, including taxes and benefits; see "Calculating Your True Labor Rate" below)
 - **Your overhead rate** (monthly fixed costs / monthly jobs or monthly revenue)
 - **Your target food cost %** (your standard, not just the industry average)
 - **Your target profit margin** (what you want to take home after all costs)
@@ -427,6 +520,81 @@ Beyond ingredients and recipes, you need:
 - **Your breakeven point** (minimum revenue to cover fixed costs; see formula in Part 3)
 - **Your spoilage rate** (what percentage of purchases you throw away before serving)
 - **Your non-revenue food rate** (comp, staff meal, tasting, R&D as % of food cost)
+
+### Calculating Your True Labor Rate
+
+If you enter the wrong hourly rate into a cost-plus calculation, every job you price will be wrong. Most operators undercount their true labor cost.
+
+**Solo operators (no employees):** Your "hourly rate" is not what you charge clients. It is your cost. Calculate it:
+
+1. Start with what you need to earn per hour to meet your income target
+2. Add self-employment tax (15.3% in the US): rate x 1.153
+3. Add health insurance allocation: monthly premium / productive hours per month
+4. Add retirement contribution: whatever you set aside per hour
+5. Divide by productive hours ratio: you work 50 hrs/week but only 30-35 are billable (rest is admin, shopping, marketing, bookkeeping). If 65% of your hours are productive, divide by 0.65.
+
+Example: a solo private chef who wants to earn $50/hr.
+
+- After self-employment tax: $50 x 1.153 = $57.65
+- Health insurance: $400/month / 140 productive hrs = $2.86/hr
+- Retirement: $3/hr
+- Total cost per productive hour: $63.51
+- Adjusted for productive ratio (65%): $63.51 / 0.65 = **$97.71/hr true cost**
+
+That $50/hr chef actually costs $97.71/hr to run. If they enter $50 in their cost-plus calculation, they are systematically underpricing every job by 49%.
+
+**Operators with employees:** Your labor cost per employee is:
+
+- Hourly wage
+- Plus employer FICA (7.65%)
+- Plus workers' compensation (3-8% for kitchen staff, higher for delivery drivers)
+- Plus benefits (health, PTO, meal allowance)
+- Plus non-productive time (training, cleaning, setup/breakdown)
+
+A line cook at $18/hr with full burden typically costs $22-26/hr in actual employer cost.
+
+### Receiving: Where Cost Leakage Starts
+
+When product arrives at your door, that is the first point where actual food cost can diverge from theoretical. If you do not verify what you receive, you will overpay.
+
+Receiving checklist:
+
+- **Verify weight:** Spot-check protein cases on a scale. Frozen seafood includes ice glaze (10-15% of stated weight). Meat packaging includes soaker pads (2-5% of package weight). You are paying for product you cannot serve.
+- **Check temperature:** Proteins below 40F, frozen below 0F. If product arrives above safe temperature, reject it. That is a food safety issue, not just cost.
+- **Inspect quality:** Color, smell, packaging integrity. Poor quality product has lower yield (more trim waste), which raises your actual food cost even if the price per pound is correct.
+- **Count case goods:** Verify the number of units matches the invoice. Short shipments are common.
+- **Match invoice to order:** Compare the price on the invoice to the price you were quoted. Price discrepancies (market price items, substitutions, surcharges) happen regularly.
+
+When something is wrong, document it and request a credit memo immediately. Do not accept short shipments and hope to sort it out later.
+
+**Catch weight items** (proteins sold by actual weight, not fixed weight) are especially important to verify. If your recipe assumes 10 lb cases of chicken breast but the actual case weighs 9.3 lb, your food cost is 7.5% higher than calculated on every case.
+
+### Portion Control: The Biggest Source of Variance
+
+Having the right portion standards (covered in the Portion Standards section) is necessary but not sufficient. Those standards are theoretical until someone plates the food. Portion control is how you enforce them.
+
+A cook who free-hands a 7 oz protein portion instead of weighing out 6 oz adds 17% to the protein cost on every plate. Over 100 covers at $8/portion protein cost, that is $136 in unplanned food cost per service.
+
+Required portioning tools by station:
+
+- **Proteins:** Digital scale (weigh every portion during prep, not during service)
+- **Starches and sides:** Volume scoops (e.g., #8 scoop for 4 oz, #6 scoop for 5.3 oz)
+- **Sauces and soups:** Ladles (2 oz, 4 oz, 6 oz, 8 oz)
+- **Composed plates:** Ring molds or visual guides (photos of correctly plated dishes)
+
+To identify portioning problems: weigh 5 random plates during service and compare to the recipe card spec. If plates consistently come in over spec, retrain the cook or adjust the recipe card to reflect the portion you actually want to serve (and reprice accordingly).
+
+### Waste Tracking: Making the Invisible Visible
+
+Waste has three distinct sources, each with different causes and solutions:
+
+1. **Prep waste:** Trim loss during preparation. This is already accounted for by yield factors. If your actual trim waste exceeds the yield factor, the factor needs updating.
+2. **Production waste:** Over-production (made too much), line mistakes (burned, dropped, wrong order), refires. This is not accounted for by yield factors. It is pure cost leakage.
+3. **Post-service waste:** Unsold buffet food, expired mise en place, plate returns. This is the spoilage category.
+
+To track waste, keep a waste log: date, item, quantity, reason (prep error, over-production, spoilage, refire, plate return), and estimated cost. Review weekly. Look for patterns: the same item, the same shift, the same cook. Patterns point to training needs or recipe adjustments, not just bad luck.
+
+The goal is not zero waste (that is impossible). The goal is reducing waste from "invisible background noise" to a measured, managed number that you can improve over time.
 
 ---
 
@@ -662,6 +830,98 @@ When money comes in affects what you can buy, which affects achievable quality a
 
 For private chefs and caterers, a deposit policy isn't just about cash flow. It directly affects your ingredient purchasing power. A chef collecting 50% up front can buy the best product at the right vendor. A chef floating costs on a credit card adds 2-3% in interest to their effective food cost.
 
+### Payment Processing Fees
+
+Credit card processing (2.5-3.5%) is a cost that most operators forget to factor into pricing. On a $500 event, 3% processing is $15. On $10,000/month revenue, it is $300/month ($3,600/year).
+
+Payment processing fees reduce your effective revenue. If you charge $100 and pay 3% processing, your effective revenue is $97, which makes your actual food cost percentage higher than what you calculated. A recipe with $30 ingredient cost at $100 selling price is 30% food cost on paper, but 30.9% against actual collected revenue.
+
+Where to account for it: include processing fees as an overhead line item in cost-plus calculations, or build it into your profit margin. Do not ignore it.
+
+### Food Cost and Your Financial Statements (COGS and P&L)
+
+ChefFlow calculates recipe-level food cost (what a dish should cost based on ingredient prices and yield). Your accountant calculates period-level COGS (what you actually spent on food in a month or year). These are related but not identical.
+
+**COGS formula (what your accountant uses):**
+
+```text
+Cost of Goods Sold = Beginning Inventory + Purchases - Ending Inventory
+```
+
+ChefFlow's food cost percentage is a **theoretical** number based on recipe cards. COGS is an **actual** number based on what you bought, what you had on hand, and what is left. The difference between the two is variance (waste, portioning errors, spoilage, theft).
+
+**Simplified food-service P&L:**
+
+```text
+Revenue (what you collected)
+- COGS (food + direct materials)                    Target: 28-35%
+= Gross Profit
+- Labor (wages, taxes, benefits, workers' comp)      Target: 25-35%
+- Occupancy (rent, utilities, insurance, permits)    Target: 8-12%
+- Operating expenses (marketing, admin, supplies)    Target: 5-10%
+= Operating Profit (EBITDA)                          Target: 10-20%
+```
+
+When your accountant asks for food cost data, they want COGS, not recipe percentages. Until ChefFlow has inventory tracking, you bridge the gap by tracking total purchases (your vendor invoices) and doing periodic inventory counts (even if informal).
+
+**Chart of accounts mapping:** ChefFlow's cost-plus categories map to standard accounting categories as follows:
+
+- Food cost -> COGS: Food
+- Beverage cost -> COGS: Beverage
+- Packaging/disposables -> COGS: Paper and Disposables
+- Direct event labor -> COGS: Direct Labor (or Cost of Revenue: Labor)
+- Travel/vehicle -> Transportation Expense
+- Equipment rental -> Cost of Revenue: Rentals
+- Insurance -> Operating Expense: Insurance
+- Kitchen rent/commissary -> Occupancy Expense
+- Marketing -> Operating Expense: Marketing
+- Payment processing -> Operating Expense: Processing Fees
+
+If your bookkeeper needs to categorize ChefFlow data for tax filing, this mapping tells them where each cost-plus line item belongs.
+
+### Baker's Percentage (Bakery-Specific Costing Method)
+
+Bakers use a different system called baker's percentage (or baker's math). Every ingredient in a formula is expressed as a percentage of total flour weight, with flour always equal to 100%.
+
+**Example: baguette formula at 68% hydration:**
+
+| Ingredient    | Baker's %  | Weight (for 1 kg flour) |
+| ------------- | ---------- | ----------------------- |
+| Bread flour   | 100%       | 1,000 g                 |
+| Water         | 68%        | 680 g                   |
+| Salt          | 2%         | 20 g                    |
+| Instant yeast | 1.5%       | 15 g                    |
+| **Total**     | **171.5%** | **1,715 g dough**       |
+
+To cost this formula: convert each ingredient's weight to its purchase-unit cost (e.g., 1,000 g flour = 2.2 lbs x $0.45/lb = $0.99). Baker's percentage does not change the costing math, but it changes how bakers scale and think about their recipes. The system needs to accept baker's percentage as an input format and convert to gram weights for costing.
+
+**Baking yield:** Bread and pastry lose 10-15% of dough weight during baking (moisture evaporation). A 1,715 g dough batch produces approximately 1,460-1,545 g of finished bread. This is a cooking yield of 0.85-0.90.
+
+### Service Style Cost Conversion
+
+The same menu costs differently depending on how you serve it. Portion standards (Section 3 of the reference data) give multipliers, but the total cost difference between service styles goes beyond food volume:
+
+- **Plated service (1.0x food):** Precise portions, minimal waste, standard labor. The baseline.
+- **Family style (1.15-1.25x food):** More food prepared (guests serve themselves), fewer plating staff but more serving vessels needed. Equipment rental increases. End-of-service waste: 5-10% (food left in serving dishes).
+- **Buffet (1.25-1.40x food):** Significantly more food, replenishment labor, chafing dishes and serving equipment, sneeze guards. End-of-service waste: 10-20% (food on the buffet at close is typically discarded depending on jurisdiction). Total cost difference from plated: 40-60%, not just the 25-40% food volume increase.
+- **Stations (1.30-1.50x food):** Similar to buffet but with attended action stations requiring skilled cooks at each station. Higher labor cost than buffet.
+
+When converting a quote from plated to buffet, do not simply multiply food cost by 1.3. Add the equipment, labor, and waste differences separately.
+
+### Regulatory and Compliance Costs
+
+These are mandatory costs that affect your overhead and breakeven. They vary by operation type and jurisdiction, but they are not optional.
+
+**Permits and licenses:** Health department permits ($100-1,000/year), catering permits ($50-500/year), temporary event permits ($25-200 per event), mobile vendor permits ($200-1,000/year), home kitchen permits under cottage food laws ($0-200/year). Some jurisdictions require separate permits for each type of activity.
+
+**Food safety certifications:** ServSafe Manager certification ($150-200, renewal every 5 years). Food handler cards ($15-25 per person, renewal every 2-3 years). Allergen awareness training ($20-50 per person in states that require it). For operations with employees, these are per-employee costs that compound.
+
+**Insurance:** General liability ($500-3,000/year). Product liability for packaged goods ($500-5,000/year). Commercial auto for catering/food truck ($1,200-5,000/year). Workers' compensation for employees (3-8% of payroll for kitchen staff). Liquor liability if serving alcohol ($500-3,000/year). Many venues and clients require proof of $1M-$2M coverage as a condition of booking.
+
+**Cottage food operators:** If you operate from a home kitchen, know your state's revenue cap ($5,000-$75,000/year in most states, with some states having no cap). Exceeding the cap without upgrading to a commercial kitchen permit is a violation. The cost of upgrading (commercial kitchen rental at $500-2,000/month or buildout at $10,000-50,000) is a breakeven consideration.
+
+All of these costs belong in your overhead calculation. They are fixed costs that you pay whether you have zero events or fifty events in a month.
+
 ---
 
 ## Part 4: Operator-Specific Guidance
@@ -681,6 +941,23 @@ Your unique costs: commissary rental ($500-2,000/month), generator fuel ($15-40/
 ### Ghost Kitchen / Delivery
 
 Platform commissions (15-30%) are your dominant non-food cost. On a $25 order with 30% food cost ($7.50) and 25% commission ($6.25), you're already at 55% before labor or overhead. Engineer your menu for items that travel well, prep fast, and have high contribution margin. Packaging ($0.75-2.50 per order) adds up at volume.
+
+**Multi-platform economics:** If you are on multiple platforms with different commission rates, you need to calculate your effective food cost per platform, not just overall:
+
+```text
+Effective Revenue = Menu Price - Commission - Promo Subsidy - Processing Fee
+Platform Food Cost % = Ingredient Cost / Effective Revenue x 100
+```
+
+Example: a $25 menu item with $7.50 ingredient cost across three platforms:
+
+- Platform A (15% commission): effective revenue $21.25, food cost 35.3%
+- Platform B (25% commission): effective revenue $18.75, food cost 40.0%
+- Platform C (30% commission): effective revenue $17.50, food cost 42.9%
+
+The same item at the same price goes from viable (35%) to unsustainable (43%) depending on the platform. Many operators charge 15-20% more on high-commission platforms to compensate. If a platform also requires funded promotions ($0 delivery, 20% off first order), subtract those from your effective revenue too.
+
+**Adjusted food cost targets for delivery:** The standard 28-35% target assumes you keep most of your revenue. With 25-30% going to platform commissions, your food cost target on delivery items should be 20-25% to maintain workable margins.
 
 ### Bakery
 
@@ -705,6 +982,23 @@ Every cost is concentrated into one event. There's no amortization across months
 ### Wholesale / CPG
 
 Ingredient cost at industrial scale drops 30-60% versus retail. But new cost lines appear: co-packing fees ($5,000-50,000 per run), packaging design, freight, slotting fees ($5,000-25,000 per retail chain per SKU), broker commissions (5-10%), and spoilage/returns (2-8% of shipped product). Your margin math is completely different from foodservice.
+
+**The CPG margin stack:** Food cost percentage targets from restaurants do not apply. In CPG, the margin is shared across four levels:
+
+```text
+Ingredient Cost (your COGS)
+  x 2.0-2.5 = Wholesale Price (what you sell to distributors)
+    x 1.15-1.25 = Distributor Price (what distributors sell to retailers)
+      x 1.8-2.2 = Retail Price (what consumers pay)
+```
+
+A jar of sauce with $2.50 in ingredients becomes ~$5.00 wholesale, ~$6.25 at distributor, ~$11-12 retail. The "4x rule": retail price should be roughly 4x your ingredient cost to survive the margin stack. If your ingredient cost is too high for the target retail price, reformulate the recipe before launching.
+
+**Landed cost (your true COGS):** Ingredient cost alone is not your cost. Add: co-packing labor, packaging materials, labels, freight to warehouse, insurance, and expected shrinkage/returns (2-8%). This is your landed cost per unit, and it is what you use for margin calculations.
+
+**Slotting fees:** Retailers charge $5,000-25,000 per SKU per chain for shelf space. Amortize this across expected unit sales over the placement period. If you place 1 SKU in a chain expecting to sell 5,000 units in year one and the slotting fee is $10,000, add $2.00/unit to your effective cost for that channel.
+
+**FSMA compliance:** If you manufacture, process, or pack food for wholesale distribution, FDA's Food Safety Modernization Act requires a written food safety plan, a Preventive Controls Qualified Individual (PCQI), and supplier verification programs. Budget $2,000-10,000 for initial plan development and $800-1,500 for PCQI training. These are real overhead costs.
 
 ---
 

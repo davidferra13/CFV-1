@@ -128,12 +128,16 @@ These are not optional add-ons. They are load-bearing components of accurate foo
 
 ```
 EP Cost = AP Cost / Yield Factor
-Yield Factor = EP Weight / AP Weight (decimal, 0 < yield <= 1.0)
+Trim Yield Factor = EP Weight / AP Weight (decimal, 0 < yield <= 1.0)
+Cooking Yield Factor = Cooked Weight / Raw Weight (decimal, > 0; CAN exceed 1.0 for items that absorb water)
+Combined Yield = Trim Yield x Cooking Yield
 ```
 
 - **AP** = what you buy (includes bones, trim, skin, stems, waste)
 - **EP** = what you serve (usable portion after loss)
 - Every ingredient in the system has a `yield_factor` field. Default is `1.0` (no waste). A yield factor of `0.65` means 35% waste.
+- **Trim yield** is always <= 1.0 (you cannot gain edible matter by trimming).
+- **Cooking yield** CAN exceed 1.0 for starches and grains that absorb water during cooking: rice (2.0-3.0x), pasta (1.8-2.2x), dried beans (2.0-2.5x), oatmeal (3.0-4.0x). This is critical for accurate portioning and cost-per-serving calculations.
 - Recipe costing MUST use EP cost, not AP cost. Costing against AP weight is a systematic undercount of true cost.
 - Yield factors vary by preparation method. Raw broccoli yield differs from blanched broccoli yield. The system stores one default yield per ingredient; chefs can override per recipe.
 
@@ -315,6 +319,94 @@ Breakeven Units = Fixed Costs / (Revenue Per Unit - Variable Cost Per Unit)
 - 50% deposit on booking enables premium ingredient purchasing. Net-30 invoicing requires personal float.
 - **System behavior:** Informational only. Deposit policy is already configurable in event/quote settings.
 
+#### Inventory Costing Method
+
+- The system uses **most recent price** for recipe costing (not FIFO, LIFO, or weighted average). This is a recipe-level theoretical cost, not a period-level accounting cost.
+- When inventory tracking ships, the system will support FIFO for actual food cost calculations: oldest inventory is assumed consumed first.
+- **COGS (Cost of Goods Sold)** is a period-level accounting figure: `Beginning Inventory + Purchases - Ending Inventory = COGS`. ChefFlow's recipe-level food cost is a projection; COGS is the accounting reality. These are related but not identical. The knowledge layer explains both.
+
+#### Job Costing vs. Period Costing
+
+- **Job costing** allocates costs to specific events/orders. Used by: private chefs, caterers, pop-ups. ChefFlow's cost-plus calculator is a job costing tool.
+- **Period costing** allocates costs to time periods (weekly, monthly). Used by: restaurants, bakeries, institutional. Monthly food cost % is a period costing metric.
+- Some operations use both: a caterer tracks per-event profitability (job) AND monthly P&L (period).
+- The knowledge layer explains both methods so operators understand how ChefFlow's per-event numbers connect to their monthly financials.
+
+---
+
+## Part 1b: Calculation Precision Rules
+
+These rules prevent rounding errors, floating-point bugs, and reproducibility failures. They are mandatory for any code that computes costs.
+
+### Order of Operations
+
+For every recipe cost calculation, follow this exact sequence:
+
+1. Look up each ingredient's price per unit (cents, integer from database)
+2. Convert to price per recipe unit (using conversion factors, full float precision)
+3. Multiply by recipe quantity (full float precision)
+4. Divide by yield factor (full float precision; guard against zero)
+5. Sum all ingredient costs (full float precision)
+6. Apply Q-factor: `adjusted = sum * (1 + qFactorPct / 100)` (full float precision)
+7. Round ONCE to nearest cent: `Math.round(adjusted)` (half-up rounding)
+8. Divide by portion count for per-serving cost (full float precision, then round once)
+
+### Precision Rules
+
+- **Intermediate calculations:** Full JavaScript `number` (float64) precision. Never round intermediate values.
+- **Final per-ingredient cost:** Round to nearest cent (`Math.round`) only when storing or displaying.
+- **Percentage displays:** Round to one decimal place (e.g., 32.4%, not 32.3846%).
+- **Yield factor multiplication:** Always multiply trim and cooking yields together first, then divide once. Never apply sequentially with intermediate rounding.
+- **Q-factor application:** Apply AFTER summing all ingredient costs, not per-ingredient.
+- **Conversion factors:** Use the exact values from `docs/food-costing-reference-data.md` Section 1. Export as named constants in `lib/costing/knowledge.ts`.
+
+### Unit Conversion Engine
+
+- **Canonical base units:** grams (weight), milliliters (volume), "each" (count).
+- **Valid conversion paths:**
+  - Weight-to-weight: always valid (direct factor lookup)
+  - Volume-to-weight: requires ingredient density lookup (Section 1c)
+  - Count-to-weight: requires count-to-weight entry (Section 1d)
+  - Volume-to-count: requires both density AND count-to-weight entries
+- **Missing conversion:** Return a `missing_conversion` warning, never zero or null silently.
+- **Chain depth limit:** Maximum 3 conversion steps. Flag conversions that chain 3+ steps as "estimated" in the UI.
+
+### Floating-Point Guards
+
+- `yield_factor === 0` produces `Infinity`. Guard: reject at validation (see Input Validation below).
+- `portion_count === 0` produces `Infinity`. Guard: reject at validation.
+- Circular sub-recipe references produce infinite loops. Guard: cycle detection before computation (maintain a visited-recipe set during recursive costing).
+
+### Input Validation Rules
+
+Every costing input must pass validation before entering the calculation pipeline. Invalid inputs are rejected with a specific error message, never silently clamped.
+
+| Field                  | Valid Range     | Notes                                                                         |
+| ---------------------- | --------------- | ----------------------------------------------------------------------------- |
+| `price_per_unit_cents` | >= 0            | Zero is valid (foraged, donated, comped). Negative is never valid.            |
+| `trim_yield_factor`    | > 0 and <= 1.0  | You cannot gain edible matter by trimming.                                    |
+| `cooking_yield_factor` | > 0             | CAN exceed 1.0 (rice, pasta, beans absorb water). Flag > 4.0 as likely error. |
+| `combined_yield`       | > 0             | Product of trim and cooking yields.                                           |
+| `q_factor_pct`         | >= 0 and <= 100 | Recommended range 3-15%, but validation allows 0-100.                         |
+| `quantity`             | > 0             | Zero or negative quantities are always invalid.                               |
+| `portion_count`        | >= 1            | Must be a positive integer.                                                   |
+| `profit_margin_pct`    | >= 0 and < 100  | 100% margin is mathematically valid but flagged as likely error.              |
+| `target_food_cost_pct` | > 0 and <= 100  | 0% target is meaningless (free food).                                         |
+
+### Historical Cost Snapshots
+
+- **Event/quote costs are snapshot at quote creation time.** Re-costing a recipe updates the recipe template but does NOT retroactively change existing quotes or events.
+- The `CostingResult` should include a `computedAt: string` (ISO timestamp) field.
+- Historical event reports always show the cost as it was when the quote was created, not current prices.
+- If a chef explicitly re-costs an event, the snapshot is replaced and the old snapshot is logged.
+
+### Localization Scope
+
+- **V1 targets the US market.** Currency is USD. Unit system defaults to US customary with metric conversion available.
+- Currency is stored as integer minor units (cents). If localization ships, storage becomes `(amount_minor_units: number, currency_code: string)`.
+- Seasonal availability data (Section 5) is North American temperate. Conversion factors (Section 1) are universal except fluid ounces and cups (US-specific volume measures).
+- Localization (metric-primary UI, non-USD currencies, non-US tax rules) is a future enhancement, not V1 scope.
+
 ---
 
 ## Part 2: Data Model Extensions
@@ -340,7 +432,7 @@ All exhaustive lookup tables (unit conversions, ingredient densities, yield fact
 
 The reference data file contains:
 
-- **17 sections** of structured lookup tables
+- **20 sections** of structured lookup tables
 - **150+ ingredient yield factors** (trim and cooking, with combined yield examples)
 - **60+ ingredient density values** (volume-to-weight)
 - **70+ count-to-weight conversions** (produce, proteins, herbs)
@@ -440,6 +532,9 @@ interface CostingResult {
   ingredientsMissingPrice: number
   coverageRatio: number // ingredientsWithPrice / ingredientCount
   warnings: CostingWarning[]
+
+  // Snapshot metadata
+  computedAt: string // ISO timestamp of when this result was calculated
 }
 
 interface CostingWarning {
@@ -590,6 +685,75 @@ Remy gains a new knowledge action: `knowledge.food_costing`
 | Chef asks about resale certificate            | Knowledge layer explains tax exemption and cost impact. Informational only; tax is outside costing engine scope.                                               |
 | Chef asks about retainer vs. one-off pricing  | Knowledge layer explains different economics. Does not auto-adjust pricing. Chef controls all pricing decisions.                                               |
 | Recipe hasn't been re-costed in 90+ days      | Surface "info" hint: "This recipe was last costed X days ago. Ingredient prices may have changed." Not a block.                                                |
+| Zero-cost ingredient (foraged, donated)       | Include in ingredient count and coverage ratio. Q-factor applies to $0 (still $0). Do not flag as "missing price."                                             |
+| All ingredients missing prices                | `totalIngredientCostCents` = 0. `foodCostPct` = null (not 0%). Show "Costing incomplete" state. Do not compute suggested price.                                |
+| Negative price (vendor credit/return)         | Reject at validation. Credits are accounting adjustments, not ingredient prices. They do not flow through the recipe costing engine.                           |
+| Recipe with zero yield (division by zero)     | Reject at validation before any calculation. Surface error: "Recipe yield cannot be zero."                                                                     |
+| Circular sub-recipe (A -> B -> A)             | Detect cycle before computation. Surface error: "Circular recipe reference detected." Do not attempt to compute.                                               |
+| Cooking yield > 1.0 (rice, pasta, beans)      | Allow it. Correct behavior (water absorption). Surface info if > 4.0: "Cooking yield above 400% is unusual. Please verify."                                    |
+| Very large menu (1000+ items)                 | Batch computation with progress indicator. Use `resolvePricesBatch` (never N+1 individual lookups). Target: < 5 seconds for 1000 items.                        |
+| Payment processing fees on event total        | Not a food cost. Belongs in cost-plus as an overhead or separate line item. Reduces effective revenue, which raises actual food cost %.                        |
+
+---
+
+## Golden Test Cases
+
+These are exact-output test cases for verifying costing math. All values are deterministic. Use these as automated regression tests.
+
+### Test 1: Simple Single Ingredient
+
+- Input: 1 ingredient, price = 500 cents/lb, quantity = 0.5 lb, yield = 1.0, Q-factor = 0%, portions = 1
+- Expected: `totalIngredientCostCents = 250`, `foodCostPct` at $8.33 selling price (30% target) = 30.0%
+- `suggestedPriceCents = 833` (250 / 0.30 = 833.33, rounded to 833)
+
+### Test 2: Yield Factor Applied
+
+- Input: 1 ingredient, price = 500 cents/lb, quantity = 6 oz (0.375 lb), trim yield = 0.78, cooking yield = 1.0, Q-factor = 0%, portions = 1
+- Calculation: `(500 * 0.375) / 0.78 = 240.384...`
+- Expected: `totalIngredientCostCents = 240` (Math.round)
+
+### Test 3: Combined Yield (Trim + Cooking)
+
+- Input: 1 ingredient, price = 800 cents/lb, quantity = 8 oz (0.5 lb), trim yield = 0.78, cooking yield = 0.55, Q-factor = 0%, portions = 1
+- Calculation: combined yield = `0.78 * 0.55 = 0.429`, cost = `(800 * 0.5) / 0.429 = 932.400...`
+- Expected: `totalIngredientCostCents = 932`
+
+### Test 4: Q-Factor Applied
+
+- Input: 3 ingredients totaling 1200 cents raw cost, Q-factor = 7%, portions = 1
+- Calculation: `1200 * 1.07 = 1284`
+- Expected: `totalIngredientCostCents = 1284`, `qFactorApplied = true`
+
+### Test 5: Cooking Yield > 1.0 (Rice)
+
+- Input: rice, price = 150 cents/lb, quantity = 1 lb dry, trim yield = 1.0, cooking yield = 2.5, Q-factor = 0%, portions = 4
+- Calculation: cost of 1 lb = 150. Yield factor = 2.5 (you get 2.5 lb cooked from 1 lb dry). Cost per lb cooked = `150 / 2.5 = 60`. Per portion (4 portions from 2.5 lb cooked) = `150 / 4 = 37.5`
+- Expected: `totalIngredientCostCents = 150` (total recipe), per-serving = 38 cents (Math.round(37.5))
+- Note: for rice/pasta, cooking yield affects portion planning, not cost-per-AP-unit. The 1 lb of dry rice still costs 150 cents regardless of how much water it absorbs.
+
+### Test 6: Blended Menu Cost
+
+- Input: 3 items. Item A: cost 300c, price 1000c, qty 20. Item B: cost 500c, price 1200c, qty 15. Item C: cost 200c, price 800c, qty 10.
+- Calculation: `(300*20 + 500*15 + 200*10) / (1000*20 + 1200*15 + 800*10) = (6000+7500+2000) / (20000+18000+8000) = 15500/46000 = 0.33695...`
+- Expected: `blendedFoodCostPct = 33.7%`
+
+### Test 7: Sub-Recipe Costing
+
+- Input: Recipe B makes 80 cups at total cost 2200 cents. Recipe A uses 2 cups of Recipe B.
+- Calculation: cost of 2 cups = `2200 / 80 * 2 = 55`
+- Expected: Sub-recipe ingredient contributes 55 cents to Recipe A's total cost.
+
+### Property-Based Test Rules
+
+These are invariants that must hold for ANY valid input:
+
+1. If all ingredients have prices > 0 and quantities > 0, then `totalIngredientCostCents > 0`
+2. `foodCostPct` is always between 0 and 100 when both cost and selling price are positive
+3. Adding an ingredient with price > 0 never decreases `totalIngredientCostCents`
+4. `ingredientsWithPrice + ingredientsMissingPrice = ingredientCount`
+5. `coverageRatio = ingredientsWithPrice / ingredientCount` (always 0 to 1)
+6. Enabling Q-factor always increases total cost (when Q > 0 and base cost > 0)
+7. Reducing yield factor always increases per-unit cost (when base cost > 0)
 
 ---
 
@@ -618,6 +782,11 @@ Remy gains a new knowledge action: `knowledge.food_costing`
 - **Seasonal price trend indicators** - future enhancement on auto-costing engine
 - **Client-facing cost breakdown** - clients see totals, not methodology. Separate spec if needed.
 - **Competitive pricing intelligence** - "what do other chefs charge?" is a different system entirely
+- **Localization** - V1 is US market only (USD, US customary units, US tax rules). Metric-primary UI and non-USD currencies are future enhancements
+- **POS integration** - POS sales data feeding into actual food cost is a future integration, not V1 scope
+- **Accounting software export** - direct export to QuickBooks/Xero chart of accounts is a future integration
+- **Inventory management system integration** - consuming inventory counts from external systems is future scope
+- **Recipe import from other platforms** - structured import from ChefTec, Meez, CostBrain, etc. is future scope
 
 ---
 
@@ -656,7 +825,9 @@ None. All configuration fields described above either already exist in the chef 
 - The `CostingResult` interface defined here should be reconciled with whatever the auto-costing engine currently returns. Extend, don't replace.
 - All help content is STATIC. No server actions, no database queries, no AI generation for the knowledge layer itself. It's a content map in a TypeScript file.
 - The user-facing guide (`docs/food-costing-guide.md`) is the canonical content source. The reference data file (`docs/food-costing-reference-data.md`) is the canonical data source. The TypeScript content map extracts from both. If they diverge, the docs win.
-- The reference data file contains 17 sections: 150+ yield factors, 60+ density values, 70+ count-to-weight conversions, portion standards, operator cost lines, seasonal data, beverage costing (targets, yields, ice displacement, event planning), waste/spoilage rates (by operation type and ingredient category), non-revenue food allowances, purchasing strategy (vendor channels, delivery fees, volume discounts), re-costing frequency, presentation/garnish costs, breakeven templates, and tax reference. This is a LOT of static data. Structure `lib/costing/knowledge.ts` as typed lookup maps, not inline strings.
+- The reference data file contains 20 sections: 150+ yield factors, 60+ density values, 70+ count-to-weight conversions, portion standards, operator cost lines, seasonal data, beverage costing (targets, yields, ice displacement, event planning), waste/spoilage rates (by operation type and ingredient category), non-revenue food allowances, purchasing strategy (vendor channels, delivery fees, volume discounts), re-costing frequency, presentation/garnish costs, breakeven templates, tax reference (sales tax, income tax, prepared food), regulatory/compliance costs (permits, insurance, certifications), packaging cost reference (container types, eco-premiums), and accounting/financial reporting reference (chart of accounts mapping, total cost structure benchmarks, portioning error impact, delivery platform commission impact). This is a LOT of static data. Structure `lib/costing/knowledge.ts` as typed lookup maps, not inline strings.
+- **Calculation precision is mandatory.** Read Part 1b (Calculation Precision Rules) before writing any costing math. Key rules: never round intermediate values, multiply yield factors together before dividing, apply Q-factor after summing, round once at the end with Math.round. Golden test cases (below Verification Steps) must pass as automated regression tests.
+- **Cooking yield CAN exceed 1.0.** Rice, pasta, dried beans, and grains absorb water during cooking. A cooking yield of 2.5 (rice triples in weight) is valid and expected. Only trim yield is capped at 1.0. Do not reject or clamp cooking yields above 1.0.
 - Operator-specific cost lines (`lib/costing/operator-cost-lines.ts`) should export a map keyed by `OperatorType`. When a chef selects their operation type in settings, the UI pre-populates relevant cost line templates they can fill in with their actual numbers.
 - Follow the Universal Interface Philosophy: one primary action per screen, five mandatory states, cognitive load limits. The knowledge layer is supplementary; it must not compete with primary costing data for attention.
 - No em dashes anywhere. No "OpenClaw" in any user-visible string.

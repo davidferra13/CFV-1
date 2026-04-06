@@ -452,7 +452,7 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 
 **Private Chef / Personal Chef:**
 | Cost Line | Typical Range | Frequency |
-|-----------|--------------|-----------|
+| -------------------------- | -------------------------------------------- | ---------- |
 | Travel (mileage) | IRS rate ($0.67/mile in 2026) or actual fuel | Per event |
 | Travel time | Hourly rate x drive hours | Per event |
 | Parking | $0-50 | Per event |
@@ -463,7 +463,7 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 
 **Caterer / Event Production:**
 | Cost Line | Typical Range | Frequency |
-|-----------|--------------|-----------|
+| --------------------------- | -------------------- | ----------------------- |
 | Venue rental | $0-5,000 | Per event |
 | Equipment rental | $100-2,000 | Per event |
 | Linen rental | $100-800 | Per event |
@@ -476,7 +476,7 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 
 **Food Truck / Mobile:**
 | Cost Line | Typical Range | Frequency |
-|-----------|--------------|-----------|
+| -------------------------------------- | -------------------- | --------------- |
 | Commissary kitchen rental | $500-2,000/month | Monthly |
 | Generator fuel | $15-40/day | Per service |
 | Parking permit / vending fee | $25-500/day | Per service |
@@ -488,7 +488,7 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 
 **Ghost Kitchen / Delivery-Only:**
 | Cost Line | Typical Range | Frequency |
-|-----------|--------------|-----------|
+| ---------------------------------------- | --------------------- | -------------------- |
 | Kitchen rental (shared space) | $1,500-5,000/month | Monthly |
 | Platform commission (DoorDash, UberEats) | 15-30% of order total | Per order |
 | Packaging per order | $0.75-2.50 | Per order |
@@ -498,7 +498,7 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 
 **Bakery / Pastry:**
 | Cost Line | Typical Range | Frequency |
-|-----------|--------------|-----------|
+| ---------------------------------------- | ----------------------------- | --------- |
 | Packaging (boxes, bags, inserts, labels) | $0.25-3.00 per item | Per unit |
 | Decoration labor (cakes) | $25-75/hr, 2-20 hrs per piece | Per order |
 | Specialty equipment (molds, rings, tips) | $50-500 | Amortized |
@@ -507,7 +507,7 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 
 **Restaurant (Dine-In):**
 | Cost Line | Typical Range | Frequency |
-|-----------|--------------|-----------|
+| --------------------------- | --------------------- | --------------- |
 | Rent / lease | $2,000-25,000/month | Monthly |
 | Utilities | $500-3,000/month | Monthly |
 | Beverage program (COGS) | 18-35% of bev revenue | Ongoing |
@@ -522,7 +522,7 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 
 **Meal Prep / Subscription:**
 | Cost Line | Typical Range | Frequency |
-|-----------|--------------|-----------|
+| ------------------------------ | ----------------------- | ------------ |
 | Containers + lids | $0.30-1.00 per meal | Per unit |
 | Labels (nutritional, branding) | $0.05-0.15 per label | Per unit |
 | Insulated packaging | $1.50-4.00 per shipment | Per delivery |
@@ -533,7 +533,7 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 
 **Wholesale / CPG:**
 | Cost Line | Typical Range | Frequency |
-|-----------|--------------|-----------|
+| ------------------------------------------ | ------------------------------- | ------------------ |
 | Co-packing fees | $5,000-50,000 per run | Per production run |
 | Packaging (jars, bottles, labels, cartons) | $0.50-5.00 per unit | Per unit |
 | Freight / distribution | $0.25-2.00 per unit | Per unit |
@@ -545,7 +545,7 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 
 **Pop-Up / Temporary Event:**
 | Cost Line | Typical Range | Frequency |
-|-----------|--------------|-----------|
+| ------------------------ | ---------------- | --------- |
 | Venue fee / booth rental | $100-5,000 | Per event |
 | Temporary health permit | $50-500 | Per event |
 | Equipment transport | $50-300 | Per event |
@@ -556,7 +556,7 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 
 **Institutional (Schools, Hospitals, Corporate):**
 | Cost Line | Typical Range | Frequency |
-|-----------|--------------|-----------|
+| --------------------------------- | --------------------------------- | ------------------- |
 | Contract price lock (6-12 months) | Fixed per meal | Per contract period |
 | Nutritional compliance overhead | 2-5% of labor | Ongoing |
 | Commodity program credits | -$0.10-0.50 per meal | Ongoing (offset) |
@@ -1048,3 +1048,202 @@ Contribution Margin Ratio = (Selling Price - Variable Cost) / Selling Price
 | $5,000                   | 7%       | $350             | $4,200      | Small catering company |
 | $10,000                  | 7%       | $700             | $8,400      | Restaurant             |
 | $25,000                  | 7%       | $1,750           | $21,000     | High-volume operation  |
+
+### 17c. Prepared Food Sales Tax Complexity
+
+Catering and prepared food tax rules vary significantly by state. Key distinctions operators must verify with their state:
+
+- **Catering invoice taxation:** Some states tax the entire invoice (food + labor + service charge). Others tax only the food portion. This affects what you collect from clients.
+- **Delivery charges:** Taxable in some states, exempt in others. If taxable, delivery fees on catering orders increase the client's total, affecting competitiveness.
+- **Eat-in vs. takeout:** Some states (e.g., New York) tax prepared food eaten on premises but exempt the same item taken to go. Others tax both equally.
+- **Heated food rule:** Unheated grocery items (raw chicken, produce) are often tax-exempt. The same item heated or prepared becomes taxable.
+- **Threshold rules:** Some states exempt prepared food below a certain price (e.g., under $1.50 in some jurisdictions).
+
+Operators must consult their state revenue department for specific rules. Miscollecting sales tax creates compliance liability (back taxes + penalties + interest).
+
+### 17d. Income Tax Considerations for Food Operators
+
+| Category                       | Tax Treatment                    | Notes                                               |
+| ------------------------------ | -------------------------------- | --------------------------------------------------- |
+| Food purchased for resale      | 100% deductible as COGS          | Schedule C, Line 38 (Cost of Goods Sold)            |
+| Staff meals                    | 100% deductible as COGS or wages | If provided as a benefit, document as compensation  |
+| Client entertainment/tastings  | 50% deductible                   | Must be business-related, documented                |
+| Equipment purchases            | Section 179 or depreciation      | Up to $1,160,000 immediate expensing (2024)         |
+| Vehicle (standard mileage)     | $0.67/mile (2024)                | For catering, shopping, client visits               |
+| Vehicle (actual expenses)      | Fuel, insurance, maintenance     | Must track actual costs; choose one method per year |
+| Home office (home-based chefs) | Square footage % of home costs   | Reduces effective overhead allocation               |
+
+Consult a tax professional for your specific situation. These are general US guidelines, not tax advice.
+
+---
+
+## 18. Regulatory and Compliance Cost Reference
+
+### 18a. Permits and Licenses by Operation Type
+
+| Permit Type               | Typical Cost     | Renewal   | Required For                                 |
+| ------------------------- | ---------------- | --------- | -------------------------------------------- |
+| Health department permit  | $100-1,000/year  | Annual    | All food operations                          |
+| Food handler card         | $15-25/person    | 2-3 years | All food handlers (most states)              |
+| Food safety manager cert  | $150-200/person  | 5 years   | At least 1 per operation (most states)       |
+| Catering permit           | $50-500/year     | Annual    | Off-premise caterers                         |
+| Temporary event permit    | $25-200/event    | Per event | Pop-ups, festivals, outdoor events           |
+| Mobile vendor permit      | $200-1,000/year  | Annual    | Food trucks, carts                           |
+| Cottage food permit       | $0-200/year      | Annual    | Home kitchen operators (state-dependent)     |
+| Liquor license            | $300-14,000/year | Annual    | Operations serving alcohol                   |
+| Liquor license (quota)    | $50,000-500,000  | One-time  | States with quota systems (secondary market) |
+| Catering liquor permit    | $100-1,000/event | Per event | Caterers serving alcohol at off-site events  |
+| FDA facility registration | $0               | Biennial  | Wholesale/CPG manufacturers                  |
+
+### 18b. Insurance Types for Food Operations
+
+| Insurance Type        | Typical Cost      | Required?             | Applies To                        |
+| --------------------- | ----------------- | --------------------- | --------------------------------- |
+| General liability     | $500-3,000/year   | Effectively mandatory | All operations                    |
+| Product liability     | $500-5,000/year   | Mandatory for CPG     | Wholesale, packaged food, retail  |
+| Commercial auto       | $1,200-5,000/year | Mandatory if vehicles | Food trucks, caterers, delivery   |
+| Workers' compensation | 3-8% of payroll   | Mandatory with staff  | All operations with employees     |
+| Property/equipment    | $500-2,000/year   | Recommended           | Brick-and-mortar, food trucks     |
+| Liquor liability      | $500-3,000/year   | Mandatory if serving  | Bars, restaurants, caterers       |
+| Hired/non-owned auto  | $200-800/year     | Recommended           | Employees using personal vehicles |
+| Business interruption | $500-2,000/year   | Recommended           | Brick-and-mortar operations       |
+| Umbrella/excess       | $500-2,000/year   | Recommended           | Higher-risk operations            |
+
+Note: Many venues and corporate clients require proof of $1M-$2M general liability coverage as a condition of booking. Factor this into your overhead if you serve those markets.
+
+### 18c. Workers' Compensation Rates (Food Service)
+
+The reference data Section 4b lists workers' comp at 1-5% of payroll. For food service specifically, rates are higher due to injury frequency:
+
+| Job Classification    | Typical Rate     | Notes                           |
+| --------------------- | ---------------- | ------------------------------- |
+| Kitchen staff (cooks) | 3-8% of payroll  | Burns, cuts, slip-and-fall risk |
+| Servers/FOH           | 2-5% of payroll  | Lower injury rate than kitchen  |
+| Delivery drivers      | 5-10% of payroll | Vehicle accident risk premium   |
+| Management/admin      | 1-2% of payroll  | Office classification           |
+
+Rates vary by state and by the employer's experience modification factor (claims history). Operations with injury claims pay higher rates.
+
+### 18d. Food Safety Certification Costs
+
+| Certification              | Cost       | Renewal   | Who Needs It                               |
+| -------------------------- | ---------- | --------- | ------------------------------------------ |
+| ServSafe Food Handler      | $15-25     | 2-3 years | All food handlers in most states           |
+| ServSafe Manager           | $150-200   | 5 years   | At least 1 manager per operation           |
+| ServSafe Alcohol           | $20-40     | 3-5 years | Servers/bartenders in serving operations   |
+| Allergen awareness         | $20-50     | Varies    | Required in some states (e.g., MA, IL, RI) |
+| PCQI (Preventive Controls) | $800-1,500 | One-time  | Wholesale/CPG under FSMA                   |
+| HACCP certification        | $200-500   | 3-5 years | Wholesale, institutional, export           |
+
+### 18e. Organic and Specialty Certifications
+
+| Certification             | Annual Cost        | Applies To                        |
+| ------------------------- | ------------------ | --------------------------------- |
+| USDA Organic              | $750-15,000/year   | Any operation labeling "organic"  |
+| Non-GMO Project Verified  | $2,000-15,000/year | Packaged food with this claim     |
+| Fair Trade Certified      | $2,000-10,000/year | Products with fair trade sourcing |
+| Kosher certification      | $1,000-10,000/year | Products marketed as kosher       |
+| Gluten-free certification | $1,500-5,000/year  | Products claiming gluten-free     |
+
+Using the word "Certified Organic" on labels or menus without USDA certification is a federal violation. These costs must be amortized into product pricing.
+
+---
+
+## 19. Packaging Cost Reference
+
+### 19a. Container Types and Per-Unit Cost
+
+| Container Type      | Cost at 100 qty | Cost at 500 qty | Cost at 1000+ qty | Common Use                    |
+| ------------------- | --------------- | --------------- | ----------------- | ----------------------------- |
+| Polypropylene (PP)  | $0.25-0.40      | $0.18-0.30      | $0.12-0.22        | Meal prep, hot food           |
+| PET (clear plastic) | $0.20-0.35      | $0.15-0.25      | $0.10-0.18        | Salads, cold items, deli      |
+| Sugarcane/bagasse   | $0.35-0.60      | $0.25-0.45      | $0.18-0.35        | Eco-friendly hot food         |
+| PLA (compostable)   | $0.40-0.70      | $0.30-0.55      | $0.22-0.40        | Eco-friendly cold items       |
+| Aluminum foil pans  | $0.30-0.50      | $0.20-0.35      | $0.15-0.28        | Catering, baking, delivery    |
+| Kraft paper boxes   | $0.25-0.45      | $0.18-0.32      | $0.12-0.25        | Bakery, sandwiches            |
+| Clamshell (foam)    | $0.08-0.15      | $0.06-0.12      | $0.04-0.08        | Budget takeout (being phased) |
+
+### 19b. Additional Packaging Costs
+
+| Item                    | Cost Per Unit | Notes                                     |
+| ----------------------- | ------------- | ----------------------------------------- |
+| Branded labels          | $0.05-0.15    | Custom printed, includes nutritional info |
+| Tamper-evident seals    | $0.02-0.05    | Required for delivery, meal prep          |
+| Utensil kits            | $0.08-0.20    | Fork/knife/napkin packets                 |
+| Sauce cups (2 oz)       | $0.03-0.06    | With lids                                 |
+| Insulated liners        | $0.50-1.50    | For shipped/delivered meal boxes          |
+| Gel ice packs           | $0.30-0.80    | Cold chain for delivery                   |
+| Bakery boxes (standard) | $0.25-0.75    | 6x6 to 12x12                              |
+| Cake boxes (tall)       | $0.75-2.50    | For tiered or decorated cakes             |
+| Window bags (bread)     | $0.05-0.12    | Artisan bread packaging                   |
+
+### 19c. Eco-Packaging Premium
+
+Switching from conventional to eco-friendly packaging adds 40-100% to container cost. At 500 containers/week:
+
+| Container Type | Weekly Cost (conventional) | Weekly Cost (eco) | Annual Premium |
+| -------------- | -------------------------- | ----------------- | -------------- |
+| Meal prep (PP) | $90-150                    | $125-225          | $1,820-3,900   |
+| Takeout (foam) | $30-60                     | $90-175           | $3,120-5,980   |
+| Bakery (kraft) | $90-160                    | $125-225          | $1,820-3,380   |
+
+---
+
+## 20. Accounting and Financial Reporting Reference
+
+### 20a. Chart of Accounts Mapping (ChefFlow to Standard Restaurant Accounting)
+
+| ChefFlow Category       | Standard Account        | Account Type    | Notes                                  |
+| ----------------------- | ----------------------- | --------------- | -------------------------------------- |
+| Food cost               | 5000 COGS: Food         | Cost of Revenue | Direct ingredient costs                |
+| Beverage cost           | 5100 COGS: Beverage     | Cost of Revenue | Alcohol and non-alcoholic separately   |
+| Packaging/disposables   | 5200 COGS: Paper        | Cost of Revenue | Containers, bags, wraps, utensils      |
+| Direct event labor      | 5300 COGS: Direct Labor | Cost of Revenue | Prep, cook, serve, cleanup hours       |
+| Salaried kitchen staff  | 6000 Payroll Expense    | Operating       | Includes employer taxes and benefits   |
+| Travel/vehicle          | 6500 Transportation     | Operating       | Mileage, fuel, parking, tolls          |
+| Equipment rental        | 6200 Rentals            | Operating       | Per-event or monthly                   |
+| Kitchen rent/commissary | 7000 Occupancy          | Operating       | Rent, utilities, maintenance           |
+| Insurance               | 7100 Insurance          | Operating       | All policy types                       |
+| Marketing               | 7500 Marketing          | Operating       | Advertising, promotions, platform fees |
+| Payment processing      | 7600 Processing Fees    | Operating       | Credit card, platform transaction fees |
+| Permits and licenses    | 7200 Regulatory         | Operating       | Health dept, catering, liquor permits  |
+| Professional services   | 7300 Professional Fees  | Operating       | Accounting, legal, consulting          |
+
+### 20b. Total Cost Structure Benchmarks by Operation Type
+
+These show where food cost fits relative to all other costs. All percentages are of revenue.
+
+| Cost Category    | Fine Dining | Casual Dining | Private Chef | Catering | Food Truck | Bakery | Ghost Kitchen |
+| ---------------- | ----------- | ------------- | ------------ | -------- | ---------- | ------ | ------------- |
+| Food cost        | 28-32%      | 30-35%        | 25-35%       | 28-35%   | 28-35%     | 25-35% | 28-35%        |
+| Labor            | 30-35%      | 28-32%        | 30-45%       | 25-35%   | 20-28%     | 25-35% | 15-25%        |
+| Occupancy        | 8-12%       | 6-10%         | 0-5%         | 3-8%     | 10-15%     | 8-12%  | 15-25%        |
+| Other overhead   | 5-10%       | 5-8%          | 5-10%        | 5-10%    | 8-12%      | 5-10%  | 5-10%         |
+| Platform fees    | 0%          | 0-5%          | 0%           | 0%       | 0-5%       | 0-5%   | 15-30%        |
+| Operating profit | 10-18%      | 12-20%        | 15-30%       | 12-22%   | 8-18%      | 8-18%  | 5-15%         |
+
+### 20c. Portioning Error Cost Impact
+
+This table shows how over-portioning a single protein item compounds across service volume.
+
+| Over-Portion Amount | Cost Per Plate (at $6/lb protein) | Extra Cost per 50 Covers | Extra Cost per 100 Covers | Extra Cost per 200 Covers |
+| ------------------- | --------------------------------- | ------------------------ | ------------------------- | ------------------------- |
+| +0.5 oz             | +$0.19                            | $9.38                    | $18.75                    | $37.50                    |
+| +1 oz               | +$0.38                            | $18.75                   | $37.50                    | $75.00                    |
+| +2 oz               | +$0.75                            | $37.50                   | $75.00                    | $150.00                   |
+
+At $10/lb protein (premium cuts), these numbers nearly double. Over a year of daily service, +1 oz over-portioning on a single protein item costs $9,000-$14,000 in unplanned food cost.
+
+### 20d. Delivery Platform Commission Impact on Effective Food Cost
+
+Same $25 menu item, same $7.50 ingredient cost (30% food cost before commission):
+
+| Platform Commission | Effective Revenue | Effective Food Cost % | Viable?              |
+| ------------------- | ----------------- | --------------------- | -------------------- |
+| 0% (direct order)   | $25.00            | 30.0%                 | Yes                  |
+| 15%                 | $21.25            | 35.3%                 | Marginal             |
+| 20%                 | $20.00            | 37.5%                 | Marginal             |
+| 25%                 | $18.75            | 40.0%                 | Requires menu markup |
+| 30%                 | $17.50            | 42.9%                 | Requires menu markup |
+
+To maintain 30% effective food cost on a 30% commission platform, the menu price must be: $7.50 / 0.30 / (1 - 0.30) = **$35.71** (a 43% markup from the $25 dine-in price).
