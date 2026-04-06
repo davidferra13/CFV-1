@@ -332,6 +332,58 @@ Breakeven Units = Fixed Costs / (Revenue Per Unit - Variable Cost Per Unit)
 - Some operations use both: a caterer tracks per-event profitability (job) AND monthly P&L (period).
 - The knowledge layer explains both methods so operators understand how ChefFlow's per-event numbers connect to their monthly financials.
 
+#### Shrink (Inventory Loss)
+
+- Shrink is the difference between theoretical inventory (what should be on hand) and actual inventory (what is). Industry average: 2-5% of food cost.
+- Four sources: internal theft (75% of total in foodservice), external theft, administrative errors (most common once measured), and unrecorded waste.
+- Shrink differs from waste: waste is measured and documented; shrink is the unexplained gap after waste is accounted for.
+- **System behavior:** Informational concept. Requires inventory tracking to measure. Define now. The knowledge layer educates operators on benchmarks (Section 21 of reference data), investigation methodology, and cost impact. Do not display shrink metrics until inventory tracking is live.
+
+#### Menu Engineering Matrix (Stars/Plowhorses/Puzzles/Dogs)
+
+- Every menu item is classified by two axes: popularity (sales mix %) and profitability (contribution margin per item).
+- Four quadrants: **Stars** (high both, protect), **Plowhorses** (popular but low margin, re-engineer), **Puzzles** (profitable but unpopular, promote), **Dogs** (low both, remove).
+- Popularity threshold: 70% of fair share (100% / number of items x 70%). Profitability threshold: weighted average contribution margin.
+- **System behavior:** Future enhancement. When POS/sales mix data is available, the system can classify items automatically. Define the methodology now. The knowledge layer teaches the framework. See reference data Section 22 for classification rules, worked examples, and analysis frequency.
+
+#### Prep Production Planning (Par Levels, Prep Sheets, Batch Sizing)
+
+- Par levels define minimum on-hand quantities: `Par = Average Daily Usage x Days Between Deliveries x Safety Factor (1.2-1.5)`.
+- Prep sheets translate par levels into daily production tasks: item, par, on-hand, to-prep, shelf life, priority.
+- Batch sizing matches equipment capacity and shelf life constraints. Over-prepping is unplanned food cost.
+- **System behavior:** Informational concept for the knowledge layer. Requires sales forecasting + inventory to automate. The knowledge layer provides par level formulas, shelf life tables, and the cost connection (every prep item links to a costed recipe card).
+
+#### Vendor Price Tracking
+
+- Focus on top 20 ingredients by spend (typically 60-80% of total food cost). Track weekly: vendor, item, pack size, unit price, vs. last week, vs. 90-day average.
+- Price alert triggers: +3-5% single item (monitor), +5-10% (get quotes), +10%+ (switch or substitute), +3%+ across 5+ items (review all recipes).
+- Switching vendors requires evaluating minimums, delivery schedule, quality, payment terms, and reliability, not just price.
+- **System behavior:** The OpenClaw price database already tracks historical prices with timestamps. Future enhancement: surface price trend indicators and alert operators when key ingredient prices exceed thresholds. Define methodology now.
+
+#### Equipment Impact on Yield
+
+- Cooking equipment significantly affects yield: sous vide (90-95% protein yield) vs. convection oven (70-80%) vs. smoking (60-70%). Same product, same temp, 30-40% cost difference from equipment alone.
+- When a kitchen changes cooking equipment, all affected recipe cards must have their yield factors updated.
+- **System behavior:** Informational. The knowledge layer educates operators on equipment-yield relationships. See reference data Section 23 for yield tables by equipment type and protein, vegetable yield tables, effective cost calculators, and equipment upgrade ROI formulas.
+- **Builder note:** Yield factors in recipe cards are entered by operators (or defaulted from reference data). The system does not infer equipment type. But the knowledge layer and help text should surface equipment-yield relationships so operators set accurate yield factors.
+
+#### Cross-Utilization Scoring
+
+- Beyond byproduct recovery (already defined in Cross-Utilization above), ingredient overlap scoring measures how many menu items share each ingredient.
+- Overlap Score = (# dishes using ingredient / total menu items) x 100. Target: 70%+ of ingredients at 15%+ overlap.
+- High overlap = volume purchasing power + low waste + prep efficiency. Low overlap (single-dish ingredients) = waste risk.
+- Financial impact: consistent cross-utilization reduces food cost 3-8 percentage points.
+- Byproduct recovery value: `Adjusted Primary Cost = Original Cost - Recovery Value of Byproducts`.
+- **System behavior:** Future enhancement when recipe-ingredient relationships are queryable at menu level. The knowledge layer teaches the framework now. See reference data Section 9 (existing cross-utilization map) and the Guide for scoring methodology.
+
+#### Actual vs. Theoretical Reconciliation
+
+- The most important financial report in food cost management. Extends the Theoretical vs. Actual Variance concept above.
+- Reconciliation is not just measuring the gap; it is explaining the gap source by source: portioning, receiving, waste, POS errors, inventory errors, then unexplained (shrink).
+- Variance thresholds: 0-1 pt (normal), 1-2 pts (monitor), 2-3 pts (investigate), 3-5 pts (escalate), 5+ pts (critical).
+- Frequency: monthly for standing-inventory operations (restaurants, bakeries), per-event for job-costed operations (private chefs, caterers).
+- **System behavior:** Requires inventory tracking to implement. Define the reconciliation framework, investigation methodology, and reporting template now. The knowledge layer and help text teach operators how to do this manually until automated. See reference data Section 24 for variance thresholds, source magnitude tables, worksheet template, and trend interpretation.
+
 ---
 
 ## Part 1b: Calculation Precision Rules
@@ -432,7 +484,7 @@ All exhaustive lookup tables (unit conversions, ingredient densities, yield fact
 
 The reference data file contains:
 
-- **20 sections** of structured lookup tables
+- **24 sections** of structured lookup tables
 - **150+ ingredient yield factors** (trim and cooking, with combined yield examples)
 - **60+ ingredient density values** (volume-to-weight)
 - **70+ count-to-weight conversions** (produce, proteins, herbs)
@@ -777,8 +829,12 @@ These are invariants that must hold for ANY valid input:
 
 ## Out of Scope
 
-- **Inventory tracking and actual vs. theoretical variance** - defined conceptually here, built when inventory feature ships
-- **Cross-utilization tracking** - defined conceptually, no implementation
+- **Inventory tracking and actual vs. theoretical variance** - defined conceptually here (including reconciliation framework, variance thresholds, and investigation methodology), built when inventory feature ships
+- **Cross-utilization tracking and scoring** - defined conceptually (including overlap scoring, byproduct recovery valuation), no implementation until recipe-menu relationships are queryable
+- **Menu engineering matrix automation** - defined conceptually (Stars/Plowhorses/Puzzles/Dogs classification), built when POS/sales mix data is available
+- **Prep production planning automation** - defined conceptually (par levels, prep sheets, batch sizing), built when sales forecasting and inventory exist
+- **Vendor price alerting** - defined conceptually (threshold triggers, switching criteria), built when price history has enough data points
+- **Shrink measurement and reporting** - defined conceptually (investigation methodology, benchmarks), built when inventory tracking ships
 - **Seasonal price trend indicators** - future enhancement on auto-costing engine
 - **Client-facing cost breakdown** - clients see totals, not methodology. Separate spec if needed.
 - **Competitive pricing intelligence** - "what do other chefs charge?" is a different system entirely
@@ -825,7 +881,7 @@ None. All configuration fields described above either already exist in the chef 
 - The `CostingResult` interface defined here should be reconciled with whatever the auto-costing engine currently returns. Extend, don't replace.
 - All help content is STATIC. No server actions, no database queries, no AI generation for the knowledge layer itself. It's a content map in a TypeScript file.
 - The user-facing guide (`docs/food-costing-guide.md`) is the canonical content source. The reference data file (`docs/food-costing-reference-data.md`) is the canonical data source. The TypeScript content map extracts from both. If they diverge, the docs win.
-- The reference data file contains 20 sections: 150+ yield factors, 60+ density values, 70+ count-to-weight conversions, portion standards, operator cost lines, seasonal data, beverage costing (targets, yields, ice displacement, event planning), waste/spoilage rates (by operation type and ingredient category), non-revenue food allowances, purchasing strategy (vendor channels, delivery fees, volume discounts), re-costing frequency, presentation/garnish costs, breakeven templates, tax reference (sales tax, income tax, prepared food), regulatory/compliance costs (permits, insurance, certifications), packaging cost reference (container types, eco-premiums), and accounting/financial reporting reference (chart of accounts mapping, total cost structure benchmarks, portioning error impact, delivery platform commission impact). This is a LOT of static data. Structure `lib/costing/knowledge.ts` as typed lookup maps, not inline strings.
+- The reference data file contains 24 sections: 150+ yield factors, 60+ density values, 70+ count-to-weight conversions, portion standards, operator cost lines, seasonal data, beverage costing (targets, yields, ice displacement, event planning), waste/spoilage rates (by operation type and ingredient category), non-revenue food allowances, purchasing strategy (vendor channels, delivery fees, volume discounts), re-costing frequency, presentation/garnish costs, breakeven templates, tax reference (sales tax, income tax, prepared food), regulatory/compliance costs (permits, insurance, certifications), packaging cost reference (container types, eco-premiums), accounting/financial reporting reference (chart of accounts mapping, total cost structure benchmarks, portioning error impact, delivery platform commission impact), **shrink benchmarks** (rates by operation type, investigation priority matrix, cost impact tables), **menu engineering classification** (Stars/Plowhorses/Puzzles/Dogs matrix, thresholds, worked examples, analysis frequency), **equipment yield impact** (protein yield by cooking equipment, effective cost per usable pound, vegetable yield, upgrade ROI calculator), and **actual vs. theoretical variance** (threshold response table, common variance sources, reconciliation worksheet template, trend interpretation). This is a LOT of static data. Structure `lib/costing/knowledge.ts` as typed lookup maps, not inline strings.
 - **Calculation precision is mandatory.** Read Part 1b (Calculation Precision Rules) before writing any costing math. Key rules: never round intermediate values, multiply yield factors together before dividing, apply Q-factor after summing, round once at the end with Math.round. Golden test cases (below Verification Steps) must pass as automated regression tests.
 - **Cooking yield CAN exceed 1.0.** Rice, pasta, dried beans, and grains absorb water during cooking. A cooking yield of 2.5 (rice triples in weight) is valid and expected. Only trim yield is capped at 1.0. Do not reject or clamp cooking yields above 1.0.
 - Operator-specific cost lines (`lib/costing/operator-cost-lines.ts`) should export a map keyed by `OperatorType`. When a chef selects their operation type in settings, the UI pre-populates relevant cost line templates they can fill in with their actual numbers.

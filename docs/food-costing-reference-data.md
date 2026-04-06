@@ -1247,3 +1247,257 @@ Same $25 menu item, same $7.50 ingredient cost (30% food cost before commission)
 | 30%                 | $17.50            | 42.9%                 | Requires menu markup |
 
 To maintain 30% effective food cost on a 30% commission platform, the menu price must be: $7.50 / 0.30 / (1 - 0.30) = **$35.71** (a 43% markup from the $25 dine-in price).
+
+---
+
+## 21. Shrink Benchmarks and Investigation Reference
+
+### 21a. Shrink Rate Benchmarks by Operation Type
+
+| Operation Type | Expected Shrink % | Primary Sources                                       |
+| -------------- | ----------------- | ----------------------------------------------------- |
+| Fine dining    | 2-4%              | Portioning errors, unrecorded comps, high-value items |
+| Casual dining  | 3-6%              | Volume-driven, more staff touchpoints                 |
+| Quick service  | 2-5%              | Standardized items but high speed = recording errors  |
+| Private chef   | 1-2%              | Solo operator, buy per job, low sitting inventory     |
+| Catering       | 2-4%              | Event-based purchasing, controlled environment        |
+| Food truck     | 2-5%              | Informal tracking, small team, limited controls       |
+| Institutional  | 1-3%              | Formal systems, regular audits, structured processes  |
+| Bakery         | 3-6%              | Sampling, breakage, weight variation in dough/batter  |
+| Bar/beverage   | 3-8%              | Over-pouring, free drinks, spillage, breakage         |
+| Ghost kitchen  | 3-6%              | High pace, minimal oversight, packaging waste         |
+| Meal prep      | 2-4%              | Batch production, measured portioning                 |
+
+### 21b. Shrink Investigation Priority Matrix
+
+When shrink exceeds your benchmark, investigate in this order (highest probability cause first):
+
+| Priority | Source               | Typical % of Total Shrink | Detection Method                                     |
+| -------- | -------------------- | ------------------------- | ---------------------------------------------------- |
+| 1        | Portioning errors    | 30-40%                    | Weigh 5 random plates, compare to recipe card spec   |
+| 2        | Recording errors     | 20-30%                    | Audit POS entries against kitchen tickets for 1 week |
+| 3        | Receiving errors     | 10-20%                    | Spot-check 5 deliveries: count, weigh, verify credit |
+| 4        | Unrecorded waste     | 10-15%                    | Compare waste log completeness to production volume  |
+| 5        | Internal consumption | 5-15%                     | Staff meal tracking, unauthorized consumption policy |
+| 6        | Vendor fraud         | 2-5%                      | Random weight verification, delivery audit trail     |
+
+### 21c. Cost Impact of Shrink
+
+| Monthly Food Spend | 2% Shrink | 4% Shrink | 6% Shrink | 8% Shrink |
+| ------------------ | --------- | --------- | --------- | --------- |
+| $3,000             | $60/mo    | $120/mo   | $180/mo   | $240/mo   |
+| $5,000             | $100/mo   | $200/mo   | $300/mo   | $400/mo   |
+| $10,000            | $200/mo   | $400/mo   | $600/mo   | $800/mo   |
+| $25,000            | $500/mo   | $1,000/mo | $1,500/mo | $2,000/mo |
+| $50,000            | $1,000/mo | $2,000/mo | $3,000/mo | $4,000/mo |
+
+Reducing shrink from 6% to 2% on $10,000/month food spend saves $4,800/year. This is the highest-ROI activity in food cost management because it recovers money already spent.
+
+---
+
+## 22. Menu Engineering Classification Reference
+
+### 22a. The Menu Engineering Matrix (Stars, Plowhorses, Puzzles, Dogs)
+
+Every menu item is classified by two dimensions: **popularity** (how often it sells) and **profitability** (contribution margin per item). The intersection creates four quadrants:
+
+| Classification | Popularity | Profitability | Strategy                                                       |
+| -------------- | ---------- | ------------- | -------------------------------------------------------------- |
+| **Star**       | High       | High          | Protect. Prominent placement. Do not change.                   |
+| **Plowhorse**  | High       | Low           | Re-engineer. Reduce portion, lower cost, raise price slightly. |
+| **Puzzle**     | Low        | High          | Promote. Better placement, server recommendations, rename.     |
+| **Dog**        | Low        | Low           | Remove or replace. Not earning its menu space.                 |
+
+### 22b. Classification Thresholds
+
+To classify items, you need two benchmarks:
+
+```text
+Popularity Threshold = 100% / Number of Menu Items x 70%
+  (an item selling at 70% of its "fair share" is considered popular)
+
+Profitability Threshold = Weighted Average Contribution Margin across all items
+  (items above average are "high profitability")
+```
+
+**Example: 20-item menu, 1,000 total covers in period**
+
+```text
+Popularity threshold = 100% / 20 x 70% = 3.5% of total sales = 35 covers
+Profitability threshold = Total Contribution Margin / Total Covers
+  = $15,200 / 1,000 = $15.20 average CM per item
+```
+
+Any item selling 35+ covers AND contributing $15.20+ per sale is a Star.
+
+### 22c. Menu Engineering Worked Example
+
+| Menu Item       | Covers Sold | Food Cost | Price  | CM/Item | Classification |
+| --------------- | ----------- | --------- | ------ | ------- | -------------- |
+| Grilled salmon  | 120         | $7.50     | $28.00 | $20.50  | Star           |
+| Caesar salad    | 95          | $2.80     | $14.00 | $11.20  | Plowhorse      |
+| Wagyu steak     | 22          | $28.00    | $65.00 | $37.00  | Puzzle         |
+| Pasta primavera | 18          | $4.20     | $16.00 | $11.80  | Dog            |
+| Chicken piccata | 88          | $5.50     | $24.00 | $18.50  | Star           |
+| Lobster risotto | 15          | $14.00    | $38.00 | $24.00  | Puzzle         |
+| House burger    | 140         | $4.80     | $18.00 | $13.20  | Plowhorse      |
+| Seasonal soup   | 45          | $1.90     | $9.00  | $7.10   | Plowhorse      |
+
+**Thresholds for this example:** Popularity = 35 covers, Profitability = $15.20 weighted avg CM.
+
+**Actions from this analysis:**
+
+- **Stars** (salmon, chicken): keep exactly as they are, give prime menu position
+- **Plowhorses** (Caesar, burger, soup): high sellers but low margin; reduce portion size slightly, find cheaper ingredient alternatives, or raise price $1-2
+- **Puzzles** (wagyu, lobster risotto): great margin but low sales; better menu description, server push, or limited-time feature
+- **Dogs** (pasta primavera): not popular, not profitable; remove from menu or completely redesign
+
+### 22d. Menu Engineering Frequency
+
+| Operation Type | Re-Analyze Frequency | Data Needed                        |
+| -------------- | -------------------- | ---------------------------------- |
+| Restaurant     | Monthly              | POS mix report + current food cost |
+| Catering       | Quarterly            | Event menu selections + costs      |
+| Food truck     | Monthly              | Daily sales mix + cost per item    |
+| Bakery         | Monthly              | Product mix + cost per item        |
+| Private chef   | Per season           | Menu request frequency + costs     |
+| Ghost kitchen  | Bi-weekly            | Platform analytics + food cost     |
+
+---
+
+## 23. Equipment Yield Impact Reference
+
+### 23a. Protein Yield by Cooking Equipment
+
+| Equipment/Method       | Beef (yield %) | Poultry (yield %) | Pork (yield %) | Fish (yield %) |
+| ---------------------- | -------------- | ----------------- | -------------- | -------------- |
+| Sous vide              | 88-95%         | 90-95%            | 90-95%         | 92-97%         |
+| Combi oven (steam+dry) | 82-90%         | 85-92%            | 85-92%         | 88-94%         |
+| Convection oven        | 68-78%         | 72-82%            | 70-80%         | 80-88%         |
+| Standard oven          | 62-75%         | 68-78%            | 65-78%         | 78-85%         |
+| Grill/broil            | 65-75%         | 68-78%            | 65-75%         | 75-85%         |
+| Deep fry               | 78-85%         | 80-88%            | 78-85%         | 80-88%         |
+| Pan sear               | 75-82%         | 78-85%            | 75-82%         | 82-90%         |
+| Braising/stewing       | 55-65%         | 60-70%            | 55-65%         | N/A            |
+| Smoking (hot)          | 58-68%         | 62-72%            | 60-70%         | 70-80%         |
+| Smoking (cold)         | 85-92%         | N/A               | 85-92%         | 88-95%         |
+
+### 23b. Effective Cost Per Usable Pound by Equipment
+
+Based on a $5.00/lb AP cost:
+
+| Equipment        | Yield % | Usable lbs (per 10 lb AP) | Effective $/lb | vs. Sous Vide |
+| ---------------- | ------- | ------------------------- | -------------- | ------------- |
+| Sous vide (92%)  | 92%     | 9.2 lb                    | $5.43          | Baseline      |
+| Combi oven (88%) | 88%     | 8.8 lb                    | $5.68          | +4.6%         |
+| Convection (75%) | 75%     | 7.5 lb                    | $6.67          | +22.8%        |
+| Grill (70%)      | 70%     | 7.0 lb                    | $7.14          | +31.5%        |
+| Standard (68%)   | 68%     | 6.8 lb                    | $7.35          | +35.4%        |
+| Braising (60%)   | 60%     | 6.0 lb                    | $8.33          | +53.4%        |
+| Smoking (65%)    | 65%     | 6.5 lb                    | $7.69          | +41.6%        |
+
+### 23c. Vegetable Yield by Cooking Method
+
+| Method              | Root Vegetables | Leafy Greens | Cruciferous | Squash/Gourds |
+| ------------------- | --------------- | ------------ | ----------- | ------------- |
+| Steaming            | 92-96%          | 80-85%       | 88-93%      | 90-95%        |
+| Combi oven (steam)  | 90-94%          | 78-83%       | 86-91%      | 88-93%        |
+| Roasting (high dry) | 72-80%          | N/A          | 70-78%      | 75-82%        |
+| Grilling            | 78-85%          | N/A          | 75-82%      | 80-85%        |
+| Sauteing            | 82-88%          | 65-75%       | 80-86%      | 82-88%        |
+| Braising/stewing    | 78-85%          | 60-70%       | 75-82%      | 78-85%        |
+| Deep fry (battered) | 85-90%+         | N/A          | 85-90%+     | 85-90%+       |
+
+Note: Deep fry yield can exceed 100% of raw weight when batter/breading adds mass.
+
+### 23d. Equipment Upgrade ROI Calculator
+
+To determine if upgrading cooking equipment pays for itself through yield improvement:
+
+```text
+Annual Savings = Annual Protein Volume (lbs) x AP Price/lb x (New Yield - Old Yield)
+Payback Period (months) = Equipment Cost / (Annual Savings / 12)
+```
+
+**Example:** Kitchen uses 200 lbs/week of chicken ($3.00/lb AP), upgrading from convection oven (75% yield) to combi oven (88% yield):
+
+```text
+Annual savings = 200 x 52 x $3.00 x (0.88 - 0.75) = 10,400 x $3.00 x 0.13 = $4,056/year
+Combi oven cost: ~$15,000
+Payback: $15,000 / ($4,056/12) = 44 months (3.7 years)
+```
+
+For operations processing 500+ lbs/week of protein, a combi oven typically pays for itself in 12-18 months through yield improvement alone.
+
+---
+
+## 24. Actual vs. Theoretical Variance Reference
+
+### 24a. Variance Threshold Response Table
+
+| Variance (points) | Classification | Response Urgency | Required Action                                                 |
+| ----------------- | -------------- | ---------------- | --------------------------------------------------------------- |
+| 0.0-1.0           | Normal         | None             | Operational tolerance. No action required.                      |
+| 1.0-2.0           | Monitor        | Weekly review    | Track trend over 3 periods. Single occurrence is noise.         |
+| 2.0-3.0           | Investigate    | This week        | Portioning audit, receiving spot-checks, waste log review.      |
+| 3.0-5.0           | Escalate       | Today            | Full inventory recount, recipe card audit, shrink analysis.     |
+| 5.0+              | Critical       | Immediate        | Stop and diagnose. Systematic failure in controls or recording. |
+
+### 24b. Common Variance Sources and Magnitude
+
+| Source                           | Typical Variance Contribution | Detection Difficulty   | Fix Difficulty |
+| -------------------------------- | ----------------------------- | ---------------------- | -------------- |
+| Over-portioning (proteins)       | 1-3 points                    | Easy (weigh plates)    | Medium         |
+| Inventory count errors           | 0.5-3 points                  | Easy (recount)         | Easy           |
+| Unrecorded waste                 | 0.5-2 points                  | Medium                 | Easy           |
+| POS entry errors                 | 0.5-1.5 points                | Medium                 | Medium         |
+| Recipe card drift (outdated)     | 0.5-2 points                  | Hard (audit all cards) | Medium         |
+| Receiving errors (short weights) | 0.5-1.5 points                | Medium                 | Easy           |
+| Internal consumption (theft)     | 0.5-2 points                  | Hard                   | Hard           |
+| Price changes (unrecorded)       | 0.5-1 point                   | Easy                   | Easy           |
+| Vendor substitutions             | 0.25-0.75 points              | Medium                 | Easy           |
+
+### 24c. Reconciliation Worksheet Template
+
+```text
+Period: _______________
+Revenue:                            $_________
+
+THEORETICAL FOOD COST
+  Recipe cost x portions sold:      $_________
+  Theoretical %:                    _________%
+
+ACTUAL FOOD COST
+  Beginning inventory:              $_________
+  + Purchases:                      $_________
+  - Ending inventory:               $_________
+  = Actual food cost:               $_________
+  Actual %:                         _________%
+
+VARIANCE
+  Dollar variance:                  $_________
+  Point variance:                   _________pts
+
+VARIANCE EXPLANATION
+  Portioning (over/under):          $_________
+  Receiving discrepancies:          $_________
+  Recorded waste:                   $_________
+  POS/recording errors:             $_________
+  Inventory count adjustment:       $_________
+  Known comps/staff meals:          $_________
+  Subtotal explained:               $_________
+
+  Unexplained (shrink):            $_________
+  Unexplained as % of food cost:    _________%
+```
+
+### 24d. Variance Trend Interpretation
+
+| Pattern                                       | Likely Cause                          | Action                                        |
+| --------------------------------------------- | ------------------------------------- | --------------------------------------------- |
+| Steady 1-2 pts, consistent across months      | Systematic portioning or recipe drift | Recipe card audit; retrain on standards       |
+| Sudden spike (3+ pts in one period)           | Inventory error or major incident     | Recount inventory; check for missing invoices |
+| Gradual upward drift (0.5 pts/month increase) | Price increases not captured          | Re-cost all recipes; update ingredient prices |
+| High variance on specific days/shifts         | Staff-specific portioning or waste    | Monitor that shift; weigh plates, check waste |
+| Variance concentrated in one category         | Category-specific control failure     | Focus audit on that protein/produce/dairy     |
+| Variance decreases after staff change         | Previous staff was the root cause     | Document for future reference                 |

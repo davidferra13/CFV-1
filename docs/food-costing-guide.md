@@ -596,6 +596,302 @@ To track waste, keep a waste log: date, item, quantity, reason (prep error, over
 
 The goal is not zero waste (that is impossible). The goal is reducing waste from "invisible background noise" to a measured, managed number that you can improve over time.
 
+### Shrink: The Gap Between Paper and Reality
+
+Shrink is the difference between what your inventory records say you should have and what you actually have. It is the single largest unexplained cost in most food operations, averaging 2-5% of food cost industry-wide.
+
+Shrink has four sources:
+
+1. **Theft (internal).** Employee consumption without authorization, taking product home, over-portioning for friends and family. Industry estimates: 75% of inventory shrink in foodservice comes from internal sources.
+2. **Theft (external).** Vendor short-deliveries, delivery driver pilferage, customer walkouts. Less common but harder to detect.
+3. **Administrative error.** Receiving mistakes (accepted 9 cases, logged 10), POS entry errors (rang up wrong item), recipe card errors (card says 6 oz, actual portion is 8 oz). Often the largest single category once you start measuring.
+4. **Unrecorded waste.** Product thrown away without logging it. A cook burns a steak, tosses it, fires a new one. The waste log shows nothing, but inventory is short one steak.
+
+**How shrink differs from waste:** Waste is product you know about (trim, spoilage, over-production). Shrink is product that disappears without a documented reason. Waste is measured. Shrink is the gap between measured and actual.
+
+**Measuring shrink:**
+
+```text
+Shrink % = (Theoretical Usage - Actual Usage) / Theoretical Usage x 100
+
+Where:
+  Theoretical Usage = Sum of (recipe card quantity x covers sold) for each item
+  Actual Usage = Beginning Inventory + Purchases - Ending Inventory
+```
+
+**Shrink benchmarks by operation type:**
+
+| Operation Type | Expected Shrink % | Notes                                                |
+| -------------- | ----------------- | ---------------------------------------------------- |
+| Fine dining    | 2-4%              | Tight controls, expensive product, high visibility   |
+| Casual dining  | 3-6%              | Higher volume, more staff, more opportunities        |
+| Quick service  | 2-5%              | Standardized portions, limited menu                  |
+| Private chef   | 1-2%              | Solo operator, buy-per-job, minimal sitting stock    |
+| Catering       | 2-4%              | Event-based purchasing limits exposure               |
+| Food truck     | 2-5%              | Small team, limited storage, informal tracking       |
+| Institutional  | 1-3%              | Formal inventory systems, regular audits             |
+| Bakery         | 3-6%              | Sampling, broken items, weight variation in dough    |
+| Bar/beverage   | 3-8%              | Over-pouring is the #1 source; free drinks for staff |
+
+**When shrink exceeds your benchmark:** Investigate in this order: (1) check recipe cards against actual portions being served, (2) verify receiving accuracy against invoices, (3) review POS against kitchen tickets for entry errors, (4) then consider theft. Most "theft" turns out to be portioning or recording errors. Fix those first.
+
+**Cost impact:** On $10,000/month food spend, 4% shrink is $400/month ($4,800/year) in product you paid for but cannot account for. Reducing shrink from 5% to 2% on that volume saves $3,600/year. This is money already spent; you are recovering it, not earning it.
+
+### Equipment Impact on Yield
+
+The yield factors in your recipe cards are not universal constants. They depend heavily on what equipment you use to cook the food. Two kitchens cooking the same protein at the same internal temperature can get dramatically different yields based on their cooking equipment.
+
+**Protein yield by cooking method:**
+
+| Equipment/Method       | Typical Yield (Protein) | Why                                                        |
+| ---------------------- | ----------------------- | ---------------------------------------------------------- |
+| Sous vide (water bath) | 90-95%                  | No evaporation, sealed bag retains all moisture            |
+| Combi oven (steam+dry) | 85-92%                  | Controlled humidity reduces moisture loss                  |
+| Convection oven        | 70-80%                  | Dry circulating heat drives significant moisture loss      |
+| Standard oven          | 65-78%                  | Less even heat, longer cook times, more moisture loss      |
+| Grill/broil            | 65-75%                  | High direct heat, fat render, flare-up charring            |
+| Deep fry               | 75-85%                  | Quick cook preserves moisture; breading adds weight        |
+| Pan sear               | 75-85%                  | Short cook time limits loss; finish in oven adds more loss |
+| Braising               | 55-65%                  | Long cook, significant collagen breakdown and shrinkage    |
+| Smoking (hot)          | 60-70%                  | Extended low heat, major moisture evaporation              |
+
+**What this means for costing:** A 10 lb pork loin at $4.50/lb ($45.00) produces:
+
+- **Sous vide (92% yield):** 9.2 lb usable = $4.89/lb effective cost
+- **Convection oven (75% yield):** 7.5 lb usable = $6.00/lb effective cost
+- **Smoking (65% yield):** 6.5 lb usable = $6.92/lb effective cost
+
+The same product ranges from $4.89 to $6.92 per usable pound depending on how you cook it. That is a 41% cost difference from equipment choice alone.
+
+**Vegetable yield by method:**
+
+| Equipment/Method    | Typical Yield (Vegetables) | Notes                                     |
+| ------------------- | -------------------------- | ----------------------------------------- |
+| Steaming            | 90-95%                     | Minimal moisture loss                     |
+| Combi oven (steam)  | 88-93%                     | Similar to steaming with better control   |
+| Roasting (high dry) | 70-80%                     | Significant moisture loss, caramelization |
+| Grilling            | 75-85%                     | Quick cook, some charring loss            |
+| Sauteing            | 80-90%                     | Quick, moderate moisture loss             |
+| Braising/stewing    | 75-85%                     | Long cook, but liquid retained in dish    |
+
+**When to update yield factors:** If you change cooking equipment (bought a combi oven, switched from roasting to sous vide), update every recipe card that uses the affected method. A kitchen that upgrades from a standard oven to a combi oven on proteins can see a 10-15 percentage point yield improvement, which directly lowers food cost.
+
+### Prep Production Planning: Connecting Cost to Daily Operations
+
+Knowing what something costs is step one. Knowing how much to prepare today is what prevents that knowledge from being wasted. Over-production is money in the trash. Under-production is lost revenue and upset customers.
+
+**Par levels:** The minimum quantity of a prepped item to have on hand at the start of service.
+
+```text
+Par Level = Average Daily Usage x Days Between Deliveries x Safety Factor
+
+Where:
+  Average Daily Usage = total used over period / number of service days
+  Safety Factor = 1.2-1.5 (20-50% buffer depending on variability)
+```
+
+**Example:** You use an average of 8 lbs of diced onions per day. Deliveries come every 3 days. Safety factor 1.25 (moderate demand variability).
+
+```text
+Par = 8 lbs x 3 days x 1.25 = 30 lbs
+```
+
+If you have 12 lbs of diced onions on hand at start of day, your prep order is 30 - 12 = 18 lbs of onions to dice.
+
+**Prep sheets:** The daily production list that translates par levels and forecasted demand into specific tasks.
+
+A prep sheet for each station should include:
+
+| Item              | Par    | On Hand | To Prep | Shelf Life | Priority |
+| ----------------- | ------ | ------- | ------- | ---------- | -------- |
+| Diced onions      | 30 lbs | 12 lbs  | 18 lbs  | 3 days     | High     |
+| Chicken stock     | 4 gal  | 1 gal   | 3 gal   | 5 days     | High     |
+| Vinaigrette       | 2 qt   | 0.5 qt  | 1.5 qt  | 7 days     | Medium   |
+| Chocolate ganache | 3 lbs  | 3 lbs   | 0       | 5 days     | Skip     |
+
+**Batch sizing:** When prepping, match batch sizes to your equipment capacity and shelf life:
+
+- Do not prep 50 lbs of mirepoix if your largest container holds 30 lbs and it only lasts 4 days
+- Do not make a half batch of stock if your pot holds a full batch at nearly the same labor cost
+- Round up to equipment-efficient sizes (full sheet trays, full hotel pans, full pots)
+
+**Shelf life of common prepped items (refrigerated):**
+
+| Prepped Item           | Shelf Life | Storage Notes                        |
+| ---------------------- | ---------- | ------------------------------------ |
+| Cut/diced vegetables   | 2-3 days   | Covered, airtight, no standing water |
+| Blanched vegetables    | 3-4 days   | Shocked in ice water, drained        |
+| Cooked grains/pasta    | 3-5 days   | Cooled within 2 hours, covered       |
+| Stocks and broths      | 5-7 days   | Rapid cool, labeled, date            |
+| Vinaigrettes/dressings | 5-14 days  | Varies by acidity and dairy          |
+| Marinades (no protein) | 5-7 days   | Discard if raw protein was added     |
+| Prepped proteins (raw) | 1-2 days   | Portioned, wrapped, dated            |
+| Cooked proteins        | 3-4 days   | Cooled within 2 hours, covered       |
+| Sauces (cream-based)   | 3-5 days   | Dairy limits shelf life              |
+| Sauces (stock-based)   | 5-7 days   | Cool rapidly, label, date            |
+| Fresh herb oils        | 3-5 days   | Refrigerate immediately              |
+
+**The cost connection:** Every item on a prep sheet has a costed recipe card. If your par level says "prep 18 lbs diced onions" and your recipe card says onions cost $0.89/lb with a 0.90 trim yield, you know that prep task costs $17.80 in product. If the cook preps 25 lbs instead (because the container was empty and "better safe than sorry"), that is $7.80 in unplanned food cost. Multiply that casual over-prepping across 10 items per day and you find $30-80/day in hidden costs.
+
+### Vendor Price Tracking: Catching Cost Drift Before It Eats Your Margin
+
+Ingredient prices change constantly. Without tracking, a 3% price increase on your top 10 ingredients can shift your food cost by a full percentage point before you notice. Most operators discover price increases 30-90 days after they start, through financial statements that are already reporting the damage.
+
+**What to track:** Focus on your top 20 ingredients by spend. These typically represent 60-80% of total food cost. Tracking every ingredient is unnecessary; track the ones that matter.
+
+**How to track:**
+
+```text
+Weekly price log (per key ingredient):
+  Date | Vendor | Item | Pack Size | Unit Price | Price/lb or Price/oz | vs. Last Week | vs. 90-Day Avg
+```
+
+**Price alert triggers (when to take action):**
+
+| Price Change         | Action                                                                   |
+| -------------------- | ------------------------------------------------------------------------ |
+| +3-5% single item    | Note it, monitor next week, check alternate vendor                       |
+| +5-10% single item   | Get competing quotes, consider substitution                              |
+| +10%+ single item    | Switch vendors or substitute immediately, re-cost recipes                |
+| +3%+ across 5+ items | Broad market move; review all recipe costs, consider menu price increase |
+| -10%+ single item    | Lock in price if possible (contract, forward buy)                        |
+
+**When to switch vendors:** Price alone does not justify switching. Consider:
+
+- **Minimum order requirements** (new vendor may require larger minimums)
+- **Delivery schedule** (do they deliver on days you need?)
+- **Quality consistency** (cheaper product with inconsistent yield costs more in the end)
+- **Payment terms** (net 7 vs. net 30 affects cash flow)
+- **Reliability** (late or missed deliveries cost more than a price difference)
+
+**The rule:** switch if the price difference is 10%+ on a high-volume item AND the new vendor meets quality/reliability standards. For differences under 10%, the switching cost (new account setup, testing, relationship building) usually exceeds the savings.
+
+**Seasonal price patterns to anticipate:**
+
+Budget for these annual cycles rather than reacting to them:
+
+- **Produce:** highest prices December-March (limited domestic supply), lowest June-October
+- **Proteins:** beef peaks summer (grilling season demand), poultry peaks November-December (holidays), seafood varies by species
+- **Dairy:** butter and cream peak November-December (holiday baking demand), lowest spring-summer
+- **Eggs:** peak January-March (post-holiday recovery, lower lay rates), lowest summer
+
+### Cross-Utilization Scoring: Measuring Ingredient Efficiency
+
+The Cross-Utilization Map (Section 9 of Reference Data) shows what byproducts can become. But cross-utilization also works in the other direction: how many of your menu items share the same base ingredients? The more overlap, the less waste and the better your purchasing power.
+
+**Ingredient overlap score:**
+
+```text
+Overlap Score = Number of Menu Items Using Ingredient / Total Menu Items x 100
+```
+
+An ingredient used in 8 out of 20 dishes has a 40% overlap score. High-overlap ingredients are your purchasing anchors: you can buy them in volume, negotiate better prices, and have near-zero waste because demand is consistent.
+
+**Menu-level cross-utilization analysis:**
+
+| Ingredient     | Used In (# dishes) | Overlap Score | Volume/Week | Purchasing Impact                            |
+| -------------- | ------------------ | ------------- | ----------- | -------------------------------------------- |
+| Chicken breast | 6 of 20            | 30%           | 40 lbs      | Case pricing, low waste                      |
+| Mixed greens   | 8 of 20            | 40%           | 15 lbs      | High usage, moderate spoilage                |
+| Olive oil      | 18 of 20           | 90%           | 3 gal       | Commodity buy, negligible waste              |
+| Saffron        | 1 of 20            | 5%            | 0.5 oz      | Expensive, slow turnover, high spoilage risk |
+| Heavy cream    | 7 of 20            | 35%           | 6 qt        | Good usage, manageable shelf life            |
+
+**Target:** aim for 70%+ of your ingredients to have an overlap score above 15% (used in 3+ dishes on a 20-item menu). Ingredients with less than 5% overlap (used in only 1 dish) are waste risks and purchasing inefficiencies. Either find more uses for them or consider removing the dish that requires them.
+
+**The financial impact:** Consistent cross-utilization reduces food cost by 3-8 percentage points through three mechanisms:
+
+1. **Volume purchasing** - higher quantities of fewer ingredients unlock better pricing
+2. **Waste reduction** - shared ingredients get used before they expire
+3. **Prep efficiency** - one batch of diced onions serves multiple dishes (less labor)
+
+**Byproduct recovery value:** When you actively use trim and byproducts (the Cross-Utilization Map), assign them a recovery value:
+
+```text
+Recovery Value = Byproduct Weight x Fair Market Value of Equivalent Product
+Adjusted Primary Cost = Original Cost - Recovery Value
+
+Example: Whole chicken ($2.50/lb, 4 lb bird = $10.00)
+  Breast yield: 1.5 lb (primary product)
+  Thigh/leg yield: 1.2 lb (secondary product, valued at $1.80/lb = $2.16)
+  Carcass: 1.0 lb (stock, valued at $0.50/lb equivalent = $0.50)
+  Trim/loss: 0.3 lb
+
+  Adjusted breast cost = ($10.00 - $2.16 - $0.50) / 1.5 lb = $4.89/lb
+  vs. buying breast alone: $4.50/lb (case) to $6.50/lb (retail)
+```
+
+Whole-animal fabrication often produces a lower effective cost per portion than buying individual cuts, if you have uses for every part.
+
+### Actual vs. Theoretical Food Cost Reconciliation
+
+This is the most important financial report in food cost management. Everything else in this guide builds toward this: can you explain the gap between what your food should have cost and what it actually did cost?
+
+**The two numbers:**
+
+```text
+Theoretical Food Cost = Sum of (recipe cost per portion x portions sold) for all items
+Actual Food Cost = Beginning Inventory + Purchases - Ending Inventory
+```
+
+Theoretical is what your recipe cards and POS say should have happened. Actual is what your bank account and shelves say did happen. The difference is variance.
+
+**Variance formula:**
+
+```text
+Variance (%) = Actual Food Cost % - Theoretical Food Cost %
+Variance ($) = Actual Food Cost ($) - Theoretical Food Cost ($)
+```
+
+**Variance thresholds and response:**
+
+| Variance   | Assessment | Action Required                                                |
+| ---------- | ---------- | -------------------------------------------------------------- |
+| 0-1 point  | Excellent  | Normal operational tolerance. No action needed.                |
+| 1-2 points | Acceptable | Monitor trends. Investigate if consistent across 3+ periods.   |
+| 2-3 points | Warning    | Active investigation. Check portioning, receiving, waste log.  |
+| 3-5 points | Problem    | Full audit: inventory accuracy, recipe cards, shrink analysis. |
+| 5+ points  | Critical   | Stop and fix. Something is systematically wrong.               |
+
+**Investigation framework (when variance exceeds 2 points):**
+
+Work through these in order. Each step either explains the variance or eliminates a cause:
+
+1. **Inventory accuracy.** Did you count correctly? Recount high-value items. Check unit conversions (did someone count cases when the system expects eaches?). This is the most common source of large variance and the easiest to fix.
+
+2. **Recipe card accuracy.** Are recipe cards current? Weigh 5 random plates during service and compare to the card. If cooks are consistently portioning 8 oz when the card says 6 oz, the card is wrong or the cook needs retraining. Update the card to reflect reality, then reprice.
+
+3. **POS accuracy.** Is the POS recording what is actually being served? Wrong buttons, missing modifiers (extra protein, double sauce), and unrecorded comps all create theoretical usage that is lower than actual. If the POS says you sold 50 steaks but the kitchen fired 55, you have 5 unrecorded covers.
+
+4. **Waste.** Check the waste log. If no waste log exists, that is the problem. Start one. Unrecorded waste is invisible variance.
+
+5. **Receiving.** Spot-check 5 deliveries against invoices. Count cases, weigh proteins, verify credits for shorts and returns. Vendor errors (intentional or not) create immediate variance.
+
+6. **Shrink.** If steps 1-5 do not fully explain the gap, the remainder is shrink (theft, unrecorded consumption, administrative errors). See the Shrink section above.
+
+**Reconciliation report format:**
+
+```text
+Period: [month]
+Revenue: $XX,XXX
+
+Theoretical food cost: $X,XXX (XX.X%)
+Actual food cost:      $X,XXX (XX.X%)
+Variance:              $XXX   (X.X points)
+
+Variance explained:
+  Portioning errors:   $XXX  (identified by plate weight checks)
+  Receiving errors:    $XX   (invoice vs. actual delivery discrepancy)
+  Unrecorded waste:    $XX   (estimated from waste log gaps)
+  POS errors:          $XX   (comps, modifiers, wrong buttons)
+  Inventory errors:    $XX   (recount corrections)
+  Unexplained (shrink): $XX  (remainder after all identified sources)
+```
+
+**Frequency:** Run this reconciliation monthly for operations with standing inventory (restaurants, bakeries, institutional). For per-event operations (private chefs, caterers), run it per event or per week during busy seasons. The goal is not perfect accuracy on every line; it is identifying whether variance is trending up, and catching it before it compounds.
+
+**The bridge to your P&L:** Your accountant's COGS number (from the P&L section above) IS your actual food cost. Your theoretical food cost comes from ChefFlow's recipe cards multiplied by covers sold. The reconciliation report is how you explain the difference between the two to yourself, your accountant, or your business partner.
+
 ---
 
 ## Part 2: The Two Methods
@@ -1068,42 +1364,50 @@ The system shows both the formula-driven price and your override (if you set one
 
 ## Glossary
 
-| Term                      | Definition                                                                                      |
-| ------------------------- | ----------------------------------------------------------------------------------------------- |
-| **AP (As Purchased)**     | Weight or quantity as you buy it, including waste                                               |
-| **EP (Edible Portion)**   | Weight or quantity that ends up on the plate                                                    |
-| **Yield Factor**          | EP weight / AP weight. Decimal between 0 and 1.                                                 |
-| **Trim Yield**            | Percentage remaining after fabrication (peeling, cutting, deboning)                             |
-| **Cooking Yield**         | Percentage remaining after applying heat (shrinkage, evaporation, fat render)                   |
-| **Combined Yield**        | Trim yield x cooking yield. The true usable percentage from purchase to plate.                  |
-| **Q-Factor**              | Percentage surcharge for incidental ingredients (oil, salt, seasonings). Default 7%.            |
-| **Food Cost %**           | Ingredient cost as a percentage of selling price                                                |
-| **Cost-Plus**             | Pricing method summing all costs (food, labor, overhead, extras) plus profit margin             |
-| **Prime Cost**            | Food cost + labor cost, as a percentage of revenue. Target 55-65%.                              |
-| **Contribution Margin**   | Selling price minus food cost, in dollars                                                       |
-| **Blended Food Cost**     | Weighted average food cost % across a full menu or event                                        |
-| **Menu Engineering**      | Pricing items as a portfolio so the overall blend hits target, even if individual items don't   |
-| **Theoretical Food Cost** | What food cost should be based on recipe cards and covers sold                                  |
-| **Actual Food Cost**      | What food cost is based on purchases and inventory change                                       |
-| **Variance**              | Gap between theoretical and actual food cost. Target: under 2 points.                           |
-| **Value-Based Pricing**   | Setting price based on perceived value, above the cost-based floor                              |
-| **Par Level**             | Minimum quantity of a staple to keep on hand                                                    |
-| **FIFO**                  | First In, First Out. Use oldest inventory first.                                                |
-| **Cross-Utilization**     | Using trim, byproducts, or surplus from one recipe in another                                   |
-| **Pack Size**             | The unit a supplier sells in (per lb, per case, per #10 can)                                    |
-| **Broadline Distributor** | Large-scale supplier (Sysco, US Foods) with wide selection and delivery minimums                |
-| **#10 Can**               | Institutional-size can, approximately 6.5 lbs / 3 quarts                                        |
-| **IQF**                   | Individually Quick Frozen. Each piece frozen separately for easy portioning.                    |
-| **Mise en Place**         | Everything in its place. All ingredients prepped, measured, and ready before cooking begins.    |
-| **Spoilage**              | Product lost before service (expiration, damage, rot). Different from yield loss.               |
-| **Non-Revenue Food**      | Food prepared but not sold: staff meals, comps, tastings, R&D. Budget 2-4% of food cost.        |
-| **Case-Break**            | Buying less than a full case. Often costs more per unit but reduces waste on specialty items.   |
-| **Pour Cost**             | Beverage equivalent of food cost %. Cost of drink ingredients / selling price.                  |
-| **Breakeven Point**       | Revenue or units needed to cover all fixed costs before any profit.                             |
-| **Escalation Clause**     | Contract term allowing price adjustment if ingredient costs rise beyond a threshold.            |
-| **GPO**                   | Group Purchasing Organization. Pools buying power across multiple operators for volume pricing. |
-| **Resale Certificate**    | Tax document exempting ingredient purchases from sales tax when buying for resale.              |
-| **Retainer Pricing**      | Recurring client pricing that reflects lower per-visit overhead from guaranteed volume.         |
-| **Anchoring**             | Pricing tactic: high-priced item makes other items feel reasonable by comparison.               |
-| **Batch Allocation**      | Distributing the cost of a shared recipe (stock, sauce) across all dishes that use it.          |
-| **Spoilage Rate**         | Percentage of purchased product lost to waste before service. Track monthly.                    |
+| Term                        | Definition                                                                                                                                                                |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AP (As Purchased)**       | Weight or quantity as you buy it, including waste                                                                                                                         |
+| **EP (Edible Portion)**     | Weight or quantity that ends up on the plate                                                                                                                              |
+| **Yield Factor**            | EP weight / AP weight. Decimal between 0 and 1.                                                                                                                           |
+| **Trim Yield**              | Percentage remaining after fabrication (peeling, cutting, deboning)                                                                                                       |
+| **Cooking Yield**           | Percentage remaining after applying heat (shrinkage, evaporation, fat render)                                                                                             |
+| **Combined Yield**          | Trim yield x cooking yield. The true usable percentage from purchase to plate.                                                                                            |
+| **Q-Factor**                | Percentage surcharge for incidental ingredients (oil, salt, seasonings). Default 7%.                                                                                      |
+| **Food Cost %**             | Ingredient cost as a percentage of selling price                                                                                                                          |
+| **Cost-Plus**               | Pricing method summing all costs (food, labor, overhead, extras) plus profit margin                                                                                       |
+| **Prime Cost**              | Food cost + labor cost, as a percentage of revenue. Target 55-65%.                                                                                                        |
+| **Contribution Margin**     | Selling price minus food cost, in dollars                                                                                                                                 |
+| **Blended Food Cost**       | Weighted average food cost % across a full menu or event                                                                                                                  |
+| **Menu Engineering**        | Pricing items as a portfolio so the overall blend hits target, even if individual items don't                                                                             |
+| **Theoretical Food Cost**   | What food cost should be based on recipe cards and covers sold                                                                                                            |
+| **Actual Food Cost**        | What food cost is based on purchases and inventory change                                                                                                                 |
+| **Variance**                | Gap between theoretical and actual food cost. Target: under 2 points.                                                                                                     |
+| **Value-Based Pricing**     | Setting price based on perceived value, above the cost-based floor                                                                                                        |
+| **Par Level**               | Minimum quantity of a staple to keep on hand                                                                                                                              |
+| **FIFO**                    | First In, First Out. Use oldest inventory first.                                                                                                                          |
+| **Cross-Utilization**       | Using trim, byproducts, or surplus from one recipe in another                                                                                                             |
+| **Pack Size**               | The unit a supplier sells in (per lb, per case, per #10 can)                                                                                                              |
+| **Broadline Distributor**   | Large-scale supplier (Sysco, US Foods) with wide selection and delivery minimums                                                                                          |
+| **#10 Can**                 | Institutional-size can, approximately 6.5 lbs / 3 quarts                                                                                                                  |
+| **IQF**                     | Individually Quick Frozen. Each piece frozen separately for easy portioning.                                                                                              |
+| **Mise en Place**           | Everything in its place. All ingredients prepped, measured, and ready before cooking begins.                                                                              |
+| **Spoilage**                | Product lost before service (expiration, damage, rot). Different from yield loss.                                                                                         |
+| **Non-Revenue Food**        | Food prepared but not sold: staff meals, comps, tastings, R&D. Budget 2-4% of food cost.                                                                                  |
+| **Case-Break**              | Buying less than a full case. Often costs more per unit but reduces waste on specialty items.                                                                             |
+| **Pour Cost**               | Beverage equivalent of food cost %. Cost of drink ingredients / selling price.                                                                                            |
+| **Breakeven Point**         | Revenue or units needed to cover all fixed costs before any profit.                                                                                                       |
+| **Escalation Clause**       | Contract term allowing price adjustment if ingredient costs rise beyond a threshold.                                                                                      |
+| **GPO**                     | Group Purchasing Organization. Pools buying power across multiple operators for volume pricing.                                                                           |
+| **Resale Certificate**      | Tax document exempting ingredient purchases from sales tax when buying for resale.                                                                                        |
+| **Retainer Pricing**        | Recurring client pricing that reflects lower per-visit overhead from guaranteed volume.                                                                                   |
+| **Anchoring**               | Pricing tactic: high-priced item makes other items feel reasonable by comparison.                                                                                         |
+| **Batch Allocation**        | Distributing the cost of a shared recipe (stock, sauce) across all dishes that use it.                                                                                    |
+| **Spoilage Rate**           | Percentage of purchased product lost to waste before service. Track monthly.                                                                                              |
+| **Shrink**                  | Unexplained inventory loss: the gap between what records say you should have and what you actually have. Includes theft, administrative errors, and unrecorded waste.     |
+| **Menu Engineering Matrix** | Classification of menu items into Stars (popular + profitable), Plowhorses (popular + low margin), Puzzles (unpopular + profitable), and Dogs (unpopular + unprofitable). |
+| **Prep Sheet**              | Daily production list translating par levels and demand forecasts into specific prep tasks with quantities, shelf life, and priority.                                     |
+| **Overlap Score**           | Percentage of menu items that use a given ingredient. Higher overlap = better purchasing power and lower waste.                                                           |
+| **Byproduct Recovery**      | Assigning value to trim and byproducts when they are used in other preparations, reducing the effective cost of the primary product.                                      |
+| **Reconciliation**          | The process of explaining the gap between theoretical and actual food cost, source by source (portioning, receiving, waste, POS errors, shrink).                          |
+| **Variance Threshold**      | The point at which the gap between theoretical and actual food cost triggers investigation. Standard: 2 percentage points.                                                |
+| **Equipment Yield**         | The yield percentage specific to a cooking method/equipment. Sous vide (90-95%) vs. convection (70-80%) vs. smoking (60-70%) on the same protein.                         |
