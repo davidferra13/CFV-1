@@ -360,7 +360,9 @@ export default async function Home() {
                   clipRule="evenodd"
                 />
               </svg>
-              Every chef is reviewed
+              {allChefs.length > 0
+                ? `${allChefs.length} reviewed chef${allChefs.length !== 1 ? 's' : ''}`
+                : 'Every chef is reviewed'}
             </span>
           </div>
         </div>

@@ -1,4 +1,3 @@
-// 404 Not Found Page
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -6,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4 relative overflow-hidden">
-      {/* Subtle warm glow */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="w-[400px] h-[400px] rounded-full bg-brand-500/[0.03] blur-[80px]" />
       </div>
@@ -19,13 +17,27 @@ export default function NotFound() {
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-stone-400">
-            Sorry, the page you&apos;re looking for doesn&apos;t exist.
+            Sorry, the page you&apos;re looking for doesn&apos;t exist or has moved.
           </p>
-          <Link href="/">
-            <Button variant="primary" className="w-full">
-              Go Home
-            </Button>
-          </Link>
+          <div className="space-y-2">
+            <Link href="/">
+              <Button variant="primary" className="w-full">
+                Go Home
+              </Button>
+            </Link>
+            <div className="flex gap-2">
+              <Link href="/chefs" className="flex-1">
+                <Button variant="secondary" className="w-full">
+                  Browse Chefs
+                </Button>
+              </Link>
+              <Link href="/book" className="flex-1">
+                <Button variant="secondary" className="w-full">
+                  Book a Chef
+                </Button>
+              </Link>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
