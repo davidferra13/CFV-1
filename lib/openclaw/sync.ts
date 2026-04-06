@@ -302,7 +302,7 @@ async function syncCore(
       ? await ingredientQuery.where(eq(ingredients.tenantId, tenantId))
       : await ingredientQuery
 
-    // Step 2: Deduplicate names (send both original and normalized for better match rates)
+    // Step 2: Deduplicate names (send original, normalized, AND aliased canonical names)
     const uniqueNames = [
       ...new Set(cfIngredients.filter((i) => i.name?.trim()).map((i) => i.name!.trim())),
     ]
@@ -316,7 +316,40 @@ async function syncCore(
         normalizedToOriginal.get(normalized)!.push(name)
       }
     }
-    // Add normalized variants to the lookup set (Pi gets both original and normalized names)
+
+    // Build alias -> original name map (system_ingredient canonical names map to chef ingredients)
+    // This bridges the gap: if a chef's "chicken breast" is aliased to system_ingredient
+    // "Chicken Thigh (Boneless, Skinless)", Pi can find prices using the canonical name.
+    const aliasIngredientIds = cfIngredients.map((i) => i.id)
+    if (aliasIngredientIds.length > 0) {
+      try {
+        const aliasRows = await db.execute(sql`
+          SELECT ia.ingredient_id, si.name AS canonical_name
+          FROM ingredient_aliases ia
+          JOIN system_ingredients si ON si.id = ia.system_ingredient_id
+          WHERE ia.ingredient_id = ANY(${aliasIngredientIds})
+            AND ia.system_ingredient_id IS NOT NULL
+            AND ia.match_method != 'dismissed'
+        `)
+        for (const row of aliasRows as any[]) {
+          const canonicalName = (row.canonical_name as string)?.trim()
+          if (!canonicalName) continue
+          // Map canonical name -> chef ingredient(s) that use this alias
+          if (!normalizedToOriginal.has(canonicalName.toLowerCase())) {
+            normalizedToOriginal.set(canonicalName.toLowerCase(), [])
+          }
+          // Find the chef ingredient name for this alias
+          const chefIng = cfIngredients.find((i) => i.id === row.ingredient_id)
+          if (chefIng?.name) {
+            normalizedToOriginal.get(canonicalName.toLowerCase())!.push(chefIng.name.trim())
+          }
+        }
+      } catch (err) {
+        console.warn('[sync] Could not load ingredient aliases (non-blocking):', err)
+      }
+    }
+
+    // Add normalized variants AND canonical alias names to the lookup set
     const allNamesToSend = [...new Set([...uniqueNames, ...normalizedToOriginal.keys()])]
 
     if (uniqueNames.length === 0) {

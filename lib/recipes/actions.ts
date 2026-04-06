@@ -1408,7 +1408,77 @@ async function findOrCreateIngredient(
     throw new Error('Failed to create ingredient "${name}"')
   }
 
+  // Auto-match to system_ingredients using pg_trgm (non-blocking)
+  try {
+    await autoMatchToSystemIngredient(db, tenantId, newIngredient.id, name)
+  } catch (err) {
+    console.error('[findOrCreateIngredient] Auto-match failed (non-blocking):', err)
+  }
+
   return newIngredient.id
+}
+
+/**
+ * Auto-match a chef's ingredient to a system_ingredient using pg_trgm similarity.
+ * If a strong match is found (>= 0.5 similarity), creates an ingredient_alias
+ * automatically. This bridges the gap between chef ingredient names and
+ * OpenClaw/USDA canonical names, enabling price resolution to work.
+ *
+ * Non-blocking: callers should wrap in try/catch.
+ */
+async function autoMatchToSystemIngredient(
+  db: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  ingredientId: string,
+  ingredientName: string
+): Promise<void> {
+  const { normalizeIngredientName } = await import('@/lib/pricing/ingredient-matching-utils')
+
+  const normalized = normalizeIngredientName(ingredientName)
+  if (!normalized || normalized.length < 2) return
+
+  // Check if alias already exists
+  const { data: existingAlias } = await db
+    .from('ingredient_aliases')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('ingredient_id', ingredientId)
+    .single()
+
+  if (existingAlias) return
+
+  // Query system_ingredients with pg_trgm similarity
+  try {
+    const { data: matches } = await db.rpc('raw_sql', {
+      query: `
+        SELECT id, name, extensions.similarity(lower(name), $1) AS score
+        FROM system_ingredients
+        WHERE extensions.similarity(lower(name), $1) > 0.4
+          AND is_active = true
+        ORDER BY score DESC
+        LIMIT 1
+      `,
+      params: [normalized],
+    })
+
+    if (!matches || matches.length === 0) return
+
+    const bestMatch = (matches as any[])[0]
+    if (!bestMatch.id || bestMatch.score < 0.5) return
+
+    // Create auto-alias with trigram method
+    await db.from('ingredient_aliases').insert({
+      tenant_id: tenantId,
+      ingredient_id: ingredientId,
+      system_ingredient_id: bestMatch.id,
+      match_method: 'trigram',
+      similarity_score: bestMatch.score,
+      confirmed_at: new Date().toISOString(),
+    })
+  } catch (err) {
+    // pg_trgm might not be available, or rpc might fail - non-blocking
+    console.error('[autoMatchToSystemIngredient] pg_trgm query failed:', err)
+  }
 }
 
 // ============================================
@@ -1905,7 +1975,45 @@ async function ensureIngredientHasPrice(
 
   // Resolve price from the 10-tier chain
   const { resolvePrice } = await import('@/lib/pricing/resolve-price')
-  const resolved = await resolvePrice(ingredientId, tenantId)
+  let resolved = await resolvePrice(ingredientId, tenantId)
+
+  // Fallback: if no price found, check if ingredient has an alias to a system_ingredient
+  // and try to find prices from other ingredients that share the same canonical match
+  if (resolved.cents == null || resolved.source === 'none') {
+    try {
+      const { data: alias } = await db
+        .from('ingredient_aliases')
+        .select('system_ingredient_id')
+        .eq('tenant_id', tenantId)
+        .eq('ingredient_id', ingredientId)
+        .single()
+
+      if (alias?.system_ingredient_id) {
+        // Find other ingredients in this tenant that share the same system_ingredient alias AND have prices
+        const { data: siblings } = await db
+          .from('ingredient_aliases')
+          .select('ingredient_id')
+          .eq('tenant_id', tenantId)
+          .eq('system_ingredient_id', alias.system_ingredient_id)
+          .neq('ingredient_id', ingredientId)
+          .limit(5)
+
+        if (siblings && siblings.length > 0) {
+          // Try resolving price from a sibling ingredient
+          for (const sibling of siblings) {
+            const siblingResolved = await resolvePrice(sibling.ingredient_id, tenantId)
+            if (siblingResolved.cents != null && siblingResolved.source !== 'none') {
+              resolved = siblingResolved
+              break
+            }
+          }
+        }
+      }
+    } catch (err) {
+      // Alias lookup is non-blocking
+      console.error('[ensureIngredientHasPrice] Alias fallback failed:', err)
+    }
+  }
 
   if (resolved.cents == null || resolved.source === 'none') return
 
