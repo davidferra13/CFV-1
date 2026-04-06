@@ -6,11 +6,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 export const metadata: Metadata = {
   title: 'How It Works - Book a Chef in 3 Steps',
   description:
-    'Search vetted chefs by location, cuisine, or service type. Connect directly with no middleman. Enjoy a chef-led experience.',
+    'Search reviewed chefs by location, cuisine, or service type. Connect directly with no middleman. Enjoy a chef-led experience.',
   openGraph: {
     title: 'How It Works - Book a Chef in 3 Steps',
     description:
-      'Search vetted chefs by location, cuisine, or service type. Connect directly with no middleman. Enjoy a chef-led experience.',
+      'Search reviewed chefs by location, cuisine, or service type. Connect directly with no middleman. Enjoy a chef-led experience.',
     url: `${BASE_URL}/how-it-works`,
     siteName: 'ChefFlow',
     type: 'website',
@@ -24,7 +24,7 @@ const STEPS = [
   {
     step: '01',
     title: 'Search',
-    description: 'Browse chefs by location, cuisine, or service type. Every chef is vetted.',
+    description: 'Browse chefs by location, cuisine, or service type. Every profile is reviewed.',
     detail:
       'Use filters to narrow results by availability, pricing, dietary specialties, and more. View profiles, read reviews, and compare options before reaching out.',
   },
@@ -58,8 +58,8 @@ const TRUST_POINTS = [
     description: 'Chefs keep 100% of what they earn. No platform fees on either side.',
   },
   {
-    label: 'Every chef is vetted',
-    description: 'Profiles are verified before going live. You see real credentials.',
+    label: 'Every profile is reviewed',
+    description: 'Profiles are reviewed before going live. You see real experience and services.',
   },
 ]
 

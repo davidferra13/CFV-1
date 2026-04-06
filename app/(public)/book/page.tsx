@@ -6,10 +6,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 export const metadata: Metadata = {
   title: 'Book a Private Chef',
   description:
-    'Tell us about your event and we will connect you with vetted private chefs in your area. No middleman, no hidden fees.',
+    'Tell us about your event and we will connect you with reviewed private chefs in your area. No middleman, no hidden fees.',
   openGraph: {
     title: 'Book a Private Chef',
-    description: 'Describe your event and get matched with vetted private chefs near you.',
+    description: 'Describe your event and get matched with reviewed private chefs near you.',
     url: `${BASE_URL}/book`,
     type: 'website',
   },
@@ -29,7 +29,7 @@ export default function BookPage() {
             Book a private chef
           </h1>
           <p className="mt-4 text-base text-stone-300 md:text-lg leading-relaxed max-w-xl mx-auto">
-            Tell us about your event. We will match you with vetted chefs in your area who will
+            Tell us about your event. We will match you with reviewed chefs in your area who will
             reach out to you directly. Free to submit, no obligation.
           </p>
         </div>

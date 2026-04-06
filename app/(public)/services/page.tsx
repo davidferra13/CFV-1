@@ -79,8 +79,8 @@ export default function ServicesPage() {
           Chef services for <span className="text-gradient">every occasion.</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-stone-300">
-          Whether you need a private dinner for two or catering for two hundred, find a vetted chef
-          who specializes in exactly what you are looking for.
+          Whether you need a private dinner for two or catering for two hundred, find a reviewed
+          chef who specializes in exactly what you are looking for.
         </p>
       </section>
 

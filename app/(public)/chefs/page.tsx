@@ -54,7 +54,7 @@ const ZERO_RESULT_SUGGESTIONS = DISCOVERY_SERVICE_TYPE_OPTIONS.filter((option) =
 export const metadata: Metadata = {
   title: 'Hire a Private Chef Near You - ChefFlow Chef Directory',
   description:
-    'Search vetted private chefs by cuisine, service type, location, and availability, then send an inquiry in minutes.',
+    'Search reviewed private chefs by cuisine, service type, location, and availability, then send an inquiry in minutes.',
   keywords: [
     'hire private chef',
     'private chef near me',
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: 'Hire a Private Chef',
-    description: 'Browse vetted chefs by cuisine, service type, and availability.',
+    description: 'Browse reviewed chefs by cuisine, service type, and availability.',
     url: `${APP_URL}/chefs`,
     type: 'website',
   },
@@ -536,7 +536,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
       <section className="mx-auto max-w-6xl px-4 pb-20 pt-12 sm:px-6 lg:px-8">
         <div className="mb-8">
           <p className="text-sm font-medium uppercase tracking-widest text-brand-500">
-            Showing {chefs.length} of {allChefs.length} vetted chef
+            Showing {chefs.length} of {allChefs.length} reviewed chef
             {allChefs.length !== 1 ? 's' : ''}
           </p>
           {activeFilters.length > 0 && (
@@ -606,10 +606,12 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
 
         <div className="mt-16 text-center">
           <div className="mx-auto max-w-lg rounded-2xl border border-stone-700 bg-stone-900 p-6 shadow-sm">
-            <p className="text-sm font-semibold text-stone-200">Every chef on ChefFlow is vetted</p>
+            <p className="text-sm font-semibold text-stone-200">
+              Every profile on ChefFlow is reviewed
+            </p>
             <p className="mt-1.5 text-xs leading-relaxed text-stone-500">
-              We only list experienced chefs with clear service positioning and reviewable
-              availability.
+              We review each chef for experience, clear service positioning, and availability before
+              listing them in the directory.
             </p>
           </div>
         </div>

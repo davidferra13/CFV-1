@@ -41,7 +41,7 @@ export default function AboutPage() {
           <div className="rounded-2xl border border-stone-700/60 bg-stone-900/50 p-6">
             <h2 className="text-lg font-semibold text-stone-100">For consumers</h2>
             <p className="mt-3 text-sm leading-relaxed text-stone-400">
-              Search vetted chefs by location, cuisine, or service type. Send an inquiry directly.
+              Search reviewed chefs by location, cuisine, or service type. Send an inquiry directly.
               No middleman, no commission, no hidden fees. You deal with the chef, always.
             </p>
           </div>

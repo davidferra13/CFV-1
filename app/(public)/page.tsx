@@ -298,8 +298,8 @@ export default async function Home() {
             Find a private chef <span className="text-gradient">near you.</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-stone-300 md:text-xl">
-            Browse by cuisine, location, or occasion. Connect directly with vetted chefs for private
-            dinners, catering, meal prep, and more.
+            Browse by cuisine, location, or occasion. Connect directly with reviewed chefs for
+            private dinners, catering, meal prep, and more.
           </p>
 
           {/* Dual CTAs */}
@@ -360,7 +360,7 @@ export default async function Home() {
                   clipRule="evenodd"
                 />
               </svg>
-              Every chef is vetted
+              Every chef is reviewed
             </span>
           </div>
         </div>
@@ -375,7 +375,7 @@ export default async function Home() {
                 Featured chefs
               </h2>
               <p className="mt-2 text-sm text-stone-400">
-                Vetted professionals ready to create your next experience.
+                Reviewed professionals ready to create your next experience.
               </p>
             </div>
             <Link
