@@ -158,6 +158,7 @@ The systems that power everything.
 - [x] AI runtime (Ollama for private data, Gemini for generic tasks)
 - [x] Real-time updates (SSE with EventEmitter bus)
 - [x] File storage (local filesystem, HMAC signed URLs)
+- [ ] **Mobile app + PWA activation** - P0 spec ready: `docs/specs/cloud-mobile-unified-migration.md` (self-hosted, $0 cost)
 - [x] Email integration (Gmail API, send/sync/threading)
 - [x] Kiosk and device fleet (tablet RSVP, dietary, feedback)
 - [x] Settings (54 configuration pages)
@@ -209,6 +210,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 | Infrastructure system completion       | Complete | Merged to main                                                                                                                                                                                                                                                                 |
 | Food costing pipeline (full E2E)       | Complete | Merged to main (Apr 6)                                                                                                                                                                                                                                                         |
 | Analytics honesty (zero-hallucination) | Complete | Merged to main (Apr 6)                                                                                                                                                                                                                                                         |
+| Mobile app + PWA activation            | Draft    | Spec written Apr 6: `docs/specs/cloud-mobile-unified-migration.md`. 4-phase plan. Self-hosted. PWA (enable), Tauri desktop (resurrect), Android (build), iOS (blocked on Mac hardware)                                                                                         |
 
 _Last cleared: 2026-04-06. Completed items moved to queue or exit criteria._
 
@@ -239,7 +241,7 @@ These are explicitly out of scope for V1. Do not build, spec, or plan these:
 - **Restaurant POS integration** - not our market for V1
 - **AI recipe generation** - PERMANENT BAN. Recipes are chef IP. AI never creates recipes.
 - **Paid feature tiers / Pro gates** - all features free. No paywalls.
-- **Mobile native app** - PWA is sufficient for V1
+- **Mobile native app** - Now P0. Spec: `docs/specs/cloud-mobile-unified-migration.md`. PWA (already built, enable it) + Tauri (Android/iOS). 100% self-hosted, $0 cost
 - **Enterprise catering features** - large team management, multi-location
 - **White-label / reseller** - one brand, one product
 - **Automated client outreach without chef approval** - AI assists, chef decides

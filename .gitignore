@@ -98,7 +98,6 @@ HOME-*.xml
 
 # Legacy (deleted scaffolds, kept for safety)
 /pages/
-/src-tauri/
 /android/
 /ios/
 /worker/

@@ -1,0 +1,7 @@
+{
+  "identifier": "mobile",
+  "description": "Capabilities for ChefFlow mobile app",
+  "windows": ["main"],
+  "platforms": ["android", "iOS"],
+  "permissions": ["core:default", "notification:default"]
+}

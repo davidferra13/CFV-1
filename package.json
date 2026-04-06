@@ -7,6 +7,7 @@
     "build": "node scripts/run-next-build.mjs",
     "bundle:check": "node scripts/check-bundle-budget.mjs",
     "lines:check": "node scripts/check-file-line-budget.mjs",
+    "tauri": "tauri",
     "tauri:dev": "npx tauri dev",
     "tauri:build": "npx tauri build",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\" --ignore-path .prettierignore",

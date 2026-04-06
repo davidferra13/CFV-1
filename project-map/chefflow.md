@@ -31,3 +31,14 @@ Full blueprint: `docs/product-blueprint.md`
 - 725 database tables
 - 54 settings pages
 - 90+ Mission Control API endpoints
+
+## Mobile App + PWA Activation (P0, Apr 2026)
+
+**Spec:** `docs/specs/cloud-mobile-unified-migration.md`
+**Status:** Spec complete. Ready for Phase 1 execution.
+
+**Current state:** App is globally reachable at app.cheflowhq.com via Cloudflare Tunnel. 100% self-hosted. No mobile install yet.
+
+**What's already built:** PWA (manifest, service worker, icons, push infra - all done, just disabled). Tauri (deps installed, desktop config + all platform icons in abandoned worktree).
+
+**4 phases:** PWA activation (verify + VAPID keys), Tauri desktop (resurrect from worktree), Tauri Android (add mobile target, build APK), Tauri iOS (blocked on macOS hardware). $0 cost.
