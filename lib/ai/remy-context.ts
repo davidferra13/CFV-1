@@ -8,6 +8,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { RemyContext, PageEntityContext } from '@/lib/ai/remy-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
+import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
+import { archetypeToOperatorType, OPERATOR_TARGETS } from '@/lib/costing/knowledge'
 import { loadEmailDigest } from '@/lib/ai/remy-email-actions'
 import { sanitizeForPrompt } from '@/lib/ai/remy-input-validation'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
@@ -100,18 +102,20 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
   const db: any = createServerClient()
 
   // Tier 1: Always fresh (cheap count queries + chef profile + daily plan + service config)
-  const [chefProfile, counts, dailyPlan, healthSummary, serviceConfig] = await Promise.all([
-    loadChefProfile(db, tenantId),
-    loadQuickCounts(db, tenantId),
-    withContextFallback(tenantId, 'load_daily_plan', null, () => getDailyPlanStats()),
-    withContextFallback(tenantId, 'load_business_health_summary', null, async () => {
-      const summary = await getBusinessHealthSummary()
-      return summary.remyContext
-    }),
-    withContextFallback(tenantId, 'load_service_config', null, () =>
-      getServiceConfigForTenant(tenantId)
-    ),
-  ])
+  const [chefProfile, counts, dailyPlan, healthSummary, serviceConfig, archetype] =
+    await Promise.all([
+      loadChefProfile(db, tenantId),
+      loadQuickCounts(db, tenantId),
+      withContextFallback(tenantId, 'load_daily_plan', null, () => getDailyPlanStats()),
+      withContextFallback(tenantId, 'load_business_health_summary', null, async () => {
+        const summary = await getBusinessHealthSummary()
+        return summary.remyContext
+      }),
+      withContextFallback(tenantId, 'load_service_config', null, () =>
+        getServiceConfigForTenant(tenantId)
+      ),
+      getCachedChefArchetype(tenantId),
+    ])
 
   // Tier 2: Cached for 5 minutes
   const cached = contextCache.get(tenantId)
@@ -257,6 +261,19 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     pendingMilestones: pendingMilestones ?? undefined,
     // Auto-response config
     autoResponseStatus: autoResponseStatus ?? undefined,
+    // Food costing targets (operator-specific)
+    costingContext: (() => {
+      const opType = archetypeToOperatorType(archetype)
+      const targets = OPERATOR_TARGETS[opType]
+      return {
+        operationType: opType,
+        foodCostTargetLow: targets.foodCostPctLow,
+        foodCostTargetHigh: targets.foodCostPctHigh,
+        primeCostTarget: targets.primeCostPctTarget,
+        qFactorDefault: targets.qFactorDefault,
+        recostFrequency: targets.recostFrequency,
+      }
+    })(),
   }
 }
 

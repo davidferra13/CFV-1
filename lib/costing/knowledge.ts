@@ -106,6 +106,8 @@ export interface HelpContent {
   targetRange?: string
   guidance: string
   guideSection: string // anchor for the full guide page
+  /** Real-world context from industry research (practitioner tips, benchmarks) */
+  industryContext?: string
 }
 
 export const HELP_CONTENT: Record<HelpTopic, HelpContent> = {
@@ -118,6 +120,8 @@ export const HELP_CONTENT: Record<HelpTopic, HelpContent> = {
     guidance:
       'If your food cost is above target, check yield factors, portion sizes, and ingredient prices. Menu engineering (subsidizing high-cost items with low-cost ones) can bring the blend into range.',
     guideSection: 'method-1-food-cost-percentage',
+    industryContext:
+      'A practitioner example: a 15-guest retreat at $100/person grosses $1,500, but after assistants ($200), travel ($100), food ($300), expenses ($50), and tax reserve ($375), net profit is only $475 (31.7%). Food cost is the lever you control most directly.',
   },
   blended_cost: {
     title: 'Blended Food Cost',
@@ -146,6 +150,8 @@ export const HELP_CONTENT: Record<HelpTopic, HelpContent> = {
     guidance:
       'Cost-plus is best for catering, private chef events, and any job where labor and overhead vary significantly. It ensures every cost is covered before profit.',
     guideSection: 'method-2-cost-plus-buildup',
+    industryContext:
+      "Research shows actual cooking is roughly 40% of a private chef's work week. Shopping, driving, client communication, menu planning, and admin eat the other 60%. Cost-plus captures this invisible labor; hourly cooking rates do not. Successful operators charge a flat service fee that covers the full scope of work.",
   },
   q_factor: {
     title: 'Q-Factor (Incidental Surcharge)',
@@ -156,6 +162,8 @@ export const HELP_CONTENT: Record<HelpTopic, HelpContent> = {
     guidance:
       'Without Q-factor, your food cost is systematically undercounted. Set to 0% only if you individually track every ingredient including oil and seasoning.',
     guideSection: 'q-factor',
+    industryContext:
+      'The Q-factor is the cost most operators forget. Oil, salt, spices, parchment, foil, garnishes, and disposable gloves seem trivial per dish but compound across a full event. At 7%, a $300 ingredient bill actually costs $321. Over a year of events, that adds up to thousands in unaccounted cost.',
   },
   yield_factor: {
     title: 'Yield Factor (AP to EP)',
@@ -165,6 +173,8 @@ export const HELP_CONTENT: Record<HelpTopic, HelpContent> = {
     guidance:
       'Trim yield is always <= 1.0. Cooking yield can exceed 1.0 for items that absorb water (rice, pasta, dried beans). Combined yield = trim yield x cooking yield.',
     guideSection: 'yield-factors',
+    industryContext:
+      'Common yields operators get wrong: boneless chicken 75%, whole fish 35-45%, vegetables 70-90%, herbs 50-60%, shrimp (shell-on to peeled) 50-55%. Ignoring yield is the single most common reason chefs underprice their menus.',
   },
   prime_cost: {
     title: 'Prime Cost',
@@ -202,6 +212,8 @@ export const HELP_CONTENT: Record<HelpTopic, HelpContent> = {
     guidance:
       'Spoilage cost spreads across sold units. A dish at 30% recipe food cost with 8% spoilage effectively costs 33%. Track waste daily to identify patterns.',
     guideSection: 'waste-tracking',
+    industryContext:
+      '75% of food shrink is internal (over-portioning, spoilage, waste, admin error), not theft. One steakhouse saved $15,600/year just by tightening portion control on a single protein cut. Waste targets: plated service under 5%, buffet under 12%.',
   },
   non_revenue_food: {
     title: 'Non-Revenue Food',
@@ -237,6 +249,8 @@ export const HELP_CONTENT: Record<HelpTopic, HelpContent> = {
     guidance:
       'Know your breakeven before obsessing over food cost targets. If you need 40 covers to break even, a 28% food cost on 20 covers still loses money.',
     guideSection: 'breakeven-analysis',
+    industryContext:
+      'Solo operators typically cap at $80,000-$100,000 annual revenue without systems and staff. The breakeven for a first permanent hire requires roughly $40,000-$60,000 in additional annual revenue. Most operators should use 1099 contractors before committing to W-2 employees.',
   },
   purchasing_strategy: {
     title: 'Purchasing Strategy',
@@ -245,6 +259,8 @@ export const HELP_CONTENT: Record<HelpTopic, HelpContent> = {
     guidance:
       'Delivery fees ($25-75 per drop) can add 5-25% to small orders. Volume discounts save 30-60% but only if you use the product before quality degrades. Match your channel to your volume.',
     guideSection: 'purchasing-strategy',
+    industryContext:
+      'Successful operators use a tiered vendor strategy: broadline distributor for 60-70% of volume (Sysco, US Foods, Restaurant Depot), specialty vendors for premium items, direct farm relationships for seasonal produce, and cash-and-carry (Costco, local markets) for fill-ins. In-season ingredients can cost 30-60% less than out-of-season.',
   },
   garnish_cost: {
     title: 'Presentation and Garnish Cost',
@@ -974,6 +990,38 @@ export const GUIDE_SECTIONS: GuideSection[] = [
 // ---------------------------------------------------------------------------
 // Helper: get contextual guidance for a value
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Archetype → OperatorType mapping
+// ---------------------------------------------------------------------------
+// The chef_preferences.archetype column stores one of 6 presets (kebab-case).
+// This maps them to the 14 OperatorType values used by the knowledge layer.
+
+const ARCHETYPE_TO_OPERATOR: Record<string, OperatorType> = {
+  'private-chef': 'private_chef',
+  caterer: 'catering',
+  'meal-prep': 'meal_prep',
+  restaurant: 'restaurant',
+  'food-truck': 'food_truck',
+  bakery: 'bakery',
+}
+
+/**
+ * Convert a chef archetype ID (from chef_preferences.archetype) to an OperatorType.
+ * Falls back to 'private_chef' if unknown or null.
+ */
+export function archetypeToOperatorType(archetype: string | null | undefined): OperatorType {
+  if (!archetype) return 'private_chef'
+  return ARCHETYPE_TO_OPERATOR[archetype] ?? 'private_chef'
+}
+
+/**
+ * Get operator-specific targets for a chef archetype.
+ * Convenience wrapper: archetype string in, targets out.
+ */
+export function getTargetsForArchetype(archetype: string | null | undefined): OperatorTargets {
+  return OPERATOR_TARGETS[archetypeToOperatorType(archetype)]
+}
 
 export function getContextualGuidance(
   topic: HelpTopic,

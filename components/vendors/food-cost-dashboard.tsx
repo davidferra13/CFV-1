@@ -13,18 +13,22 @@ interface FoodCostDashboardProps {
   thisWeekPercent: number
   thisMonthPercent: number
   targetPercent: number
+  /** Low end of target range (operator-specific). Defaults to targetPercent. */
+  targetLow?: number
+  /** High end of target range (operator-specific). Defaults to targetPercent + 5. */
+  targetHigh?: number
   dailyData: DailyRow[]
 }
 
-function getCostColor(pct: number): string {
-  if (pct < 30) return 'text-emerald-400'
-  if (pct <= 35) return 'text-amber-400'
+function getCostColor(pct: number, low: number, high: number): string {
+  if (pct < low) return 'text-emerald-400'
+  if (pct <= high) return 'text-amber-400'
   return 'text-red-400'
 }
 
-function getBarColor(pct: number): string {
-  if (pct < 30) return 'bg-emerald-500'
-  if (pct <= 35) return 'bg-amber-500'
+function getBarColor(pct: number, low: number, high: number): string {
+  if (pct < low) return 'bg-emerald-500'
+  if (pct <= high) return 'bg-amber-500'
   return 'bg-red-500'
 }
 
@@ -32,8 +36,12 @@ export function FoodCostDashboard({
   thisWeekPercent,
   thisMonthPercent,
   targetPercent,
+  targetLow,
+  targetHigh,
   dailyData,
 }: FoodCostDashboardProps) {
+  const low = targetLow ?? targetPercent
+  const high = targetHigh ?? targetPercent + 5
   const maxPercent = Math.max(...dailyData.map((d) => d.foodCostPercent), targetPercent, 50)
 
   return (
@@ -43,7 +51,7 @@ export function FoodCostDashboard({
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
             <p className="text-xs text-stone-400 uppercase tracking-wide">This Week</p>
-            <p className={`text-2xl font-bold mt-1 ${getCostColor(thisWeekPercent)}`}>
+            <p className={`text-2xl font-bold mt-1 ${getCostColor(thisWeekPercent, low, high)}`}>
               {thisWeekPercent.toFixed(1)}%
             </p>
           </CardContent>
@@ -51,7 +59,7 @@ export function FoodCostDashboard({
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
             <p className="text-xs text-stone-400 uppercase tracking-wide">This Month</p>
-            <p className={`text-2xl font-bold mt-1 ${getCostColor(thisMonthPercent)}`}>
+            <p className={`text-2xl font-bold mt-1 ${getCostColor(thisMonthPercent, low, high)}`}>
               {thisMonthPercent.toFixed(1)}%
             </p>
           </CardContent>
@@ -77,7 +85,7 @@ export function FoodCostDashboard({
                   <span className="text-xs text-stone-400 w-24 shrink-0">{day.date}</span>
                   <div className="flex-1 bg-stone-800 rounded-full h-5 relative overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${getBarColor(day.foodCostPercent)}`}
+                      className={`h-full rounded-full transition-all ${getBarColor(day.foodCostPercent, low, high)}`}
                       style={{
                         width: `${Math.min((day.foodCostPercent / maxPercent) * 100, 100)}%`,
                       }}
@@ -91,7 +99,7 @@ export function FoodCostDashboard({
                     />
                   </div>
                   <span
-                    className={`text-xs font-medium w-12 text-right ${getCostColor(day.foodCostPercent)}`}
+                    className={`text-xs font-medium w-12 text-right ${getCostColor(day.foodCostPercent, low, high)}`}
                   >
                     {day.foodCostPercent.toFixed(1)}%
                   </span>
@@ -100,13 +108,13 @@ export function FoodCostDashboard({
             </div>
             <div className="mt-3 flex items-center gap-4 text-xs text-stone-500">
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500" /> &lt;30%
+                <span className="w-2 h-2 rounded-full bg-emerald-500" /> &lt;{low}%
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-500" /> 30-35%
+                <span className="w-2 h-2 rounded-full bg-amber-500" /> {low}-{high}%
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-red-500" /> &gt;35%
+                <span className="w-2 h-2 rounded-full bg-red-500" /> &gt;{high}%
               </span>
               <span className="flex items-center gap-1">
                 <span className="w-2 h-0.5 bg-stone-400" /> Target
@@ -149,7 +157,9 @@ export function FoodCostDashboard({
                           minimumFractionDigits: 2,
                         })}
                       </td>
-                      <td className={`py-2 font-medium ${getCostColor(day.foodCostPercent)}`}>
+                      <td
+                        className={`py-2 font-medium ${getCostColor(day.foodCostPercent, low, high)}`}
+                      >
                         {day.foodCostPercent.toFixed(1)}%
                       </td>
                     </tr>

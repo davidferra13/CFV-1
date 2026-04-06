@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
 import { Card } from '@/components/ui/card'
+import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
 import {
   Table,
   TableHeader,
@@ -57,13 +58,19 @@ export default async function RecipeCostPage() {
           <p className="text-2xl font-bold text-stone-100">
             {withCost.length > 0 ? `$${(maxCostCents / 100).toFixed(2)}` : '-'}
           </p>
-          <p className="text-sm text-stone-500 mt-1">Most expensive recipe</p>
+          <p className="text-sm text-stone-500 mt-1 flex items-center justify-center gap-1">
+            Most expensive recipe
+            <CostingHelpPopover topic="food_cost_pct" />
+          </p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">
             {avgCostCents > 0 ? `$${(avgCostCents / 100).toFixed(2)}` : '-'}
           </p>
-          <p className="text-sm text-stone-500 mt-1">Average recipe cost</p>
+          <p className="text-sm text-stone-500 mt-1 flex items-center justify-center gap-1">
+            Average recipe cost
+            <CostingHelpPopover topic="per_person" />
+          </p>
         </Card>
         <Card className="p-4 text-center">
           <p className="text-2xl font-bold text-stone-100">{noCost.length}</p>

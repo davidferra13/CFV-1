@@ -37,6 +37,7 @@ import {
 } from '@/lib/recipes/production-log-actions'
 import type { ProductionLogEntry } from '@/lib/recipes/production-log-actions'
 import { format, isPast, isBefore, addDays } from 'date-fns'
+import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
   sauce: 'warning',
@@ -858,7 +859,10 @@ export function RecipeDetailClient({ recipe }: Props) {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {recipe.costSummary.totalCostCents != null && (
                 <div>
-                  <dt className="text-sm font-medium text-stone-500">Total Cost</dt>
+                  <dt className="text-sm font-medium text-stone-500 flex items-center gap-1">
+                    Total Cost
+                    <CostingHelpPopover topic="food_cost_pct" />
+                  </dt>
                   <dd className="text-2xl font-bold text-stone-100 mt-1">
                     ${(recipe.costSummary.totalCostCents / 100).toFixed(2)}
                   </dd>
@@ -866,7 +870,10 @@ export function RecipeDetailClient({ recipe }: Props) {
               )}
               {recipe.costSummary.costPerPortionCents != null && (
                 <div>
-                  <dt className="text-sm font-medium text-stone-500">Cost per Portion</dt>
+                  <dt className="text-sm font-medium text-stone-500 flex items-center gap-1">
+                    Cost per Portion
+                    <CostingHelpPopover topic="per_person" />
+                  </dt>
                   <dd className="text-2xl font-bold text-stone-100 mt-1">
                     ${(recipe.costSummary.costPerPortionCents / 100).toFixed(2)}
                   </dd>

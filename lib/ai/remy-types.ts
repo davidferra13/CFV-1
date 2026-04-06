@@ -378,6 +378,15 @@ export interface RemyContext {
     enabled: boolean
     templateCount: number
   }
+  /** Food costing context (operator-specific targets and current performance) */
+  costingContext?: {
+    operationType: string
+    foodCostTargetLow: number
+    foodCostTargetHigh: number
+    primeCostTarget: number
+    qFactorDefault: number
+    recostFrequency: string
+  }
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

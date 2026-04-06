@@ -2,10 +2,15 @@
 
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { formatCurrency } from '@/lib/utils/currency'
+import { getTargetsForArchetype } from '@/lib/costing/knowledge'
+import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
+import { requireChef } from '@/lib/auth/get-user'
 import { MONTH_NAMES } from './business-section-defaults'
 import { loadBusinessCardsData } from './business-cards-loader'
 
 export async function BusinessCards() {
+  const chef = await requireChef()
+  const archetype = await getCachedChefArchetype(chef.entityId)
   const now = new Date()
   const currentMonthName = MONTH_NAMES[now.getMonth()]
   const {
@@ -29,6 +34,11 @@ export async function BusinessCards() {
   const avgFoodCost = foodCostTrend.overallAvgFoodCostPercent
   const hasFoodCostData = foodCostTrend.months.some((month) => month.eventCount > 0)
   const foodCostSparkData = foodCostTrend.months.map((month) => month.avgFoodCostPercent || 0)
+
+  // Use operator-specific targets based on chef's actual archetype
+  const targets = getTargetsForArchetype(archetype)
+  const foodCostHigh = targets.foodCostPctHigh
+  const foodCostLow = targets.foodCostPctLow
 
   const goalEnabled = revenueGoal.enabled
   const goalPercent = revenueGoal.monthly.progressPercent ?? 0
@@ -80,8 +90,14 @@ export async function BusinessCards() {
           title="Food Cost"
           value={`${(avgFoodCost ?? 0).toFixed(1)}%`}
           subtitle="avg food cost percentage"
-          trend={avgFoodCost != null && avgFoodCost > 35 ? 'Above target' : 'Healthy range'}
-          trendDirection={avgFoodCost != null && avgFoodCost > 35 ? 'down' : 'up'}
+          trend={
+            avgFoodCost != null && avgFoodCost > foodCostHigh
+              ? `Above ${foodCostLow}-${foodCostHigh}% target`
+              : avgFoodCost != null && avgFoodCost < foodCostLow
+                ? `Below ${foodCostLow}-${foodCostHigh}% range`
+                : `Within ${foodCostLow}-${foodCostHigh}% target`
+          }
+          trendDirection={avgFoodCost != null && avgFoodCost > foodCostHigh ? 'down' : 'up'}
           sparkData={foodCostSparkData.length >= 3 ? foodCostSparkData : undefined}
           href="/analytics"
         />

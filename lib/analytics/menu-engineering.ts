@@ -5,6 +5,8 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
+import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
+import { getTargetsForArchetype } from '@/lib/costing/knowledge'
 
 // ─── BCG Matrix Quadrants ───────────────────────────────────────────────────
 
@@ -51,9 +53,17 @@ function assignQuadrant(
 
 export async function computeMenuEngineering(
   menuId?: string,
-  targetFoodCostPct: number = 30
+  targetFoodCostPct?: number
 ): Promise<MenuEngineeringResult> {
   const chef = await requireChef()
+
+  // Use operator-specific target if none provided
+  if (targetFoodCostPct === undefined) {
+    const archetype = await getCachedChefArchetype(chef.entityId)
+    const targets = getTargetsForArchetype(archetype)
+    targetFoodCostPct = targets.foodCostPctHigh
+  }
+
   const db = await createServerClient()
 
   // Get dishes with their linked recipes and cost data

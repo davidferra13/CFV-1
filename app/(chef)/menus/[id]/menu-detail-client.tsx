@@ -28,6 +28,7 @@ import {
 } from '@/lib/recipes/actions'
 import { useUndoStack } from '@/lib/undo/use-undo-stack'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
 import type { ConfirmPolicyInput } from '@/lib/confirm/confirm-policy'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import { format } from 'date-fns'
@@ -573,7 +574,10 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
         </Card>
         <Card>
           <CardContent className="py-4">
-            <p className="text-xs uppercase tracking-wider text-stone-500">Cost / Guest</p>
+            <p className="text-xs uppercase tracking-wider text-stone-500 flex items-center gap-1">
+              Cost / Guest
+              <CostingHelpPopover topic="per_person" />
+            </p>
             <p className="mt-1 text-2xl font-semibold text-stone-100">
               {costSummary?.cost_per_guest_cents != null
                 ? formatCurrency(costSummary.cost_per_guest_cents)
@@ -583,7 +587,13 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
         </Card>
         <Card>
           <CardContent className="py-4">
-            <p className="text-xs uppercase tracking-wider text-stone-500">Food Cost %</p>
+            <p className="text-xs uppercase tracking-wider text-stone-500 flex items-center gap-1">
+              Food Cost %
+              <CostingHelpPopover
+                topic="food_cost_pct"
+                currentValue={costSummary?.food_cost_percentage ?? undefined}
+              />
+            </p>
             <p className="mt-1 text-2xl font-semibold text-stone-100">
               {costSummary?.food_cost_percentage != null
                 ? `${costSummary.food_cost_percentage.toFixed(1)}%`

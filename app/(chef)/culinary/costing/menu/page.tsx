@@ -6,6 +6,7 @@ import { getRecipes } from '@/lib/recipes/actions'
 import { safeFetchAll } from '@/lib/utils/safe-fetch'
 import { ErrorState } from '@/components/ui/error-state'
 import { Card } from '@/components/ui/card'
+import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
 import {
   Table,
   TableHeader,
@@ -126,9 +127,19 @@ export default async function MenuCostPage() {
                 <TableHead>Menu</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Components</TableHead>
-                <TableHead>Estimated Cost</TableHead>
+                <TableHead>
+                  <span className="flex items-center gap-1">
+                    Estimated Cost
+                    <CostingHelpPopover topic="food_cost_pct" />
+                  </span>
+                </TableHead>
                 <TableHead>Target Guests</TableHead>
-                <TableHead>Cost / Guest</TableHead>
+                <TableHead>
+                  <span className="flex items-center gap-1">
+                    Cost / Guest
+                    <CostingHelpPopover topic="per_person" />
+                  </span>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
