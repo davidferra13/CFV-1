@@ -238,3 +238,14 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on arrival: green (2d7a17773)
 - Build state on departure: green (tsc clean)
 - Notes: Fixed 3 interface philosophy violations. (1) Inquiries filter: replaced 5 budget buttons with select dropdown, reducing 12-16 controls to ~9. (2) Event detail header: moved 4 overflow actions (Packing List, Grocery Quote, Travel Plan, Create Story) into a "More" dropdown menu. (3) Quotes page: wrapped 3 intelligence panels in collapsed details disclosure. All comply with Section 5 (one primary action), Section 6 (cognitive load limits), Section 11 (anti-patterns). QA revealed the real inquiries page used inline tabs (not the orphaned component); corrected with 5 primary tabs + "More..." overflow select. Also fixed inquiries heading dark theme (text-stone-900 invisible). Then completed dark theme remediation across remaining 19 admin pages (156 replacements). Fixed duplicate /calendar nav entry causing React key warning. Removed duplicate during lint-staged in dark theme commit.
+
+## 2026-04-05 ~22:00 EST
+
+- Agent: General (Claude Opus 4.6)
+- Task: Build food costing knowledge system from spec
+- Status: completed
+- Files touched: lib/costing/knowledge.ts (new), lib/costing/operator-cost-lines.ts (new), components/costing/costing-help-popover.tsx (new), components/costing/costing-warning-detail.tsx (new), app/(chef)/help/food-costing/page.tsx (new), components/navigation/nav-config.tsx, app/api/remy/stream/route-instant-answers.ts, docs/app-complete-audit.md, docs/food-costing-knowledge-implementation.md (new), docs/specs/food-costing-knowledge-system.md
+- Commits: 116881744
+- Build state on arrival: green (699fb96b7)
+- Build state on departure: tsc green (116881744), full build not re-run
+- Notes: Built complete food costing knowledge system: static content map (20 topics, 13 warnings, 14 operator profiles), 80+ cost line templates, help popover component, warning detail component, full guide page at /help/food-costing, nav integration, 6 Remy instant-answer patterns. All content static, Formula > AI. Spec marked as built. Future work: integrate popovers into existing costing views.
