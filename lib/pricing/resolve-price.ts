@@ -13,6 +13,7 @@
  *   4. FLYER              - Weekly circular (openclaw_flyer)
  *   5. INSTACART          - Markup-adjusted proxy (openclaw_instacart)
  *   6. REGIONAL AVERAGE   - Cross-store average from all OpenClaw sources (2+ stores)
+ *  6.5 MARKET AGGREGATE   - System-level market price via ingredient alias bridge
  *   7. GOVERNMENT         - BLS/USDA NE regional average (openclaw_government)
  *   8. HISTORICAL         - Chef's own average from past purchases
  *   9. CATEGORY BASELINE  - Category-level median (e.g., average spice price per oz)
@@ -34,6 +35,7 @@ export type PriceSource =
   | 'flyer'
   | 'instacart'
   | 'regional_average'
+  | 'market_aggregate'
   | 'government'
   | 'historical'
   | 'category_baseline'
@@ -141,6 +143,8 @@ function sourceDisplayStore(source: PriceSource, storeName: string | null): stri
       return storeName ? `${storeName} (Instacart)` : 'Instacart'
     case 'regional_average':
       return storeName || 'Regional Average'
+    case 'market_aggregate':
+      return storeName || 'Market Average'
     case 'government':
       return 'USDA NE avg'
     case 'historical':
@@ -389,6 +393,48 @@ export async function resolvePrice(
         confidence: 0.5,
         freshness: computeFreshness(regionalAvg.mostRecentDate),
         confirmedAt: regionalAvg.mostRecentDate,
+        reason: null,
+      })
+    }
+  }
+
+  // Tier 6.5: MARKET AGGREGATE (system-level price via ingredient alias)
+  // If this ingredient is aliased to a system_ingredient, check the pre-computed
+  // market price from openclaw.system_ingredient_prices (aggregated from FTS-matched products).
+  const marketAgg = (await db.execute(sql`
+    SELECT sip.avg_price_cents, sip.median_price_cents, sip.price_unit,
+           sip.store_count, sip.state_count, sip.confidence,
+           sip.newest_price_at::text AS newest_date
+    FROM ingredient_aliases ia
+    JOIN openclaw.system_ingredient_prices sip ON sip.system_ingredient_id = ia.system_ingredient_id
+    WHERE ia.ingredient_id = ${ingredientId}
+      AND ia.tenant_id = ${tenantId}
+      AND ia.system_ingredient_id IS NOT NULL
+      AND ia.match_method != 'dismissed'
+    LIMIT 1
+  `)) as unknown as Array<{
+    avg_price_cents: number
+    median_price_cents: number | null
+    price_unit: string
+    store_count: number
+    state_count: number
+    confidence: number
+    newest_date: string | null
+  }>
+
+  if (marketAgg.length > 0) {
+    const row = marketAgg[0]
+    const priceCents = row.median_price_cents ?? row.avg_price_cents
+    if (priceCents > 0) {
+      return withDecay({
+        cents: priceCents,
+        unit: row.price_unit || 'each',
+        source: 'market_aggregate',
+        sourceTier: 'system_ingredient_market',
+        store: `Market Average (${row.store_count} stores, ${row.state_count} state${row.state_count !== 1 ? 's' : ''})`,
+        confidence: Math.min(parseFloat(String(row.confidence)) || 0.55, 0.65),
+        freshness: computeFreshness(row.newest_date),
+        confirmedAt: row.newest_date,
         reason: null,
       })
     }

@@ -9,6 +9,8 @@ export const metadata: Metadata = {
 }
 import { getIngredients } from '@/lib/recipes/actions'
 import { IngredientsClient } from './ingredients-client'
+import { IngredientHealthBanner } from '@/components/pricing/ingredient-health-banner'
+import { getIngredientHealthAction } from '@/lib/pricing/ingredient-health-actions'
 
 export default async function IngredientsPage({
   searchParams,
@@ -17,10 +19,18 @@ export default async function IngredientsPage({
 }) {
   await requireChef()
 
-  const ingredients = await getIngredients({
-    category: searchParams.category,
-    search: searchParams.search,
-  })
+  const [ingredients, health] = await Promise.all([
+    getIngredients({
+      category: searchParams.category,
+      search: searchParams.search,
+    }),
+    getIngredientHealthAction().catch(() => null),
+  ])
 
-  return <IngredientsClient ingredients={ingredients} />
+  return (
+    <div className="space-y-6">
+      {health && <IngredientHealthBanner health={health} />}
+      <IngredientsClient ingredients={ingredients} />
+    </div>
+  )
 }
