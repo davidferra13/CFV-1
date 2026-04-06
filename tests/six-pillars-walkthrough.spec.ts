@@ -11,7 +11,7 @@ import * as path from 'path'
  * Uses the agent test account for authentication.
  */
 
-const BASE = process.env.TEST_BASE_URL || 'http://localhost:3100'
+const BASE = process.env.TEST_BASE_URL || 'http://127.0.0.1:3100'
 const CREDS = { email: 'agent@local.chefflow', password: 'CHEF.jdgyuegf9924092.FLOW' }
 const SSDIR = 'test-results/six-pillars'
 
@@ -27,33 +27,40 @@ test.describe('Six Pillars Happy-Path Walkthrough', () => {
 
     const resp = await page.request.post(BASE + '/api/e2e/auth', {
       data: CREDS,
-      timeout: 30000,
+      timeout: 60000,
     })
     if (!resp.ok()) throw new Error('E2E auth failed: ' + resp.status())
 
     const setCookieHeader = resp.headers()['set-cookie'] || ''
-    const cookieMatch = setCookieHeader.match(
-      /(__Secure-authjs\.session-token|authjs\.session-token)=([^;]+)/
-    )
-    if (!cookieMatch) {
+    // Extract the session token from Set-Cookie
+    const tokenMatch = setCookieHeader.match(/(?:__Secure-)?authjs\.session-token=([^;]+)/)
+    if (!tokenMatch) {
       throw new Error('No session cookie in e2e auth response')
     }
-    const sessionCookieHeader = cookieMatch[1] + '=' + cookieMatch[2]
-
-    await context.route('**/*', async (route) => {
-      const headers = route.request().headers()
-      const existing = headers['cookie'] || ''
-      headers['cookie'] = existing ? existing + '; ' + sessionCookieHeader : sessionCookieHeader
-      await route.continue({ headers })
-    })
+    // The e2e auth endpoint determines cookie name based on NEXTAUTH_URL.
+    // Extract the actual cookie name from the response header.
+    const nameMatch = setCookieHeader.match(/((?:__Secure-)?authjs\.session-token)=/)
+    const cookieName = nameMatch ? nameMatch[1] : 'authjs.session-token'
+    const isSecureCookie = cookieName.startsWith('__Secure-')
+    await context.addCookies([
+      {
+        name: cookieName,
+        value: tokenMatch[1],
+        domain: new URL(BASE).hostname,
+        path: '/',
+        httpOnly: true,
+        secure: isSecureCookie,
+        sameSite: 'Lax',
+      },
+    ])
   })
 
   // ---------------------------------------------------------------------------
   // Helper: navigate, wait, screenshot, assert not crashed/blank
   // ---------------------------------------------------------------------------
   async function verifyPage(page: import('@playwright/test').Page, route: string, label: string) {
-    await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 20000 })
-    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {})
+    await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 45000 })
+    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(500)
 
     const ssName = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()

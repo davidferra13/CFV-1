@@ -203,12 +203,12 @@ V1 is "done" and ready to ship when ALL of the following are true:
 
 ## What's Actively Being Worked On
 
-| Item                                   | Status   | Owner                                      |
-| -------------------------------------- | -------- | ------------------------------------------ |
-| 6-pillar Playwright walkthrough        | Written  | Tests ready, blocked on dev server restart |
-| Infrastructure system completion       | Complete | Merged to main                             |
-| Food costing pipeline (full E2E)       | Complete | Merged to main (Apr 6)                     |
-| Analytics honesty (zero-hallucination) | Complete | Merged to main (Apr 6)                     |
+| Item                                   | Status   | Owner                                                                                                                                                                                                                                                                          |
+| -------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 6-pillar Playwright walkthrough        | Blocked  | Auth uses \_\_Secure- cookies (NEXTAUTH_URL=https). Dev server must restart with NEXTAUTH_URL=http://127.0.0.1:3100 for Playwright to authenticate. Run: `NEXTAUTH_URL=http://127.0.0.1:3100 npm run dev` then `npx playwright test --config=playwright.six-pillars.config.ts` |
+| Infrastructure system completion       | Complete | Merged to main                                                                                                                                                                                                                                                                 |
+| Food costing pipeline (full E2E)       | Complete | Merged to main (Apr 6)                                                                                                                                                                                                                                                         |
+| Analytics honesty (zero-hallucination) | Complete | Merged to main (Apr 6)                                                                                                                                                                                                                                                         |
 
 _Last cleared: 2026-04-06. Completed items moved to queue or exit criteria._
 
