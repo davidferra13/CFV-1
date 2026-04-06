@@ -144,7 +144,7 @@ export default function GlobalError({
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
             {isChunkError ? (
               <button
-                onClick={() => nukeServiceWorkerAndReload()}
+                onClick={() => nukeServiceWorkerAndReload({ force: true })}
                 style={{
                   backgroundColor: '#e88f47',
                   color: '#1c1917',

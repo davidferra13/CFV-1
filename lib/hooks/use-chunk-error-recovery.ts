@@ -20,21 +20,25 @@ export function isChunkLoadError(error: Error): boolean {
  * Uses sessionStorage to prevent infinite reload loops: if we already
  * attempted recovery within the last 30 seconds, we bail and let the
  * error boundary show its fallback UI instead.
+ *
+ * Pass `force: true` to bypass the loop guard (for manual "Reload Now" clicks).
  */
-export async function nukeServiceWorkerAndReload(): Promise<boolean> {
-  // Guard against infinite loops
-  try {
-    const lastAttempt = sessionStorage.getItem(RECOVERY_KEY)
-    if (lastAttempt) {
-      const elapsed = Date.now() - parseInt(lastAttempt, 10)
-      if (elapsed < RECOVERY_TTL_MS) {
-        // Already tried recently, don't loop
-        return false
+export async function nukeServiceWorkerAndReload(opts?: { force?: boolean }): Promise<boolean> {
+  // Guard against infinite loops (skipped for manual user clicks)
+  if (!opts?.force) {
+    try {
+      const lastAttempt = sessionStorage.getItem(RECOVERY_KEY)
+      if (lastAttempt) {
+        const elapsed = Date.now() - parseInt(lastAttempt, 10)
+        if (elapsed < RECOVERY_TTL_MS) {
+          // Already tried recently, don't loop
+          return false
+        }
       }
+      sessionStorage.setItem(RECOVERY_KEY, String(Date.now()))
+    } catch {
+      // sessionStorage unavailable (private browsing, etc.) - proceed anyway
     }
-    sessionStorage.setItem(RECOVERY_KEY, String(Date.now()))
-  } catch {
-    // sessionStorage unavailable (private browsing, etc.) - proceed anyway
   }
 
   try {
@@ -75,6 +79,6 @@ export function useChunkErrorRecovery(error: Error): {
 
   return {
     isChunkError,
-    triggerRecovery: () => nukeServiceWorkerAndReload(),
+    triggerRecovery: () => nukeServiceWorkerAndReload({ force: true }),
   }
 }
