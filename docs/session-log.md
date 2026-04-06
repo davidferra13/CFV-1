@@ -271,3 +271,14 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on arrival: tsc green (52446f740)
 - Build state on departure: tsc green (5519ba6c4)
 - Notes: Created warning generator utility (pure function, recipe/menu data in, CostingWarning[] out). Replaced manual cost issue bullets in recipe detail with expandable CostingWarningList. Added menu cost warnings (food cost above target, incomplete coverage). Added CostingHelpPopover to pricing settings (3 sections), plate costs page title, and plate cost table margin KPI. Total costing knowledge integration: 16 surfaces wired.
+
+## 2026-04-06 ~14:00 EST
+
+- Agent: General (Claude Opus 4.6)
+- Task: Wire food costing knowledge layer into fully automatic end-to-end pipeline
+- Status: completed
+- Files touched: 22 files modified/created (10 conversion files, 3 threshold files, 2 new UI components, event detail page, pricing config, OpenClaw sync, recipe actions)
+- Commits: 988fe7bbd, 9eb86ef0c
+- Build state on arrival: tsc green (5519ba6c4)
+- Build state on departure: tsc green (9eb86ef0c)
+- Notes: Eliminated all hardcoded conversion factors (10 files now import from knowledge.ts). Operator-aware thresholds in food cost calculator, pricing recommendation, widget. Auto-price resolution on ingredient add (10-tier chain). Auto-matching to system_ingredients via pg_trgm (5,435 canonical names). Alias-aware price fallback. OpenClaw sync sends canonical alias names. New EventFoodCostInsight on event Money tab. CostLineReferencePanel on pricing settings. Zero remaining gaps in costing pipeline. Stopped at anti-clutter boundary.
