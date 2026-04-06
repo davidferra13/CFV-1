@@ -7,6 +7,7 @@ import type { PricingConfig, PricingConfigInput } from '@/lib/pricing/config-typ
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
 
 // Policy defaults (deposit, hours, mileage) - reasonable starting points
 // Rate defaults are zero: chefs must set their own pricing
@@ -171,7 +172,10 @@ export function PricingConfigForm({ initialConfig }: { initialConfig: PricingCon
       {/* Base Rates - Couples */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-stone-100">Couples Rates (1-2 guests)</h2>
+          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
+            Couples Rates (1-2 guests)
+            <CostingHelpPopover topic="per_person" />
+          </h2>
           <p className="text-sm text-stone-400">Per-person pricing for intimate dinners</p>
         </CardHeader>
         <CardContent className="p-6 grid gap-4 sm:grid-cols-3">
@@ -199,7 +203,10 @@ export function PricingConfigForm({ initialConfig }: { initialConfig: PricingCon
       {/* Base Rates - Groups */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-stone-100">Group Rates (3+ guests)</h2>
+          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
+            Group Rates (3+ guests)
+            <CostingHelpPopover topic="food_cost_pct" />
+          </h2>
           <p className="text-sm text-stone-400">Per-person pricing for group dinners</p>
         </CardHeader>
         <CardContent className="p-6 grid gap-4 sm:grid-cols-3">
@@ -326,7 +333,10 @@ export function PricingConfigForm({ initialConfig }: { initialConfig: PricingCon
       {/* Mileage */}
       <Card>
         <CardHeader>
-          <h2 className="text-lg font-semibold text-stone-100">Travel</h2>
+          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
+            Travel
+            <CostingHelpPopover topic="cost_plus" />
+          </h2>
           <p className="text-sm text-stone-400">Mileage rate for travel fee calculations</p>
         </CardHeader>
         <CardContent className="p-6 grid gap-4 sm:grid-cols-2">

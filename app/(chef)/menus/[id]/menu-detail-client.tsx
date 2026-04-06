@@ -29,6 +29,8 @@ import {
 import { useUndoStack } from '@/lib/undo/use-undo-stack'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
+import { CostingWarningList } from '@/components/costing/costing-warning-detail'
+import { generateMenuWarnings } from '@/lib/costing/generate-warnings'
 import type { ConfirmPolicyInput } from '@/lib/confirm/confirm-policy'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import { format } from 'date-fns'
@@ -617,6 +619,19 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, cos
           </CardContent>
         </Card>
       </div>
+
+      {/* Menu cost warnings */}
+      {costSummary && (
+        <CostingWarningList
+          warnings={generateMenuWarnings({
+            totalRecipeCostCents: costSummary.total_recipe_cost_cents,
+            costPerGuestCents: costSummary.cost_per_guest_cents,
+            foodCostPercentage: costSummary.food_cost_percentage,
+            totalComponentCount: costSummary.total_component_count,
+            hasAllRecipeCosts: costSummary.has_all_recipe_costs,
+          })}
+        />
+      )}
 
       {/* What-If Simulator Panel */}
       {showSimulator && simulatorDishes.length >= 2 && (

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { getMarginRating } from '@/lib/finance/plate-cost-calculator'
 import type { EventPlateCostRow, PlateCostSummary } from '@/lib/finance/plate-cost-actions'
+import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
 
 type SortField = 'date' | 'margin' | 'cost' | 'revenue' | 'guests'
 type SortDir = 'asc' | 'desc'
@@ -98,7 +99,10 @@ export function PlateCostTable({ summary }: PlateCostTableProps) {
           >
             {summary.avgMarginPercent.toFixed(1)}%
           </p>
-          <p className="text-xs text-stone-500 mt-1">Avg Margin</p>
+          <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
+            Avg Margin
+            <CostingHelpPopover topic="contribution_margin" />
+          </p>
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-100">{summary.totalEvents}</p>
@@ -187,9 +191,7 @@ export function PlateCostTable({ summary }: PlateCostTableProps) {
                     <tr
                       key={row.eventId}
                       className="border-b border-stone-800 hover:bg-stone-800/50 cursor-pointer"
-                      onClick={() =>
-                        setExpandedEvent(isExpanded ? null : row.eventId)
-                      }
+                      onClick={() => setExpandedEvent(isExpanded ? null : row.eventId)}
                     >
                       <td className="px-4 py-3">
                         <div>

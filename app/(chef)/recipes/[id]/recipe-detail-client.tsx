@@ -38,6 +38,8 @@ import {
 import type { ProductionLogEntry } from '@/lib/recipes/production-log-actions'
 import { format, isPast, isBefore, addDays } from 'date-fns'
 import { CostingHelpPopover } from '@/components/costing/costing-help-popover'
+import { CostingWarningList } from '@/components/costing/costing-warning-detail'
+import { generateRecipeWarnings } from '@/lib/costing/generate-warnings'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
   sauce: 'warning',
@@ -897,39 +899,22 @@ export function RecipeDetailClient({ recipe }: Props) {
                 </dd>
               </div>
             </div>
-            {/* Cost issue breakdown */}
-            {recipe.costIssues &&
-              (recipe.costIssues.missingPrices > 0 ||
-                recipe.costIssues.unitMismatches > 0 ||
-                recipe.costIssues.stalePrices > 0) && (
-                <div className="mt-3 pt-3 border-t border-stone-800 space-y-1">
-                  {recipe.costIssues.missingPrices > 0 && (
-                    <p className="text-sm text-stone-500 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-stone-600 flex-shrink-0" />
-                      {recipe.costIssues.missingPrices} ingredient
-                      {recipe.costIssues.missingPrices > 1 ? 's' : ''} missing price data
-                    </p>
-                  )}
-                  {recipe.costIssues.unitMismatches > 0 && (
-                    <p className="text-sm text-amber-500 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0" />
-                      {recipe.costIssues.unitMismatches} ingredient
-                      {recipe.costIssues.unitMismatches > 1 ? 's' : ''} with unit mismatch (cost
-                      approximate)
-                    </p>
-                  )}
-                  {recipe.costIssues.stalePrices > 0 && (
-                    <p className="text-sm text-amber-400 flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
-                      {recipe.costIssues.stalePrices} ingredient
-                      {recipe.costIssues.stalePrices > 1 ? 's' : ''} with stale pricing (90+ days)
-                    </p>
-                  )}
-                  <p className="text-xs text-stone-600 mt-1">
-                    Upload receipts to automatically update ingredient prices.
-                  </p>
-                </div>
-              )}
+            {/* Cost warnings */}
+            {recipe.costIssues && (
+              <div className="mt-3 pt-3 border-t border-stone-800">
+                <CostingWarningList
+                  warnings={generateRecipeWarnings({
+                    totalCostCents: recipe.costSummary.totalCostCents ?? null,
+                    costPerPortionCents: recipe.costSummary.costPerPortionCents ?? null,
+                    ingredientCount: recipe.costSummary.ingredientCount ?? 0,
+                    hasAllPrices: recipe.costSummary.hasAllPrices ?? false,
+                    missingPrices: recipe.costIssues.missingPrices,
+                    unitMismatches: recipe.costIssues.unitMismatches,
+                    stalePrices: recipe.costIssues.stalePrices,
+                  })}
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
