@@ -1,8 +1,8 @@
-# Session Digest: Mobile App + PWA Activation Spec
+# Session Digest: Mobile App + PWA Activation (Full Build)
 
-**Date:** 2026-04-06 ~20:00 EST
-**Agent type:** Planner
-**Duration:** ~60 minutes
+**Date:** 2026-04-06 ~18:00-21:00 EST
+**Agent type:** Planner + Builder
+**Duration:** ~3 hours
 
 ## What Was Discussed
 
@@ -15,9 +15,19 @@
 ## What Changed
 
 - **Created:** `docs/specs/cloud-mobile-unified-migration.md` - 4-phase plan (PWA activation, Tauri desktop, Android, iOS). 100% self-hosted. $0 cost
-- **Updated:** `docs/product-blueprint.md` - mobile native app moved from V2 to P0, infrastructure checklist updated
+- **Created:** `src-tauri/` - full Tauri project with desktop + mobile support (resurrected from worktree, refactored)
+- **Created:** `src-tauri/src/lib.rs` - shared entry point with `#[cfg(desktop)]`/`#[cfg(mobile)]` conditional compilation
+- **Created:** `src-tauri/capabilities/mobile.json` - Android/iOS permissions (no desktop-only autostart)
+- **Created:** `builds/ChefFlow-0.1.0-arm64.apk` - signed Android APK (6.5 MB)
+- **Created:** `builds/ChefFlow_0.1.0_x64-setup.exe` - Windows desktop installer (1.4 MB)
+- **Modified:** `package.json` - added `"tauri"` script (required by Gradle)
+- **Modified:** `.gitignore` - removed `/src-tauri/` from legacy exclusions, added `builds/`
+- **Modified:** `.env.local` - added VAPID keys for push notifications
+- **Updated:** `docs/product-blueprint.md` - mobile moved from V2 to P0, phases 1-3 marked complete
 - **Updated:** `project-map/chefflow.md` - added mobile activation section
 - **Created:** `memory/project_cloud_mobile_migration.md` and `memory/feedback_no_cloud_services.md`
+- **Installed:** Android SDK (cmdline-tools, platform 34, build-tools 34, NDK 27) at `~/Android/Sdk`
+- **Installed:** Rust Android targets (aarch64, armv7, i686, x86_64)
 
 ## Decisions Made
 
@@ -32,12 +42,21 @@
 
 The backend was never the problem. The Cloudflare Tunnel already exposes everything globally. The gap was only the installable shell (PWA + Tauri). Initial analysis overcomplicated this by proposing cloud migrations that were unnecessary and unwanted.
 
+## Build Artifacts
+
+| Artifact                 | Location                                                           | Size       |
+| ------------------------ | ------------------------------------------------------------------ | ---------- |
+| Android APK (signed)     | `builds/ChefFlow-0.1.0-arm64.apk`                                  | 6.5 MB     |
+| Windows installer (NSIS) | `builds/ChefFlow_0.1.0_x64-setup.exe`                              | 1.4 MB     |
+| Windows installer (MSI)  | `src-tauri/target/release/bundle/msi/ChefFlow_0.1.0_x64_en-US.msi` | in target/ |
+| Debug keystore           | `.auth/chefflow-debug.keystore`                                    | gitignored |
+
 ## Unresolved
 
-1. **When to start Phase 1 (PWA verification)** - spec is ready, zero code changes needed
-2. **iOS timeline** - blocked on Mac hardware purchase
-3. **Mac mini timeline** - developer mentioned it as a plan, no date set
+1. **iOS build** - blocked on macOS hardware (developer plans Mac mini purchase, no date)
+2. **Prod server restart** - VAPID keys in `.env.local` need server restart to take effect for push notifications
+3. **Physical phone test** - APK exists but hasn't been installed on an actual Android device yet
 
 ## For Next Agent
 
-The spec at `docs/specs/cloud-mobile-unified-migration.md` is the source of truth. **Do not suggest cloud services.** Everything is self-hosted. The backend doesn't change. PWA activation is Phase 1 (zero code changes). Tauri resurrection is Phase 2 (copy from worktree). Build state unchanged.
+Phases 1-3 are **done**. Spec at `docs/specs/cloud-mobile-unified-migration.md`. Commit `f2f4e77dd`. **Do not suggest cloud services.** Everything is self-hosted. The APK at `builds/ChefFlow-0.1.0-arm64.apk` is ready to sideload on Android. The PWA is live at `app.cheflowhq.com`. Phase 4 (iOS) is the only remaining work, blocked on Mac hardware.

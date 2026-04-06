@@ -1,6 +1,6 @@
 # Spec: Mobile App + PWA Activation
 
-> **Status:** draft
+> **Status:** built (phases 1-3 complete, phase 4 blocked on macOS hardware)
 > **Priority:** P0 (blocking)
 > **Depends on:** none
 > **Estimated complexity:** medium (3-8 files)

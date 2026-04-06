@@ -292,4 +292,6 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: (pending push)
 - Build state on arrival: tsc green (9eb86ef0c), build green (699fb96b7)
 - Build state on departure: unchanged (no code changes, spec-only session)
-- Notes: Full infrastructure audit across 5 layers. Key finding: backend already globally reachable via Cloudflare Tunnel. Gap is installable shell only. Wrote 4-phase spec (self-hosted, $0 cost). Phase 1 (PWA) fully verified: manifest valid, service worker production-grade, all icons serving, all meta tags present, offline page works, VAPID keys generated and configured in .env.local. PWA is installable NOW at app.cheflowhq.com on any phone. Phase 2 (Tauri desktop) is next: copy src-tauri from worktree, fix platform detection, build.
+- Commits: f2f4e77dd
+- Build state on departure: tsc unchanged (no TS changes), Tauri desktop green, Android APK green
+- Notes: Full infrastructure audit. Wrote 4-phase spec (self-hosted, $0). Phase 1: PWA verified (all assets serving, VAPID keys generated). Phase 2: Tauri desktop resurrected from worktree, refactored to lib.rs with cfg(desktop)/cfg(mobile) split, Windows installer built. Phase 3: Android SDK installed, APK built and signed (6.5MB). Phase 4 (iOS) blocked on Mac hardware. All pushed to GitHub.

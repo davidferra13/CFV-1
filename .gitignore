@@ -252,3 +252,4 @@ tests/screenshots/
 qa-screenshots/
 .qa-screenshots/
 tmp-screenshots/
+builds/
