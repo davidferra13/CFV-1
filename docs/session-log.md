@@ -260,3 +260,14 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on arrival: tsc green (116881744)
 - Build state on departure: tsc green (52446f740)
 - Notes: Deep exploration revealed 86 files doing costing calculations without using the knowledge layer. Built archetype-to-operator bridge (no migration, uses existing chef_preferences.archetype). Wired CostingHelpPopover into recipe detail, menu detail, recipe costing, menu costing dashboards. Replaced hardcoded 30/35% thresholds in food cost dashboard and menu engineering with operator-specific targets. Added costingContext to Remy (operator type, targets, Q-factor, recosting frequency). Updated User Manual and implementation doc.
+
+## 2026-04-06 ~00:30 EST
+
+- Agent: General (Claude Opus 4.6)
+- Task: Deeper food costing knowledge integration (warnings, popovers, finance pages)
+- Status: completed
+- Files touched: lib/costing/generate-warnings.ts (new), app/(chef)/recipes/[id]/recipe-detail-client.tsx, app/(chef)/menus/[id]/menu-detail-client.tsx, components/settings/pricing-config-form.tsx, app/(chef)/finance/plate-costs/page.tsx, components/finance/plate-cost-table.tsx
+- Commits: 5519ba6c4
+- Build state on arrival: tsc green (52446f740)
+- Build state on departure: tsc green (5519ba6c4)
+- Notes: Created warning generator utility (pure function, recipe/menu data in, CostingWarning[] out). Replaced manual cost issue bullets in recipe detail with expandable CostingWarningList. Added menu cost warnings (food cost above target, incomplete coverage). Added CostingHelpPopover to pricing settings (3 sections), plate costs page title, and plate cost table margin KPI. Total costing knowledge integration: 16 surfaces wired.

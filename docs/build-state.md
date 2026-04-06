@@ -14,11 +14,11 @@ Last known state of the app. Updated after every successful type check and build
 
 | Check                                  | Status | Last Verified | Commit    | Agent           |
 | -------------------------------------- | ------ | ------------- | --------- | --------------- |
-| `npx tsc --noEmit --skipLibCheck`      | green  | 2026-04-05    | 52446f740 | Claude Opus 4.6 |
+| `npx tsc --noEmit --skipLibCheck`      | green  | 2026-04-06    | 5519ba6c4 | Claude Opus 4.6 |
 | `npx next build --no-lint` (16GB heap) | green  | 2026-04-05    | 699fb96b7 | Claude Opus 4.6 |
 
-**Last green build:** 699fb96b7 (2026-04-05) - Golden standard public pages audit. TSC green on 52446f740 (food costing knowledge wired into 10 surfaces).
-**Last commit on main:** 52446f740
+**Last green build:** 699fb96b7 (2026-04-05) - Golden standard public pages audit. TSC green on 5519ba6c4 (food costing warnings + deeper integration).
+**Last commit on main:** 5519ba6c4
 
 **Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. OOM fix: build requires `NODE_OPTIONS="--max-old-space-size=16384"` (8GB heap now insufficient; 16GB needed as codebase grew).
 
