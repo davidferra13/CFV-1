@@ -410,6 +410,27 @@ export function RecipeDetailClient({ recipe }: Props) {
         />
       )}
 
+      {/* Post-save guidance: show when recipe is not yet on any menu or event */}
+      {recipe.eventHistory.length === 0 && (
+        <div className="rounded-lg border border-stone-700 bg-stone-900/50 px-4 py-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+          <span className="text-stone-400">Next steps:</span>
+          <Link href="/culinary/menus" className="text-brand-400 hover:text-brand-300">
+            Add to a menu →
+          </Link>
+          <Link href="/recipes/new" className="text-brand-400 hover:text-brand-300">
+            Create another recipe →
+          </Link>
+          {recipe.ingredients.length === 0 && (
+            <Link
+              href={`/recipes/${recipe.id}/edit`}
+              className="text-amber-400 hover:text-amber-300"
+            >
+              Add ingredients for costing →
+            </Link>
+          )}
+        </div>
+      )}
+
       {/* Ingredients */}
       <Card>
         <CardHeader>
@@ -851,73 +872,89 @@ export function RecipeDetailClient({ recipe }: Props) {
         </CardContent>
       </Card>
 
-      {/* Cost Summary */}
-      {recipe.costSummary && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Cost Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {recipe.costSummary.totalCostCents != null && (
+      {/* Cost Summary - always visible so chefs see pricing status */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Cost Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {recipe.costSummary ? (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {recipe.costSummary.totalCostCents != null && (
+                  <div>
+                    <dt className="text-sm font-medium text-stone-500 flex items-center gap-1">
+                      Total Cost
+                      <CostingHelpPopover topic="food_cost_pct" />
+                    </dt>
+                    <dd className="text-2xl font-bold text-stone-100 mt-1">
+                      ${(recipe.costSummary.totalCostCents / 100).toFixed(2)}
+                    </dd>
+                  </div>
+                )}
+                {recipe.costSummary.costPerPortionCents != null && (
+                  <div>
+                    <dt className="text-sm font-medium text-stone-500 flex items-center gap-1">
+                      Cost per Portion
+                      <CostingHelpPopover topic="per_person" />
+                    </dt>
+                    <dd className="text-2xl font-bold text-stone-100 mt-1">
+                      ${(recipe.costSummary.costPerPortionCents / 100).toFixed(2)}
+                    </dd>
+                  </div>
+                )}
                 <div>
-                  <dt className="text-sm font-medium text-stone-500 flex items-center gap-1">
-                    Total Cost
-                    <CostingHelpPopover topic="food_cost_pct" />
-                  </dt>
-                  <dd className="text-2xl font-bold text-stone-100 mt-1">
-                    ${(recipe.costSummary.totalCostCents / 100).toFixed(2)}
+                  <dt className="text-sm font-medium text-stone-500">Price Data</dt>
+                  <dd className="mt-1">
+                    {recipe.costSummary.hasAllPrices &&
+                    (!recipe.costIssues ||
+                      (recipe.costIssues.unitMismatches === 0 &&
+                        recipe.costIssues.stalePrices === 0)) ? (
+                      <Badge variant="success">Verified</Badge>
+                    ) : recipe.costIssues?.missingPrices === recipe.costSummary.ingredientCount ? (
+                      <Badge variant="default">No Data</Badge>
+                    ) : (
+                      <Badge variant="warning">
+                        {recipe.costIssues?.unitMismatches ? 'Approximate' : 'Partial'}
+                      </Badge>
+                    )}
                   </dd>
                 </div>
-              )}
-              {recipe.costSummary.costPerPortionCents != null && (
-                <div>
-                  <dt className="text-sm font-medium text-stone-500 flex items-center gap-1">
-                    Cost per Portion
-                    <CostingHelpPopover topic="per_person" />
-                  </dt>
-                  <dd className="text-2xl font-bold text-stone-100 mt-1">
-                    ${(recipe.costSummary.costPerPortionCents / 100).toFixed(2)}
-                  </dd>
-                </div>
-              )}
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Price Data</dt>
-                <dd className="mt-1">
-                  {recipe.costSummary.hasAllPrices &&
-                  (!recipe.costIssues ||
-                    (recipe.costIssues.unitMismatches === 0 &&
-                      recipe.costIssues.stalePrices === 0)) ? (
-                    <Badge variant="success">Verified</Badge>
-                  ) : recipe.costIssues?.missingPrices === recipe.costSummary.ingredientCount ? (
-                    <Badge variant="default">No Data</Badge>
-                  ) : (
-                    <Badge variant="warning">
-                      {recipe.costIssues?.unitMismatches ? 'Approximate' : 'Partial'}
-                    </Badge>
-                  )}
-                </dd>
               </div>
+              {/* Cost warnings */}
+              {recipe.costIssues && (
+                <div className="mt-3 pt-3 border-t border-stone-800">
+                  <CostingWarningList
+                    warnings={generateRecipeWarnings({
+                      totalCostCents: recipe.costSummary.totalCostCents ?? null,
+                      costPerPortionCents: recipe.costSummary.costPerPortionCents ?? null,
+                      ingredientCount: recipe.costSummary.ingredientCount ?? 0,
+                      hasAllPrices: recipe.costSummary.hasAllPrices ?? false,
+                      missingPrices: recipe.costIssues.missingPrices,
+                      unitMismatches: recipe.costIssues.unitMismatches,
+                      stalePrices: recipe.costIssues.stalePrices,
+                    })}
+                  />
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-stone-500 text-sm">
+                {recipe.ingredients.length === 0
+                  ? 'Add ingredients to see cost breakdown.'
+                  : 'No pricing data available yet. Costs will appear as ingredient prices are matched.'}
+              </p>
+              <Link
+                href="/recipes/ingredients"
+                className="text-sm text-brand-400 hover:text-brand-300 mt-2 inline-block"
+              >
+                View Ingredient Library
+              </Link>
             </div>
-            {/* Cost warnings */}
-            {recipe.costIssues && (
-              <div className="mt-3 pt-3 border-t border-stone-800">
-                <CostingWarningList
-                  warnings={generateRecipeWarnings({
-                    totalCostCents: recipe.costSummary.totalCostCents ?? null,
-                    costPerPortionCents: recipe.costSummary.costPerPortionCents ?? null,
-                    ingredientCount: recipe.costSummary.ingredientCount ?? 0,
-                    hasAllPrices: recipe.costSummary.hasAllPrices ?? false,
-                    missingPrices: recipe.costIssues.missingPrices,
-                    unitMismatches: recipe.costIssues.unitMismatches,
-                    stalePrices: recipe.costIssues.stalePrices,
-                  })}
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
       {/* Event History */}
       {recipe.eventHistory.length > 0 && (

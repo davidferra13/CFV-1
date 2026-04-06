@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -9,7 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
-import { createRecipeWithIngredients, linkRecipeToComponent } from '@/lib/recipes/actions'
+import {
+  createRecipeWithIngredients,
+  linkRecipeToComponent,
+  checkIngredientPrices,
+} from '@/lib/recipes/actions'
+import type { IngredientPriceHint } from '@/lib/recipes/actions'
 import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { parseRecipeFromText } from '@/lib/ai/parse-recipe'
 import type { ParsedRecipe, ParsedIngredient } from '@/lib/ai/parse-recipe'
@@ -104,6 +109,31 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
       is_optional: false,
     },
   ])
+
+  // ---- Ingredient price hints (debounced batch check) ----
+  const [priceHints, setPriceHints] = useState<Map<string, boolean>>(new Map())
+  const priceCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (priceCheckTimer.current) clearTimeout(priceCheckTimer.current)
+    const names = ingredients.map((i) => i.name.trim()).filter(Boolean)
+    if (names.length === 0) return
+
+    priceCheckTimer.current = setTimeout(async () => {
+      try {
+        const hints = await checkIngredientPrices(names)
+        const map = new Map<string, boolean>()
+        for (const h of hints) map.set(h.name, h.hasPrice)
+        setPriceHints(map)
+      } catch {
+        // Non-blocking: price hints are a convenience, not critical
+      }
+    }, 800)
+
+    return () => {
+      if (priceCheckTimer.current) clearTimeout(priceCheckTimer.current)
+    }
+  }, [ingredients])
 
   // ---- Form protection (draft persistence + unsaved changes guard) ----
   const defaultData = useMemo(
@@ -897,12 +927,28 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                         {index === 0 && (
                           <label className="block text-xs text-stone-500 mb-1">Name</label>
                         )}
-                        <Input
-                          type="text"
-                          value={ing.name}
-                          onChange={(e) => updateIngredientRow(index, 'name', e.target.value)}
-                          placeholder="Ingredient name"
-                        />
+                        <div className="relative">
+                          <Input
+                            type="text"
+                            value={ing.name}
+                            onChange={(e) => updateIngredientRow(index, 'name', e.target.value)}
+                            placeholder="Ingredient name"
+                          />
+                          {ing.name.trim() && priceHints.has(ing.name.trim().toLowerCase()) && (
+                            <span
+                              className={`absolute right-2 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full ${
+                                priceHints.get(ing.name.trim().toLowerCase())
+                                  ? 'bg-emerald-500'
+                                  : 'bg-stone-600'
+                              }`}
+                              title={
+                                priceHints.get(ing.name.trim().toLowerCase())
+                                  ? 'Price data available'
+                                  : 'No price data yet'
+                              }
+                            />
+                          )}
+                        </div>
                       </div>
                       <div className="w-20">
                         {index === 0 && (

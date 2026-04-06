@@ -56,6 +56,12 @@ export function RecipeUsagePanel({ recipeId }: RecipeUsagePanelProps) {
         </CardHeader>
         <CardContent>
           <p className="text-stone-500 text-sm">This recipe is not used in any menus yet.</p>
+          <Link
+            href="/culinary/menus"
+            className="inline-block mt-2 text-sm text-brand-400 hover:text-brand-300"
+          >
+            Add to a menu →
+          </Link>
         </CardContent>
       </Card>
     )

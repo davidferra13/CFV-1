@@ -14,11 +14,11 @@ Last known state of the app. Updated after every successful type check and build
 
 | Check                                  | Status | Last Verified | Commit    | Agent           |
 | -------------------------------------- | ------ | ------------- | --------- | --------------- |
-| `npx tsc --noEmit --skipLibCheck`      | green  | 2026-04-06    | 9eb86ef0c | Claude Opus 4.6 |
-| `npx next build --no-lint` (16GB heap) | green  | 2026-04-05    | 699fb96b7 | Claude Opus 4.6 |
+| `npx tsc --noEmit --skipLibCheck`      | green  | 2026-04-06    | eae737a8c | Claude Opus 4.6 |
+| `npx next build --no-lint` (16GB heap) | green  | 2026-04-06    | eae737a8c | Claude Opus 4.6 |
 
-**Last green build:** 699fb96b7 (2026-04-05) - Golden standard public pages audit. TSC green on 9eb86ef0c (full food costing pipeline wiring + ingredient auto-matching).
-**Last commit on main:** 5519ba6c4
+**Last green build:** eae737a8c (2026-04-06) - Full catch-up build. 27 commits verified: android widgets (8), quick notes, ingredient normalization, food costing trust provenance, mobile/Tauri/PWA, zero hallucination fixes, ingredient auto-matching.
+**Last commit on main:** eae737a8c
 
 **Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. OOM fix: build requires `NODE_OPTIONS="--max-old-space-size=16384"` (8GB heap now insufficient; 16GB needed as codebase grew).
 
@@ -40,6 +40,7 @@ _Newest first. Keep the last 10 entries._
 
 | Date       | tsc    | build | Commit                         | Agent           | Notes                                                                                                                                                                                                                                                                                                                                                                                      |
 | ---------- | ------ | ----- | ------------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-04-06 | green  | green | eae737a8c                      | Claude Opus 4.6 | Full catch-up build: 27 commits verified. Android widgets (8), quick notes, ingredient normalization, food costing trust provenance, mobile/Tauri/PWA, zero hallucination fixes, ingredient auto-matching, public page rewrites.                                                                                                                                                           |
 | 2026-04-05 | green  | green | 699fb96b7                      | Claude Opus 4.6 | Golden standard public pages audit: legal accuracy (MA governing law, Resend privacy), dark theme (contact form), security (webhook fail-closed, sentinel stripped), vetted->reviewed (7 pages), dynamic chef count, better 404 nav.                                                                                                                                                       |
 | 2026-04-05 | green  | green | 2d7a17773                      | Claude Opus 4.6 | Dark theme remediation across 7 admin pages, Zero Hallucination fixes (silent zeros -> error states), visual polish (sparklines, animated counters, status glow).                                                                                                                                                                                                                          |
 | 2026-04-05 | green  | green | 6633c8266                      | Claude Opus 4.6 | OpenClaw visibility gap closure: admin health dashboard, analytics integration, isFounder gate fix. Playwright-verified both pages.                                                                                                                                                                                                                                                        |

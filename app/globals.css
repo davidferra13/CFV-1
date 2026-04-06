@@ -1559,6 +1559,15 @@ select:focus {
   border-left: 3px solid rgb(var(--brand-500)) !important;
 }
 
+/* ── Hide scrollbar (for horizontal pill rows) ── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* ── Smooth scrollbar fade on sections ── */
 .scrollbar-fade::-webkit-scrollbar-thumb {
   background: rgb(var(--stone-700) / 0);

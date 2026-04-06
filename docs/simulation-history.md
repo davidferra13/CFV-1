@@ -170,3 +170,18 @@ Failing: none - all modules passed
 
 Passing: allergen_risk, correspondence, menu_suggestions, quote_draft
 Failing: inquiry_parse (0%), client_parse (0%)
+
+## 2026-04-06 03:27 UTC - 50% pass rate - Run 8aaad6ae
+
+Passing: inquiry_parse, correspondence, quote_draft
+Failing: client_parse (0%), allergen_risk (0%), menu_suggestions (0%)
+
+## 2026-04-06 03:46 UTC - 50% pass rate - Run 19f1da35
+
+Passing: inquiry_parse, correspondence, quote_draft
+Failing: client_parse (0%), allergen_risk (0%), menu_suggestions (0%)
+
+## 2026-04-06 04:21 UTC - 50% pass rate - Run 624bfd14
+
+Passing: inquiry_parse, correspondence, quote_draft
+Failing: client_parse (0%), allergen_risk (0%), menu_suggestions (0%)

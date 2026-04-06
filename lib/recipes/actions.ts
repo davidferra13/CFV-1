@@ -2425,3 +2425,48 @@ export async function createRecipeWithIngredients(
     missingPriceIngredientIds: missingPriceIds,
   }
 }
+
+// ============================================
+// BATCH INGREDIENT PRICE CHECK
+// Lightweight: given a list of ingredient names, return which have pricing data.
+// Used by the recipe create form for inline price hints.
+// ============================================
+
+export type IngredientPriceHint = {
+  name: string
+  hasPrice: boolean
+}
+
+export async function checkIngredientPrices(names: string[]): Promise<IngredientPriceHint[]> {
+  const user = await requireChef()
+  if (names.length === 0) return []
+
+  const db: any = createServerClient()
+  const cleanNames = names
+    .map((n) => n.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 50) // cap at 50 to prevent abuse
+
+  if (cleanNames.length === 0) return []
+
+  // Look up existing ingredients by name (case-insensitive)
+  const { data: ingredients } = await db
+    .from('ingredients')
+    .select('name, last_price_cents, cost_per_unit_cents, average_price_cents')
+    .eq('tenant_id', user.tenantId!)
+    .in('name', cleanNames)
+
+  const priceMap = new Map<string, boolean>()
+  for (const ing of ingredients || []) {
+    const hasPrice =
+      (ing.last_price_cents != null && ing.last_price_cents > 0) ||
+      (ing.cost_per_unit_cents != null && ing.cost_per_unit_cents > 0) ||
+      (ing.average_price_cents != null && ing.average_price_cents > 0)
+    priceMap.set(ing.name.toLowerCase(), hasPrice)
+  }
+
+  return cleanNames.map((n) => ({
+    name: n,
+    hasPrice: priceMap.get(n) ?? false,
+  }))
+}
