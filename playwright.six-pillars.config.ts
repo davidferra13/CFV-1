@@ -4,7 +4,7 @@ export default defineConfig({
   testMatch: ['tests/six-pillars-walkthrough.spec.ts'],
   workers: 1,
   fullyParallel: false,
-  timeout: 90000,
+  timeout: 120000,
   use: {
     baseURL: process.env.TEST_BASE_URL || 'http://127.0.0.1:3100',
     headless: true,

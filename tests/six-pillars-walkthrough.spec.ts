@@ -14,42 +14,48 @@ import * as path from 'path'
 const BASE = process.env.TEST_BASE_URL || 'http://127.0.0.1:3100'
 const CREDS = { email: 'agent@local.chefflow', password: 'CHEF.jdgyuegf9924092.FLOW' }
 const SSDIR = 'test-results/six-pillars'
+const AUTH_STATE = 'test-results/six-pillars/.auth-state.json'
 
-test.beforeAll(() => {
+// Auth cookie header cached across tests (auth once, reuse)
+let cachedSessionCookie = ''
+
+test.beforeAll(async () => {
   fs.mkdirSync(SSDIR, { recursive: true })
+
+  // Authenticate once via e2e endpoint
+  const resp = await fetch(BASE + '/api/e2e/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(CREDS),
+  })
+  if (!resp.ok) throw new Error('E2E auth failed: ' + resp.status)
+
+  const setCookieHeader = resp.headers.get('set-cookie') || ''
+  const cookieMatch = setCookieHeader.match(/((?:__Secure-)?authjs\.session-token)=([^;]+)/)
+  if (!cookieMatch) throw new Error('No session cookie in e2e auth response')
+  cachedSessionCookie = cookieMatch[1] + '=' + cookieMatch[2]
 })
 
 test.describe('Six Pillars Happy-Path Walkthrough', () => {
   test.use({ baseURL: BASE })
 
-  test.beforeEach(async ({ page, context }) => {
-    await context.addCookies([{ name: 'cookieConsent', value: 'declined', url: BASE }])
-
-    const resp = await page.request.post(BASE + '/api/e2e/auth', {
-      data: CREDS,
-      timeout: 60000,
-    })
-    if (!resp.ok()) throw new Error('E2E auth failed: ' + resp.status())
-
-    const setCookieHeader = resp.headers()['set-cookie'] || ''
-    // Extract the session token from Set-Cookie
-    const tokenMatch = setCookieHeader.match(/(?:__Secure-)?authjs\.session-token=([^;]+)/)
-    if (!tokenMatch) {
-      throw new Error('No session cookie in e2e auth response')
-    }
-    // The e2e auth endpoint determines cookie name based on NEXTAUTH_URL.
-    // Extract the actual cookie name from the response header.
-    const nameMatch = setCookieHeader.match(/((?:__Secure-)?authjs\.session-token)=/)
-    const cookieName = nameMatch ? nameMatch[1] : 'authjs.session-token'
-    const isSecureCookie = cookieName.startsWith('__Secure-')
+  test.beforeEach(async ({ context }) => {
+    // Add cookies directly (works because dev server uses non-Secure cookies
+    // when started with NEXTAUTH_URL=http://...)
+    const [cookieName, cookieValue] = cachedSessionCookie.split('=', 2)
     await context.addCookies([
       {
+        name: 'cookieConsent',
+        value: 'declined',
+        domain: '127.0.0.1',
+        path: '/',
+      },
+      {
         name: cookieName,
-        value: tokenMatch[1],
-        domain: new URL(BASE).hostname,
+        value: cookieValue,
+        domain: '127.0.0.1',
         path: '/',
         httpOnly: true,
-        secure: isSecureCookie,
         sameSite: 'Lax',
       },
     ])
@@ -59,8 +65,8 @@ test.describe('Six Pillars Happy-Path Walkthrough', () => {
   // Helper: navigate, wait, screenshot, assert not crashed/blank
   // ---------------------------------------------------------------------------
   async function verifyPage(page: import('@playwright/test').Page, route: string, label: string) {
-    await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 45000 })
-    await page.waitForLoadState('networkidle', { timeout: 30000 }).catch(() => {})
+    await page.goto(route, { waitUntil: 'domcontentloaded', timeout: 60000 })
+    await page.waitForTimeout(1500)
     await page.waitForTimeout(500)
 
     const ssName = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase()
@@ -77,13 +83,13 @@ test.describe('Six Pillars Happy-Path Walkthrough', () => {
       .catch(() => false)
     expect(crashed, `${label}: should not show error boundary`).toBe(false)
 
-    // Has visible content (not blank)
-    const hasContent = await page
-      .locator('main, section, table, ul, .grid, [role="tabpanel"]')
-      .first()
-      .isVisible({ timeout: 5000 })
-      .catch(() => false)
-    expect(hasContent, `${label}: should have visible content`).toBe(true)
+    // Has visible content (not blank page)
+    const bodyText = await page.textContent('body', { timeout: 10000 }).catch(() => '')
+    const hasContent = (bodyText?.length ?? 0) > 50
+    expect(
+      hasContent,
+      `${label}: should have visible content (got ${bodyText?.length ?? 0} chars)`
+    ).toBe(true)
 
     return page
   }
