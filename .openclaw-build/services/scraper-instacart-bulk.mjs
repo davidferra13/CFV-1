@@ -26,8 +26,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const SESSION_PATH = join(__dirname, '..', 'data', 'instacart-session.json');
 const INSTACART_BASE = 'https://www.instacart.com';
 
-// All stores with Instacart slugs
-const STORES = [
+// ── NATIONWIDE STORE REGISTRY ──
+// Import from the central registry. Every major US chain, every region.
+import { NATIONWIDE_STORES, getFlatStoreList } from './nationwide-stores.mjs';
+
+// Legacy format for backward compatibility + new nationwide coverage
+const STORES_LEGACY = [
   { slug: 'market-basket', sourceId: 'market-basket-instacart', name: 'Market Basket', markupPct: 15, tier: 'retail' },
   { slug: 'hannaford', sourceId: 'hannaford-instacart', name: 'Hannaford', markupPct: 12, tier: 'retail' },
   { slug: 'aldi', sourceId: 'aldi-instacart', name: 'Aldi', markupPct: 18, tier: 'retail' },
@@ -37,6 +41,18 @@ const STORES = [
   { slug: 'bjs-wholesale-club', sourceId: 'bjs-instacart', name: "BJ's", markupPct: 18, tier: 'wholesale' },
   { slug: 'whole-foods', sourceId: 'wholefoods-instacart', name: 'Whole Foods', markupPct: 10, tier: 'retail' },
 ];
+
+// Build the full STORES array from the nationwide registry
+// Each region becomes its own "store" entry for scraping
+const STORES = getFlatStoreList().map(s => ({
+  slug: s.slug,
+  sourceId: s.sourceId,
+  name: s.name,
+  markupPct: s.markupPct,
+  tier: s.tier,
+  zip: s.zip,
+  state: s.state,
+}));
 
 // Broad search terms that return many products per search (~80 terms)
 const SEARCH_TERMS = [
@@ -78,10 +94,10 @@ function ensureSourcesExist(db) {
   `);
   for (const store of STORES) {
     stmt.run(
-      store.sourceId, `${store.name} (via Instacart)`, 'retail_chain', store.slug, 'MA',
+      store.sourceId, store.name, 'retail_chain', store.slug, store.state || 'MA',
       'instacart_api', `${INSTACART_BASE}/store/${store.slug}`, 1, store.tier, 'active',
       `${INSTACART_BASE}/store/${store.slug}`,
-      `Full catalog via Instacart API. ${store.markupPct}% markup adjustment applied.`
+      `Full catalog via Instacart API. ${store.markupPct}% markup adjustment applied. Zip: ${store.zip || 'default'}`
     );
   }
 }
@@ -114,8 +130,10 @@ function saveSession(session) {
 /**
  * Get Instacart session via Puppeteer.
  * Captures cookies AND intercepts a real GraphQL search request.
+ * @param {string} storeSlug - Instacart store slug
+ * @param {string} [zipCode='01835'] - Zip code for location (nationwide support)
  */
-async function getInstacartSession(storeSlug) {
+async function getInstacartSession(storeSlug, zipCode = '01835') {
   console.log('[session] Launching browser...');
   const browser = await launchBrowser();
   let graphqlTemplate = null;
@@ -160,7 +178,7 @@ async function getInstacartSession(storeSlug) {
     });
     await sleep(5000);
 
-    // Try to set location to 01835
+    // Set location to the target zip code (nationwide support)
     try {
       const locBtns = await page.$$('button');
       for (const btn of locBtns.slice(0, 10)) {
@@ -174,7 +192,7 @@ async function getInstacartSession(storeSlug) {
       const zipInput = await page.$('input[placeholder*="zip"], input[placeholder*="address"], input[name="address"]');
       if (zipInput) {
         await zipInput.click({ clickCount: 3 });
-        await zipInput.type('01835', { delay: 30 });
+        await zipInput.type(zipCode, { delay: 30 });
         await sleep(1000);
         await page.keyboard.press('Enter');
         await sleep(3000);
@@ -553,11 +571,15 @@ async function main() {
     console.log(`STORE: ${store.name} (${store.slug})`);
     console.log(`${'='.repeat(50)}`);
 
-    // Get or reuse session
+    // Get or reuse session (new session per zip code for nationwide coverage)
+    const storeZip = store.zip || '01835';
     let session = forceSession ? null : loadCachedSession();
+    // If cached session was for a different zip, get a fresh one
+    if (session && session.zip && session.zip !== storeZip) session = null;
     if (!session) {
       try {
-        session = await getInstacartSession(store.slug);
+        session = await getInstacartSession(store.slug, storeZip);
+        if (session) session.zip = storeZip;
       } catch (err) {
         console.error(`[session] Failed: ${err.message}`);
         console.log('[fallback] Trying Puppeteer category browse...');

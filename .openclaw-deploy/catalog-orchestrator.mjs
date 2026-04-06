@@ -28,14 +28,65 @@ import { readFileSync } from 'fs';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const WALKER_PATH = join(__dirname, 'instacart-catalog-walker.mjs');
 
-// Instacart slug -> our chain_slug mapping
+// Instacart slug -> our chain_slug mapping (nationwide)
 const CHAIN_MAP = {
+  // New England
   'market-basket': 'market_basket',
   'hannaford': 'hannaford',
   'shaws': 'shaws',
+  'stop-and-shop': 'stop_and_shop',
+  // National
   'aldi': 'aldi',
   'whole-foods': 'whole_foods',
-  'stop-and-shop': 'stop_and_shop',
+  'costco': 'costco',
+  'bjs-wholesale-club': 'bjs',
+  'sams-club': 'sams_club',
+  'walmart': 'walmart',
+  'target': 'target',
+  'kroger': 'kroger',
+  'lidl': 'lidl',
+  // Southeast
+  'harris-teeter': 'harris_teeter',
+  'ingles': 'ingles',
+  'lowes-foods': 'lowes_foods',
+  'food-lion': 'food_lion',
+  'publix': 'publix',
+  'piggly-wiggly': 'piggly_wiggly',
+  'winn-dixie': 'winn_dixie',
+  'earth-fare': 'earth_fare',
+  // Mid-Atlantic
+  'giant': 'giant_food',
+  'giant-eagle': 'giant_eagle',
+  'shoprite': 'shoprite',
+  'acme': 'acme',
+  'wegmans': 'wegmans',
+  'key-food': 'key_food',
+  // Midwest
+  'meijer': 'meijer',
+  'hy-vee': 'hy_vee',
+  'jewel-osco': 'jewel_osco',
+  'schnucks': 'schnucks',
+  'fresh-thyme': 'fresh_thyme',
+  // South / Southwest
+  'heb': 'heb',
+  'tom-thumb': 'tom_thumb',
+  'randalls': 'randalls',
+  'food-city': 'food_city',
+  // West
+  'safeway': 'safeway',
+  'albertsons': 'albertsons',
+  'vons': 'vons',
+  'ralphs': 'ralphs',
+  'fred-meyer': 'fred_meyer',
+  'qfc': 'qfc',
+  'sprouts': 'sprouts',
+  'winco': 'winco',
+  'stater-bros': 'stater_bros',
+  'smart-and-final': 'smart_and_final',
+  'grocery-outlet': 'grocery_outlet',
+  // Specialty
+  'hmart': 'hmart',
+  'restaurant-depot': 'restaurant_depot',
 };
 
 // Reverse: chain_slug -> instacart slug
@@ -43,9 +94,27 @@ const REVERSE_MAP = Object.fromEntries(
   Object.entries(CHAIN_MAP).map(([k, v]) => [v, k])
 );
 
-// Chains to crawl in priority order (most stores first)
+// Chains to crawl in priority order (highest-impact first)
 const CHAIN_PRIORITY = [
-  'market_basket', 'hannaford', 'shaws', 'whole_foods', 'aldi', 'stop_and_shop'
+  // National chains (cover the most chefs)
+  'kroger', 'walmart', 'aldi', 'whole_foods', 'publix', 'safeway', 'albertsons',
+  'costco', 'target', 'heb',
+  // Southeast (the gap that prompted this expansion)
+  'harris_teeter', 'food_lion', 'ingles', 'lowes_foods', 'winn_dixie', 'piggly_wiggly',
+  // Mid-Atlantic
+  'giant_food', 'shoprite', 'wegmans', 'acme', 'giant_eagle',
+  // Midwest
+  'meijer', 'hy_vee', 'jewel_osco', 'schnucks',
+  // West
+  'ralphs', 'vons', 'fred_meyer', 'sprouts', 'qfc',
+  // Wholesale
+  'restaurant_depot', 'bjs', 'sams_club',
+  // New England (already covered, lower priority)
+  'market_basket', 'hannaford', 'shaws', 'stop_and_shop',
+  // Specialty / regional
+  'hmart', 'lidl', 'earth_fare', 'fresh_thyme', 'food_city',
+  'key_food', 'tom_thumb', 'randalls', 'winco', 'stater_bros',
+  'smart_and_final', 'grocery_outlet',
 ];
 
 function parseArgs() {

@@ -14,12 +14,46 @@ import { httpFetch } from '../lib/scrape-utils.mjs';
 import { normalizeByRules, isFoodItem, loadCachedMappings, saveMapping } from '../lib/normalize-rules.mjs';
 import { normalizePrice } from '../lib/unit-normalization.mjs';
 
-const POSTAL_CODE = '01835'; // Haverhill, MA
+// ── NATIONWIDE ZIP CODES ──
+// Flipp serves different flyers based on zip. We scrape multiple regions.
+const FLIPP_ZIPS = [
+  // Northeast
+  { zip: '01835', label: 'Haverhill, MA' },
+  { zip: '10001', label: 'New York, NY' },
+  { zip: '19101', label: 'Philadelphia, PA' },
+  { zip: '06101', label: 'Hartford, CT' },
+  // Southeast
+  { zip: '29201', label: 'Columbia, SC' },
+  { zip: '28202', label: 'Charlotte, NC' },
+  { zip: '30301', label: 'Atlanta, GA' },
+  { zip: '33101', label: 'Miami, FL' },
+  { zip: '37201', label: 'Nashville, TN' },
+  // Midwest
+  { zip: '60601', label: 'Chicago, IL' },
+  { zip: '48201', label: 'Detroit, MI' },
+  { zip: '55401', label: 'Minneapolis, MN' },
+  { zip: '63101', label: 'St. Louis, MO' },
+  { zip: '45201', label: 'Cincinnati, OH' },
+  // South / Southwest
+  { zip: '75201', label: 'Dallas, TX' },
+  { zip: '77001', label: 'Houston, TX' },
+  { zip: '70112', label: 'New Orleans, LA' },
+  // West
+  { zip: '90001', label: 'Los Angeles, CA' },
+  { zip: '94102', label: 'San Francisco, CA' },
+  { zip: '98101', label: 'Seattle, WA' },
+  { zip: '80201', label: 'Denver, CO' },
+  { zip: '85001', label: 'Phoenix, AZ' },
+];
+
+// Use first zip as default for backward compat, but iterate all zips in main()
+const POSTAL_CODE = FLIPP_ZIPS[0].zip;
 const FLIPP_API_BASE = 'https://backflipp.wishabi.com/flipp';
 
-// ALL grocery/food merchants in our area
+// ALL grocery/food merchants - nationwide
+// Flipp merchantIds are the same nationwide; the zip code determines which flyers appear
 const FLIPP_STORES = [
-  // Primary grocery stores
+  // ── Major grocery chains ──
   { merchantId: 5814, sourceId: 'market-basket-flipp', name: 'Market Basket', chain: 'market-basket', tier: 'retail' },
   { merchantId: 3533, sourceId: 'demoulas-mb-flipp', name: 'Demoulas Market Basket', chain: 'market-basket', tier: 'retail' },
   { merchantId: 2454, sourceId: 'shaws-flipp', name: "Shaw's", chain: 'shaws', tier: 'retail' },
@@ -29,23 +63,57 @@ const FLIPP_STORES = [
   { merchantId: 2527, sourceId: 'wegmans-flipp', name: "Wegman's", chain: 'wegmans', tier: 'retail' },
   { merchantId: 3871, sourceId: 'mckinnons-flipp', name: "McKinnon's Supermarkets", chain: 'mckinnons', tier: 'retail' },
 
-  // Big box stores with groceries
+  // ── National / Southeast / South ──
+  { merchantId: 2551, sourceId: 'kroger-flipp', name: 'Kroger', chain: 'kroger', tier: 'retail' },
+  { merchantId: 2467, sourceId: 'publix-flipp', name: 'Publix', chain: 'publix', tier: 'retail' },
+  { merchantId: 2373, sourceId: 'food-lion-flipp', name: 'Food Lion', chain: 'food-lion', tier: 'retail' },
+  { merchantId: 2537, sourceId: 'harris-teeter-flipp', name: 'Harris Teeter', chain: 'harris-teeter', tier: 'retail' },
+  { merchantId: 2430, sourceId: 'winn-dixie-flipp', name: 'Winn-Dixie', chain: 'winn-dixie', tier: 'retail' },
+  { merchantId: 2542, sourceId: 'piggly-wiggly-flipp', name: 'Piggly Wiggly', chain: 'piggly-wiggly', tier: 'retail' },
+  { merchantId: 2388, sourceId: 'ingles-flipp', name: 'Ingles Markets', chain: 'ingles', tier: 'retail' },
+  { merchantId: 5765, sourceId: 'lowes-foods-flipp', name: "Lowe's Foods", chain: 'lowes-foods', tier: 'retail' },
+  { merchantId: 2515, sourceId: 'food-city-flipp', name: 'Food City', chain: 'food-city', tier: 'retail' },
+  { merchantId: 2480, sourceId: 'heb-flipp', name: 'H-E-B', chain: 'heb', tier: 'retail' },
+
+  // ── Mid-Atlantic ──
+  { merchantId: 2381, sourceId: 'giant-flipp', name: 'Giant Food', chain: 'giant', tier: 'retail' },
+  { merchantId: 2513, sourceId: 'giant-eagle-flipp', name: 'Giant Eagle', chain: 'giant-eagle', tier: 'retail' },
+  { merchantId: 2492, sourceId: 'shoprite-flipp', name: 'ShopRite', chain: 'shoprite', tier: 'retail' },
+  { merchantId: 2448, sourceId: 'acme-flipp', name: 'ACME Markets', chain: 'acme', tier: 'retail' },
+
+  // ── Midwest ──
+  { merchantId: 2547, sourceId: 'meijer-flipp', name: 'Meijer', chain: 'meijer', tier: 'retail' },
+  { merchantId: 2522, sourceId: 'hy-vee-flipp', name: 'Hy-Vee', chain: 'hy-vee', tier: 'retail' },
+  { merchantId: 2453, sourceId: 'jewel-osco-flipp', name: 'Jewel-Osco', chain: 'jewel-osco', tier: 'retail' },
+  { merchantId: 2501, sourceId: 'schnucks-flipp', name: 'Schnucks', chain: 'schnucks', tier: 'retail' },
+
+  // ── West ──
+  { merchantId: 2465, sourceId: 'safeway-flipp', name: 'Safeway', chain: 'safeway', tier: 'retail' },
+  { merchantId: 2449, sourceId: 'albertsons-flipp', name: 'Albertsons', chain: 'albertsons', tier: 'retail' },
+  { merchantId: 2464, sourceId: 'vons-flipp', name: 'Vons', chain: 'vons', tier: 'retail' },
+  { merchantId: 2551, sourceId: 'ralphs-flipp', name: 'Ralphs', chain: 'ralphs', tier: 'retail' },
+  { merchantId: 2476, sourceId: 'sprouts-flipp', name: 'Sprouts', chain: 'sprouts', tier: 'retail' },
+  { merchantId: 2521, sourceId: 'fred-meyer-flipp', name: 'Fred Meyer', chain: 'fred-meyer', tier: 'retail' },
+  { merchantId: 2530, sourceId: 'winco-flipp', name: 'WinCo Foods', chain: 'winco', tier: 'retail' },
+
+  // ── Big box stores with groceries ──
   { merchantId: 2175, sourceId: 'walmart-flipp', name: 'Walmart', chain: 'walmart', tier: 'retail' },
   { merchantId: 2040, sourceId: 'target-flipp', name: 'Target', chain: 'target', tier: 'retail' },
 
-  // Wholesale / club stores
+  // ── Wholesale / club stores ──
   { merchantId: 2519, sourceId: 'costco-flipp', name: 'Costco', chain: 'costco', tier: 'wholesale' },
   { merchantId: 3341, sourceId: 'sams-club-flipp', name: "Sam's Club", chain: 'sams-club', tier: 'wholesale' },
   { merchantId: 4440, sourceId: 'restaurant-depot-flipp', name: 'Restaurant Depot', chain: 'restaurant-depot', tier: 'wholesale' },
 
-  // Pharmacy/convenience with food
+  // ── Pharmacy/convenience with food ──
   { merchantId: 2264, sourceId: 'cvs-flipp', name: 'CVS Pharmacy', chain: 'cvs', tier: 'retail' },
   { merchantId: 2460, sourceId: 'walgreens-flipp', name: 'Walgreens', chain: 'walgreens', tier: 'retail' },
 
-  // Discount stores with food
+  // ── Discount stores with food ──
   { merchantId: 2150, sourceId: 'family-dollar-flipp', name: 'Family Dollar', chain: 'family-dollar', tier: 'retail' },
   { merchantId: 2063, sourceId: 'dollar-general-flipp', name: 'Dollar General', chain: 'dollar-general', tier: 'retail' },
   { merchantId: 3056, sourceId: 'ocean-state-flipp', name: 'Ocean State Job Lot', chain: 'ocean-state', tier: 'retail' },
+  { merchantId: 2135, sourceId: 'dollar-tree-flipp', name: 'Dollar Tree', chain: 'dollar-tree', tier: 'retail' },
 ];
 
 const STORE_BY_MERCHANT = new Map(FLIPP_STORES.map(s => [s.merchantId, s]));
@@ -167,6 +235,9 @@ function ensureRawIngredient(db, rawName) {
 /**
  * Search Flipp with pagination to get ALL results for a query.
  */
+// Module-level zip code for current scrape pass (set by main loop)
+let currentZip = POSTAL_CODE;
+
 async function searchFlippExhaustive(query) {
   const allItems = [];
   let offset = 0;
@@ -174,7 +245,7 @@ async function searchFlippExhaustive(query) {
 
   // Fetch up to 3 pages per query (600 items max)
   for (let page = 0; page < 3; page++) {
-    const url = `${FLIPP_API_BASE}/items/search?locale=en-us&postal_code=${POSTAL_CODE}&q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`;
+    const url = `${FLIPP_API_BASE}/items/search?locale=en-us&postal_code=${currentZip}&q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`;
 
     try {
       const res = await httpFetch(url);
@@ -264,12 +335,18 @@ async function main() {
     : FLIPP_STORES;
   const activeSourceIds = new Set(activeStores.map(s => s.sourceId));
 
-  console.log('=== OpenClaw Flipp VACUUM Scraper ===');
+  // Determine which zip codes to scrape
+  const zipArg = chainArgs.find(a => a.startsWith('--zip='))?.split('=')[1];
+  const zipsToScrape = zipArg
+    ? FLIPP_ZIPS.filter(z => z.zip === zipArg)
+    : FLIPP_ZIPS;
+
+  console.log('=== OpenClaw Flipp VACUUM Scraper (Nationwide) ===');
   console.log(`Time: ${new Date().toISOString()}`);
-  console.log(`Postal code: ${POSTAL_CODE}`);
+  console.log(`Zip codes: ${zipsToScrape.length} (${zipsToScrape.map(z => z.label).join(', ')})`);
   console.log(`Active stores: ${activeStores.length}`);
   console.log(`Search terms: ${FOOD_SEARCHES.length}`);
-  console.log(`Mode: EXHAUSTIVE - every item, every store, with pagination`);
+  console.log(`Mode: EXHAUSTIVE - every item, every store, every region`);
 
   const db = getDb();
   const cachedMappings = loadCachedMappings(db);
@@ -279,7 +356,7 @@ async function main() {
     ensureSourceExists(db, store);
   }
 
-  // Global dedup across ALL searches
+  // Global dedup across ALL searches and ALL zips
   const globalSeen = new Set();
 
   // Track results per store
@@ -290,6 +367,13 @@ async function main() {
 
   let totalSearches = 0;
   let totalRawItems = 0;
+
+  // ── ITERATE ALL ZIP CODES ──
+  for (const zipEntry of zipsToScrape) {
+    currentZip = zipEntry.zip;
+    console.log(`\n${'═'.repeat(60)}`);
+    console.log(`REGION: ${zipEntry.label} (${zipEntry.zip})`);
+    console.log(`${'═'.repeat(60)}`);
 
   for (const query of FOOD_SEARCHES) {
     const items = await searchFlippExhaustive(query);
@@ -385,6 +469,10 @@ async function main() {
     // Light rate limiting
     await new Promise(r => setTimeout(r, 250));
   }
+
+  // End of zip code region
+  console.log(`  Region ${zipEntry.label} complete. Total unique items so far: ${globalSeen.size}`);
+  } // end zip code loop
 
   // Update timestamps and print results
   console.log(`\n=== Results by Store ===`);

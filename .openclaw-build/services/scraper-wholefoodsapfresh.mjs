@@ -20,8 +20,33 @@ const WF_BRAND_ID = 'VUZHIFdob2xlIEZvb2Rz';
 const BASE_URL = 'https://www.wholefoodsmarket.com';
 
 const REGIONS = [
+  // New England (existing)
   { zip: '01835', label: 'Haverhill, MA', sourceId: 'whole-foods-haverhill-ma', state: 'MA' },
   { zip: '04101', label: 'Portland, ME', sourceId: 'whole-foods-portland-me', state: 'ME' },
+  // Southeast
+  { zip: '29201', label: 'Columbia, SC', sourceId: 'whole-foods-columbia-sc', state: 'SC' },
+  { zip: '28202', label: 'Charlotte, NC', sourceId: 'whole-foods-charlotte-nc', state: 'NC' },
+  { zip: '30301', label: 'Atlanta, GA', sourceId: 'whole-foods-atlanta-ga', state: 'GA' },
+  { zip: '33101', label: 'Miami, FL', sourceId: 'whole-foods-miami-fl', state: 'FL' },
+  // Mid-Atlantic
+  { zip: '10001', label: 'New York, NY', sourceId: 'whole-foods-new-york-ny', state: 'NY' },
+  { zip: '20001', label: 'Washington, DC', sourceId: 'whole-foods-washington-dc', state: 'DC' },
+  { zip: '19101', label: 'Philadelphia, PA', sourceId: 'whole-foods-philadelphia-pa', state: 'PA' },
+  // Midwest
+  { zip: '60601', label: 'Chicago, IL', sourceId: 'whole-foods-chicago-il', state: 'IL' },
+  { zip: '55401', label: 'Minneapolis, MN', sourceId: 'whole-foods-minneapolis-mn', state: 'MN' },
+  // South / Southwest
+  { zip: '75201', label: 'Dallas, TX', sourceId: 'whole-foods-dallas-tx', state: 'TX' },
+  { zip: '77001', label: 'Houston, TX', sourceId: 'whole-foods-houston-tx', state: 'TX' },
+  { zip: '73301', label: 'Austin, TX', sourceId: 'whole-foods-austin-tx', state: 'TX' },
+  { zip: '37201', label: 'Nashville, TN', sourceId: 'whole-foods-nashville-tn', state: 'TN' },
+  // West
+  { zip: '90001', label: 'Los Angeles, CA', sourceId: 'whole-foods-los-angeles-ca', state: 'CA' },
+  { zip: '94102', label: 'San Francisco, CA', sourceId: 'whole-foods-san-francisco-ca', state: 'CA' },
+  { zip: '98101', label: 'Seattle, WA', sourceId: 'whole-foods-seattle-wa', state: 'WA' },
+  { zip: '97201', label: 'Portland, OR', sourceId: 'whole-foods-portland-or', state: 'OR' },
+  { zip: '80201', label: 'Denver, CO', sourceId: 'whole-foods-denver-co', state: 'CO' },
+  { zip: '85001', label: 'Phoenix, AZ', sourceId: 'whole-foods-phoenix-az', state: 'AZ' },
 ];
 
 const CATEGORIES = [
