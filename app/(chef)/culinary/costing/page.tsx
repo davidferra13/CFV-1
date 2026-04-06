@@ -9,8 +9,8 @@ import { StoreScorecard } from '@/components/pricing/store-scorecard'
 import { CostImpact } from '@/components/pricing/cost-impact'
 import { CostRefreshButton } from '@/components/pricing/cost-refresh-button'
 import { CostingConfidenceBadge } from '@/components/pricing/costing-confidence-badge'
-import { IngredientMatchReview } from '@/components/pricing/ingredient-match-review'
-import { getUnmatchedIngredientsAction } from '@/lib/pricing/ingredient-matching-actions'
+import { IngredientHealthBanner } from '@/components/pricing/ingredient-health-banner'
+import { getIngredientHealthAction } from '@/lib/pricing/ingredient-health-actions'
 import { Card } from '@/components/ui/card'
 import { PricingReadinessCard } from '@/components/pricing/pricing-readiness-card'
 import { getPricingReadinessSummary } from '@/lib/pricing/pricing-readiness-actions'
@@ -39,12 +39,12 @@ function priceFreshness(dateStr: string | null): { text: string; color: string }
 
 export default async function CostingPage() {
   await requireChef()
-  const [recipes, menuCosts, allIngredients, unmatchedIngredients, readinessSummary] =
+  const [recipes, menuCosts, allIngredients, ingredientHealth, readinessSummary] =
     await Promise.all([
       getRecipes(),
       getMenuCostSummaries(),
       getIngredients().catch(() => []),
-      getUnmatchedIngredientsAction().catch(() => []),
+      getIngredientHealthAction().catch(() => null),
       getPricingReadinessSummary(),
     ])
 
@@ -117,7 +117,7 @@ export default async function CostingPage() {
                   <TableHead>Total Cost</TableHead>
                   <TableHead>Cost / Portion</TableHead>
                   <TableHead>Freshness</TableHead>
-                  <TableHead>Complete Pricing</TableHead>
+                  <TableHead>Price Trust</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -162,6 +162,9 @@ export default async function CostingPage() {
                           <CostingConfidenceBadge
                             coveragePct={recipe.has_all_prices ? 100 : null}
                             isPartial={recipe.has_all_prices === false}
+                            avgConfidence={recipe.avg_price_confidence}
+                            minConfidence={recipe.min_price_confidence}
+                            lowConfidenceCount={recipe.low_confidence_count}
                           />
                         )}
                       </TableCell>
@@ -173,11 +176,11 @@ export default async function CostingPage() {
         )}
       </div>
 
-      {/* Ingredient Match Review Panel */}
-      {unmatchedIngredients.length > 0 && (
+      {/* Ingredient Normalization Health */}
+      {ingredientHealth && (
         <div>
-          <h2 className="text-lg font-semibold text-stone-100 mb-3">Ingredient Matching</h2>
-          <IngredientMatchReview initialUnmatched={unmatchedIngredients} />
+          <h2 className="text-lg font-semibold text-stone-100 mb-3">Ingredient Normalization</h2>
+          <IngredientHealthBanner health={ingredientHealth} />
         </div>
       )}
 

@@ -277,6 +277,9 @@ export type RecipeListItem = {
   total_cost_cents: number | null
   has_all_prices: boolean | null
   last_price_updated_at: string | null
+  avg_price_confidence: number | null
+  min_price_confidence: number | null
+  low_confidence_count: number | null
   cuisine: string | null
   meal_type: string | null
   season: string[]
@@ -337,7 +340,7 @@ export async function getRecipes(filters?: {
   const { data: costData } = await db
     .from('recipe_cost_summary')
     .select(
-      'recipe_id, ingredient_count, total_ingredient_cost_cents, has_all_prices, last_price_updated_at'
+      'recipe_id, ingredient_count, total_ingredient_cost_cents, has_all_prices, last_price_updated_at, avg_price_confidence, min_price_confidence, low_confidence_count'
     )
     .eq('tenant_id', user.tenantId!)
 
@@ -375,6 +378,12 @@ export async function getRecipes(filters?: {
       total_cost_cents: cost?.total_ingredient_cost_cents ?? null,
       has_all_prices: cost?.has_all_prices ?? null,
       last_price_updated_at: cost?.last_price_updated_at ?? null,
+      avg_price_confidence:
+        cost?.avg_price_confidence != null ? parseFloat(cost.avg_price_confidence) : null,
+      min_price_confidence:
+        cost?.min_price_confidence != null ? parseFloat(cost.min_price_confidence) : null,
+      low_confidence_count:
+        cost?.low_confidence_count != null ? parseInt(cost.low_confidence_count) : null,
       cuisine: r.cuisine ?? null,
       meal_type: r.meal_type ?? null,
       season: r.season || [],
@@ -1466,14 +1475,14 @@ async function autoMatchToSystemIngredient(
     const bestMatch = (matches as any[])[0]
     if (!bestMatch.id || bestMatch.score < 0.5) return
 
-    // Create auto-alias with trigram method
+    // Create auto-alias with trigram method (pending until chef confirms)
     await db.from('ingredient_aliases').insert({
       tenant_id: tenantId,
       ingredient_id: ingredientId,
       system_ingredient_id: bestMatch.id,
       match_method: 'trigram',
       similarity_score: bestMatch.score,
-      confirmed_at: new Date().toISOString(),
+      // confirmed_at left null - chef must review and approve auto-matches
     })
   } catch (err) {
     // pg_trgm might not be available, or rpc might fail - non-blocking

@@ -1,36 +1,66 @@
 'use client'
 
 interface CostingConfidenceBadgeProps {
-  // Pass 100 for fully priced, 0 for no prices, any value in between for partial.
-  // Pass null to hide the badge entirely (no data available yet).
-  // Do NOT pass 50 as a proxy for "some but not all" - use the actual ratio or
-  // let the caller pass isPartial=true to get an honest "Partial" label.
   coveragePct: number | null
   avgConfidence?: number | null
+  minConfidence?: number | null
+  lowConfidenceCount?: number | null
   size?: 'sm' | 'md'
-  // When the data source only provides a boolean (has_all_prices: false) and
-  // cannot supply the real ratio, set isPartial=true to show "Partial" instead
-  // of a fabricated percentage.
   isPartial?: boolean
+}
+
+function confidenceLabel(avg: number): { text: string; color: string; bgColor: string } {
+  if (avg >= 0.8)
+    return {
+      text: 'High trust',
+      color: 'text-emerald-400',
+      bgColor: 'bg-emerald-900/60 border-emerald-700/40',
+    }
+  if (avg >= 0.5)
+    return {
+      text: 'Mixed trust',
+      color: 'text-amber-400',
+      bgColor: 'bg-amber-900/60 border-amber-700/40',
+    }
+  return { text: 'Low trust', color: 'text-red-400', bgColor: 'bg-red-900/60 border-red-700/40' }
+}
+
+function confidenceTooltip(
+  coveragePct: number | null,
+  avgConfidence: number | null | undefined,
+  minConfidence: number | null | undefined,
+  lowConfidenceCount: number | null | undefined
+): string {
+  const parts: string[] = []
+  if (coveragePct !== null) parts.push(`${coveragePct}% of ingredients priced`)
+  if (avgConfidence != null) parts.push(`Avg confidence: ${Math.round(avgConfidence * 100)}%`)
+  if (minConfidence != null) parts.push(`Weakest: ${Math.round(minConfidence * 100)}%`)
+  if (lowConfidenceCount != null && lowConfidenceCount > 0) {
+    parts.push(
+      `${lowConfidenceCount} ingredient${lowConfidenceCount > 1 ? 's' : ''} below 50% confidence`
+    )
+  }
+  return parts.join(' | ') || 'No pricing data'
 }
 
 export function CostingConfidenceBadge({
   coveragePct,
   avgConfidence,
+  minConfidence,
+  lowConfidenceCount,
   size = 'sm',
   isPartial = false,
 }: CostingConfidenceBadgeProps) {
   if (coveragePct === null && !isPartial) return null
 
   const sizeClass = size === 'sm' ? 'text-xs px-1.5 py-0.5' : 'text-sm px-2 py-1'
+  const tooltip = confidenceTooltip(coveragePct, avgConfidence, minConfidence, lowConfidenceCount)
 
-  // Explicit partial state: boolean data source, unknown actual ratio.
-  // Show "Partial" in amber rather than a fabricated percentage.
+  // Missing prices: show "Partial" in amber
   if (isPartial || (coveragePct !== null && coveragePct > 0 && coveragePct < 100)) {
-    const tooltip = 'Some ingredients are missing price data'
     return (
       <span
-        className={`inline-flex items-center rounded border bg-amber-900/60 text-amber-400 border-amber-700/40 ${sizeClass} font-medium`}
+        className={`inline-flex items-center gap-1 rounded border bg-amber-900/60 text-amber-400 border-amber-700/40 ${sizeClass} font-medium`}
         title={tooltip}
       >
         Partial
@@ -38,20 +68,41 @@ export function CostingConfidenceBadge({
     )
   }
 
-  // Fully priced or fully unpriced - show the real number.
+  // All priced (or none): show coverage + confidence quality
   const pct = coveragePct ?? 0
-  const color =
-    pct >= 90
-      ? 'bg-emerald-900/60 text-emerald-400 border-emerald-700/40'
-      : 'bg-red-900/60 text-red-400 border-red-700/40'
 
-  const tooltip = avgConfidence
-    ? `${pct}% coverage, avg confidence: ${avgConfidence.toFixed(2)}`
-    : `${pct}% of ingredients priced`
+  // No prices at all
+  if (pct === 0) {
+    return (
+      <span
+        className={`inline-flex items-center rounded border bg-red-900/60 text-red-400 border-red-700/40 ${sizeClass} font-medium`}
+        title={tooltip}
+      >
+        0%
+      </span>
+    )
+  }
 
+  // Fully priced: color by confidence quality, not just coverage
+  if (avgConfidence != null) {
+    const conf = confidenceLabel(avgConfidence)
+    return (
+      <span
+        className={`inline-flex items-center gap-1 rounded border ${conf.bgColor} ${conf.color} ${sizeClass} font-medium`}
+        title={tooltip}
+      >
+        {conf.text}
+        {lowConfidenceCount != null && lowConfidenceCount > 0 && (
+          <span className="opacity-70">({lowConfidenceCount})</span>
+        )}
+      </span>
+    )
+  }
+
+  // Fallback: no confidence data yet, show coverage only
   return (
     <span
-      className={`inline-flex items-center rounded border ${color} ${sizeClass} font-medium`}
+      className={`inline-flex items-center rounded border bg-emerald-900/60 text-emerald-400 border-emerald-700/40 ${sizeClass} font-medium`}
       title={tooltip}
     >
       {pct}%

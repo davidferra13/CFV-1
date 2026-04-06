@@ -138,6 +138,9 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           family_id: null,
           variation_label: null,
           family_name: null,
+          avg_price_confidence: null,
+          min_price_confidence: null,
+          low_confidence_count: null,
         }
         setRecipes((prev) => [newEntry, ...prev])
         setForm(EMPTY_FORM)
