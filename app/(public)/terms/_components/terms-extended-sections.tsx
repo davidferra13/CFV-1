@@ -4,7 +4,7 @@ export default function TermsExtendedSections() {
   return (
     <>
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">
           4. Pricing and Voluntary Contributions
         </h2>
         <p className="mb-4 leading-relaxed">
@@ -32,12 +32,12 @@ export default function TermsExtendedSections() {
           </li>
         </ul>
         <p className="mt-4 leading-relaxed">
-          Client portal access is provided at no charge to clients of subscribed chefs.
+          Client portal access is provided at no charge to all clients.
         </p>
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">5. Acceptable Use</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">5. Acceptable Use</h2>
         <p className="mb-4 leading-relaxed">
           You agree to use the Service only for lawful purposes and in a manner that does not
           infringe the rights of others. You must not:
@@ -60,7 +60,7 @@ export default function TermsExtendedSections() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">
           6. Chef and Client Relationship
         </h2>
         <p className="leading-relaxed">
@@ -74,7 +74,7 @@ export default function TermsExtendedSections() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">7. Payment Processing</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">7. Payment Processing</h2>
         <p className="leading-relaxed">
           Payments between chefs and clients are processed by Stripe. By accepting payments through
           ChefFlow, chefs agree to{' '}
@@ -82,17 +82,17 @@ export default function TermsExtendedSections() {
             href="https://stripe.com/legal/ssa"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-700 hover:underline"
+            className="text-brand-400 hover:underline"
           >
             Stripe&apos;s Connected Account Agreement
           </a>
           . ChefFlow does not hold client funds on its own behalf. Standard Stripe processing fees
-          apply; ChefFlow does not charge additional transaction fees beyond the subscription.
+          apply; ChefFlow does not charge additional transaction fees.
         </p>
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">8. Intellectual Property</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">8. Intellectual Property</h2>
         <p className="mb-4 leading-relaxed">
           <strong>ChefFlow content</strong> - The Service, including its design, code, branding, and
           documentation, is owned by ChefFlow and protected by intellectual property law. You may
@@ -108,10 +108,10 @@ export default function TermsExtendedSections() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">9. Privacy</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">9. Privacy</h2>
         <p className="leading-relaxed">
           Your use of the Service is also governed by our{' '}
-          <Link href="/privacy" className="text-brand-700 hover:underline">
+          <Link href="/privacy" className="text-brand-400 hover:underline">
             Privacy Policy
           </Link>
           , which is incorporated into these Terms by reference.
@@ -119,7 +119,7 @@ export default function TermsExtendedSections() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">10. Disclaimer of Warranties</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">10. Disclaimer of Warranties</h2>
         <p className="leading-relaxed">
           The Service is provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo; without
           warranties of any kind, either express or implied, including but not limited to warranties
@@ -131,7 +131,7 @@ export default function TermsExtendedSections() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">11. Limitation of Liability</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">11. Limitation of Liability</h2>
         <p className="leading-relaxed">
           To the fullest extent permitted by applicable law, ChefFlow and its officers, directors,
           employees, and agents shall not be liable for any indirect, incidental, special,
@@ -144,7 +144,7 @@ export default function TermsExtendedSections() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">12. Indemnification</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">12. Indemnification</h2>
         <p className="leading-relaxed">
           You agree to indemnify and hold ChefFlow and its affiliates harmless from any claims,
           liabilities, damages, losses, and expenses (including reasonable legal fees) arising out
@@ -154,7 +154,7 @@ export default function TermsExtendedSections() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">13. Termination</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">13. Termination</h2>
         <p className="leading-relaxed">
           Either party may terminate these Terms at any time. You may terminate by cancelling your
           account. We may terminate or suspend your access immediately, without prior notice, if we
@@ -165,18 +165,18 @@ export default function TermsExtendedSections() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">14. Governing Law</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">14. Governing Law</h2>
         <p className="leading-relaxed">
-          These Terms are governed by and construed in accordance with the laws of the United
-          States, without regard to conflict-of-law principles. Any disputes arising from these
-          Terms or the Service shall be resolved in a court of competent jurisdiction. You waive any
-          right to a jury trial in connection with any action or litigation in any way arising out
-          of or related to these Terms.
+          These Terms are governed by and construed in accordance with the laws of the Commonwealth
+          of Massachusetts, United States, without regard to conflict-of-law principles. Any
+          disputes arising from these Terms or the Service shall be resolved in a court of competent
+          jurisdiction. You waive any right to a jury trial in connection with any action or
+          litigation in any way arising out of or related to these Terms.
         </p>
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">15. Changes to These Terms</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">15. Changes to These Terms</h2>
         <p className="leading-relaxed">
           We reserve the right to modify these Terms at any time. When we do, we will revise the
           &ldquo;Last updated&rdquo; date. For material changes, we will notify you by email or by a
@@ -186,12 +186,12 @@ export default function TermsExtendedSections() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold text-stone-900">16. Contact Us</h2>
+        <h2 className="mb-4 text-xl font-semibold text-stone-100">16. Contact Us</h2>
         <p className="leading-relaxed">Questions about these Terms should be directed to:</p>
         <address className="mt-4 not-italic leading-relaxed">
           <strong>ChefFlow</strong>
           <br />
-          <a href="mailto:legal@cheflowhq.com" className="text-brand-700 hover:underline">
+          <a href="mailto:legal@cheflowhq.com" className="text-brand-400 hover:underline">
             legal@cheflowhq.com
           </a>
         </address>

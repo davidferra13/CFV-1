@@ -394,46 +394,6 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'cannabis',
-    label: 'Cannabis',
-    icon: SealCheck,
-    module: 'cannabis',
-    items: [
-      {
-        href: '/cannabis',
-        label: 'Cannabis Hub',
-        icon: SealCheck,
-        children: [
-          { href: '/cannabis/about', label: 'About' },
-          { href: '/cannabis/agreement', label: 'Agreement' },
-          { href: '/cannabis/compliance', label: 'Compliance' },
-          { href: '/cannabis/handbook', label: 'Handbook' },
-          { href: '/cannabis/invite', label: 'Invite Guests' },
-          { href: '/cannabis/hub', label: 'Member Hub' },
-        ],
-      },
-      {
-        href: '/cannabis/ledger',
-        label: 'Cannabis Ledger',
-        icon: NotebookIcon,
-      },
-      {
-        href: '/cannabis/events',
-        label: 'Infused Events',
-        icon: CalendarDays,
-        children: [
-          { href: '/cannabis/control-packet/template', label: 'Control Packet Template' },
-          { href: '/cannabis/rsvps', label: 'RSVPs' },
-        ],
-      },
-      {
-        href: '/cannabis/unlock',
-        label: 'Unlock Cannabis Tier',
-        icon: SealCheck,
-      },
-    ],
-  },
-  {
     id: 'clients',
     label: 'Clients',
     icon: Users,
@@ -1468,6 +1428,7 @@ export const navGroups: NavGroup[] = [
         href: '/help',
         label: 'Help Center',
         icon: Compass,
+        children: [{ href: '/help/food-costing', label: 'Food Costing Guide' }],
       },
       {
         href: '/inbox/history-scan',

@@ -7,9 +7,14 @@ import { broadcast } from '@/lib/realtime/sse-server'
  * Authenticated by shared secret (Pi -> PC, internal network only).
  */
 
-const WEBHOOK_SECRET = process.env.OPENCLAW_WEBHOOK_SECRET || 'openclaw-internal-2026'
+const WEBHOOK_SECRET = process.env.OPENCLAW_WEBHOOK_SECRET
 
 export async function POST(req: NextRequest) {
+  // Fail-closed: reject all requests if webhook secret is not configured
+  if (!WEBHOOK_SECRET) {
+    return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
+  }
+
   // Verify shared secret
   const authHeader = req.headers.get('authorization')
   if (authHeader !== `Bearer ${WEBHOOK_SECRET}`) {

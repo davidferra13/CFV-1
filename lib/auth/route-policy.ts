@@ -106,7 +106,6 @@ export const STAFF_PROTECTED_PATHS = [
 // Public website and tokenized pages that must remain reachable unauthenticated.
 export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/about',
-  '/privacy-policy',
   '/compare',
   '/marketplace-chefs',
   '/customers',
@@ -128,8 +127,6 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/worksheet',
   '/guest-feedback',
   '/chef',
-  '/cannabis/public',
-  '/cannabis-invite',
   '/partner-signup',
   '/partner-report',
   '/chefs',
@@ -184,7 +181,6 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/inngest',
   '/api/kiosk',
   '/api/feeds',
-  '/api/v1',
   '/api/v2',
   '/api/storage',
   '/api/realtime',

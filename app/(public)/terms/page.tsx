@@ -20,11 +20,11 @@ const TermsExtendedSections = dynamic(() => import('./_components/terms-extended
     <div className="space-y-10">
       {[1, 2, 3, 4].map((i) => (
         <div key={i}>
-          <div className="h-6 w-48 loading-bone loading-bone-light mb-4" />
+          <div className="h-6 w-48 loading-bone mb-4" />
           <div className="space-y-2">
-            <div className="h-4 w-full bg-stone-100 rounded animate-pulse" />
-            <div className="h-4 w-5/6 bg-stone-100 rounded animate-pulse" />
-            <div className="h-4 w-4/6 bg-stone-100 rounded animate-pulse" />
+            <div className="h-4 w-full bg-stone-800 rounded animate-pulse" />
+            <div className="h-4 w-5/6 bg-stone-800 rounded animate-pulse" />
+            <div className="h-4 w-4/6 bg-stone-800 rounded animate-pulse" />
           </div>
         </div>
       ))}
@@ -35,15 +35,15 @@ const TermsExtendedSections = dynamic(() => import('./_components/terms-extended
 export default function TermsPage() {
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
-      <div className="mb-10 border-b border-stone-200 pb-8">
-        <h1 className="text-4xl font-bold tracking-tight text-stone-900">Terms of Service</h1>
-        <p className="mt-3 text-sm text-stone-500">Last updated: March 1, 2026</p>
+      <div className="mb-10 border-b border-stone-700/60 pb-8">
+        <h1 className="text-4xl font-bold tracking-tight text-stone-100">Terms of Service</h1>
+        <p className="mt-3 text-sm text-stone-500">Last updated: April 5, 2026</p>
       </div>
 
-      <div className="space-y-10 text-stone-700">
+      <div className="space-y-10 text-stone-300">
         {/* Sections 1-3: server-rendered (above the fold) */}
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">1. Acceptance of Terms</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">1. Acceptance of Terms</h2>
           <p className="leading-relaxed">
             By creating an account or using the ChefFlow platform at cheflowhq.com (the
             &ldquo;Service&rdquo;), you agree to be bound by these Terms of Service
@@ -59,7 +59,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">2. Description of Service</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">2. Description of Service</h2>
           <p className="leading-relaxed">
             ChefFlow is a business operations platform for private chefs. It provides tools for
             managing events, menus, client communications, proposals, and payments. ChefFlow is a
@@ -70,7 +70,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">
             3. Accounts and Registration
           </h2>
           <p className="mb-4 leading-relaxed">
@@ -82,7 +82,7 @@ export default function TermsPage() {
             <li>Update your information if it changes</li>
             <li>
               Notify us immediately at{' '}
-              <a href="mailto:support@cheflowhq.com" className="text-brand-700 hover:underline">
+              <a href="mailto:support@cheflowhq.com" className="text-brand-400 hover:underline">
                 support@cheflowhq.com
               </a>{' '}
               if you suspect unauthorized access to your account
@@ -101,8 +101,8 @@ export default function TermsPage() {
         </Suspense>
       </div>
 
-      <div className="mt-12 border-t border-stone-200 pt-8">
-        <Link href="/" className="text-sm font-medium text-stone-600 hover:text-stone-900">
+      <div className="mt-12 border-t border-stone-700/60 pt-8">
+        <Link href="/" className="text-sm font-medium text-stone-400 hover:text-stone-100">
           &larr; Back to Home
         </Link>
       </div>

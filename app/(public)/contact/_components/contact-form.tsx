@@ -116,10 +116,10 @@ export default function ContactForm({ supportInfo }: ContactFormProps) {
           </CardHeader>
           <CardContent>
             {showSuccess && (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
+              <div className="mb-6 p-4 bg-emerald-950/40 border border-emerald-700/50 rounded-md">
                 <div className="flex items-start">
                   <svg
-                    className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
+                    className="w-5 h-5 text-emerald-400 mt-0.5 mr-3 flex-shrink-0"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >
@@ -130,16 +130,16 @@ export default function ContactForm({ supportInfo }: ContactFormProps) {
                     />
                   </svg>
                   <div>
-                    <h4 className="font-semibold text-green-900 mb-1">Message sent!</h4>
-                    <p className="text-green-700 text-sm">{successMessage}</p>
+                    <h4 className="font-semibold text-emerald-200 mb-1">Message sent!</h4>
+                    <p className="text-emerald-300 text-sm">{successMessage}</p>
                   </div>
                 </div>
               </div>
             )}
 
             {submitError && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-red-700 text-sm">{submitError}</p>
+              <div className="mb-6 p-4 bg-red-950/40 border border-red-700/50 rounded-md">
+                <p className="text-red-300 text-sm">{submitError}</p>
               </div>
             )}
 
@@ -211,22 +211,22 @@ export default function ContactForm({ supportInfo }: ContactFormProps) {
               <div
                 className={`rounded-lg border px-4 py-3 ${
                   supportInfo.isOpen
-                    ? 'border-emerald-200 bg-emerald-50'
-                    : 'border-amber-200 bg-amber-50'
+                    ? 'border-emerald-700/50 bg-emerald-950/30'
+                    : 'border-amber-700/50 bg-amber-950/30'
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <h4 className="font-semibold text-stone-900">Support Status</h4>
+                  <h4 className="font-semibold text-stone-100">Support Status</h4>
                   <span
                     className={`text-xs font-semibold uppercase tracking-wide ${
-                      supportInfo.isOpen ? 'text-emerald-700' : 'text-amber-700'
+                      supportInfo.isOpen ? 'text-emerald-400' : 'text-amber-400'
                     }`}
                   >
                     {supportInfo.statusLabel}
                   </span>
                 </div>
                 {supportInfo.currentTimeLabel && (
-                  <p className="mt-2 text-sm text-stone-600">
+                  <p className="mt-2 text-sm text-stone-400">
                     Current support time: {supportInfo.currentTimeLabel}
                   </p>
                 )}
@@ -235,9 +235,9 @@ export default function ContactForm({ supportInfo }: ContactFormProps) {
 
             <div>
               <div className="flex items-start mb-4">
-                <div className="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                <div className="w-10 h-10 bg-brand-950/40 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                   <svg
-                    className="w-5 h-5 text-brand-700"
+                    className="w-5 h-5 text-brand-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -251,10 +251,10 @@ export default function ContactForm({ supportInfo }: ContactFormProps) {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-stone-900 mb-1">Email</h4>
+                  <h4 className="font-semibold text-stone-100 mb-1">Email</h4>
                   <a
                     href={`mailto:${supportInfo.supportEmail}`}
-                    className="text-brand-700 hover:text-brand-800"
+                    className="text-brand-400 hover:text-brand-300"
                   >
                     {supportInfo.supportEmail}
                   </a>
@@ -262,11 +262,11 @@ export default function ContactForm({ supportInfo }: ContactFormProps) {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-stone-200">
+            <div className="pt-6 border-t border-stone-700/60">
               <div className="flex items-start">
-                <div className="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                <div className="w-10 h-10 bg-brand-950/40 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                   <svg
-                    className="w-5 h-5 text-brand-700"
+                    className="w-5 h-5 text-brand-400"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -280,8 +280,8 @@ export default function ContactForm({ supportInfo }: ContactFormProps) {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-stone-900 mb-1">Response Time</h4>
-                  <p className="text-stone-600 text-sm">
+                  <h4 className="font-semibold text-stone-100 mb-1">Response Time</h4>
+                  <p className="text-stone-400 text-sm">
                     {supportInfo.isOpen === true
                       ? 'We are currently online and usually respond as soon as possible.'
                       : 'We typically respond within 1 business day.'}
@@ -290,9 +290,9 @@ export default function ContactForm({ supportInfo }: ContactFormProps) {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-stone-200">
+            <div className="pt-6 border-t border-stone-700/60">
               <div className="flex items-start">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                <div className="w-10 h-10 bg-emerald-950/40 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                   <svg
                     className="w-5 h-5 text-emerald-600"
                     fill="none"
@@ -308,12 +308,12 @@ export default function ContactForm({ supportInfo }: ContactFormProps) {
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-stone-900 mb-1">Support Hours</h4>
+                  <h4 className="font-semibold text-stone-100 mb-1">Support Hours</h4>
                   <div className="space-y-1">
                     {supportInfo.hoursSummary.map((line) => (
                       <p
                         key={`${line.dayLabel}-${line.hoursLabel}`}
-                        className="text-stone-600 text-sm"
+                        className="text-stone-400 text-sm"
                       >
                         {line.dayLabel}
                         <br />

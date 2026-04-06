@@ -112,17 +112,17 @@ function SignUpForm() {
           contextId="auth-sign-up"
           message="Loading invitation..."
           minHeightClassName="min-h-screen"
-          className="bg-surface-muted"
+          className="bg-stone-950"
         />
       )
     }
 
     return (
-      <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
+      <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-            <p className="text-stone-600 mt-2">Complete your client registration</p>
+            <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
+            <p className="text-stone-400 mt-2">Complete your client registration</p>
           </div>
 
           <Card>
@@ -190,11 +190,11 @@ function SignUpForm() {
 
   // Chef signup (public)
   return (
-    <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
+    <div className="min-h-screen bg-stone-950 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-          <p className="text-stone-600 mt-2">Manage your chef work, your way</p>
+          <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
+          <p className="text-stone-400 mt-2">Manage your chef work, your way</p>
         </div>
 
         <Card>
@@ -250,18 +250,18 @@ function SignUpForm() {
                 Create Account
               </Button>
 
-              <div className="text-sm text-center text-stone-600">
+              <div className="text-sm text-center text-stone-400">
                 Already have an account?{' '}
                 <Link
                   href="/auth/signin"
-                  className="text-brand-700 hover:text-brand-700 font-medium"
+                  className="text-brand-400 hover:text-brand-300 font-medium"
                 >
                   Sign in
                 </Link>
                 <span className="mx-1">·</span>
                 <Link
                   href="/auth/client-signup"
-                  className="text-brand-700 hover:text-brand-700 font-medium"
+                  className="text-brand-400 hover:text-brand-300 font-medium"
                 >
                   Client sign up
                 </Link>
@@ -281,7 +281,7 @@ export default function SignUpPage() {
         <CenteredLoadingState
           contextId="auth-sign-up"
           minHeightClassName="min-h-screen"
-          className="bg-surface-muted"
+          className="bg-stone-950"
         />
       }
     >
