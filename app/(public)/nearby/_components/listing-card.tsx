@@ -7,46 +7,20 @@ type Props = {
   listing: DirectoryListingSummary
 }
 
-function StatusBadge({ status }: { status: string }) {
-  if (status === 'verified') {
-    return (
-      <span className="rounded-full bg-emerald-900/85 px-2.5 py-0.5 text-xxs font-semibold text-emerald-300 backdrop-blur-sm">
-        Verified
-      </span>
-    )
-  }
-  if (status === 'claimed') {
-    return (
-      <span className="rounded-full bg-brand-900/85 px-2.5 py-0.5 text-xxs font-semibold text-brand-300 backdrop-blur-sm">
-        Claimed
-      </span>
-    )
-  }
-  return (
-    <span className="rounded-full bg-stone-800/90 px-2.5 py-0.5 text-xxs font-semibold text-stone-400 backdrop-blur-sm">
-      Listed
-    </span>
-  )
-}
-
 export function ListingCard({ listing }: Props) {
   const hasPhoto = listing.photo_urls.length > 0
-  const cuisineLabels = listing.cuisine_types.slice(0, 3).map(getCuisineLabel)
-  const locationParts = [listing.city, listing.state].filter(Boolean)
+  const cuisineLabels = listing.cuisine_types
+    .filter((c) => c !== 'other')
+    .slice(0, 3)
+    .map(getCuisineLabel)
+  const locationParts = [
+    listing.city && listing.city !== 'unknown' ? listing.city : null,
+    listing.state,
+  ].filter(Boolean)
   const location = locationParts.join(', ')
-  const isUnclaimed = listing.status !== 'claimed' && listing.status !== 'verified'
-
-  const hoverRing =
-    listing.status === 'verified'
-      ? 'hover:ring-emerald-600'
-      : listing.status === 'claimed'
-        ? 'hover:ring-brand-600'
-        : 'hover:ring-stone-600'
 
   return (
-    <article
-      className={`group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 shadow-[0_2px_20px_rgb(0,0,0,0.06)] ring-1 ring-stone-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgb(0,0,0,0.25)] ${hoverRing}`}
-    >
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 ring-1 ring-stone-800 transition-all duration-300 hover:-translate-y-1 hover:ring-stone-600 hover:shadow-[0_8px_40px_rgb(0,0,0,0.25)]">
       {/* Image area */}
       <div className="relative aspect-[16/10] overflow-hidden">
         {hasPhoto ? (
@@ -61,30 +35,6 @@ export function ListingCard({ listing }: Props) {
         )}
 
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
-
-        {/* Badges */}
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-3">
-          <div className="flex items-center gap-1.5">
-            <StatusBadge status={listing.status} />
-            {listing.lead_score != null && listing.lead_score > 0 && (
-              <span
-                className={`h-2 w-2 rounded-full ${
-                  listing.lead_score >= 70
-                    ? 'bg-emerald-400'
-                    : listing.lead_score >= 40
-                      ? 'bg-amber-400'
-                      : 'bg-stone-500'
-                }`}
-                title={`Quality score: ${listing.lead_score}`}
-              />
-            )}
-          </div>
-          {listing.featured && (
-            <span className="rounded-full bg-brand-900/90 px-2.5 py-0.5 text-xxs font-semibold text-brand-300 backdrop-blur-sm">
-              Featured
-            </span>
-          )}
-        </div>
 
         {/* Price range */}
         {listing.price_range && (
@@ -105,14 +55,8 @@ export function ListingCard({ listing }: Props) {
           </span>
         </div>
 
-        {/* Location + address */}
-        {(location || listing.address) && (
-          <p className="mt-1 text-xs text-stone-500">
-            {listing.address ? `${listing.address}, ${location}` : location}
-          </p>
-        )}
+        {location && <p className="mt-1 text-xs text-stone-500">{location}</p>}
 
-        {/* Phone */}
         {listing.phone && (
           <a
             href={`tel:${listing.phone}`}
@@ -145,7 +89,7 @@ export function ListingCard({ listing }: Props) {
 
         {/* Actions */}
         <div className="mt-4 flex gap-2">
-          {listing.website_url ? (
+          {listing.website_url && (
             <a
               href={listing.website_url}
               target="_blank"
@@ -154,39 +98,24 @@ export function ListingCard({ listing }: Props) {
             >
               Visit website
             </a>
-          ) : (
-            <span className="flex-1 rounded-lg bg-stone-800 px-3 py-2.5 text-center text-xs font-medium text-stone-500">
-              No website listed
-            </span>
           )}
           {listing.lat && listing.lon && (
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${listing.lat},${listing.lon}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-lg border border-stone-700 px-3 py-2.5 text-center text-xs font-medium text-stone-300 transition-colors hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100"
-              title="View on Google Maps"
+              className={`rounded-lg border border-stone-700 px-3 py-2.5 text-center text-xs font-medium text-stone-300 transition-colors hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100 ${!listing.website_url ? 'flex-1' : ''}`}
             >
-              Map
+              Directions
             </a>
           )}
           <Link
             href={`/nearby/${listing.slug}`}
-            className="rounded-lg border border-stone-700 px-3 py-2.5 text-center text-xs font-medium text-stone-300 transition-colors hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100"
+            className={`rounded-lg border border-stone-700 px-3 py-2.5 text-center text-xs font-medium text-stone-300 transition-colors hover:border-stone-600 hover:bg-stone-800 hover:text-stone-100 ${!listing.website_url && !(listing.lat && listing.lon) ? 'flex-1' : ''}`}
           >
             Details
           </Link>
         </div>
-
-        {/* Claim CTA for unclaimed listings */}
-        {isUnclaimed && (
-          <Link
-            href={`/nearby/${listing.slug}`}
-            className="mt-3 block text-center text-xs text-stone-500 transition-colors hover:text-brand-400"
-          >
-            Is this your business? Claim for free
-          </Link>
-        )}
       </div>
     </article>
   )

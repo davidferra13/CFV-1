@@ -182,7 +182,7 @@ export async function getDirectoryListings(
               lat, lon, lead_score
        FROM directory_listings
        WHERE ${whereClause}
-       ORDER BY featured DESC, lead_score DESC NULLS LAST, name ASC
+       ORDER BY featured DESC, (CASE WHEN photo_urls IS NOT NULL AND array_length(photo_urls, 1) > 0 THEN 0 ELSE 1 END), lead_score DESC NULLS LAST, name ASC
        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
       [...params, ITEMS_PER_PAGE, offset]
     )
@@ -274,34 +274,35 @@ export async function getDirectoryStats(): Promise<{
   topCities: { city: string; state: string; count: number }[]
 }> {
   try {
+    const BASE_WHERE = "status IN ('discovered', 'claimed', 'verified')"
     const [totalResult, stateResults, cityResults] = await Promise.all([
-      pgClient`
-        SELECT count(*)::int as count FROM directory_listings
-        WHERE status IN ('discovered', 'claimed', 'verified')
-      `,
-      pgClient`
-        SELECT canonical_state as state, count(*)::int as count
-        FROM (
-          SELECT ${pgClient.unsafe(CANONICAL_STATE_SQL)} as canonical_state
-          FROM directory_listings
-          WHERE status IN ('discovered', 'claimed', 'verified')
-        ) states
-        WHERE canonical_state IS NOT NULL
-        GROUP BY canonical_state
-        ORDER BY canonical_state
-      `,
-      pgClient`
-        SELECT city, canonical_state as state, count(*)::int as count
-        FROM (
-          SELECT city, ${pgClient.unsafe(CANONICAL_STATE_SQL)} as canonical_state
-          FROM directory_listings
-          WHERE status IN ('discovered', 'claimed', 'verified') AND city IS NOT NULL
-        ) cities
-        WHERE canonical_state IS NOT NULL
-        GROUP BY city, canonical_state
-        ORDER BY count DESC
-        LIMIT 20
-      `,
+      pgClient.unsafe(
+        `SELECT count(*)::int as count FROM directory_listings
+         WHERE ${BASE_WHERE}`
+      ),
+      pgClient.unsafe(
+        `SELECT canonical_state as state, count(*)::int as count
+         FROM (
+           SELECT ${CANONICAL_STATE_SQL} as canonical_state
+           FROM directory_listings
+           WHERE ${BASE_WHERE}
+         ) states
+         WHERE canonical_state IS NOT NULL
+         GROUP BY canonical_state
+         ORDER BY canonical_state`
+      ),
+      pgClient.unsafe(
+        `SELECT city, canonical_state as state, count(*)::int as count
+         FROM (
+           SELECT city, ${CANONICAL_STATE_SQL} as canonical_state
+           FROM directory_listings
+           WHERE ${BASE_WHERE} AND city IS NOT NULL AND city != 'unknown'
+         ) cities
+         WHERE canonical_state IS NOT NULL
+         GROUP BY city, canonical_state
+         ORDER BY count DESC
+         LIMIT 20`
+      ),
     ])
 
     return {
@@ -391,7 +392,7 @@ export async function submitDirectoryListing(input: {
     console.error('[non-blocking] Welcome email setup failed', err)
   }
 
-  revalidatePath('/discover')
+  revalidatePath('/nearby')
   return { success: true }
 }
 
@@ -500,7 +501,7 @@ export async function requestListingClaim(input: {
     console.error('[non-blocking] Claimed email setup failed', err)
   }
 
-  revalidatePath('/discover')
+  revalidatePath('/nearby')
   return { success: true }
 }
 
@@ -751,7 +752,7 @@ export async function adminUpdateListingStatus(
     }
   }
 
-  revalidatePath('/discover')
+  revalidatePath('/nearby')
   revalidatePath('/admin/directory-listings')
   return { success: true }
 }
@@ -800,7 +801,7 @@ export async function adminCreateListing(input: {
     return { success: false, error: 'Failed to create listing.' }
   }
 
-  revalidatePath('/discover')
+  revalidatePath('/nearby')
   revalidatePath('/admin/directory-listings')
   return { success: true, slug }
 }
@@ -850,7 +851,7 @@ export async function enhanceDirectoryListing(input: {
     return { success: false, error: 'Failed to update listing.' }
   }
 
-  revalidatePath('/discover')
+  revalidatePath('/nearby')
   return { success: true }
 }
 

@@ -46,7 +46,7 @@ export const PUBLIC_NAV: PublicNavEntry[] = [
       { href: '/services', label: 'Services' },
     ],
   },
-  { href: '/discover', label: 'Discover' },
+  // { href: '/nearby', label: 'Nearby' }, // Hidden until data quality is production-ready
   { href: '/how-it-works', label: 'How It Works' },
   { href: '/for-operators', label: 'For Operators' },
 ]
@@ -57,12 +57,12 @@ export const PUBLIC_NAV: PublicNavEntry[] = [
 
 export const FOOTER_SECTIONS = {
   discover: {
-    heading: 'Discover',
+    heading: 'Find Food',
     links: [
       { href: '/book', label: 'Book a Chef' },
       { href: '/chefs', label: 'Browse Chefs' },
       { href: '/services', label: 'Services' },
-      { href: '/discover', label: 'Food Directory' },
+      // { href: '/nearby', label: 'Nearby' }, // Hidden until data quality is production-ready
       { href: '/contact', label: 'Contact' },
     ],
   },

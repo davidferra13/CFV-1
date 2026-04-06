@@ -22,8 +22,8 @@ export default function robots(): MetadataRoute.Robots {
           '/partner-signup',
           '/for-operators',
           '/about',
-          '/discover',
-          '/discover/',
+          // '/nearby', // Hidden until data quality is production-ready
+          // '/nearby/',
           '/book',
         ],
         disallow: [
