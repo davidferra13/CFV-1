@@ -53,7 +53,7 @@ ChefFlow has 265+ pages. A chef doesn't need 265 pages while they're cooking. Th
 
 ## The 10 Widgets
 
-### 1. Brain Dump (2x2) - NEW FEATURE REQUIRED
+### 1. Quick Notes (2x2) - NEW FEATURE REQUIRED
 
 The raw dictation notepad. This is the #1 widget because it solves the #1 real problem: thoughts happen faster than you can organize them.
 
@@ -73,11 +73,11 @@ The raw dictation notepad. This is the #1 widget because it solves the #1 real p
 
 - Tap the `+` input field. Keyboard opens. Type or dictate. Hit enter. Note appears in the list
 - Notes are raw, unstructured, timestamped bullets
-- List syncs to a new "Brain Dump" section on the ChefFlow dashboard
+- List syncs to a new "Quick Notes" section on the ChefFlow dashboard
 - Remy can read the brain dump and suggest actions ("You mentioned 'email Johnson back' - want me to draft that?")
-- Tap any note to open ChefFlow to the Brain Dump view (where notes can be triaged into tasks, calendar items, reminders)
+- Tap any note to open ChefFlow to the Quick Notes view (where notes can be triaged into tasks, calendar items, reminders)
 
-**Backend needed:** New `chef_brain_dump` table (id, chef_id, text, created_at, status: raw|triaged|dismissed). New server action `addBrainDumpNote()`. New API endpoint `POST /api/v2/brain-dump`. Dashboard section to display and triage notes.
+**Backend needed:** New `chef_quick_notes` table (id, chef_id, text, created_at, status: raw|triaged|dismissed). New server action `addQuickNote()`. New API endpoint `POST /api/v2/quick-notes`. Dashboard section to display and triage notes.
 
 **Why this is #1:** The developer said "I'm constantly taking notes down all day. Literally all day." This is the capture mechanism. Everything else in ChefFlow organizes and acts on information. This is how it gets in.
 
@@ -190,7 +190,7 @@ Not a display widget. A row of buttons that launch straight into specific app fu
 └──────────────────────────────┘
 ```
 
-- **Note:** Opens Brain Dump capture (keyboard ready, type and save)
+- **Note:** Opens Quick Notes capture (keyboard ready, type and save)
 - **Event:** Opens new event form
 - **Snap:** Opens camera, photo saves to ChefFlow storage (receipt, plating, ingredient)
 
@@ -278,14 +278,14 @@ The weekly runway.
 
 ## New Backend Features Required
 
-### 1. Brain Dump (new feature)
+### 1. Quick Notes (new feature)
 
 This is the only widget that requires a genuinely new feature in ChefFlow.
 
 **Database:**
 
 ```sql
-CREATE TABLE chef_brain_dump (
+CREATE TABLE chef_quick_notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id UUID NOT NULL REFERENCES chefs(id),
   text TEXT NOT NULL,
@@ -296,20 +296,48 @@ CREATE TABLE chef_brain_dump (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_brain_dump_chef ON chef_brain_dump(chef_id, status, created_at DESC);
+CREATE INDEX idx_quick_notes_chef ON chef_quick_notes(chef_id, status, created_at DESC);
 ```
 
 **Server actions:**
 
-| Action                            | Auth            | Input                                          | Output            |
-| --------------------------------- | --------------- | ---------------------------------------------- | ----------------- |
-| `addBrainDumpNote(text)`          | `requireChef()` | `{ text: string }`                             | `{ success, id }` |
-| `getBrainDumpNotes()`             | `requireChef()` | `{ status?: string, limit?: number }`          | `BrainDumpNote[]` |
-| `triageBrainDumpNote(id, action)` | `requireChef()` | `{ id, status, triaged_to?, triaged_ref_id? }` | `{ success }`     |
+| Action                        | Auth            | Input                                          | Output            |
+| ----------------------------- | --------------- | ---------------------------------------------- | ----------------- |
+| `addQuickNote(text)`          | `requireChef()` | `{ text: string }`                             | `{ success, id }` |
+| `getQuickNotes()`             | `requireChef()` | `{ status?: string, limit?: number }`          | `QuickNote[]`     |
+| `triageQuickNote(id, action)` | `requireChef()` | `{ id, status, triaged_to?, triaged_ref_id? }` | `{ success }`     |
 
-**API endpoint:** `POST /api/v2/brain-dump` (for widget), `GET /api/v2/brain-dump` (list).
+**API endpoint:** `POST /api/v2/quick-notes` (for widget), `GET /api/v2/quick-notes` (list).
 
-**Dashboard section:** New "Brain Dump" card on the dashboard showing raw notes with triage buttons (Convert to Task, Add to Calendar, Link to Inquiry, Dismiss).
+**Dashboard section (FIRST-CLASS FEATURE, not just a card):**
+
+Quick Notes lives on the chef portal dashboard as a prominent, always-visible section. Not a collapsible card buried at the bottom. This is where the chef's raw stream of consciousness lands, and where they triage it into real actions.
+
+Layout on dashboard:
+
+```
+┌─────────────────────────────────────────────┐
+│ Quick Notes                          12 notes│
+│                                             │
+│ + Type a quick note...              [voice] │
+│                                             │
+│ ● Email Johnson back          3h  [triage ▾]│
+│ ● Pick basil from garden 4pm  1h  [triage ▾]│
+│ ● Check lamb price at WF      45m [triage ▾]│
+│ ● Menu needs a dessert option 30m [triage ▾]│
+│ ● Reschedule Friday dinner    20m [triage ▾]│
+│                                             │
+│ Show all 12 notes...                        │
+└─────────────────────────────────────────────┘
+```
+
+- Text input at the top (always visible, keyboard-ready). Type or use system dictation
+- Each note shows text, time since capture, and a triage dropdown
+- Triage actions: Convert to Task, Add to Calendar, Link to Event, Link to Inquiry, Dismiss
+- Triaging a note creates the real object (task, calendar entry, etc.) and links back to the original note
+- Dismissed notes move to a collapsed "dismissed" section (recoverable, not deleted)
+- Notes sort by newest first
+- The same data powers both the dashboard section AND the Android widget. One table, two surfaces
 
 **Remy integration:** Remy can read raw brain dump notes and suggest triage actions. "You wrote 'email Johnson back' 3 hours ago. Want me to draft a reply?" This uses existing Remy action patterns, not new AI features.
 
@@ -332,8 +360,8 @@ This is a pure formula (not AI). Each field is a boolean check against existing 
 
 | Endpoint                                 | Purpose                        | Scope                        |
 | ---------------------------------------- | ------------------------------ | ---------------------------- |
-| `GET /api/v2/brain-dump`                 | Recent notes                   | `brain-dump:read`            |
-| `POST /api/v2/brain-dump`                | Add note                       | `brain-dump:write`           |
+| `GET /api/v2/quick-notes`                | Recent notes                   | `quick-notes:read`           |
+| `POST /api/v2/quick-notes`               | Add note                       | `quick-notes:write`          |
 | `GET /api/v2/widgets/inbox`              | Unified inbox (top N)          | `inquiries:read,events:read` |
 | `GET /api/v2/widgets/priority`           | Top priority action            | `events:read,inquiries:read` |
 | `GET /api/v2/widgets/prep`               | Active prep list               | `events:read`                |
@@ -355,7 +383,7 @@ All widgets use existing v2 API Bearer token auth (`cf_live_*`). Chef generates 
 
 | #   | Widget         | Size | Type             | Interaction               |
 | --- | -------------- | ---- | ---------------- | ------------------------- |
-| 1   | Brain Dump     | 2x2  | Input + list     | Type notes, tap to triage |
+| 1   | Quick Notes    | 2x2  | Input + list     | Type notes, tap to triage |
 | 2   | Inbox          | 4x2  | Display + tap    | Tap message to open       |
 | 3   | Dinner Circles | 4x2  | Display + tap    | Tap event to open circle  |
 | 4   | Prep List      | 2x2  | Checkable list   | Check items off           |
@@ -372,7 +400,7 @@ All widgets use existing v2 API Bearer token auth (`cf_live_*`). Chef generates 
 
 **Phase A (backend, 1 session):**
 
-1. Brain Dump table + server actions + dashboard section
+1. Quick Notes table + server actions + dashboard section
 2. Event completeness score formula
 3. Widget API endpoints (lightweight wrappers around existing functions)
 
@@ -382,7 +410,7 @@ All widgets use existing v2 API Bearer token auth (`cf_live_*`). Chef generates 
 2. Display-only widgets first: Today, Revenue, Week Glance, Live Feed
 3. Interactive widgets: Prep List, Grocery Run (checkbox toggle)
 4. Tap-through widgets: Inbox, Dinner Circles (progress bars)
-5. Input widgets: Brain Dump (text input from widget), Quick Actions (deep-link launchers)
+5. Input widgets: Quick Notes (text input from widget), Quick Actions (deep-link launchers)
 
 Phase A can be built by any builder agent (it's Next.js/TypeScript). Phase B requires Kotlin in `src-tauri/gen/android/`.
 
@@ -407,14 +435,14 @@ Phase A can be built by any builder agent (it's Next.js/TypeScript). Phase B req
 - iOS widgets (blocked on macOS hardware)
 - Widget configuration/customization (fixed layouts for V1)
 - Real-time push updates to widgets (polling on intervals is sufficient)
-- Voice input on Brain Dump widget (uses keyboard/system dictation, not custom voice)
+- Voice input on Quick Notes widget (uses keyboard/system dictation, not custom voice)
 - AI auto-triage of brain dump notes (Remy suggests, chef decides)
 
 ---
 
 ## Notes for Builder Agent
 
-1. **Brain Dump is the only new feature.** Everything else wraps existing data. Build Brain Dump first (Phase A) since multiple widgets benefit from it.
+1. **Quick Notes is the only new feature.** Everything else wraps existing data. Build Quick Notes first (Phase A) since multiple widgets benefit from it.
 
 2. **Completeness score is a formula, not AI.** 8 boolean checks, weighted sum. Put it in `lib/events/completeness.ts`. Expose via the events API.
 
@@ -422,7 +450,7 @@ Phase A can be built by any builder agent (it's Next.js/TypeScript). Phase B req
 
 4. **The Live Feed widget uses Android's `RemoteViews` with `ViewFlipper`** for horizontal scrolling text. This is a standard Android pattern for ticker-style widgets.
 
-5. **Quick Actions widget uses `PendingIntent` with deep-link URIs.** Each button launches `chefflow://events/new`, `chefflow://brain-dump`, etc. The Tauri app needs to register these URI schemes.
+5. **Quick Actions widget uses `PendingIntent` with deep-link URIs.** Each button launches `chefflow://events/new`, `chefflow://quick-notes`, etc. The Tauri app needs to register these URI schemes.
 
 6. **Brand colors:** Background `#faf9f7`, accent `#e88f47`, text `#333333`. Progress bars use `#e88f47` fill on `#e5e5e5` track.
 
