@@ -51,6 +51,8 @@ export const API_SCOPES = {
   'safety:write': 'Create and update safety incidents',
   'remy:read': 'List and view Remy approval policies',
   'remy:write': 'Create, update, and delete Remy approval policies',
+  'quick-notes:read': 'List and view quick notes',
+  'quick-notes:write': 'Create, triage, and delete quick notes',
 
   // Admin scopes
   'webhooks:manage': 'Manage outbound webhook subscriptions',

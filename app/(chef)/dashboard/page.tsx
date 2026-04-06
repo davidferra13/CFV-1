@@ -33,6 +33,8 @@ import { isAdmin } from '@/lib/auth/admin'
 import { CoverageHealthWidget } from '@/components/pricing/coverage-health-widget'
 import { DinnerCirclesSection } from './_sections/dinner-circles-cards'
 import { DashboardSecondaryInsights } from '@/components/dashboard/dashboard-secondary-insights'
+import { QuickNotesSection } from '@/components/dashboard/quick-notes-section'
+import { getQuickNotes } from '@/lib/quick-notes/actions'
 import { SmartSuggestions, SmartSuggestionsSkeleton } from './_sections/smart-suggestions'
 import { MetricsStrip } from './_sections/metrics-strip'
 import { OpenClawLiveAlerts } from '@/components/pricing/openclaw-live-alerts'
@@ -302,6 +304,11 @@ async function PipelineStatusSection() {
   return <PipelineStatusBadge />
 }
 
+async function QuickNotesLoader() {
+  const notes = await safe('quickNotes', () => getQuickNotes({ limit: 20 }), [])
+  return <QuickNotesSection initialNotes={notes} />
+}
+
 export default async function ChefDashboard() {
   const user = await requireChef()
 
@@ -370,6 +377,15 @@ export default async function ChefDashboard() {
 
       {/* Onboarding banner - shows until setup is complete, then auto-hides */}
       <OnboardingBanner />
+
+      {/* ============================================ */}
+      {/* QUICK NOTES - raw capture pad, always visible*/}
+      {/* ============================================ */}
+      <WidgetErrorBoundary name="Quick Notes" compact>
+        <Suspense fallback={<WidgetCardSkeleton size="md" />}>
+          <QuickNotesLoader />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* ============================================ */}
       {/* HERO METRICS - Big numbers, no card wrapper  */}
