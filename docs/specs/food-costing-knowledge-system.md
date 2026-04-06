@@ -221,6 +221,100 @@ Actual = what cost IS (purchases - ending inventory + beginning inventory) / rev
 - The system does not currently track cross-utilization. Define the concept; implement when inventory/waste tracking exists.
 - **Do not fabricate cross-utilization savings.** If the system can't measure it, it doesn't display it.
 
+#### Waste and Spoilage (Pre-Service Loss)
+
+- Distinct from yield factors (prep/cooking loss). Spoilage = product that expires, rots, or gets damaged before use.
+- Typical rates: 1-3% (private chef) to 5-15% (bakery). See reference data Section 11 for full table.
+- Spoilage cost is spread across sold units: `Effective Cost = Total Production Cost / Units Sold`
+- A dish with 30% recipe food cost and 8% spoilage rate has a 33% effective food cost.
+- **System behavior:** Spoilage tracking is a future feature (requires inventory). Define the concept now. Do not display spoilage-adjusted numbers until tracking is live.
+
+#### Non-Revenue Food (Comp, Staff Meal, Tasting, R&D)
+
+- Food prepared but not sold: staff meals (1-3% of food cost), comps (1-3%), client tastings (0.5-2%), R&D (1-3%).
+- Total non-revenue food budget: 2-6% of food cost. Default assumption: 3%.
+- This is a cost-plus line item or an overhead percentage, not a recipe-level adjustment.
+- **System behavior:** Surface as an optional cost-plus line called "Non-Revenue Food" with a default of 3% of food cost. Chef-configurable.
+
+#### Beverage Costing
+
+- Beverages have separate cost targets from food: liquor 15-22%, wine 25-40%, beer 20-30%, non-alcoholic 10-20%.
+- Beverage-specific yield: ice displacement (25-33% of glass), pour count (17 standard pours per 750 mL), spillage (1-2%).
+- The blended food + beverage cost is what matters for overall profitability.
+- **System behavior:** Beverage costing is a future module. Define methodology now. When built, beverage cost is tracked separately from food cost and displayed alongside it, never blended silently.
+- See reference data Section 10 for full beverage cost tables, yield data, and event planning guides.
+
+#### Batch Allocation
+
+- Shared recipes (stocks, sauces, spice blends) must be costed per usable portion: `Batch Cost Per Unit = Total Cost / Total Yield Units`
+- Shared pantry staples (olive oil, butter) under $10 are covered by Q-Factor.
+- Shared recipes over $10 should be explicitly allocated per recipe that uses them.
+- **System behavior:** Sub-recipes already cost per portion in the auto-costing engine. This definition formalizes the methodology for the knowledge layer.
+
+#### Minimum Order Waste (Case-Break Problem)
+
+- When minimum purchase exceeds what a job needs, the surplus may spoil.
+- If surplus will be used within shelf life, cost only what is used per recipe.
+- If surplus will spoil, charge the full purchase to the triggering job.
+- **System behavior:** Informational concept for the knowledge layer. No automated tracking.
+
+#### Purchasing Strategy Impact on Food Cost
+
+- Same ingredient can vary 30-50% across purchasing channels (broadline vs. cash-and-carry vs. retail).
+- Delivery fees ($25-75 per drop) add 5-25% to small orders.
+- Volume discounts (30-60% savings) only make sense if you'll use the product before quality degrades.
+- **System behavior:** Informational. The price engine uses whatever price is in the database. The knowledge layer educates operators on why their numbers might differ from expectations.
+- See reference data Section 13 for vendor comparison tables and delivery fee impact.
+
+#### Taxes on Ingredient Purchases
+
+- Raw ingredients for resale are typically tax-exempt (with resale certificate) in most US states.
+- Without a resale cert, 5-10% sales tax directly inflates food cost.
+- **System behavior:** Informational only. Tax calculations are outside the costing engine scope. The knowledge layer educates operators.
+- See reference data Section 17 for exemption tables and cost impact.
+
+#### Re-Costing Frequency
+
+- Recipe costs drift as ingredient prices change. Re-costing frequency depends on operation type.
+- Private chef/caterer: per event. Restaurant/bakery: monthly. Institutional: quarterly.
+- Triggers for immediate re-cost: supplier price increase, vendor change, seasonal shift, yield correction.
+- **System behavior:** Future enhancement: flag recipes that haven't been re-costed in X days based on operation type. Define now, build when price history has enough data.
+- See reference data Section 14 for frequency table by operation type.
+
+#### Breakeven Analysis
+
+```
+Breakeven Units = Fixed Costs / (Revenue Per Unit - Variable Cost Per Unit)
+```
+
+- Every operator needs to know their minimum viable volume before food cost targets matter.
+- **System behavior:** Informational concept for the knowledge layer and cost-plus calculator. Not a computed metric (requires fixed cost input that isn't in the system yet).
+- See reference data Section 16 for breakeven templates by operation type.
+
+#### Inflation and Price Escalation
+
+- Year-over-year food commodity inflation (3-8% annually in recent years) erodes margins on fixed-price menus and contracts.
+- Escalation clauses in contracts protect against inflation risk on locked pricing.
+- **System behavior:** The price engine uses current prices. The knowledge layer educates operators about re-costing discipline and contract escalation clauses.
+
+#### Contract vs. One-Off Pricing
+
+- Recurring clients have different economics: lower per-visit overhead, less waste from ingredient overlap, consolidated shopping.
+- One-off events must absorb full setup, teardown, and sourcing costs.
+- **System behavior:** Informational. The cost-plus calculator already supports different line items per event. The knowledge layer explains when and why to adjust.
+
+#### Menu Pricing Psychology
+
+- Not a formula. A set of behavioral principles affecting achievable price.
+- Charm pricing, anchoring, decoy pricing, removing dollar signs.
+- **System behavior:** Informational only. Included in the knowledge base page and Remy's repertoire. Never auto-applied.
+
+#### Deposit and Payment Timing
+
+- Cash flow affects purchasing power, which affects achievable quality at a food cost target.
+- 50% deposit on booking enables premium ingredient purchasing. Net-30 invoicing requires personal float.
+- **System behavior:** Informational only. Deposit policy is already configurable in event/quote settings.
+
 ---
 
 ## Part 2: Data Model Extensions
@@ -246,7 +340,7 @@ All exhaustive lookup tables (unit conversions, ingredient densities, yield fact
 
 The reference data file contains:
 
-- **9 sections** of structured lookup tables
+- **17 sections** of structured lookup tables
 - **150+ ingredient yield factors** (trim and cooking, with combined yield examples)
 - **60+ ingredient density values** (volume-to-weight)
 - **70+ count-to-weight conversions** (produce, proteins, herbs)
@@ -257,6 +351,14 @@ The reference data file contains:
 - **Non-linear scaling factors** for 11 component types
 - **Cross-utilization map** for 20+ primary products and their reuse pathways
 - **Common pack sizes** for 30+ staple ingredients
+- **Beverage costing data** (18 beverage categories with targets, yield reference, ice displacement, event planning guides)
+- **Waste and spoilage rates** by operation type (12 types) and ingredient category (15 categories)
+- **Non-revenue food allowances** (5 categories with percentage ranges)
+- **Purchasing strategy reference** (vendor channel comparison, delivery fee impact, volume discount breakdowns)
+- **Re-costing frequency** by operation type (11 types with triggers)
+- **Presentation and garnish costs** (12 items with per-plate cost calculations, 4 service levels)
+- **Breakeven analysis templates** (formulas, 8 operation types, contribution margin reference)
+- **Tax reference** (sales tax exemptions, resale certificate cost impact at 5 spend levels)
 
 ### Operator-Specific Cost Line Schema
 
@@ -349,6 +451,12 @@ interface CostingWarning {
     | 'default_yield'
     | 'stale_price'
     | 'missing_price'
+    | 'high_spoilage_risk'
+    | 'no_recost_recent'
+    | 'case_break_waste'
+    | 'no_resale_cert'
+    | 'high_garnish_cost'
+    | 'beverage_cost_missing'
   message: string
   severity: 'info' | 'amber' | 'red'
   ingredientId?: string // for ingredient-specific warnings
@@ -401,6 +509,17 @@ interface CostingHelpPopoverProps {
     | 'prime_cost'
     | 'contribution_margin'
     | 'ap_ep'
+    | 'spoilage'
+    | 'non_revenue_food'
+    | 'beverage_cost'
+    | 'batch_allocation'
+    | 'breakeven'
+    | 'purchasing_strategy'
+    | 'garnish_cost'
+    | 'recosting_frequency'
+    | 'inflation_escalation'
+    | 'case_break'
+    | 'tax_exemption'
   currentValue?: number // the actual number being displayed, for contextual guidance
   targetValue?: number // the chef's target, for comparison
   operationType?: string // chef's operation type, for relevant ranges
@@ -465,6 +584,12 @@ Remy gains a new knowledge action: `knowledge.food_costing`
 | Cost-plus calculation with $0 labor           | Allow it. Some chefs are solo and don't count their own labor. Flag as info, not error.                                                                        |
 | Ingredient has no price in OpenClaw           | Already handled by auto-costing engine. Knowledge layer explains what "missing price" means and what the chef can do (manual override, wait for price update). |
 | Remy asked about costing but chef has no data | Remy explains the methodology generically. Does not fabricate example numbers or "typical" costs.                                                              |
+| Chef asks about beverage costing              | Knowledge layer explains beverage cost methodology. Does not compute beverage costs (future module). Shows targets and methodology from the guide.             |
+| Chef has high spoilage but no tracking        | Knowledge layer explains spoilage concept, provides rate benchmarks by operation type. Does not display spoilage-adjusted numbers until tracking exists.       |
+| Chef asks about breakeven                     | Knowledge layer explains the formula and provides benchmarks by operation type. Does not compute (requires fixed cost input not yet in system).                |
+| Chef asks about resale certificate            | Knowledge layer explains tax exemption and cost impact. Informational only; tax is outside costing engine scope.                                               |
+| Chef asks about retainer vs. one-off pricing  | Knowledge layer explains different economics. Does not auto-adjust pricing. Chef controls all pricing decisions.                                               |
+| Recipe hasn't been re-costed in 90+ days      | Surface "info" hint: "This recipe was last costed X days ago. Ingredient prices may have changed." Not a block.                                                |
 
 ---
 
@@ -531,7 +656,7 @@ None. All configuration fields described above either already exist in the chef 
 - The `CostingResult` interface defined here should be reconciled with whatever the auto-costing engine currently returns. Extend, don't replace.
 - All help content is STATIC. No server actions, no database queries, no AI generation for the knowledge layer itself. It's a content map in a TypeScript file.
 - The user-facing guide (`docs/food-costing-guide.md`) is the canonical content source. The reference data file (`docs/food-costing-reference-data.md`) is the canonical data source. The TypeScript content map extracts from both. If they diverge, the docs win.
-- The reference data file contains 150+ yield factors, 60+ density values, 70+ count-to-weight conversions, portion standards, operator cost lines, and seasonal data. This is a LOT of static data. Structure `lib/costing/knowledge.ts` as typed lookup maps, not inline strings.
+- The reference data file contains 17 sections: 150+ yield factors, 60+ density values, 70+ count-to-weight conversions, portion standards, operator cost lines, seasonal data, beverage costing (targets, yields, ice displacement, event planning), waste/spoilage rates (by operation type and ingredient category), non-revenue food allowances, purchasing strategy (vendor channels, delivery fees, volume discounts), re-costing frequency, presentation/garnish costs, breakeven templates, and tax reference. This is a LOT of static data. Structure `lib/costing/knowledge.ts` as typed lookup maps, not inline strings.
 - Operator-specific cost lines (`lib/costing/operator-cost-lines.ts`) should export a map keyed by `OperatorType`. When a chef selects their operation type in settings, the UI pre-populates relevant cost line templates they can fill in with their actual numbers.
 - Follow the Universal Interface Philosophy: one primary action per screen, five mandatory states, cognitive load limits. The knowledge layer is supplementary; it must not compete with primary costing data for attention.
 - No em dashes anywhere. No "OpenClaw" in any user-visible string.

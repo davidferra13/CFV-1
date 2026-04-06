@@ -752,3 +752,299 @@ Each operator type has cost lines that go beyond Food + Labor + Overhead. These 
 | Wine (opened, oxidizing)    | Leftover wine                         | Vinegar, cooking wine, reductions                     |
 
 **Estimated margin recovery from cross-utilization: 3-8 percentage points off food cost when practiced consistently.**
+
+---
+
+## 10. Beverage Costing Reference Data
+
+### 10a. Beverage Cost Targets
+
+| Category              | Target Cost % | Typical Margin | Notes                                        |
+| --------------------- | ------------- | -------------- | -------------------------------------------- |
+| Well liquor           | 15-18%        | 82-85%         | Highest margin category in foodservice       |
+| Call liquor           | 18-20%        | 80-82%         |                                              |
+| Premium liquor        | 18-22%        | 78-82%         | Higher cost but higher price point           |
+| Super-premium liquor  | 20-25%        | 75-80%         | Rare/luxury spirits                          |
+| Cocktails (classic)   | 18-22%        | 78-82%         | 2-3 ingredients, simple build                |
+| Cocktails (craft)     | 22-28%        | 72-78%         | Fresh juices, syrups, garnishes add cost     |
+| Wine by the glass     | 25-35%        | 65-75%         | Standard: bottle cost / 4-5 glasses          |
+| Wine by the bottle    | 30-40%        | 60-70%         | Lower markup than by-the-glass               |
+| Draft beer            | 20-28%        | 72-80%         | Keg math (see yield table)                   |
+| Bottled/canned beer   | 25-30%        | 70-75%         | Less margin than draft                       |
+| Craft beer (draft)    | 25-30%        | 70-75%         | Higher keg cost                              |
+| Non-alcoholic drinks  | 10-20%        | 80-90%         | Soda fountain syrup cost is nearly zero      |
+| Coffee (drip)         | 12-18%        | 82-88%         | Per-cup cost is extremely low at volume      |
+| Espresso drinks       | 15-22%        | 78-85%         | Milk is the expensive part, not the coffee   |
+| Fresh-squeezed juice  | 25-35%        | 65-75%         | Citrus yield is low (30-40% of fruit weight) |
+| Smoothies             | 22-30%        | 70-78%         | Frozen fruit, protein powder, dairy          |
+| Iced tea (house-made) | 8-15%         | 85-92%         | Tea is very cheap per gallon                 |
+| Lemonade (fresh)      | 18-25%        | 75-82%         | Sugar + lemon yield drives cost              |
+
+### 10b. Beverage Yield Reference
+
+| Item                          | Yield                           | Notes                           |
+| ----------------------------- | ------------------------------- | ------------------------------- |
+| 750 mL liquor bottle          | 17 standard pours (1.5 oz each) | 25.4 oz total                   |
+| 1 L liquor bottle             | 22 standard pours               | 33.8 oz total                   |
+| 1.75 L liquor bottle (handle) | 39 standard pours               | 59.2 oz total                   |
+| 750 mL wine bottle            | 5 glasses (5 oz pour)           | 4.2 glasses at 6 oz pour        |
+| 750 mL wine bottle            | 25 tasting pours (1 oz each)    | For wine tastings               |
+| Half-barrel keg (15.5 gal)    | 124 pints (16 oz)               | Account for 5-10% foam loss     |
+| Sixth-barrel keg (5.16 gal)   | 41 pints                        | Common for craft beer           |
+| 1 lb coffee beans             | 40-45 cups (6 oz brewed)        | Standard ratio: 2 tbsp per 6 oz |
+| 5 lb bag coffee               | 200-225 cups                    |                                 |
+| 1 gallon simple syrup         | 128 oz / ~85 cocktails          | At 1.5 oz per drink             |
+| 1 case lemons (140 ct)        | ~560 oz juice / ~373 cocktails  | At 1.5 oz juice per cocktail    |
+
+### 10c. Ice and Displacement
+
+| Glass Size   | Ice Fill   | Liquid Capacity | Notes                            |
+| ------------ | ---------- | --------------- | -------------------------------- |
+| 12 oz        | Standard   | 8-9 oz          | 25-33% displacement              |
+| 16 oz        | Standard   | 11-12 oz        |                                  |
+| 22 oz        | Standard   | 15-16 oz        |                                  |
+| Rocks (8 oz) | Large cube | 5-6 oz          | Single large cube, less dilution |
+| Pint (16 oz) | No ice     | 16 oz           | Draft beer, no displacement      |
+
+### 10d. Bar Service Planning (Events)
+
+| Service Type    | Drinks/Person/Hour (First) | Drinks/Person/Hour (After) | Notes                          |
+| --------------- | -------------------------- | -------------------------- | ------------------------------ |
+| Open bar        | 2.0-2.5                    | 1.0-1.5                    | Budget liberally               |
+| Limited bar     | 1.5-2.0                    | 0.75-1.0                   | Beer, wine, signature cocktail |
+| Beer and wine   | 1.5-2.0                    | 0.75-1.0                   | Lower cost per drink           |
+| Cash bar        | 1.0-1.5                    | 0.5-1.0                    | Guests self-regulate           |
+| Consumption bar | 1.5-2.0                    | 1.0-1.5                    | Tab-based; harder to predict   |
+
+**Bottle planning for events (open bar, 4-hour event):**
+
+| Drink Type | Per 100 Guests | Notes                               |
+| ---------- | -------------- | ----------------------------------- |
+| Liquor     | 10-12 bottles  | Mix of vodka, gin, whiskey, tequila |
+| Wine       | 18-22 bottles  | 60% white, 40% red (adjust by menu) |
+| Beer       | 2-3 cases      | Mix of light and craft              |
+| Mixers     | 15-20 L total  | Tonic, soda, juice, ginger ale      |
+| Garnishes  | $40-80         | Citrus, olives, cherries, herbs     |
+
+---
+
+## 11. Waste and Spoilage Rates
+
+### 11a. Expected Spoilage by Operation Type
+
+| Operation Type | Expected Rate | Primary Drivers                                      |
+| -------------- | ------------- | ---------------------------------------------------- |
+| Fine dining    | 5-8%          | Wide ingredient variety, premium perishables         |
+| Casual dining  | 4-7%          | Broad menu, moderate turnover                        |
+| Private chef   | 1-3%          | Buy per job, minimal sitting inventory               |
+| Catering       | 2-5%          | Buy per event, some surplus for safety               |
+| Food truck     | 3-8%          | Limited storage, weather-dependent demand            |
+| Ghost kitchen  | 3-8%          | Unpredictable order volume, perishable-heavy         |
+| Bakery         | 5-15%         | Daily production of perishable items, unsold product |
+| Meal prep      | 3-7%          | Batch production, tight shelf life windows           |
+| Restaurant     | 4-10%         | Menu size is the biggest driver                      |
+| Institutional  | 3-6%          | High volume, formal tracking, predictable demand     |
+| Pop-up         | 2-5%          | One-shot inventory, plan conservatively              |
+| Wholesale/CPG  | 2-8%          | Shipping damage, returns, shelf-life expiry          |
+
+### 11b. Spoilage by Ingredient Category
+
+| Category            | Shelf Life (Refrigerated) | Typical Spoilage Risk | Notes                                 |
+| ------------------- | ------------------------- | --------------------- | ------------------------------------- |
+| Fresh herbs         | 3-7 days                  | High (15-30%)         | Buy close to use date; stems in water |
+| Berries             | 2-5 days                  | High (10-20%)         | Fragile, mold quickly                 |
+| Fresh seafood       | 1-2 days                  | High (5-15%)          | Use day of purchase if possible       |
+| Leafy greens        | 5-7 days                  | Medium-High (8-15%)   | Wilt, slime, bruise                   |
+| Fresh mushrooms     | 5-7 days                  | Medium (5-10%)        | Paper bag, not plastic                |
+| Dairy (cream, milk) | 7-14 days                 | Medium (3-8%)         | Check dates on delivery               |
+| Soft cheese         | 7-14 days                 | Medium (3-8%)         | Mold risk after opening               |
+| Fresh poultry       | 2-3 days                  | Medium (3-5%)         | Use or freeze within 48 hours         |
+| Ground meat         | 1-2 days                  | Medium (3-5%)         | Highest bacteria risk                 |
+| Hard cheese         | 3-6 weeks                 | Low (1-3%)            | Cut off mold, still usable            |
+| Root vegetables     | 2-4 weeks                 | Low (2-5%)            | Good storage crop                     |
+| Citrus              | 2-3 weeks                 | Low (2-4%)            | Dries out before rotting              |
+| Eggs                | 3-5 weeks                 | Very Low (1-2%)       | Excellent shelf life                  |
+| Dry goods           | 6-12 months               | Very Low (<1%)        | Pantry staples, minimal risk          |
+| Frozen items        | 3-12 months               | Very Low (<1%)        | Freezer burn is the main concern      |
+
+### 11c. Effective Cost Adjustment for Spoilage
+
+```text
+Effective Cost Per Sold Unit = Total Production Cost / (Total Units Produced x (1 - Spoilage Rate))
+```
+
+**Example:** You produce 100 croissants at $1.20 each ($120 total). 10 go unsold (10% spoilage). Your effective cost per sold croissant is $120 / 90 = $1.33, not $1.20. If you price at $3.50, your actual food cost is 38%, not 34%.
+
+---
+
+## 12. Non-Revenue Food Allowances
+
+| Category        | Typical Range (% of food cost) | Notes                                             |
+| --------------- | ------------------------------ | ------------------------------------------------- |
+| Staff meals     | 1-3%                           | $3-5/person/shift; higher at restaurants          |
+| Comps / voids   | 1-3%                           | Restaurants highest; private chef/catering lowest |
+| Client tastings | 0.5-2%                         | Private chef and catering; spread across bookings |
+| R&D / testing   | 1-3%                           | New menu development, recipe testing              |
+| Quality control | 0.5-1%                         | Tasting during service for seasoning and plating  |
+| **Total**       | **2-6%**                       | **Budget 3-4% as a baseline**                     |
+
+**Tasting cost recovery model for private chefs and caterers:**
+
+```text
+Tasting Cost Per Event = (Total Annual Tasting Cost) / (Number of Booked Events)
+```
+
+If you do 20 tastings/year at $150 average cost and book 12 events from them, each booked event carries $250 in tasting cost ($3,000 / 12). Build this into your overhead or add a tasting fee.
+
+---
+
+## 13. Purchasing Strategy Reference
+
+### 13a. Price Position by Channel
+
+| Channel                             | Price vs. Broadline Delivered | Delivery  | Min Order | Best For                           |
+| ----------------------------------- | ----------------------------- | --------- | --------- | ---------------------------------- |
+| Broadline delivered (Sysco, USF)    | Baseline (1.0x)               | Yes       | $200-500  | Volume, range, consistency         |
+| Specialty distributor               | 1.10-1.30x                    | Yes       | $150-400  | Quality, unique items              |
+| Cash-and-carry (Restaurant Depot)   | 0.85-0.95x                    | No        | None      | No delivery fee, immediate         |
+| Wholesale club (Costco, Sam's)      | 0.80-0.90x (select items)     | No        | None      | Butter, cream, eggs, dry goods     |
+| Direct farm / ranch                 | 0.80-1.20x (varies widely)    | Sometimes | Varies    | Quality, story, relationship       |
+| Farmers market                      | 1.00-1.30x                    | No        | None      | Peak-season produce, direct        |
+| Retail grocery                      | 1.20-1.50x                    | No        | None      | Emergency, tiny quantities only    |
+| Online wholesale (WebstaurantStore) | 0.90-1.00x                    | Yes       | Varies    | Equipment, dry goods, shelf-stable |
+
+### 13b. Delivery Fee Impact
+
+| Order Size | Delivery Fee | Fee as % of Order | Impact on Effective Food Cost |
+| ---------- | ------------ | ----------------- | ----------------------------- |
+| $200       | $50          | 25%               | Devastating; avoid            |
+| $300       | $50          | 17%               | Too high; consolidate more    |
+| $500       | $50          | 10%               | Acceptable for weekly drops   |
+| $750       | $50          | 7%                | Target minimum                |
+| $1,000     | $50          | 5%                | Good efficiency               |
+| $1,500+    | $0 (waived)  | 0%                | Most broadliners waive here   |
+
+### 13c. Volume Discount Comparison (Common Staples)
+
+| Item              | Retail (per unit) | Wholesale (per unit)  | Savings | Break-Even Volume     |
+| ----------------- | ----------------- | --------------------- | ------- | --------------------- |
+| All-purpose flour | $0.80/lb (5 lb)   | $0.35/lb (50 lb)      | 56%     | Must use 50 lb/month  |
+| Butter            | $5.00/lb          | $3.50/lb (36 lb cs)   | 30%     | Must use 36 lb/month  |
+| Olive oil         | $12/L (retail)    | $7/L (6-gal case)     | 42%     | Must use 6 gal/month  |
+| Eggs              | $4.50/doz         | $2.80/doz (15 doz cs) | 38%     | Must use 15 doz/month |
+| Chicken breast    | $4.50/lb          | $2.80/lb (40 lb cs)   | 38%     | Must use 40 lb/month  |
+| Heavy cream       | $6.00/qt          | $3.50/qt (12 qt cs)   | 42%     | Must use 12 qt/month  |
+
+---
+
+## 14. Re-Costing Frequency Reference
+
+| Operation Type | Frequency      | Trigger Events for Immediate Re-Cost                     |
+| -------------- | -------------- | -------------------------------------------------------- |
+| Private chef   | Per event      | Every proposal uses current prices                       |
+| Caterer        | Per event      | Custom menus require current pricing                     |
+| Restaurant     | Monthly        | Supplier price increase, menu change, seasonal shift     |
+| Bakery         | Monthly        | Flour/butter/egg price changes (high-volume amplifies)   |
+| Food truck     | Monthly        | Tight menu makes review fast                             |
+| Ghost kitchen  | Monthly        | Platform pricing must stay competitive                   |
+| Meal prep      | Weekly         | Tight margins, perishable-heavy, price-sensitive clients |
+| Institutional  | Quarterly      | Contract pricing buffers short-term swings               |
+| Wholesale/CPG  | Per production | Batch economics change with each ingredient lot          |
+| Fine dining    | Bi-weekly      | Seasonal ingredients, premium pricing demands accuracy   |
+| Pop-up         | Per event      | One-shot economics, no averaging across months           |
+
+---
+
+## 15. Presentation and Garnish Cost Reference
+
+| Item                     | Typical Cost       | Per-Plate Usage | Per-Plate Cost | Category           |
+| ------------------------ | ------------------ | --------------- | -------------- | ------------------ |
+| Microgreens (mixed)      | $25-40/lb          | 0.1-0.25 oz     | $0.16-0.63     | Garnish            |
+| Pea shoots               | $15-25/lb          | 0.15-0.3 oz     | $0.14-0.47     | Garnish            |
+| Edible flowers (mixed)   | $15-30/pack (50ct) | 1-3 per plate   | $0.30-1.80     | Garnish            |
+| Edible gold leaf         | $30-80/book (25sh) | 1 sheet         | $1.20-3.20     | Luxury garnish     |
+| Fresh herbs (chiffonade) | $2-4/bunch         | Pinch           | $0.05-0.15     | Standard garnish   |
+| Herb oil                 | $2-5/batch (8 oz)  | 0.25 oz drizzle | $0.06-0.16     | Sauce/drizzle      |
+| Balsamic reduction       | $12-40/bottle      | 0.25 oz         | $0.18-0.60     | Sauce/drizzle      |
+| Truffle oil              | $15-30/bottle      | 3-5 drops       | $0.10-0.25     | Finishing          |
+| Fresh truffle shavings   | $40-120/oz         | 0.1-0.2 oz      | $4.00-24.00    | Luxury             |
+| Candied nuts             | $8-15/lb           | 0.5-1 oz        | $0.25-0.94     | Texture garnish    |
+| Caviar                   | $50-200/oz         | 0.25-0.5 oz     | $12.50-100.00  | Luxury             |
+| Cocoa powder/matcha      | Negligible         | Dusting         | $0.01-0.05     | Q-factor territory |
+
+**Total garnish cost by service level:**
+
+| Service Level  | Typical Garnish Cost/Plate | As % of $15 Plate | As % of $40 Plate |
+| -------------- | -------------------------- | ----------------- | ----------------- |
+| Casual         | $0.10-0.30                 | 0.7-2.0%          | 0.3-0.8%          |
+| Upscale casual | $0.30-0.75                 | 2.0-5.0%          | 0.8-1.9%          |
+| Fine dining    | $0.75-3.00                 | 5.0-20%           | 1.9-7.5%          |
+| Luxury         | $3.00-25.00+               | 20%+              | 7.5%+             |
+
+---
+
+## 16. Breakeven Analysis Templates
+
+### 16a. Formula
+
+```text
+Breakeven Units = Fixed Costs / (Revenue Per Unit - Variable Cost Per Unit)
+Breakeven Revenue = Fixed Costs / (1 - (Variable Costs / Revenue))
+Breakeven Revenue = Fixed Costs / Contribution Margin Ratio
+```
+
+### 16b. By Operation Type
+
+| Operation Type | Typical Monthly Fixed Costs | Avg Revenue/Unit | Avg Variable Cost/Unit | Breakeven/Month  |
+| -------------- | --------------------------- | ---------------- | ---------------------- | ---------------- |
+| Food truck     | $3,500-6,000                | $12-16/meal      | $4.50-6.00/meal        | 350-600 meals    |
+| Ghost kitchen  | $2,500-6,000                | $18-28/order     | $8-14/order            | 200-430 orders   |
+| Private chef   | $1,000-3,000                | $400-800/event   | $150-350/event         | 3-6 events       |
+| Caterer        | $2,000-5,000                | $1,500-5,000/evt | $600-2,500/event       | 2-4 events       |
+| Bakery         | $3,000-8,000                | $5-12/item       | $1.50-4.50/item        | 500-1,200 items  |
+| Meal prep      | $2,000-5,000                | $10-15/meal      | $4-7/meal              | 300-700 meals    |
+| Restaurant     | $8,000-30,000               | $25-55/cover     | $10-22/cover           | 400-1,000 covers |
+| Pop-up         | $500-2,000 (per event)      | $15-30/person    | $6-12/person           | 40-130 covers    |
+
+### 16c. Contribution Margin Ratio Reference
+
+```text
+Contribution Margin Ratio = (Selling Price - Variable Cost) / Selling Price
+```
+
+| Food Cost % | Labor % (Variable) | Other Variable % | Total Variable % | Contribution Margin Ratio |
+| ----------- | ------------------ | ---------------- | ---------------- | ------------------------- |
+| 28%         | 15%                | 5%               | 48%              | 0.52                      |
+| 30%         | 18%                | 5%               | 53%              | 0.47                      |
+| 32%         | 20%                | 5%               | 57%              | 0.43                      |
+| 35%         | 22%                | 5%               | 62%              | 0.38                      |
+| 38%         | 25%                | 5%               | 68%              | 0.32                      |
+
+---
+
+## 17. Tax Reference (US, General)
+
+### 17a. Sales Tax Exemptions for Food Operators
+
+| Item                            | Typically Exempt (with resale cert) | Typically Taxable | Notes                            |
+| ------------------------------- | ----------------------------------- | ----------------- | -------------------------------- |
+| Raw ingredients for resale      | Yes                                 |                   | Core food cost                   |
+| Beverages for resale            | Yes                                 |                   | Including alcohol in most states |
+| Packaging given to customer     | Yes                                 |                   | Containers, bags, wraps          |
+| Equipment and smallwares        |                                     | Yes               | Always taxable                   |
+| Cleaning supplies               |                                     | Yes               |                                  |
+| Paper goods (internal use)      |                                     | Yes               |                                  |
+| Staff meal ingredients          |                                     | Varies            | Complex; state-specific          |
+| Prepared food sold to customers |                                     | Usually           | Operator collects and remits     |
+| Catering services               |                                     | Usually           | Some states tax service portion  |
+| Grocery items (unprepared)      | Yes (in most states)                |                   | Lower or zero rate               |
+
+### 17b. Impact of Missing Resale Certificate
+
+| Monthly Ingredient Spend | Tax Rate | Monthly Tax Paid | Annual Cost | Notes                  |
+| ------------------------ | -------- | ---------------- | ----------- | ---------------------- |
+| $1,000                   | 7%       | $70              | $840        | Small operation        |
+| $3,000                   | 7%       | $210             | $2,520      | Solo private chef      |
+| $5,000                   | 7%       | $350             | $4,200      | Small catering company |
+| $10,000                  | 7%       | $700             | $8,400      | Restaurant             |
+| $25,000                  | 7%       | $1,750           | $21,000     | High-volume operation  |
