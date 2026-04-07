@@ -35,7 +35,8 @@ const TOKEN_PATH = join(__dirname, '..', 'data', 'kroger-token.json');
 // Environment
 const CLIENT_ID = process.env.KROGER_CLIENT_ID;
 const CLIENT_SECRET = process.env.KROGER_CLIENT_SECRET;
-const API_BASE = 'https://api.kroger.com/v1';
+// Certification environment (api-ce) is what our app is approved for
+const API_BASE = process.env.KROGER_API_BASE || 'https://api-ce.kroger.com/v1';
 
 // Kroger banner chain IDs (used in location search)
 // Each "chain" in the Kroger API is identified by a division or banner name
@@ -108,7 +109,8 @@ async function getAccessToken() {
     );
   }
 
-  const res = await fetch('https://api.kroger.com/v1/connect/oauth2/token', {
+  const authBase = (process.env.KROGER_API_BASE || 'https://api-ce.kroger.com').replace('/v1', '');
+  const res = await fetch(`${authBase}/v1/connect/oauth2/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
