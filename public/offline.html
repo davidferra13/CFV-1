@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>ChefFlow — Offline</title>
+  <title>ChefFlow - Capture</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -13,133 +13,502 @@
       color: #1c1917;
       min-height: 100dvh;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem env(safe-area-inset-right, 0) 2rem env(safe-area-inset-left, 0);
-      padding-top: calc(2rem + env(safe-area-inset-top, 0px));
-      padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+      flex-direction: column;
+      padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 16px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 16px);
     }
 
-    .card {
+    .header {
       text-align: center;
-      max-width: 360px;
-      width: 100%;
+      padding: 1.5rem 0 1rem;
     }
 
-    .icon {
-      width: 72px;
-      height: 72px;
-      margin: 0 auto 1.5rem;
-      background: #fff7ed;
-      border: 2px solid #fed7aa;
-      border-radius: 16px;
-      display: flex;
+    .offline-badge {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #d97706;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 999px;
+      padding: 4px 12px;
+      margin-bottom: 0.75rem;
     }
 
-    .icon svg {
-      width: 32px;
-      height: 32px;
-      color: #e88f47;
+    .offline-badge .dot {
+      width: 6px;
+      height: 6px;
+      background: #f59e0b;
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
     }
 
     h1 {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: 700;
       color: #1c1917;
-      margin-bottom: 0.5rem;
       letter-spacing: -0.02em;
     }
 
     .subtitle {
-      font-size: 1rem;
-      color: #57534e;
-      line-height: 1.6;
-      margin-bottom: 0.75rem;
-    }
-
-    .safe-notice {
       font-size: 0.875rem;
-      color: #16a34a;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-      border-radius: 10px;
-      padding: 0.75rem 1rem;
-      margin-bottom: 1.5rem;
+      color: #78716c;
+      margin-top: 4px;
+    }
+
+    .form-area {
+      flex: 1;
       display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 0.5rem 0;
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .type-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .type-btn {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 4px;
+      border: 1.5px solid #e7e5e4;
+      border-radius: 10px;
+      background: #fff;
+      color: #57534e;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .type-btn.active {
+      border-color: #e88f47;
+      background: #fff7ed;
+      color: #c2410c;
+      font-weight: 600;
+    }
+
+    .type-btn:active { transform: scale(0.97); }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 12px;
+      border: 1.5px solid #e7e5e4;
+      border-radius: 12px;
+      background: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      color: #1c1917;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    textarea:focus { border-color: #e88f47; }
+    textarea::placeholder { color: #a8a29e; }
+
+    .amount-row {
+      display: none;
       align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
+      gap: 8px;
     }
 
-    .safe-notice svg {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
+    .amount-row.visible { display: flex; }
+
+    .amount-row label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #57534e;
+      white-space: nowrap;
     }
 
-    button {
+    .amount-input {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1.5px solid #e7e5e4;
+      border-radius: 10px;
+      background: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      color: #1c1917;
+      outline: none;
+    }
+
+    .amount-input:focus { border-color: #e88f47; }
+
+    .save-btn {
       background: #e88f47;
       color: #fff;
       border: none;
-      border-radius: 10px;
-      padding: 0.75rem 1.5rem;
-      font-size: 0.9375rem;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       width: 100%;
-      transition: background 0.15s;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 4px;
     }
 
-    button:hover { background: #d47530; }
-    button:active { background: #b15c26; }
+    .save-btn:hover { background: #d47530; }
+    .save-btn:active { background: #b15c26; transform: scale(0.98); }
+    .save-btn:disabled { background: #d6d3d1; cursor: not-allowed; }
 
-    .wordmark {
-      margin-top: 2.5rem;
-      font-size: 0.8125rem;
+    .saved-toast {
+      position: fixed;
+      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #166534;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .saved-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .queue-section {
+      max-width: 480px;
+      width: 100%;
+      margin: 0 auto;
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    .queue-header {
+      font-size: 0.75rem;
       font-weight: 600;
       color: #a8a29e;
-      letter-spacing: 0.1em;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
     }
 
-    .auto-reload {
-      display: none;
-      margin-top: 1rem;
+    .queue-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .queue-item {
+      background: #fff;
+      border: 1px solid #e7e5e4;
+      border-radius: 10px;
+      padding: 10px 12px;
       font-size: 0.8125rem;
       color: #57534e;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .queue-item-text {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .queue-item-time {
+      font-size: 0.6875rem;
+      color: #a8a29e;
+      white-space: nowrap;
+    }
+
+    .queue-empty {
+      text-align: center;
+      font-size: 0.8125rem;
+      color: #a8a29e;
+      padding: 1rem 0;
+    }
+
+    .reconnect-bar {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #166534;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      z-index: 100;
+      padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    }
+
+    .reconnect-bar.show { display: block; }
+
+    .wordmark {
+      text-align: center;
+      padding: 0.75rem 0;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #d6d3d1;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="icon">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 0 1 7.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 0 1 1.06 0Z" />
-      </svg>
-    </div>
-    <h1>You're Offline</h1>
-    <p class="subtitle">This page couldn't be loaded from cache.</p>
 
-    <div class="safe-notice">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-      </svg>
-      Your work is saved locally and will sync automatically.
-    </div>
-
-    <button onclick="window.location.reload()">Retry Connection</button>
-
-    <p class="auto-reload" id="auto-reload">Reconnecting automatically...</p>
-    <p class="wordmark">ChefFlow</p>
+  <div class="reconnect-bar" id="reconnect-bar">
+    Back online. Redirecting...
   </div>
 
+  <div class="header">
+    <div class="offline-badge"><span class="dot"></span> Offline</div>
+    <h1>Quick Capture</h1>
+    <p class="subtitle">Saved locally, syncs when you reconnect</p>
+  </div>
+
+  <div class="form-area">
+    <div class="type-row">
+      <button class="type-btn active" data-type="note" onclick="setType('note')">Note</button>
+      <button class="type-btn" data-type="expense" onclick="setType('expense')">Expense</button>
+      <button class="type-btn" data-type="recipe-idea" onclick="setType('recipe-idea')">Recipe</button>
+      <button class="type-btn" data-type="event-note" onclick="setType('event-note')">Event</button>
+    </div>
+
+    <textarea id="capture-text" placeholder="What's on your mind?" autofocus></textarea>
+
+    <div class="amount-row" id="amount-row">
+      <label for="capture-amount">Amount $</label>
+      <input type="number" id="capture-amount" class="amount-input" placeholder="0.00" step="0.01" min="0" inputmode="decimal" />
+    </div>
+
+    <button class="save-btn" id="save-btn" onclick="saveCapture()">Save Capture</button>
+  </div>
+
+  <div class="queue-section">
+    <div class="queue-header" id="queue-header" style="display:none;">Pending sync</div>
+    <div class="queue-list" id="queue-list"></div>
+  </div>
+
+  <div class="wordmark">ChefFlow</div>
+
+  <div class="saved-toast" id="saved-toast">Saved</div>
+
   <script>
+    // ---- State ----
+    var currentType = 'note';
+    var DB_NAME = 'chefflow-offline';
+    var DB_VERSION = 1;
+    var STORE_NAME = 'pending-actions';
+
+    // ---- Type selector ----
+    function setType(type) {
+      currentType = type;
+      var btns = document.querySelectorAll('.type-btn');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.toggle('active', btns[i].getAttribute('data-type') === type);
+      }
+      document.getElementById('amount-row').classList.toggle('visible', type === 'expense');
+
+      var ta = document.getElementById('capture-text');
+      var placeholders = {
+        'note': "What's on your mind?",
+        'expense': 'What did you buy? (e.g. 3lb salmon from Market Basket)',
+        'recipe-idea': 'Describe the dish or technique...',
+        'event-note': 'Note about an upcoming or past event...'
+      };
+      ta.placeholder = placeholders[type] || placeholders['note'];
+      ta.focus();
+    }
+
+    // ---- IndexedDB (mirrors lib/offline/idb-queue.ts exactly) ----
+    function openDB() {
+      return new Promise(function(resolve, reject) {
+        var request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = function() {
+          var db = request.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            var store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            store.createIndex('by-status', 'status', { unique: false });
+            store.createIndex('by-queued', 'queuedAt', { unique: false });
+          }
+        };
+        request.onsuccess = function() { resolve(request.result); };
+        request.onerror = function() { reject(request.error); };
+      });
+    }
+
+    function generateId() {
+      return Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+    }
+
+    function enqueue(actionName, args) {
+      return openDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+          var action = {
+            id: generateId(),
+            actionName: actionName,
+            args: args,
+            queuedAt: new Date().toISOString(),
+            retries: 0,
+            status: 'pending'
+          };
+          var tx = db.transaction(STORE_NAME, 'readwrite');
+          tx.objectStore(STORE_NAME).add(action);
+          tx.oncomplete = function() { db.close(); resolve(action); };
+          tx.onerror = function() { db.close(); reject(tx.error); };
+        });
+      });
+    }
+
+    function getPending() {
+      return openDB().then(function(db) {
+        return new Promise(function(resolve, reject) {
+          var tx = db.transaction(STORE_NAME, 'readonly');
+          var index = tx.objectStore(STORE_NAME).index('by-queued');
+          var request = index.getAll();
+          request.onsuccess = function() {
+            db.close();
+            var all = request.result || [];
+            resolve(all.filter(function(a) { return a.status === 'pending'; }));
+          };
+          request.onerror = function() { db.close(); reject(request.error); };
+        });
+      });
+    }
+
+    // ---- Save capture ----
+    function saveCapture() {
+      var text = document.getElementById('capture-text').value.trim();
+      if (!text) return;
+
+      var payload = {
+        type: currentType,
+        text: text,
+        capturedAt: new Date().toISOString()
+      };
+
+      if (currentType === 'expense') {
+        var amount = document.getElementById('capture-amount').value;
+        if (amount) payload.amount = amount;
+      }
+
+      var btn = document.getElementById('save-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      enqueue('offline-capture/create', [payload]).then(function() {
+        // Clear form
+        document.getElementById('capture-text').value = '';
+        document.getElementById('capture-amount').value = '';
+        btn.disabled = false;
+        btn.textContent = 'Save Capture';
+
+        // Flash toast
+        showToast('Saved');
+
+        // Refresh queue display
+        renderQueue();
+      }).catch(function(err) {
+        console.error('Failed to save capture:', err);
+        btn.disabled = false;
+        btn.textContent = 'Save Capture';
+        showToast('Save failed. Try again.');
+      });
+    }
+
+    // ---- Toast ----
+    function showToast(msg) {
+      var toast = document.getElementById('saved-toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(function() { toast.classList.remove('show'); }, 2000);
+    }
+
+    // ---- Queue display ----
+    function renderQueue() {
+      getPending().then(function(items) {
+        // Only show captures from this offline page
+        var captures = items.filter(function(a) {
+          return a.actionName === 'offline-capture/create';
+        });
+
+        var header = document.getElementById('queue-header');
+        var list = document.getElementById('queue-list');
+
+        if (captures.length === 0) {
+          header.style.display = 'none';
+          list.innerHTML = '';
+          return;
+        }
+
+        header.style.display = 'block';
+        header.textContent = 'Pending sync (' + captures.length + ')';
+
+        list.innerHTML = captures.map(function(c) {
+          var payload = c.args && c.args[0] ? c.args[0] : {};
+          var label = payload.type === 'expense' ? 'Expense' :
+                      payload.type === 'recipe-idea' ? 'Recipe' :
+                      payload.type === 'event-note' ? 'Event' : 'Note';
+          var time = new Date(c.queuedAt);
+          var timeStr = time.getHours() + ':' + String(time.getMinutes()).padStart(2, '0');
+          var text = payload.text || '';
+          if (text.length > 60) text = text.slice(0, 57) + '...';
+
+          return '<div class="queue-item">' +
+            '<span class="queue-item-text"><strong>' + label + ':</strong> ' + escapeHtml(text) + '</span>' +
+            '<span class="queue-item-time">' + timeStr + '</span>' +
+            '</div>';
+        }).join('');
+      }).catch(function() {
+        // IDB not available - silently fail
+      });
+    }
+
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ---- Reconnection ----
     window.addEventListener('online', function() {
-      document.getElementById('auto-reload').style.display = 'block';
+      var bar = document.getElementById('reconnect-bar');
+      bar.classList.add('show');
       setTimeout(function() { window.location.reload(); }, 1500);
     });
+
+    // ---- Keyboard shortcut: Ctrl/Cmd + Enter to save ----
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        saveCapture();
+      }
+    });
+
+    // ---- Init ----
+    renderQueue();
   </script>
 </body>
 </html>

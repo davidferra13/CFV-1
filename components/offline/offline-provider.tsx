@@ -16,6 +16,7 @@ import {
 import { useNetworkStatus } from '@/lib/offline/use-network-status'
 import { replayPendingActions, onSyncProgress, type SyncProgress } from '@/lib/offline/sync-engine'
 import { getPendingCount } from '@/lib/offline/idb-queue'
+import { registerCaptureAction } from '@/lib/offline/register-capture-action'
 import { toast } from 'sonner'
 
 interface OfflineContextValue {
@@ -47,6 +48,9 @@ export function useOffline() {
 }
 
 export function OfflineProvider({ children }: { children: ReactNode }) {
+  // Register the offline capture action so SW-queued items replay correctly
+  registerCaptureAction()
+
   const { isOnline, isOffline, wasOffline, checkNow } = useNetworkStatus()
   const [pendingCount, setPendingCount] = useState(0)
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null)

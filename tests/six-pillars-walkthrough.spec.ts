@@ -14,51 +14,25 @@ import * as path from 'path'
 const BASE = process.env.TEST_BASE_URL || 'http://127.0.0.1:3100'
 const CREDS = { email: 'agent@local.chefflow', password: 'CHEF.jdgyuegf9924092.FLOW' }
 const SSDIR = 'test-results/six-pillars'
-const AUTH_STATE = 'test-results/six-pillars/.auth-state.json'
-
-// Auth cookie header cached across tests (auth once, reuse)
-let cachedSessionCookie = ''
 
 test.beforeAll(async () => {
   fs.mkdirSync(SSDIR, { recursive: true })
-
-  // Authenticate once via e2e endpoint
-  const resp = await fetch(BASE + '/api/e2e/auth', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(CREDS),
-  })
-  if (!resp.ok) throw new Error('E2E auth failed: ' + resp.status)
-
-  const setCookieHeader = resp.headers.get('set-cookie') || ''
-  const cookieMatch = setCookieHeader.match(/((?:__Secure-)?authjs\.session-token)=([^;]+)/)
-  if (!cookieMatch) throw new Error('No session cookie in e2e auth response')
-  cachedSessionCookie = cookieMatch[1] + '=' + cookieMatch[2]
 })
 
 test.describe('Six Pillars Happy-Path Walkthrough', () => {
   test.use({ baseURL: BASE })
 
-  test.beforeEach(async ({ context }) => {
-    // Add cookies directly (works because dev server uses non-Secure cookies
-    // when started with NEXTAUTH_URL=http://...)
-    const [cookieName, cookieValue] = cachedSessionCookie.split('=', 2)
+  // Auth via page.request.post - lets Playwright handle cookies natively,
+  // regardless of Secure/__Secure- prefix or NEXTAUTH_URL scheme.
+  test.beforeEach(async ({ page, context }) => {
     await context.addCookies([
-      {
-        name: 'cookieConsent',
-        value: 'declined',
-        domain: '127.0.0.1',
-        path: '/',
-      },
-      {
-        name: cookieName,
-        value: cookieValue,
-        domain: '127.0.0.1',
-        path: '/',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
+      { name: 'cookieConsent', value: 'declined', domain: '127.0.0.1', path: '/' },
     ])
+    const res = await page.request.post(`${BASE}/api/e2e/auth`, {
+      data: CREDS,
+      timeout: 60_000,
+    })
+    if (!res.ok()) throw new Error('E2E auth failed: ' + res.status())
   })
 
   // ---------------------------------------------------------------------------
