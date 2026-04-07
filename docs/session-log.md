@@ -306,3 +306,14 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on arrival: .next/ empty (no valid production build), prod TTFB 43s
 - Build state on departure: green (d33bc2a4c), 771 pages, prod TTFB 20ms
 - Notes: Root cause: no production build in .next/ directory. Prod server compiled pages on-demand (43s dashboard TTFB). Fix: rebuilt (771 pages), restarted prod server (sub-20ms TTFB). Secondary: Cloudflare tunnel used localhost (200ms IPv6 penalty per request), changed to 127.0.0.1. Tertiary: added 4 missing DB indexes on ingredient_price_history and grocery_price_quote_items for price resolution queries.
+
+## 2026-04-07 ~13:30 EST
+
+- Agent: General (Claude Opus 4.6)
+- Task: OpenClaw diagnostics and repair - scrapers not running
+- Status: completed
+- Files touched: Pi crontab (added OPENCLAW_DIR, LOCK_FILE, PATH env vars), prices.db (cleaned stuck run #85)
+- Commits: none (Pi infrastructure fix, no repo changes)
+- Build state on arrival: green (d33bc2a4c)
+- Build state on departure: green (unchanged)
+- Notes: Root cause: Pi rebooted Apr 6 23:27, crontab had no env var definitions. $OPENCLAW_DIR was empty, so every scraper cron job silently failed (cd to home, script not found, error discarded by no MTA). Fix: added OPENCLAW_DIR=/home/davidferra/openclaw-prices, LOCK_FILE=/tmp/openclaw.lock, PATH to crontab header. Cleaned stuck run #85 (king_soopers, never completed). Verified: Flipp scraper fired at 13:30 (302 searches, 22 zips, nationwide), Market Basket catalog walker triggered manually (crawling successfully). All cron jobs will now execute correctly.
