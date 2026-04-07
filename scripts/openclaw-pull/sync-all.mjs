@@ -276,7 +276,24 @@ async function main() {
   // Step 4: Pull docket output documents from Pi
   pullDocketDocs()
 
-  // Step 5: Refresh materialized views
+  // Step 5: Snapshot current prices for time-series tracking
+  try {
+    const sql = postgres(config.pg.connectionString)
+    const snapshotResult = await sql`
+      INSERT INTO openclaw.price_snapshots (store_product_id, price_cents, is_sale, observed_at)
+      SELECT sp.id, sp.price_cents, COALESCE(sp.is_sale, false), now()
+      FROM openclaw.store_products sp
+      WHERE sp.last_seen_at > now() - interval '1 day'
+        AND sp.price_cents > 0
+      ON CONFLICT DO NOTHING
+    `
+    log(`  Price snapshots: ${snapshotResult.count} observations recorded`)
+    await sql.end()
+  } catch (err) {
+    log(`  Price snapshots failed (non-blocking): ${err.message}`)
+  }
+
+  // Step 6: Refresh materialized views
   await refreshViews()
 
   // Summary
