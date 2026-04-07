@@ -95,7 +95,7 @@ const CHAIN_DEFINITIONS = [
   // ════════════════════════════════════════════════
   { slug: 'kroger', chainSlug: 'kroger', name: 'Kroger', markupPct: 12, tier: 'retail',
     states: ['OH','MI','IN','IL','KY','TN','GA','AL','MS','SC','NC','VA','WV','TX','CO','AZ','NV','NM','OR','WA','CA','AR','LA','MO','KS'] },
-  { slug: 'frys-food', chainSlug: 'frys_food', name: "Fry's Food", markupPct: 12, tier: 'retail',
+  { slug: 'frys', chainSlug: 'frys_food', name: "Fry's Food", markupPct: 12, tier: 'retail',
     states: ['AZ'] },
   { slug: 'king-soopers', chainSlug: 'king_soopers', name: 'King Soopers', markupPct: 12, tier: 'retail',
     states: ['CO','WY'] },
@@ -107,13 +107,13 @@ const CHAIN_DEFINITIONS = [
     states: ['IL'] },
   { slug: 'pick-n-save', chainSlug: 'pick_n_save', name: "Pick 'n Save", markupPct: 12, tier: 'retail',
     states: ['WI'] },
-  { slug: 'food-4-less', chainSlug: 'food_4_less', name: 'Food 4 Less', markupPct: 15, tier: 'retail',
+  { slug: 'food4less', chainSlug: 'food_4_less', name: 'Food 4 Less', markupPct: 15, tier: 'retail',
     states: ['CA','IL','IN','OH'] },
   { slug: 'fred-meyer', chainSlug: 'fred_meyer', name: 'Fred Meyer', markupPct: 12, tier: 'retail',
     states: ['OR','WA','ID','AK'] },
   { slug: 'qfc', chainSlug: 'qfc', name: 'QFC', markupPct: 12, tier: 'retail',
     states: ['WA','OR'] },
-  { slug: 'harris-teeter', chainSlug: 'harris_teeter', name: 'Harris Teeter', markupPct: 12, tier: 'retail',
+  { slug: 'harristeeter', chainSlug: 'harris_teeter', name: 'Harris Teeter', markupPct: 12, tier: 'retail',
     states: ['NC','SC','VA','DC','MD','DE','GA','FL'] },
   { slug: 'ralphs', chainSlug: 'ralphs', name: 'Ralphs', markupPct: 12, tier: 'retail',
     states: ['CA'] },
@@ -145,7 +145,7 @@ const CHAIN_DEFINITIONS = [
     states: ['IL','IN','IA'] },
   { slug: 'shaws', chainSlug: 'shaws', name: "Shaw's", markupPct: 15, tier: 'retail',
     states: ['MA','ME','NH','VT','CT','RI'] },
-  { slug: 'acme', chainSlug: 'acme', name: 'ACME Markets', markupPct: 12, tier: 'retail',
+  { slug: 'acme-markets', chainSlug: 'acme', name: 'ACME Markets', markupPct: 12, tier: 'retail',
     states: ['PA','NJ','DE','MD','CT'] },
   { slug: 'star-market', chainSlug: 'star_market', name: 'Star Market', markupPct: 12, tier: 'retail',
     states: ['MA'] },
@@ -163,11 +163,11 @@ const CHAIN_DEFINITIONS = [
   // ════════════════════════════════════════════════
   // AHOLD DELHAIZE
   // ════════════════════════════════════════════════
-  { slug: 'stop-and-shop', chainSlug: 'stop_and_shop', name: 'Stop & Shop', markupPct: 15, tier: 'retail',
+  { slug: 'stop-shop', chainSlug: 'stop_and_shop', name: 'Stop & Shop', markupPct: 15, tier: 'retail',
     states: ['MA','CT','RI','NJ','NY'] },
   { slug: 'giant', chainSlug: 'giant_food', name: 'Giant Food', markupPct: 12, tier: 'retail',
     states: ['DC','MD','VA','DE','PA'] },
-  { slug: 'giant-martins', chainSlug: 'giant_martins', name: 'Giant / Martin\'s', markupPct: 12, tier: 'retail',
+  { slug: 'giant-food-stores', chainSlug: 'giant_martins', name: 'Giant / Martin\'s', markupPct: 12, tier: 'retail',
     states: ['PA','VA','WV','MD'] },
   { slug: 'food-lion', chainSlug: 'food_lion', name: 'Food Lion', markupPct: 12, tier: 'retail',
     states: ['NC','SC','VA','GA','TN','KY','WV','MD','DE','PA'] },
@@ -201,9 +201,9 @@ const CHAIN_DEFINITIONS = [
     states: ['CA','AZ','NV','CO','TX','OK','GA','FL','AL','TN','NC','SC','VA','MD','PA','NJ'] },
   { slug: 'natural-grocers', chainSlug: 'natural_grocers', name: 'Natural Grocers', markupPct: 10, tier: 'retail',
     states: ['CO','TX','OK','KS','NE','MO','IA','MN','WI','MT','WY','ID','UT','NM','AZ','NV','OR','WA'] },
-  { slug: 'the-fresh-market', chainSlug: 'the_fresh_market', name: 'The Fresh Market', markupPct: 10, tier: 'retail',
+  { slug: 'the-fresh-market', chainSlug: 'the_fresh_market', name: 'The Fresh Market', markupPct: 10, tier: 'retail', // verified on Instacart
     states: ['NC','SC','GA','FL','AL','TN','VA','OH','IN','IL','CT','PA','MD'] },
-  { slug: 'earth-fare', chainSlug: 'earth_fare', name: 'Earth Fare', markupPct: 10, tier: 'retail',
+  { slug: 'earth-fare-market', chainSlug: 'earth_fare', name: 'Earth Fare', markupPct: 10, tier: 'retail',
     states: ['NC','SC','GA','TN','FL','OH','IN'] },
 
   // ════════════════════════════════════════════════
@@ -213,7 +213,7 @@ const CHAIN_DEFINITIONS = [
     states: ['MA','NH','ME'] },
   { slug: 'price-chopper', chainSlug: 'price_chopper', name: 'Price Chopper', markupPct: 12, tier: 'retail',
     states: ['NY','VT','CT','MA','NH','PA'] },
-  { slug: 'tops', chainSlug: 'tops_markets', name: 'Tops Markets', markupPct: 12, tier: 'retail',
+  { slug: 'tops-markets', chainSlug: 'tops_markets', name: 'Tops Markets', markupPct: 12, tier: 'retail',
     states: ['NY','PA','VT'] },
   { slug: 'wegmans', chainSlug: 'wegmans', name: 'Wegmans', markupPct: 10, tier: 'retail',
     states: ['NY','PA','NJ','VA','NC','MD','MA','DC'] },
@@ -221,7 +221,7 @@ const CHAIN_DEFINITIONS = [
     states: ['NJ','NY','CT','PA','MD','DE'] },
   { slug: 'price-rite', chainSlug: 'price_rite', name: 'Price Rite', markupPct: 15, tier: 'retail',
     states: ['CT','MA','NY','NJ','PA','MD','RI'] },
-  { slug: 'weis-markets', chainSlug: 'weis_markets', name: 'Weis Markets', markupPct: 12, tier: 'retail',
+  { slug: 'weis-markets', chainSlug: 'weis_markets', name: 'Weis Markets', markupPct: 12, tier: 'retail', // verified on Instacart
     states: ['PA','MD','NY','NJ','WV','VA','DE'] },
   { slug: 'key-food', chainSlug: 'key_food', name: 'Key Food', markupPct: 15, tier: 'retail',
     states: ['NY','NJ'] },
@@ -267,19 +267,19 @@ const CHAIN_DEFINITIONS = [
     states: ['WI'] },
   { slug: 'cub', chainSlug: 'cub_foods', name: 'Cub Foods', markupPct: 12, tier: 'retail',
     states: ['MN'] },
-  { slug: 'fresh-thyme', chainSlug: 'fresh_thyme', name: 'Fresh Thyme', markupPct: 10, tier: 'retail',
+  { slug: 'fresh-thyme-farmers-market', chainSlug: 'fresh_thyme', name: 'Fresh Thyme', markupPct: 10, tier: 'retail',
     states: ['IN','IL','OH','MI','MN','WI','IA','MO','KY','NE','PA'] },
   { slug: 'fareway', chainSlug: 'fareway', name: 'Fareway', markupPct: 12, tier: 'retail',
     states: ['IA','NE','MN','SD','IL','MO','KS'] },
   { slug: 'coborns', chainSlug: 'coborns', name: "Coborn's", markupPct: 12, tier: 'retail',
     states: ['MN','SD','ND','WI'] },
-  { slug: 'dierbergs', chainSlug: 'dierbergs', name: 'Dierbergs', markupPct: 12, tier: 'retail',
+  { slug: 'dierbergs-markets', chainSlug: 'dierbergs', name: 'Dierbergs', markupPct: 12, tier: 'retail',
     states: ['MO','IL'] },
 
   // ════════════════════════════════════════════════
   // SOUTH / SOUTHWEST REGIONALS
   // ════════════════════════════════════════════════
-  { slug: 'heb', chainSlug: 'heb', name: 'H-E-B', markupPct: 10, tier: 'retail',
+  { slug: 'h-e-b', chainSlug: 'heb', name: 'H-E-B', markupPct: 10, tier: 'retail',
     states: ['TX'] },
   { slug: 'central-market', chainSlug: 'central_market', name: 'Central Market', markupPct: 8, tier: 'retail',
     states: ['TX'] },
@@ -297,11 +297,11 @@ const CHAIN_DEFINITIONS = [
   // ════════════════════════════════════════════════
   // WEST COAST REGIONALS
   // ════════════════════════════════════════════════
-  { slug: 'winco', chainSlug: 'winco', name: 'WinCo Foods', markupPct: 15, tier: 'retail',
+  { slug: 'winco-foods', chainSlug: 'winco', name: 'WinCo Foods', markupPct: 15, tier: 'retail',
     states: ['ID','WA','OR','CA','NV','AZ','TX','UT','OK','MT'] },
   { slug: 'stater-bros', chainSlug: 'stater_bros', name: 'Stater Bros', markupPct: 12, tier: 'retail',
     states: ['CA'] },
-  { slug: 'smart-and-final', chainSlug: 'smart_and_final', name: 'Smart & Final', markupPct: 12, tier: 'retail',
+  { slug: 'smart-final', chainSlug: 'smart_and_final', name: 'Smart & Final', markupPct: 12, tier: 'retail',
     states: ['CA','AZ','NV'] },
   { slug: 'grocery-outlet', chainSlug: 'grocery_outlet', name: 'Grocery Outlet', markupPct: 15, tier: 'retail',
     states: ['CA','OR','WA','ID','NV','PA','NJ','MD'] },
@@ -315,9 +315,9 @@ const CHAIN_DEFINITIONS = [
     states: ['CA'] },
   { slug: 'bristol-farms', chainSlug: 'bristol_farms', name: 'Bristol Farms', markupPct: 8, tier: 'retail',
     states: ['CA'] },
-  { slug: 'new-seasons', chainSlug: 'new_seasons', name: 'New Seasons Market', markupPct: 10, tier: 'retail',
+  { slug: 'new-seasons-market', chainSlug: 'new_seasons', name: 'New Seasons Market', markupPct: 10, tier: 'retail',
     states: ['OR','WA'] },
-  { slug: 'pcc', chainSlug: 'pcc', name: 'PCC Community Markets', markupPct: 10, tier: 'retail',
+  { slug: 'pcc-community-markets', chainSlug: 'pcc', name: 'PCC Community Markets', markupPct: 10, tier: 'retail',
     states: ['WA'] },
 
   // ════════════════════════════════════════════════
@@ -333,7 +333,7 @@ const CHAIN_DEFINITIONS = [
   // ════════════════════════════════════════════════
   { slug: 'costco', chainSlug: 'costco', name: 'Costco', markupPct: 20, tier: 'wholesale',
     states: Object.keys(STATE_ZIPS) },
-  { slug: 'bjs-wholesale-club', chainSlug: 'bjs', name: "BJ's Wholesale", markupPct: 18, tier: 'wholesale',
+  { slug: 'bjs', chainSlug: 'bjs', name: "BJ's Wholesale", markupPct: 18, tier: 'wholesale',
     states: ['MA','CT','RI','NY','NJ','PA','DE','MD','DC','VA','NC','SC','GA','FL','OH','MI','IN','ME','NH'] },
   { slug: 'sams-club', chainSlug: 'sams_club', name: "Sam's Club", markupPct: 18, tier: 'wholesale',
     states: Object.keys(STATE_ZIPS) },
@@ -345,7 +345,7 @@ const CHAIN_DEFINITIONS = [
   // ════════════════════════════════════════════════
   { slug: 'hmart', chainSlug: 'hmart', name: 'H Mart', markupPct: 12, tier: 'retail',
     states: ['NY','NJ','PA','VA','MD','GA','TX','CA','IL','CO','WA','MI','OH'] },
-  { slug: '99-ranch', chainSlug: '99_ranch', name: '99 Ranch Market', markupPct: 12, tier: 'retail',
+  { slug: '99-ranch-market', chainSlug: '99_ranch', name: '99 Ranch Market', markupPct: 12, tier: 'retail',
     states: ['CA','TX','NV','WA','OR','NJ','MD','VA'] },
   { slug: 'mitsuwa', chainSlug: 'mitsuwa', name: 'Mitsuwa Marketplace', markupPct: 12, tier: 'retail',
     states: ['CA','NJ','IL','TX','HI'] },
@@ -359,7 +359,7 @@ const CHAIN_DEFINITIONS = [
     states: ['CA','AZ','NV','NM','TX'] },
   { slug: 'cardenas', chainSlug: 'cardenas', name: 'Cardenas Markets', markupPct: 12, tier: 'retail',
     states: ['CA','NV','AZ'] },
-  { slug: 'vallarta', chainSlug: 'vallarta', name: 'Vallarta Supermarkets', markupPct: 12, tier: 'retail',
+  { slug: 'vallarta-supermarkets', chainSlug: 'vallarta', name: 'Vallarta Supermarkets', markupPct: 12, tier: 'retail',
     states: ['CA'] },
   { slug: 'northgate', chainSlug: 'northgate', name: 'Northgate Market', markupPct: 12, tier: 'retail',
     states: ['CA'] },
@@ -411,7 +411,7 @@ const CHAIN_DEFINITIONS = [
     states: ['NY','NJ'] },
   { slug: 'fairway', chainSlug: 'fairway', name: 'Fairway Market', markupPct: 10, tier: 'retail',
     states: ['NY','NJ'] },
-  { slug: 'morton-williams', chainSlug: 'morton_williams', name: 'Morton Williams', markupPct: 10, tier: 'retail',
+  { slug: 'morton-williams-supermarket', chainSlug: 'morton_williams', name: 'Morton Williams', markupPct: 10, tier: 'retail',
     states: ['NY'] },
   { slug: 'westside-market', chainSlug: 'westside_market', name: 'Westside Market', markupPct: 10, tier: 'retail',
     states: ['NY'] },
@@ -419,7 +419,7 @@ const CHAIN_DEFINITIONS = [
     states: ['NY'] },
   { slug: 'balducci', chainSlug: 'balducci', name: "Balducci's", markupPct: 8, tier: 'retail',
     states: ['NY','CT','VA','MD'] },
-  { slug: 'kings', chainSlug: 'kings_food', name: 'Kings Food Markets', markupPct: 10, tier: 'retail',
+  { slug: 'kings-food-markets', chainSlug: 'kings_food', name: 'Kings Food Markets', markupPct: 10, tier: 'retail',
     states: ['NJ','CT','NY'] },
   { slug: 'food-emporium', chainSlug: 'food_emporium', name: 'Food Emporium', markupPct: 12, tier: 'retail',
     states: ['NY','NJ','CT'] },
@@ -459,11 +459,11 @@ const CHAIN_DEFINITIONS = [
     states: ['OH'] },
   { slug: 'jungle-jims', chainSlug: 'jungle_jims', name: "Jungle Jim's", markupPct: 10, tier: 'retail',
     states: ['OH'] },
-  { slug: 'dorothy-lane', chainSlug: 'dorothy_lane', name: 'Dorothy Lane Market', markupPct: 8, tier: 'retail',
+  { slug: 'dorothy-lane-market', chainSlug: 'dorothy_lane', name: 'Dorothy Lane Market', markupPct: 8, tier: 'retail',
     states: ['OH'] },
   { slug: 'hyvee', chainSlug: 'hy_vee', name: 'Hy-Vee', markupPct: 12, tier: 'retail',
     states: ['IA','MN','NE','SD','KS','MO','WI','IL'] },
-  { slug: 'lunds-byerlys', chainSlug: 'lunds_byerlys', name: 'Lunds & Byerlys', markupPct: 10, tier: 'retail',
+  { slug: 'lunds-and-byerlys', chainSlug: 'lunds_byerlys', name: 'Lunds & Byerlys', markupPct: 10, tier: 'retail',
     states: ['MN'] },
   { slug: 'kowalskis', chainSlug: 'kowalskis', name: "Kowalski's", markupPct: 10, tier: 'retail',
     states: ['MN'] },
@@ -477,7 +477,7 @@ const CHAIN_DEFINITIONS = [
     states: ['TX'] },
   { slug: 'ranch-market', chainSlug: 'ranch_market', name: 'Ranch Market', markupPct: 12, tier: 'retail',
     states: ['AZ','TX'] },
-  { slug: 'el-rancho', chainSlug: 'el_rancho', name: 'El Rancho Supermercado', markupPct: 12, tier: 'retail',
+  { slug: 'el-rancho-supermercado', chainSlug: 'el_rancho', name: 'El Rancho Supermercado', markupPct: 12, tier: 'retail',
     states: ['TX'] },
   { slug: 'market-street', chainSlug: 'market_street', name: 'Market Street', markupPct: 12, tier: 'retail',
     states: ['TX','NM'] },
@@ -519,7 +519,7 @@ const CHAIN_DEFINITIONS = [
     states: ['WA'] },
   { slug: 'market-of-choice', chainSlug: 'market_of_choice', name: 'Market of Choice', markupPct: 10, tier: 'retail',
     states: ['OR'] },
-  { slug: 'winco', chainSlug: 'winco', name: 'WinCo Foods', markupPct: 15, tier: 'retail',
+  { slug: 'winco-foods', chainSlug: 'winco', name: 'WinCo Foods', markupPct: 15, tier: 'retail',
     states: ['ID','WA','OR','CA','NV','AZ','TX','UT','OK','MT'] },
 
   // ════════════════════════════════════════════════
@@ -533,11 +533,11 @@ const CHAIN_DEFINITIONS = [
     states: ['UT'] },
   { slug: 'ridleys', chainSlug: 'ridleys', name: "Ridley's", markupPct: 12, tier: 'retail',
     states: ['ID','MT','UT'] },
-  { slug: 'rosauers', chainSlug: 'rosauers', name: "Rosauers", markupPct: 12, tier: 'retail',
+  { slug: 'rosauers-supermarkets', chainSlug: 'rosauers', name: "Rosauers", markupPct: 12, tier: 'retail',
     states: ['WA','ID','MT','OR'] },
   { slug: 'super-1-foods', chainSlug: 'super_1_foods', name: 'Super 1 Foods', markupPct: 12, tier: 'retail',
     states: ['ID','WA','MT'] },
-  { slug: 'yokes', chainSlug: 'yokes', name: "Yoke's Fresh Market", markupPct: 12, tier: 'retail',
+  { slug: 'yokes-fresh-market', chainSlug: 'yokes', name: "Yoke's Fresh Market", markupPct: 12, tier: 'retail',
     states: ['WA','ID'] },
 
   // ════════════════════════════════════════════════
@@ -611,7 +611,35 @@ const CHAIN_DEFINITIONS = [
 // EXPORTS
 // ══════════════════════════════════════════════════════════════════════
 
-export { CHAIN_DEFINITIONS, STATE_ZIPS };
+// Chains verified as NOT on Instacart (404 confirmed 2026-04-07).
+// These stay in the database for receipt/Flipp/direct scraping, but
+// the Instacart scraper skips them to avoid wasting Pi time.
+const NOT_ON_INSTACART = new Set([
+  // Albertsons banners with own delivery (not Instacart)
+  'shaws', 'star-market', 'carrs',
+  // Own delivery platforms
+  'whole-foods', 'whole-foods-market', 'lidl', 'aldi-nord',
+  'lowes-foods', 'fareway', 'woodmans', 'coborns',
+  // Wholesale / distributor (no retail scraping)
+  'chefs-warehouse', 'performance-food',
+  // Not on Instacart (verified 404)
+  'bakers', 'jay-c', 'harveys', 'fresco-y-mas', 'price-rite',
+  'times-supermarket', 'mitsuwa', 'patel-brothers', 'lotte-plaza',
+  'foods-co', 'sedanos', 'northgate', 'grocery-depot', 'presidente',
+  'uncle-giuseppes', 'balducci', 'food-emporium', 'c-town',
+  'karns', 'redner', 'associated', 'sentry', 'martins-super',
+  'piggly-wiggly-midwest', 'ruler', 'marc', 'jungle-jims',
+  'hyvee', 'ranch-market', 'la-michoacana', 'spec', 'nugget-markets',
+  'ranch-99', 'madre-tierra', 'jons', 'central-co-op', 'market-of-choice',
+  'lins', 'apna-bazaar', 'great-wall', 'kam-man', 'hana-world',
+  'good-fortune', 'la-bodega', 'supermercado-el-ahorro',
+  'international-fresh', 'lucky-market', 'mom-organic', 'fresh-fields',
+  // Discount (not on Instacart)
+  'dollar-general', 'dollar-tree', 'family-dollar', 'five-below',
+  'ocean-state', 'sharp-shopper', 'ollies',
+]);
+
+export { CHAIN_DEFINITIONS, STATE_ZIPS, NOT_ON_INSTACART };
 export const NATIONWIDE_STORES = CHAIN_DEFINITIONS;
 
 /**
@@ -621,6 +649,8 @@ export const NATIONWIDE_STORES = CHAIN_DEFINITIONS;
 export function getFlatStoreList() {
   const flat = [];
   for (const chain of CHAIN_DEFINITIONS) {
+    // Skip chains verified as not on Instacart
+    if (NOT_ON_INSTACART.has(chain.slug)) continue;
     for (const stateCode of chain.states) {
       const zips = STATE_ZIPS[stateCode];
       if (!zips) continue;

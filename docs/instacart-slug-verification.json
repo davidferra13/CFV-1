@@ -1,0 +1,1199 @@
+{
+  "timestamp": "2026-04-07T00:24:35.079Z",
+  "total": 198,
+  "valid": [],
+  "invalid": [
+    {
+      "slug": "bakers",
+      "name": "Baker's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "jay-c",
+      "name": "Jay C",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "shaws",
+      "name": "Shaw's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "carrs",
+      "name": "Carrs",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "star-market",
+      "name": "Star Market",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "harveys",
+      "name": "Harvey's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "fresco-y-mas",
+      "name": "Fresco y Más",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "whole-foods",
+      "name": "Whole Foods",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "lidl",
+      "name": "Lidl",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "price-rite",
+      "name": "Price Rite",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "lowes-foods",
+      "name": "Lowe's Foods",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "woodmans",
+      "name": "Woodman's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "fareway",
+      "name": "Fareway",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "coborns",
+      "name": "Coborn's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "times-supermarket",
+      "name": "Times Supermarket",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "mitsuwa",
+      "name": "Mitsuwa Marketplace",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "patel-brothers",
+      "name": "Patel Brothers",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "lotte-plaza",
+      "name": "Lotte Plaza",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "foods-co",
+      "name": "Foods Co",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "sedanos",
+      "name": "Sedano's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "northgate",
+      "name": "Northgate Market",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "grocery-depot",
+      "name": "Grocery Depot",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "presidente",
+      "name": "Presidente Supermarkets",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "uncle-giuseppes",
+      "name": "Uncle Giuseppe's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "balducci",
+      "name": "Balducci's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "food-emporium",
+      "name": "Food Emporium",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "c-town",
+      "name": "C-Town",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "karns",
+      "name": "Karns Foods",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "redner",
+      "name": "Redner's Markets",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "associated",
+      "name": "Associated Supermarkets",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "sentry",
+      "name": "Sentry Foods",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "martins-super",
+      "name": "Martin's Super Markets",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "piggly-wiggly-midwest",
+      "name": "Piggly Wiggly (Midwest)",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "ruler",
+      "name": "Ruler Foods",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "marc",
+      "name": "Marc's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "jungle-jims",
+      "name": "Jungle Jim's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "hyvee",
+      "name": "Hy-Vee",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "ranch-market",
+      "name": "Ranch Market",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "la-michoacana",
+      "name": "La Michoacana",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "spec",
+      "name": "Spec's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "nugget-markets",
+      "name": "Nugget Markets",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "ranch-99",
+      "name": "99 Ranch Market",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "madre-tierra",
+      "name": "Madre Tierra",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "jons",
+      "name": "Jon's Fresh Marketplace",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "central-co-op",
+      "name": "Central Co-op",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "market-of-choice",
+      "name": "Market of Choice",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "lins",
+      "name": "Lin's",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "apna-bazaar",
+      "name": "Apna Bazaar",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "great-wall",
+      "name": "Great Wall Supermarket",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "kam-man",
+      "name": "Kam Man Food",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "hana-world",
+      "name": "Hana World Market",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "good-fortune",
+      "name": "Good Fortune Supermarket",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "la-bodega",
+      "name": "La Bodega",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "chefs-warehouse",
+      "name": "Chef's Warehouse",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "supermercado-el-ahorro",
+      "name": "El Ahorro Supermarket",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "international-fresh",
+      "name": "International Fresh Market",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "lucky-market",
+      "name": "Lucky's Market",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "performance-food",
+      "name": "Performance Food Group",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "whole-foods-market",
+      "name": "Whole Foods",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "mom-organic",
+      "name": "MOM's Organic Market",
+      "status": 404,
+      "reason": "404"
+    },
+    {
+      "slug": "fresh-fields",
+      "name": "Fresh Fields",
+      "status": 404,
+      "reason": "404"
+    }
+  ],
+  "redirect": [
+    {
+      "slug": "king-soopers",
+      "name": "King Soopers",
+      "status": 302,
+      "redirectTo": "king-soopers"
+    },
+    {
+      "slug": "smiths",
+      "name": "Smith's",
+      "status": 302,
+      "redirectTo": "smiths"
+    },
+    {
+      "slug": "frys",
+      "name": "Fry's Food",
+      "status": 302,
+      "redirectTo": "frys"
+    },
+    {
+      "slug": "dillons",
+      "name": "Dillons",
+      "status": 302,
+      "redirectTo": "dillons"
+    },
+    {
+      "slug": "kroger",
+      "name": "Kroger",
+      "status": 302,
+      "redirectTo": "kroger"
+    },
+    {
+      "slug": "food4less",
+      "name": "Food 4 Less",
+      "status": 302,
+      "redirectTo": "food4less"
+    },
+    {
+      "slug": "marianos",
+      "name": "Mariano's",
+      "status": 302,
+      "redirectTo": "marianos"
+    },
+    {
+      "slug": "fred-meyer",
+      "name": "Fred Meyer",
+      "status": 302,
+      "redirectTo": "fred-meyer"
+    },
+    {
+      "slug": "pick-n-save",
+      "name": "Pick 'n Save",
+      "status": 302,
+      "redirectTo": "pick-n-save"
+    },
+    {
+      "slug": "qfc",
+      "name": "QFC",
+      "status": 302,
+      "redirectTo": "qfc"
+    },
+    {
+      "slug": "harristeeter",
+      "name": "Harris Teeter",
+      "status": 302,
+      "redirectTo": "harristeeter"
+    },
+    {
+      "slug": "ruler-foods",
+      "name": "Ruler Foods",
+      "status": 302,
+      "redirectTo": "ruler-foods"
+    },
+    {
+      "slug": "city-market",
+      "name": "City Market",
+      "status": 302,
+      "redirectTo": "city-market"
+    },
+    {
+      "slug": "ralphs",
+      "name": "Ralphs",
+      "status": 302,
+      "redirectTo": "ralphs"
+    },
+    {
+      "slug": "albertsons",
+      "name": "Albertsons",
+      "status": 302,
+      "redirectTo": "albertsons"
+    },
+    {
+      "slug": "pay-less",
+      "name": "Pay Less",
+      "status": 302,
+      "redirectTo": "pay-less"
+    },
+    {
+      "slug": "safeway",
+      "name": "Safeway",
+      "status": 302,
+      "redirectTo": "safeway"
+    },
+    {
+      "slug": "gerbes",
+      "name": "Gerbes",
+      "status": 302,
+      "redirectTo": "gerbes"
+    },
+    {
+      "slug": "jewel-osco",
+      "name": "Jewel-Osco",
+      "status": 302,
+      "redirectTo": "jewel-osco"
+    },
+    {
+      "slug": "acme-markets",
+      "name": "ACME Markets",
+      "status": 302,
+      "redirectTo": "acme-markets"
+    },
+    {
+      "slug": "pavilions",
+      "name": "Pavilions",
+      "status": 302,
+      "redirectTo": "pavilions"
+    },
+    {
+      "slug": "vons",
+      "name": "Vons",
+      "status": 302,
+      "redirectTo": "vons"
+    },
+    {
+      "slug": "haggen",
+      "name": "Haggen",
+      "status": 302,
+      "redirectTo": "haggen"
+    },
+    {
+      "slug": "tom-thumb",
+      "name": "Tom Thumb",
+      "status": 302,
+      "redirectTo": "tom-thumb"
+    },
+    {
+      "slug": "randalls",
+      "name": "Randalls",
+      "status": 302,
+      "redirectTo": "randalls"
+    },
+    {
+      "slug": "united-supermarkets",
+      "name": "United Supermarkets",
+      "status": 302,
+      "redirectTo": "united-supermarkets"
+    },
+    {
+      "slug": "giant-food-stores",
+      "name": "Giant / Martin's",
+      "status": 302,
+      "redirectTo": "giant-food-stores"
+    },
+    {
+      "slug": "giant",
+      "name": "Giant Food",
+      "status": 302,
+      "redirectTo": "giant"
+    },
+    {
+      "slug": "stop-shop",
+      "name": "Stop & Shop",
+      "status": 302,
+      "redirectTo": "stop-shop"
+    },
+    {
+      "slug": "food-lion",
+      "name": "Food Lion",
+      "status": 302,
+      "redirectTo": "food-lion"
+    },
+    {
+      "slug": "hannaford",
+      "name": "Hannaford",
+      "status": 302,
+      "redirectTo": "hannaford"
+    },
+    {
+      "slug": "winn-dixie",
+      "name": "Winn-Dixie",
+      "status": 302,
+      "redirectTo": "winn-dixie"
+    },
+    {
+      "slug": "aldi",
+      "name": "Aldi",
+      "status": 302,
+      "redirectTo": "aldi"
+    },
+    {
+      "slug": "walmart",
+      "name": "Walmart",
+      "status": 302,
+      "redirectTo": "walmart"
+    },
+    {
+      "slug": "sprouts",
+      "name": "Sprouts Farmers Market",
+      "status": 302,
+      "redirectTo": "sprouts"
+    },
+    {
+      "slug": "target",
+      "name": "Target",
+      "status": 302,
+      "redirectTo": "target"
+    },
+    {
+      "slug": "price-chopper",
+      "name": "Price Chopper",
+      "status": 302,
+      "redirectTo": "price-chopper"
+    },
+    {
+      "slug": "the-fresh-market",
+      "name": "The Fresh Market",
+      "status": 302,
+      "redirectTo": "the-fresh-market"
+    },
+    {
+      "slug": "market-basket",
+      "name": "Market Basket",
+      "status": 302,
+      "redirectTo": "market-basket"
+    },
+    {
+      "slug": "earth-fare-market",
+      "name": "Earth Fare",
+      "status": 302,
+      "redirectTo": "earth-fare-market"
+    },
+    {
+      "slug": "natural-grocers",
+      "name": "Natural Grocers",
+      "status": 302,
+      "redirectTo": "natural-grocers"
+    },
+    {
+      "slug": "tops-markets",
+      "name": "Tops Markets",
+      "status": 302,
+      "redirectTo": "tops-markets"
+    },
+    {
+      "slug": "shoprite",
+      "name": "ShopRite",
+      "status": 302,
+      "redirectTo": "shoprite"
+    },
+    {
+      "slug": "wegmans",
+      "name": "Wegmans",
+      "status": 302,
+      "redirectTo": "wegmans"
+    },
+    {
+      "slug": "weis-markets",
+      "name": "Weis Markets",
+      "status": 302,
+      "redirectTo": "weis-markets"
+    },
+    {
+      "slug": "giant-eagle",
+      "name": "Giant Eagle",
+      "status": 302,
+      "redirectTo": "giant-eagle"
+    },
+    {
+      "slug": "big-y",
+      "name": "Big Y",
+      "status": 302,
+      "redirectTo": "big-y"
+    },
+    {
+      "slug": "stew-leonards",
+      "name": "Stew Leonard's",
+      "status": 302,
+      "redirectTo": "stew-leonards"
+    },
+    {
+      "slug": "key-food",
+      "name": "Key Food",
+      "status": 302,
+      "redirectTo": "key-food"
+    },
+    {
+      "slug": "foodtown",
+      "name": "Foodtown",
+      "status": 302,
+      "redirectTo": "foodtown"
+    },
+    {
+      "slug": "publix",
+      "name": "Publix",
+      "status": 302,
+      "redirectTo": "publix"
+    },
+    {
+      "slug": "piggly-wiggly",
+      "name": "Piggly Wiggly",
+      "status": 302,
+      "redirectTo": "piggly-wiggly"
+    },
+    {
+      "slug": "ingles",
+      "name": "Ingles Markets",
+      "status": 302,
+      "redirectTo": "ingles"
+    },
+    {
+      "slug": "food-city",
+      "name": "Food City",
+      "status": 302,
+      "redirectTo": "food-city"
+    },
+    {
+      "slug": "schnucks",
+      "name": "Schnucks",
+      "status": 302,
+      "redirectTo": "schnucks"
+    },
+    {
+      "slug": "meijer",
+      "name": "Meijer",
+      "status": 302,
+      "redirectTo": "meijer"
+    },
+    {
+      "slug": "hy-vee",
+      "name": "Hy-Vee",
+      "status": 302,
+      "redirectTo": "hy-vee"
+    },
+    {
+      "slug": "festival-foods",
+      "name": "Festival Foods",
+      "status": 302,
+      "redirectTo": "festival-foods"
+    },
+    {
+      "slug": "cub",
+      "name": "Cub Foods",
+      "status": 302,
+      "redirectTo": "cub"
+    },
+    {
+      "slug": "dierbergs-markets",
+      "name": "Dierbergs",
+      "status": 302,
+      "redirectTo": "dierbergs-markets"
+    },
+    {
+      "slug": "fresh-thyme-farmers-market",
+      "name": "Fresh Thyme",
+      "status": 302,
+      "redirectTo": "fresh-thyme-farmers-market"
+    },
+    {
+      "slug": "central-market",
+      "name": "Central Market",
+      "status": 302,
+      "redirectTo": "central-market"
+    },
+    {
+      "slug": "bashas",
+      "name": "Bashas'",
+      "status": 302,
+      "redirectTo": "bashas"
+    },
+    {
+      "slug": "h-e-b",
+      "name": "H-E-B",
+      "status": 302,
+      "redirectTo": "h-e-b"
+    },
+    {
+      "slug": "brookshires",
+      "name": "Brookshire's",
+      "status": 302,
+      "redirectTo": "brookshires"
+    },
+    {
+      "slug": "fiesta-mart",
+      "name": "Fiesta Mart",
+      "status": 302,
+      "redirectTo": "fiesta-mart"
+    },
+    {
+      "slug": "stater-bros",
+      "name": "Stater Bros",
+      "status": 302,
+      "redirectTo": "stater-bros"
+    },
+    {
+      "slug": "grocery-outlet",
+      "name": "Grocery Outlet",
+      "status": 302,
+      "redirectTo": "grocery-outlet"
+    },
+    {
+      "slug": "winco-foods",
+      "name": "WinCo Foods",
+      "status": 302,
+      "redirectTo": "winco-foods"
+    },
+    {
+      "slug": "raleys",
+      "name": "Raley's",
+      "status": 302,
+      "redirectTo": "raleys"
+    },
+    {
+      "slug": "smart-final",
+      "name": "Smart & Final",
+      "status": 302,
+      "redirectTo": "smart-final"
+    },
+    {
+      "slug": "bristol-farms",
+      "name": "Bristol Farms",
+      "status": 302,
+      "redirectTo": "bristol-farms"
+    },
+    {
+      "slug": "new-seasons-market",
+      "name": "New Seasons Market",
+      "status": 302,
+      "redirectTo": "new-seasons-market"
+    },
+    {
+      "slug": "gelsons",
+      "name": "Gelson's",
+      "status": 302,
+      "redirectTo": "gelsons"
+    },
+    {
+      "slug": "save-mart",
+      "name": "Save Mart",
+      "status": 302,
+      "redirectTo": "save-mart"
+    },
+    {
+      "slug": "lucky",
+      "name": "Lucky Supermarkets",
+      "status": 302,
+      "redirectTo": "lucky"
+    },
+    {
+      "slug": "costco",
+      "name": "Costco",
+      "status": 302,
+      "redirectTo": "costco"
+    },
+    {
+      "slug": "foodland",
+      "name": "Foodland",
+      "status": 302,
+      "redirectTo": "foodland"
+    },
+    {
+      "slug": "pcc-community-markets",
+      "name": "PCC Community Markets",
+      "status": 302,
+      "redirectTo": "pcc-community-markets"
+    },
+    {
+      "slug": "bjs",
+      "name": "BJ's Wholesale",
+      "status": 302,
+      "redirectTo": "bjs"
+    },
+    {
+      "slug": "99-ranch-market",
+      "name": "99 Ranch Market",
+      "status": 302,
+      "redirectTo": "99-ranch-market"
+    },
+    {
+      "slug": "hmart",
+      "name": "H Mart",
+      "status": 302,
+      "redirectTo": "hmart"
+    },
+    {
+      "slug": "sams-club",
+      "name": "Sam's Club",
+      "status": 302,
+      "redirectTo": "sams-club"
+    },
+    {
+      "slug": "restaurant-depot",
+      "name": "Restaurant Depot",
+      "status": 302,
+      "redirectTo": "restaurant-depot"
+    },
+    {
+      "slug": "uwajimaya",
+      "name": "Uwajimaya",
+      "status": 302,
+      "redirectTo": "uwajimaya"
+    },
+    {
+      "slug": "cardenas",
+      "name": "Cardenas Markets",
+      "status": 302,
+      "redirectTo": "cardenas"
+    },
+    {
+      "slug": "el-super",
+      "name": "El Super",
+      "status": 302,
+      "redirectTo": "el-super"
+    },
+    {
+      "slug": "vallarta-supermarkets",
+      "name": "Vallarta Supermarkets",
+      "status": 302,
+      "redirectTo": "vallarta-supermarkets"
+    },
+    {
+      "slug": "metro-market",
+      "name": "Metro Market",
+      "status": 302,
+      "redirectTo": "metro-market"
+    },
+    {
+      "slug": "bi-lo",
+      "name": "BI-LO",
+      "status": 302,
+      "redirectTo": "bi-lo"
+    },
+    {
+      "slug": "food-depot",
+      "name": "Food Depot",
+      "status": 302,
+      "redirectTo": "food-depot"
+    },
+    {
+      "slug": "owens",
+      "name": "Owen's",
+      "status": 302,
+      "redirectTo": "owens"
+    },
+    {
+      "slug": "save-a-lot",
+      "name": "Save-A-Lot",
+      "status": 302,
+      "redirectTo": "save-a-lot"
+    },
+    {
+      "slug": "compare-foods",
+      "name": "Compare Foods",
+      "status": 302,
+      "redirectTo": "compare-foods"
+    },
+    {
+      "slug": "market-32",
+      "name": "Market 32",
+      "status": 302,
+      "redirectTo": "market-32"
+    },
+    {
+      "slug": "lucky-supermarkets",
+      "name": "Lucky California",
+      "status": 302,
+      "redirectTo": "lucky-supermarkets"
+    },
+    {
+      "slug": "bravo-supermarkets",
+      "name": "Bravo Supermarkets",
+      "status": 302,
+      "redirectTo": "bravo-supermarkets"
+    },
+    {
+      "slug": "fairway",
+      "name": "Fairway Market",
+      "status": 302,
+      "redirectTo": "fairway"
+    },
+    {
+      "slug": "westside-market",
+      "name": "Westside Market",
+      "status": 302,
+      "redirectTo": "westside-market"
+    },
+    {
+      "slug": "morton-williams-supermarket",
+      "name": "Morton Williams",
+      "status": 302,
+      "redirectTo": "morton-williams-supermarket"
+    },
+    {
+      "slug": "kings-food-markets",
+      "name": "Kings Food Markets",
+      "status": 302,
+      "redirectTo": "kings-food-markets"
+    },
+    {
+      "slug": "deciccos",
+      "name": "DeCicco's",
+      "status": 302,
+      "redirectTo": "deciccos"
+    },
+    {
+      "slug": "western-beef",
+      "name": "Western Beef",
+      "status": 302,
+      "redirectTo": "western-beef"
+    },
+    {
+      "slug": "pathmark",
+      "name": "Pathmark",
+      "status": 302,
+      "redirectTo": "pathmark"
+    },
+    {
+      "slug": "county-market",
+      "name": "County Market",
+      "status": 302,
+      "redirectTo": "county-market"
+    },
+    {
+      "slug": "spartan-nash",
+      "name": "SpartanNash",
+      "status": 302,
+      "redirectTo": "spartan-nash"
+    },
+    {
+      "slug": "buehlers",
+      "name": "Buehler's",
+      "status": 302,
+      "redirectTo": "buehlers"
+    },
+    {
+      "slug": "roundys",
+      "name": "Roundy's",
+      "status": 302,
+      "redirectTo": "roundys"
+    },
+    {
+      "slug": "lunds-and-byerlys",
+      "name": "Lunds & Byerlys",
+      "status": 302,
+      "redirectTo": "lunds-and-byerlys"
+    },
+    {
+      "slug": "kowalskis",
+      "name": "Kowalski's",
+      "status": 302,
+      "redirectTo": "kowalskis"
+    },
+    {
+      "slug": "food-town",
+      "name": "Food Town (TX)",
+      "status": 302,
+      "redirectTo": "food-town"
+    },
+    {
+      "slug": "dorothy-lane-market",
+      "name": "Dorothy Lane Market",
+      "status": 302,
+      "redirectTo": "dorothy-lane-market"
+    },
+    {
+      "slug": "el-rancho-supermercado",
+      "name": "El Rancho Supermercado",
+      "status": 302,
+      "redirectTo": "el-rancho-supermercado"
+    },
+    {
+      "slug": "amigos",
+      "name": "Amigos",
+      "status": 302,
+      "redirectTo": "amigos"
+    },
+    {
+      "slug": "market-street",
+      "name": "Market Street",
+      "status": 302,
+      "redirectTo": "market-street"
+    },
+    {
+      "slug": "lazy-acres",
+      "name": "Lazy Acres",
+      "status": 302,
+      "redirectTo": "lazy-acres"
+    },
+    {
+      "slug": "erewhon",
+      "name": "Erewhon",
+      "status": 302,
+      "redirectTo": "erewhon"
+    },
+    {
+      "slug": "metropolitan-market",
+      "name": "Metropolitan Market",
+      "status": 302,
+      "redirectTo": "metropolitan-market"
+    },
+    {
+      "slug": "super-king",
+      "name": "Super King Markets",
+      "status": 302,
+      "redirectTo": "super-king"
+    },
+    {
+      "slug": "super-a-foods",
+      "name": "Super A Foods",
+      "status": 302,
+      "redirectTo": "super-a-foods"
+    },
+    {
+      "slug": "harmons",
+      "name": "Harmons",
+      "status": 302,
+      "redirectTo": "harmons"
+    },
+    {
+      "slug": "maceys",
+      "name": "Macey's",
+      "status": 302,
+      "redirectTo": "maceys"
+    },
+    {
+      "slug": "town-and-country",
+      "name": "Town & Country Markets",
+      "status": 302,
+      "redirectTo": "town-and-country"
+    },
+    {
+      "slug": "rosauers-supermarkets",
+      "name": "Rosauers",
+      "status": 302,
+      "redirectTo": "rosauers-supermarkets"
+    },
+    {
+      "slug": "ridleys",
+      "name": "Ridley's",
+      "status": 302,
+      "redirectTo": "ridleys"
+    },
+    {
+      "slug": "yokes-fresh-market",
+      "name": "Yoke's Fresh Market",
+      "status": 302,
+      "redirectTo": "yokes-fresh-market"
+    },
+    {
+      "slug": "super-1-foods",
+      "name": "Super 1 Foods",
+      "status": 302,
+      "redirectTo": "super-1-foods"
+    },
+    {
+      "slug": "jetro",
+      "name": "Jetro Cash & Carry",
+      "status": 302,
+      "redirectTo": "jetro"
+    },
+    {
+      "slug": "fresh-market",
+      "name": "Fresh Market",
+      "status": 302,
+      "redirectTo": "fresh-market"
+    }
+  ],
+  "error": [],
+  "skipped": [
+    {
+      "slug": "aldi-nord",
+      "name": "Trader Joe's",
+      "reason": "known non-Instacart"
+    },
+    {
+      "slug": "dollar-general",
+      "name": "Dollar General",
+      "reason": "known non-Instacart"
+    },
+    {
+      "slug": "dollar-tree",
+      "name": "Dollar Tree",
+      "reason": "known non-Instacart"
+    },
+    {
+      "slug": "family-dollar",
+      "name": "Family Dollar",
+      "reason": "known non-Instacart"
+    },
+    {
+      "slug": "five-below",
+      "name": "Five Below",
+      "reason": "known non-Instacart"
+    },
+    {
+      "slug": "ocean-state",
+      "name": "Ocean State Job Lot",
+      "reason": "known non-Instacart"
+    },
+    {
+      "slug": "sharp-shopper",
+      "name": "Sharp Shopper",
+      "reason": "known non-Instacart"
+    },
+    {
+      "slug": "ollies",
+      "name": "Ollie's Bargain Outlet",
+      "reason": "known non-Instacart"
+    }
+  ],
+  "summary": {
+    "valid": 0,
+    "redirect": 129,
+    "invalid": 61,
+    "error": 0,
+    "skipped": 8
+  }
+}
