@@ -205,7 +205,7 @@ async function findNearbyStores(
 interface IngredientMatch {
   id: string
   name: string
-  source_table: 'ingredients' | 'system_ingredients'
+  source_table: 'ingredients' | 'system_ingredients' | 'canonical_ingredients'
   category: string | null
   method: 'exact' | 'fulltext' | 'trigram'
   confidence: number
@@ -295,9 +295,9 @@ async function matchIngredient(text: string): Promise<IngredientMatch | null> {
   // 5. Trigram similarity on system_ingredients (catches typos, partial names)
   const trigram = (await db.execute(sql`
     SELECT id, name, category,
-      similarity(name::text, ${text}::text) as sim
+      extensions.similarity(name::text, ${text}::text) as sim
     FROM system_ingredients
-    WHERE similarity(name::text, ${text}::text) > 0.25
+    WHERE extensions.similarity(name::text, ${text}::text) > 0.25
     ORDER BY sim DESC
     LIMIT 1
   `)) as unknown as Array<{ id: string; name: string; category: string | null; sim: number }>
@@ -310,6 +310,66 @@ async function matchIngredient(text: string): Promise<IngredientMatch | null> {
       category: trigram[0].category,
       method: 'trigram',
       confidence: Math.min(0.85, trigram[0].sim),
+    }
+  }
+
+  // 6. Exact match in canonical_ingredients (69K+ items from OpenClaw)
+  const canonExact = (await db.execute(sql`
+    SELECT ingredient_id as id, name, category FROM openclaw.canonical_ingredients
+    WHERE LOWER(name) = ${normalized}
+    LIMIT 1
+  `)) as unknown as Array<{ id: string; name: string; category: string | null }>
+
+  if (canonExact.length > 0) {
+    return {
+      id: canonExact[0].id,
+      name: canonExact[0].name,
+      source_table: 'canonical_ingredients',
+      category: canonExact[0].category,
+      method: 'exact',
+      confidence: 0.9,
+    }
+  }
+
+  // 7. FTS on canonical_ingredients (uses GIN index)
+  const canonFts = (await db.execute(sql`
+    SELECT ingredient_id as id, name, category,
+      ts_rank(to_tsvector('english', name), plainto_tsquery('english', ${text})) as rank
+    FROM openclaw.canonical_ingredients
+    WHERE to_tsvector('english', name) @@ plainto_tsquery('english', ${text})
+    ORDER BY rank DESC
+    LIMIT 1
+  `)) as unknown as Array<{ id: string; name: string; category: string | null; rank: number }>
+
+  if (canonFts.length > 0 && canonFts[0].rank > 0.05) {
+    return {
+      id: canonFts[0].id,
+      name: canonFts[0].name,
+      source_table: 'canonical_ingredients',
+      category: canonFts[0].category,
+      method: 'fulltext',
+      confidence: Math.min(0.85, 0.6 + canonFts[0].rank),
+    }
+  }
+
+  // 8. Trigram similarity on canonical_ingredients
+  const canonTrigram = (await db.execute(sql`
+    SELECT ingredient_id as id, name, category,
+      extensions.similarity(name::text, ${text}::text) as sim
+    FROM openclaw.canonical_ingredients
+    WHERE extensions.similarity(name::text, ${text}::text) > 0.3
+    ORDER BY sim DESC
+    LIMIT 1
+  `)) as unknown as Array<{ id: string; name: string; category: string | null; sim: number }>
+
+  if (canonTrigram.length > 0) {
+    return {
+      id: canonTrigram[0].id,
+      name: canonTrigram[0].name,
+      source_table: 'canonical_ingredients',
+      category: canonTrigram[0].category,
+      method: 'trigram',
+      confidence: Math.min(0.8, canonTrigram[0].sim),
     }
   }
 
@@ -810,10 +870,10 @@ async function lookupUsdaBaseline(
   // Try trigram similarity
   const trigramRows = (await db.execute(sql`
     SELECT item_name, price_cents, unit, region, category, observation_date::text as observation_date,
-      similarity(item_name, ${ingredientText}) as sim
+      extensions.similarity(item_name, ${ingredientText}) as sim
     FROM openclaw.usda_price_baselines
     WHERE region = ${targetRegion}
-      AND similarity(item_name, ${ingredientText}) > 0.2
+      AND extensions.similarity(item_name, ${ingredientText}) > 0.2
     ORDER BY sim DESC
     LIMIT 1
   `)) as unknown as Array<UsdaBaseline & { sim: number }>
@@ -860,19 +920,21 @@ function buildCoverageNote(
   }
   // National scope
   if (zipRequested) {
-    return `No stores near ${zipRequested}. Price based on all available store data (NE United States).`
+    return `No stores near ${zipRequested} with pricing data. Price based on all available nationwide data.`
   }
-  return 'No ZIP provided. Price based on all available store data (NE United States).'
+  return 'No ZIP provided. Price based on all available nationwide data.'
 }
 
 /**
- * Confidence multiplier by scope. National is heavily penalized because
- * "national" currently means "7 stores in MA/NH" - not actual national coverage.
+ * Confidence multiplier by scope.
+ * National carries a moderate penalty: 150K+ stores mapped but price data
+ * is still concentrated in certain regions. As scraping coverage expands,
+ * the national multiplier should approach regional.
  */
 function scopeConfidenceMultiplier(scope: 'local' | 'regional' | 'national'): number {
   if (scope === 'local') return 1.0
-  if (scope === 'regional') return 0.8
-  return 0.35 // national = we have no data near you, price is a rough estimate
+  if (scope === 'regional') return 0.85
+  return 0.55 // national: 150K stores mapped, price data still expanding
 }
 
 // ---------------------------------------------------------------------------
