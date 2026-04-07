@@ -1,0 +1,10 @@
+[Unit]
+Description=ChefFlow Health Watchdog Service
+Documentation=https://github.com/davidferra13/CFV-1
+
+[Service]
+Type=oneshot
+User=davidferra
+ExecStart=/home/davidferra/apps/chefflow-prod/scripts/pi-watchdog.sh
+StandardOutput=append:/home/davidferra/.pm2/logs/watchdog.log
+StandardError=append:/home/davidferra/.pm2/logs/watchdog.log

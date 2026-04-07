@@ -1,0 +1,11 @@
+[Unit]
+Description=ChefFlow Health Watchdog
+Documentation=https://github.com/davidferra13/CFV-1
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+AccuracySec=30sec
+
+[Install]
+WantedBy=timers.target
