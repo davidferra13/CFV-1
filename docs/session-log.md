@@ -295,3 +295,14 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: f2f4e77dd
 - Build state on departure: tsc unchanged (no TS changes), Tauri desktop green, Android APK green
 - Notes: Full infrastructure audit. Wrote 4-phase spec (self-hosted, $0). Phase 1: PWA verified (all assets serving, VAPID keys generated). Phase 2: Tauri desktop resurrected from worktree, refactored to lib.rs with cfg(desktop)/cfg(mobile) split, Windows installer built. Phase 3: Android SDK installed, APK built and signed (6.5MB). Phase 4 (iOS) blocked on Mac hardware. All pushed to GitHub.
+
+## 2026-04-07 ~13:00 EST
+
+- Agent: General (Claude Opus 4.6)
+- Task: Full performance audit - identify and eliminate dominant latency constraint
+- Status: completed
+- Files touched: ~/.cloudflared/config.yml (tunnel fix), docs/build-state.md (updated), docs/session-log.md (updated)
+- Commits: none (infrastructure changes, no source code modified)
+- Build state on arrival: .next/ empty (no valid production build), prod TTFB 43s
+- Build state on departure: green (d33bc2a4c), 771 pages, prod TTFB 20ms
+- Notes: Root cause: no production build in .next/ directory. Prod server compiled pages on-demand (43s dashboard TTFB). Fix: rebuilt (771 pages), restarted prod server (sub-20ms TTFB). Secondary: Cloudflare tunnel used localhost (200ms IPv6 penalty per request), changed to 127.0.0.1. Tertiary: added 4 missing DB indexes on ingredient_price_history and grocery_price_quote_items for price resolution queries.

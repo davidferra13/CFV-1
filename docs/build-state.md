@@ -15,12 +15,12 @@ Last known state of the app. Updated after every successful type check and build
 | Check                                  | Status | Last Verified | Commit    | Agent           |
 | -------------------------------------- | ------ | ------------- | --------- | --------------- |
 | `npx tsc --noEmit --skipLibCheck`      | green  | 2026-04-06    | eae737a8c | Claude Opus 4.6 |
-| `npx next build --no-lint` (16GB heap) | green  | 2026-04-06    | eae737a8c | Claude Opus 4.6 |
+| `npx next build --no-lint` (12GB heap) | green  | 2026-04-07    | d33bc2a4c | Claude Opus 4.6 |
 
-**Last green build:** eae737a8c (2026-04-06) - Full catch-up build. 27 commits verified: android widgets (8), quick notes, ingredient normalization, food costing trust provenance, mobile/Tauri/PWA, zero hallucination fixes, ingredient auto-matching.
-**Last commit on main:** eae737a8c
+**Last green build:** d33bc2a4c (2026-04-07) - Performance audit rebuild. 771 pages compiled. Production server verified sub-20ms TTFB. Cloudflare tunnel latency eliminated (localhost to 127.0.0.1). DB indexes added for price resolution.
+**Last commit on main:** d33bc2a4c
 
-**Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. OOM fix: build requires `NODE_OPTIONS="--max-old-space-size=16384"` (8GB heap now insufficient; 16GB needed as codebase grew).
+**Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. Build script (`scripts/run-next-build.mjs`) uses 12GB heap by default (`NEXT_BUILD_MAX_OLD_SPACE_SIZE=12288`). Peak observed: 11.3GB during compilation.
 
 **Known non-blocking build noise:** `npm run build -- --no-lint` still emits existing `DYNAMIC_SERVER_USAGE` warnings from unrelated routes during static generation, and Next 14.2.35 still warns that `serverActions` is an unrecognized key in `next.config.js`. The build exits `0`. Treat those warnings as follow-up runtime/config cleanup, not as a blocker for the current baseline.
 
@@ -40,6 +40,7 @@ _Newest first. Keep the last 10 entries._
 
 | Date       | tsc    | build | Commit                         | Agent           | Notes                                                                                                                                                                                                                                                                                                                                                                                      |
 | ---------- | ------ | ----- | ------------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-04-07 | green  | green | d33bc2a4c                      | Claude Opus 4.6 | Performance audit rebuild. 771 pages. Prod TTFB: 43s to 20ms. Tunnel fix (localhost to 127.0.0.1). 4 DB indexes added for price resolution.                                                                                                                                                                                                                                                |
 | 2026-04-06 | green  | green | eae737a8c                      | Claude Opus 4.6 | Full catch-up build: 27 commits verified. Android widgets (8), quick notes, ingredient normalization, food costing trust provenance, mobile/Tauri/PWA, zero hallucination fixes, ingredient auto-matching, public page rewrites.                                                                                                                                                           |
 | 2026-04-05 | green  | green | 699fb96b7                      | Claude Opus 4.6 | Golden standard public pages audit: legal accuracy (MA governing law, Resend privacy), dark theme (contact form), security (webhook fail-closed, sentinel stripped), vetted->reviewed (7 pages), dynamic chef count, better 404 nav.                                                                                                                                                       |
 | 2026-04-05 | green  | green | 2d7a17773                      | Claude Opus 4.6 | Dark theme remediation across 7 admin pages, Zero Hallucination fixes (silent zeros -> error states), visual polish (sparklines, animated counters, status glow).                                                                                                                                                                                                                          |
