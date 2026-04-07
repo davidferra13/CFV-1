@@ -1146,17 +1146,57 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
     }
   }
 
-  // --- Strategy D: USDA regional baseline (BLS average prices) ---
-  // This is the safety net: even with zero scraped data near this ZIP,
-  // we can return a regionally-adjusted USDA average price.
+  // --- Strategy D: USDA baseline + estimation model ---
+  // Safety net: even with zero scraped data, return a regionally-adjusted
+  // estimated price. Uses USDA baseline + store-type markup models to
+  // generate realistic estimates for chains, independents, convenience, etc.
   const region = zipCode ? zipCoords?.region || (await getZipRegion(zipCode)) : null
   const usda = await lookupUsdaBaseline(ingredient, region)
 
   if (usda) {
     const regionLabel = usda.region === 'us_average' ? 'US average' : usda.region
     const matchConf = match ? Math.min(match.confidence, 0.8) : 0.5
-    // USDA baselines are inherently lower confidence: they're averages, not live prices
-    const overallConfidence = Math.round(matchConf * 0.4 * 100) / 100
+
+    // Try to apply estimation model for a more realistic retail price
+    let estimatedCents = usda.price_cents
+    let estimationSource = `USDA BLS (${regionLabel})`
+    let estimationConfidence = 0.4
+    let estimationType: string = 'commodity'
+
+    try {
+      // Get the best estimation model (chain retail markup over USDA)
+      const models = (await db.execute(sql`
+        SELECT model_name, store_type, base_markup_pct, category_adjustments, confidence
+        FROM openclaw.price_estimation_models
+        WHERE is_active = true AND store_type = 'independent'
+        AND (region IS NULL OR region = ${region})
+        ORDER BY region NULLS LAST, confidence DESC
+        LIMIT 1
+      `)) as unknown as Array<{
+        model_name: string
+        store_type: string
+        base_markup_pct: number
+        category_adjustments: Record<string, number> | null
+        confidence: number
+      }>
+
+      if (models.length > 0) {
+        const model = models[0]
+        const catAdj = model.category_adjustments?.[usda.category || '']
+        if (catAdj) {
+          estimatedCents = Math.round(usda.price_cents * catAdj)
+        } else {
+          estimatedCents = Math.round(usda.price_cents * (1 + model.base_markup_pct / 100))
+        }
+        estimationSource = `${estimationSource} + ${model.model_name} model`
+        estimationConfidence = Math.min(model.confidence, 0.55)
+        estimationType = 'estimated'
+      }
+    } catch {
+      /* estimation models may not exist on older schema */
+    }
+
+    const overallConfidence = Math.round(matchConf * estimationConfidence * 100) / 100
 
     return {
       matched: true,
@@ -1164,10 +1204,13 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       ingredient_id: match?.id || null,
       match_method: match?.method || 'product_search',
       match_confidence: matchConf,
-      price_cents: usda.price_cents,
-      price_per_unit_cents: usda.price_cents,
+      price_cents: estimatedCents,
+      price_per_unit_cents: estimatedCents,
       unit: usda.unit,
-      range: null, // single data point
+      range: {
+        min_cents: usda.price_cents, // raw USDA = floor
+        max_cents: Math.round(usda.price_cents * 1.5), // 50% markup = ceiling
+      },
       confidence_score: overallConfidence,
       data_points: 1,
       last_updated: usda.observation_date,
@@ -1176,12 +1219,12 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
         stores_in_area: 0,
         nearest_store_miles: null,
         scope: 'national',
-        coverage_note: `USDA ${regionLabel} baseline (BLS avg). No live store prices available near ${zipCode || 'unknown location'}.`,
+        coverage_note: `Estimated from ${estimationSource}. No live store prices available near ${zipCode || 'unknown location'}.`,
       },
-      sources: [`USDA BLS (${regionLabel})`],
-      price_type: 'commodity',
-      yield: await computeYield(match?.id || null, usda.price_cents),
-      source_types: ['commodity'],
+      sources: [estimationSource],
+      price_type: estimationType as 'retail' | 'wholesale' | 'commodity' | 'farm_direct' | 'mixed',
+      yield: await computeYield(match?.id || null, estimatedCents),
+      source_types: [estimationType],
       image_url: null,
     }
   }
