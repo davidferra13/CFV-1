@@ -106,12 +106,17 @@ function ensureSourcesExist(db) {
 // SESSION MANAGEMENT
 // ============================================================================
 
-function loadCachedSession() {
+function loadCachedSession(requiredZip) {
   try {
     if (!existsSync(SESSION_PATH)) return null;
     const data = JSON.parse(readFileSync(SESSION_PATH, 'utf8'));
+    // Session must match the required zip code (nationwide support)
+    if (requiredZip && data.zip && data.zip !== requiredZip) {
+      console.log(`[session] Cached session is for zip ${data.zip}, need ${requiredZip}. Getting fresh session.`);
+      return null;
+    }
     if (Date.now() - data.timestamp < 2 * 60 * 60 * 1000) {
-      console.log('[session] Using cached session (age: ' + Math.round((Date.now() - data.timestamp) / 60000) + 'min)');
+      console.log('[session] Using cached session (age: ' + Math.round((Date.now() - data.timestamp) / 60000) + 'min, zip: ' + (data.zip || 'unknown') + ')');
       return data;
     }
     console.log('[session] Cached session expired');
@@ -573,9 +578,7 @@ async function main() {
 
     // Get or reuse session (new session per zip code for nationwide coverage)
     const storeZip = store.zip || '01835';
-    let session = forceSession ? null : loadCachedSession();
-    // If cached session was for a different zip, get a fresh one
-    if (session && session.zip && session.zip !== storeZip) session = null;
+    let session = forceSession ? null : loadCachedSession(storeZip);
     if (!session) {
       try {
         session = await getInstacartSession(store.slug, storeZip);
