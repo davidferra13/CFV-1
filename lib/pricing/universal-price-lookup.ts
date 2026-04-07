@@ -77,6 +77,19 @@ export interface PriceLookupResult {
   /** Whether this is a retail, wholesale, commodity, or farm-direct price.
    * 'mixed' if the result aggregates both retail and wholesale sources. */
   price_type: 'retail' | 'wholesale' | 'commodity' | 'farm_direct' | 'mixed'
+
+  /** Yield-adjusted pricing (raw price / yield = true usable cost) */
+  yield: {
+    /** Yield percentage (0.0-1.0). 1.0 = no waste. */
+    yield_pct: number
+    /** Price per usable unit after yield adjustment, in cents */
+    usable_cost_per_unit_cents: number | null
+    /** Whether yield was applied (false = ingredient not found or yield = 1.0) */
+    applied: boolean
+  }
+
+  /** Source type breakdown */
+  source_types: string[]
 }
 
 // ---------------------------------------------------------------------------
@@ -864,6 +877,8 @@ function scopeConfidenceMultiplier(scope: 'local' | 'regional' | 'national'): nu
 export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupResult> {
   const { ingredient, zipCode, radiusMiles = 50 } = query
 
+  const defaultYield = { yield_pct: 1.0, usable_cost_per_unit_cents: null as number | null, applied: false }
+
   const noResult: PriceLookupResult = {
     matched: false,
     ingredient_name: ingredient,
@@ -886,6 +901,30 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
     },
     sources: [],
     price_type: 'retail',
+    yield: defaultYield,
+    source_types: [],
+  }
+
+  // Helper: look up yield_pct for an ingredient and compute usable cost
+  async function computeYield(ingredientId: string | null, priceCents: number | null) {
+    if (!ingredientId || !priceCents) return defaultYield
+    try {
+      const rows = (await db.execute(sql`
+        SELECT yield_pct FROM system_ingredients WHERE id = ${ingredientId} AND yield_pct < 1.0
+        UNION ALL
+        SELECT yield_pct FROM ingredients WHERE id = ${ingredientId} AND yield_pct IS NOT NULL AND yield_pct < 1.0
+        LIMIT 1
+      `)) as unknown as Array<{ yield_pct: number }>
+      if (rows.length > 0 && rows[0].yield_pct > 0) {
+        const yieldPct = Number(rows[0].yield_pct)
+        return {
+          yield_pct: yieldPct,
+          usable_cost_per_unit_cents: Math.round(priceCents / yieldPct),
+          applied: true,
+        }
+      }
+    } catch { /* yield columns may not exist on older schema */ }
+    return defaultYield
   }
 
   // --- Resolve location ---
@@ -930,6 +969,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
             match.confidence * locationMultiplier * (Math.min(agg.data_points, 20) / 20) * 100
           ) / 100
 
+        const yieldInfo = await computeYield(match.id, agg.median_cents)
+
         return {
           matched: true,
           ingredient_name: match.name,
@@ -957,6 +998,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           },
           sources: agg.sources,
           price_type: 'retail',
+          yield: yieldInfo,
+          source_types: agg.source_types,
         }
       }
     }
@@ -979,6 +1022,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
         unit: norm.unit,
         store: pp.store_name || 'unknown',
         date: pp.last_seen_at || new Date().toISOString(),
+        reliability_weight: pp.reliability_weight ? Number(pp.reliability_weight) : undefined,
+        source_type: pp.source_type || undefined,
       }
     })
 
@@ -1018,6 +1063,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
         },
         sources: agg.sources,
         price_type: derivePriceType(productPrices),
+        yield: await computeYield(match?.id || null, agg.median_cents),
+        source_types: agg.source_types,
       }
     }
   }
@@ -1038,6 +1085,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           unit: norm.unit,
           store: pp.store_name || 'unknown',
           date: pp.last_seen_at || new Date().toISOString(),
+          reliability_weight: pp.reliability_weight ? Number(pp.reliability_weight) : undefined,
+          source_type: pp.source_type || undefined,
         }
       })
 
@@ -1075,6 +1124,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           },
           sources: agg.sources,
           price_type: derivePriceType(nationalPrices),
+          yield: await computeYield(match?.id || null, agg.median_cents),
+          source_types: agg.source_types,
         }
       }
     }
@@ -1114,6 +1165,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       },
       sources: [`USDA BLS (${regionLabel})`],
       price_type: 'commodity',
+      yield: await computeYield(match?.id || null, usda.price_cents),
+      source_types: ['commodity'],
     }
   }
 
