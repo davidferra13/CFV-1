@@ -58,35 +58,141 @@ const KROGER_BANNERS = [
 
 // Search terms for comprehensive food coverage
 const SEARCH_TERMS = [
-  'chicken breast', 'chicken thigh', 'ground beef', 'ground turkey',
-  'steak', 'pork chop', 'bacon', 'sausage', 'salmon', 'shrimp',
-  'eggs', 'milk', 'butter', 'cheese', 'yogurt', 'cream',
-  'bread', 'rice', 'pasta', 'flour', 'sugar',
-  'apple', 'banana', 'orange', 'strawberry', 'blueberry',
-  'potato', 'onion', 'tomato', 'lettuce', 'carrot', 'broccoli',
-  'garlic', 'pepper', 'mushroom', 'avocado', 'corn',
-  'olive oil', 'vegetable oil', 'vinegar', 'soy sauce',
-  'salt', 'pepper', 'cumin', 'paprika', 'oregano', 'basil',
-  'canned tomato', 'broth', 'beans', 'peanut butter',
-  'coffee', 'tea', 'juice', 'water',
-  'frozen vegetables', 'ice cream',
+  // Proteins - poultry
+  'chicken breast', 'chicken thigh', 'chicken wings', 'chicken drumstick',
+  'whole chicken', 'ground chicken', 'ground turkey', 'turkey breast',
+  'duck breast', 'cornish hen',
+  // Proteins - beef
+  'ground beef', 'ribeye steak', 'sirloin steak', 'strip steak',
+  'beef tenderloin', 'chuck roast', 'beef stew meat', 'short ribs',
+  'flank steak', 'brisket', 'skirt steak', 'ground beef 90',
+  // Proteins - pork
+  'pork chop', 'pork loin', 'pork tenderloin', 'pork shoulder',
+  'bacon', 'sausage', 'ham', 'pork belly', 'bratwurst',
+  // Proteins - seafood
+  'salmon fillet', 'shrimp', 'cod fillet', 'tilapia', 'tuna steak',
+  'crab', 'lobster tail', 'scallops', 'mussels', 'clams',
+  'swordfish', 'halibut', 'catfish', 'haddock', 'mahi mahi',
+  'canned tuna', 'canned salmon', 'smoked salmon',
+  // Proteins - other
+  'eggs', 'tofu', 'tempeh', 'lamb chop', 'lamb rack', 'veal',
+  // Dairy
+  'whole milk', '2 percent milk', 'skim milk', 'half and half',
+  'heavy cream', 'sour cream', 'buttermilk',
+  'butter', 'unsalted butter', 'margarine',
+  'cheddar cheese', 'mozzarella', 'parmesan', 'swiss cheese',
+  'cream cheese', 'goat cheese', 'feta', 'provolone', 'brie',
+  'cottage cheese', 'ricotta',
+  'yogurt', 'greek yogurt', 'oat milk', 'almond milk',
+  // Produce - fruit
+  'apple', 'banana', 'orange', 'lemon', 'lime', 'grapefruit',
+  'strawberry', 'blueberry', 'raspberry', 'blackberry', 'grape',
+  'avocado', 'mango', 'pineapple', 'peach', 'pear', 'plum',
+  'watermelon', 'cantaloupe', 'honeydew', 'kiwi', 'coconut',
+  'cherry', 'pomegranate', 'fig', 'date', 'cranberry',
+  // Produce - vegetable
+  'potato', 'sweet potato', 'onion', 'yellow onion', 'red onion',
+  'garlic', 'shallot', 'leek', 'scallion',
+  'tomato', 'roma tomato', 'cherry tomato', 'grape tomato',
+  'bell pepper', 'jalapeno', 'serrano', 'habanero', 'poblano',
+  'mushroom', 'portobello', 'shiitake', 'cremini',
+  'lettuce', 'romaine', 'spinach', 'arugula', 'kale', 'mixed greens',
+  'broccoli', 'cauliflower', 'brussels sprouts', 'cabbage',
+  'carrot', 'celery', 'cucumber', 'zucchini', 'squash',
+  'corn', 'green bean', 'asparagus', 'artichoke', 'beet',
+  'eggplant', 'radish', 'turnip', 'parsnip', 'rutabaga',
+  'edamame', 'snap pea', 'snow pea',
+  // Fresh herbs
+  'basil', 'cilantro', 'parsley', 'rosemary', 'thyme',
+  'oregano', 'dill', 'mint', 'sage', 'chive', 'tarragon',
+  // Pantry - grains
+  'white rice', 'brown rice', 'jasmine rice', 'basmati rice', 'wild rice',
+  'pasta', 'spaghetti', 'penne', 'linguine', 'fettuccine',
+  'bread', 'sourdough', 'baguette', 'tortilla', 'pita',
+  'flour', 'bread flour', 'cake flour', 'cornmeal', 'cornstarch',
+  'oats', 'quinoa', 'couscous', 'barley', 'farro',
+  // Pantry - baking
+  'sugar', 'brown sugar', 'powdered sugar', 'honey', 'maple syrup',
+  'baking powder', 'baking soda', 'yeast', 'vanilla extract',
+  'cocoa powder', 'chocolate chips', 'condensed milk', 'evaporated milk',
+  // Pantry - oils and fats
+  'olive oil', 'extra virgin olive oil', 'vegetable oil', 'canola oil',
+  'coconut oil', 'sesame oil', 'avocado oil', 'peanut oil',
+  // Pantry - canned
+  'canned tomato', 'tomato sauce', 'tomato paste', 'crushed tomato',
+  'chicken broth', 'beef broth', 'vegetable broth', 'stock',
+  'black beans', 'kidney beans', 'chickpeas', 'lentils', 'pinto beans',
+  'canned corn', 'canned green beans', 'coconut milk',
+  // Pantry - condiments
+  'peanut butter', 'almond butter', 'jam', 'jelly',
+  'vinegar', 'apple cider vinegar', 'balsamic vinegar', 'rice vinegar',
+  'soy sauce', 'fish sauce', 'worcestershire', 'hot sauce',
+  'ketchup', 'mustard', 'dijon mustard', 'mayonnaise',
+  'salsa', 'sriracha', 'tahini', 'hoisin sauce',
+  // Spices
+  'salt', 'kosher salt', 'black pepper', 'white pepper',
+  'garlic powder', 'onion powder', 'paprika', 'smoked paprika',
+  'cumin', 'chili powder', 'cayenne', 'turmeric', 'ginger powder',
+  'cinnamon', 'nutmeg', 'cloves', 'allspice', 'cardamom',
+  'italian seasoning', 'bay leaves', 'red pepper flakes', 'curry powder',
+  // Frozen
+  'frozen vegetables', 'frozen fruit', 'frozen shrimp', 'frozen chicken',
+  'ice cream', 'frozen pizza', 'frozen fries',
+  // Beverages
+  'coffee', 'tea', 'orange juice', 'apple juice', 'sparkling water',
 ];
 
-// Zip codes per banner region
+// Every state where each banner operates, with representative zips.
+// Kroger alone is in 35 states. Every state gets coverage.
 const BANNER_ZIPS = {
-  kroger: ['45201', '30301', '46201', '40201', '37201', '75201', '77001', '48201'],
-  frys: ['85001'],
-  kingsoopers: ['80201'],
-  smiths: ['84101', '89101', '87101'],
-  dillons: ['67201'],
-  ralphs: ['90001', '92101'],
-  fredmeyer: ['97201', '98101', '99501'],
-  qfc: ['98101'],
-  harristeeter: ['29201', '28202', '27601', '23219', '20001'],
-  marianos: ['60601'],
-  picknsave: ['53201'],
-  food4less: ['90001'],
-  citymarket: ['80201'],
+  kroger: [
+    '45201','43201','44101', // OH
+    '48201','49501',         // MI
+    '46201','47901',         // IN
+    '60601','62701',         // IL
+    '40201','40501',         // KY
+    '37201','37901','38101', // TN
+    '30301','31401','30901', // GA
+    '35201','36101',         // AL
+    '39201',                 // MS
+    '29201','29401','29601', // SC
+    '28202','27601','27101', // NC
+    '23219','22901','23451', // VA
+    '25301',                 // WV
+    '75201','77001','78201','73301','79901', // TX
+    '80201','80901',         // CO
+    '85001','85701',         // AZ
+    '89101','89501',         // NV
+    '87101',                 // NM
+    '97201','97401',         // OR
+    '98101','99201',         // WA
+    '90001','94102','92101','95814','93301', // CA
+    '72201',                 // AR
+    '70112','70801',         // LA
+    '63101','64101',         // MO
+    '67201','66101',         // KS
+  ],
+  frys: ['85001','85701'],
+  kingsoopers: ['80201','80901'],
+  smiths: ['84101','89101','89501','87101','59601','59101','83701','82001'],
+  dillons: ['67201','66101'],
+  ralphs: ['90001','92101','93301','95814'],
+  fredmeyer: ['97201','97401','98101','99201','83701','99501'],
+  qfc: ['98101','99201','97201'],
+  harristeeter: [
+    '29201','29401','29601', // SC
+    '28202','27601','27101', // NC
+    '23219','22901','23451', // VA
+    '20001',                 // DC
+    '21201',                 // MD
+    '19801',                 // DE
+    '30301','31401',         // GA
+    '33101','32801',         // FL
+  ],
+  marianos: ['60601','62701'],
+  picknsave: ['53201','53701'],
+  food4less: ['90001','92101','60601','46201','44101'],
+  citymarket: ['80201','80901'],
 };
 
 // ── AUTH ──
