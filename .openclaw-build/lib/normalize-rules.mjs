@@ -499,9 +499,63 @@ const FOOD_INDICATORS = [
   'smucker', 'jif', 'skippy', 'peter pan',
   'philadelphia cream', 'cool whip', 'reddi-wip',
   'clover valley', 'great value', 'market pantry', 'good & gather',
+  // ── Store brands (New England, existing) ──
   'stop & shop', 'shaw\'s', 'big y', 'wegmans', 'aldi',
   'simply nature', 'fit & active', 'friendly farms',
   'culinary tours', 'o organics', 'open nature', 'signature select',
+  // ── Store brands (Kroger family) ──
+  'kroger', 'private selection', 'simple truth', 'simple truth organic',
+  'heritage farm', 'comforts', 'psst', 'big k', 'check this out',
+  'fred meyer', 'fry\'s', 'king soopers', 'ralphs', 'smith\'s', 'dillons',
+  'mariano\'s', 'pick \'n save', 'qfc', 'ruler', 'food 4 less',
+  'harris teeter', 'ht traders', 'harris teeter organics',
+  // ── Store brands (Albertsons / Safeway family) ──
+  'safeway', 'albertsons', 'vons', 'jewel', 'jewel-osco', 'acme',
+  'tom thumb', 'randalls', 'pavilions', 'star market', 'carrs',
+  'lucerne', 'waterfront bistro', 'debi lilly', 'primo taglio',
+  'open nature', 'o organics', 'signature select', 'signature cafe',
+  'ready meals', 'soleil', 'value corner',
+  // ── Store brands (Ahold Delhaize) ──
+  'nature\'s promise', 'taste of inspirations', 'bowl & basket',
+  'wholesome pantry', 'paperbird', 'hannaford', 'food lion',
+  'giant', 'martin\'s', 'giant eagle', 'market district',
+  // ── Store brands (Southeast) ──
+  'publix', 'publix premium', 'greenwise', 'publix bakery',
+  'ingles', 'laura lynn', 'lowe\'s foods', 'lowes foods',
+  'winn-dixie', 'winn dixie', 'se grocers', 'piggly wiggly',
+  'harveys', 'earth fare', 'food city', 'food lion',
+  // ── Store brands (Midwest) ──
+  'meijer', 'hy-vee', 'hy vee', 'schnucks', 'schnuck\'s',
+  'woodman\'s', 'festival foods', 'cub', 'fresh thyme',
+  // ── Store brands (Texas / South) ──
+  'h-e-b', 'heb', 'hill country fare', 'central market',
+  'brookshire\'s', 'fiesta', 'food town',
+  // ── Store brands (West Coast) ──
+  'safeway select', 'vons', 'sprouts', 'sprouts farmers',
+  'winco', 'stater bros', 'smart & final', 'first street',
+  'grocery outlet', 'raley\'s', 'nob hill', 'bel air',
+  'save mart', 'lucky', 'gelson\'s', 'bristol farms',
+  'new seasons', 'pcc', 'metropolitan market',
+  // ── Store brands (National) ──
+  'great value', 'marketside', 'sam\'s choice', 'member\'s mark',
+  'kirkland', 'kirkland signature', 'good & gather', 'market pantry',
+  'favorite day', 'up & up', 'target', 'walmart',
+  'costco', 'sam\'s club', 'bj\'s', 'wellsley farms', 'berkley jensen',
+  'whole foods', 'whole foods market', '365', '365 everyday value',
+  '365 by whole foods', 'amazon fresh', 'aplenty',
+  'trader joe\'s', 'trader giotto\'s', 'trader ming\'s',
+  'lidl', 'preferred selection', 'chef select',
+  'aldi', 'specially selected', 'baker\'s corner', 'clancy\'s',
+  'deutsche kuche', 'elevation', 'fremont fish market',
+  'happy farms', 'l\'oven fresh', 'little salad bar',
+  'live gfree', 'mama cozzi', 'park street deli',
+  'priano', 'season\'s choice', 'southern grove',
+  // ── Store brands (Ethnic / Specialty) ──
+  'h mart', 'hmart', '99 ranch', 'patel brothers',
+  'el super', 'cardenas', 'vallarta', 'northgate',
+  'sedano\'s', 'fiesta mart', 'la michoacana',
+  // ── Store brands (Dollar / Discount) ──
+  'clover valley', 'dollar general', 'dollar tree',
 ];
 
 /**

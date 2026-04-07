@@ -90,6 +90,9 @@ export interface PriceLookupResult {
 
   /** Source type breakdown */
   source_types: string[]
+
+  /** Product image URL (from Instacart/scraper, if available) */
+  image_url: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -332,6 +335,7 @@ interface ProductPriceRow {
   price_type: 'retail' | 'wholesale' | 'commodity' | 'farm_direct' | null
   reliability_weight: number | null
   source_type: string | null
+  image_url: string | null
 }
 
 // Non-food keyword patterns for products that slip through category filters
@@ -393,7 +397,8 @@ async function searchProductPrices(
         NULL::float as distance_miles,
         sp.price_type,
         c.reliability_weight,
-        c.source_type
+        c.source_type,
+        p.image_url
       FROM openclaw.products p
       JOIN openclaw.store_products sp ON sp.product_id = p.id
       JOIN openclaw.stores s ON s.id = sp.store_id
@@ -877,7 +882,11 @@ function scopeConfidenceMultiplier(scope: 'local' | 'regional' | 'national'): nu
 export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupResult> {
   const { ingredient, zipCode, radiusMiles = 50 } = query
 
-  const defaultYield = { yield_pct: 1.0, usable_cost_per_unit_cents: null as number | null, applied: false }
+  const defaultYield = {
+    yield_pct: 1.0,
+    usable_cost_per_unit_cents: null as number | null,
+    applied: false,
+  }
 
   const noResult: PriceLookupResult = {
     matched: false,
@@ -903,6 +912,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
     price_type: 'retail',
     yield: defaultYield,
     source_types: [],
+    image_url: null,
   }
 
   // Helper: look up yield_pct for an ingredient and compute usable cost
@@ -923,7 +933,9 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           applied: true,
         }
       }
-    } catch { /* yield columns may not exist on older schema */ }
+    } catch {
+      /* yield columns may not exist on older schema */
+    }
     return defaultYield
   }
 
@@ -1000,6 +1012,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           price_type: 'retail',
           yield: yieldInfo,
           source_types: agg.source_types,
+          image_url: null,
         }
       }
     }
@@ -1065,6 +1078,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
         price_type: derivePriceType(productPrices),
         yield: await computeYield(match?.id || null, agg.median_cents),
         source_types: agg.source_types,
+        image_url: productPrices.find((p) => p.image_url)?.image_url || null,
       }
     }
   }
@@ -1126,6 +1140,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           price_type: derivePriceType(nationalPrices),
           yield: await computeYield(match?.id || null, agg.median_cents),
           source_types: agg.source_types,
+          image_url: nationalPrices.find((p) => p.image_url)?.image_url || null,
         }
       }
     }
@@ -1167,6 +1182,7 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       price_type: 'commodity',
       yield: await computeYield(match?.id || null, usda.price_cents),
       source_types: ['commodity'],
+      image_url: null,
     }
   }
 
