@@ -367,6 +367,14 @@ const CHAIN_DEFINITIONS = [
     states: ['FL'] },
 
   // ════════════════════════════════════════════════
+  // CONVENIENCE STORES (verified on Instacart)
+  // ════════════════════════════════════════════════
+  { slug: 'sheetz', chainSlug: 'sheetz', name: 'Sheetz', markupPct: 20, tier: 'retail',
+    states: ['PA','VA','WV','NC','MD','OH'] },
+  { slug: 'caseys', chainSlug: 'caseys', name: "Casey's General Store", markupPct: 20, tier: 'retail',
+    states: ['IA','IL','IN','KS','MN','MO','NE','ND','OH','OK','SD','TN','WI','AR','KY'] },
+
+  // ════════════════════════════════════════════════
   // ADDITIONAL KROGER BANNERS
   // ════════════════════════════════════════════════
   { slug: 'foods-co', chainSlug: 'foods_co', name: 'Foods Co', markupPct: 15, tier: 'retail',
