@@ -245,6 +245,7 @@ async function getInstacartSession(storeSlug, zipCode = '01835') {
         )
       ),
       ua,
+      zip: zipCode, // Track which zip this session was created for
     };
 
     saveSession(session);

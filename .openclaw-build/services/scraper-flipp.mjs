@@ -406,7 +406,9 @@ async function main() {
 
       if (normalized) {
         ingredientId = normalized.ingredientId;
-        saveMapping(db, item.name, normalized.ingredientId, normalized.variantId, normalized.method, normalized.confidence);
+        try {
+          saveMapping(db, item.name, normalized.ingredientId, normalized.variantId, normalized.method, normalized.confidence);
+        } catch { /* FK constraint - ingredient not in canonical table yet, non-blocking */ }
       } else {
         // NO MATCH? Store it anyway with a generated ingredient ID.
         // This is the key change - we don't throw away data.
