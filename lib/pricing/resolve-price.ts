@@ -161,9 +161,10 @@ function sourceDisplayStore(source: PriceSource, storeName: string | null): stri
 export async function resolvePrice(
   ingredientId: string,
   tenantId: string,
-  options?: { preferredStore?: string }
+  options?: { preferredStore?: string; state?: string }
 ): Promise<ResolvedPrice> {
   const preferredStore = options?.preferredStore || null
+  const preferredState = options?.state || null
   const noPrice: ResolvedPrice = {
     cents: null,
     unit: 'each',
@@ -280,7 +281,7 @@ export async function resolvePrice(
   }
 
   // Tier 3: DIRECT SCRAPE (openclaw_scrape) within 14 days
-  // When preferredStore is set, prefer rows from that store (same tier, same freshness rules)
+  // When preferredStore or state is set, prefer rows from that store/region
   const scrape = (await db.execute(sql`
     SELECT price_per_unit_cents, unit, store_name, purchase_date
     FROM ingredient_price_history
@@ -290,6 +291,7 @@ export async function resolvePrice(
       AND purchase_date > CURRENT_DATE - INTERVAL '14 days'
     ORDER BY
       CASE WHEN ${preferredStore} IS NOT NULL AND LOWER(store_name) = LOWER(${preferredStore}) THEN 0 ELSE 1 END,
+      CASE WHEN ${preferredState} IS NOT NULL AND store_name ILIKE '%' || ${preferredState || ''} || '%' THEN 0 ELSE 1 END,
       purchase_date DESC
     LIMIT 1
   `)) as unknown as PriceRow[]
@@ -321,6 +323,7 @@ export async function resolvePrice(
       AND purchase_date > CURRENT_DATE - INTERVAL '14 days'
     ORDER BY
       CASE WHEN ${preferredStore} IS NOT NULL AND LOWER(store_name) = LOWER(${preferredStore}) THEN 0 ELSE 1 END,
+      CASE WHEN ${preferredState} IS NOT NULL AND store_name ILIKE '%' || ${preferredState || ''} || '%' THEN 0 ELSE 1 END,
       purchase_date DESC
     LIMIT 1
   `)) as unknown as PriceRow[]
@@ -352,6 +355,7 @@ export async function resolvePrice(
       AND purchase_date > CURRENT_DATE - INTERVAL '30 days'
     ORDER BY
       CASE WHEN ${preferredStore} IS NOT NULL AND LOWER(store_name) = LOWER(${preferredStore}) THEN 0 ELSE 1 END,
+      CASE WHEN ${preferredState} IS NOT NULL AND store_name ILIKE '%' || ${preferredState || ''} || '%' THEN 0 ELSE 1 END,
       purchase_date DESC
     LIMIT 1
   `)) as unknown as PriceRow[]
@@ -401,10 +405,12 @@ export async function resolvePrice(
   // Tier 6.5: MARKET AGGREGATE (system-level price via ingredient alias)
   // If this ingredient is aliased to a system_ingredient, check the pre-computed
   // market price from openclaw.system_ingredient_prices (aggregated from FTS-matched products).
+  // When state is provided, boost confidence for SIP entries that include that state.
   const marketAgg = (await db.execute(sql`
     SELECT sip.avg_price_cents, sip.median_price_cents, sip.price_unit,
            sip.store_count, sip.state_count, sip.confidence,
-           sip.newest_price_at::text AS newest_date
+           sip.newest_price_at::text AS newest_date,
+           sip.states as covered_states
     FROM ingredient_aliases ia
     JOIN openclaw.system_ingredient_prices sip ON sip.system_ingredient_id = ia.system_ingredient_id
     WHERE ia.ingredient_id = ${ingredientId}
@@ -420,19 +426,26 @@ export async function resolvePrice(
     state_count: number
     confidence: number
     newest_date: string | null
+    covered_states: string[] | null
   }>
 
   if (marketAgg.length > 0) {
     const row = marketAgg[0]
     const priceCents = row.median_price_cents ?? row.avg_price_cents
     if (priceCents > 0) {
+      // Boost confidence if the requested state is covered by this price data
+      const statesArr = row.covered_states || []
+      const coversRequestedState = preferredState && statesArr.includes(preferredState)
+      const baseConf = Math.min(parseFloat(String(row.confidence)) || 0.55, 0.65)
+      const adjustedConf = coversRequestedState ? Math.min(baseConf + 0.1, 0.75) : baseConf
+
       return withDecay({
         cents: priceCents,
         unit: row.price_unit || 'each',
         source: 'market_aggregate',
         sourceTier: 'system_ingredient_market',
         store: `Market Average (${row.store_count} stores, ${row.state_count} state${row.state_count !== 1 ? 's' : ''})`,
-        confidence: Math.min(parseFloat(String(row.confidence)) || 0.55, 0.65),
+        confidence: adjustedConf,
         freshness: computeFreshness(row.newest_date),
         confirmedAt: row.newest_date,
         reason: null,
@@ -540,9 +553,10 @@ export async function resolvePrice(
 export async function resolvePricesBatch(
   ingredientIds: string[],
   tenantId: string,
-  options?: { preferredStore?: string }
+  options?: { preferredStore?: string; state?: string }
 ): Promise<Map<string, ResolvedPrice>> {
   const preferredStore = options?.preferredStore || null
+  const preferredState = options?.state || null
   const result = new Map<string, ResolvedPrice>()
 
   if (ingredientIds.length === 0) return result
