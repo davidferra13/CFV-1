@@ -317,3 +317,20 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Build state on arrival: green (d33bc2a4c)
 - Build state on departure: green (unchanged)
 - Notes: Root cause: Pi rebooted Apr 6 23:27, crontab had no env var definitions. $OPENCLAW_DIR was empty, so every scraper cron job silently failed (cd to home, script not found, error discarded by no MTA). Fix: added OPENCLAW_DIR=/home/davidferra/openclaw-prices, LOCK_FILE=/tmp/openclaw.lock, PATH to crontab header. Cleaned stuck run #85 (king_soopers, never completed). Verified: Flipp scraper fired at 13:30 (302 searches, 22 zips, nationwide), Market Basket catalog walker triggered manually (crawling successfully). All cron jobs will now execute correctly.
+
+## 2026-04-09 17:13 EST
+
+- Agent: Planner
+- Task: Architecture audit review and hardening spec
+- Status: started
+- Build state on arrival: green (commit 6b1a253ad, dirty checkout)
+
+## 2026-04-09 17:50 EST
+
+- Agent: Planner
+- Task: Architecture audit review and hardening spec
+- Status: completed
+- Files touched: docs/session-log.md, docs/specs/p0-request-trust-and-api-tenant-boundary-hardening.md, docs/session-digests/2026-04-09-175000-request-trust-api-tenant-boundary-hardening.md
+- Commits: pending push
+- Build state on departure: unchanged from docs/build-state.md (spec-only session, no build rerun)
+- Notes: Wrote a narrow P0 hardening spec for request trust and API tenant-boundary coherence. Scope is limited to header sanitation before public and skip-auth returns, direct session auth on the Google callback, `/chef` route-policy overlap cleanup, tenant-explicit stores for notifications/partners/loyalty, and doc honesty for routes that currently overclaim completeness. Unverified: whether any external API consumer already depends on the current broken notification recipient default or current error shapes.
