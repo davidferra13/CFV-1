@@ -334,3 +334,20 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending push
 - Build state on departure: unchanged from docs/build-state.md (spec-only session, no build rerun)
 - Notes: Wrote a narrow P0 hardening spec for request trust and API tenant-boundary coherence. Scope is limited to header sanitation before public and skip-auth returns, direct session auth on the Google callback, `/chef` route-policy overlap cleanup, tenant-explicit stores for notifications/partners/loyalty, and doc honesty for routes that currently overclaim completeness. Unverified: whether any external API consumer already depends on the current broken notification recipient default or current error shapes.
+
+## 2026-04-09 19:36 EST
+
+- Agent: Planner
+- Task: Best-in-class architecture gap spec for system boundaries, routing, and platform structure
+- Status: started
+- Build state on arrival: green (commit 0672c9465, dirty checkout)
+
+## 2026-04-09 19:48 EST
+
+- Agent: Planner
+- Task: Best-in-class architecture gap spec for system boundaries, routing, and platform structure
+- Status: completed
+- Files touched: docs/session-log.md, docs/specs/p0-runtime-surface-boundary-enforcement.md, docs/session-digests/2026-04-09-194500-runtime-surface-boundary-enforcement.md
+- Commits: pending push
+- Build state on departure: unchanged from docs/build-state.md (spec-only session, no build rerun)
+- Notes: Wrote a P0 runtime architecture spec that turns the documented surface model into an enforced runtime contract. Scope is intentionally narrow: create a machine-readable surface contract, give `/admin` an admin-owned shell and nav, remove admin route ownership from chef nav, and add tests so future shell and nav leakage is caught early. Broader debt remains outside this slice: request trust/API tenant boundary hardening, durable rate limiting, least-privilege DB access, and build gating that still ignores lint/type failures.
