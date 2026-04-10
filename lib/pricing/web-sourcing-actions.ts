@@ -4,19 +4,14 @@
  * Ingredient Web Sourcing
  *
  * When the local catalog has no data for an ingredient, this action searches
- * specialty retailers via Brave Search API and returns confirmed product pages.
+ * specialty retailers via DuckDuckGo HTML scraping - free, no API key required.
  *
- * Requires: BRAVE_SEARCH_API_KEY in env (Brave Search API, ~$3/month)
- * Fallback: returns empty array - caller shows static retailer links instead.
- *
- * Auth: requireChef() - only authenticated chefs can trigger search API calls.
- * Cache: results are cached 1 hour per query to avoid redundant API calls.
+ * Results are filtered to trusted retailer domains and cached 1 hour per query.
+ * Auth-gated: only authenticated chefs can trigger searches.
  */
 
 import { requireChef } from '@/lib/auth/get-user'
 
-// Retailers we trust for specialty ingredient sourcing.
-// Results from other domains are filtered out.
 const TRUSTED_DOMAINS = [
   { domain: 'eataly.com', label: 'Eataly' },
   { domain: 'wholefoodsmarket.com', label: 'Whole Foods' },
@@ -24,8 +19,10 @@ const TRUSTED_DOMAINS = [
   { domain: 'formaggiokitchen.com', label: 'Formaggio Kitchen' },
   { domain: 'amazon.com', label: 'Amazon Fresh' },
   { domain: 'freshdirect.com', label: 'FreshDirect' },
-  { domain: 'weee.com', label: 'Weee!' },
   { domain: 'goldbelly.com', label: 'Goldbelly' },
+  { domain: 'specialtyproduce.com', label: 'Specialty Produce' },
+  { domain: 'marxfoods.com', label: 'Marx Foods' },
+  { domain: 'earthy.com', label: 'Earthy Delights' },
 ]
 
 export type SourcingResult = {
@@ -35,27 +32,43 @@ export type SourcingResult = {
   retailer: string
 }
 
-export type SourcingResponse =
-  | { source: 'live'; results: SourcingResult[] }
-  | { source: 'no_key' }
-  | { source: 'error' }
+export type SourcingResponse = { source: 'live'; results: SourcingResult[] } | { source: 'error' }
+
+// Extract all uddg-encoded destination URLs from DuckDuckGo HTML
+function extractDDGUrls(html: string): Array<{ url: string; title: string }> {
+  const results: Array<{ url: string; title: string }> = []
+
+  // Match uddg redirect links with their anchor text
+  const linkPattern = /href="[^"]*uddg=([^&"]+)[^"]*"[^>]*>([^<]+)</g
+  let match: RegExpExecArray | null
+
+  while ((match = linkPattern.exec(html)) !== null) {
+    try {
+      const url = decodeURIComponent(match[1])
+      const title = match[2].trim()
+      if (url.startsWith('http') && title.length > 0) {
+        results.push({ url, title })
+      }
+    } catch {
+      // skip malformed entries
+    }
+  }
+
+  return results
+}
 
 export async function searchIngredientOnline(query: string): Promise<SourcingResponse> {
   await requireChef()
-
-  const apiKey = process.env.BRAVE_SEARCH_API_KEY
-  if (!apiKey) return { source: 'no_key' }
 
   const searchQuery = `${query} buy specialty grocery store`
 
   try {
     const res = await fetch(
-      `https://api.search.brave.com/res/v1/web/search?q=${encodeURIComponent(searchQuery)}&count=10`,
+      `https://html.duckduckgo.com/html/?q=${encodeURIComponent(searchQuery)}`,
       {
         headers: {
-          Accept: 'application/json',
-          'Accept-Encoding': 'gzip',
-          'X-Subscription-Token': apiKey,
+          'User-Agent': 'Mozilla/5.0 (compatible; ChefFlow/1.0; ingredient sourcing)',
+          Accept: 'text/html',
         },
         next: { revalidate: 3600 },
       }
@@ -63,23 +76,18 @@ export async function searchIngredientOnline(query: string): Promise<SourcingRes
 
     if (!res.ok) return { source: 'error' }
 
-    const data = await res.json()
-    const webResults: Array<{ title: string; url: string; description?: string }> =
-      data.web?.results ?? []
+    const html = await res.text()
+    const extracted = extractDDGUrls(html)
 
-    const results: SourcingResult[] = webResults
-      .flatMap((r) => {
-        const match = TRUSTED_DOMAINS.find((td) => r.url?.includes(td.domain))
+    const results: SourcingResult[] = extracted
+      .flatMap(({ url, title }) => {
+        const match = TRUSTED_DOMAINS.find((td) => url.includes(td.domain))
         if (!match) return []
-        return [
-          {
-            title: r.title ?? match.label,
-            url: r.url,
-            description: r.description ?? '',
-            retailer: match.label,
-          },
-        ]
+        return [{ title, url, description: '', retailer: match.label }]
       })
+      .filter(
+        (r, i, arr) => arr.findIndex((x) => x.retailer === r.retailer) === i // one per retailer
+      )
       .slice(0, 6)
 
     return { source: 'live', results }
