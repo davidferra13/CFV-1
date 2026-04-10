@@ -65,16 +65,16 @@ A formula returns the same correct answer every single time, instantly, for free
 
 - `app/(chef)/culinary/price-catalog/catalog-browser.tsx` - catalog browser empty state
 - `components/culinary/substitution-lookup.tsx` - substitution search empty state
+- `components/culinary/ShoppingListGenerator.tsx` - per-row "Find it" button for unassigned/unpriced items with `toBuy > 0`
 
 **Surfaces still pending:**
 
-- Grocery list (adding item not in catalog)
 - Event costing ingredient matching dead-ends
 
 **How to add it to a new surface:**
 
 ```tsx
-import { searchIngredientOnline } from '@/lib/pricing/web-sourcing-actions'
+import { WebSourcingPanel } from '@/components/pricing/web-sourcing-panel'
 
 // In your empty state, when search query exists:
 {
@@ -82,7 +82,7 @@ import { searchIngredientOnline } from '@/lib/pricing/web-sourcing-actions'
 }
 ```
 
-The `WebSourcingPanel` component in `catalog-browser.tsx` is the reference implementation. Copy it or extract it to `components/pricing/web-sourcing-panel.tsx` if a third surface needs it.
+The canonical shared component is `components/pricing/web-sourcing-panel.tsx`. Use it directly - do not duplicate the DDG logic.
 
 **Graceful degradation:** If DDG returns nothing, show static deep-links to Eataly, Whole Foods, Instacart, Formaggio Kitchen, and Amazon Fresh. Never show a dead end.
 

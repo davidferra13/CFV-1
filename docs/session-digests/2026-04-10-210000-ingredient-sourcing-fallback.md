@@ -27,31 +27,40 @@
 
 **Modified: `components/culinary/substitution-lookup.tsx`**
 
-- "No substitutions found" state now appends `SourcingFallback` component.
-- Shows "Buy the original" with live retailer results when no sub exists.
+- "No substitutions found" state now renders `WebSourcingPanel` with label "Buy the original".
+
+**New file: `components/pricing/web-sourcing-panel.tsx`**
+
+- Shared component extracted so all surfaces use the same code.
+- Props: `{ query: string; label?: string }`. Fires `searchIngredientOnline` on mount with cancellation. Shows live DDG results or static fallback grid.
+
+**Modified: `components/culinary/ShoppingListGenerator.tsx`**
+
+- Extracted `ShoppingListRow` component with per-row "Find it" toggle button.
+- Appears when `supplier === 'Unassigned' && estimatedCostCents === 0 && toBuy > 0`.
+- Clicking expands `<WebSourcingPanel query={item.ingredientName} label="Where to buy" />` inline below the row via `<tr colSpan={5}>`.
 
 **Modified: `docs/CLAUDE-ARCHITECTURE.md`**
 
-- Added rule `0d. Catalog Empty = Sourcing Fallback (PERMANENT)` with implementation pattern, surfaces implemented, surfaces pending, and reference code.
+- Added rule `0d. Catalog Empty = Sourcing Fallback (PERMANENT)`.
+- Surfaces list updated: shopping list now implemented. Event costing still pending.
 
 ## Decisions Made
 
 - DuckDuckGo HTML scraping over Brave Search API ($3/month) - free, zero setup, works.
 - Location-aware queries: chef's home city/state appended to every search so results are regionally relevant.
 - Pattern codified as a permanent architecture rule so all future surfaces get it automatically.
-- `WebSourcingPanel` in `catalog-browser.tsx` is the reference implementation. Extract to `components/pricing/web-sourcing-panel.tsx` when a third surface needs it.
+- `WebSourcingPanel` extracted to `components/pricing/web-sourcing-panel.tsx` as the canonical shared component.
 
 ## Unresolved
 
-- Grocery list sourcing fallback not yet built (next surface).
-- Event costing ingredient matching dead-ends not yet wired.
-- `WebSourcingPanel` is duplicated (catalog-browser + substitution-lookup). Extract to shared component when adding the third surface.
+- Event costing ingredient matching dead-ends not yet wired (only remaining 0d surface).
 - Playwright UI verification blocked by pre-existing HSTS issue in dev server middleware (unrelated to this work).
 
 ## Context for Next Agent
 
-- Build is green. Last push: `279a1499b` on `origin/main`.
-- `lib/pricing/web-sourcing-actions.ts` is the single source of truth for web sourcing. Do not duplicate the DDG logic.
-- Server-side verification confirmed: DDG returns live results for puntarelle (Instacart, Amazon Fresh) and ramp leaves (Instacart). Pattern is sound.
+- Build is green. All three rule-0d surfaces complete: catalog browser, substitution lookup, shopping list.
+- `lib/pricing/web-sourcing-actions.ts` is the single source of truth for web sourcing. Do not duplicate DDG logic.
+- `components/pricing/web-sourcing-panel.tsx` is the shared UI component. Import it, do not copy it.
+- Server-side verified: DDG returns live results for puntarelle and ramp leaves. Pattern is sound.
 - Two pre-existing tsc errors in `lib/hub/integration-actions.ts` remain. Not related to this work.
-- The next builder should extract `WebSourcingPanel` to a shared component before adding it to a third surface.
