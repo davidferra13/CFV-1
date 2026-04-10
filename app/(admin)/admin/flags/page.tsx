@@ -33,6 +33,18 @@ const KNOWN_FLAGS = [
     label: 'Beta Features',
     description: 'Catch-all flag for unreleased or experimental features',
   },
+  {
+    key: 'developer_tools',
+    label: 'Developer Tools',
+    description:
+      'Exception-only: enable advanced API keys and webhook tooling for approved custom integrations',
+  },
+  {
+    key: 'supplier_calling',
+    label: 'Supplier Calling',
+    description:
+      'AI phone calling: places automated calls to vendor suppliers to check ingredient availability. Requires Twilio. Gated - off by default for all chefs.',
+  },
 ] as const
 
 export default async function AdminFlagsPage() {
@@ -91,6 +103,30 @@ export default async function AdminFlagsPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      <div className="bg-amber-950/40 rounded-xl border border-amber-900/70 p-4 space-y-3">
+        <div>
+          <h2 className="text-xs font-semibold text-amber-300 uppercase tracking-wide">
+            Developer Tools Policy
+          </h2>
+          <p className="mt-2 text-sm text-amber-100">
+            Keep <span className="font-mono">developer_tools</span> off by default. Only enable it
+            for a specific chef account that has an approved custom integration need, a named owner,
+            and a review date.
+          </p>
+        </div>
+        <ul className="space-y-1 text-xs text-amber-200/90">
+          <li>Default state: off for all chefs.</li>
+          <li>Approval bar: explicit business need, owner, and sunset condition.</li>
+          <li>
+            Review cadence: quarterly. Run{' '}
+            <span className="font-mono">npm run audit:developer-tools</span> before renewals.
+          </li>
+          <li>
+            Reference: <span className="font-mono">docs/developer-tools-runbook.md</span>
+          </li>
+        </ul>
       </div>
 
       {!note && (

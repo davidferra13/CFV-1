@@ -52,6 +52,7 @@ import {
 } from 'lucide-react'
 import type { PriceHistoryPoint } from '@/lib/openclaw/price-intelligence-actions'
 import { getVendorCallQueue, type VendorCallCandidate } from '@/lib/vendors/sourcing-actions'
+import { initiateSupplierCall, getCallStatus } from '@/lib/calling/twilio-actions'
 
 type ViewMode = 'table' | 'grid' | 'store-aisle'
 type CatalogView = 'store-picker' | 'browsing'
@@ -119,10 +120,17 @@ const VENDOR_TYPE_LABELS: Record<string, string> = {
   other: 'Other',
 }
 
+type CallState =
+  | { phase: 'idle' }
+  | { phase: 'calling' }
+  | { phase: 'done'; result: 'yes' | 'no' | null; status: string }
+
 function VendorCallQueuePanel({ query }: { query: string }) {
   const [vendors, setVendors] = useState<VendorCallCandidate[]>([])
+  const [callingEnabled, setCallingEnabled] = useState(false)
   const [loading, setLoading] = useState(true)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [callStates, setCallStates] = useState<Record<string, CallState>>({})
 
   useEffect(() => {
     if (!query || query.length < 2) {
@@ -132,9 +140,21 @@ function VendorCallQueuePanel({ query }: { query: string }) {
     let cancelled = false
     setLoading(true)
 
-    getVendorCallQueue(query)
-      .then((results) => {
-        if (!cancelled) setVendors(results)
+    Promise.all([
+      getVendorCallQueue(query),
+      // Check if supplier_calling flag is on by attempting a dry-run gate check
+      // We detect this by checking if initiateSupplierCall would pass the gate.
+      // Simpler: fetch /api/calling/enabled which checks the flag server-side.
+      fetch('/api/calling/enabled')
+        .then((r) => r.json())
+        .then((d) => d?.enabled === true)
+        .catch(() => false),
+    ])
+      .then(([results, enabled]) => {
+        if (!cancelled) {
+          setVendors(results)
+          setCallingEnabled(enabled)
+        }
       })
       .catch(() => {
         if (!cancelled) setVendors([])
@@ -155,6 +175,42 @@ function VendorCallQueuePanel({ query }: { query: string }) {
     })
   }
 
+  async function placeCall(vendor: VendorCallCandidate) {
+    setCallStates((prev) => ({ ...prev, [vendor.id]: { phase: 'calling' } }))
+    try {
+      const result = await initiateSupplierCall(vendor.id, query)
+      if (!result.success) {
+        setCallStates((prev) => ({
+          ...prev,
+          [vendor.id]: { phase: 'done', result: null, status: result.error ?? 'Failed' },
+        }))
+        return
+      }
+
+      // Poll for result every 3s, up to 60s
+      const callId = result.callId!
+      let attempts = 0
+      const poll = setInterval(async () => {
+        attempts++
+        const status = await getCallStatus(callId)
+        if (!status) return
+        if (['completed', 'failed', 'no_answer', 'busy'].includes(status.status)) {
+          clearInterval(poll)
+          setCallStates((prev) => ({
+            ...prev,
+            [vendor.id]: { phase: 'done', result: status.result, status: status.status },
+          }))
+        }
+        if (attempts >= 20) clearInterval(poll)
+      }, 3000)
+    } catch {
+      setCallStates((prev) => ({
+        ...prev,
+        [vendor.id]: { phase: 'done', result: null, status: 'Error placing call' },
+      }))
+    }
+  }
+
   // Don't render if still loading or no vendors have phone numbers
   if (loading || vendors.length === 0) return null
 
@@ -171,53 +227,103 @@ function VendorCallQueuePanel({ query }: { query: string }) {
       </div>
 
       <ul className="divide-y divide-stone-800">
-        {vendors.map((vendor) => (
-          <li key={vendor.id} className="flex items-center justify-between px-5 py-3.5 gap-4">
-            <div className="min-w-0 flex items-center gap-3">
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center">
-                <Store className="w-3.5 h-3.5 text-stone-400" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium text-stone-200 truncate">{vendor.name}</span>
-                  {vendor.is_preferred && (
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-brand-900/50 text-brand-400 border border-brand-800/50 flex-shrink-0">
-                      Preferred
-                    </span>
-                  )}
-                  <span className="text-xs px-1.5 py-0.5 rounded bg-stone-800 text-stone-400 border border-stone-700 flex-shrink-0 capitalize">
-                    {VENDOR_TYPE_LABELS[vendor.vendor_type] ?? vendor.vendor_type}
-                  </span>
+        {vendors.map((vendor) => {
+          const callState = callStates[vendor.id] ?? { phase: 'idle' }
+          return (
+            <li key={vendor.id} className="flex items-center justify-between px-5 py-3.5 gap-4">
+              <div className="min-w-0 flex items-center gap-3">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center">
+                  <Store className="w-3.5 h-3.5 text-stone-400" />
                 </div>
-                {vendor.contact_name && (
-                  <p className="text-xs text-stone-500 mt-0.5">Attn: {vendor.contact_name}</p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-stone-200 truncate">
+                      {vendor.name}
+                    </span>
+                    {vendor.is_preferred && (
+                      <span className="text-xs px-1.5 py-0.5 rounded bg-brand-900/50 text-brand-400 border border-brand-800/50 flex-shrink-0">
+                        Preferred
+                      </span>
+                    )}
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-stone-800 text-stone-400 border border-stone-700 flex-shrink-0 capitalize">
+                      {VENDOR_TYPE_LABELS[vendor.vendor_type] ?? vendor.vendor_type}
+                    </span>
+                  </div>
+                  {vendor.contact_name && (
+                    <p className="text-xs text-stone-500 mt-0.5">Attn: {vendor.contact_name}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {/* Copy phone button - always visible */}
+                <button
+                  type="button"
+                  onClick={() => copyPhone(vendor)}
+                  title={`Copy ${vendor.phone}`}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium transition-colors
+                    border-stone-700 bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-stone-200
+                    data-[copied=true]:border-emerald-700 data-[copied=true]:bg-emerald-900/30 data-[copied=true]:text-emerald-400"
+                  data-copied={copiedId === vendor.id ? 'true' : undefined}
+                >
+                  {copiedId === vendor.id ? (
+                    <CheckCheck className="w-3.5 h-3.5" />
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      {vendor.phone}
+                    </>
+                  )}
+                </button>
+
+                {/* AI Call button - only visible when supplier_calling flag is on */}
+                {callingEnabled && (
+                  <>
+                    {callState.phase === 'idle' && (
+                      <button
+                        type="button"
+                        onClick={() => placeCall(vendor)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium transition-colors
+                          border-brand-700 bg-brand-900/40 text-brand-300 hover:bg-brand-800/50 hover:text-brand-200"
+                      >
+                        <Phone className="w-3.5 h-3.5" />
+                        Auto-call
+                      </button>
+                    )}
+                    {callState.phase === 'calling' && (
+                      <span className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium border-amber-700 bg-amber-900/30 text-amber-300">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Calling...
+                      </span>
+                    )}
+                    {callState.phase === 'done' && (
+                      <span
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium
+                          ${callState.result === 'yes' ? 'border-emerald-700 bg-emerald-900/30 text-emerald-300' : ''}
+                          ${callState.result === 'no' ? 'border-rose-800 bg-rose-900/20 text-rose-400' : ''}
+                          ${callState.result === null ? 'border-stone-700 bg-stone-800 text-stone-400' : ''}`}
+                      >
+                        {callState.result === 'yes' && (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            In stock
+                          </>
+                        )}
+                        {callState.result === 'no' && (
+                          <>
+                            <X className="w-3.5 h-3.5" />
+                            Not available
+                          </>
+                        )}
+                        {callState.result === null && <>No answer</>}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => copyPhone(vendor)}
-              title={`Copy ${vendor.phone}`}
-              className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-medium transition-colors
-                border-stone-700 bg-stone-800 text-stone-300 hover:bg-stone-700 hover:text-stone-100
-                data-[copied=true]:border-emerald-700 data-[copied=true]:bg-emerald-900/30 data-[copied=true]:text-emerald-400"
-              data-copied={copiedId === vendor.id ? 'true' : undefined}
-            >
-              {copiedId === vendor.id ? (
-                <>
-                  <CheckCheck className="w-3.5 h-3.5" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5" />
-                  {vendor.phone}
-                </>
-              )}
-            </button>
-          </li>
-        ))}
+            </li>
+          )
+        })}
       </ul>
 
       <div className="px-5 py-2.5 border-t border-stone-800 bg-stone-950/50">
@@ -229,7 +335,7 @@ function VendorCallQueuePanel({ query }: { query: string }) {
           >
             Vendors
           </a>
-          . AI auto-calling coming soon.
+          {callingEnabled ? '. Auto-calling is active.' : '.'}
         </p>
       </div>
     </div>
