@@ -7,10 +7,13 @@ import {
   getCatalogCategories,
   getCatalogStores,
   addCatalogIngredientToLibrary,
+  searchSystemIngredients,
+  addSystemIngredientToLibrary,
   type CatalogItemV2,
   type CatalogDetailResult,
   type CatalogDetailPrice,
   type CatalogStore,
+  type SystemIngredientMatch,
 } from '@/lib/openclaw/catalog-actions'
 import { getPriceHistory } from '@/lib/openclaw/price-intelligence-actions'
 import { getPreferredStores } from '@/lib/grocery/store-shopping-actions'
@@ -288,6 +291,11 @@ export function CatalogBrowser() {
   const [activeCartId, setActiveCartId] = useState<string | null>(null)
   const [cartItemIds, setCartItemIds] = useState<Set<string>>(new Set())
 
+  // System ingredient fallback (shown when catalog has no market price data)
+  const [systemMatches, setSystemMatches] = useState<SystemIngredientMatch[]>([])
+  const [systemMatchAdded, setSystemMatchAdded] = useState<Set<string>>(new Set())
+  const [systemMatchAdding, setSystemMatchAdding] = useState<string | null>(null)
+
   // Dropdowns
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [categorySearch, setCategorySearch] = useState('')
@@ -399,6 +407,27 @@ export function CatalogBrowser() {
     observer.observe(sentinel)
     return () => observer.disconnect()
   }, [hasMore, isLoadingMore, isPending, nextCursor, doSearch])
+
+  // ---------------------------------------------------------------------------
+  // System ingredient fallback: fires when catalog returns 0 results
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (isPending || items.length > 0 || search.trim().length < 2) {
+      setSystemMatches([])
+      return
+    }
+    let cancelled = false
+    searchSystemIngredients(search.trim())
+      .then((results) => {
+        if (!cancelled) setSystemMatches(results)
+      })
+      .catch(() => {
+        if (!cancelled) setSystemMatches([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [isPending, items.length, search])
 
   // ---------------------------------------------------------------------------
   // Outside-click handlers for dropdowns
@@ -901,6 +930,77 @@ export function CatalogBrowser() {
                   </button>
                 )}
               </div>
+
+              {/* ---- System ingredient matches (no market price yet) ---- */}
+              {systemMatches.length > 0 && (
+                <div className="bg-stone-900 rounded-lg border border-stone-800 overflow-hidden">
+                  <div className="px-4 py-3 border-b border-stone-800 flex items-center gap-2">
+                    <Info className="w-4 h-4 text-brand-400 flex-shrink-0" />
+                    <p className="text-sm text-stone-300 font-medium">
+                      In our ingredient catalog - no market price data yet
+                    </p>
+                  </div>
+                  <ul className="divide-y divide-stone-800">
+                    {systemMatches.map((match) => (
+                      <li
+                        key={match.id}
+                        className="flex items-center justify-between px-4 py-3 gap-4"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm text-stone-200 font-medium truncate">
+                            {match.name}
+                          </p>
+                          <p className="text-xs text-stone-500 capitalize mt-0.5">
+                            {match.category.replace(/_/g, ' ')}
+                            {match.subcategory ? ` - ${match.subcategory.replace(/_/g, ' ')}` : ''}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={
+                            systemMatchAdded.has(match.id) || systemMatchAdding === match.id
+                          }
+                          onClick={async () => {
+                            setSystemMatchAdding(match.id)
+                            try {
+                              const result = await addSystemIngredientToLibrary(match.id)
+                              if (result.success || result.error === 'Already in your library') {
+                                setSystemMatchAdded((prev) => new Set(prev).add(match.id))
+                              }
+                            } catch {
+                              // Non-blocking
+                            } finally {
+                              setSystemMatchAdding(null)
+                            }
+                          }}
+                          className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors
+                            disabled:opacity-60 disabled:cursor-default
+                            bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-stone-100
+                            data-[added=true]:bg-emerald-900/40 data-[added=true]:text-emerald-400"
+                          data-added={systemMatchAdded.has(match.id) ? 'true' : undefined}
+                        >
+                          {systemMatchAdded.has(match.id) ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              Added
+                            </>
+                          ) : systemMatchAdding === match.id ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              Adding
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-3.5 h-3.5" />
+                              Add to my library
+                            </>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/* ---- Web sourcing fallback ---- */}
               {search.trim().length > 1 && <WebSourcingPanel query={search.trim()} />}

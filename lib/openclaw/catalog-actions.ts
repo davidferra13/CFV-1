@@ -741,26 +741,19 @@ export async function getCatalogStats(): Promise<CatalogStats> {
   await requireChef()
 
   const [totals, categories] = await Promise.all([
+    // Use materialized view for the expensive priced-count query (was 22s, now <1ms)
     pgClient`
-      WITH priced AS (
-        SELECT DISTINCT ci.ingredient_id
-        FROM openclaw.canonical_ingredients ci
-        JOIN openclaw.normalization_map nm
-          ON nm.canonical_ingredient_id = ci.ingredient_id
-        JOIN openclaw.products p
-          ON LOWER(TRIM(p.name)) = LOWER(TRIM(nm.raw_name))
-         AND p.is_food = true
-        JOIN openclaw.store_products sp
-          ON sp.product_id = p.id
-         AND sp.price_cents > 0
-        JOIN openclaw.stores s
-          ON s.id = sp.store_id
-         AND s.is_active = true
-      )
-      SELECT
-        (SELECT COUNT(*)::int FROM openclaw.canonical_ingredients) AS total,
-        (SELECT COUNT(*)::int FROM priced) AS priced
-    `,
+      SELECT total_ingredients AS total, priced_ingredients AS priced
+      FROM openclaw.catalog_stats_mv
+    `.catch(
+      () =>
+        // Fallback: fast approximate if MV doesn't exist
+        pgClient`
+        SELECT
+          (SELECT COUNT(*)::int FROM openclaw.canonical_ingredients) AS total,
+          0 AS priced
+      `
+    ),
     pgClient`
       SELECT
         COALESCE(NULLIF(category, ''), 'uncategorized') AS name,
@@ -1027,5 +1020,159 @@ export async function getShoppingOptimizationAdmin(
       savings: Math.max(0, bestSingleStore - optimalTotalCents),
     },
     singleStoreRanking,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// System ingredient fallback search
+// Used by the catalog browser when market data returns zero results.
+// Searches system_ingredients by alias (exact), FTS, and trigram in order.
+// ---------------------------------------------------------------------------
+
+export type SystemIngredientMatch = {
+  id: string
+  name: string
+  category: string
+  subcategory: string
+  aliases: string[]
+  slug: string | null
+  matchedVia: 'alias' | 'fts' | 'trigram'
+}
+
+export async function searchSystemIngredients(query: string): Promise<SystemIngredientMatch[]> {
+  await requireChef()
+
+  const q = query.trim().toLowerCase()
+  if (!q || q.length < 2) return []
+
+  // Strategy 1: exact alias match (GIN index, fast)
+  const aliasRows = await pgClient<SystemIngredientMatch[]>`
+    SELECT
+      id::text,
+      name,
+      category,
+      COALESCE(subcategory, '') AS subcategory,
+      COALESCE(aliases, '{}') AS aliases,
+      slug,
+      'alias'::text AS "matchedVia"
+    FROM system_ingredients
+    WHERE is_active = true
+      AND ${q} = ANY(aliases)
+    LIMIT 8
+  `
+
+  if (aliasRows.length > 0) return aliasRows
+
+  // Strategy 2: full-text search on name
+  const ftsQuery = q
+    .replace(/[^a-z0-9 ]/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .join(' & ')
+  if (ftsQuery) {
+    const ftsRows = await pgClient<SystemIngredientMatch[]>`
+      SELECT
+        id::text,
+        name,
+        category,
+        COALESCE(subcategory, '') AS subcategory,
+        COALESCE(aliases, '{}') AS aliases,
+        slug,
+        'fts'::text AS "matchedVia"
+      FROM system_ingredients
+      WHERE is_active = true
+        AND to_tsvector('english', name) @@ to_tsquery('english', ${ftsQuery})
+      ORDER BY ts_rank(to_tsvector('english', name), to_tsquery('english', ${ftsQuery})) DESC
+      LIMIT 8
+    `
+    if (ftsRows.length > 0) return ftsRows
+  }
+
+  // Strategy 3: trigram similarity (catches misspellings and partial matches)
+  const trigramRows = await pgClient<SystemIngredientMatch[]>`
+    SELECT
+      id::text,
+      name,
+      category,
+      COALESCE(subcategory, '') AS subcategory,
+      COALESCE(aliases, '{}') AS aliases,
+      slug,
+      'trigram'::text AS "matchedVia"
+    FROM system_ingredients
+    WHERE is_active = true
+      AND extensions.similarity(lower(name), ${q}) > 0.25
+    ORDER BY extensions.similarity(lower(name), ${q}) DESC
+    LIMIT 8
+  `
+
+  return trigramRows
+}
+
+// ---------------------------------------------------------------------------
+// Add a system ingredient to the chef's personal ingredient library
+// ---------------------------------------------------------------------------
+
+export async function addSystemIngredientToLibrary(
+  systemIngredientId: string,
+  overrides?: { priceCents?: number; unit?: string; vendor?: string }
+): Promise<{ success: boolean; id?: string; error?: string }> {
+  const user = await requireChef()
+
+  // Fetch the system ingredient
+  const rows = await pgClient<{ name: string; category: string; standard_unit: string }[]>`
+    SELECT name, category, standard_unit
+    FROM system_ingredients
+    WHERE id = ${systemIngredientId}::uuid AND is_active = true
+    LIMIT 1
+  `
+  if (rows.length === 0) return { success: false, error: 'System ingredient not found' }
+
+  const si = rows[0]
+  const unit = overrides?.unit ?? si.standard_unit ?? 'g'
+
+  try {
+    // Check if this chef already has this ingredient linked
+    const existing = await pgClient<{ id: string }[]>`
+      SELECT i.id FROM ingredients i
+      WHERE i.tenant_id = ${user.tenantId!}::uuid
+        AND i.system_ingredient_id = ${systemIngredientId}::uuid
+      LIMIT 1
+    `
+    if (existing.length > 0) {
+      return { success: true, id: existing[0].id }
+    }
+
+    // Insert into chef's ingredient library via raw SQL (system_ingredient_id not in generated schema)
+    const inserted = await pgClient<{ id: string }[]>`
+      INSERT INTO ingredients (
+        tenant_id, name, category, default_unit, price_unit,
+        system_ingredient_id, average_price_cents, last_price_cents,
+        last_price_date, preferred_vendor
+      ) VALUES (
+        ${user.tenantId!}::uuid,
+        ${si.name},
+        ${si.category}::ingredient_category,
+        ${unit},
+        ${unit},
+        ${systemIngredientId}::uuid,
+        ${overrides?.priceCents ?? null},
+        ${overrides?.priceCents ?? null},
+        ${overrides?.priceCents ? new Date().toISOString().split('T')[0] : null},
+        ${overrides?.vendor ?? null}
+      )
+      RETURNING id::text
+    `
+
+    revalidatePath('/culinary/ingredients')
+    revalidatePath('/culinary/price-catalog')
+
+    return { success: true, id: inserted[0]?.id }
+  } catch (err) {
+    console.error(
+      '[catalog] addSystemIngredientToLibrary error:',
+      err instanceof Error ? err.message : err
+    )
+    return { success: false, error: 'Failed to add ingredient to library' }
   }
 }
