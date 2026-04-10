@@ -45,8 +45,13 @@ import {
   Check,
   Tag,
   Info,
+  Phone,
+  Copy,
+  CheckCheck,
+  Store,
 } from 'lucide-react'
 import type { PriceHistoryPoint } from '@/lib/openclaw/price-intelligence-actions'
+import { getVendorCallQueue, type VendorCallCandidate } from '@/lib/vendors/sourcing-actions'
 
 type ViewMode = 'table' | 'grid' | 'store-aisle'
 type CatalogView = 'store-picker' | 'browsing'
@@ -222,6 +227,145 @@ function WebSourcingPanel({ query }: { query: string }) {
       <p className="text-xs text-stone-600">
         Searching for: <span className="text-stone-400 italic">{query}</span>
       </p>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Vendor Call Queue Panel
+// Shown as a last resort when catalog + web sourcing both return nothing.
+// Pulls the chef's saved vendor contacts, ranks them by specialty relevance,
+// and presents a click-to-copy phone list so the chef knows exactly who to
+// call and in what order.
+// ---------------------------------------------------------------------------
+
+const VENDOR_TYPE_LABELS: Record<string, string> = {
+  specialty: 'Specialty',
+  butcher: 'Butcher',
+  fishmonger: 'Fishmonger',
+  farm: 'Farm',
+  produce: 'Produce',
+  dairy: 'Dairy',
+  bakery: 'Bakery',
+  grocery: 'Grocery',
+  liquor: 'Liquor',
+  equipment: 'Equipment',
+  other: 'Other',
+}
+
+function VendorCallQueuePanel({ query }: { query: string }) {
+  const [vendors, setVendors] = useState<VendorCallCandidate[]>([])
+  const [loading, setLoading] = useState(true)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!query || query.length < 2) {
+      setLoading(false)
+      return
+    }
+    let cancelled = false
+    setLoading(true)
+
+    getVendorCallQueue(query)
+      .then((results) => {
+        if (!cancelled) setVendors(results)
+      })
+      .catch(() => {
+        if (!cancelled) setVendors([])
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [query])
+
+  function copyPhone(vendor: VendorCallCandidate) {
+    navigator.clipboard.writeText(vendor.phone).then(() => {
+      setCopiedId(vendor.id)
+      setTimeout(() => setCopiedId(null), 2000)
+    })
+  }
+
+  // Don't render if still loading or no vendors have phone numbers
+  if (loading || vendors.length === 0) return null
+
+  return (
+    <div className="bg-stone-900 rounded-lg border border-stone-700 overflow-hidden">
+      <div className="px-5 py-3 border-b border-stone-700 flex items-center gap-2.5">
+        <Phone className="w-4 h-4 text-stone-400 flex-shrink-0" />
+        <div>
+          <p className="text-sm font-medium text-stone-200">Call your suppliers</p>
+          <p className="text-xs text-stone-500 mt-0.5">
+            Not in the catalog or online. These vendors may have it.
+          </p>
+        </div>
+      </div>
+
+      <ul className="divide-y divide-stone-800">
+        {vendors.map((vendor) => (
+          <li key={vendor.id} className="flex items-center justify-between px-5 py-3.5 gap-4">
+            <div className="min-w-0 flex items-center gap-3">
+              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center">
+                <Store className="w-3.5 h-3.5 text-stone-400" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-medium text-stone-200 truncate">{vendor.name}</span>
+                  {vendor.is_preferred && (
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-brand-900/50 text-brand-400 border border-brand-800/50 flex-shrink-0">
+                      Preferred
+                    </span>
+                  )}
+                  <span className="text-xs px-1.5 py-0.5 rounded bg-stone-800 text-stone-400 border border-stone-700 flex-shrink-0 capitalize">
+                    {VENDOR_TYPE_LABELS[vendor.vendor_type] ?? vendor.vendor_type}
+                  </span>
+                </div>
+                {vendor.contact_name && (
+                  <p className="text-xs text-stone-500 mt-0.5">Attn: {vendor.contact_name}</p>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => copyPhone(vendor)}
+              title={`Copy ${vendor.phone}`}
+              className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-medium transition-colors
+                border-stone-700 bg-stone-800 text-stone-300 hover:bg-stone-700 hover:text-stone-100
+                data-[copied=true]:border-emerald-700 data-[copied=true]:bg-emerald-900/30 data-[copied=true]:text-emerald-400"
+              data-copied={copiedId === vendor.id ? 'true' : undefined}
+            >
+              {copiedId === vendor.id ? (
+                <>
+                  <CheckCheck className="w-3.5 h-3.5" />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  {vendor.phone}
+                </>
+              )}
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <div className="px-5 py-2.5 border-t border-stone-800 bg-stone-950/50">
+        <p className="text-xs text-stone-600">
+          Manage contacts in{' '}
+          <a
+            href="/culinary/vendors"
+            className="text-stone-500 hover:text-stone-400 underline underline-offset-2"
+          >
+            Vendors
+          </a>
+          . AI auto-calling coming soon.
+        </p>
+      </div>
     </div>
   )
 }
@@ -1004,6 +1148,9 @@ export function CatalogBrowser() {
 
               {/* ---- Web sourcing fallback ---- */}
               {search.trim().length > 1 && <WebSourcingPanel query={search.trim()} />}
+
+              {/* ---- Vendor call queue (Tier 3 last resort) ---- */}
+              {search.trim().length > 1 && <VendorCallQueuePanel query={search.trim()} />}
             </div>
           )}
 

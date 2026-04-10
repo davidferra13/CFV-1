@@ -42,3 +42,24 @@ Full blueprint: `docs/product-blueprint.md`
 **What's already built:** PWA (manifest, service worker, icons, push infra - all done, just disabled). Tauri (deps installed, desktop config + all platform icons in abandoned worktree).
 
 **4 phases:** PWA activation (verify + VAPID keys), Tauri desktop (resurrect from worktree), Tauri Android (add mobile target, build APK), Tauri iOS (blocked on macOS hardware). $0 cost.
+
+## Ingredient Sourcing Intelligence (Apr 2026)
+
+**Spec:** `docs/specs/ingredient-sourcing-intelligence.md`
+**Status:** Tier 3 built and live.
+
+**What it is:** A 4-tier sourcing fallback system embedded in the Food Catalog. When a chef searches for an ingredient and gets nothing, the system escalates through tiers automatically rather than leaving the chef with a dead end.
+
+**The 4 tiers:**
+
+1. Catalog lookup (OpenClaw, 15K+ items) - instant. Already existed.
+2. Web search via DuckDuckGo across trusted specialty retailers - fast. Already existed.
+3. Vendor call queue: pulls the chef's saved supplier contacts, ranks them by specialty relevance (specialty/butcher/farm/fishmonger first), shows phone numbers with a copy-to-clipboard button. **Built April 2026.**
+4. AI auto-calling via Bland.ai: system calls vendors on the chef's behalf, reports back async. **Future.**
+
+**Key files:**
+
+- `lib/vendors/sourcing-actions.ts` - `getVendorCallQueue()` server action
+- `app/(chef)/culinary/price-catalog/catalog-browser.tsx` - `VendorCallQueuePanel` component
+
+**Design principle:** The catalog should be so good that calls become rare. If Tier 3 fires constantly, the catalog needs work - not the calling system.

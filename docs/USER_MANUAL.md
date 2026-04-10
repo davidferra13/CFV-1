@@ -217,6 +217,20 @@ The Ingredients page shows the price for each item, resolved through a multi-tie
 
 Each price shows its source (which store, which data point). Toggle the price history chart to see trends over time.
 
+### Finding an Ingredient (Sourcing Intelligence)
+
+The Food Catalog at Sidebar > Culinary > Food Catalog searches 15,000+ ingredients across 39 stores. When you type an ingredient name and get no results, ChefFlow does not give up. It works through three fallback tiers automatically:
+
+**Tier 1 - Local catalog:** The OpenClaw database. Instant results for mainstream grocery items.
+
+**Tier 2 - Web search:** Searches specialty retailers (Eataly, Whole Foods, Formaggio Kitchen, Marx Foods, and others) via live web search. Good for gourmet or hard-to-find items.
+
+**Tier 3 - Your vendor call queue:** If the ingredient is not found online either, ChefFlow shows your saved supplier contacts with phone numbers. Vendors are ranked by relevance: specialty suppliers, butchers, farms, and fishmongers appear first. Tap the phone number to copy it, then make the call.
+
+To make Tier 3 useful, keep your vendor list current: Sidebar > Culinary > Vendors. Make sure each vendor has a phone number and the correct vendor type set (butcher, farm, specialty, etc.).
+
+A fourth tier (AI auto-calling, where ChefFlow calls vendors for you) is in development.
+
 ### Culinary Board
 
 A kanban for recipe development with four columns:
