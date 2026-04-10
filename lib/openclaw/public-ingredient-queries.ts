@@ -79,93 +79,142 @@ export async function getPublicIngredientDetail(
 
   const ingredient = (ingredientRows as any[])[0]
 
-  const rows = await pgClient`
-    WITH matched AS (
-      SELECT
-        s.id AS store_id,
-        s.name AS store_name,
-        s.city AS store_city,
-        s.state AS store_state,
-        COALESCE(c.website_url, c.store_locator_url) AS store_website,
-        COALESCE(sp.sale_price_cents, sp.price_cents) AS price_cents,
-        COALESCE(NULLIF(ci.standard_unit, ''), NULLIF(p.size_unit, ''), 'each') AS price_unit,
-        sp.price_type,
-        sp.source,
-        COALESCE(sp.in_stock, true) AS in_stock,
-        COALESCE(
-          NULLIF(p.image_url, ''),
-          NULLIF(ci.off_image_url, 'none'),
-          ci.off_image_url
-        ) AS image_url,
-        p.brand,
-        COALESCE(pc.department, pc.name) AS aisle_cat,
-        sp.last_seen_at AS last_confirmed_at,
-        sp.last_seen_at AS last_changed_at,
-        p.size AS package_size,
-        ROW_NUMBER() OVER (
-          PARTITION BY s.id
-          ORDER BY COALESCE(sp.sale_price_cents, sp.price_cents) ASC NULLS LAST,
-                   sp.last_seen_at DESC NULLS LAST
-        ) AS store_rank
-      FROM openclaw.canonical_ingredients ci
-      LEFT JOIN openclaw.normalization_map nm
-        ON nm.canonical_ingredient_id = ci.ingredient_id
-      LEFT JOIN openclaw.products p
-        ON LOWER(TRIM(p.name)) = LOWER(TRIM(nm.raw_name))
-       AND p.is_food = true
-      LEFT JOIN openclaw.store_products sp
-        ON sp.product_id = p.id
-       AND sp.price_cents > 0
-      LEFT JOIN openclaw.stores s
-        ON s.id = sp.store_id
-       AND s.is_active = true
-      LEFT JOIN openclaw.chains c
-        ON c.id = s.chain_id
-      LEFT JOIN openclaw.product_categories pc
-        ON pc.id = p.category_id
-      WHERE ci.ingredient_id = ${ingredientId}
-    )
-    SELECT
-      store_name,
-      store_city,
-      store_state,
-      store_website,
-      price_cents,
-      price_unit,
-      price_type,
-      source,
-      in_stock,
-      image_url,
-      brand,
-      aisle_cat,
-      last_confirmed_at,
-      last_changed_at,
-      package_size
-    FROM matched
-    WHERE store_rank = 1
-      AND store_id IS NOT NULL
-    ORDER BY price_cents ASC NULLS LAST, store_name ASC
+  // Two-step lookup to avoid the slow cross-join between products (13.9M rows)
+  // and normalization_map. Each step uses indexed single-value lookups.
+  //
+  // Step 1: get a sample of raw_names for this ingredient (indexed, fast)
+  // Step 2: for each raw_name, fetch ONE product ID via exact name match (index scan)
+  // Step 3: batch-fetch store prices for those product IDs (product_id index, fast)
+  //
+  // This keeps the intermediate result bounded regardless of product table duplicates.
+  const nmRows = await pgClient`
+    SELECT LOWER(TRIM(raw_name)) AS rn
+    FROM openclaw.normalization_map
+    WHERE canonical_ingredient_id = ${ingredientId}
+    ORDER BY confidence DESC NULLS LAST
+    LIMIT 8
   `
 
-  const prices: CatalogDetailPrice[] = (rows as any[]).map((row) => ({
-    store: String(row.store_name),
-    storeCity: row.store_city ?? null,
-    storeState: row.store_state ?? null,
-    storeWebsite: row.store_website ?? null,
-    priceCents: toNumber(row.price_cents),
-    priceUnit: normalizeUnit(row.price_unit),
-    priceType: row.price_type ?? 'retail',
-    pricingTier: row.price_type ?? 'retail',
-    confidence: row.source?.includes('instacart') ? 'instacart_adjusted' : 'direct_scrape',
-    inStock: Boolean(row.in_stock),
-    sourceUrl: null,
-    imageUrl: normalizeImage(row.image_url),
-    brand: row.brand ?? null,
-    aisleCat: row.aisle_cat ?? null,
-    lastConfirmedAt: toIso(row.last_confirmed_at) ?? new Date(0).toISOString(),
-    lastChangedAt: toIso(row.last_changed_at) ?? new Date(0).toISOString(),
-    packageSize: row.package_size ?? null,
-  }))
+  const rawNames = (nmRows as any[]).map((r: any) => r.rn as string)
+  if (rawNames.length === 0) {
+    // No normalization entries - ingredient has no price data
+    return {
+      ingredient: {
+        id: ingredient.ingredient_id as string,
+        name: ingredient.name as string,
+        category: normalizeCategory(ingredient.category as string | null),
+        standardUnit: normalizeUnit(ingredient.standard_unit as string | null),
+      },
+      prices: [],
+      summary: {
+        storeCount: 0,
+        inStockCount: 0,
+        outOfStockCount: 0,
+        cheapestCents: null,
+        cheapestStore: null,
+        avgCents: null,
+        hasSourceUrls: false,
+      },
+    }
+  }
+
+  // For each raw_name, get ONE product ID via single-value exact match (uses btree index)
+  const productIdResults = await Promise.all(
+    rawNames.map((rn) =>
+      pgClient`
+        SELECT id, COALESCE(NULLIF(size_unit, ''), 'each') AS size_unit, image_url, brand
+        FROM openclaw.products
+        WHERE LOWER(TRIM(name)) = ${rn}
+          AND is_food = true
+        LIMIT 1
+      `.then((r) => (r as any[])[0] ?? null)
+    )
+  )
+
+  const productSample = productIdResults.filter(Boolean) as Array<{
+    id: string
+    size_unit: string
+    image_url: string | null
+    brand: string | null
+  }>
+
+  if (productSample.length === 0) {
+    return {
+      ingredient: {
+        id: ingredient.ingredient_id as string,
+        name: ingredient.name as string,
+        category: normalizeCategory(ingredient.category as string | null),
+        standardUnit: normalizeUnit(ingredient.standard_unit as string | null),
+      },
+      prices: [],
+      summary: {
+        storeCount: 0,
+        inStockCount: 0,
+        outOfStockCount: 0,
+        cheapestCents: null,
+        cheapestStore: null,
+        avgCents: null,
+        hasSourceUrls: false,
+      },
+    }
+  }
+
+  const productIds = productSample.map((p) => p.id)
+  const productMeta: Record<
+    string,
+    { size_unit: string; image_url: string | null; brand: string | null }
+  > = {}
+  for (const p of productSample) {
+    productMeta[p.id] = { size_unit: p.size_unit, image_url: p.image_url, brand: p.brand }
+  }
+
+  // Batch-fetch store prices for these product IDs (product_id index is efficient for N <= 8)
+  const rows = await pgClient`
+    SELECT
+      s.name AS store_name,
+      s.city AS store_city,
+      s.state AS store_state,
+      sp.product_id,
+      COALESCE(sp.sale_price_cents, sp.price_cents) AS price_cents,
+      sp.price_type,
+      sp.source,
+      COALESCE(sp.in_stock, true) AS in_stock,
+      sp.last_seen_at AS last_confirmed_at
+    FROM openclaw.store_products sp
+    JOIN openclaw.stores s ON s.id = sp.store_id AND s.is_active = true
+    WHERE sp.product_id = ANY(${productIds}::uuid[])
+      AND sp.price_cents > 0
+    ORDER BY price_cents ASC NULLS LAST
+  `
+
+  // Dedup by store name: pick cheapest entry per store (rows already sorted by price ASC)
+  const seenStores = new Set<string>()
+  const prices: CatalogDetailPrice[] = []
+  for (const row of rows as any[]) {
+    const storeName = String(row.store_name)
+    if (seenStores.has(storeName)) continue
+    seenStores.add(storeName)
+    const meta = productMeta[row.product_id] ?? { size_unit: 'each', image_url: null, brand: null }
+    prices.push({
+      store: storeName,
+      storeCity: row.store_city ?? null,
+      storeState: row.store_state ?? null,
+      storeWebsite: null,
+      priceCents: toNumber(row.price_cents),
+      priceUnit: normalizeUnit(meta.size_unit),
+      priceType: row.price_type ?? 'retail',
+      pricingTier: row.price_type ?? 'retail',
+      confidence: row.source?.includes('instacart') ? 'instacart_adjusted' : 'direct_scrape',
+      inStock: Boolean(row.in_stock),
+      sourceUrl: null,
+      imageUrl: normalizeImage(meta.image_url),
+      brand: meta.brand ?? null,
+      aisleCat: null,
+      lastConfirmedAt: toIso(row.last_confirmed_at) ?? new Date(0).toISOString(),
+      lastChangedAt: toIso(row.last_confirmed_at) ?? new Date(0).toISOString(),
+      packageSize: null,
+    })
+  }
 
   const inStockPrices = prices.filter((p) => p.inStock)
   const summary = {
