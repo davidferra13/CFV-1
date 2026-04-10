@@ -21,6 +21,8 @@ import {
   buildAllergyRecordRows,
   recordsToStringArray,
 } from '@/lib/dietary/intake'
+import { recordPlatformEvent } from '@/lib/platform-observability/events'
+import { extractRequestMetadata } from '@/lib/platform-observability/context'
 
 const DEFAULT_BOOKING_CHEF_EMAIL = FOUNDER_EMAIL
 
@@ -133,11 +135,11 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   let chefError: { message?: string } | null = null
 
   if (validated.chef_slug) {
-    const lookup = await findChefByPublicSlug<{ id: string; business_name: string | null }>(
-      db,
-      validated.chef_slug,
-      'id, business_name'
-    )
+    const lookup = await findChefByPublicSlug<{
+      id: string
+      business_name: string | null
+      email: string | null
+    }>(db, validated.chef_slug, 'id, business_name, email')
     chef = lookup.data
     chefError = lookup.error
   } else {
@@ -145,20 +147,28 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     if (ownerChefId) {
       const lookup = await db
         .from('chefs')
-        .select('id, business_name')
+        .select('id, business_name, email')
         .eq('id', ownerChefId)
         .single()
-      chef = lookup.data as { id: string; business_name: string | null } | null
+      chef = lookup.data as {
+        id: string
+        business_name: string | null
+        email: string | null
+      } | null
       chefError = lookup.error
     }
 
     if (!chef) {
       const founderLookup = await db
         .from('chefs')
-        .select('id, business_name')
+        .select('id, business_name, email')
         .ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
         .single()
-      chef = founderLookup.data as { id: string; business_name: string | null } | null
+      chef = founderLookup.data as {
+        id: string
+        business_name: string | null
+        email: string | null
+      } | null
       chefError = founderLookup.error
     }
   }
@@ -169,6 +179,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   const tenantId = chef.id as string
   const chefName = (chef.business_name as string | null) || 'Your Chef'
+  const chefEmail = (chef as any).email as string | null
 
   const { data: discoveryProfile, error: discoveryError } = await (db as any)
     .from('chef_marketplace_profiles')
@@ -265,6 +276,47 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     throw new Error('Failed to create inquiry')
   }
 
+  await recordPlatformEvent({
+    eventKey: 'conversion.public_inquiry_submitted',
+    source: 'public_booking',
+    actorType: 'anonymous',
+    tenantId,
+    subjectType: 'inquiry',
+    subjectId: inquiry.id,
+    summary: `${validated.full_name.trim()} submitted a public inquiry for ${validated.occasion.trim()}`,
+    details: `${validated.guest_count} guests on ${validated.event_date} at ${validated.serve_time.trim()}`,
+    metadata: {
+      ...extractRequestMetadata(hdrs),
+      client_email: validated.email.toLowerCase().trim(),
+      client_name: validated.full_name.trim(),
+      occasion: validated.occasion.trim(),
+      guest_count: validated.guest_count,
+      service_mode: serviceMode,
+      budget_mode: budgetMode,
+      budget_range: budgetRange,
+      budget_cents: budgetCents,
+    },
+  })
+
+  if (budgetKnown) {
+    await recordPlatformEvent({
+      eventKey: 'input.public_inquiry_budget_provided',
+      source: 'public_booking',
+      actorType: 'anonymous',
+      tenantId,
+      subjectType: 'inquiry',
+      subjectId: inquiry.id,
+      summary: `Budget information captured for inquiry ${inquiry.id}`,
+      metadata: {
+        ...extractRequestMetadata(hdrs),
+        budget_mode: budgetMode,
+        budget_range: budgetRange,
+        budget_cents: budgetCents,
+      },
+      alertDedupeKey: `inquiry-budget:${inquiry.id}`,
+    })
+  }
+
   // Auto-create Dinner Circle (non-blocking)
   let circleGroupToken: string | null = null
   try {
@@ -294,12 +346,37 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       chefName,
       occasion: validated.occasion.trim(),
       eventDate: validated.event_date || null,
+      guestCount: validated.guest_count,
+      location: validated.address.trim() || null,
+      serveTime: validated.serve_time.trim() || null,
       circleUrl: circleGroupToken
         ? `https://app.cheflowhq.com/hub/g/${circleGroupToken}`
         : undefined,
     })
   } catch (emailErr) {
     console.error('[submitPublicInquiry] Acknowledgment email failed (non-blocking):', emailErr)
+  }
+
+  // Notify chef of new inquiry via email (non-blocking)
+  if (chefEmail) {
+    try {
+      const { sendNewInquiryChefEmail } = await import('@/lib/email/notifications')
+      await sendNewInquiryChefEmail({
+        chefEmail,
+        chefName,
+        clientName: validated.full_name.trim(),
+        occasion: validated.occasion.trim(),
+        eventDate: validated.event_date || null,
+        guestCount: validated.guest_count,
+        source: 'portal',
+        inquiryId: inquiry.id,
+      })
+    } catch (emailErr) {
+      console.error(
+        '[submitPublicInquiry] Chef notification email failed (non-blocking):',
+        emailErr
+      )
+    }
   }
 
   // 4. Create draft event with available info (TBD for missing required fields)
@@ -341,6 +418,22 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
 
   // 6. Link inquiry to the created event
   await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
+
+  await recordPlatformEvent({
+    eventKey: 'conversion.public_inquiry_converted_to_draft_event',
+    source: 'public_booking',
+    actorType: 'system',
+    tenantId,
+    subjectType: 'event',
+    subjectId: event.id,
+    summary: `Public inquiry ${inquiry.id} auto-created draft event ${event.id}`,
+    metadata: {
+      ...extractRequestMetadata(hdrs),
+      inquiry_id: inquiry.id,
+      client_id: client.id,
+    },
+    alertDedupeKey: `inquiry-draft-event:${inquiry.id}`,
+  })
 
   // 7. Enqueue Remy reactive AI task - auto-score lead (non-blocking)
   try {

@@ -88,6 +88,9 @@ export async function sendInquiryReceivedEmail(params: {
   chefName: string
   occasion: string
   eventDate: string | null
+  guestCount?: number | null
+  location?: string | null
+  serveTime?: string | null
   circleUrl?: string
 }) {
   await sendEmail({
@@ -98,6 +101,9 @@ export async function sendInquiryReceivedEmail(params: {
       chefName: params.chefName,
       occasion: params.occasion,
       eventDate: params.eventDate,
+      guestCount: params.guestCount ?? null,
+      location: params.location ?? null,
+      serveTime: params.serveTime ?? null,
       circleUrl: params.circleUrl,
     }),
   })

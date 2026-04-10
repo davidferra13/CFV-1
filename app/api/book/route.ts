@@ -319,6 +319,8 @@ export async function POST(request: NextRequest) {
         chefName: 'ChefFlow',
         occasion: data.occasion.trim(),
         eventDate: data.event_date || null,
+        guestCount: data.guest_count ?? null,
+        location: data.location?.trim() || null,
       })
     } catch (emailErr) {
       console.error('[open-booking] Client email failed (non-blocking):', emailErr)

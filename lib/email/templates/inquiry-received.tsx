@@ -1,6 +1,7 @@
 // Inquiry Received Email
-// Sent to client when they submit the public inquiry form
-// No portal account exists yet - no CTA button, just acknowledgment
+// Sent to client when they submit the public inquiry form.
+// No portal account exists yet - gives the client a clear confirmation,
+// event summary, and what to expect next.
 
 import { Text } from '@react-email/components'
 import * as React from 'react'
@@ -11,6 +12,9 @@ type InquiryReceivedProps = {
   chefName: string
   occasion: string
   eventDate: string | null
+  guestCount?: number | null
+  location?: string | null
+  serveTime?: string | null
   circleUrl?: string
 }
 
@@ -19,16 +23,20 @@ export function InquiryReceivedEmail({
   chefName,
   occasion,
   eventDate,
+  guestCount,
+  location,
+  serveTime,
   circleUrl,
 }: InquiryReceivedProps) {
   return (
-    <BaseLayout preview={`${chefName} received your inquiry`}>
+    <BaseLayout preview={`Got it. ${chefName} will be in touch within 24 hours.`}>
       <Text style={heading}>Inquiry received</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        Thank you for reaching out to <strong>{chefName}</strong>. Your inquiry has been received
-        and you can expect to hear back shortly.
+        Your inquiry is in. {chefName} will review the details and follow up within 24 hours with
+        availability, questions, and next steps.
       </Text>
+
       <table style={detailsTable}>
         <tbody>
           <tr>
@@ -41,17 +49,46 @@ export function InquiryReceivedEmail({
               <td style={detailValue}>{eventDate}</td>
             </tr>
           )}
+          {serveTime && (
+            <tr>
+              <td style={detailLabel}>Serve time</td>
+              <td style={detailValue}>{serveTime}</td>
+            </tr>
+          )}
+          {guestCount != null && guestCount > 0 && (
+            <tr>
+              <td style={detailLabel}>Guests</td>
+              <td style={detailValue}>{guestCount}</td>
+            </tr>
+          )}
+          {location && (
+            <tr>
+              <td style={detailLabel}>Location</td>
+              <td style={detailValue}>{location}</td>
+            </tr>
+          )}
         </tbody>
       </table>
-      {circleUrl && (
+
+      {circleUrl ? (
         <Text style={paragraph}>
-          I have set up a space where we can plan everything together. You can view it here:{' '}
+          A planning space has been set up for your event. You can use it to message {chefName},{' '}
+          track menu progress, and coordinate details:{' '}
           <a href={circleUrl} style={linkStyle}>
-            Your Dinner Circle
+            Open your planning space
           </a>
         </Text>
+      ) : (
+        <Text style={paragraph}>
+          Keep an eye on your inbox. {chefName} will reach out directly to discuss menus, logistics,
+          and pricing.
+        </Text>
       )}
-      <Text style={footer}>Your chef will follow up with menu options and next steps.</Text>
+
+      <Text style={footer}>
+        If you have any immediate questions, reply to this email and it will go directly to{' '}
+        {chefName}.
+      </Text>
     </BaseLayout>
   )
 }
