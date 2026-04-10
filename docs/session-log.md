@@ -419,3 +419,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 84e9cb54a, 7e379fd4c (pushed to origin/main)
 - Build state on departure: green (tsc clean on all touched files)
 - Notes: supplier_calling flag enabled for davidferra13@gmail.com only. Migration applied to local DB. Twilio credentials added as placeholders in .env.local (user filled them in). Trial mode restriction: Twilio trial can only call verified numbers - upgrade account for real vendor calls.
+
+## 2026-04-10 (research - ai conversational calling platforms)
+
+- Agent: Research (Sonnet 4.6)
+- Task: State of the art research on AI conversational phone call platforms for supplier availability calls
+- Status: completed
+- Files touched:
+  - docs/research/ai-conversational-calling-platforms-2026-04-10.md (new)
+- Build state on departure: green (no code changes)
+- Notes: Report covers Bland/Vapi/Retell comparison, voice cloning requirements, conversation design decision tree, legal/TCPA compliance, pricing breakdown. Retell AI recommended. Immediate action: add FCC AI disclosure to existing TwiML script.
