@@ -55,6 +55,39 @@ A formula returns the same correct answer every single time, instantly, for free
 - **Pages:** All `/prospecting/*` pages already have `requireAdmin()` - if a non-admin somehow navigates there, they get redirected.
 - **If you add any new prospecting-related UI** (link, button, widget, shortcut), it MUST be gated behind `isAdmin` / `adminOnly`. No exceptions.
 
+### 0d. Catalog Empty = Sourcing Fallback (PERMANENT)
+
+**Any surface where an ingredient or catalog item lookup returns zero results MUST include a web sourcing fallback.** A dead end is a Zero Hallucination violation - showing nothing when the ingredient exists in the world is a lie by omission.
+
+**The rule:** If a search returns empty and the context involves an ingredient name, render `searchIngredientOnline(query)` from `lib/pricing/web-sourcing-actions.ts`. It fires a DuckDuckGo search filtered to trusted specialty retailers, is location-aware (uses chef's `home_city` + `home_state`), caches results 1 hour, and is auth-gated. Free, no API key.
+
+**Surfaces already implemented:**
+
+- `app/(chef)/culinary/price-catalog/catalog-browser.tsx` - catalog browser empty state
+- `components/culinary/substitution-lookup.tsx` - substitution search empty state
+
+**Surfaces still pending:**
+
+- Grocery list (adding item not in catalog)
+- Event costing ingredient matching dead-ends
+
+**How to add it to a new surface:**
+
+```tsx
+import { searchIngredientOnline } from '@/lib/pricing/web-sourcing-actions'
+
+// In your empty state, when search query exists:
+{
+  query.trim().length > 1 && <WebSourcingPanel query={query} />
+}
+```
+
+The `WebSourcingPanel` component in `catalog-browser.tsx` is the reference implementation. Copy it or extract it to `components/pricing/web-sourcing-panel.tsx` if a third surface needs it.
+
+**Graceful degradation:** If DDG returns nothing, show static deep-links to Eataly, Whole Foods, Instacart, Formaggio Kitchen, and Amazon Fresh. Never show a dead end.
+
+---
+
 ### 1. Non-Blocking Side Effects
 
 Notifications, emails, activity logs, calendar syncs, and automations are **non-blocking** - if they fail, the main operation still succeeds.

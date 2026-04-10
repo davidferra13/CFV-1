@@ -388,3 +388,13 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 33ec419f4 (pushed to origin/main)
 - Build state on departure: green (tsc: 2 pre-existing errors in lib/hub/integration-actions.ts unrelated to this work; next build exits 0)
 - Notes: Full session digest at docs/session-digests/2026-04-10-pricing-honesty-resolution-tier.md. Thread archived.
+
+## 2026-04-10 21:00 EST
+
+- Agent: General (Sonnet 4.6)
+- Task: Ingredient web sourcing fallback - catalog empty state, substitution lookup, architecture rule
+- Status: completed
+- Files touched: lib/pricing/web-sourcing-actions.ts (new), app/(chef)/culinary/price-catalog/catalog-browser.tsx, components/culinary/substitution-lookup.tsx, docs/CLAUDE-ARCHITECTURE.md, docs/session-digests/2026-04-10-210000-ingredient-sourcing-fallback.md (new), docs/session-log.md
+- Commits: 2575785f5, b2cfcf43e, 4800a2050, 8ec79ef22, ca497116b, 279a1499b (all pushed to origin/main)
+- Build state on departure: green (tsc clean on touched files; 2 pre-existing errors in lib/hub/integration-actions.ts unrelated)
+- Notes: Sourcing fallback now in catalog browser + substitution lookup. Pattern codified in CLAUDE-ARCHITECTURE.md rule 0d. Grocery list is the next pending surface. Extract WebSourcingPanel to shared component before adding third surface.
