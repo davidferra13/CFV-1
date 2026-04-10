@@ -89,12 +89,14 @@ function ConfidenceIcon({ confidence }: { confidence: string }) {
 
 // ---------------------------------------------------------------------------
 // Web Sourcing Panel
-// Shown when a catalog search returns zero results. Surfaces direct search
-// links to specialty retailers so the chef can source the ingredient immediately
-// without leaving the app to Google it manually.
+// Shown when a catalog search returns zero results. When BRAVE_SEARCH_API_KEY
+// is set, fetches live product pages from trusted specialty retailers.
+// Falls back to static deep-link buttons when the key is absent.
 // ---------------------------------------------------------------------------
 
-const SOURCING_RETAILERS = [
+import { searchIngredientOnline, type SourcingResult } from '@/lib/pricing/web-sourcing-actions'
+
+const STATIC_RETAILERS = [
   {
     name: 'Eataly',
     url: (q: string) => `https://www.eataly.com/us_en/search?q=${encodeURIComponent(q)}`,
@@ -124,31 +126,97 @@ const SOURCING_RETAILERS = [
 ]
 
 function WebSourcingPanel({ query }: { query: string }) {
+  const [liveResults, setLiveResults] = useState<SourcingResult[] | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+
+  useEffect(() => {
+    if (!query || query.length < 2) return
+    let cancelled = false
+    setIsSearching(true)
+    setLiveResults(null)
+
+    searchIngredientOnline(query)
+      .then((res) => {
+        if (cancelled) return
+        if (res.source === 'live') {
+          setLiveResults(res.results)
+        } else {
+          setLiveResults([])
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLiveResults([])
+      })
+      .finally(() => {
+        if (!cancelled) setIsSearching(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [query])
+
   return (
     <div className="bg-stone-900 rounded-lg border border-stone-700 p-5">
-      <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">
-        Not in catalog - search specialty retailers
-      </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-        {SOURCING_RETAILERS.map((retailer) => (
-          <a
-            key={retailer.name}
-            href={retailer.url(query)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between px-3 py-2.5 rounded-md bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-stone-600 transition-colors group"
-          >
-            <div>
-              <p className="text-sm font-medium text-stone-200 group-hover:text-white">
-                {retailer.name}
-              </p>
-              <p className="text-xs text-stone-500">{retailer.note}</p>
-            </div>
-            <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-stone-300 shrink-0 ml-2" />
-          </a>
-        ))}
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-medium text-stone-400 uppercase tracking-wider">
+          Not in catalog - sourcing search
+        </p>
+        {isSearching && <Loader2 className="w-3.5 h-3.5 text-stone-500 animate-spin" />}
       </div>
-      <p className="text-xs text-stone-600 mt-3">
+
+      {/* Live results from Brave Search */}
+      {liveResults && liveResults.length > 0 && (
+        <div className="space-y-2 mb-3">
+          {liveResults.map((result) => (
+            <a
+              key={result.url}
+              href={result.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-start justify-between px-3 py-2.5 rounded-md bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-stone-600 transition-colors group"
+            >
+              <div className="min-w-0 pr-2">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-xs font-semibold text-brand-400">{result.retailer}</span>
+                </div>
+                <p className="text-sm text-stone-200 group-hover:text-white truncate">
+                  {result.title}
+                </p>
+                {result.description && (
+                  <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{result.description}</p>
+                )}
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-stone-300 shrink-0 mt-1" />
+            </a>
+          ))}
+        </div>
+      )}
+
+      {/* Static fallback - shown while searching or when live search unavailable */}
+      {(!liveResults || liveResults.length === 0) && !isSearching && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mb-3">
+          {STATIC_RETAILERS.map((retailer) => (
+            <a
+              key={retailer.name}
+              href={retailer.url(query)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between px-3 py-2.5 rounded-md bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-stone-600 transition-colors group"
+            >
+              <div>
+                <p className="text-sm font-medium text-stone-200 group-hover:text-white">
+                  {retailer.name}
+                </p>
+                <p className="text-xs text-stone-500">{retailer.note}</p>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-stone-300 shrink-0 ml-2" />
+            </a>
+          ))}
+        </div>
+      )}
+
+      <p className="text-xs text-stone-600">
         Searching for: <span className="text-stone-400 italic">{query}</span>
       </p>
     </div>
