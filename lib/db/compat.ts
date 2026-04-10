@@ -96,10 +96,40 @@ type ParsedSelect = {
 type ParsedJoin = {
   alias: string | null // e.g. 'client' in 'client:clients(full_name)'
   table: string // e.g. 'clients'
-  columns: string[] // e.g. ['full_name']
-  allColumns: boolean // true if columns is ['*']
+  mainColumns: string[] // direct columns selected from the joined table
+  joins: ParsedJoin[] // nested joined selections from the joined table
   inner: boolean // true if !inner hint was used
   explicitFk: string | null // e.g. 'author_profile_id' in 'table!author_profile_id(*)'
+}
+
+type JoinPlan = {
+  join: ParsedJoin
+  sqlAlias: string
+  parentTable: string
+  parentAlias: string
+  children: JoinPlan[]
+}
+
+function splitTopLevel(input: string): string[] {
+  const tokens: string[] = []
+  let depth = 0
+  let current = ''
+
+  for (const ch of input) {
+    if (ch === '(') depth++
+    if (ch === ')') depth--
+    if (ch === ',' && depth === 0) {
+      const token = current.trim()
+      if (token) tokens.push(token)
+      current = ''
+      continue
+    }
+    current += ch
+  }
+
+  const last = current.trim()
+  if (last) tokens.push(last)
+  return tokens
 }
 
 function parseSelectString(select: string): ParsedSelect {
@@ -110,22 +140,7 @@ function parseSelectString(select: string): ParsedSelect {
     return { mainColumns: ['*'], joins: [] }
   }
 
-  // Tokenize: split on commas but respect parentheses
-  const tokens: string[] = []
-  let depth = 0
-  let current = ''
-
-  for (const ch of select) {
-    if (ch === '(') depth++
-    if (ch === ')') depth--
-    if (ch === ',' && depth === 0) {
-      tokens.push(current.trim())
-      current = ''
-    } else {
-      current += ch
-    }
-  }
-  if (current.trim()) tokens.push(current.trim())
+  const tokens = splitTopLevel(select)
 
   for (const token of tokens) {
     // Check for nested select: table(col1, col2) or alias:table(col1, col2)
@@ -135,15 +150,15 @@ function parseSelectString(select: string): ParsedSelect {
     )
     if (nestedMatch) {
       const [, alias, table, hint, innerCols] = nestedMatch
-      const columns = innerCols.split(',').map((c) => c.trim())
+      const nestedParsed = parseSelectString(innerCols)
       const isInner = hint === 'inner'
       // If hint is not 'inner' or 'left', treat it as an explicit FK column name
       const explicitFk = hint && hint !== 'inner' && hint !== 'left' ? hint : null
       joins.push({
         alias: alias || null,
         table,
-        columns,
-        allColumns: columns.length === 1 && columns[0] === '*',
+        mainColumns: nestedParsed.mainColumns,
+        joins: nestedParsed.joins,
         inner: isInner,
         explicitFk,
       })
@@ -434,6 +449,10 @@ class QueryBuilder<T = any> {
   private async executeSelect(): Promise<PostgrestResponse<any>> {
     const parsed = parseSelectString(this._selectStr)
     const hasJoins = parsed.joins.length > 0
+    const joinPlans = hasJoins
+      ? this.buildJoinPlans(parsed.joins, this._table, this._table)
+      : ([] as JoinPlan[])
+    const relationAliases = this.buildRelationAliasMap(joinPlans)
 
     // Load FK cache if we have joins
     if (hasJoins) await loadFkCache()
@@ -446,7 +465,7 @@ class QueryBuilder<T = any> {
     if (this._selectOpts.head) {
       columnsSql = '1'
     } else if (hasJoins) {
-      columnsSql = this.buildJoinColumns(parsed, params)
+      columnsSql = this.buildJoinColumns(parsed, joinPlans)
     } else {
       columnsSql = this.buildMainColumns(parsed.mainColumns)
     }
@@ -454,16 +473,16 @@ class QueryBuilder<T = any> {
     // Build FROM clause
     let fromSql = quoteIdent(this._table)
     if (hasJoins) {
-      fromSql = this.buildJoinFrom(parsed)
+      fromSql = this.buildJoinFrom(joinPlans)
     }
 
     // Build WHERE clause
-    const { sql: whereSql, params: whereParams } = this.buildWhere(paramIdx)
+    const { sql: whereSql, params: whereParams } = this.buildWhere(paramIdx, relationAliases)
     params.push(...whereParams)
     paramIdx += whereParams.length
 
     // Build ORDER BY
-    const orderSql = this.buildOrderBy()
+    const orderSql = this.buildOrderBy(relationAliases)
 
     // Build LIMIT/OFFSET
     const { limitSql, offsetSql } = this.buildLimitOffset()
@@ -529,7 +548,44 @@ class QueryBuilder<T = any> {
       .join(', ')
   }
 
-  private buildJoinColumns(parsed: ParsedSelect, _params: unknown[]): string {
+  private buildJoinPlans(
+    joins: ParsedJoin[],
+    parentTable: string,
+    parentAlias: string,
+    path: string[] = []
+  ): JoinPlan[] {
+    return joins.map((join) => {
+      const relationName = join.alias || join.table
+      const currentPath = [...path, relationName]
+      const sqlAlias = currentPath.join('__')
+
+      return {
+        join,
+        sqlAlias,
+        parentTable,
+        parentAlias,
+        children: this.buildJoinPlans(join.joins, join.table, sqlAlias, currentPath),
+      }
+    })
+  }
+
+  private buildRelationAliasMap(joinPlans: JoinPlan[]): Map<string, string> {
+    const aliases = new Map<string, string>()
+
+    const visit = (plans: JoinPlan[], path: string[] = []) => {
+      for (const plan of plans) {
+        const relationName = plan.join.alias || plan.join.table
+        const currentPath = [...path, relationName]
+        aliases.set(currentPath.join('.'), plan.sqlAlias)
+        visit(plan.children, currentPath)
+      }
+    }
+
+    visit(joinPlans)
+    return aliases
+  }
+
+  private buildJoinColumns(parsed: ParsedSelect, joinPlans: JoinPlan[]): string {
     const parts: string[] = []
 
     // Main table columns
@@ -547,57 +603,87 @@ class QueryBuilder<T = any> {
     }
 
     // Joined table columns - selected as JSON to preserve nesting
-    for (const join of parsed.joins) {
-      const tbl = assertIdent(join.table)
-      const alias = join.alias ? assertIdent(join.alias) : tbl
-
-      if (join.allColumns) {
-        parts.push(`row_to_json(${quoteIdent(tbl)}) AS ${quoteIdent(`__join_${alias}`)}`)
-      } else {
-        const jsonParts = join.columns
-          .map((c) => {
-            assertIdent(c)
-            return `'${c}', ${quoteIdent(tbl)}.${quoteIdent(c)}`
-          })
-          .join(', ')
-        parts.push(`json_build_object(${jsonParts}) AS ${quoteIdent(`__join_${alias}`)}`)
-      }
+    for (const plan of joinPlans) {
+      const alias = plan.join.alias || plan.join.table
+      parts.push(`${this.buildJoinJson(plan)} AS ${quoteIdent(`__join_${alias}`)}`)
     }
 
     return parts.join(', ')
   }
 
-  private buildJoinFrom(parsed: ParsedSelect): string {
+  private buildJoinJson(plan: JoinPlan): string {
+    const aliasRef = quoteIdent(plan.sqlAlias)
+    const directColumns = plan.join.mainColumns.filter((column) => column !== '*')
+    const hasWildcard = plan.join.mainColumns.includes('*')
+    const jsonParts: string[] = []
+
+    for (const column of directColumns) {
+      assertIdent(column)
+      jsonParts.push(`'${column}', ${aliasRef}.${quoteIdent(column)}`)
+    }
+
+    for (const child of plan.children) {
+      jsonParts.push(`'${child.join.alias || child.join.table}', ${this.buildJoinJson(child)}`)
+    }
+
+    let jsonExpr = hasWildcard ? `to_jsonb(${aliasRef})` : `'{}'::jsonb`
+    if (jsonParts.length > 0) {
+      const extraExpr = `jsonb_build_object(${jsonParts.join(', ')})`
+      jsonExpr = hasWildcard ? `${jsonExpr} || ${extraExpr}` : extraExpr
+    }
+
+    return `CASE WHEN ${this.buildJoinPresenceCheck(plan)} THEN NULL ELSE ${jsonExpr} END`
+  }
+
+  private buildJoinPresenceCheck(plan: JoinPlan): string {
+    const candidateColumns = plan.join.mainColumns.filter((column) => column !== '*')
+    const presenceColumn = candidateColumns.includes('id') ? 'id' : (candidateColumns[0] ?? 'id')
+    return `${quoteIdent(plan.sqlAlias)}.${quoteIdent(presenceColumn)} IS NULL`
+  }
+
+  private buildJoinFrom(joinPlans: JoinPlan[]): string {
     let sql = quoteIdent(this._table)
 
-    for (const join of parsed.joins) {
-      const tbl = assertIdent(join.table)
-      const joinType = join.inner ? 'INNER JOIN' : 'LEFT JOIN'
+    for (const plan of joinPlans) {
+      sql += this.buildJoinClause(plan)
+    }
 
-      if (join.explicitFk) {
-        // Explicit FK column specified via PostgREST !column_name syntax
-        // The FK column lives on the main table and points to the joined table's id
-        const fk = assertIdent(join.explicitFk)
-        sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(fk)} = ${quoteIdent(tbl)}."id"`
+    return sql
+  }
+
+  private buildJoinClause(plan: JoinPlan): string {
+    const targetTable = assertIdent(plan.join.table)
+    const targetRef =
+      plan.sqlAlias === targetTable
+        ? quoteIdent(targetTable)
+        : `${quoteIdent(targetTable)} AS ${quoteIdent(plan.sqlAlias)}`
+    const joinType = plan.join.inner ? 'INNER JOIN' : 'LEFT JOIN'
+    const parentRef = quoteIdent(plan.parentAlias)
+    const targetAliasRef = quoteIdent(plan.sqlAlias)
+
+    let onClause: string
+    if (plan.join.explicitFk) {
+      const fk = assertIdent(plan.join.explicitFk)
+      onClause = `${parentRef}.${quoteIdent(fk)} = ${targetAliasRef}."id"`
+    } else {
+      const fkCol = resolveFkColumn(plan.parentTable, targetTable)
+      if (fkCol) {
+        onClause = `${parentRef}.${quoteIdent(fkCol)} = ${targetAliasRef}."id"`
       } else {
-        const fkCol = resolveFkColumn(this._table, tbl)
-        if (fkCol) {
-          // Forward FK: main table has a column referencing joined table's id
-          sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(fkCol)} = ${quoteIdent(tbl)}."id"`
+        const reverseFkCol = resolveFkColumn(targetTable, plan.parentTable)
+        if (reverseFkCol) {
+          onClause = `${targetAliasRef}.${quoteIdent(reverseFkCol)} = ${parentRef}."id"`
         } else {
-          // Try reverse FK: joined table has a column referencing main table's id
-          const reverseFkCol = resolveFkColumn(tbl, this._table)
-          if (reverseFkCol) {
-            sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(tbl)}.${quoteIdent(reverseFkCol)} = ${quoteIdent(this._table)}."id"`
-          } else {
-            // Fallback: try common convention (singular form + _id)
-            const singularGuess = tbl.replace(/s$/, '') + '_id'
-            sql += ` ${joinType} ${quoteIdent(tbl)} ON ${quoteIdent(this._table)}.${quoteIdent(singularGuess)} = ${quoteIdent(tbl)}."id"`
-          }
+          const singularGuess = targetTable.replace(/s$/, '') + '_id'
+          onClause = `${parentRef}.${quoteIdent(singularGuess)} = ${targetAliasRef}."id"`
         }
       }
     }
 
+    let sql = ` ${joinType} ${targetRef} ON ${onClause}`
+    for (const child of plan.children) {
+      sql += this.buildJoinClause(child)
+    }
     return sql
   }
 
@@ -623,13 +709,25 @@ class QueryBuilder<T = any> {
 
   // ── WHERE clause builder ────────────────────────────────────────────────
 
-  /** Qualify a column: if already table-qualified (has dot), quote as-is; otherwise prefix with this._table */
-  private qualifyColumn(col: string): string {
-    if (col.includes('.')) return quoteIdent(col)
+  /** Qualify a column, resolving nested relation paths when joins introduced SQL aliases. */
+  private qualifyColumn(col: string, relationAliases: Map<string, string> = new Map()): string {
+    if (col.includes('.')) {
+      const parts = col.split('.')
+      const columnName = parts.pop()!
+      const relationPath = parts.join('.')
+      const relationAlias = relationAliases.get(relationPath)
+      if (relationAlias) {
+        return `${quoteIdent(relationAlias)}.${quoteIdent(columnName)}`
+      }
+      return quoteIdent(col)
+    }
     return `${quoteIdent(this._table)}.${quoteIdent(col)}`
   }
 
-  private buildWhere(startParamIdx: number = 1): { sql: string; params: unknown[] } {
+  private buildWhere(
+    startParamIdx: number = 1,
+    relationAliases: Map<string, string> = new Map()
+  ): { sql: string; params: unknown[] } {
     if (this._filters.length === 0) return { sql: '', params: [] }
 
     const conditions: string[] = []
@@ -639,53 +737,57 @@ class QueryBuilder<T = any> {
     for (const f of this._filters) {
       switch (f.type) {
         case 'eq':
-          conditions.push(`${this.qualifyColumn(f.column)} = $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} = $${idx++}`)
           params.push(f.value)
           break
         case 'neq':
-          conditions.push(`${this.qualifyColumn(f.column)} != $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} != $${idx++}`)
           params.push(f.value)
           break
         case 'gt':
-          conditions.push(`${this.qualifyColumn(f.column)} > $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} > $${idx++}`)
           params.push(f.value)
           break
         case 'gte':
-          conditions.push(`${this.qualifyColumn(f.column)} >= $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} >= $${idx++}`)
           params.push(f.value)
           break
         case 'lt':
-          conditions.push(`${this.qualifyColumn(f.column)} < $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} < $${idx++}`)
           params.push(f.value)
           break
         case 'lte':
-          conditions.push(`${this.qualifyColumn(f.column)} <= $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} <= $${idx++}`)
           params.push(f.value)
           break
         case 'like':
-          conditions.push(`${this.qualifyColumn(f.column)} LIKE $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} LIKE $${idx++}`)
           params.push(f.value)
           break
         case 'ilike':
-          conditions.push(`${this.qualifyColumn(f.column)} ILIKE $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} ILIKE $${idx++}`)
           params.push(f.value)
           break
         case 'not_like':
-          conditions.push(`${this.qualifyColumn(f.column)} NOT LIKE $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} NOT LIKE $${idx++}`)
           params.push(f.value)
           break
         case 'is':
           if (f.value === null) {
-            conditions.push(`${this.qualifyColumn(f.column)} IS NULL`)
+            conditions.push(`${this.qualifyColumn(f.column, relationAliases)} IS NULL`)
           } else {
-            conditions.push(`${this.qualifyColumn(f.column)} IS ${f.value ? 'TRUE' : 'FALSE'}`)
+            conditions.push(
+              `${this.qualifyColumn(f.column, relationAliases)} IS ${f.value ? 'TRUE' : 'FALSE'}`
+            )
           }
           break
         case 'not_is':
           if (f.value === null) {
-            conditions.push(`${this.qualifyColumn(f.column)} IS NOT NULL`)
+            conditions.push(`${this.qualifyColumn(f.column, relationAliases)} IS NOT NULL`)
           } else {
-            conditions.push(`${this.qualifyColumn(f.column)} IS NOT ${f.value ? 'TRUE' : 'FALSE'}`)
+            conditions.push(
+              `${this.qualifyColumn(f.column, relationAliases)} IS NOT ${f.value ? 'TRUE' : 'FALSE'}`
+            )
           }
           break
         case 'in':
@@ -693,7 +795,7 @@ class QueryBuilder<T = any> {
             conditions.push('FALSE')
           } else {
             const placeholders = f.values.map(() => `$${idx++}`).join(', ')
-            conditions.push(`${this.qualifyColumn(f.column)} IN (${placeholders})`)
+            conditions.push(`${this.qualifyColumn(f.column, relationAliases)} IN (${placeholders})`)
             params.push(...f.values)
           }
           break
@@ -702,24 +804,28 @@ class QueryBuilder<T = any> {
             conditions.push('TRUE')
           } else {
             const placeholders = f.values.map(() => `$${idx++}`).join(', ')
-            conditions.push(`${this.qualifyColumn(f.column)} NOT IN (${placeholders})`)
+            conditions.push(
+              `${this.qualifyColumn(f.column, relationAliases)} NOT IN (${placeholders})`
+            )
             params.push(...f.values)
           }
           break
         case 'contains':
-          conditions.push(`${this.qualifyColumn(f.column)} @> $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} @> $${idx++}`)
           params.push(typeof f.value === 'string' ? f.value : JSON.stringify(f.value))
           break
         case 'containedBy':
-          conditions.push(`${this.qualifyColumn(f.column)} <@ $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} <@ $${idx++}`)
           params.push(typeof f.value === 'string' ? f.value : JSON.stringify(f.value))
           break
         case 'overlaps':
-          conditions.push(`${this.qualifyColumn(f.column)} && $${idx++}`)
+          conditions.push(`${this.qualifyColumn(f.column, relationAliases)} && $${idx++}`)
           params.push(f.value)
           break
         case 'or':
-          conditions.push(`(${this.parseOrExpression(f.expression, params, () => idx++)})`)
+          conditions.push(
+            `(${this.parseOrExpression(f.expression, params, () => idx++, relationAliases)})`
+          )
           break
         case 'match':
           for (const [key, val] of Object.entries(f.obj)) {
@@ -731,7 +837,14 @@ class QueryBuilder<T = any> {
           break
         case 'filter': {
           // Generic filter - map PostgREST operators to SQL
-          const mapped = this.mapFilterOperator(f.column, f.operator, f.value, params, () => idx++)
+          const mapped = this.mapFilterOperator(
+            f.column,
+            f.operator,
+            f.value,
+            params,
+            () => idx++,
+            relationAliases
+          )
           if (mapped) conditions.push(mapped)
           break
         }
@@ -746,15 +859,22 @@ class QueryBuilder<T = any> {
    *   'id.ilike.%foo%,name.ilike.%foo%'
    *   'pinned.eq.true,created_at.gte.2024-01-01'
    */
-  private parseOrExpression(expr: string, params: unknown[], nextIdx: () => number): string {
+  private parseOrExpression(
+    expr: string,
+    params: unknown[],
+    nextIdx: () => number,
+    relationAliases: Map<string, string> = new Map()
+  ): string {
     const parts = expr.split(',').map((part) => part.trim())
     const sqlParts: string[] = []
 
     for (const part of parts) {
-      const match = part.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\.(\w+)\.(.+)$/)
+      const match = part.match(
+        /^([a-zA-Z_][a-zA-Z0-9_.]*)\.(eq|neq|gt|gte|lt|lte|like|ilike|is|in)\.(.+)$/
+      )
       if (!match) continue
       const [, col, op, val] = match
-      const qCol = `${quoteIdent(this._table)}.${quoteIdent(assertIdent(col))}`
+      const qCol = this.qualifyColumn(assertIdent(col), relationAliases)
 
       switch (op) {
         case 'eq':
@@ -828,9 +948,10 @@ class QueryBuilder<T = any> {
     operator: string,
     value: unknown,
     params: unknown[],
-    nextIdx: () => number
+    nextIdx: () => number,
+    relationAliases: Map<string, string> = new Map()
   ): string | null {
-    const qCol = `${quoteIdent(this._table)}.${quoteIdent(column)}`
+    const qCol = this.qualifyColumn(column, relationAliases)
     switch (operator) {
       case 'eq':
         params.push(value)
@@ -858,13 +979,13 @@ class QueryBuilder<T = any> {
 
   // ── ORDER BY builder ────────────────────────────────────────────────────
 
-  private buildOrderBy(): string {
+  private buildOrderBy(relationAliases: Map<string, string> = new Map()): string {
     if (this._orders.length === 0) return ''
     const parts = this._orders.map((o) => {
       const dir = o.ascending ? 'ASC' : 'DESC'
       const nulls =
         o.nullsFirst !== undefined ? (o.nullsFirst ? ' NULLS FIRST' : ' NULLS LAST') : ''
-      return `${quoteIdent(this._table)}.${quoteIdent(o.column)} ${dir}${nulls}`
+      return `${this.qualifyColumn(o.column, relationAliases)} ${dir}${nulls}`
     })
     return ` ORDER BY ${parts.join(', ')}`
   }
@@ -1256,8 +1377,21 @@ class AuthCompat {
 }
 
 // ─── Storage compat (local filesystem via lib/storage/) ──────────────────────
+//
+// IMPORTANT: Do NOT add a top-level `import * as localStorage from '@/lib/storage'` here.
+// The storage module uses Node.js `path` which crashes the edge runtime that
+// bundles middleware.ts. All storage access must go through the lazy getter below.
 
-import * as localStorage from '@/lib/storage'
+type StorageModule = typeof import('@/lib/storage')
+
+let _storageModule: StorageModule | null = null
+
+async function getStorageModule(): Promise<StorageModule> {
+  if (!_storageModule) {
+    _storageModule = await import('@/lib/storage')
+  }
+  return _storageModule
+}
 
 class StorageBucketCompat {
   private _bucket: string
@@ -1272,7 +1406,8 @@ class StorageBucketCompat {
     options?: { contentType?: string; upsert?: boolean }
   ) {
     try {
-      const result = await localStorage.upload(this._bucket, filePath, file as any, options)
+      const storage = await getStorageModule()
+      const result = await storage.upload(this._bucket, filePath, file as any, options)
       return { data: { path: result ? result.path : filePath }, error: null }
     } catch (err) {
       return { data: null, error: { message: (err as any).message || 'Upload failed' } }
@@ -1281,7 +1416,8 @@ class StorageBucketCompat {
 
   async remove(paths: string[]) {
     try {
-      const results = await localStorage.remove(this._bucket, paths)
+      const storage = await getStorageModule()
+      const results = await storage.remove(this._bucket, paths)
       return { data: results, error: null }
     } catch (err) {
       return { data: null, error: { message: (err as any).message || 'Remove failed' } }
@@ -1290,7 +1426,8 @@ class StorageBucketCompat {
 
   async createSignedUrl(filePath: string, expiresIn: number) {
     try {
-      const signedUrl = localStorage.getSignedUrl(this._bucket, filePath, expiresIn)
+      const storage = await getStorageModule()
+      const signedUrl = storage.getSignedUrl(this._bucket, filePath, expiresIn)
       return { data: { signedUrl }, error: null }
     } catch (err) {
       return { data: null, error: { message: (err as any).message || 'Signed URL failed' } }
@@ -1298,18 +1435,20 @@ class StorageBucketCompat {
   }
 
   async createSignedUrls(paths: string[], expiresIn: number) {
+    const storage = await getStorageModule()
     return {
       data: paths.map((p) => ({
         path: p,
-        signedUrl: localStorage.getSignedUrl(this._bucket, p, expiresIn),
+        signedUrl: storage.getSignedUrl(this._bucket, p, expiresIn),
         error: null,
       })),
       error: null,
     }
   }
 
-  getPublicUrl(filePath: string) {
-    return { data: { publicUrl: localStorage.getPublicUrl(this._bucket, filePath) } }
+  async getPublicUrl(filePath: string) {
+    const storage = await getStorageModule()
+    return { data: { publicUrl: storage.getPublicUrl(this._bucket, filePath) } }
   }
 
   async list(
@@ -1317,7 +1456,8 @@ class StorageBucketCompat {
     options?: { limit?: number; offset?: number; sortBy?: { column: string; order: string } }
   ) {
     try {
-      const data = await localStorage.list(this._bucket, prefix, options)
+      const storage = await getStorageModule()
+      const data = await storage.list(this._bucket, prefix, options)
       return { data, error: null }
     } catch (err) {
       return { data: [], error: { message: (err as any).message || 'List failed' } }
@@ -1326,7 +1466,8 @@ class StorageBucketCompat {
 
   async download(filePath: string) {
     try {
-      const data = await localStorage.download(this._bucket, filePath)
+      const storage = await getStorageModule()
+      const data = await storage.download(this._bucket, filePath)
       if (!data) return { data: null, error: { message: 'File not found' } }
       return { data: new Blob([new Uint8Array(data)]), error: null }
     } catch (err) {
@@ -1344,11 +1485,13 @@ class StorageCompat {
     name: string,
     options?: { public?: boolean; fileSizeLimit?: number; allowedMimeTypes?: string[] }
   ) {
-    return localStorage.createBucket(name, options)
+    const storage = await getStorageModule()
+    return storage.createBucket(name, options)
   }
 
   async listBuckets() {
-    return localStorage.listBuckets()
+    const storage = await getStorageModule()
+    return storage.listBuckets()
   }
 }
 

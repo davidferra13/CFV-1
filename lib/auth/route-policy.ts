@@ -143,11 +143,15 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/hub',
   '/g',
   '/availability',
+  '/cannabis-invite',
+  '/cannabis/public',
   '/discover',
+  '/nearby',
   '/for-operators',
   '/gift-cards',
   '/how-it-works',
   '/services',
+  '/ingredient',
 ] as const
 
 export const PUBLIC_ASSET_PATHS = [
@@ -190,6 +194,7 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/cron',
   '/api/sentinel',
   '/api/openclaw/webhook',
+  '/api/ingredients',
 ] as const
 
 function matchesPathOrChild(pathname: string, basePath: string): boolean {

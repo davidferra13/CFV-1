@@ -14,6 +14,7 @@ import {
   setRequestAuthContext,
   stripInternalRequestHeaders,
 } from '@/lib/auth/request-auth-context'
+import { resolveAuthCookieOptions } from '@/lib/auth/request-origin'
 
 const roleCookieName = 'chefflow-role-cache'
 
@@ -51,6 +52,12 @@ function buildRedirectUrl(request: NextRequest, path: string): URL {
  */
 export default auth(async (request) => {
   const { pathname } = request.nextUrl
+  const { useSecureCookies } = resolveAuthCookieOptions({
+    requestOrigin: request.nextUrl.origin,
+    forwardedProto: request.headers.get('x-forwarded-proto'),
+    forwardedHost: request.headers.get('x-forwarded-host'),
+    host: request.headers.get('host'),
+  })
 
   if (isPublicAssetPath(pathname)) {
     return NextResponse.next()
@@ -118,7 +125,7 @@ export default auth(async (request) => {
   response.cookies.set(roleCookieName, role, {
     maxAge: sessionOnly ? undefined : 300,
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: useSecureCookies,
     sameSite: 'lax',
     path: '/',
   })
@@ -145,6 +152,6 @@ export default auth(async (request) => {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
+    '/((?!api/(?:auth|webhooks|gmail|scheduled|e2e|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|demo|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|sentinel|openclaw/webhook|ingredients)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
   ],
 }
