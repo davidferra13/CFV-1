@@ -30,6 +30,9 @@ import type { BookingScore } from '@/lib/analytics/booking-score'
 import { isDemoInquiry } from '@/lib/onboarding/demo-data-utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { InquiriesOverflowSelect } from '@/components/inquiries/inquiries-overflow-select'
+import { GmailSyncStrip } from '@/components/inquiries/gmail-sync-strip'
+import { getGmailSyncStatus } from '@/lib/gmail/actions'
+import { QuickLogButton } from '@/components/inquiries/quick-log-button'
 
 const CHEF_ACTION_STATUSES = new Set(['new', 'awaiting_chef'])
 
@@ -202,6 +205,10 @@ export default async function InquiriesPage({
   await requireChef()
 
   const filter = (searchParams.status || 'all') as InquiryFilter
+  const gmailStatus = await getGmailSyncStatus().catch(() => ({
+    connected: false,
+    lastSyncedAt: null,
+  }))
 
   // Primary tabs (max 6 visible per interface philosophy Section 6)
   const primaryTabs: { value: InquiryFilter; label: string }[] = [
@@ -228,10 +235,19 @@ export default async function InquiriesPage({
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Inquiry Pipeline</h1>
           <p className="text-stone-400 mt-1">Track every lead from first contact to booked event</p>
+          <div className="mt-2">
+            <GmailSyncStrip
+              connected={gmailStatus.connected}
+              lastSyncedAt={gmailStatus.lastSyncedAt}
+            />
+          </div>
         </div>
-        <Link href="/inquiries/new">
-          <Button>New Inquiry</Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <QuickLogButton />
+          <Link href="/inquiries/new">
+            <Button>New Inquiry</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Status Tabs (5 primary + 1 overflow select = 6 controls) */}

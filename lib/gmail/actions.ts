@@ -12,6 +12,39 @@ import { sendEmail, getMessageHeaders } from './client'
 import { isCommTriageEnabled } from '@/lib/features'
 import type { SyncResult, GmailSyncLogEntry, SendMessageResult } from './types'
 
+// ─── Get Gmail Sync Status ──────────────────────────────────────────────────
+
+export async function getGmailSyncStatus(): Promise<{
+  connected: boolean
+  lastSyncedAt: string | null
+}> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: conn } = await db
+    .from('google_connections')
+    .select('gmail_connected')
+    .eq('chef_id', user.entityId)
+    .maybeSingle()
+
+  if (!conn?.gmail_connected) {
+    return { connected: false, lastSyncedAt: null }
+  }
+
+  const { data: lastLog } = await db
+    .from('gmail_sync_log')
+    .select('synced_at')
+    .eq('tenant_id', user.tenantId!)
+    .order('synced_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return {
+    connected: true,
+    lastSyncedAt: lastLog?.synced_at ?? null,
+  }
+}
+
 // ─── Trigger Gmail Sync ─────────────────────────────────────────────────────
 
 export async function triggerGmailSync(): Promise<SyncResult> {

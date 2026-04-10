@@ -9,6 +9,7 @@
 import { createAdminClient } from '@/lib/db/admin'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import { insertDraftMessageInternal } from '@/lib/messages/internal'
 import { z } from 'zod'
 
 // ============================================
@@ -51,7 +52,7 @@ export async function handleInquiryCreated(
   const { data: inquiry } = await (db
     .from('inquiries')
     .select(
-      'id, status, created_at, confirmed_occasion, confirmed_budget_cents, confirmed_guest_count, channel, client:clients(full_name, email)'
+      'id, status, created_at, confirmed_occasion, confirmed_budget_cents, confirmed_guest_count, confirmed_date, confirmed_location, source_message, channel, client_id, client:clients(full_name, email)'
     )
     .eq('id', inquiryId)
     .eq('tenant_id', tenantId)
@@ -92,13 +93,85 @@ export async function handleInquiryCreated(
     .update({ lead_score: score } as any)
     .eq('id', inquiryId) as any)
 
+  // Generate first-response draft (non-blocking - Ollama may be offline)
+  let draftGenerated = false
+  try {
+    await generateFirstResponseDraft(db, inquiryId, tenantId, inquiry)
+    draftGenerated = true
+  } catch (draftErr) {
+    if (draftErr instanceof OllamaOfflineError) throw draftErr
+    console.error('[handleInquiryCreated] Draft generation failed (non-blocking):', draftErr)
+  }
+
   return {
     inquiryId,
     score,
     factors,
+    draftGenerated,
     clientName: (inquiry as any).client?.full_name ?? payload.clientName ?? 'Unknown',
     summary: `Lead scored ${score}/100: ${factors.join(', ') || 'Base score'}`,
   }
+}
+
+// ─── Internal: generate first-response draft ────────────────────────────────
+
+async function generateFirstResponseDraft(
+  db: any,
+  inquiryId: string,
+  tenantId: string,
+  inquiry: Record<string, any>
+): Promise<void> {
+  const chefName = await loadChefName(db, tenantId)
+  const chefFirstName = chefName.split(' ')[0]
+
+  const clientName = inquiry.client?.full_name ?? 'there'
+  const clientFirstName = clientName.split(' ')[0]
+  const occasion = inquiry.confirmed_occasion ?? null
+  const date = inquiry.confirmed_date ?? null
+  const guests = inquiry.confirmed_guest_count ?? null
+  const location = inquiry.confirmed_location ?? null
+  const sourceMessage = inquiry.source_message ?? null
+
+  const DraftSchema = z.object({
+    subject: z.string().max(120),
+    body: z.string().max(1200),
+  })
+
+  const contextLines = [
+    `Client name: ${clientName}`,
+    occasion ? `Occasion: ${occasion}` : null,
+    date ? `Requested date: ${date}` : null,
+    guests ? `Guest count: ${guests}` : null,
+    location ? `Location: ${location}` : null,
+    sourceMessage ? `Their message: ${sourceMessage}` : null,
+  ]
+    .filter(Boolean)
+    .join('\n')
+
+  const result = await parseWithOllama(
+    `You are ${chefName}, a private chef. Write a warm, brief first-response email to a new inquiry. Rules:
+- Address the client by first name
+- Acknowledge what you know about their event in one sentence
+- Express genuine interest
+- Ask one or two specific questions to understand what they need (never ask for info you already have)
+- Close with a clear next step (happy to connect by phone, will follow up with details once you know more)
+- Tone: warm, direct, personal. Not formal. Not stiff. Write like a real person.
+- No em dashes anywhere
+- Keep the body under 150 words
+- Do NOT mention pricing
+Return JSON: { "subject": "...", "body": "..." }`,
+    contextLines,
+    DraftSchema,
+    { modelTier: 'standard', maxTokens: 600 }
+  )
+
+  await insertDraftMessageInternal({
+    tenantId,
+    inquiryId,
+    clientId: inquiry.client_id ?? null,
+    subject: result.subject,
+    body: result.body,
+  })
 }
 
 // ============================================
