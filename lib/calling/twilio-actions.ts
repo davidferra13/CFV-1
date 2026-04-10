@@ -125,13 +125,24 @@ export async function initiateSupplierCall(
   }
 
   // Place the call via Twilio
-  const twimlUrl = `${APP_URL}/api/calling/twiml?callId=${callRecord.id}&ingredient=${encodeURIComponent(ingredientName)}`
+  const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callRecord.id)}`
   const statusCallbackUrl = `${APP_URL}/api/calling/status`
+
+  // Inline TwiML - no separate endpoint needed. Neural voice, 2s pause so vendor
+  // can say hello, accepts spoken yes/no AND keypresses.
+  const inlineTwiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Pause length="2"/>
+  <Gather input="speech dtmf" timeout="6" speechTimeout="3" numDigits="1" action="${gatherAction}" method="POST" hints="yes, yeah, we do, absolutely, no, nope, out of stock, not right now">
+    <Say voice="Polly.Joanna-Neural">Hi! Quick question for you. Do you guys currently have ${ingredientName} in stock? Just say yes or no, or press 1 for yes and 2 for no.</Say>
+  </Gather>
+  <Say voice="Polly.Joanna-Neural">No worries, thanks so much for your time. Have a great day!</Say>
+</Response>`
 
   const twilioBody = new URLSearchParams({
     To: vendor.phone,
     From: TWILIO_PHONE_NUMBER,
-    Url: twimlUrl,
+    Twiml: inlineTwiml,
     StatusCallback: statusCallbackUrl,
     StatusCallbackMethod: 'POST',
     StatusCallbackEvent: 'completed initiated ringing',

@@ -1,33 +1,76 @@
 /**
- * Gather (Keypress) Endpoint
+ * Gather Endpoint
  *
- * Twilio POSTs here after the vendor presses a digit.
- * 1 = yes (they have it), 2 = no (they don't).
+ * Twilio POSTs here after the vendor responds - either by speaking
+ * (yes/no/yeah/nope/we do/we don't) or pressing a digit (1=yes, 2=no).
  *
- * Updates the supplier_calls record and broadcasts the result
- * to the chef via SSE so the UI updates in real time.
+ * Resolves the result, updates the call record, broadcasts via SSE,
+ * and plays a natural closing line before hanging up.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
 
+const YES_WORDS = [
+  'yes',
+  'yeah',
+  'yep',
+  'yup',
+  'we do',
+  'absolutely',
+  'correct',
+  'sure',
+  'affirmative',
+  'we have',
+  'in stock',
+  'got it',
+  'got some',
+]
+const NO_WORDS = [
+  'no',
+  'nope',
+  'nah',
+  "we don't",
+  "don't have",
+  'out of stock',
+  'not right now',
+  'unavailable',
+  'we do not',
+  'not available',
+  'sorry',
+]
+
+function resolveResult(digits: string | null, speech: string | null): 'yes' | 'no' | null {
+  if (digits === '1') return 'yes'
+  if (digits === '2') return 'no'
+
+  if (speech) {
+    const lower = speech.toLowerCase()
+    if (YES_WORDS.some((w) => lower.includes(w))) return 'yes'
+    if (NO_WORDS.some((w) => lower.includes(w))) return 'no'
+  }
+
+  return null
+}
+
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
-  const digit = formData.get('Digits') as string | null
-  const callSid = formData.get('CallSid') as string | null
+  const digits = formData.get('Digits') as string | null
+  const speech = formData.get('SpeechResult') as string | null
 
   const { searchParams } = new URL(req.url)
   const callId = searchParams.get('callId')
 
   if (!callId) {
-    return respondTwiml('<Response><Say>An error occurred. Goodbye.</Say></Response>')
+    return twiml(
+      '<Response><Say voice="Polly.Joanna-Neural">Thanks so much, have a great day!</Say></Response>'
+    )
   }
 
-  const result = digit === '1' ? 'yes' : digit === '2' ? 'no' : null
+  const result = resolveResult(digits, speech)
   const db: any = createAdminClient()
 
-  // Update the call record
   const { data: callRecord } = await db
     .from('supplier_calls')
     .update({
@@ -39,7 +82,6 @@ export async function POST(req: NextRequest) {
     .select('chef_id, vendor_name, ingredient_name')
     .single()
 
-  // Broadcast result to chef's SSE channel
   if (callRecord) {
     try {
       await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
@@ -53,18 +95,17 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Thank the vendor and hang up
-  const message =
+  const closing =
     result === 'yes'
-      ? 'Thank you for confirming. The chef will be in touch. Goodbye.'
+      ? 'Perfect, thank you! We really appreciate it. Have a great rest of your day!'
       : result === 'no'
-        ? 'Thank you for letting us know. Goodbye.'
-        : 'We did not capture your response. Thank you. Goodbye.'
+        ? 'Got it, no worries at all. Thanks for your time, have a great day!'
+        : 'No worries, thanks so much for picking up. Have a great day!'
 
-  return respondTwiml(`<Response><Say voice="Polly.Joanna">${message}</Say></Response>`)
+  return twiml(`<Response><Say voice="Polly.Joanna-Neural">${closing}</Say></Response>`)
 }
 
-function respondTwiml(xml: string) {
+function twiml(xml: string) {
   return new NextResponse(xml, {
     status: 200,
     headers: { 'Content-Type': 'text/xml' },
