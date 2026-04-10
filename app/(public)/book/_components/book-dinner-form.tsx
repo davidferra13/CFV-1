@@ -26,10 +26,10 @@ const GUEST_OPTIONS = [
 const BUDGET_OPTIONS = [
   { value: '', label: 'What experience level?' },
   { value: 'not-sure', label: 'Not sure yet (help me figure it out)' },
-  { value: 'casual', label: 'Casual dining ($40-$75 / person)' },
-  { value: 'elevated', label: 'Elevated experience ($75-$150 / person)' },
-  { value: 'fine-dining', label: 'Fine dining ($150-$300 / person)' },
-  { value: 'luxury', label: 'Luxury / custom ($300+ / person)' },
+  { value: 'casual', label: 'Casual home cooking' },
+  { value: 'elevated', label: 'Elevated dining experience' },
+  { value: 'fine-dining', label: 'Fine dining / restaurant quality' },
+  { value: 'luxury', label: 'Luxury / fully custom' },
 ]
 
 type FormState = {
