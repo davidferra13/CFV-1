@@ -1,16 +1,25 @@
 /**
  * Gather Endpoint
  *
- * Twilio POSTs here after the vendor responds - either by speaking
- * (yes/no/yeah/nope/we do/we don't) or pressing a digit (1=yes, 2=no).
+ * Twilio POSTs here after each gather interaction.
  *
- * Resolves the result, updates the call record, broadcasts via SSE,
- * and plays a natural closing line before hanging up.
+ * Step 1 (step=1 or missing): Resolve yes/no availability from vendor response.
+ *   - If yes: update DB, play confirmation, gather price/quantity (step=2).
+ *   - If no:  update DB, broadcast result, play closing.
+ *   - If unclear: play closing without a result.
+ *
+ * Step 2 (step=2): Parse price and quantity from free speech.
+ *   - Extracts price (e.g. "$4.50 per pound") and quantity (e.g. "3 pounds").
+ *   - Updates DB, broadcasts result, plays closing.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { broadcast } from '@/lib/realtime/broadcast'
+
+// ---------------------------------------------------------------------------
+// Availability resolution - step 1
+// ---------------------------------------------------------------------------
 
 const YES_WORDS = [
   'yes',
@@ -26,6 +35,7 @@ const YES_WORDS = [
   'in stock',
   'got it',
   'got some',
+  'we got',
 ]
 const NO_WORDS = [
   'no',
@@ -39,75 +49,252 @@ const NO_WORDS = [
   'we do not',
   'not available',
   'sorry',
+  "don't carry",
 ]
 
-function resolveResult(digits: string | null, speech: string | null): 'yes' | 'no' | null {
+function resolveAvailability(digits: string | null, speech: string | null): 'yes' | 'no' | null {
   if (digits === '1') return 'yes'
   if (digits === '2') return 'no'
-
   if (speech) {
     const lower = speech.toLowerCase()
     if (YES_WORDS.some((w) => lower.includes(w))) return 'yes'
     if (NO_WORDS.some((w) => lower.includes(w))) return 'no'
   }
+  return null
+}
+
+// ---------------------------------------------------------------------------
+// Price and quantity extraction - step 2
+// ---------------------------------------------------------------------------
+
+const UNIT_WORDS =
+  '(?:pound|lb|lbs|ounce|oz|piece|each|unit|item|dozen|case|box|bag|gallon|quart|pint|liter|kilogram|kg)'
+const PER_UNIT = `(?:\\s*(?:a|per|\\/)\\s*${UNIT_WORDS})?`
+
+function extractPrice(speech: string): string | null {
+  // "$4.50", "$12 a pound"
+  const dollarSignPattern = new RegExp(`\\$[\\d,.]+${PER_UNIT}`, 'i')
+  const dollarSignMatch = speech.match(dollarSignPattern)
+  if (dollarSignMatch) return dollarSignMatch[0].trim()
+
+  // "12 dollars", "4 dollars and 50 cents a pound"
+  const dollarWordPattern = new RegExp(
+    `\\b(\\d+(?:\\.\\d+)?)\\s*(?:dollars?|bucks?)(?:\\s+(?:and\\s+)?(\\d+)\\s*cents?)?${PER_UNIT}`,
+    'i'
+  )
+  const dollarWordMatch = speech.match(dollarWordPattern)
+  if (dollarWordMatch) {
+    const dollars = dollarWordMatch[1]
+    const cents = dollarWordMatch[2] ? `.${dollarWordMatch[2].padStart(2, '0')}` : ''
+    return `$${dollars}${cents}`
+  }
+
+  // "four fifty a pound", "six twenty-five each" - verbal price (dollars and cents spoken as two numbers)
+  // Map word numbers to digits
+  const wordNumbers: Record<string, string> = {
+    zero: '0',
+    one: '1',
+    two: '2',
+    three: '3',
+    four: '4',
+    five: '5',
+    six: '6',
+    seven: '7',
+    eight: '8',
+    nine: '9',
+    ten: '10',
+    eleven: '11',
+    twelve: '12',
+    thirteen: '13',
+    fourteen: '14',
+    fifteen: '15',
+    sixteen: '16',
+    seventeen: '17',
+    eighteen: '18',
+    nineteen: '19',
+    twenty: '20',
+    thirty: '30',
+    forty: '40',
+    fifty: '50',
+    sixty: '60',
+    seventy: '70',
+    eighty: '80',
+    ninety: '90',
+  }
+  const normalised = speech.toLowerCase().replace(/[-]/g, ' ')
+  const wordNumPattern = new RegExp(
+    `\\b(${Object.keys(wordNumbers).join('|')})(?:\\s+(${Object.keys(wordNumbers).join('|')}))?${PER_UNIT}`,
+    'i'
+  )
+  const wordNumMatch = normalised.match(wordNumPattern)
+  if (wordNumMatch) {
+    const major = wordNumbers[wordNumMatch[1].toLowerCase()]
+    const minor = wordNumMatch[2] ? wordNumbers[wordNumMatch[2].toLowerCase()] : null
+    if (major) {
+      const price = minor ? `$${major}.${minor.padStart(2, '0')}` : `$${major}`
+      return price
+    }
+  }
 
   return null
 }
 
-export async function POST(req: NextRequest) {
-  const formData = await req.formData()
-  const digits = formData.get('Digits') as string | null
-  const speech = formData.get('SpeechResult') as string | null
+function extractQuantity(speech: string): string | null {
+  const quantityPattern =
+    /\b(\d+(?:\.\d+)?)\s*(?:pounds?|lbs?|ounces?|oz|pieces?|units?|items?|dozens?|cases?|boxes?|bags?|gallons?|quarts?|pints?|liters?|kilograms?|kgs?)\b/i
+  const roughPattern =
+    /\b(a few|several|some|plenty|a lot|half a|a quarter|about \d+|around \d+)\b/i
 
-  const { searchParams } = new URL(req.url)
-  const callId = searchParams.get('callId')
+  const quantityMatch = speech.match(quantityPattern)
+  if (quantityMatch) return quantityMatch[0].trim()
 
-  if (!callId) {
-    return twiml(
-      '<Response><Say voice="Polly.Joanna-Neural">Thanks so much, have a great day!</Say></Response>'
-    )
-  }
+  const roughMatch = speech.match(roughPattern)
+  if (roughMatch) return roughMatch[0].trim()
 
-  const result = resolveResult(digits, speech)
-  const db: any = createAdminClient()
-
-  const { data: callRecord } = await db
-    .from('supplier_calls')
-    .update({
-      result,
-      status: 'completed',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', callId)
-    .select('chef_id, vendor_name, ingredient_name')
-    .single()
-
-  if (callRecord) {
-    try {
-      await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
-        callId,
-        vendorName: callRecord.vendor_name,
-        ingredientName: callRecord.ingredient_name,
-        result,
-      })
-    } catch (err) {
-      console.error('[calling/gather] broadcast error:', err)
-    }
-  }
-
-  const closing =
-    result === 'yes'
-      ? 'Perfect, thank you! We really appreciate it. Have a great rest of your day!'
-      : result === 'no'
-        ? 'Got it, no worries at all. Thanks for your time, have a great day!'
-        : 'No worries, thanks so much for picking up. Have a great day!'
-
-  return twiml(`<Response><Say voice="Polly.Joanna-Neural">${closing}</Say></Response>`)
+  return null
 }
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 function twiml(xml: string) {
   return new NextResponse(xml, {
     status: 200,
     headers: { 'Content-Type': 'text/xml' },
   })
+}
+
+function closingTwiml(message: string) {
+  const escaped = message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  return twiml(`<Response><Say voice="Polly.Ruth-Generative">${escaped}</Say><Hangup/></Response>`)
+}
+
+// ---------------------------------------------------------------------------
+// Route handler
+// ---------------------------------------------------------------------------
+
+export async function POST(req: NextRequest) {
+  const formData = await req.formData()
+  const digits = formData.get('Digits') as string | null
+  const speech = (formData.get('SpeechResult') as string | null)?.trim() || null
+
+  const { searchParams } = new URL(req.url)
+  const callId = searchParams.get('callId')
+  const step = searchParams.get('step') || '1'
+
+  if (!callId) {
+    return closingTwiml('Thanks so much for your time! Have a great day.')
+  }
+
+  const db: any = createAdminClient()
+
+  // ---
+  // Step 2: Price and quantity capture
+  // ---
+  if (step === '2') {
+    const priceQuoted = speech ? extractPrice(speech) : null
+    const quantityAvailable = speech ? extractQuantity(speech) : null
+
+    const { data: callRecord } = await db
+      .from('supplier_calls')
+      .update({
+        price_quoted: priceQuoted,
+        quantity_available: quantityAvailable,
+        speech_transcript: speech,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', callId)
+      .select('chef_id, vendor_name, ingredient_name, result')
+      .single()
+
+    if (callRecord) {
+      try {
+        await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
+          callId,
+          vendorName: callRecord.vendor_name,
+          ingredientName: callRecord.ingredient_name,
+          result: callRecord.result,
+          priceQuoted,
+          quantityAvailable,
+        })
+      } catch (err) {
+        console.error('[calling/gather] broadcast error (step 2):', err)
+      }
+    }
+
+    const hasPriceInfo = priceQuoted || quantityAvailable
+    const closing = hasPriceInfo
+      ? 'Perfect, I have all the information. Thank you so much, and have a wonderful day!'
+      : "Got it, I'll pass that along. Thanks so much for your time, have a great day!"
+
+    return closingTwiml(closing)
+  }
+
+  // ---
+  // Step 1: Availability (yes/no)
+  // ---
+  const result = resolveAvailability(digits, speech)
+
+  if (result === 'yes') {
+    // Update DB with availability result - price capture follows in step 2
+    await db
+      .from('supplier_calls')
+      .update({
+        result: 'yes',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', callId)
+
+    // Ask for price and quantity with a follow-up gather
+    const gatherAction = `${process.env.NEXTAUTH_URL || 'https://app.cheflowhq.com'}/api/calling/gather?callId=${encodeURIComponent(callId)}&step=2`
+
+    return twiml(`<Response>
+  <Gather input="speech" timeout="8" speechTimeout="4" action="${gatherAction}" method="POST">
+    <Say voice="Polly.Ruth-Generative">Fantastic! Could you quickly tell me the current price and roughly how much you have available? For example, four fifty a pound or about three pounds.</Say>
+  </Gather>
+  <Say voice="Polly.Ruth-Generative">No worries, I'll just note that it's in stock. Thank you so much, have a great day!</Say>
+  <Hangup/>
+</Response>`)
+  }
+
+  if (result === 'no') {
+    const { data: callRecord } = await db
+      .from('supplier_calls')
+      .update({
+        result: 'no',
+        status: 'completed',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', callId)
+      .select('chef_id, vendor_name, ingredient_name')
+      .single()
+
+    if (callRecord) {
+      try {
+        await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
+          callId,
+          vendorName: callRecord.vendor_name,
+          ingredientName: callRecord.ingredient_name,
+          result: 'no',
+          priceQuoted: null,
+          quantityAvailable: null,
+        })
+      } catch (err) {
+        console.error('[calling/gather] broadcast error (no):', err)
+      }
+    }
+
+    return closingTwiml(
+      'Got it, no worries at all. Thanks for your time, and have a great rest of your day!'
+    )
+  }
+
+  // Unclear response - close without a result
+  await db
+    .from('supplier_calls')
+    .update({ status: 'completed', updated_at: new Date().toISOString() })
+    .eq('id', callId)
+
+  return closingTwiml('Sorry about that! Thanks so much for picking up. Have a great day!')
 }

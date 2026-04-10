@@ -33,6 +33,8 @@ export type SupplierCall = {
   ingredient_name: string
   status: string
   result: 'yes' | 'no' | null
+  price_quoted: string | null
+  quantity_available: string | null
   created_at: string
 }
 
@@ -71,13 +73,16 @@ export async function initiateSupplierCall(
 
   const db: any = createServerClient()
 
-  // Load vendor
-  const { data: vendor, error: vendorError } = await db
-    .from('vendors')
-    .select('id, name, phone')
-    .eq('id', vendorId)
-    .eq('chef_id', user.tenantId!)
-    .single()
+  // Load vendor and chef business name in parallel
+  const [{ data: vendor, error: vendorError }, { data: chef }] = await Promise.all([
+    db
+      .from('vendors')
+      .select('id, name, phone')
+      .eq('id', vendorId)
+      .eq('chef_id', user.tenantId!)
+      .single(),
+    db.from('chefs').select('business_name').eq('id', user.tenantId!).single(),
+  ])
 
   if (vendorError || !vendor || !vendor.phone) {
     return { success: false, error: 'Vendor not found or missing phone number.' }
@@ -125,18 +130,25 @@ export async function initiateSupplierCall(
   }
 
   // Place the call via Twilio
-  const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callRecord.id)}`
+  const gatherAction = `${APP_URL}/api/calling/gather?callId=${encodeURIComponent(callRecord.id)}&step=1`
   const statusCallbackUrl = `${APP_URL}/api/calling/status`
 
-  // Inline TwiML - no separate endpoint needed. Neural voice, 2s pause so vendor
-  // can say hello, accepts spoken yes/no AND keypresses.
+  const businessName = chef?.business_name || 'a private chef client'
+
+  // FCC-compliant inline TwiML.
+  // - Discloses AI nature at the start (FCC 2024 requirement for AI-generated calls).
+  // - States the chef's business name so vendor recognizes the relationship.
+  // - Accepts spoken yes/no and keypresses (1=yes, 2=no).
+  // - If yes: second gather captures price and quantity.
+  // - Uses Polly.Ruth-Generative for the most natural-sounding voice available via Twilio.
   const inlineTwiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Pause length="2"/>
-  <Gather input="speech dtmf" timeout="6" speechTimeout="3" numDigits="1" action="${gatherAction}" method="POST" hints="yes, yeah, we do, absolutely, no, nope, out of stock, not right now">
-    <Say voice="Polly.Joanna-Neural">Hi! Quick question for you. Do you guys currently have ${ingredientName} in stock? Just say yes or no, or press 1 for yes and 2 for no.</Say>
+  <Gather input="speech dtmf" timeout="10" speechTimeout="5" numDigits="1" action="${gatherAction}" method="POST" hints="yes, yeah, we do, absolutely, no, nope, out of stock, not right now">
+    <Say voice="Polly.Ruth-Generative">Hi there! This is an AI assistant calling on behalf of ${businessName}. I just have a quick question - do you currently have ${ingredientName} in stock? You can say yes or no, or press 1 for yes and 2 for no.</Say>
   </Gather>
-  <Say voice="Polly.Joanna-Neural">No worries, thanks so much for your time. Have a great day!</Say>
+  <Say voice="Polly.Ruth-Generative">No worries, thanks so much for your time. Have a great day!</Say>
+  <Hangup/>
 </Response>`
 
   const twilioBody = new URLSearchParams({
@@ -208,7 +220,9 @@ export async function getCallStatus(callId: string): Promise<SupplierCall | null
 
   const { data } = await db
     .from('supplier_calls')
-    .select('id, vendor_name, vendor_phone, ingredient_name, status, result, created_at')
+    .select(
+      'id, vendor_name, vendor_phone, ingredient_name, status, result, price_quoted, quantity_available, created_at'
+    )
     .eq('id', callId)
     .eq('chef_id', user.tenantId!)
     .single()
@@ -226,7 +240,9 @@ export async function getRecentCalls(limit = 20): Promise<SupplierCall[]> {
 
   const { data } = await db
     .from('supplier_calls')
-    .select('id, vendor_name, vendor_phone, ingredient_name, status, result, created_at')
+    .select(
+      'id, vendor_name, vendor_phone, ingredient_name, status, result, price_quoted, quantity_available, created_at'
+    )
     .eq('chef_id', user.tenantId!)
     .order('created_at', { ascending: false })
     .limit(limit)

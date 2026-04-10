@@ -123,7 +123,13 @@ const VENDOR_TYPE_LABELS: Record<string, string> = {
 type CallState =
   | { phase: 'idle' }
   | { phase: 'calling' }
-  | { phase: 'done'; result: 'yes' | 'no' | null; status: string }
+  | {
+      phase: 'done'
+      result: 'yes' | 'no' | null
+      status: string
+      priceQuoted?: string | null
+      quantityAvailable?: string | null
+    }
 
 function VendorCallQueuePanel({ query }: { query: string }) {
   const [vendors, setVendors] = useState<VendorCallCandidate[]>([])
@@ -198,7 +204,13 @@ function VendorCallQueuePanel({ query }: { query: string }) {
           clearInterval(poll)
           setCallStates((prev) => ({
             ...prev,
-            [vendor.id]: { phase: 'done', result: status.result, status: status.status },
+            [vendor.id]: {
+              phase: 'done',
+              result: status.result,
+              status: status.status,
+              priceQuoted: status.price_quoted,
+              quantityAvailable: status.quantity_available,
+            },
           }))
         }
         if (attempts >= 20) clearInterval(poll)
@@ -297,26 +309,36 @@ function VendorCallQueuePanel({ query }: { query: string }) {
                       </span>
                     )}
                     {callState.phase === 'done' && (
-                      <span
-                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium
-                          ${callState.result === 'yes' ? 'border-emerald-700 bg-emerald-900/30 text-emerald-300' : ''}
-                          ${callState.result === 'no' ? 'border-rose-800 bg-rose-900/20 text-rose-400' : ''}
-                          ${callState.result === null ? 'border-stone-700 bg-stone-800 text-stone-400' : ''}`}
-                      >
-                        {callState.result === 'yes' && (
-                          <>
-                            <Check className="w-3.5 h-3.5" />
-                            In stock
-                          </>
-                        )}
-                        {callState.result === 'no' && (
-                          <>
-                            <X className="w-3.5 h-3.5" />
-                            Not available
-                          </>
-                        )}
-                        {callState.result === null && <>No answer</>}
-                      </span>
+                      <div className="flex flex-col items-end gap-0.5">
+                        <span
+                          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium
+                            ${callState.result === 'yes' ? 'border-emerald-700 bg-emerald-900/30 text-emerald-300' : ''}
+                            ${callState.result === 'no' ? 'border-rose-800 bg-rose-900/20 text-rose-400' : ''}
+                            ${callState.result === null ? 'border-stone-700 bg-stone-800 text-stone-400' : ''}`}
+                        >
+                          {callState.result === 'yes' && (
+                            <>
+                              <Check className="w-3.5 h-3.5" />
+                              In stock
+                            </>
+                          )}
+                          {callState.result === 'no' && (
+                            <>
+                              <X className="w-3.5 h-3.5" />
+                              Not available
+                            </>
+                          )}
+                          {callState.result === null && <>No answer</>}
+                        </span>
+                        {callState.result === 'yes' &&
+                          (callState.priceQuoted || callState.quantityAvailable) && (
+                            <span className="text-[10px] text-stone-400 text-right leading-tight">
+                              {[callState.priceQuoted, callState.quantityAvailable]
+                                .filter(Boolean)
+                                .join(' · ')}
+                            </span>
+                          )}
+                      </div>
                     )}
                   </>
                 )}
