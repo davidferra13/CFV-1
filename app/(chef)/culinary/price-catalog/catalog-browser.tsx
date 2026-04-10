@@ -97,9 +97,9 @@ function ConfidenceIcon({ confidence }: { confidence: string }) {
 
 // ---------------------------------------------------------------------------
 // Web Sourcing Panel
-// Shown when a catalog search returns zero results. When BRAVE_SEARCH_API_KEY
-// is set, fetches live product pages from trusted specialty retailers.
-// Falls back to static deep-link buttons when the key is absent.
+// Shown when a catalog search returns zero results. Fetches live product
+// pages from trusted specialty retailers via DuckDuckGo (free, no API key).
+// Falls back to static deep-link buttons if the search returns nothing.
 // ---------------------------------------------------------------------------
 
 import { searchIngredientOnline, type SourcingResult } from '@/lib/pricing/web-sourcing-actions'
