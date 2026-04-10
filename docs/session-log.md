@@ -398,3 +398,24 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 2575785f5, b2cfcf43e, 4800a2050, 8ec79ef22, ca497116b, 279a1499b (all pushed to origin/main)
 - Build state on departure: green (tsc clean on touched files; 2 pre-existing errors in lib/hub/integration-actions.ts unrelated)
 - Notes: Sourcing fallback now in catalog browser + substitution lookup. Pattern codified in CLAUDE-ARCHITECTURE.md rule 0d. Grocery list is the next pending surface. Extract WebSourcingPanel to shared component before adding third surface.
+
+## 2026-04-10 (session - supplier calling)
+
+- Agent: General (Sonnet 4.6)
+- Task: Ingredient Sourcing Intelligence - vendor call queue (Tier 3) + AI auto-calling via Twilio (Tier 4)
+- Status: completed
+- Files touched:
+  - lib/vendors/sourcing-actions.ts (new) - getVendorCallQueue server action
+  - lib/calling/twilio-actions.ts (new) - Twilio call dispatch, gate check, daily limit, business hours guard
+  - app/api/calling/twiml/route.ts (new) - TwiML script endpoint (what Twilio reads to vendor)
+  - app/api/calling/gather/route.ts (new) - keypress result handler (1=yes, 2=no)
+  - app/api/calling/status/route.ts (new) - Twilio status callback (no-answer, busy, failed)
+  - app/api/calling/enabled/route.ts (new) - feature gate check for UI
+  - database/migrations/20260410000002_supplier_calls.sql (new) - call log table
+  - app/(chef)/culinary/price-catalog/catalog-browser.tsx - VendorCallQueuePanel + Auto-call button
+  - app/(admin)/admin/flags/page.tsx - supplier_calling flag added to registry
+  - docs/specs/ingredient-sourcing-intelligence.md (new)
+  - project-map/chefflow.md, docs/USER_MANUAL.md
+- Commits: 84e9cb54a, 7e379fd4c (pushed to origin/main)
+- Build state on departure: green (tsc clean on all touched files)
+- Notes: supplier_calling flag enabled for davidferra13@gmail.com only. Migration applied to local DB. Twilio credentials added as placeholders in .env.local (user filled them in). Trial mode restriction: Twilio trial can only call verified numbers - upgrade account for real vendor calls.
