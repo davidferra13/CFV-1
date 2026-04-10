@@ -10,9 +10,71 @@ import {
   createPurchaseOrderFromShoppingList,
   type ShoppingListResult,
 } from '@/lib/culinary/shopping-list-actions'
+import { WebSourcingPanel } from '@/components/pricing/web-sourcing-panel'
 
 function formatCurrency(cents: number) {
   return `$${(cents / 100).toFixed(2)}`
+}
+
+// ---------------------------------------------------------------------------
+// ShoppingListRow
+// Per-item row with inline sourcing panel for unassigned/unpriced items.
+// When a chef needs to buy something but has no supplier or price data,
+// the sourcing panel fires automatically to show where to buy it.
+// ---------------------------------------------------------------------------
+
+type ShoppingItem = ShoppingListResult['items'][number]
+
+function ShoppingListRow({ item }: { item: ShoppingItem }) {
+  const needsSourcing = item.supplier === 'Unassigned' && item.estimatedCostCents === 0
+  const [showSourcing, setShowSourcing] = useState(false)
+
+  return (
+    <>
+      <tr className="border-b border-stone-800">
+        <td className="px-2 py-2 text-stone-100">
+          <div className="flex items-center gap-2">
+            {item.ingredientName}
+            {needsSourcing && item.toBuy > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowSourcing((v) => !v)}
+                className="text-xs text-brand-400 hover:text-brand-300 underline shrink-0"
+              >
+                {showSourcing ? 'Hide' : 'Find it'}
+              </button>
+            )}
+          </div>
+          <p className="text-xs text-stone-500">
+            {item.category} · {item.supplier}
+          </p>
+        </td>
+        <td className="px-2 py-2 text-right text-stone-300">
+          {item.totalRequired.toFixed(2)} {item.unit}
+        </td>
+        <td className="px-2 py-2 text-right text-stone-300">
+          {item.onHand.toFixed(2)} {item.unit}
+        </td>
+        <td
+          className={`px-2 py-2 text-right font-medium ${
+            item.toBuy > 0 ? 'text-red-600' : 'text-green-700'
+          }`}
+        >
+          {item.toBuy.toFixed(2)} {item.unit}
+        </td>
+        <td className="px-2 py-2 text-right text-stone-300">
+          {formatCurrency(item.estimatedCostCents)}
+        </td>
+      </tr>
+      {showSourcing && (
+        <tr className="border-b border-stone-800 bg-stone-950">
+          <td colSpan={5} className="px-3 py-3">
+            <WebSourcingPanel query={item.ingredientName} label="Where to buy" />
+          </td>
+        </tr>
+      )}
+    </>
+  )
 }
 
 type Props = {
@@ -230,33 +292,7 @@ export function ShoppingListGenerator({ initialResult, initialEventIds }: Props)
                   </thead>
                   <tbody>
                     {items.map((item) => (
-                      <tr
-                        key={`${item.ingredientId}:${item.unit}`}
-                        className="border-b border-stone-800"
-                      >
-                        <td className="px-2 py-2 text-stone-100">
-                          {item.ingredientName}
-                          <p className="text-xs text-stone-500">
-                            {item.category} · {item.supplier}
-                          </p>
-                        </td>
-                        <td className="px-2 py-2 text-right text-stone-300">
-                          {item.totalRequired.toFixed(2)} {item.unit}
-                        </td>
-                        <td className="px-2 py-2 text-right text-stone-300">
-                          {item.onHand.toFixed(2)} {item.unit}
-                        </td>
-                        <td
-                          className={`px-2 py-2 text-right font-medium ${
-                            item.toBuy > 0 ? 'text-red-600' : 'text-green-700'
-                          }`}
-                        >
-                          {item.toBuy.toFixed(2)} {item.unit}
-                        </td>
-                        <td className="px-2 py-2 text-right text-stone-300">
-                          {formatCurrency(item.estimatedCostCents)}
-                        </td>
-                      </tr>
+                      <ShoppingListRow key={`${item.ingredientId}:${item.unit}`} item={item} />
                     ))}
                   </tbody>
                 </table>
