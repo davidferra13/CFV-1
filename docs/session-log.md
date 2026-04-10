@@ -378,3 +378,13 @@ Every agent appends an entry when they start and when they finish. The next agen
   - Critically, the pre-change state was reporting `zip_local` for olive oil in MA, CA, TX, AK, AND Hawaii with an identical 1674c/each price, because the old Strategy A read `ingredient_price_history` with no tenant filter and no geographic filter. That is both a cross-tenant data leak AND a Zero Hallucination violation. Strategy A is now deleted for the universal lookup; the chef-scoped resolver in `resolve-price.ts` still handles per-chef receipt data correctly.
   - After the fix all multi-location olive oil queries correctly report `national_median`. The openclaw market data does not yet have store-level coverage dense enough to return `zip_local` for most ZIPs. That gap is now legible, which is exactly the point: the tier distribution is the data-acquisition queue for the next scraping work.
   - Nothing in `lib/hub/integration-actions.ts` was touched; the 2 pre-existing TS errors there predate this session.
+
+## 2026-04-10 (session close)
+
+- Agent: Builder (Claude Opus 4.6)
+- Task: Pricing honesty - resolution tier, crash-free misspellings, cross-tenant leak fix
+- Status: completed
+- Files touched: lib/pricing/resolve-price.ts, lib/pricing/universal-price-lookup.ts, components/pricing/price-badge.tsx, scripts/price-edge-stress.mjs (new), docs/session-log.md, docs/build-state.md, docs/session-digests/2026-04-10-pricing-honesty-resolution-tier.md (new)
+- Commits: 33ec419f4 (pushed to origin/main)
+- Build state on departure: green (tsc: 2 pre-existing errors in lib/hub/integration-actions.ts unrelated to this work; next build exits 0)
+- Notes: Full session digest at docs/session-digests/2026-04-10-pricing-honesty-resolution-tier.md. Thread archived.
