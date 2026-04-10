@@ -6,10 +6,15 @@
  * When the local catalog has no data for an ingredient, this action searches
  * specialty retailers via DuckDuckGo HTML scraping - free, no API key required.
  *
+ * The chef's home_city + home_state are added to the query so results are
+ * regionally relevant (e.g. a Portland ME chef gets New England suppliers).
+ *
  * Results are filtered to trusted retailer domains and cached 1 hour per query.
  * Auth-gated: only authenticated chefs can trigger searches.
  */
 
+import { db } from '@/lib/db'
+import { sql } from 'drizzle-orm'
 import { requireChef } from '@/lib/auth/get-user'
 
 const TRUSTED_DOMAINS = [
@@ -37,8 +42,6 @@ export type SourcingResponse = { source: 'live'; results: SourcingResult[] } | {
 // Extract all uddg-encoded destination URLs from DuckDuckGo HTML
 function extractDDGUrls(html: string): Array<{ url: string; title: string }> {
   const results: Array<{ url: string; title: string }> = []
-
-  // Match uddg redirect links with their anchor text
   const linkPattern = /href="[^"]*uddg=([^&"]+)[^"]*"[^>]*>([^<]+)</g
   let match: RegExpExecArray | null
 
@@ -57,10 +60,25 @@ function extractDDGUrls(html: string): Array<{ url: string; title: string }> {
   return results
 }
 
-export async function searchIngredientOnline(query: string): Promise<SourcingResponse> {
-  await requireChef()
+async function getChefLocation(chefId: string): Promise<string> {
+  try {
+    const rows = await db.execute(
+      sql`SELECT home_city, home_state FROM chef_preferences WHERE chef_id = ${chefId} LIMIT 1`
+    )
+    const row = rows.rows?.[0] as { home_city?: string; home_state?: string } | undefined
+    const parts = [row?.home_city, row?.home_state].filter(Boolean)
+    return parts.join(', ')
+  } catch {
+    return ''
+  }
+}
 
-  const searchQuery = `${query} buy specialty grocery store`
+export async function searchIngredientOnline(query: string): Promise<SourcingResponse> {
+  const user = await requireChef()
+
+  const location = await getChefLocation(user.entityId)
+  const locationClause = location ? ` ${location}` : ''
+  const searchQuery = `${query} buy specialty grocery store${locationClause}`
 
   try {
     const res = await fetch(
@@ -85,9 +103,7 @@ export async function searchIngredientOnline(query: string): Promise<SourcingRes
         if (!match) return []
         return [{ title, url, description: '', retailer: match.label }]
       })
-      .filter(
-        (r, i, arr) => arr.findIndex((x) => x.retailer === r.retailer) === i // one per retailer
-      )
+      .filter((r, i, arr) => arr.findIndex((x) => x.retailer === r.retailer) === i)
       .slice(0, 6)
 
     return { source: 'live', results }
