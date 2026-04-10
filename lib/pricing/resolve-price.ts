@@ -43,11 +43,45 @@ export type PriceSource =
 
 export type PriceFreshness = 'current' | 'recent' | 'stale' | 'none'
 
+/**
+ * Honest resolution tier for every price. This is what `<PriceSourceBadge>`
+ * renders to users: it names where the number actually came from so the UI
+ * cannot silently claim locality or authority the data does not have.
+ *
+ *   chef_receipt     - chef's own logged purchase or live API quote (trust: high)
+ *   wholesale        - wholesale distributor pricing (trust: high)
+ *   zip_local        - scraped from a store known to serve this chef/state (trust: high)
+ *   regional         - cross-store median from regional_price_averages (trust: medium)
+ *   market_state     - market aggregate that covers the requested state (trust: medium)
+ *   market_national  - market aggregate, no state match or no state requested (trust: low)
+ *   government       - USDA/BLS regional baseline (trust: low)
+ *   historical       - chef's long-tail average across receipts (trust: low)
+ *   category_baseline- category-level median estimate (trust: very low)
+ *   none             - no data available (trust: none)
+ */
+export type ResolutionTier =
+  | 'chef_receipt'
+  | 'wholesale'
+  | 'zip_local'
+  | 'regional'
+  | 'market_state'
+  | 'market_national'
+  | 'government'
+  | 'historical'
+  | 'category_baseline'
+  | 'none'
+
 export interface ResolvedPrice {
   cents: number | null
   unit: string
   source: PriceSource
   sourceTier: string | null
+  /**
+   * Honest geographic/authority tier for this price. Added 2026-04-10 to
+   * stop the pricing engine from silently reporting national medians as if
+   * they were local. Always set by resolvePrice / resolvePricesBatch.
+   */
+  resolutionTier: ResolutionTier
   store: string | null
   confidence: number
   /** Confidence adjusted for age. Decays over time. Use this for ranking. */
@@ -125,6 +159,39 @@ function withDecay(price: Omit<ResolvedPrice, 'effectiveConfidence'>): ResolvedP
   }
 }
 
+/**
+ * Pick the honest tier for a receipt-sourced price. A logged receipt from a
+ * store the chef actually shopped at is `chef_receipt` regardless of where
+ * we were asked for a price. If the receipt store name contains the preferred
+ * state, it is additionally a `zip_local` signal for that state.
+ */
+function tierForReceiptSource(
+  source: string,
+  storeName: string | null,
+  preferredState: string | null
+): ResolutionTier {
+  if (
+    source === 'manual' ||
+    source === 'grocery_entry' ||
+    source === 'po_receipt' ||
+    source === 'vendor_invoice'
+  ) {
+    return 'chef_receipt'
+  }
+  if (source === 'openclaw_wholesale') return 'wholesale'
+  // Scrape/flyer/instacart: treat as zip_local only when we can see the state.
+  if (
+    preferredState &&
+    storeName &&
+    storeName.toLowerCase().includes(preferredState.toLowerCase())
+  ) {
+    return 'zip_local'
+  }
+  // Otherwise it is a scraped price with no geographic guarantee — fall back
+  // to regional rather than claiming locality we cannot prove.
+  return 'regional'
+}
+
 // --- Source display names ---
 
 function sourceDisplayStore(source: PriceSource, storeName: string | null): string {
@@ -170,6 +237,7 @@ export async function resolvePrice(
     unit: 'each',
     source: 'none',
     sourceTier: null,
+    resolutionTier: 'none',
     store: null,
     confidence: 0,
     effectiveConfidence: 0,
@@ -198,6 +266,7 @@ export async function resolvePrice(
         unit: row.unit || 'each',
         source: 'receipt',
         sourceTier: row.source,
+        resolutionTier: 'chef_receipt',
         store: sourceDisplayStore('receipt', row.store_name),
         confidence: 1.0,
         freshness: computeFreshness(row.purchase_date),
@@ -242,6 +311,7 @@ export async function resolvePrice(
         unit: 'each',
         source: 'api_quote',
         sourceTier: row.source_label || 'api',
+        resolutionTier: 'chef_receipt',
         store: sourceDisplayStore('api_quote', row.source_label),
         confidence: 0.75,
         freshness: computeFreshness(row.created_at),
@@ -271,6 +341,7 @@ export async function resolvePrice(
         unit: row.unit || 'each',
         source: 'wholesale',
         sourceTier: 'openclaw_wholesale',
+        resolutionTier: 'wholesale',
         store: sourceDisplayStore('wholesale', row.store_name),
         confidence: 0.8,
         freshness: computeFreshness(row.purchase_date),
@@ -304,6 +375,7 @@ export async function resolvePrice(
         unit: row.unit || 'each',
         source: 'direct_scrape',
         sourceTier: 'openclaw_scrape',
+        resolutionTier: tierForReceiptSource('openclaw_scrape', row.store_name, preferredState),
         store: sourceDisplayStore('direct_scrape', row.store_name),
         confidence: 0.85,
         freshness: computeFreshness(row.purchase_date),
@@ -336,6 +408,7 @@ export async function resolvePrice(
         unit: row.unit || 'each',
         source: 'flyer',
         sourceTier: 'openclaw_flyer',
+        resolutionTier: tierForReceiptSource('openclaw_flyer', row.store_name, preferredState),
         store: sourceDisplayStore('flyer', row.store_name),
         confidence: 0.7,
         freshness: computeFreshness(row.purchase_date),
@@ -368,6 +441,7 @@ export async function resolvePrice(
         unit: row.unit || 'each',
         source: 'instacart',
         sourceTier: 'openclaw_instacart',
+        resolutionTier: tierForReceiptSource('openclaw_instacart', row.store_name, preferredState),
         store: sourceDisplayStore('instacart', row.store_name),
         confidence: 0.6,
         freshness: computeFreshness(row.purchase_date),
@@ -393,6 +467,7 @@ export async function resolvePrice(
         unit: regionalAvg.mostCommonUnit,
         source: 'regional_average',
         sourceTier: 'regional_average',
+        resolutionTier: 'regional',
         store: `Regional Average (${regionalAvg.storeCount} stores)`,
         confidence: 0.5,
         freshness: computeFreshness(regionalAvg.mostRecentDate),
@@ -444,6 +519,7 @@ export async function resolvePrice(
         unit: row.price_unit || 'each',
         source: 'market_aggregate',
         sourceTier: 'system_ingredient_market',
+        resolutionTier: coversRequestedState ? 'market_state' : 'market_national',
         store: `Market Average (${row.store_count} stores, ${row.state_count} state${row.state_count !== 1 ? 's' : ''})`,
         confidence: adjustedConf,
         freshness: computeFreshness(row.newest_date),
@@ -472,6 +548,7 @@ export async function resolvePrice(
         unit: row.unit || 'each',
         source: 'government',
         sourceTier: 'openclaw_government',
+        resolutionTier: 'government',
         store: sourceDisplayStore('government', null),
         confidence: 0.4,
         freshness: computeFreshness(row.purchase_date),
@@ -502,6 +579,7 @@ export async function resolvePrice(
         unit: row.unit || 'each',
         source: 'historical',
         sourceTier: null,
+        resolutionTier: 'historical',
         store: sourceDisplayStore('historical', null),
         confidence: 0.3,
         freshness: computeFreshness(row.latest_date),
@@ -525,6 +603,7 @@ export async function resolvePrice(
         unit: baseline.mostCommonUnit,
         source: 'category_baseline',
         sourceTier: 'category_baseline',
+        resolutionTier: 'category_baseline',
         store: `${baseline.category} category estimate`,
         confidence: 0.2,
         freshness: 'stale' as PriceFreshness,
@@ -666,6 +745,7 @@ export async function resolvePricesBatch(
           unit: recentReceipt.unit || 'each',
           source: 'receipt',
           sourceTier: recentReceipt.source,
+          resolutionTier: 'chef_receipt',
           store: sourceDisplayStore('receipt', recentReceipt.store_name),
           confidence: 1.0,
           freshness: computeFreshness(recentReceipt.purchase_date),
@@ -685,6 +765,7 @@ export async function resolvePricesBatch(
           unit: 'each',
           source: 'api_quote',
           sourceTier: quote.source_label || 'api',
+          resolutionTier: 'chef_receipt',
           store: sourceDisplayStore('api_quote', quote.source_label),
           confidence: 0.75,
           freshness: computeFreshness(quote.created_at),
@@ -723,6 +804,7 @@ export async function resolvePricesBatch(
           unit: wholesaleRow.unit || 'each',
           source: 'wholesale',
           sourceTier: 'openclaw_wholesale',
+          resolutionTier: 'wholesale',
           store: sourceDisplayStore('wholesale', wholesaleRow.store_name),
           confidence: 0.8,
           freshness: computeFreshness(wholesaleRow.purchase_date),
@@ -743,6 +825,11 @@ export async function resolvePricesBatch(
           unit: scrapeRow.unit || 'each',
           source: 'direct_scrape',
           sourceTier: 'openclaw_scrape',
+          resolutionTier: tierForReceiptSource(
+            'openclaw_scrape',
+            scrapeRow.store_name,
+            preferredState
+          ),
           store: sourceDisplayStore('direct_scrape', scrapeRow.store_name),
           confidence: 0.85,
           freshness: computeFreshness(scrapeRow.purchase_date),
@@ -763,6 +850,11 @@ export async function resolvePricesBatch(
           unit: flyerRow.unit || 'each',
           source: 'flyer',
           sourceTier: 'openclaw_flyer',
+          resolutionTier: tierForReceiptSource(
+            'openclaw_flyer',
+            flyerRow.store_name,
+            preferredState
+          ),
           store: sourceDisplayStore('flyer', flyerRow.store_name),
           confidence: 0.7,
           freshness: computeFreshness(flyerRow.purchase_date),
@@ -783,6 +875,11 @@ export async function resolvePricesBatch(
           unit: instacartRow.unit || 'each',
           source: 'instacart',
           sourceTier: 'openclaw_instacart',
+          resolutionTier: tierForReceiptSource(
+            'openclaw_instacart',
+            instacartRow.store_name,
+            preferredState
+          ),
           store: sourceDisplayStore('instacart', instacartRow.store_name),
           confidence: 0.6,
           freshness: computeFreshness(instacartRow.purchase_date),
@@ -805,6 +902,7 @@ export async function resolvePricesBatch(
             unit: regional.mostCommonUnit,
             source: 'regional_average',
             sourceTier: 'regional_average',
+            resolutionTier: 'regional',
             store: `Regional Average (${regional.storeCount} stores)`,
             confidence: 0.5,
             freshness: computeFreshness(regional.mostRecentDate),
@@ -826,6 +924,7 @@ export async function resolvePricesBatch(
           unit: govRow.unit || 'each',
           source: 'government',
           sourceTier: 'openclaw_government',
+          resolutionTier: 'government',
           store: sourceDisplayStore('government', null),
           confidence: 0.4,
           freshness: computeFreshness(govRow.purchase_date),
@@ -850,6 +949,7 @@ export async function resolvePricesBatch(
           unit: receipts[0]?.unit || 'each',
           source: 'historical',
           sourceTier: null,
+          resolutionTier: 'historical',
           store: sourceDisplayStore('historical', null),
           confidence: 0.3,
           freshness: computeFreshness(latestDate),
@@ -872,6 +972,7 @@ export async function resolvePricesBatch(
             unit: baseline.mostCommonUnit,
             source: 'category_baseline',
             sourceTier: 'category_baseline',
+            resolutionTier: 'category_baseline',
             store: `${baseline.category} category estimate`,
             confidence: 0.2,
             freshness: 'stale',
@@ -889,6 +990,7 @@ export async function resolvePricesBatch(
       unit: 'each',
       source: 'none',
       sourceTier: null,
+      resolutionTier: 'none',
       store: null,
       confidence: 0,
       effectiveConfidence: 0,

@@ -12,12 +12,14 @@ Last known state of the app. Updated after every successful type check and build
 
 ## Current State
 
-| Check                                  | Status | Last Verified | Commit    | Agent           |
-| -------------------------------------- | ------ | ------------- | --------- | --------------- |
-| `npx tsc --noEmit --skipLibCheck`      | green  | 2026-04-06    | eae737a8c | Claude Opus 4.6 |
-| `npx next build --no-lint` (12GB heap) | green  | 2026-04-07    | d33bc2a4c | Claude Opus 4.6 |
+| Check                                 | Status | Last Verified | Commit         | Agent                     |
+| ------------------------------------- | ------ | ------------- | -------------- | ------------------------- |
+| `npx tsc --noEmit --skipLibCheck`     | yellow | 2026-04-10    | dirty checkout | Builder (pricing honesty) |
+| `npx next build --no-lint` (8GB heap) | green  | 2026-04-10    | dirty checkout | Builder (pricing honesty) |
 
-**Last green build:** d33bc2a4c (2026-04-07) - Performance audit rebuild. 771 pages compiled. Production server verified sub-20ms TTFB. Cloudflare tunnel latency eliminated (localhost to 127.0.0.1). DB indexes added for price resolution.
+**Yellow note (2026-04-10):** Full project `tsc` returns exactly 2 errors, both in `lib/hub/integration-actions.ts` (implicit `any` on lines 388 and 404). These predate the current pricing-honesty session and come from an unrelated uncommitted working-tree change. The pricing files touched this session (`lib/pricing/resolve-price.ts`, `lib/pricing/universal-price-lookup.ts`, `components/pricing/price-badge.tsx`) typecheck clean, and `npx next build --no-lint` still exits 0 with a fresh BUILD_ID (`922b43351`). The hub file is a pre-existing debt item for whoever owns the guest-visible dinner circle work.
+
+**Last green build:** dirty checkout (2026-04-08) - Full production rebuild completed on the current Remy operator-mode / continuity / surface-reliability checkout. `:3000` was restarted onto the new build and `/api/remy/landing` returned `200` SSE for `hey` with the fast-path greeting.
 **Last commit on main:** d33bc2a4c
 
 **Current blocker:** none. Both typecheck and build pass. BUILD_ID artifact confirmed present after build. Build script (`scripts/run-next-build.mjs`) uses 12GB heap by default (`NEXT_BUILD_MAX_OLD_SPACE_SIZE=12288`). Peak observed: 11.3GB during compilation.
@@ -40,6 +42,7 @@ _Newest first. Keep the last 10 entries._
 
 | Date       | tsc    | build | Commit                         | Agent           | Notes                                                                                                                                                                                                                                                                                                                                                                                      |
 | ---------- | ------ | ----- | ------------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-04-08 | green  | green | dirty checkout                 | Codex           | Re-ran `npm run typecheck:app`, rebuilt the full production app via `node scripts/run-next-prod.mjs --build`, and restarted `:3000` onto the current checkout. Live smoke on `/api/remy/landing` returned `200` SSE for `hey`, confirming the Remy continuity, operator-mode, and surface fast-path changes are active on the production port.                                             |
 | 2026-04-07 | green  | green | d33bc2a4c                      | Claude Opus 4.6 | Performance audit rebuild. 771 pages. Prod TTFB: 43s to 20ms. Tunnel fix (localhost to 127.0.0.1). 4 DB indexes added for price resolution.                                                                                                                                                                                                                                                |
 | 2026-04-06 | green  | green | eae737a8c                      | Claude Opus 4.6 | Full catch-up build: 27 commits verified. Android widgets (8), quick notes, ingredient normalization, food costing trust provenance, mobile/Tauri/PWA, zero hallucination fixes, ingredient auto-matching, public page rewrites.                                                                                                                                                           |
 | 2026-04-05 | green  | green | 699fb96b7                      | Claude Opus 4.6 | Golden standard public pages audit: legal accuracy (MA governing law, Resend privacy), dark theme (contact form), security (webhook fail-closed, sentinel stripped), vetted->reviewed (7 pages), dynamic chef count, better 404 nav.                                                                                                                                                       |

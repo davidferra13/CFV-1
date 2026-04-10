@@ -9,7 +9,12 @@
  *   <PriceBadge price={resolvedPrice} compact />
  */
 
-import type { ResolvedPrice, PriceFreshness, PriceSource } from '@/lib/pricing/resolve-price'
+import type {
+  ResolvedPrice,
+  PriceFreshness,
+  PriceSource,
+  ResolutionTier,
+} from '@/lib/pricing/resolve-price'
 
 interface PriceBadgeProps {
   price: ResolvedPrice
@@ -63,6 +68,8 @@ function sourceLabel(source: PriceSource): string {
       return 'Receipt'
     case 'api_quote':
       return 'API quote'
+    case 'wholesale':
+      return 'Wholesale'
     case 'direct_scrape':
       return 'Store site'
     case 'flyer':
@@ -71,6 +78,8 @@ function sourceLabel(source: PriceSource): string {
       return 'Instacart'
     case 'regional_average':
       return 'Regional avg'
+    case 'market_aggregate':
+      return 'Market avg'
     case 'government':
       return 'USDA avg'
     case 'historical':
@@ -81,6 +90,62 @@ function sourceLabel(source: PriceSource): string {
       return ''
     default:
       return ''
+  }
+}
+
+/**
+ * Honest human-readable label for the resolution tier. This is what the
+ * chef actually sees next to the price — it tells the truth about where the
+ * number came from so the UI cannot silently claim local data it does not
+ * have.
+ */
+function tierLabel(tier: ResolutionTier): string {
+  switch (tier) {
+    case 'chef_receipt':
+      return 'your data'
+    case 'wholesale':
+      return 'wholesale'
+    case 'zip_local':
+      return 'local'
+    case 'regional':
+      return 'regional'
+    case 'market_state':
+      return 'state avg'
+    case 'market_national':
+      return 'national avg'
+    case 'government':
+      return 'USDA est.'
+    case 'historical':
+      return 'your history'
+    case 'category_baseline':
+      return 'category est.'
+    case 'none':
+      return ''
+  }
+}
+
+/**
+ * Color the tier label based on how much geographic backing it has. The
+ * chef needs to glance and know "is this a real local price, or a national
+ * fallback?" without reading a tooltip.
+ */
+function tierColor(tier: ResolutionTier): string {
+  switch (tier) {
+    case 'chef_receipt':
+    case 'wholesale':
+    case 'zip_local':
+      return 'text-emerald-400'
+    case 'regional':
+    case 'market_state':
+      return 'text-sky-400'
+    case 'market_national':
+    case 'government':
+      return 'text-amber-400'
+    case 'historical':
+    case 'category_baseline':
+      return 'text-stone-500'
+    case 'none':
+      return 'text-red-400'
   }
 }
 
@@ -140,6 +205,9 @@ export function PriceBadge({
   const dots = confidenceDots(price.confidence)
   const fresh = freshnessLabel(price.confirmedAt)
   const freshColor = freshnessColor(price.freshness)
+  const tier = tierLabel(price.resolutionTier)
+  const tierClr = tierColor(price.resolutionTier)
+  const tierTooltip = tierTooltipText(price.resolutionTier, price.store)
 
   if (compact) {
     return (
@@ -148,6 +216,14 @@ export function PriceBadge({
           {formatCents(price.cents)}/{price.unit}
         </span>
         <TrendIndicator direction={trendDirection} pct={trendPct} />
+        {tier && (
+          <span
+            className={`ml-1.5 text-[0.65rem] uppercase tracking-wide ${tierClr}`}
+            title={tierTooltip}
+          >
+            {tier}
+          </span>
+        )}
         <span className={`ml-1.5 text-xs ${freshColor}`}>{fresh}</span>
         <span
           className="ml-1 text-xs text-stone-500"
@@ -166,6 +242,14 @@ export function PriceBadge({
       </span>
       <span className="text-stone-600">&middot;</span>
       <span className="text-xs text-stone-400">{price.store}</span>
+      {tier && (
+        <>
+          <span className="text-stone-600">&middot;</span>
+          <span className={`text-[0.65rem] uppercase tracking-wide ${tierClr}`} title={tierTooltip}>
+            {tier}
+          </span>
+        </>
+      )}
       <span className="text-stone-600">&middot;</span>
       <TrendIndicator direction={trendDirection} pct={trendPct} />
       <span className={`text-xs ${freshColor}`}>{fresh}</span>
@@ -177,6 +261,33 @@ export function PriceBadge({
       </span>
     </span>
   )
+}
+
+/** Full explanation shown in the tier badge tooltip. Be explicit about
+ *  where the price came from so callers never need to guess. */
+function tierTooltipText(tier: ResolutionTier, store: string | null): string {
+  switch (tier) {
+    case 'chef_receipt':
+      return `Your own receipt${store ? ` from ${store}` : ''}`
+    case 'wholesale':
+      return `Wholesale distributor price${store ? ` (${store})` : ''}`
+    case 'zip_local':
+      return `Scraped price from a store in your area${store ? ` (${store})` : ''}`
+    case 'regional':
+      return `Cross-store median from regional data${store ? ` (${store})` : ''}`
+    case 'market_state':
+      return `Market aggregate that includes your state${store ? ` (${store})` : ''}`
+    case 'market_national':
+      return 'Market aggregate with no local coverage for your area. Treat as a rough national estimate.'
+    case 'government':
+      return 'USDA / BLS regional baseline. Low confidence - not a live store price.'
+    case 'historical':
+      return 'Your own long-tail receipt average. May be stale.'
+    case 'category_baseline':
+      return 'Category-level median estimate. No ingredient-specific data available.'
+    case 'none':
+      return 'No price data available.'
+  }
 }
 
 /**

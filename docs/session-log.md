@@ -351,3 +351,30 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: pending push
 - Build state on departure: unchanged from docs/build-state.md (spec-only session, no build rerun)
 - Notes: Wrote a P0 runtime architecture spec that turns the documented surface model into an enforced runtime contract. Scope is intentionally narrow: create a machine-readable surface contract, give `/admin` an admin-owned shell and nav, remove admin route ownership from chef nav, and add tests so future shell and nav leakage is caught early. Broader debt remains outside this slice: request trust/API tenant boundary hardening, durable rate limiting, least-privilege DB access, and build gating that still ignores lint/type failures.
+
+## 2026-04-10 11:37 EST
+
+- Agent: Planner
+- Task: Planner Gate intake and deep inspection for the next architecture spec slice
+- Status: started
+- Build state on arrival: green (commit 922b43351, dirty checkout)
+
+## 2026-04-10 PM EST
+
+- Agent: Builder (general)
+- Task: Make the nationwide pricing engine honest. Stop lookupPrice/resolvePrice from silently claiming locality they cannot prove, stop misspelled queries from crashing the DB query, and surface the real resolution tier to every pricing UI.
+- Status: completed
+- Files touched:
+  - `lib/pricing/resolve-price.ts` (added `ResolutionTier` type, `resolutionTier` field on `ResolvedPrice`, populated at every return site in both single and batch paths, added `tierForReceiptSource` helper)
+  - `lib/pricing/universal-price-lookup.ts` (added `LookupResolutionTier`, `resolution_tier` and `suggestion` fields on `PriceLookupResult`, wrapped every strategy in a `safely()` helper so FTS failures fall through instead of throwing, added `searchProductPricesTrigram` fallback for misspellings, removed the cross-tenant `ingredient_price_history` read (old Strategy A) and added Strategy C2 for no-ZIP national fallback, honest `tierFromScope` wiring)
+  - `components/pricing/price-badge.tsx` (imported `ResolutionTier`, added `tierLabel` + `tierColor` + `tierTooltipText`, render the tier prominently in both compact and full variants, filled missing `market_aggregate` and `wholesale` cases in `sourceLabel`)
+  - `scripts/price-edge-stress.mjs` (new: 30-query edge-case harness covering common, rural, obscure, branded, vague, misspell, multi-location categories; asserts zero crashes, zero invalid tiers, and reports tier distribution)
+- Commits: pending push
+- Build state on departure: green (tsc: my files clean; the only failures are 2 pre-existing implicit-any errors in `lib/hub/integration-actions.ts` from an unrelated uncommitted working-tree change. `npx next build --no-lint` completed successfully and wrote a fresh BUILD_ID.)
+- Notes:
+  - Edge-case stress went from 23/30 + 7 crashes + silent "zip_local" lies on all 5 multi-location olive-oil queries (pre-change) to 30/30 honest results, 0 crashes, 0 invalid tiers.
+  - Distribution after the change: 26 `national_median`, 2 `estimated`, 2 `none`. The 2 `none` results include a did-you-mean suggestion where trigram found a near neighbor ("sea urchin" → "Sea Salt", surfaced as a suggestion so the caller can warn the user).
+  - The 5 misspellings that previously crashed now resolve via trigram fallback with "did-you-mean" suggestions: `tomatoe`, `parmasan` (→ Parmesan Cheese), `chiken breast` (→ Chicken Breasts), `bazil` (→ Basil), `avacado` (→ Avocado).
+  - Critically, the pre-change state was reporting `zip_local` for olive oil in MA, CA, TX, AK, AND Hawaii with an identical 1674c/each price, because the old Strategy A read `ingredient_price_history` with no tenant filter and no geographic filter. That is both a cross-tenant data leak AND a Zero Hallucination violation. Strategy A is now deleted for the universal lookup; the chef-scoped resolver in `resolve-price.ts` still handles per-chef receipt data correctly.
+  - After the fix all multi-location olive oil queries correctly report `national_median`. The openclaw market data does not yet have store-level coverage dense enough to return `zip_local` for most ZIPs. That gap is now legible, which is exactly the point: the tier distribution is the data-acquisition queue for the next scraping work.
+  - Nothing in `lib/hub/integration-actions.ts` was touched; the 2 pre-existing TS errors there predate this session.

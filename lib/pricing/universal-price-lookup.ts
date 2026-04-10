@@ -32,6 +32,19 @@ export interface PriceLookupQuery {
   radiusMiles?: number
 }
 
+/**
+ * Honest tier for a lookupPrice result. Tells the caller exactly how much
+ * geographic/authority backing the returned price has. Mirrors the
+ * `ResolutionTier` in resolve-price.ts but is local to this API surface so
+ * the two entry points can evolve independently.
+ */
+export type LookupResolutionTier =
+  | 'zip_local' // data from stores within 10 mi of the ZIP
+  | 'regional' // data from stores within the search radius
+  | 'national_median' // national product-price median, no local data
+  | 'estimated' // USDA baseline + store-type markup model
+  | 'none' // no data at all
+
 export interface PriceLookupResult {
   /** Whether the ingredient was matched to any known product/ingredient */
   matched: boolean
@@ -43,6 +56,18 @@ export interface PriceLookupResult {
   match_method: 'exact' | 'fulltext' | 'trigram' | 'product_search' | 'none'
   /** Confidence of the ingredient match itself (0-1) */
   match_confidence: number
+  /**
+   * Honest geographic/authority tier for this price. Added 2026-04-10.
+   * Callers must render this — do not silently claim the result is local
+   * when it is a national median.
+   */
+  resolution_tier: LookupResolutionTier
+  /**
+   * When the exact query did not match, this is the closest interpretation
+   * the matcher found via trigram similarity. Callers can surface this as
+   * "Did you mean X?" instead of silently substituting.
+   */
+  suggestion: string | null
 
   /** Best price estimate in cents */
   price_cents: number | null
@@ -515,6 +540,78 @@ async function searchProductPrices(
   return filterFoodProducts(rows)
 }
 
+/**
+ * Trigram similarity search on product names. Fallback for when plainto_tsquery
+ * returns nothing (typos, single-syllable queries, words that stem to empty).
+ * Uses the pg_trgm `extensions.similarity` function which is already installed
+ * for ingredient matching. Never throws; callers wrap in safely().
+ */
+async function searchProductPricesTrigram(
+  text: string,
+  storeIds: string[] | null,
+  limit = 100
+): Promise<ProductPriceRow[]> {
+  const normalized = text.trim().toLowerCase()
+  if (normalized.length < 3) return []
+
+  if (storeIds && storeIds.length > 0) {
+    const rows = (await db.execute(sql`
+      SELECT
+        p.id as product_id, p.name as product_name,
+        sp.store_id, s.name as store_name,
+        sp.price_cents,
+        sp.sale_price_cents,
+        p.size, p.size_value, p.size_unit,
+        sp.last_seen_at,
+        NULL::float as distance_miles,
+        sp.price_type,
+        c.reliability_weight,
+        c.source_type,
+        p.image_url
+      FROM openclaw.products p
+      JOIN openclaw.store_products sp ON sp.product_id = p.id
+      JOIN openclaw.stores s ON s.id = sp.store_id
+      LEFT JOIN openclaw.chains c ON c.id = s.chain_id
+      WHERE extensions.similarity(LOWER(p.name), ${normalized}) > 0.35
+        AND sp.store_id = ANY(${storeIds})
+        AND sp.price_cents > 0
+        AND sp.price_cents < 50000
+        AND p.is_food = true
+      ORDER BY extensions.similarity(LOWER(p.name), ${normalized}) DESC,
+               sp.price_cents ASC
+      LIMIT ${limit}
+    `)) as unknown as ProductPriceRow[]
+    return filterFoodProducts(rows)
+  }
+
+  const rows = (await db.execute(sql`
+    SELECT
+      p.id as product_id, p.name as product_name,
+      sp.store_id, s.name as store_name,
+      sp.price_cents,
+      sp.sale_price_cents,
+      p.size, p.size_value, p.size_unit,
+      sp.last_seen_at,
+      NULL::float as distance_miles,
+      sp.price_type,
+      c.reliability_weight,
+      c.source_type,
+      p.image_url
+    FROM openclaw.products p
+    JOIN openclaw.store_products sp ON sp.product_id = p.id
+    JOIN openclaw.stores s ON s.id = sp.store_id
+    LEFT JOIN openclaw.chains c ON c.id = s.chain_id
+    WHERE extensions.similarity(LOWER(p.name), ${normalized}) > 0.35
+      AND sp.price_cents > 0
+      AND sp.price_cents < 50000
+      AND p.is_food = true
+    ORDER BY extensions.similarity(LOWER(p.name), ${normalized}) DESC,
+             sp.last_seen_at DESC
+    LIMIT ${limit}
+  `)) as unknown as ProductPriceRow[]
+  return filterFoodProducts(rows)
+}
+
 /** Derive a single price_type label from a set of ProductPriceRow results.
  *  All retail → 'retail'. All wholesale → 'wholesale'. Any mix → 'mixed'.
  */
@@ -771,65 +868,6 @@ function aggregatePrices(
 }
 
 // ---------------------------------------------------------------------------
-// Step 7: Check ingredient_price_history (existing pipeline data)
-// ---------------------------------------------------------------------------
-
-interface HistoryPrice {
-  cents: number
-  unit: string
-  store: string
-  date: string
-  source: string
-}
-
-async function getHistoryPrices(
-  ingredientId: string,
-  storeNames?: string[]
-): Promise<HistoryPrice[]> {
-  let rows: Array<{
-    price_per_unit_cents: number
-    unit: string
-    store_name: string
-    purchase_date: string
-    source: string
-  }>
-
-  if (storeNames && storeNames.length > 0) {
-    rows = (await db.execute(sql`
-      SELECT price_per_unit_cents, unit, store_name, purchase_date, source
-      FROM ingredient_price_history
-      WHERE ingredient_id = ${ingredientId}
-        AND price_per_unit_cents > 0
-        AND price_per_unit_cents < 50000
-        AND purchase_date > CURRENT_DATE - INTERVAL '60 days'
-      ORDER BY purchase_date DESC
-      LIMIT 200
-    `)) as unknown as typeof rows
-  } else {
-    rows = (await db.execute(sql`
-      SELECT price_per_unit_cents, unit, store_name, purchase_date, source
-      FROM ingredient_price_history
-      WHERE ingredient_id = ${ingredientId}
-        AND price_per_unit_cents > 0
-        AND price_per_unit_cents < 50000
-        AND purchase_date > CURRENT_DATE - INTERVAL '60 days'
-      ORDER BY purchase_date DESC
-      LIMIT 200
-    `)) as unknown as typeof rows
-  }
-
-  return rows
-    .filter((r) => r.price_per_unit_cents != null)
-    .map((r) => ({
-      cents: Number(r.price_per_unit_cents),
-      unit: r.unit || 'each',
-      store: r.store_name || 'unknown',
-      date: r.purchase_date,
-      source: r.source,
-    }))
-}
-
-// ---------------------------------------------------------------------------
 // Step 6b: USDA regional baseline lookup
 // ---------------------------------------------------------------------------
 
@@ -956,6 +994,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
     ingredient_id: null,
     match_method: 'none',
     match_confidence: 0,
+    resolution_tier: 'none',
+    suggestion: null,
     price_cents: null,
     price_per_unit_cents: null,
     unit: 'each',
@@ -975,6 +1015,32 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
     yield: defaultYield,
     source_types: [],
     image_url: null,
+  }
+
+  /** Map location scope + ZIP presence to an honest resolution tier. */
+  const tierFromScope = (
+    scope: 'local' | 'regional' | 'national',
+    hasZip: boolean
+  ): LookupResolutionTier => {
+    if (scope === 'local') return 'zip_local'
+    if (scope === 'regional') return 'regional'
+    // 'national' scope with a ZIP means the ZIP was given but no local data
+    // was found and we fell back to nationwide data. Say so.
+    return hasZip ? 'national_median' : 'national_median'
+  }
+
+  /** Safe wrapper: run a strategy, swallow and log any error, return null so
+   *  the next strategy can run. Keeps the top-level function total. */
+  async function safely<T>(label: string, fn: () => Promise<T>): Promise<T | null> {
+    try {
+      return await fn()
+    } catch (err) {
+      console.warn(
+        `[lookupPrice] strategy '${label}' failed:`,
+        err instanceof Error ? err.message : err
+      )
+      return null
+    }
   }
 
   // Helper: look up yield_pct for an ingredient and compute usable cost
@@ -1007,9 +1073,12 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
   let locationScope: 'local' | 'regional' | 'national' = 'national'
 
   if (zipCode) {
-    zipCoords = await resolveZipCoords(zipCode)
+    zipCoords = await safely('resolveZipCoords', () => resolveZipCoords(zipCode))
     if (zipCoords) {
-      nearbyStores = await findNearbyStores(zipCoords.lat, zipCoords.lng, radiusMiles)
+      nearbyStores =
+        (await safely('findNearbyStores', () =>
+          findNearbyStores(zipCoords!.lat, zipCoords!.lng, radiusMiles)
+        )) || []
       if (nearbyStores.length > 0) {
         const closestMiles = nearbyStores[0].distance_miles
         locationScope = closestMiles <= 10 ? 'local' : 'regional'
@@ -1020,68 +1089,37 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
   const storeIds = nearbyStores.length > 0 ? nearbyStores.map((s) => s.store_id) : null
 
   // --- Match ingredient ---
-  const match = await matchIngredient(ingredient)
+  const match = await safely('matchIngredient', () => matchIngredient(ingredient))
+  // Suggestion: if match came via trigram, the matched name may differ from
+  // the query — surface it as a "did you mean" hint for the caller.
+  const suggestion =
+    match &&
+    match.method === 'trigram' &&
+    match.name.toLowerCase() !== ingredient.trim().toLowerCase()
+      ? match.name
+      : null
 
-  // --- Strategy A: We have an ingredient match with price history ---
-  if (match) {
-    const historyPrices = await getHistoryPrices(match.id)
-
-    if (historyPrices.length > 0) {
-      const agg = aggregatePrices(
-        historyPrices.map((p) => ({
-          cents: p.cents,
-          unit: p.unit,
-          store: p.store,
-          date: p.date,
-        }))
-      )
-
-      if (agg) {
-        const locationMultiplier = scopeConfidenceMultiplier(locationScope)
-        const overallConfidence =
-          Math.round(
-            match.confidence * locationMultiplier * (Math.min(agg.data_points, 20) / 20) * 100
-          ) / 100
-
-        const yieldInfo = await computeYield(match.id, agg.median_cents)
-
-        return {
-          matched: true,
-          ingredient_name: match.name,
-          ingredient_id: match.id,
-          match_method: match.method,
-          match_confidence: match.confidence,
-          price_cents: agg.median_cents,
-          price_per_unit_cents: agg.median_cents,
-          unit: agg.unit,
-          range: { min_cents: agg.min_cents, max_cents: agg.max_cents },
-          confidence_score: overallConfidence,
-          data_points: agg.data_points,
-          last_updated: agg.last_updated,
-          location: {
-            zip_requested: zipCode || null,
-            stores_in_area: nearbyStores.length,
-            nearest_store_miles: nearbyStores[0]?.distance_miles ?? null,
-            scope: locationScope,
-            coverage_note: buildCoverageNote(
-              locationScope,
-              nearbyStores.length,
-              nearbyStores[0]?.distance_miles ?? null,
-              zipCode || null
-            ),
-          },
-          sources: agg.sources,
-          price_type: 'retail',
-          yield: yieldInfo,
-          source_types: agg.source_types,
-          image_url: null,
-        }
-      }
-    }
-  }
+  // Strategy A removed 2026-04-10: the old code path read
+  // ingredient_price_history without a tenant filter, leaking cross-tenant
+  // chef receipts into a universal API surface and silently tagging the
+  // result as zip_local. The universal lookup now relies exclusively on
+  // openclaw market data (Strategies B, C, C2, and D). The chef-specific,
+  // tenant-scoped price resolver lives in lib/pricing/resolve-price.ts.
 
   // --- Strategy B: Direct product search in openclaw catalog ---
-  const productPrices = await searchProductPrices(ingredient, storeIds)
+  // FTS can throw on some malformed queries (unusual punctuation, etc.) and
+  // empty-tsquery inputs can return zero rows. Either way, we fall through
+  // to a trigram-based fallback rather than crashing the whole lookup.
+  let productPrices =
+    (await safely('searchProductPrices (FTS, local)', () =>
+      searchProductPrices(ingredient, storeIds)
+    )) || []
+  if (productPrices.length === 0) {
+    productPrices =
+      (await safely('searchProductPricesTrigram (local)', () =>
+        searchProductPricesTrigram(ingredient, storeIds)
+      )) || []
+  }
 
   if (productPrices.length > 0) {
     // Normalize each product price using size data
@@ -1117,6 +1155,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
         ingredient_id: match?.id || null,
         match_method: match?.method || 'product_search',
         match_confidence: matchConf,
+        resolution_tier: tierFromScope(locationScope, !!zipCode),
+        suggestion,
         price_cents: agg.median_cents,
         price_per_unit_cents: agg.median_cents,
         unit: agg.unit,
@@ -1147,7 +1187,16 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
 
   // --- Strategy C: Fall back to national product search (if location filtered returned nothing) ---
   if (storeIds && storeIds.length > 0) {
-    const nationalPrices = await searchProductPrices(ingredient, null)
+    let nationalPrices =
+      (await safely('searchProductPrices (FTS, national)', () =>
+        searchProductPrices(ingredient, null)
+      )) || []
+    if (nationalPrices.length === 0) {
+      nationalPrices =
+        (await safely('searchProductPricesTrigram (national)', () =>
+          searchProductPricesTrigram(ingredient, null)
+        )) || []
+    }
 
     if (nationalPrices.length > 0) {
       const normalized = nationalPrices.map((pp) => {
@@ -1184,6 +1233,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
           ingredient_id: match?.id || null,
           match_method: match?.method || 'product_search',
           match_confidence: matchConf,
+          resolution_tier: 'national_median',
+          suggestion,
           price_cents: agg.median_cents,
           price_per_unit_cents: agg.median_cents,
           unit: agg.unit,
@@ -1208,12 +1259,88 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
     }
   }
 
+  // --- Strategy C2: National search when no ZIP was provided at all ---
+  // The original code only ran national search as a fallback when storeIds
+  // existed but returned nothing. If the caller passed no ZIP, we still need
+  // to try the national path (previously this would skip straight to USDA).
+  if (!storeIds) {
+    let nationwidePrices =
+      (await safely('searchProductPrices (FTS, no-zip)', () =>
+        searchProductPrices(ingredient, null)
+      )) || []
+    if (nationwidePrices.length === 0) {
+      nationwidePrices =
+        (await safely('searchProductPricesTrigram (no-zip)', () =>
+          searchProductPricesTrigram(ingredient, null)
+        )) || []
+    }
+    if (nationwidePrices.length > 0) {
+      const normalized = nationwidePrices.map((pp) => {
+        const norm = normalizeProductPrice(
+          pp.sale_price_cents || pp.price_cents,
+          pp.size_value ? Number(pp.size_value) : null,
+          pp.size_unit,
+          pp.size || null
+        )
+        return {
+          cents: norm.price_per_unit_cents,
+          unit: norm.unit,
+          store: pp.store_name || 'unknown',
+          date: pp.last_seen_at || new Date().toISOString(),
+          reliability_weight: pp.reliability_weight ? Number(pp.reliability_weight) : undefined,
+          source_type: pp.source_type || undefined,
+        }
+      })
+      const agg = aggregatePrices(normalized)
+      if (agg) {
+        const matchConf = match ? match.confidence : 0.5
+        const overallConfidence =
+          Math.round(
+            matchConf *
+              scopeConfidenceMultiplier('national') *
+              (Math.min(agg.data_points, 20) / 20) *
+              100
+          ) / 100
+        return {
+          matched: true,
+          ingredient_name: match?.name || ingredient,
+          ingredient_id: match?.id || null,
+          match_method: match?.method || 'product_search',
+          match_confidence: matchConf,
+          resolution_tier: 'national_median',
+          suggestion,
+          price_cents: agg.median_cents,
+          price_per_unit_cents: agg.median_cents,
+          unit: agg.unit,
+          range: { min_cents: agg.min_cents, max_cents: agg.max_cents },
+          confidence_score: overallConfidence,
+          data_points: agg.data_points,
+          last_updated: agg.last_updated,
+          location: {
+            zip_requested: null,
+            stores_in_area: 0,
+            nearest_store_miles: null,
+            scope: 'national',
+            coverage_note: buildCoverageNote('national', 0, null, null),
+          },
+          sources: agg.sources,
+          price_type: derivePriceType(nationwidePrices),
+          yield: await computeYield(match?.id || null, agg.median_cents),
+          source_types: agg.source_types,
+          image_url: nationwidePrices.find((p) => p.image_url)?.image_url || null,
+        }
+      }
+    }
+  }
+
   // --- Strategy D: USDA baseline + estimation model ---
   // Safety net: even with zero scraped data, return a regionally-adjusted
   // estimated price. Uses USDA baseline + store-type markup models to
   // generate realistic estimates for chains, independents, convenience, etc.
-  const region = zipCode ? zipCoords?.region || (await getZipRegion(zipCode)) : null
-  const usda = await lookupUsdaBaseline(ingredient, region)
+  const region = zipCode
+    ? zipCoords?.region || (await safely('getZipRegion', () => getZipRegion(zipCode)))
+    : null
+  const usda = await safely('lookupUsdaBaseline', () => lookupUsdaBaseline(ingredient, region))
 
   if (usda) {
     const regionLabel = usda.region === 'us_average' ? 'US average' : usda.region
@@ -1266,6 +1393,8 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
       ingredient_id: match?.id || null,
       match_method: match?.method || 'product_search',
       match_confidence: matchConf,
+      resolution_tier: 'estimated',
+      suggestion,
       price_cents: estimatedCents,
       price_per_unit_cents: estimatedCents,
       unit: usda.unit,
@@ -1292,7 +1421,17 @@ export async function lookupPrice(query: PriceLookupQuery): Promise<PriceLookupR
   }
 
   // --- No data at all ---
-  return noResult
+  // Still return a total, typed, honest result. If the matcher surfaced a
+  // trigram candidate we include it as a suggestion so the caller can render
+  // "Did you mean {suggestion}?" instead of silently showing nothing.
+  return {
+    ...noResult,
+    ingredient_name: match?.name || ingredient,
+    ingredient_id: match?.id || null,
+    match_method: match?.method || 'none',
+    match_confidence: match?.confidence || 0,
+    suggestion,
+  }
 }
 
 // ---------------------------------------------------------------------------
