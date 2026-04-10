@@ -14,6 +14,8 @@ import {
 } from '@/lib/openclaw/catalog-actions'
 import { getPriceHistory } from '@/lib/openclaw/price-intelligence-actions'
 import { getPreferredStores } from '@/lib/grocery/store-shopping-actions'
+import { classifyFromCatalogDetail, classifyFromItemData } from '@/lib/pricing/sourceability'
+import { AvailabilityBadge, AvailabilityDetail } from '@/components/pricing/availability-badge'
 import { StockBadge } from '@/components/pricing/stock-badge'
 import { FreshnessDot } from '@/components/pricing/freshness-dot'
 import { ImageWithFallback } from '@/components/pricing/image-with-fallback'
@@ -82,6 +84,74 @@ function ConfidenceIcon({ confidence }: { confidence: string }) {
     <span className={`inline-flex items-center gap-1 ${colorClass}`} title={label}>
       {icon}
     </span>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Web Sourcing Panel
+// Shown when a catalog search returns zero results. Surfaces direct search
+// links to specialty retailers so the chef can source the ingredient immediately
+// without leaving the app to Google it manually.
+// ---------------------------------------------------------------------------
+
+const SOURCING_RETAILERS = [
+  {
+    name: 'Eataly',
+    url: (q: string) => `https://www.eataly.com/us_en/search?q=${encodeURIComponent(q)}`,
+    note: 'Italian specialty',
+  },
+  {
+    name: 'Whole Foods',
+    url: (q: string) => `https://www.wholefoodsmarket.com/search?q=${encodeURIComponent(q)}`,
+    note: 'Specialty produce',
+  },
+  {
+    name: 'Instacart',
+    url: (q: string) =>
+      `https://www.instacart.com/store/items/item_page?q=${encodeURIComponent(q)}`,
+    note: 'Same-day delivery',
+  },
+  {
+    name: 'Formaggio Kitchen',
+    url: (q: string) => `https://www.formaggiokitchen.com/search?q=${encodeURIComponent(q)}`,
+    note: 'Gourmet specialty',
+  },
+  {
+    name: 'Amazon Fresh',
+    url: (q: string) => `https://www.amazon.com/s?k=${encodeURIComponent(q)}&rh=n%3A16310101`,
+    note: 'National delivery',
+  },
+]
+
+function WebSourcingPanel({ query }: { query: string }) {
+  return (
+    <div className="bg-stone-900 rounded-lg border border-stone-700 p-5">
+      <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">
+        Not in catalog - search specialty retailers
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+        {SOURCING_RETAILERS.map((retailer) => (
+          <a
+            key={retailer.name}
+            href={retailer.url(query)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between px-3 py-2.5 rounded-md bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-stone-600 transition-colors group"
+          >
+            <div>
+              <p className="text-sm font-medium text-stone-200 group-hover:text-white">
+                {retailer.name}
+              </p>
+              <p className="text-xs text-stone-500">{retailer.note}</p>
+            </div>
+            <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-stone-300 shrink-0 ml-2" />
+          </a>
+        ))}
+      </div>
+      <p className="text-xs text-stone-600 mt-3">
+        Searching for: <span className="text-stone-400 italic">{query}</span>
+      </p>
+    </div>
   )
 }
 
@@ -744,22 +814,28 @@ export function CatalogBrowser() {
 
           {/* ---- Empty state ---- */}
           {!isPending && !error && items.length === 0 && (
-            <div className="bg-stone-900 rounded-lg border border-stone-800 p-8 text-center">
-              <Search className="w-8 h-8 text-stone-600 mx-auto mb-2" />
-              <p className="text-sm text-stone-400">No ingredients found</p>
-              <p className="text-xs text-stone-500 mt-1">
-                {activeStoreName
-                  ? `No catalog data for ${activeStoreName} yet. Coverage for this store is still in progress.`
-                  : 'Try adjusting your filters or search term'}
-              </p>
-              {hasActiveFilters && (
-                <button
-                  onClick={clearAllFilters}
-                  className="mt-3 text-xs text-brand-400 hover:text-brand-300 underline"
-                >
-                  Clear all filters
-                </button>
-              )}
+            <div className="space-y-3">
+              <div className="bg-stone-900 rounded-lg border border-stone-800 p-8 text-center">
+                <Search className="w-8 h-8 text-stone-600 mx-auto mb-2" />
+                <p className="text-sm text-stone-400">No ingredients found</p>
+                <p className="text-xs text-stone-500 mt-1">
+                  {activeStoreName
+                    ? `No catalog data for ${activeStoreName} yet. Coverage for this store is still in progress.`
+                    : 'Try adjusting your filters or search term'}
+                </p>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={clearAllFilters}
+                    className="mt-3 text-xs text-brand-400 hover:text-brand-300 underline"
+                  >
+                    Clear all filters
+                  </button>
+                )}
+              </div>
+
+              {/* ---- Web sourcing fallback ---- */}
+              {search.trim().length > 1 && <WebSourcingPanel query={search.trim()} />}
             </div>
           )}
 
@@ -777,7 +853,8 @@ export function CatalogBrowser() {
                       <th className="text-left px-4 py-2 font-medium">Name</th>
                       <th className="text-left px-4 py-2 font-medium">Category</th>
                       <th className="text-right px-4 py-2 font-medium">Best Price</th>
-                      <th className="text-left px-4 py-2 font-medium">Availability</th>
+                      <th className="text-left px-4 py-2 font-medium">Stock</th>
+                      <th className="text-left px-4 py-2 font-medium">Sourceability</th>
                       <th className="text-center px-4 py-2 font-medium">Stores</th>
                       <th className="text-left px-4 py-2 font-medium">Updated</th>
                     </tr>
@@ -970,6 +1047,17 @@ function DesktopRow({
         <td className="px-4 py-2.5">
           <StockBadge inStockCount={item.inStockCount} outOfStockCount={item.outOfStockCount} />
         </td>
+        <td className="px-4 py-2.5">
+          <AvailabilityBadge
+            report={classifyFromItemData(
+              item.priceCount,
+              item.inStockCount,
+              item.outOfStockCount,
+              item.lastUpdated
+            )}
+            variant="compact"
+          />
+        </td>
         <td className="px-4 py-2.5 text-center text-stone-300">{item.priceCount}</td>
         <td className="px-4 py-2.5">
           <div className="flex items-center gap-1.5">
@@ -982,7 +1070,7 @@ function DesktopRow({
       {/* Expanded detail */}
       {isExpanded && (
         <tr>
-          <td colSpan={7} className="px-4 py-4 bg-stone-950/60">
+          <td colSpan={8} className="px-4 py-4 bg-stone-950/60">
             <ExpandedDetail
               detail={expandedDetail}
               priceHistory={priceHistory}
@@ -1129,6 +1217,8 @@ function ExpandedDetail({
   isAdding: boolean
   isInCart: boolean
 }) {
+  const [linkCopied, setLinkCopied] = useState(false)
+
   if (!detail) {
     return (
       <div className="flex items-center gap-2 text-stone-500 text-sm py-2">
@@ -1139,9 +1229,22 @@ function ExpandedDetail({
   }
 
   const { prices, summary } = detail
+  const sourceability = classifyFromCatalogDetail(detail)
+
+  function handleCopyShareLink(e: React.MouseEvent) {
+    e.stopPropagation()
+    const url = `${window.location.origin}/ingredient/${item.id}`
+    navigator.clipboard.writeText(url).then(() => {
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2000)
+    })
+  }
 
   return (
     <div className="space-y-4">
+      {/* Sourceability analysis */}
+      <AvailabilityDetail report={sourceability} />
+
       {/* Summary row + sparkline */}
       <div className="flex flex-wrap items-center gap-4">
         <div className="text-xs text-stone-400">
@@ -1251,7 +1354,7 @@ function ExpandedDetail({
       )}
 
       {/* Action buttons */}
-      <div className="flex items-center gap-2 pt-1">
+      <div className="flex flex-wrap items-center gap-2 pt-1">
         <button
           onClick={(e) => {
             e.stopPropagation()
@@ -1298,6 +1401,26 @@ function ExpandedDetail({
             <Plus className="w-3.5 h-3.5" />
           )}
           {isAdded ? 'In Pantry' : isAdding ? 'Adding...' : 'Add to Pantry'}
+        </button>
+
+        {/* Share link - copies /ingredient/[id] to clipboard */}
+        <button
+          type="button"
+          onClick={handleCopyShareLink}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-md border border-stone-700 bg-stone-800 text-stone-300 hover:bg-stone-700 transition-colors ml-auto"
+          title="Copy shareable link to this ingredient"
+        >
+          {linkCopied ? (
+            <>
+              <Check className="w-3.5 h-3.5 text-emerald-400" />
+              Link copied
+            </>
+          ) : (
+            <>
+              <ExternalLink className="w-3.5 h-3.5" />
+              Share ingredient
+            </>
+          )}
         </button>
       </div>
     </div>
