@@ -22,6 +22,78 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ---
 
+## MODEL STRATEGY (3-Tier System - READ THIS)
+
+**Default model for this project is Sonnet 4.6.** This is configured in `.claude/settings.json` (`"model": "sonnet"`). The Max $200/mo plan bills against a token budget. Tier selection is cost discipline, not preference.
+
+**The 3-tier model:**
+
+| Tier         | Model      | Agent          | Purpose                                    |
+| ------------ | ---------- | -------------- | ------------------------------------------ |
+| **Worker**   | Haiku 4.5  | `haiku-worker` | Mechanical, judgment-free tasks. Cheapest. |
+| **Executor** | Sonnet 4.6 | (main session) | All normal work. Default.                  |
+| **Advisor**  | Opus 4.6   | `opus-advisor` | Hard decisions only. Most expensive.       |
+
+---
+
+### Tier 1: Haiku Worker (cheapest - call first for bulk tasks)
+
+Call `haiku-worker` via `Agent` tool with `subagent_type: "haiku-worker"` when the task is mechanical and requires no judgment.
+
+**Good reasons to call Haiku:**
+
+- Scanning 10+ files for a pattern (compliance check, symbol search, audit)
+- Extracting structured data from a large document
+- Writing boilerplate code from a template you specify exactly
+- Running a compliance check: em dash scan, OpenClaw surface scan, `@ts-nocheck` audit
+- Drafting a session digest from structured input you provide
+- Formatting raw data into a markdown report matching a template
+
+**Do NOT call Haiku for:**
+
+- Any task requiring understanding of the project architecture
+- Code that ships without Sonnet reviewing the output
+- Anything where a wrong answer causes a regression
+- Anything requiring judgment, context, or tradeoff analysis
+
+**Rule of thumb:** if a human intern could do it correctly from a checklist alone, Haiku can do it. If it requires knowing the codebase, keep it on Sonnet.
+
+---
+
+### Tier 2: Sonnet Executor (default - handles everything else)
+
+Sonnet runs the session end-to-end: reads files, edits code, runs commands, implements features, ships. This is the default tier. Do not escalate to Opus or delegate to Haiku unless there is a clear reason.
+
+---
+
+### Tier 3: Opus Advisor (most expensive - last resort for hard decisions)
+
+Call `opus-advisor` via `Agent` tool with `subagent_type: "opus-advisor"` only when Sonnet is genuinely stuck or the decision has long-term consequences.
+
+**Good reasons to call Opus:**
+
+- Architecture tradeoffs with non-obvious implications
+- Debugging where you have already tried 2+ fixes without progress
+- Security-sensitive design (auth, tenant scoping, data exposure)
+- Spec review, multi-file refactor planning
+- Ambiguous requirements that need a judgment call
+- You are about to do something that might violate a CLAUDE.md rule
+
+**Do NOT call Opus for:**
+
+- Simple edits, renames, or syntax fixes
+- File or symbol lookups (use Grep or Glob directly)
+- Straightforward implementation where the path is clear
+- Anything you already know the answer to
+
+**Rule of thumb:** if you can solve it in under 3 tool calls without guessing, do not call Opus. If you are stuck, going in circles, or the decision has lasting consequences, call Opus and get one clear recommendation back.
+
+---
+
+**Switching models mid-session:** Use `/model sonnet` or `/model opus` in Claude Code. The default-on-start comes from `.claude/settings.json`.
+
+---
+
 ## Quick Reference
 
 - **Product Blueprint:** `docs/product-blueprint.md` is THE finish line. V1 scope, progress bar, exit criteria. Read it. Update it when you complete features.
