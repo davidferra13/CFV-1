@@ -429,3 +429,13 @@ Every agent appends an entry when they start and when they finish. The next agen
   - docs/research/ai-conversational-calling-platforms-2026-04-10.md (new)
 - Build state on departure: green (no code changes)
 - Notes: Report covers Bland/Vapi/Retell comparison, voice cloning requirements, conversation design decision tree, legal/TCPA compliance, pricing breakdown. Retell AI recommended. Immediate action: add FCC AI disclosure to existing TwiML script.
+
+## 2026-04-10 (research - ai supplier calling stakeholder analysis)
+
+- Agent: Research (Sonnet 4.6)
+- Task: Comprehensive stakeholder analysis for AI-powered supplier calling feature (6 groups: chefs, vendors, B2B platforms, procurement, legal/regulatory, technical)
+- Status: completed
+- Files touched:
+  - docs/research/2026-04-10-ai-supplier-calling-stakeholder-analysis.md (new)
+- Build state on departure: green (no code changes)
+- Notes: Report documents private chef sourcing workflow, vendor trust dynamics, B2B platform gaps (Choco/BlueCart/Notch all miss specialty real-time availability), TCPA compliance gaps in current TwiML script (missing AI disclosure, recording consent, chef identity, opt-out), two-party consent state map (developer in MA = two-party state), and 10 specific actionable implications. Most urgent: fix TwiML script compliance gap before scaling any calls.
