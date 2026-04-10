@@ -35,6 +35,7 @@ export type SupplierCall = {
   result: 'yes' | 'no' | null
   price_quoted: string | null
   quantity_available: string | null
+  recording_url: string | null
   created_at: string
 }
 
@@ -151,6 +152,8 @@ export async function initiateSupplierCall(
   <Hangup/>
 </Response>`
 
+  const recordingCallbackUrl = `${APP_URL}/api/calling/recording`
+
   const twilioBody = new URLSearchParams({
     To: vendor.phone,
     From: TWILIO_PHONE_NUMBER,
@@ -158,6 +161,9 @@ export async function initiateSupplierCall(
     StatusCallback: statusCallbackUrl,
     StatusCallbackMethod: 'POST',
     StatusCallbackEvent: 'completed initiated ringing',
+    Record: 'true',
+    RecordingStatusCallback: recordingCallbackUrl,
+    RecordingStatusCallbackMethod: 'POST',
   })
 
   try {
@@ -221,7 +227,7 @@ export async function getCallStatus(callId: string): Promise<SupplierCall | null
   const { data } = await db
     .from('supplier_calls')
     .select(
-      'id, vendor_name, vendor_phone, ingredient_name, status, result, price_quoted, quantity_available, created_at'
+      'id, vendor_name, vendor_phone, ingredient_name, status, result, price_quoted, quantity_available, recording_url, created_at'
     )
     .eq('id', callId)
     .eq('chef_id', user.tenantId!)
@@ -241,7 +247,7 @@ export async function getRecentCalls(limit = 20): Promise<SupplierCall[]> {
   const { data } = await db
     .from('supplier_calls')
     .select(
-      'id, vendor_name, vendor_phone, ingredient_name, status, result, price_quoted, quantity_available, created_at'
+      'id, vendor_name, vendor_phone, ingredient_name, status, result, price_quoted, quantity_available, recording_url, created_at'
     )
     .eq('chef_id', user.tenantId!)
     .order('created_at', { ascending: false })

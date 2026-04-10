@@ -154,6 +154,20 @@ function extractQuantity(speech: string): string | null {
   return null
 }
 
+function parsePriceToCents(priceStr: string): number | null {
+  // Extract a numeric value from a price string like "$4.50", "$12"
+  const match = priceStr.match(/\$(\d+(?:\.\d{1,2})?)/)
+  if (!match) return null
+  return Math.round(parseFloat(match[1]) * 100)
+}
+
+function extractUnit(speech: string): string | null {
+  const unitMatch = speech.match(
+    /\b(pounds?|lbs?|ounces?|oz|pieces?|each|units?|dozens?|cases?|boxes?|bags?|gallons?|quarts?|pints?|liters?|kilograms?|kgs?)\b/i
+  )
+  return unitMatch ? unitMatch[1].toLowerCase() : null
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -202,11 +216,33 @@ export async function POST(req: NextRequest) {
         price_quoted: priceQuoted,
         quantity_available: quantityAvailable,
         speech_transcript: speech,
+        status: 'completed',
         updated_at: new Date().toISOString(),
       })
       .eq('id', callId)
-      .select('chef_id, vendor_name, ingredient_name, result')
+      .select('chef_id, vendor_id, vendor_name, ingredient_name, result')
       .single()
+
+    // Write a vendor price point when a clean price was captured
+    if (callRecord && priceQuoted && callRecord.vendor_id) {
+      try {
+        const priceCents = parsePriceToCents(priceQuoted)
+        const unit = extractUnit(speech || '') || 'each'
+        if (priceCents !== null) {
+          await db.from('vendor_price_points').insert({
+            chef_id: callRecord.chef_id,
+            vendor_id: callRecord.vendor_id,
+            item_name: callRecord.ingredient_name,
+            price_cents: priceCents,
+            unit,
+            notes: `AI call: "${speech}"`,
+            recorded_at: new Date().toISOString().slice(0, 10),
+          })
+        }
+      } catch (err) {
+        console.error('[calling/gather] vendor_price_points insert error:', err)
+      }
+    }
 
     if (callRecord) {
       try {

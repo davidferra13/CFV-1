@@ -357,7 +357,19 @@ function VendorCallQueuePanel({ query }: { query: string }) {
           >
             Vendors
           </a>
-          {callingEnabled ? '. Auto-calling is active.' : '.'}
+          {callingEnabled ? (
+            <>
+              {'. '}
+              <a
+                href="/culinary/supplier-calls"
+                className="text-stone-500 hover:text-stone-400 underline underline-offset-2"
+              >
+                View call log
+              </a>
+            </>
+          ) : (
+            '.'
+          )}
         </p>
       </div>
     </div>

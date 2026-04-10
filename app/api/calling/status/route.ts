@@ -2,8 +2,14 @@
  * Twilio Status Callback
  *
  * Twilio posts call lifecycle events here (initiated, ringing, completed, failed, etc).
- * We use this to keep the supplier_calls status column accurate and handle
- * no-answer / busy / failed scenarios that the gather endpoint never sees.
+ * Keeps supplier_calls.status accurate and handles no-answer/busy/failed scenarios
+ * that the gather endpoint never sees.
+ *
+ * Race condition handling: Twilio may fire the 'completed' status callback before
+ * the gather step-2 response is processed. We only broadcast terminal results here
+ * if the gather route hasn't already done so (i.e. result is still null on a
+ * non-answer/busy/failed call). For completed calls that DID go through gather,
+ * the gather route already broadcast the result - we just update status/duration.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -22,7 +28,6 @@ export async function POST(req: NextRequest) {
 
   const db: any = createAdminClient()
 
-  // Map Twilio statuses to our schema
   const statusMap: Record<string, string> = {
     queued: 'queued',
     initiated: 'queued',
@@ -37,6 +42,7 @@ export async function POST(req: NextRequest) {
 
   const mappedStatus = statusMap[callStatus] ?? 'failed'
   const isTerminal = ['completed', 'failed', 'busy', 'no_answer'].includes(mappedStatus)
+  const isHardFail = ['failed', 'busy', 'no_answer'].includes(mappedStatus)
 
   const update: Record<string, any> = {
     status: mappedStatus,
@@ -51,15 +57,22 @@ export async function POST(req: NextRequest) {
     .select('id, chef_id, vendor_name, ingredient_name, result')
     .single()
 
-  // If terminal and no result was captured (no-answer, busy, failed), broadcast that too
-  if (isTerminal && callRecord && callRecord.result === null) {
+  if (!callRecord) return NextResponse.json({ ok: true })
+
+  // Broadcast for hard-fail cases (no-answer, busy, failed) - gather never ran.
+  // Also broadcast if completed but gather never captured a result (call ended early).
+  const shouldBroadcast = isTerminal && (isHardFail || callRecord.result === null)
+
+  if (shouldBroadcast) {
     try {
       await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
         callId: callRecord.id,
         vendorName: callRecord.vendor_name,
         ingredientName: callRecord.ingredient_name,
-        result: null,
+        result: callRecord.result,
         status: mappedStatus,
+        priceQuoted: null,
+        quantityAvailable: null,
       })
     } catch (err) {
       console.error('[calling/status] broadcast error:', err)
