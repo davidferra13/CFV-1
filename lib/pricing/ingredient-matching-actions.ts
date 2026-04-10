@@ -17,8 +17,13 @@ export type {
   UnmatchedIngredient,
 } from './ingredient-matching-utils'
 
+// Auto-confirm threshold: matches at or above this score are confirmed without chef action.
+const AUTO_CONFIRM_THRESHOLD = 0.75
+
 /**
  * Suggest canonical ingredient matches using pg_trgm similarity.
+ * If the top match scores >= AUTO_CONFIRM_THRESHOLD and no alias exists yet,
+ * the match is confirmed automatically (no chef action required).
  */
 export async function suggestMatchesAction(ingredientId: string): Promise<SuggestMatchesResult> {
   const user = await requireChef()
@@ -42,6 +47,7 @@ export async function suggestMatchesAction(ingredientId: string): Promise<Sugges
     if (si) {
       currentAlias = { name: si.name, confirmedAt: existingAlias.confirmed_at }
     }
+    return { suggestions: [], currentAlias }
   } else if (existingAlias?.match_method === 'dismissed') {
     return { suggestions: [], currentAlias: null }
   }
@@ -49,7 +55,7 @@ export async function suggestMatchesAction(ingredientId: string): Promise<Sugges
   // Get ingredient name
   const { data: ingredient } = await db
     .from('ingredients')
-    .select('name')
+    .select('name, weight_to_volume_ratio')
     .eq('id', ingredientId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -58,6 +64,60 @@ export async function suggestMatchesAction(ingredientId: string): Promise<Sugges
 
   const normalized = normalizeIngredientName(ingredient.name)
   const suggestions = await suggestIngredientMatches(db, normalized)
+
+  // Auto-confirm if top match is high-confidence
+  if (suggestions.length > 0 && suggestions[0].score >= AUTO_CONFIRM_THRESHOLD) {
+    const top = suggestions[0]
+    try {
+      await db.rpc('raw_sql', {
+        query: `
+          INSERT INTO ingredient_aliases
+            (tenant_id, ingredient_id, system_ingredient_id, match_method, similarity_score, confirmed_at, confirmed_by)
+          VALUES ($1, $2, $3, 'trigram', $4, now(), NULL)
+          ON CONFLICT (tenant_id, ingredient_id)
+          DO UPDATE SET
+            system_ingredient_id = $3,
+            match_method         = 'trigram',
+            similarity_score     = $4,
+            confirmed_at         = now(),
+            confirmed_by         = NULL
+        `,
+        params: [user.tenantId!, ingredientId, top.systemIngredientId, top.score],
+      })
+
+      // Copy density data from system ingredient if the chef's record is missing it
+      if (!ingredient.weight_to_volume_ratio) {
+        const { data: si } = await db
+          .from('system_ingredients')
+          .select('weight_to_volume_ratio, cup_weight_grams')
+          .eq('id', top.systemIngredientId)
+          .single()
+        if (si?.weight_to_volume_ratio) {
+          await db
+            .from('ingredients')
+            .update({ weight_to_volume_ratio: si.weight_to_volume_ratio } as any)
+            .eq('id', ingredientId)
+            .eq('tenant_id', user.tenantId!)
+        }
+      }
+
+      // Trigger cost refresh non-blocking
+      try {
+        const { refreshIngredientCostsAction } = await import('@/lib/pricing/cost-refresh-actions')
+        await refreshIngredientCostsAction([ingredientId])
+      } catch (err) {
+        console.error('[suggestMatchesAction] Cost refresh failed (non-blocking):', err)
+      }
+
+      revalidatePath('/culinary/costing')
+      return {
+        suggestions: [],
+        currentAlias: { name: top.name, confirmedAt: new Date().toISOString() },
+      }
+    } catch (err) {
+      console.error('[suggestMatchesAction] Auto-confirm failed, returning suggestions:', err)
+    }
+  }
 
   return { suggestions, currentAlias }
 }
