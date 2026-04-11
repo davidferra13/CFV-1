@@ -30,6 +30,110 @@ import { CopyLinkButton } from './_components/copy-link-button'
 import { IngredientSearch } from './_components/ingredient-search'
 import type { CatalogDetailResult } from '@/lib/openclaw/catalog-types'
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+
+// ---------------------------------------------------------------------------
+// JSON-LD structured data helpers
+// ---------------------------------------------------------------------------
+
+function buildIngredientJsonLd(
+  name: string,
+  slug: string,
+  knowledge: IngredientKnowledge | null | undefined,
+  priceData?: { avgCents: number | null; standardUnit: string } | null
+): object {
+  const url = `${BASE_URL}/ingredient/${slug}`
+
+  const sameAs: string[] = []
+  if (knowledge?.wikipediaUrl) sameAs.push(knowledge.wikipediaUrl)
+  if (knowledge?.wikidataQid) sameAs.push(`https://www.wikidata.org/wiki/${knowledge.wikidataQid}`)
+
+  const thing: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Thing',
+    name,
+    url,
+    ...(knowledge?.wikiSummary ? { description: knowledge.wikiSummary } : {}),
+    ...(knowledge?.imageUrl ? { image: knowledge.imageUrl } : {}),
+    ...(knowledge?.taxonName ? { alternateName: knowledge.taxonName } : {}),
+    ...(sameAs.length > 0 ? { sameAs } : {}),
+  }
+
+  if (knowledge?.originCountries?.length) {
+    thing.countryOfOrigin = knowledge.originCountries.map((c) => ({
+      '@type': 'Country',
+      name: c,
+    }))
+  }
+
+  // NutritionInformation if available
+  if (knowledge?.nutritionJson) {
+    const n = (knowledge.nutritionJson as Record<string, unknown>)?.per_100g as Record<
+      string,
+      number
+    > | null
+    if (n) {
+      const nutrition: Record<string, unknown> = {
+        '@type': 'NutritionInformation',
+        servingSize: '100 g',
+      }
+      if (n.calories_kcal != null) nutrition.calories = `${n.calories_kcal} calories`
+      if (n.protein_g != null) nutrition.proteinContent = `${n.protein_g} g`
+      if (n.carbs_g != null) nutrition.carbohydrateContent = `${n.carbs_g} g`
+      if (n.fat_g != null) nutrition.fatContent = `${n.fat_g} g`
+      if (n.fiber_g != null) nutrition.fiberContent = `${n.fiber_g} g`
+      if (Object.keys(nutrition).length > 2) thing.nutrition = nutrition
+    }
+  }
+
+  // Offer if we have price data
+  if (priceData?.avgCents) {
+    thing.offers = {
+      '@type': 'Offer',
+      price: (priceData.avgCents / 100).toFixed(2),
+      priceCurrency: 'USD',
+      unitText: priceData.standardUnit,
+      availability: 'https://schema.org/InStock',
+      seller: { '@type': 'Organization', name: 'ChefFlow' },
+    }
+  }
+
+  return thing
+}
+
+function buildBreadcrumbJsonLd(name: string, slug: string): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: BASE_URL,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Ingredients',
+        item: `${BASE_URL}/ingredients`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name,
+        item: `${BASE_URL}/ingredient/${slug}`,
+      },
+    ],
+  }
+}
+
+function JsonLd({ data }: { data: object }) {
+  return (
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Metadata
 // ---------------------------------------------------------------------------
@@ -152,186 +256,195 @@ async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogD
       : null
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <div className="mb-6 flex items-center gap-3">
-        <Link
-          href="/chefs"
-          className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to ChefFlow
-        </Link>
-      </div>
-
-      <div className="mb-8">
-        <IngredientSearch currentId={id} />
-      </div>
-
-      <div className="rounded-2xl border border-stone-700 bg-stone-900/80 overflow-hidden shadow-xl">
-        {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-stone-800">
-          <div className="flex items-start gap-4">
-            {(knowledge?.imageUrl ?? representativePrice?.imageUrl) ? (
-              <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-stone-800 border border-stone-700">
-                <img
-                  src={knowledge?.imageUrl ?? representativePrice?.imageUrl ?? ''}
-                  alt={detail.ingredient.name}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            ) : (
-              <div className="h-16 w-16 shrink-0 rounded-xl bg-stone-800 border border-stone-700 flex items-center justify-center">
-                <span className="text-2xl">🥬</span>
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">
-                {detail.ingredient.category}
-              </p>
-              <h1 className="text-2xl font-bold text-stone-100 leading-tight">
-                {detail.ingredient.name}
-              </h1>
-              <p className="text-sm text-stone-500 mt-0.5">
-                Standard unit: {detail.ingredient.standardUnit}
-              </p>
-            </div>
-          </div>
-          <div className="mt-4">
-            <AvailabilityBadge report={sourceability} variant="full" />
-          </div>
+    <>
+      <JsonLd
+        data={buildIngredientJsonLd(detail.ingredient.name, id, knowledge, {
+          avgCents: detail.summary.avgCents,
+          standardUnit: detail.ingredient.standardUnit,
+        })}
+      />
+      <JsonLd data={buildBreadcrumbJsonLd(detail.ingredient.name, id)} />
+      <div className="mx-auto max-w-2xl px-4 py-10">
+        <div className="mb-6 flex items-center gap-3">
+          <Link
+            href="/chefs"
+            className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to ChefFlow
+          </Link>
         </div>
 
-        {/* Pricing summary */}
-        <div className="px-6 py-5 grid grid-cols-2 gap-4 border-b border-stone-800">
-          <PricingCell
-            label="Lowest price"
-            value={
-              detail.summary.cheapestCents
-                ? `${formatCurrency(detail.summary.cheapestCents)} / ${detail.ingredient.standardUnit}`
-                : 'N/A'
-            }
-            sub={detail.summary.cheapestStore ?? undefined}
-          />
-          <PricingCell
-            label="Average price"
-            value={
-              detail.summary.avgCents
-                ? `${formatCurrency(detail.summary.avgCents)} / ${detail.ingredient.standardUnit}`
-                : 'N/A'
-            }
-            sub={`across ${detail.summary.storeCount} ${detail.summary.storeCount === 1 ? 'store' : 'stores'}`}
-          />
+        <div className="mb-8">
+          <IngredientSearch currentId={id} />
         </div>
 
-        {/* Availability detail */}
-        <div className="px-6 py-5 border-b border-stone-800">
-          <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
-            Sourcing Analysis
-          </h2>
-          <AvailabilityDetail report={sourceability} />
-          {mostRecentDate && (
-            <p className="mt-2 text-xs text-stone-600">
-              Data last updated:{' '}
-              {new Date(mostRecentDate).toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </p>
-          )}
-        </div>
-
-        {/* Store prices */}
-        {detail.prices.length > 0 && (
-          <div className="px-6 py-5 border-b border-stone-800">
-            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
-              Price by Store
-            </h2>
-            <div className="space-y-2">
-              {detail.prices.slice(0, 5).map((price, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-stone-800/50 px-3 py-2"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-stone-200 truncate">{price.store}</p>
-                    {(price.storeCity || price.storeState) && (
-                      <p className="text-xs text-stone-500">
-                        {[price.storeCity, price.storeState].filter(Boolean).join(', ')}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold text-stone-100">
-                      {formatCurrency(price.priceCents)}
-                    </p>
-                    <p className="text-xs text-stone-500">per {price.priceUnit}</p>
-                  </div>
-                  <InStockDot inStock={price.inStock} />
+        <div className="rounded-2xl border border-stone-700 bg-stone-900/80 overflow-hidden shadow-xl">
+          {/* Header */}
+          <div className="px-6 pt-6 pb-4 border-b border-stone-800">
+            <div className="flex items-start gap-4">
+              {(knowledge?.imageUrl ?? representativePrice?.imageUrl) ? (
+                <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-stone-800 border border-stone-700">
+                  <img
+                    src={knowledge?.imageUrl ?? representativePrice?.imageUrl ?? ''}
+                    alt={detail.ingredient.name}
+                    className="h-full w-full object-cover"
+                  />
                 </div>
-              ))}
+              ) : (
+                <div className="h-16 w-16 shrink-0 rounded-xl bg-stone-800 border border-stone-700 flex items-center justify-center">
+                  <span className="text-2xl">🥬</span>
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">
+                  {detail.ingredient.category}
+                </p>
+                <h1 className="text-2xl font-bold text-stone-100 leading-tight">
+                  {detail.ingredient.name}
+                </h1>
+                <p className="text-sm text-stone-500 mt-0.5">
+                  Standard unit: {detail.ingredient.standardUnit}
+                </p>
+              </div>
             </div>
-            {detail.prices.length > 5 && (
+            <div className="mt-4">
+              <AvailabilityBadge report={sourceability} variant="full" />
+            </div>
+          </div>
+
+          {/* Pricing summary */}
+          <div className="px-6 py-5 grid grid-cols-2 gap-4 border-b border-stone-800">
+            <PricingCell
+              label="Lowest price"
+              value={
+                detail.summary.cheapestCents
+                  ? `${formatCurrency(detail.summary.cheapestCents)} / ${detail.ingredient.standardUnit}`
+                  : 'N/A'
+              }
+              sub={detail.summary.cheapestStore ?? undefined}
+            />
+            <PricingCell
+              label="Average price"
+              value={
+                detail.summary.avgCents
+                  ? `${formatCurrency(detail.summary.avgCents)} / ${detail.ingredient.standardUnit}`
+                  : 'N/A'
+              }
+              sub={`across ${detail.summary.storeCount} ${detail.summary.storeCount === 1 ? 'store' : 'stores'}`}
+            />
+          </div>
+
+          {/* Availability detail */}
+          <div className="px-6 py-5 border-b border-stone-800">
+            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+              Sourcing Analysis
+            </h2>
+            <AvailabilityDetail report={sourceability} />
+            {mostRecentDate && (
               <p className="mt-2 text-xs text-stone-600">
-                + {detail.prices.length - 5} more stores
+                Data last updated:{' '}
+                {new Date(mostRecentDate).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
               </p>
             )}
           </div>
-        )}
 
-        {/* Knowledge panel */}
-        {knowledge && <KnowledgePanel knowledge={knowledge} />}
-
-        {/* Alternatives */}
-        {alternatives.length > 0 && (
-          <div className="px-6 py-5 border-b border-stone-800">
-            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
-              {sourceability.classification === 'hard_to_source'
-                ? 'Closest Alternatives'
-                : 'Related Ingredients'}
-            </h2>
-            <div className="space-y-2">
-              {alternatives.map((alt) => (
-                <Link
-                  key={alt.id}
-                  href={`/ingredient/${alt.id}`}
-                  className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-800/40 px-3 py-2.5 hover:bg-stone-800 hover:border-stone-600 transition-colors group"
-                >
-                  <span className="text-sm text-stone-300 group-hover:text-stone-100 font-medium">
-                    {alt.name}
-                  </span>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {alt.bestPriceCents && (
-                      <span className="text-xs text-stone-400">
-                        {formatCurrency(alt.bestPriceCents)}/{alt.bestPriceUnit}
-                      </span>
-                    )}
-                    <ExternalLink className="h-3 w-3 text-stone-600 group-hover:text-stone-400" />
+          {/* Store prices */}
+          {detail.prices.length > 0 && (
+            <div className="px-6 py-5 border-b border-stone-800">
+              <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+                Price by Store
+              </h2>
+              <div className="space-y-2">
+                {detail.prices.slice(0, 5).map((price, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between gap-3 rounded-lg bg-stone-800/50 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-stone-200 truncate">{price.store}</p>
+                      {(price.storeCity || price.storeState) && (
+                        <p className="text-xs text-stone-500">
+                          {[price.storeCity, price.storeState].filter(Boolean).join(', ')}
+                        </p>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="text-sm font-semibold text-stone-100">
+                        {formatCurrency(price.priceCents)}
+                      </p>
+                      <p className="text-xs text-stone-500">per {price.priceUnit}</p>
+                    </div>
+                    <InStockDot inStock={price.inStock} />
                   </div>
-                </Link>
-              ))}
+                ))}
+              </div>
+              {detail.prices.length > 5 && (
+                <p className="mt-2 text-xs text-stone-600">
+                  + {detail.prices.length - 5} more stores
+                </p>
+              )}
             </div>
+          )}
+
+          {/* Knowledge panel */}
+          {knowledge && <KnowledgePanel knowledge={knowledge} />}
+
+          {/* Alternatives */}
+          {alternatives.length > 0 && (
+            <div className="px-6 py-5 border-b border-stone-800">
+              <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+                {sourceability.classification === 'hard_to_source'
+                  ? 'Closest Alternatives'
+                  : 'Related Ingredients'}
+              </h2>
+              <div className="space-y-2">
+                {alternatives.map((alt) => (
+                  <Link
+                    key={alt.id}
+                    href={`/ingredient/${alt.id}`}
+                    className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-800/40 px-3 py-2.5 hover:bg-stone-800 hover:border-stone-600 transition-colors group"
+                  >
+                    <span className="text-sm text-stone-300 group-hover:text-stone-100 font-medium">
+                      {alt.name}
+                    </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {alt.bestPriceCents && (
+                        <span className="text-xs text-stone-400">
+                          {formatCurrency(alt.bestPriceCents)}/{alt.bestPriceUnit}
+                        </span>
+                      )}
+                      <ExternalLink className="h-3 w-3 text-stone-600 group-hover:text-stone-400" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Share */}
+          <div className="px-6 py-5 bg-stone-900/50">
+            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+              Share This Ingredient
+            </h2>
+            <p className="text-xs text-stone-500 mb-3 leading-relaxed">
+              This link shows the same ingredient data to anyone who opens it. Share it with a
+              client, another chef, or a supplier.
+            </p>
+            <CopyLinkButton path={pageUrl} />
           </div>
-        )}
-
-        {/* Share */}
-        <div className="px-6 py-5 bg-stone-900/50">
-          <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
-            Share This Ingredient
-          </h2>
-          <p className="text-xs text-stone-500 mb-3 leading-relaxed">
-            This link shows the same ingredient data to anyone who opens it. Share it with a client,
-            another chef, or a supplier.
-          </p>
-          <CopyLinkButton path={pageUrl} />
         </div>
-      </div>
 
-      <p className="mt-6 text-center text-xs text-stone-700">
-        Prices are scraped from local grocery stores and updated periodically. Not affiliated with
-        any retailer.
-      </p>
-    </div>
+        <p className="mt-6 text-center text-xs text-stone-700">
+          Prices are scraped from local grocery stores and updated periodically. Not affiliated with
+          any retailer.
+        </p>
+      </div>
+    </>
   )
 }
 
@@ -351,69 +464,73 @@ function KnowledgeOnlyPage({
   knowledge: IngredientKnowledge
 }) {
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
-      <div className="mb-6 flex items-center gap-3">
-        <Link
-          href="/chefs"
-          className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to ChefFlow
-        </Link>
-      </div>
+    <>
+      <JsonLd data={buildIngredientJsonLd(name, id, knowledge)} />
+      <JsonLd data={buildBreadcrumbJsonLd(name, id)} />
+      <div className="mx-auto max-w-2xl px-4 py-10">
+        <div className="mb-6 flex items-center gap-3">
+          <Link
+            href="/chefs"
+            className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to ChefFlow
+          </Link>
+        </div>
 
-      <div className="mb-8">
-        <IngredientSearch currentId={id} />
-      </div>
+        <div className="mb-8">
+          <IngredientSearch currentId={id} />
+        </div>
 
-      <div className="rounded-2xl border border-stone-700 bg-stone-900/80 overflow-hidden shadow-xl">
-        {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-stone-800">
-          <div className="flex items-start gap-4">
-            {knowledge.imageUrl ? (
-              <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-stone-800 border border-stone-700">
-                <img src={knowledge.imageUrl} alt={name} className="h-full w-full object-cover" />
-              </div>
-            ) : (
-              <div className="h-16 w-16 shrink-0 rounded-xl bg-stone-800 border border-stone-700 flex items-center justify-center">
-                <span className="text-2xl">🥬</span>
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              {category && (
-                <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">{category}</p>
+        <div className="rounded-2xl border border-stone-700 bg-stone-900/80 overflow-hidden shadow-xl">
+          {/* Header */}
+          <div className="px-6 pt-6 pb-4 border-b border-stone-800">
+            <div className="flex items-start gap-4">
+              {knowledge.imageUrl ? (
+                <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-stone-800 border border-stone-700">
+                  <img src={knowledge.imageUrl} alt={name} className="h-full w-full object-cover" />
+                </div>
+              ) : (
+                <div className="h-16 w-16 shrink-0 rounded-xl bg-stone-800 border border-stone-700 flex items-center justify-center">
+                  <span className="text-2xl">🥬</span>
+                </div>
               )}
-              <h1 className="text-2xl font-bold text-stone-100 leading-tight">{name}</h1>
-              {knowledge.taxonName && (
-                <p className="text-xs text-stone-600 italic mt-0.5">{knowledge.taxonName}</p>
-              )}
+              <div className="flex-1 min-w-0">
+                {category && (
+                  <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">{category}</p>
+                )}
+                <h1 className="text-2xl font-bold text-stone-100 leading-tight">{name}</h1>
+                {knowledge.taxonName && (
+                  <p className="text-xs text-stone-600 italic mt-0.5">{knowledge.taxonName}</p>
+                )}
+              </div>
             </div>
+          </div>
+
+          {/* No pricing note */}
+          <div className="px-6 py-3 bg-stone-950/40 border-b border-stone-800">
+            <p className="text-xs text-stone-600">
+              Live price data not yet available for this ingredient.
+            </p>
+          </div>
+
+          {/* Knowledge panel */}
+          <KnowledgePanel knowledge={knowledge} />
+
+          {/* Share */}
+          <div className="px-6 py-5 bg-stone-900/50">
+            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+              Share This Ingredient
+            </h2>
+            <CopyLinkButton path={`/ingredient/${id}`} />
           </div>
         </div>
 
-        {/* No pricing note */}
-        <div className="px-6 py-3 bg-stone-950/40 border-b border-stone-800">
-          <p className="text-xs text-stone-600">
-            Live price data not yet available for this ingredient.
-          </p>
-        </div>
-
-        {/* Knowledge panel */}
-        <KnowledgePanel knowledge={knowledge} />
-
-        {/* Share */}
-        <div className="px-6 py-5 bg-stone-900/50">
-          <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
-            Share This Ingredient
-          </h2>
-          <CopyLinkButton path={`/ingredient/${id}`} />
-        </div>
+        <p className="mt-6 text-center text-xs text-stone-700">
+          Encyclopedic data sourced from Wikipedia and USDA FoodData Central.
+        </p>
       </div>
-
-      <p className="mt-6 text-center text-xs text-stone-700">
-        Encyclopedic data sourced from Wikipedia and USDA FoodData Central.
-      </p>
-    </div>
+    </>
   )
 }
 

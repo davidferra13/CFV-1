@@ -9,10 +9,19 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { pgClient } from '@/lib/db'
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+
 export const metadata: Metadata = {
   title: 'Ingredient Guide | ChefFlow',
   description:
     'Browse our culinary ingredient database: flavor profiles, origin, dietary info, and live pricing for thousands of ingredients used by professional chefs.',
+  openGraph: {
+    title: 'Ingredient Guide | ChefFlow',
+    description:
+      'Browse flavor profiles, origin, dietary info, and live pricing for thousands of culinary ingredients.',
+    url: `${BASE_URL}/ingredients`,
+    type: 'website',
+  },
 }
 
 // ---------------------------------------------------------------------------
@@ -108,123 +117,152 @@ export default async function IngredientsPage({ searchParams }: Props) {
     hasMore: false,
   }))
 
+  const collectionLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Ingredient Guide',
+    url: `${BASE_URL}/ingredients`,
+    description:
+      'Culinary ingredient encyclopedia with flavor profiles, origin, dietary info, and live pricing.',
+    numberOfItems: total,
+    publisher: { '@type': 'Organization', name: 'ChefFlow', url: BASE_URL },
+    breadcrumb: {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: BASE_URL },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Ingredient Guide',
+          item: `${BASE_URL}/ingredients`,
+        },
+      ],
+    },
+  }
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-stone-100 mb-2">Ingredient Guide</h1>
-        <p className="text-stone-400 text-sm">
-          {total.toLocaleString()} culinary ingredients with flavor profiles, origin, dietary info,
-          and live pricing.
-        </p>
-      </div>
-
-      {/* Search */}
-      <form method="get" className="mb-8">
-        <div className="relative max-w-md">
-          <input
-            name="q"
-            defaultValue={q}
-            placeholder="Search ingredients..."
-            className="w-full bg-stone-900 border border-stone-700 rounded-lg px-4 py-2.5 text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:border-stone-500"
-          />
-          <button
-            type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-stone-400 hover:text-stone-200 px-2 py-1"
-          >
-            Search
-          </button>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionLd) }}
+      />
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-stone-100 mb-2">Ingredient Guide</h1>
+          <p className="text-stone-400 text-sm">
+            {total.toLocaleString()} culinary ingredients with flavor profiles, origin, dietary
+            info, and live pricing.
+          </p>
         </div>
-      </form>
 
-      {/* Results */}
-      {items.length === 0 ? (
-        <div className="text-center py-16 text-stone-500">
-          {q ? `No ingredients found for "${q}".` : 'No enriched ingredients yet.'}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {items.map((item) => (
-            <Link
-              key={item.slug}
-              href={`/ingredient/${item.slug}`}
-              className="group block rounded-xl border border-stone-800 bg-stone-900 hover:border-stone-600 hover:bg-stone-800/60 transition-colors overflow-hidden"
+        {/* Search */}
+        <form method="get" className="mb-8">
+          <div className="relative max-w-md">
+            <input
+              name="q"
+              defaultValue={q}
+              placeholder="Search ingredients..."
+              className="w-full bg-stone-900 border border-stone-700 rounded-lg px-4 py-2.5 text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:border-stone-500"
+            />
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-stone-400 hover:text-stone-200 px-2 py-1"
             >
-              {/* Image */}
-              {item.imageUrl ? (
-                <div className="w-full h-32 overflow-hidden bg-stone-800">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-              ) : (
-                <div className="w-full h-32 bg-stone-800 flex items-center justify-center">
-                  <span className="text-4xl opacity-40">🥬</span>
-                </div>
-              )}
+              Search
+            </button>
+          </div>
+        </form>
 
-              {/* Content */}
-              <div className="p-3">
-                <h2 className="text-sm font-semibold text-stone-100 group-hover:text-white mb-0.5 leading-tight">
-                  {item.name}
-                </h2>
-                {item.category && (
-                  <p className="text-xs text-stone-500 capitalize mb-2">{item.category}</p>
+        {/* Results */}
+        {items.length === 0 ? (
+          <div className="text-center py-16 text-stone-500">
+            {q ? `No ingredients found for "${q}".` : 'No enriched ingredients yet.'}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {items.map((item) => (
+              <Link
+                key={item.slug}
+                href={`/ingredient/${item.slug}`}
+                className="group block rounded-xl border border-stone-800 bg-stone-900 hover:border-stone-600 hover:bg-stone-800/60 transition-colors overflow-hidden"
+              >
+                {/* Image */}
+                {item.imageUrl ? (
+                  <div className="w-full h-32 overflow-hidden bg-stone-800">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full h-32 bg-stone-800 flex items-center justify-center">
+                    <span className="text-4xl opacity-40">🥬</span>
+                  </div>
                 )}
 
-                {item.wikiSummary && (
-                  <p className="text-xs text-stone-400 leading-relaxed line-clamp-2 mb-2">
-                    {item.wikiSummary}
-                  </p>
-                )}
-
-                <div className="flex flex-wrap gap-1">
-                  {item.dietaryFlags.slice(0, 2).map((f) => (
-                    <span
-                      key={f}
-                      className="text-xs bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 px-1.5 py-0.5 rounded-full capitalize"
-                    >
-                      {f}
-                    </span>
-                  ))}
-                  {item.flavorProfile && (
-                    <span className="text-xs text-stone-600 capitalize self-center">
-                      {item.flavorProfile.split(',')[0]}
-                    </span>
+                {/* Content */}
+                <div className="p-3">
+                  <h2 className="text-sm font-semibold text-stone-100 group-hover:text-white mb-0.5 leading-tight">
+                    {item.name}
+                  </h2>
+                  {item.category && (
+                    <p className="text-xs text-stone-500 capitalize mb-2">{item.category}</p>
                   )}
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
 
-      {/* Pagination */}
-      {(pageNum > 1 || hasMore) && (
-        <div className="flex items-center justify-center gap-4 mt-10">
-          {pageNum > 1 && (
-            <Link
-              href={`/ingredients?${new URLSearchParams({ q, page: String(pageNum - 1) })}`}
-              className="px-4 py-2 text-sm rounded-lg border border-stone-700 text-stone-300 hover:bg-stone-800 transition-colors"
-            >
-              Previous
-            </Link>
-          )}
-          <span className="text-xs text-stone-500">
-            Page {pageNum} of {Math.ceil(total / 48)}
-          </span>
-          {hasMore && (
-            <Link
-              href={`/ingredients?${new URLSearchParams({ q, page: String(pageNum + 1) })}`}
-              className="px-4 py-2 text-sm rounded-lg border border-stone-700 text-stone-300 hover:bg-stone-800 transition-colors"
-            >
-              Next
-            </Link>
-          )}
-        </div>
-      )}
-    </div>
+                  {item.wikiSummary && (
+                    <p className="text-xs text-stone-400 leading-relaxed line-clamp-2 mb-2">
+                      {item.wikiSummary}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap gap-1">
+                    {item.dietaryFlags.slice(0, 2).map((f) => (
+                      <span
+                        key={f}
+                        className="text-xs bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 px-1.5 py-0.5 rounded-full capitalize"
+                      >
+                        {f}
+                      </span>
+                    ))}
+                    {item.flavorProfile && (
+                      <span className="text-xs text-stone-600 capitalize self-center">
+                        {item.flavorProfile.split(',')[0]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {(pageNum > 1 || hasMore) && (
+          <div className="flex items-center justify-center gap-4 mt-10">
+            {pageNum > 1 && (
+              <Link
+                href={`/ingredients?${new URLSearchParams({ q, page: String(pageNum - 1) })}`}
+                className="px-4 py-2 text-sm rounded-lg border border-stone-700 text-stone-300 hover:bg-stone-800 transition-colors"
+              >
+                Previous
+              </Link>
+            )}
+            <span className="text-xs text-stone-500">
+              Page {pageNum} of {Math.ceil(total / 48)}
+            </span>
+            {hasMore && (
+              <Link
+                href={`/ingredients?${new URLSearchParams({ q, page: String(pageNum + 1) })}`}
+                className="px-4 py-2 text-sm rounded-lg border border-stone-700 text-stone-300 hover:bg-stone-800 transition-colors"
+              >
+                Next
+              </Link>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   )
 }
