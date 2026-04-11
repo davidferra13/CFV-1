@@ -271,6 +271,47 @@ async function handleVendorAvailability(
   digits: string | null,
   confidence: number | null
 ): Promise<NextResponse> {
+  // If no callId but we have aiCallId, look up a recent unanswered supplier_call
+  // for this vendor (happens when a vendor calls back inbound).
+  if (!callId && aiCallId) {
+    const { data: aiCall } = await db
+      .from('ai_calls')
+      .select('chef_id, vendor_id, contact_phone')
+      .eq('id', aiCallId)
+      .maybeSingle()
+
+    if (aiCall?.vendor_id) {
+      const { data: pendingCall } = await db
+        .from('supplier_calls')
+        .select('id')
+        .eq('chef_id', aiCall.chef_id)
+        .eq('vendor_id', aiCall.vendor_id)
+        .in('status', ['no_answer', 'busy', 'queued'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (pendingCall) callId = pendingCall.id
+    }
+
+    // If still no callId, create a new supplier_calls record for this inbound callback
+    if (!callId && aiCall) {
+      const { data: newCall } = await db
+        .from('supplier_calls')
+        .insert({
+          chef_id: aiCall.chef_id,
+          vendor_id: aiCall.vendor_id ?? null,
+          vendor_name: null,
+          ingredient_name: 'Inbound callback',
+          status: 'in_progress',
+          triggered_by: 'inbound_callback',
+          ai_call_id: aiCallId,
+        })
+        .select('id')
+        .single()
+      if (newCall) callId = newCall.id
+    }
+  }
+
   if (!callId) {
     return closingTwiml('Thanks so much for your time. Have a great day!')
   }
@@ -425,10 +466,20 @@ async function handleVendorDelivery(
   if (step === 2) {
     if (speech) await logTranscript(db, aiCallId, 2, 'caller', speech, inputType as any, confidence)
 
+    // Merge step-2 contact/notes into extracted_data
+    const { data: existingCall } = await db
+      .from('ai_calls')
+      .select('extracted_data')
+      .eq('id', aiCallId)
+      .single()
+    const existing = (existingCall?.extracted_data as Record<string, any>) ?? {}
+    const updatedData = { ...existing, contact_notes: speech }
+
     await db
       .from('ai_calls')
       .update({
         status: 'completed',
+        extracted_data: updatedData,
         updated_at: new Date().toISOString(),
       })
       .eq('id', aiCallId)
@@ -446,7 +497,7 @@ async function handleVendorDelivery(
         contactName: aiCall.contact_name,
         subject: aiCall.subject,
         status: 'completed',
-        notes: speech,
+        extractedData: updatedData,
       }).catch(() => {})
     }
     return closingTwiml(
@@ -457,6 +508,15 @@ async function handleVendorDelivery(
   // Step 1: delivery window
   const timeWindow = speech ? extractTimeWindow(speech) : null
   if (speech) await logTranscript(db, aiCallId, 1, 'caller', speech, inputType as any, confidence)
+
+  // Save step-1 delivery window to extracted_data immediately
+  if (timeWindow) {
+    await db
+      .from('ai_calls')
+      .update({ extracted_data: { delivery_window: timeWindow } })
+      .eq('id', aiCallId)
+      .catch(() => {})
+  }
 
   const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallId)}&step=2&role=vendor_delivery`
   return twimlResponse(buildDeliveryStep2Twiml(gatherAction))
@@ -481,10 +541,20 @@ async function handleVenueConfirmation(
   if (step === 2) {
     if (speech) await logTranscript(db, aiCallId, 2, 'caller', speech, inputType as any, confidence)
 
+    // Merge step-2 kitchen restrictions into extracted_data
+    const { data: existingCall } = await db
+      .from('ai_calls')
+      .select('extracted_data')
+      .eq('id', aiCallId)
+      .single()
+    const existing = (existingCall?.extracted_data as Record<string, any>) ?? {}
+    const updatedData = { ...existing, kitchen_notes: speech }
+
     await db
       .from('ai_calls')
       .update({
         status: 'completed',
+        extracted_data: updatedData,
         updated_at: new Date().toISOString(),
       })
       .eq('id', aiCallId)
@@ -502,7 +572,7 @@ async function handleVenueConfirmation(
         contactName: aiCall.contact_name,
         subject: aiCall.subject,
         status: 'completed',
-        notes: speech,
+        extractedData: updatedData,
       }).catch(() => {})
     }
     return closingTwiml(
@@ -513,6 +583,15 @@ async function handleVenueConfirmation(
   // Step 1: access time + parking
   const timeWindow = speech ? extractTimeWindow(speech) : null
   if (speech) await logTranscript(db, aiCallId, 1, 'caller', speech, inputType as any, confidence)
+
+  // Save step-1 access window to extracted_data immediately
+  if (timeWindow) {
+    await db
+      .from('ai_calls')
+      .update({ extracted_data: { access_window: timeWindow } })
+      .eq('id', aiCallId)
+      .catch(() => {})
+  }
 
   const gatherAction = `${APP_URL}/api/calling/gather?aiCallId=${encodeURIComponent(aiCallId)}&step=2&role=venue_confirmation`
   return twimlResponse(buildVenueStep2Twiml(gatherAction))
@@ -562,22 +641,42 @@ async function handleInboundUnknown(
 ): Promise<NextResponse> {
   if (aiCallId && speech) {
     await logTranscript(db, aiCallId, 1, 'caller', speech, 'speech', null)
+
+    const { data: aiCall } = await db
+      .from('ai_calls')
+      .select('chef_id, contact_phone, contact_name')
+      .eq('id', aiCallId)
+      .single()
+
     await db
       .from('ai_calls')
       .update({
         status: 'completed',
         full_transcript: speech,
+        extracted_data: { message: speech },
         updated_at: new Date().toISOString(),
       })
       .eq('id', aiCallId)
       .catch(() => {})
 
-    const { data: aiCall } = await db.from('ai_calls').select('chef_id').eq('id', aiCallId).single()
     if (aiCall) {
+      // Surface message in quick notes so chef sees it without visiting Call Sheet
+      const callerLabel = aiCall.contact_name || aiCall.contact_phone || 'Unknown caller'
+      await db
+        .from('chef_quick_notes')
+        .insert({
+          chef_id: aiCall.chef_id,
+          content: `Inbound call from ${callerLabel}: "${speech}"`,
+          source: 'ai_call',
+          source_id: aiCallId,
+        })
+        .catch(() => {})
+
       await broadcast(`chef-${aiCall.chef_id}`, 'ai_call_result', {
         aiCallId,
         role: 'inbound_unknown',
         status: 'completed',
+        callerPhone: aiCall.contact_phone,
         message: speech,
       }).catch(() => {})
     }
