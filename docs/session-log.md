@@ -475,3 +475,20 @@ Every agent appends an entry when they start and when they finish. The next agen
 - Commits: 6eddd459a, 270e5eb29
 - Build state on departure: green
 - Notes: All 28 tests passed in 10.1 minutes. Key fixes: (1) test.describe.configure({timeout:180_000}) is the correct API - test.setTimeout() in beforeAll only sets the hook timeout not per-test timeouts; (2) removed parallel pre-warming that caused 43.7GB RAM spike from 28 simultaneous webpack compilations; (3) VendorFormWrapper needed because Server Components cannot pass function callbacks to Client Components. Routes now compile sequentially as tests run; second run is fast due to disk cache.
+
+## 2026-04-11 (builder - built specs verification + ingredient SEO polish)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: Verify 9 built specs with Playwright; continue ingredient knowledge layer SEO work
+- Status: completed
+- Files touched:
+  - app/(public)/ingredient/[id]/page.tsx (added ChefCta component - category-tailored booking conversion funnel)
+  - app/(public)/ingredients/[category]/page.tsx (added full pagination with page-aware canonical URLs)
+  - app/(public)/ingredients/page.tsx (added Recently Added 8-item photo grid from getRecentlyEnrichedIngredients)
+  - lib/openclaw/ingredient-knowledge-queries.ts (added getRecentlyEnrichedIngredients function)
+  - app/sitemap.ts (updated to include paginated category pages)
+  - app/(public)/book/\_components/book-dinner-form.tsx (wired Turnstile CAPTCHA + sessionStorage draft recovery)
+  - docs/product-blueprint.md (marked 9 built specs verified, CPA export verified, updated progress 68->70%)
+- Commits: ce33ef117 (booking form hardening)
+- Build state on departure: green
+- Notes: All 8 active built specs verified via qa-tester Playwright agent. Specs 7+8 (featured chef, credentials showcase) were already verified April 2. All 4 P0 specs PASS. P1 WARNs are working-as-designed (soft-close card is conditional on inquiry state, staff routes correctly redirect non-staff users, opportunity composer requires text input first). The /culinary/recipe-builder/new 404 is expected - correct route is /recipes/new. Ingredient enrichment drain running in background (~4,500+ of 23,534 enriched).

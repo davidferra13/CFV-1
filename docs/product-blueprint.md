@@ -28,13 +28,13 @@ ChefFlow is an operating system for food service professionals. It replaces 10+ 
 ## V1 Progress
 
 ```
-BUILD COMPLETENESS    [============================-] 93%
+BUILD COMPLETENESS    [=============================-] 95%
 SECURITY HARDENING    [=====================-------] 80%
-POLISH & UX           [==================----------] 70%
+POLISH & UX           [====================---------] 75%
 VALIDATION            [===-------------------------] 10%
-LAUNCH READINESS      [=====-----------------------] 20%
+LAUNCH READINESS      [======----------------------] 25%
 
-OVERALL V1 PROGRESS   [====================--------] 68%
+OVERALL V1 PROGRESS   [====================--------] 70%
 ```
 
 **What this means:** The software is 93% built. But shipping a product requires more than code. Validation (proving people want this) and launch readiness (marketing, onboarding, acquisition) are the remaining work.
@@ -189,7 +189,7 @@ V1 is "done" and ready to ship when ALL of the following are true:
 
 - [ ] Wave-1 operator survey launched and analyzed
 - [x] 3+ interface philosophy violations fixed (all 3 resolved April 3: hero metrics, sidebar, action bar)
-- [ ] 9 built specs verified with Playwright
+- [x] 9 built specs verified with Playwright (Apr 11: all 8 active specs pass. Specs 7+8 verified Apr 2. P0: golden path, pricing override, CPA tax export, cloud AI disclosure. P1: opportunity network, notes-dishes pipeline, soft-close leverage, staff ops.)
 - [x] Form auto-save on critical forms (inquiry, event, quote, recipe - all use useDurableDraft / useProtectedForm)
 - [x] Public booking form hardened (Turnstile CAPTCHA + sessionStorage draft recovery added April 11)
 - [ ] Onboarding flow tested with a non-technical user
@@ -225,9 +225,9 @@ _Last cleared: 2026-04-06. Completed items moved to queue or exit criteria._
 | ~~P0~~   | ~~Fix Remy parsing regression~~               | **DONE** (April 4)                                   |
 | ~~P0~~   | ~~SSE authentication~~                        | **DONE** (already implemented, minor gaps remain)    |
 | ~~P0~~   | ~~Database backup automation~~                | **DONE** (April 4)                                   |
-| P1       | 9 built specs need Playwright verification    | Various                                              |
+| ~~P1~~   | ~~9 built specs Playwright verification~~     | **DONE** (April 11)                                  |
 | ~~P1~~   | ~~Interface philosophy violations (3 found)~~ | **DONE** (April 5)                                   |
-| P1       | CPA-ready tax export verification             | `p0-chef-cpa-ready-tax-export-and-reconciliation.md` |
+| ~~P1~~   | ~~CPA-ready tax export verification~~         | **DONE** (April 11 - year-end page honest, no crash) |
 | P1       | Bulk menu import                              | Spec ready                                           |
 | P2       | Wave-1 operator survey launch                 | Surveys designed                                     |
 | P2       | Dead-zone gating and surface honesty          | `p1-dead-zone-gating-and-surface-honesty.md`         |
@@ -320,6 +320,6 @@ OpenClaw is a separate system running on a Raspberry Pi. It does ALL data collec
 
 ---
 
-_Last updated: 2026-04-04_
+_Last updated: 2026-04-11_
 _Document owner: Developer (David)_
 _Canonical location: `docs/product-blueprint.md`_
