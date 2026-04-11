@@ -1,26 +1,34 @@
 /**
  * /ingredient/[id] - Public shareable ingredient page
  *
- * A stable, consistent ingredient object anyone can view without logging in.
- * Designed to be shared in chef-to-chef and chef-to-client conversations.
+ * Two modes:
+ *   1. Full mode (id = openclaw canonical_ingredient_id): shows pricing + knowledge
+ *   2. Knowledge-only mode (id = system_ingredient slug): shows encyclopedic data only
  *
- * Shows: resolved name, availability classification, pricing, confidence,
- * store coverage, and alternatives when availability is limited.
+ * Falls through to the knowledge slug lookup when no price data exists, so all
+ * 1,500+ enriched ingredients are reachable as public pages even before OpenClaw
+ * maps them to store prices.
  */
 
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Globe, Leaf, Utensils } from 'lucide-react'
 import {
   getPublicIngredientDetail,
   getPublicAlternatives,
 } from '@/lib/openclaw/public-ingredient-queries'
+import {
+  getIngredientKnowledgeByName,
+  getIngredientKnowledgeBySlug,
+  type IngredientKnowledge,
+} from '@/lib/openclaw/ingredient-knowledge-queries'
 import { classifyFromCatalogDetail } from '@/lib/pricing/sourceability'
 import { AvailabilityDetail, AvailabilityBadge } from '@/components/pricing/availability-badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { CopyLinkButton } from './_components/copy-link-button'
 import { IngredientSearch } from './_components/ingredient-search'
+import type { CatalogDetailResult } from '@/lib/openclaw/catalog-types'
 
 // ---------------------------------------------------------------------------
 // Metadata
@@ -30,14 +38,59 @@ type Params = { params: Promise<{ id: string }> }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params
+
+  // Try full mode first
   const detail = await getPublicIngredientDetail(id).catch(() => null)
-  if (!detail) {
-    return { title: 'Ingredient not found' }
+  if (detail) {
+    const know = await getIngredientKnowledgeByName(detail.ingredient.name).catch(() => null)
+    const sourceability = classifyFromCatalogDetail(detail)
+    const descParts: string[] = []
+    if (know?.wikiSummary) descParts.push(know.wikiSummary)
+    else descParts.push(`${sourceability.label}: ${sourceability.description}`)
+    if (detail.summary.storeCount > 0)
+      descParts.push(`Real prices from ${detail.summary.storeCount} stores.`)
+    if (know?.originCountries?.length)
+      descParts.push(`Origin: ${know.originCountries.slice(0, 2).join(', ')}.`)
+    const description = descParts.join(' ').slice(0, 160)
+    return {
+      title: `${detail.ingredient.name} - Ingredient Guide | ChefFlow`,
+      description,
+      openGraph: {
+        title: `${detail.ingredient.name} | ChefFlow Ingredient Guide`,
+        description,
+        ...(know?.imageUrl
+          ? { images: [{ url: know.imageUrl, alt: detail.ingredient.name }] }
+          : {}),
+      },
+      twitter: {
+        card: 'summary',
+        title: `${detail.ingredient.name} | ChefFlow`,
+        description,
+        ...(know?.imageUrl ? { images: [know.imageUrl] } : {}),
+      },
+    }
   }
-  const sourceability = classifyFromCatalogDetail(detail)
+
+  // Fall back to knowledge slug
+  const slugResult = await getIngredientKnowledgeBySlug(id).catch(() => null)
+  if (!slugResult) return { title: 'Ingredient not found' }
+
+  const { name, knowledge: k } = slugResult
+  const description = (k.wikiSummary ?? `${name} - culinary ingredient guide.`).slice(0, 160)
   return {
-    title: `${detail.ingredient.name} - ChefFlow`,
-    description: `${sourceability.label}: ${sourceability.description} Prices from ${detail.summary.storeCount} stores.`,
+    title: `${name} - Ingredient Guide | ChefFlow`,
+    description,
+    openGraph: {
+      title: `${name} | ChefFlow Ingredient Guide`,
+      description,
+      ...(k.imageUrl ? { images: [{ url: k.imageUrl, alt: name }] } : {}),
+    },
+    twitter: {
+      card: 'summary',
+      title: `${name} | ChefFlow`,
+      description,
+      ...(k.imageUrl ? { images: [k.imageUrl] } : {}),
+    },
   }
 }
 
@@ -48,20 +101,41 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function IngredientPage({ params }: Params) {
   const { id } = await params
 
+  // --- Full mode: canonical ingredient with price data ---
   const detail = await getPublicIngredientDetail(id).catch(() => null)
-  if (!detail) notFound()
 
+  if (detail) {
+    return <FullIngredientPage id={id} detail={detail} />
+  }
+
+  // --- Knowledge-only mode: system_ingredient slug ---
+  const slugResult = await getIngredientKnowledgeBySlug(id).catch(() => null)
+  if (!slugResult) notFound()
+
+  return (
+    <KnowledgeOnlyPage
+      id={id}
+      name={slugResult.name}
+      category={slugResult.category}
+      knowledge={slugResult.knowledge}
+    />
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Full page (price data + knowledge)
+// ---------------------------------------------------------------------------
+
+async function FullIngredientPage({ id, detail }: { id: string; detail: CatalogDetailResult }) {
   const sourceability = classifyFromCatalogDetail(detail)
 
-  // Load alternatives when needed
-  const alternatives =
+  const [knowledge, alternatives] = await Promise.all([
+    getIngredientKnowledgeByName(detail.ingredient.name).catch(() => null),
     sourceability.classification !== 'readily_available'
-      ? await getPublicAlternatives(detail.ingredient.category, detail.ingredient.id, 4).catch(
-          () => []
-        )
-      : []
+      ? getPublicAlternatives(detail.ingredient.category, detail.ingredient.id, 4).catch(() => [])
+      : Promise.resolve([]),
+  ])
 
-  // Pick a representative image (first in-stock price with an image)
   const representativePrice =
     detail.prices.find((p) => p.inStock && p.imageUrl) ??
     detail.prices.find((p) => p.imageUrl) ??
@@ -70,7 +144,6 @@ export default async function IngredientPage({ params }: Params) {
 
   const pageUrl = `/ingredient/${id}`
 
-  // Most recent price date
   const mostRecentDate =
     detail.prices.length > 0
       ? detail.prices.reduce((a, b) =>
@@ -80,7 +153,6 @@ export default async function IngredientPage({ params }: Params) {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      {/* Nav breadcrumb */}
       <div className="mb-6 flex items-center gap-3">
         <Link
           href="/chefs"
@@ -91,24 +163,20 @@ export default async function IngredientPage({ params }: Params) {
         </Link>
       </div>
 
-      {/* Search bar - so recipients can find their own ingredients */}
       <div className="mb-8">
         <IngredientSearch currentId={id} />
       </div>
 
-      {/* Main card */}
       <div className="rounded-2xl border border-stone-700 bg-stone-900/80 overflow-hidden shadow-xl">
         {/* Header */}
         <div className="px-6 pt-6 pb-4 border-b border-stone-800">
           <div className="flex items-start gap-4">
-            {/* Ingredient image */}
-            {representativePrice?.imageUrl ? (
+            {(knowledge?.imageUrl ?? representativePrice?.imageUrl) ? (
               <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-stone-800 border border-stone-700">
                 <img
-                  src={representativePrice.imageUrl}
+                  src={knowledge?.imageUrl ?? representativePrice?.imageUrl ?? ''}
                   alt={detail.ingredient.name}
                   className="h-full w-full object-cover"
-                  onError={() => {}} // handled by CSS fallback
                 />
               </div>
             ) : (
@@ -116,7 +184,6 @@ export default async function IngredientPage({ params }: Params) {
                 <span className="text-2xl">🥬</span>
               </div>
             )}
-
             <div className="flex-1 min-w-0">
               <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">
                 {detail.ingredient.category}
@@ -129,8 +196,6 @@ export default async function IngredientPage({ params }: Params) {
               </p>
             </div>
           </div>
-
-          {/* Availability badge */}
           <div className="mt-4">
             <AvailabilityBadge report={sourceability} variant="full" />
           </div>
@@ -164,7 +229,6 @@ export default async function IngredientPage({ params }: Params) {
             Sourcing Analysis
           </h2>
           <AvailabilityDetail report={sourceability} />
-
           {mostRecentDate && (
             <p className="mt-2 text-xs text-stone-600">
               Data last updated:{' '}
@@ -177,7 +241,7 @@ export default async function IngredientPage({ params }: Params) {
           )}
         </div>
 
-        {/* Store prices (up to 5) */}
+        {/* Store prices */}
         {detail.prices.length > 0 && (
           <div className="px-6 py-5 border-b border-stone-800">
             <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
@@ -215,7 +279,10 @@ export default async function IngredientPage({ params }: Params) {
           </div>
         )}
 
-        {/* Alternatives (when availability is limited or hard to source) */}
+        {/* Knowledge panel */}
+        {knowledge && <KnowledgePanel knowledge={knowledge} />}
+
+        {/* Alternatives */}
         {alternatives.length > 0 && (
           <div className="px-6 py-5 border-b border-stone-800">
             <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
@@ -247,7 +314,7 @@ export default async function IngredientPage({ params }: Params) {
           </div>
         )}
 
-        {/* Share section */}
+        {/* Share */}
         <div className="px-6 py-5 bg-stone-900/50">
           <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
             Share This Ingredient
@@ -260,11 +327,228 @@ export default async function IngredientPage({ params }: Params) {
         </div>
       </div>
 
-      {/* Footer note */}
       <p className="mt-6 text-center text-xs text-stone-700">
         Prices are scraped from local grocery stores and updated periodically. Not affiliated with
         any retailer.
       </p>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Knowledge-only page (no price data)
+// ---------------------------------------------------------------------------
+
+function KnowledgeOnlyPage({
+  id,
+  name,
+  category,
+  knowledge,
+}: {
+  id: string
+  name: string
+  category: string | null
+  knowledge: IngredientKnowledge
+}) {
+  return (
+    <div className="mx-auto max-w-2xl px-4 py-10">
+      <div className="mb-6 flex items-center gap-3">
+        <Link
+          href="/chefs"
+          className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Back to ChefFlow
+        </Link>
+      </div>
+
+      <div className="mb-8">
+        <IngredientSearch currentId={id} />
+      </div>
+
+      <div className="rounded-2xl border border-stone-700 bg-stone-900/80 overflow-hidden shadow-xl">
+        {/* Header */}
+        <div className="px-6 pt-6 pb-4 border-b border-stone-800">
+          <div className="flex items-start gap-4">
+            {knowledge.imageUrl ? (
+              <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-stone-800 border border-stone-700">
+                <img src={knowledge.imageUrl} alt={name} className="h-full w-full object-cover" />
+              </div>
+            ) : (
+              <div className="h-16 w-16 shrink-0 rounded-xl bg-stone-800 border border-stone-700 flex items-center justify-center">
+                <span className="text-2xl">🥬</span>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              {category && (
+                <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">{category}</p>
+              )}
+              <h1 className="text-2xl font-bold text-stone-100 leading-tight">{name}</h1>
+              {knowledge.taxonName && (
+                <p className="text-xs text-stone-600 italic mt-0.5">{knowledge.taxonName}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* No pricing note */}
+        <div className="px-6 py-3 bg-stone-950/40 border-b border-stone-800">
+          <p className="text-xs text-stone-600">
+            Live price data not yet available for this ingredient.
+          </p>
+        </div>
+
+        {/* Knowledge panel */}
+        <KnowledgePanel knowledge={knowledge} />
+
+        {/* Share */}
+        <div className="px-6 py-5 bg-stone-900/50">
+          <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-3">
+            Share This Ingredient
+          </h2>
+          <CopyLinkButton path={`/ingredient/${id}`} />
+        </div>
+      </div>
+
+      <p className="mt-6 text-center text-xs text-stone-700">
+        Encyclopedic data sourced from Wikipedia and USDA FoodData Central.
+      </p>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Shared knowledge panel (used in both page modes)
+// ---------------------------------------------------------------------------
+
+function KnowledgePanel({ knowledge }: { knowledge: IngredientKnowledge }) {
+  const hasContent =
+    knowledge.wikiSummary ||
+    knowledge.originCountries.length > 0 ||
+    knowledge.flavorProfile ||
+    knowledge.culinaryUses ||
+    knowledge.dietaryFlags.length > 0 ||
+    knowledge.typicalPairings.length > 0
+
+  if (!hasContent) return null
+
+  return (
+    <div className="px-6 py-5 border-b border-stone-800">
+      <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-4">
+        About This Ingredient
+      </h2>
+
+      {knowledge.wikiSummary && (
+        <p className="text-sm text-stone-300 leading-relaxed mb-4">{knowledge.wikiSummary}</p>
+      )}
+
+      <div className="grid grid-cols-1 gap-3">
+        {knowledge.originCountries.length > 0 && (
+          <div className="flex items-start gap-2.5">
+            <Globe className="h-4 w-4 text-stone-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs text-stone-500 mb-0.5">Origin</p>
+              <p className="text-sm text-stone-300">{knowledge.originCountries.join(', ')}</p>
+            </div>
+          </div>
+        )}
+
+        {knowledge.flavorProfile && (
+          <div className="flex items-start gap-2.5">
+            <Utensils className="h-4 w-4 text-stone-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs text-stone-500 mb-0.5">Flavor</p>
+              <p className="text-sm text-stone-300 capitalize">{knowledge.flavorProfile}</p>
+            </div>
+          </div>
+        )}
+
+        {knowledge.culinaryUses && (
+          <div className="flex items-start gap-2.5">
+            <Leaf className="h-4 w-4 text-stone-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-xs text-stone-500 mb-0.5">Used for</p>
+              <p className="text-sm text-stone-300 capitalize">{knowledge.culinaryUses}</p>
+            </div>
+          </div>
+        )}
+
+        {knowledge.dietaryFlags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {knowledge.dietaryFlags.map((flag) => (
+              <span
+                key={flag}
+                className="px-2 py-0.5 rounded-full bg-emerald-900/40 border border-emerald-800/60 text-xs text-emerald-400 capitalize"
+              >
+                {flag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {knowledge.typicalPairings.length > 0 && (
+          <div className="mt-1">
+            <p className="text-xs text-stone-500 mb-1.5">Pairs well with</p>
+            <div className="flex flex-wrap gap-1.5">
+              {knowledge.typicalPairings.map((p) => (
+                <span
+                  key={p}
+                  className="px-2 py-0.5 rounded-full bg-stone-800 border border-stone-700 text-xs text-stone-300 capitalize"
+                >
+                  {p}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {knowledge.taxonName && (
+          <p className="text-xs text-stone-600 italic mt-1">{knowledge.taxonName}</p>
+        )}
+      </div>
+
+      {/* Nutrition snapshot */}
+      {knowledge.nutritionJson &&
+        (() => {
+          const n = (knowledge.nutritionJson as any)?.per_100g ?? {}
+          const entries = [
+            {
+              label: 'Calories',
+              value: n.calories_kcal != null ? `${n.calories_kcal} kcal` : null,
+            },
+            { label: 'Protein', value: n.protein_g != null ? `${n.protein_g}g` : null },
+            { label: 'Carbs', value: n.carbs_g != null ? `${n.carbs_g}g` : null },
+            { label: 'Fat', value: n.fat_g != null ? `${n.fat_g}g` : null },
+            { label: 'Fiber', value: n.fiber_g != null ? `${n.fiber_g}g` : null },
+          ].filter((e) => e.value !== null)
+
+          if (!entries.length) return null
+          return (
+            <div className="mt-4 pt-4 border-t border-stone-800">
+              <p className="text-xs text-stone-500 mb-2">Per 100g (USDA)</p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {entries.map((e) => (
+                  <span key={e.label} className="text-xs text-stone-400">
+                    <span className="text-stone-500">{e.label}: </span>
+                    {e.value}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
+
+      {knowledge.wikipediaUrl && (
+        <a
+          href={knowledge.wikipediaUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 flex items-center gap-1 text-xs text-stone-600 hover:text-stone-400 transition-colors w-fit"
+        >
+          <ExternalLink className="h-3 w-3" />
+          Wikipedia
+        </a>
+      )}
     </div>
   )
 }
@@ -275,18 +559,18 @@ export default async function IngredientPage({ params }: Params) {
 
 function PricingCell({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-lg bg-stone-800/50 px-4 py-3">
+    <div>
       <p className="text-xs text-stone-500 mb-1">{label}</p>
-      <p className="text-lg font-bold text-stone-100 tabular-nums">{value}</p>
-      {sub && <p className="text-xs text-stone-600 mt-0.5">{sub}</p>}
+      <p className="text-lg font-semibold text-stone-100">{value}</p>
+      {sub && <p className="text-xs text-stone-500 mt-0.5">{sub}</p>}
     </div>
   )
 }
 
 function InStockDot({ inStock }: { inStock: boolean }) {
   return (
-    <span
-      className={`h-2 w-2 rounded-full shrink-0 ${inStock ? 'bg-emerald-500' : 'bg-stone-600'}`}
+    <div
+      className={`h-2 w-2 rounded-full shrink-0 ${inStock ? 'bg-emerald-500' : 'bg-red-500/60'}`}
       title={inStock ? 'In stock' : 'Out of stock'}
     />
   )

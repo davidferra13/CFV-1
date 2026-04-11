@@ -10,6 +10,7 @@ import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { getIngredientKnowledgeBatch } from '@/lib/openclaw/ingredient-knowledge-queries'
 
 export default async function ChefRecipeDetailPage({ params }: { params: { id: string } }) {
   const recipe = await getRecipeById(params.id)
@@ -21,7 +22,16 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
 
   // If recipe has its own photo, use that. Otherwise fetch a stock placeholder.
   const hasOwnPhoto = !!r.photo_url
-  const placeholderImage = hasOwnPhoto ? null : await getPlaceholderImage(r.name)
+
+  // Batch-fetch ingredient knowledge for all recipe ingredients
+  const ingredientNames: string[] = (r.recipe_ingredients ?? [])
+    .map((ri: any) => ri.ingredient?.name)
+    .filter(Boolean)
+
+  const [placeholderImage, ingredientKnowledge] = await Promise.all([
+    hasOwnPhoto ? Promise.resolve(null) : getPlaceholderImage(r.name),
+    getIngredientKnowledgeBatch(ingredientNames).catch(() => new Map()),
+  ])
 
   return (
     <div className="space-y-6">
@@ -142,28 +152,52 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
 
           {r.recipe_ingredients?.length > 0 ? (
             <ul className="divide-y divide-stone-800">
-              {r.recipe_ingredients.map((ri: any) => (
-                <li key={ri.id} className="py-2 flex items-start justify-between gap-2">
-                  <div>
-                    <span className="text-sm text-stone-100">
-                      {ri.quantity != null && `${ri.quantity} ${ri.unit ?? ''} `}
-                      <span className="font-medium">{ri.ingredient?.name ?? 'Unknown'}</span>
-                      {ri.is_optional && (
-                        <span className="ml-1 text-xs text-stone-400">(optional)</span>
+              {r.recipe_ingredients.map((ri: any) => {
+                const iName = ri.ingredient?.name
+                const know = iName ? ingredientKnowledge.get(iName) : undefined
+                return (
+                  <li key={ri.id} className="py-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <span className="text-sm text-stone-100">
+                          {ri.quantity != null && `${ri.quantity} ${ri.unit ?? ''} `}
+                          <span className="font-medium">{iName ?? 'Unknown'}</span>
+                          {ri.is_optional && (
+                            <span className="ml-1 text-xs text-stone-400">(optional)</span>
+                          )}
+                        </span>
+                        {ri.preparation_notes && (
+                          <p className="text-xs text-stone-500 mt-0.5">{ri.preparation_notes}</p>
+                        )}
+                      </div>
+                      {ri.ingredient?.average_price_cents != null && (
+                        <span className="text-xs text-stone-400 whitespace-nowrap">
+                          {formatCurrency(ri.ingredient.average_price_cents)}/
+                          {ri.ingredient.default_unit ?? 'unit'}
+                        </span>
                       )}
-                    </span>
-                    {ri.preparation_notes && (
-                      <p className="text-xs text-stone-500 mt-0.5">{ri.preparation_notes}</p>
+                    </div>
+                    {/* Inline knowledge: dietary flags + pairings hint */}
+                    {know && (know.dietaryFlags.length > 0 || know.flavorProfile) && (
+                      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                        {know.dietaryFlags.slice(0, 3).map((f) => (
+                          <span
+                            key={f}
+                            className="text-xs bg-emerald-950/50 text-emerald-400 border border-emerald-900/50 px-1.5 py-0.5 rounded-full capitalize"
+                          >
+                            {f}
+                          </span>
+                        ))}
+                        {know.flavorProfile && (
+                          <span className="text-xs text-stone-600 capitalize">
+                            {know.flavorProfile}
+                          </span>
+                        )}
+                      </div>
                     )}
-                  </div>
-                  {ri.ingredient?.average_price_cents != null && (
-                    <span className="text-xs text-stone-400 whitespace-nowrap">
-                      {formatCurrency(ri.ingredient.average_price_cents)}/
-                      {ri.ingredient.default_unit ?? 'unit'}
-                    </span>
-                  )}
-                </li>
-              ))}
+                  </li>
+                )
+              })}
             </ul>
           ) : (
             <p className="text-sm text-stone-400">No ingredients added yet.</p>

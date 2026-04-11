@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { createAdminClient } from '@/lib/db/admin'
-
+import { getEnrichedIngredientSlugs } from '@/lib/openclaw/ingredient-knowledge-queries'
 import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -15,46 +15,88 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     priority: 1.0,
   },
   {
-    url: `${BASE_URL}/chefs`,
+    url: `${BASE_URL}/book`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.9,
+  },
+  {
+    url: `${BASE_URL}/ingredients`,
     lastModified: new Date(),
     changeFrequency: 'weekly',
     priority: 0.8,
   },
   {
-    url: `${BASE_URL}/compare`,
+    url: `${BASE_URL}/chefs`,
     lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.8,
+    changeFrequency: 'weekly',
+    priority: 0.85,
   },
   {
-    url: `${BASE_URL}/faq`,
+    url: `${BASE_URL}/services`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.75,
+  },
+  {
+    url: `${BASE_URL}/hub`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.65,
+  },
+  {
+    url: `${BASE_URL}/nearby`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.55,
+  },
+  {
+    url: `${BASE_URL}/how-it-works`,
     lastModified: new Date(),
     changeFrequency: 'monthly',
     priority: 0.7,
-  },
-  {
-    url: `${BASE_URL}/trust`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.7,
-  },
-  {
-    url: `${BASE_URL}/contact`,
-    lastModified: new Date(),
-    changeFrequency: 'yearly',
-    priority: 0.6,
   },
   {
     url: `${BASE_URL}/for-operators`,
     lastModified: new Date(),
     changeFrequency: 'monthly',
-    priority: 0.8,
+    priority: 0.65,
   },
   {
-    url: `${BASE_URL}/book`,
+    url: `${BASE_URL}/marketplace-chefs`,
     lastModified: new Date(),
     changeFrequency: 'monthly',
     priority: 0.7,
+  },
+  {
+    url: `${BASE_URL}/about`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  },
+  {
+    url: `${BASE_URL}/compare`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.55,
+  },
+  {
+    url: `${BASE_URL}/faq`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.5,
+  },
+  {
+    url: `${BASE_URL}/trust`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.55,
+  },
+  {
+    url: `${BASE_URL}/contact`,
+    lastModified: new Date(),
+    changeFrequency: 'yearly',
+    priority: 0.4,
   },
   {
     url: `${BASE_URL}/partner-signup`,
@@ -125,7 +167,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }))
 
-    return [...STATIC_ROUTES, ...compareRoutes, ...chefRoutes, ...giftCardRoutes, ...inquiryRoutes]
+    // Enriched ingredient knowledge pages
+    const ingredientSlugs = await getEnrichedIngredientSlugs().catch(() => [])
+    const ingredientRoutes: MetadataRoute.Sitemap = ingredientSlugs.map(({ slug, enrichedAt }) => ({
+      url: `${BASE_URL}/ingredient/${slug}`,
+      lastModified: new Date(enrichedAt),
+      changeFrequency: 'monthly' as const,
+      priority: 0.65,
+    }))
+
+    return [
+      ...STATIC_ROUTES,
+      ...compareRoutes,
+      ...chefRoutes,
+      ...giftCardRoutes,
+      ...inquiryRoutes,
+      ...ingredientRoutes,
+    ]
   } catch {
     // If DB is unavailable, return static routes only - don't break the build
     return STATIC_ROUTES
