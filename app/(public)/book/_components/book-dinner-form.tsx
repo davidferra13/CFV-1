@@ -1,7 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
+import { TurnstileWidget } from '@/components/security/turnstile-widget'
+
+const DRAFT_KEY = 'cf-book-form-draft'
+
+function loadDraft(): Partial<FormState> | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY)
+    return raw ? (JSON.parse(raw) as Partial<FormState>) : null
+  } catch {
+    return null
+  }
+}
+
+function saveDraft(form: FormState) {
+  try {
+    // Never persist honeypot field
+    const { website_url: _, ...safe } = form
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(safe))
+  } catch {
+    // Storage unavailable - non-fatal
+  }
+}
+
+function clearDraft() {
+  try {
+    sessionStorage.removeItem(DRAFT_KEY)
+  } catch {
+    // non-fatal
+  }
+}
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'What type of service?' },
@@ -64,29 +95,44 @@ const labelClass = 'block text-sm font-medium text-stone-200 mb-1.5'
 const selectClass =
   'w-full rounded-xl border border-stone-600/80 bg-stone-900/80 px-4 py-3 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 appearance-none cursor-pointer transition-colors'
 
+const DEFAULT_FORM: FormState = {
+  full_name: '',
+  email: '',
+  phone: '',
+  location: '',
+  event_date: '',
+  serve_time: '',
+  guest_count: 0,
+  occasion: '',
+  service_type: '',
+  budget_range: '',
+  dietary_restrictions: '',
+  additional_notes: '',
+  website_url: '',
+}
+
 export function BookDinnerForm() {
-  const [form, setForm] = useState<FormState>({
-    full_name: '',
-    email: '',
-    phone: '',
-    location: '',
-    event_date: '',
-    serve_time: '',
-    guest_count: 0,
-    occasion: '',
-    service_type: '',
-    budget_range: '',
-    dietary_restrictions: '',
-    additional_notes: '',
-    website_url: '',
-  })
+  const [form, setForm] = useState<FormState>(DEFAULT_FORM)
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<SubmitResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+
+  // Restore draft on mount
+  useEffect(() => {
+    const draft = loadDraft()
+    if (draft && Object.values(draft).some((v) => v)) {
+      setForm((prev) => ({ ...prev, ...draft }))
+    }
+  }, [])
 
   function updateField(field: keyof FormState, value: string | number) {
-    setForm((prev) => ({ ...prev, [field]: value }))
+    setForm((prev) => {
+      const next = { ...prev, [field]: value }
+      saveDraft(next)
+      return next
+    })
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -114,7 +160,7 @@ export function BookDinnerForm() {
       const res = await fetch('/api/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, turnstile_token: turnstileToken || '' }),
       })
 
       const data = await res.json()
@@ -127,6 +173,7 @@ export function BookDinnerForm() {
         return
       }
 
+      clearDraft()
       setResult(data)
     } catch {
       setError('Network error. Please check your connection and try again.')
@@ -420,6 +467,13 @@ export function BookDinnerForm() {
           )}
         </div>
       )}
+
+      {/* Invisible Turnstile CAPTCHA */}
+      <TurnstileWidget
+        onVerify={(token) => setTurnstileToken(token)}
+        onExpire={() => setTurnstileToken(null)}
+        onError={() => setTurnstileToken(null)}
+      />
 
       {/* Submit */}
       <button

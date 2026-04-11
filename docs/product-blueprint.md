@@ -188,9 +188,10 @@ V1 is "done" and ready to ship when ALL of the following are true:
 ### Should-Have (Ship Without, Fix Fast)
 
 - [ ] Wave-1 operator survey launched and analyzed
-- [ ] 3+ interface philosophy violations fixed
+- [x] 3+ interface philosophy violations fixed (all 3 resolved April 3: hero metrics, sidebar, action bar)
 - [ ] 9 built specs verified with Playwright
-- [ ] Form auto-save on critical forms (inquiry, event, quote, recipe)
+- [x] Form auto-save on critical forms (inquiry, event, quote, recipe - all use useDurableDraft / useProtectedForm)
+- [x] Public booking form hardened (Turnstile CAPTCHA + sessionStorage draft recovery added April 11)
 - [ ] Onboarding flow tested with a non-technical user
 
 ### Nice-to-Have (V1.1)
