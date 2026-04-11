@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
       .from('supplier_calls')
       .update(update)
       .eq('id', callId)
-      .select('id, chef_id, vendor_name, ingredient_name, result')
+      .select('id, chef_id, vendor_id, vendor_name, ingredient_name, result')
       .single()
     callRecord = data
   }
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       .from('supplier_calls')
       .update(update)
       .eq('call_sid', callSid)
-      .select('id, chef_id, vendor_name, ingredient_name, result')
+      .select('id, chef_id, vendor_id, vendor_name, ingredient_name, result')
       .single()
     callRecord = data
   }
@@ -139,6 +139,7 @@ export async function POST(req: NextRequest) {
       await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
         callId: callRecord.id,
         aiCallId,
+        vendorId: callRecord.vendor_id,
         vendorName: callRecord.vendor_name,
         ingredientName: callRecord.ingredient_name,
         result: callRecord.result,

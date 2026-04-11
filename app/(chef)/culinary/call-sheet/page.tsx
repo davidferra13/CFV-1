@@ -223,7 +223,7 @@ export default async function CallSheetPage({
       </div>
 
       {/* Tab: Call */}
-      {tab === 'call' && <CallHub />}
+      {tab === 'call' && <CallHub tenantId={user.tenantId ?? user.entityId} />}
 
       {/* Tab: Call Log */}
       {tab === 'log' && (

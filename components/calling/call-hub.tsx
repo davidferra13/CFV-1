@@ -10,13 +10,14 @@
  * No "add vendor" step required. Call anyone in the national directory directly.
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { getVendorCallQueue, type VendorCallCandidate } from '@/lib/vendors/sourcing-actions'
 import {
   initiateSupplierCall,
   initiateAdHocCall,
   getCallStatus,
 } from '@/lib/calling/twilio-actions'
+import { useSSE } from '@/lib/realtime/sse-client'
 import {
   Phone,
   Search,
@@ -77,7 +78,10 @@ const TYPE_COLORS: Record<string, string> = {
   bakery: 'bg-amber-900/30 text-amber-400',
 }
 
-export function CallHub() {
+// Map from callId -> vendorId so SSE results can update the right row
+const callIdToVendorId = new Map<string, string>()
+
+export function CallHub({ tenantId }: { tenantId?: string }) {
   const [ingredient, setIngredient] = useState('')
   const [vendors, setVendors] = useState<VendorCallCandidate[]>([])
   const [loading, setLoading] = useState(false)
@@ -94,6 +98,35 @@ export function CallHub() {
   const [quickIngredient, setQuickIngredient] = useState('')
   const [quickCalling, setQuickCalling] = useState(false)
   const [quickResult, setQuickResult] = useState<CallState>({ phase: 'idle' })
+
+  // SSE: receive call results in real-time instead of polling
+  // Replaces the polling interval for calls that are currently in-flight.
+  const handleSSEMessage = useCallback((msg: { event: string; data: any }) => {
+    if (msg.event !== 'supplier_call_result') return
+    const { callId, vendorId, result, status, priceQuoted, quantityAvailable, recordingUrl } =
+      msg.data
+
+    // Resolve vendorId: SSE may send it directly, or we look it up from our map
+    const vid = vendorId || (callId ? callIdToVendorId.get(callId) : null)
+    if (!vid) return
+
+    const terminal = ['completed', 'failed', 'no_answer', 'busy'].includes(status)
+    if (terminal) {
+      setCallStates((prev) => ({
+        ...prev,
+        [vid]: {
+          phase: 'done',
+          result: result ?? null,
+          status,
+          priceQuoted,
+          quantityAvailable,
+          recordingUrl,
+        },
+      }))
+    }
+  }, [])
+
+  useSSE(tenantId ? `chef-${tenantId}` : null, { onMessage: handleSSEMessage })
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -168,10 +201,19 @@ export function CallHub() {
         return
       }
 
-      // Poll for result every 3s for up to 90s
+      // Register callId -> vendorId mapping so SSE result can find the right row
       const callId = result.callId!
+      callIdToVendorId.set(callId, vendor.id)
+
+      // Poll as fallback: SSE will fire first if connection is live.
+      // Poll fires every 4s, times out after 90s.
       let attempts = 0
       const poll = setInterval(async () => {
+        // If SSE already resolved this call, stop polling
+        if (callStates[vendor.id]?.phase === 'done') {
+          clearInterval(poll)
+          return
+        }
         attempts++
         const status = await getCallStatus(callId)
         if (!status) return
@@ -189,8 +231,8 @@ export function CallHub() {
             },
           }))
         }
-        if (attempts >= 30) clearInterval(poll)
-      }, 3000)
+        if (attempts >= 22) clearInterval(poll) // ~90s
+      }, 4000)
     } catch {
       setCallStates((prev) => ({
         ...prev,

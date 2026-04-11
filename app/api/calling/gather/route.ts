@@ -386,9 +386,11 @@ async function handleVendorAvailability(
         await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
           callId,
           aiCallId,
+          vendorId: callRecord.vendor_id,
           vendorName: callRecord.vendor_name,
           ingredientName: callRecord.ingredient_name,
           result: callRecord.result,
+          status: 'completed',
           priceQuoted,
           quantityAvailable,
         })
@@ -439,9 +441,11 @@ async function handleVendorAvailability(
         await broadcast(`chef-${callRecord.chef_id}`, 'supplier_call_result', {
           callId,
           aiCallId,
+          vendorId: callRecord.vendor_id,
           vendorName: callRecord.vendor_name,
           ingredientName: callRecord.ingredient_name,
           result: 'no',
+          status: 'completed',
           priceQuoted: null,
           quantityAvailable: null,
         })
