@@ -1034,6 +1034,70 @@ async function main() {
     log('WARN: No canonical_ingredients table in SQLite')
   }
 
+  // ── Step 7d: Sync normalization_map ───────────────────────────────────
+  // The normalization_map is the BRIDGE between raw product names (openclaw.products)
+  // and canonical_ingredients. Without it, products have no price visibility in the
+  // catalog browser. This MUST run every sync so new Pi mappings flow automatically.
+  let normMapSynced = 0
+  if (tables.includes('normalization_map')) {
+    const totalNorm = sqlite.prepare('SELECT COUNT(*) as cnt FROM normalization_map').get().cnt
+    log(`Found ${totalNorm} normalization mappings in SQLite, syncing...`)
+
+    // Ensure table exists
+    await sql.unsafe(`
+      CREATE TABLE IF NOT EXISTS openclaw.normalization_map (
+        raw_name TEXT PRIMARY KEY,
+        canonical_ingredient_id TEXT NOT NULL,
+        variant_id TEXT,
+        method TEXT,
+        confidence NUMERIC(3,2),
+        confirmed BOOLEAN DEFAULT false,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `)
+    await sql.unsafe(`
+      CREATE INDEX IF NOT EXISTS idx_oc_norm_canonical
+      ON openclaw.normalization_map(canonical_ingredient_id)
+    `)
+
+    let normOffset = 0
+    while (normOffset < totalNorm) {
+      const normRows = sqlite
+        .prepare(`SELECT * FROM normalization_map LIMIT ${BATCH_SIZE} OFFSET ${normOffset}`)
+        .all()
+
+      for (const row of normRows) {
+        try {
+          await sql`
+            INSERT INTO openclaw.normalization_map (
+              raw_name, canonical_ingredient_id, variant_id, method, confidence, confirmed
+            ) VALUES (
+              ${row.raw_name}, ${row.canonical_ingredient_id},
+              ${row.variant_id ?? null}, ${row.method ?? null},
+              ${row.confidence ?? null}, ${row.confirmed === 1}
+            )
+            ON CONFLICT (raw_name) DO UPDATE SET
+              canonical_ingredient_id = EXCLUDED.canonical_ingredient_id,
+              variant_id = EXCLUDED.variant_id,
+              method = EXCLUDED.method,
+              confidence = EXCLUDED.confidence,
+              confirmed = EXCLUDED.confirmed
+          `
+          normMapSynced++
+        } catch (err) {
+          errors++
+          if (errorDetails.length < 20) errorDetails.push(`Norm map "${row.raw_name}": ${err.message}`)
+        }
+      }
+
+      normOffset += BATCH_SIZE
+      if (normOffset % 10000 === 0) log(`  Norm map: ${normOffset}/${totalNorm}...`)
+    }
+    log(`Synced ${normMapSynced} normalization mappings`)
+  } else {
+    log('WARN: No normalization_map table in SQLite - price bridge will be stale')
+  }
+
   // ── Step 8: Log sync run ───────────────────────────────────────────────
   const finishedAt = new Date()
   const durationSeconds = Math.round((finishedAt.getTime() - startedAt.getTime()) / 1000)

@@ -78,7 +78,7 @@ async function semanticSearch(sql, ingredientName) {
     log('  Building semantic embedding cache (first use)...')
     const sysIngredients = await sql`
       SELECT id, name FROM system_ingredients
-      ORDER BY name LIMIT 2000
+      ORDER BY name
     `
     _systemEmbeddingsCache = []
     // Batch embed in groups of 10 to avoid overwhelming Ollama

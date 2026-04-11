@@ -90,11 +90,10 @@ async function main() {
   let totalQuarantined = 0
   let totalSkipped = 0
 
-  // 1. Load all ingredients
+  // 1. Load all ingredients across all tenants
   const rows = await sql`
     SELECT id, name, tenant_id, last_price_cents
     FROM ingredients
-    WHERE tenant_id = '44f7d10c-a683-4a26-94c4-def97758a502'
   `
   console.log(`Ingredients in DB: ${rows.length}`)
 
@@ -244,7 +243,6 @@ async function main() {
   const pricedIngs = await sql`
     SELECT COUNT(*) as cnt FROM ingredients
     WHERE last_price_cents IS NOT NULL
-    AND tenant_id = '44f7d10c-a683-4a26-94c4-def97758a502'
   `
   const quarantineCount = await sql`
     SELECT COUNT(*) as cnt FROM openclaw.quarantined_prices WHERE NOT reviewed
