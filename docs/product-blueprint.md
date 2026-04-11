@@ -60,7 +60,7 @@ Get clients, close deals, manage the pipeline.
 - [x] Smart Fill (paste text, AI extracts structured data)
 - [x] Gmail integration (send, sync, thread linking)
 - [x] Service Lifecycle Intelligence (auto-detects stage from conversations)
-- [ ] **Remy inquiry parsing** - BROKEN (0% parse rate since March 30)
+- [x] **Remy inquiry parsing** - verified working 2026-04-11 (qwen3:4b parsing correctly)
 
 ### 2. PLAN (Menus, Calendar, Daily Ops) - 100% Complete
 
@@ -141,6 +141,7 @@ Build relationships, understand the business, get visible.
 - [x] Embed widget (external inquiry capture, vanilla JS, any website)
 - [x] Chef Opportunity Network (collaboration, referrals, knowledge sharing)
 - [x] Food operator directory (public discovery, claim flow)
+- [x] Ingredient knowledge encyclopedia (4K+ enriched pages, 15 category landing pages, JSON-LD, booking CTA funnel)
 - [x] AI-assisted social media orchestration
 - [x] Client portal (events, RSVP, dietary, feedback, rewards)
 - [x] Gift cards and vouchers

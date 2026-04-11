@@ -439,3 +439,18 @@ Every agent appends an entry when they start and when they finish. The next agen
   - docs/research/2026-04-10-ai-supplier-calling-stakeholder-analysis.md (new)
 - Build state on departure: green (no code changes)
 - Notes: Report documents private chef sourcing workflow, vendor trust dynamics, B2B platform gaps (Choco/BlueCart/Notch all miss specialty real-time availability), TCPA compliance gaps in current TwiML script (missing AI disclosure, recording consent, chef identity, opt-out), two-party consent state map (developer in MA = two-party state), and 10 specific actionable implications. Most urgent: fix TwiML script compliance gap before scaling any calls.
+
+## 2026-04-11 (builder - ingredient knowledge layer completion)
+
+- Agent: Builder (Sonnet 4.6)
+- Task: Complete ingredient knowledge encyclopedia SEO surfaces and chef workflow integration
+- Status: completed
+- Files touched:
+  - app/(public)/ingredient/[id]/page.tsx (booking CTA added, ChefCta component)
+  - app/(public)/ingredients/[category]/page.tsx (pagination, canonical metadata)
+  - app/(public)/ingredients/page.tsx (recently added section, parallel data fetch)
+  - lib/openclaw/ingredient-knowledge-queries.ts (getRecentlyEnrichedIngredients added)
+  - app/sitemap.ts (paginated category URLs included)
+- Commits: 175bdfc23, 9ab6e8d62, 41b612d0a (prior), 34561018e (accumulated)
+- Build state on departure: green (tsc clean)
+- Notes: Ingredient encyclopedia now has: 3,983 enriched pages (16.9%), 15 category pages with pagination, booking CTA on all ingredient pages (category-tailored copy), "Recently Added" photo grid on /ingredients, canonical tags on paginated pages, sitemap includes all category page variants. Drain running continuously in background (auto-loops). Inquiry parsing verified working (0% parse rate note in blueprint is stale - tested live, works fine with qwen3:4b).
