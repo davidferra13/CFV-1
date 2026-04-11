@@ -28,6 +28,7 @@ import { Card } from '@/components/ui/card'
 import { SendWorksheetButton } from '@/components/events/send-worksheet-button'
 import { RepeatMenuAlert } from '@/components/menus/repeat-menu-alert'
 import { AllergenConflictAlert } from '@/components/events/allergen-conflict-alert'
+import { DietaryKnowledgePanel } from '@/components/events/dietary-knowledge-panel'
 
 type EventDetailOverviewTabProps = {
   activeTab: EventDetailTab
@@ -408,6 +409,11 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
       {/* Deterministic Allergen Conflict Check (instant, no AI) */}
       {event.menu_id && event.status !== 'draft' && event.status !== 'cancelled' && (
         <AllergenConflictAlert eventId={event.id} />
+      )}
+
+      {/* Knowledge-enhanced dietary flag coverage (shows verified flags per ingredient) */}
+      {event.menu_id && event.status !== 'draft' && event.status !== 'cancelled' && (
+        <DietaryKnowledgePanel eventId={event.id} />
       )}
 
       {/* AI Allergen Risk Matrix (on-demand, deeper analysis) */}
