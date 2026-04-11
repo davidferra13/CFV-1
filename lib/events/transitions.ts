@@ -234,6 +234,26 @@ export async function transitionEvent({
     throw new Error('Failed to transition event status')
   }
 
+  // Idempotency guard: re-fetch the event to confirm our write actually landed.
+  // Two concurrent requests can both pass auth/permission/readiness checks before
+  // the atomic RPC rejects the second one. If the status doesn't match toStatus,
+  // another request won the race - skip all side effects to prevent duplicate
+  // emails, notifications, and PDFs.
+  const { data: verifiedEvent } = await db
+    .from('events')
+    .select('status')
+    .eq('id', eventId)
+    .single()
+
+  if (verifiedEvent?.status !== toStatus) {
+    log.events.warn('Transition side effects skipped - concurrent request won the race', {
+      eventId,
+      expected: toStatus,
+      actual: verifiedEvent?.status,
+    })
+    return { success: true, eventId, fromStatus, toStatus }
+  }
+
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/my-events/${eventId}`)
   revalidatePath('/events')
